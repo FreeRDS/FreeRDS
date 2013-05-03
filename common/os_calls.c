@@ -20,9 +20,10 @@
  * put all the os / arch define in here you want
  */
 
-#if defined(HAVE_CONFIG_H)
-#include "config_ac.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
+
 #if defined(_WIN32)
 #include <windows.h>
 #include <winsock.h>

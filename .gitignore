@@ -24,6 +24,8 @@ Makefile.in
 missing
 NEWS
 *.o
+*.so
+config.h
 README
 stamp-h1
 xrdp-chansrv
@@ -36,3 +38,8 @@ xrdp-sessvc
 xrdp-sestest
 xrdp-dis
 xrdp/xrdp
+xrdp/xrdp-ng
+
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake

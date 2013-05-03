@@ -455,7 +455,7 @@ main(int argc, char **argv)
         g_writeln("xrdp: A Remote Desktop Protocol server.");
         g_writeln("Copyright (C) Jay Sorg 2004-2011");
         g_writeln("See http://xrdp.sourceforge.net for more information.");
-        g_writeln("Version %s", PACKAGE_VERSION);
+        g_writeln("Version %s", XRDP_NG_VERSION_FULL);
         g_writeln("");
         g_deinit();
         g_exit(0);

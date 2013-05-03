@@ -21,9 +21,10 @@
 #if !defined(LIBXRDP_H)
 #define LIBXRDP_H
 
-#if defined(HAVE_CONFIG_H)
-#include "config_ac.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
+
 #include "arch.h"
 #include "parse.h"
 #include "trans.h"

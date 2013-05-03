@@ -18,7 +18,10 @@
  * module manager
  */
 
-#include <config_ac.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define ACCESS
 #include "xrdp.h"
 #include "log.h"
