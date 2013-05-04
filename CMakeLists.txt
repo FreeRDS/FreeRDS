@@ -47,6 +47,17 @@ set(XRDP_NG_VERSION_FULL "${XRDP_NG_VERSION}.${XRDP_NG_VERSION_REVISION}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+set(SBINDIR "${CMAKE_INSTALL_PREFIX}/sbin")
+set(SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc")
+set(DATADIR "${CMAKE_INSTALL_PREFIX}/share")
+set(LOCALSTATEDIR "${CMAKE_INSTALL_PREFIX}/var")
+
+set(XRDP_CFG_PATH "${SYSCONFDIR}/xrdp")
+set(XRDP_SBIN_PATH "${SBINDIR}")
+set(XRDP_SHARE_PATH "${DATADIR}/xrdp")
+set(XRDP_PID_PATH "${LOCALSTATEDIR}/run")
+set(XRDP_LOG_PATH "${LOCALSTATEDIR}/log")
+
 add_definitions("-DHAVE_CONFIG_H")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
 
@@ -61,4 +72,9 @@ endif()
 add_subdirectory(common)
 add_subdirectory(libxrdp)
 add_subdirectory(xrdp)
+add_subdirectory(sesman)
+add_subdirectory(rdp)
+add_subdirectory(xup)
+add_subdirectory(mc)
+add_subdirectory(keygen)
 

@@ -24,9 +24,10 @@
  *
  */
 
-#if defined(HAVE_CONFIG_H)
-#include "config_ac.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
+
 #include "file_loc.h"
 #include "os_calls.h"
 #include "arch.h"

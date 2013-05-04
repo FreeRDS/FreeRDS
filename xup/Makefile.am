@@ -16,3 +16,4 @@ libxup_la_SOURCES = xup.c
 
 libxup_la_LIBADD = \
   $(top_builddir)/common/libcommon.la
+

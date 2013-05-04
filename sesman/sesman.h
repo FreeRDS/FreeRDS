@@ -27,9 +27,10 @@
 #ifndef SESMAN_H
 #define SESMAN_H
 
-#if defined(HAVE_CONFIG_H)
-#include "config_ac.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
+
 #include "d3des.h"
 #include "arch.h"
 #include "parse.h"
@@ -38,8 +39,7 @@
 #include "file_loc.h"
 #include "env.h"
 #include "auth.h"
-#include "config.h"
-//#include "tcp.h"
+#include "cfg.h"
 #include "sig.h"
 #include "session.h"
 #include "access.h"

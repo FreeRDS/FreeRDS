@@ -27,8 +27,8 @@
 #ifndef LIBSCP_H
 #define LIBSCP_H
 
-#if defined(HAVE_CONFIG_H)
-#include "config_ac.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
 
 #include "libscp_types.h"

@@ -30,14 +30,13 @@ README
 stamp-h1
 xrdp-chansrv
 xrdp-genkeymap
-xrdp-keygen
+xrdp-ng-keygen
 xrdp-sesadmin
-xrdp-sesman
+xrdp-ng-sesman
 xrdp-sesrun
 xrdp-sessvc
 xrdp-sestest
 xrdp-dis
-xrdp/xrdp
 xrdp/xrdp-ng
 
 CMakeCache.txt
