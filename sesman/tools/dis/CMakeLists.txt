@@ -15,13 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "xrdp-ng-keygen")
-set(MODULE_PREFIX "FREERDP_XRDP_KEYGEN")
+set(MODULE_NAME "xrdp-ng-dis")
+set(MODULE_PREFIX "FREERDP_XRDP_DIS")
 
-include_directories("../common")
+include_directories("../../../common")
 
 set(${MODULE_PREFIX}_SRCS
-	keygen.c)
+	dis.c)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 

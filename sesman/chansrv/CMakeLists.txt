@@ -15,51 +15,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "xrdp-ng-common")
-set(MODULE_PREFIX "FREERDP_XRDP_COMMON")
+set(MODULE_NAME "xrdp-ng-chansrv")
+set(MODULE_PREFIX "FREERDP_XRDP_CHANSRV")
 
-set(ZLIB_FEATURE_TYPE "REQUIRED")
-set(ZLIB_FEATURE_PURPOSE "compression")
-set(ZLIB_FEATURE_DESCRIPTION "data compression")
+set(X11_FEATURE_TYPE "REQUIRED")
+set(X11_FEATURE_PURPOSE "X11")
+set(X11_FEATURE_DESCRIPTION "X11 client and server")
 
-set(OPENSSL_FEATURE_TYPE "REQUIRED")
-set(OPENSSL_FEATURE_PURPOSE "cryptography")
-set(OPENSSL_FEATURE_DESCRIPTION "encryption, certificate validation, hashing functions")
+set(XFIXES_FEATURE_TYPE "RECOMMENDED")
+set(XFIXES_FEATURE_PURPOSE "X11 region")
+set(XFIXES_FEATURE_DESCRIPTION "X11 region fix extension")
 
-find_feature(ZLIB ${ZLIB_FEATURE_TYPE} ${ZLIB_FEATURE_PURPOSE} ${ZLIB_FEATURE_DESCRIPTION})
-find_feature(OpenSSL ${OPENSSL_FEATURE_TYPE} ${OPENSSL_FEATURE_PURPOSE} ${OPENSSL_FEATURE_DESCRIPTION})
+find_feature(X11 ${X11_FEATURE_TYPE} ${X11_FEATURE_PURPOSE} ${X11_FEATURE_DESCRIPTION})
+find_feature(Xfixes ${XFIXES_FEATURE_TYPE} ${XFIXES_FEATURE_PURPOSE} ${XFIXES_FEATURE_DESCRIPTION})
+
+include_directories(${X11_INCLUDE_DIRS})
+include_directories(${XFIXES_INCLUDE_DIRS})
 
 include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${ZLIB_INCLUDE_DIRS})
 
+include_directories("../../common")
+
 set(${MODULE_PREFIX}_HEADERS
-	d3des.h
-	arch.h
-	os_calls.h
-	list.h
-	file.h
-	parse.h
-	defines.h
-	file_loc.h
-	log.h
-	os_calls.h
-	ssl_calls.h
-	thread_calls.h
-	trans.h
-	xrdp_constants.h)
+	chansrv.h
+	clipboard.h
+	devredir.h
+	sound.h)
 
 set(${MODULE_PREFIX}_SRCS
-	d3des.c
-	file.c
-	list.c
-	log.c
-	os_calls.c
-	ssl_calls.c
-	thread_calls.c
-	trans.c
+	chansrv.c
+	sound.c
+	clipboard.c
+	clipboard_file.c
+	devredir.c
+	rail.c
+	xcommon.c
+	drdynvc.c
+	chansrv_fuse.c
 	${${MODULE_PREFIX}_HEADERS})
 
-add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS
 	${CMAKE_THREAD_LIBS_INIT}
@@ -69,10 +65,15 @@ if(${CMAKE_SYSTEM_NAME} MATCHES SunOS)
 	set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} rt)
 endif()
 
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${X11_LIBRARIES})
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XFIXES_LIBRARIES})
+
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${ZLIB_LIBRARIES})
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${OPENSSL_LIBRARIES})
 
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-common)
+
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
 

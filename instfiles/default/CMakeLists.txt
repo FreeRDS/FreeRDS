@@ -15,19 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "xrdp-ng-keygen")
-set(MODULE_PREFIX "FREERDP_XRDP_KEYGEN")
+set(${MODULE_PREFIX}_CFG_DATA
+	xrdp.sh
+	km-0407.ini
+	km-0409.ini
+	km-040c.ini
+	km-0410.ini
+	km-0419.ini
+	km-041d.ini
+	km-0816.ini)
 
-include_directories("../common")
-
-set(${MODULE_PREFIX}_SRCS
-	keygen.c)
-
-add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
-
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-common)
-
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
-
-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${XRDP_CFG_PATH})
 

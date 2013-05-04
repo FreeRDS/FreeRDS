@@ -28,17 +28,19 @@ NEWS
 config.h
 README
 stamp-h1
-xrdp-chansrv
-xrdp-genkeymap
+xrdp-ng-chansrv
+xrdp-ng-genkeymap
 xrdp-ng-keygen
-xrdp-sesadmin
+xrdp-ng-sesadmin
 xrdp-ng-sesman
-xrdp-sesrun
-xrdp-sessvc
-xrdp-sestest
-xrdp-dis
-xrdp/xrdp-ng
+xrdp-ng-sesrun
+xrdp-ng-sessvc
+xrdp-ng-sestest
+xrdp-ng-xcon
+xrdp-ng-dis
+xrdp-ng
 
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
+install_manifest.txt

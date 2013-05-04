@@ -72,3 +72,5 @@ set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-common)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+

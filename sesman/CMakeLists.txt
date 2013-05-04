@@ -60,16 +60,16 @@ set(${MODULE_PREFIX}_SRCS
 	verify_user_pam.c
 	${${MODULE_PREFIX}_HEADERS})
 
-set(${MODULE_PREFIX}_SYSCONF_DATA
+set(${MODULE_PREFIX}_CFG_DATA
 	sesman.ini
 	startwm.sh)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 add_subdirectory(libscp)
-#add_subdirectory(tools)
-#add_subdirectory(sessvc)
-#add_subdirectory(chansrv)
+add_subdirectory(tools)
+add_subdirectory(sessvc)
+add_subdirectory(chansrv)
 
 set(${MODULE_PREFIX}_LIBS
 	${PAM_LIBRARY})
@@ -78,4 +78,8 @@ set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-common)
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-libscp)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
+
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
+
+install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${XRDP_CFG_PATH})
 

@@ -61,6 +61,11 @@ set(XRDP_LOG_PATH "${LOCALSTATEDIR}/log")
 add_definitions("-DHAVE_CONFIG_H")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
 
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}:\$ORIGIN/..")
+
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -77,4 +82,5 @@ add_subdirectory(rdp)
 add_subdirectory(xup)
 add_subdirectory(mc)
 add_subdirectory(keygen)
+add_subdirectory(instfiles)
 

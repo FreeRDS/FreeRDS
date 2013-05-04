@@ -15,19 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "xrdp-ng-keygen")
-set(MODULE_PREFIX "FREERDP_XRDP_KEYGEN")
-
-include_directories("../common")
-
-set(${MODULE_PREFIX}_SRCS
-	keygen.c)
-
-add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
-
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-common)
-
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
-
-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+add_subdirectory(dis)
+add_subdirectory(sesadmin)
+add_subdirectory(sesrun)
+add_subdirectory(sestest)
+add_subdirectory(xcon)
 

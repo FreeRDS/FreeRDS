@@ -15,17 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "xrdp-ng-keygen")
-set(MODULE_PREFIX "FREERDP_XRDP_KEYGEN")
+set(MODULE_NAME "xrdp-ng-sesadmin")
+set(MODULE_PREFIX "FREERDP_XRDP_SESADMIN")
 
-include_directories("../common")
+include_directories("..")
+include_directories("../../../common")
 
 set(${MODULE_PREFIX}_SRCS
-	keygen.c)
+	sesadmin.c)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-common)
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-libscp)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

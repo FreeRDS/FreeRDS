@@ -15,17 +15,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "xrdp-ng-keygen")
-set(MODULE_PREFIX "FREERDP_XRDP_KEYGEN")
+set(MODULE_NAME "xrdp-ng-xcon")
+set(MODULE_PREFIX "FREERDP_XRDP_XCON")
 
-include_directories("../common")
+set(X11_FEATURE_TYPE "REQUIRED")
+set(X11_FEATURE_PURPOSE "X11")
+set(X11_FEATURE_DESCRIPTION "X11 client and server")
+
+find_feature(X11 ${X11_FEATURE_TYPE} ${X11_FEATURE_PURPOSE} ${X11_FEATURE_DESCRIPTION})
+
+include_directories(${X11_INCLUDE_DIRS})
+
+include_directories("../../../common")
 
 set(${MODULE_PREFIX}_SRCS
-	keygen.c)
+	xcon.c)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-common)
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${X11_LIBRARIES})
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
