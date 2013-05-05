@@ -14,6 +14,7 @@
 #define XRDP_SHARE_PATH "${XRDP_SHARE_PATH}"
 #define XRDP_PID_PATH "${XRDP_PID_PATH}"
 #define XRDP_LOG_PATH "${XRDP_LOG_PATH}"
+#define XRDP_LIB_PATH "${XRDP_LIB_PATH}"
 
 /* Include files */
 #cmakedefine HAVE_FCNTL_H

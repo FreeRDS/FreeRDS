@@ -18,6 +18,10 @@
  * default file locations for log, config, etc
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #if !defined(FILE_LOC_H)
 #define FILE_LOC_H
 

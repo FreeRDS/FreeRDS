@@ -28,6 +28,8 @@ NEWS
 config.h
 README
 stamp-h1
+.project
+.cproject
 xrdp*chansrv
 xrdp*genkeymap
 xrdp*keygen
