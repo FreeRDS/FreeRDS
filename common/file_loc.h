@@ -21,28 +21,3 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-#if !defined(FILE_LOC_H)
-#define FILE_LOC_H
-
-#if !defined(XRDP_CFG_PATH)
-#define XRDP_CFG_PATH "/etc/xrdp"
-#endif
-
-#if !defined(XRDP_PID_PATH)
-#define XRDP_PID_PATH "/var/run"
-#endif
-
-#if !defined(XRDP_SBIN_PATH)
-#define XRDP_SBIN_PATH "/usr/local/sbin"
-#endif
-
-#if !defined(XRDP_SHARE_PATH)
-#define XRDP_SHARE_PATH "/usr/local/share/xrdp"
-#endif
-
-#if !defined(XRDP_LIB_PATH)
-#define XRDP_LIB_PATH "/usr/local/lib/xrdp"
-#endif
-
-#endif

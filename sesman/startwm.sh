@@ -1,6 +1,14 @@
 #!/bin/sh
+
 if [ -r /etc/default/locale ]; then
   . /etc/default/locale
   export LANG LANGUAGE
 fi
-. /etc/X11/Xsession
+
+if [ -r /etc/X11/Xsession ]; then
+  . /etc/X11/Xsession
+elif [ -r /etc/gdm/Xsession ]; then
+  . /etc/gdm/Xsession
+elif [ -r /etc/X11/xinit/Xsession ]; then
+  . /etc/X11/xinit/Xsession
+fi

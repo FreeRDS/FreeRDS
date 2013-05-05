@@ -60,10 +60,9 @@ static int g_sync_cmd;
 char *APP_CC
 dumpItemsToString(struct list *self, char *outstr, int len)
 {
-    g_memset(outstr, 0, len);
     int index;
-    tbus item;
     int totalLen = 0;
+    g_memset(outstr, 0, len);
 
     if (self->count == 0)
     {
@@ -209,7 +208,6 @@ x_server_running(int display)
 {
     char text[256];
     int x_running;
-    int sck;
 
     g_sprintf(text, "/tmp/.X11-unix/X%d", display);
     x_running = g_file_exist(text);
@@ -242,14 +240,14 @@ session_start_sessvc(int xpid, int wmpid, long data, char *username, int display
     g_sprintf(wmpid_str, "%d", wmpid);
     g_sprintf(xpid_str, "%d",  xpid);
     log_message(LOG_LEVEL_INFO,
-                "starting xrdp-sessvc - xpid=%s - wmpid=%s",
+                "starting xrdp-ng-sessvc - xpid=%s - wmpid=%s",
                 xpid_str, wmpid_str);
 
     sessvc_params = list_create();
     sessvc_params->auto_free = 1;
 
     /* building parameters */
-    g_snprintf(exe_path, 261, "%s/xrdp-sessvc", XRDP_SBIN_PATH);
+    g_snprintf(exe_path, 261, "%s/xrdp-ng-sessvc", XRDP_SBIN_PATH);
 
     list_add_item(sessvc_params, (long)g_strdup(exe_path));
     list_add_item(sessvc_params, (long)g_strdup(xpid_str));
@@ -263,7 +261,7 @@ session_start_sessvc(int xpid, int wmpid, long data, char *username, int display
 
     /* should not get here */
     log_message(LOG_LEVEL_ALWAYS,
-                "error starting xrdp-sessvc - pid %d - xpid=%s - wmpid=%s",
+                "error starting xrdp-ng-sessvc - pid %d - xpid=%s - wmpid=%s",
                 g_getpid(), xpid_str, wmpid_str);
 
     /* logging parameters */

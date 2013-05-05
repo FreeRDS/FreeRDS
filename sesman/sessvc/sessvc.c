@@ -38,7 +38,7 @@ static int g_term = 0;
 void DEFAULT_CC
 term_signal_handler(int sig)
 {
-    g_writeln("xrdp-sessvc: term_signal_handler: got signal %d", sig);
+    g_writeln("xrdp-ng-sessvc: term_signal_handler: got signal %d", sig);
     g_term = 1;
 }
 
@@ -46,7 +46,7 @@ term_signal_handler(int sig)
 void DEFAULT_CC
 nil_signal_handler(int sig)
 {
-    g_writeln("xrdp-sessvc: nil_signal_handler: got signal %d", sig);
+    g_writeln("xrdp-ng-sessvc: nil_signal_handler: got signal %d", sig);
 }
 
 /******************************************************************************/
@@ -84,12 +84,12 @@ main(int argc, char **argv)
     int lerror = 0;
     char exe_path[262];
 
-    g_init("xrdp-sessvc");
+    g_init("xrdp-ng-sessvc");
     g_memset(exe_path, 0, sizeof(exe_path));
 
     if (argc < 3)
     {
-        g_writeln("xrdp-sessvc: exiting, not enough parameters");
+        g_writeln("xrdp-ng-sessvc: exiting, not enough parameters");
         g_deinit();
         return 1;
     }
@@ -100,24 +100,24 @@ main(int argc, char **argv)
     g_signal_pipe(nil_signal_handler); /* SIGPIPE */
     x_pid = g_atoi(argv[1]);
     wm_pid = g_atoi(argv[2]);
-    g_writeln("xrdp-sessvc: waiting for X (pid %d) and WM (pid %d)",
+    g_writeln("xrdp-ng-sessvc: waiting for X (pid %d) and WM (pid %d)",
               x_pid, wm_pid);
-    /* run xrdp-chansrv as a seperate process */
+    /* run xrdp-ng-chansrv as a seperate process */
     chansrv_pid = g_fork();
 
     if (chansrv_pid == -1)
     {
-        g_writeln("xrdp-sessvc: fork error");
+        g_writeln("xrdp-ng-sessvc: fork error");
         g_deinit();
         return 1;
     }
     else if (chansrv_pid == 0) /* child */
     {
         g_set_current_dir(XRDP_SBIN_PATH);
-        g_snprintf(exe_path, 261, "%s/xrdp-chansrv", XRDP_SBIN_PATH);
-        g_execlp3(exe_path, "xrdp-chansrv", 0);
+        g_snprintf(exe_path, 261, "%s/xrdp-ng-chansrv", XRDP_SBIN_PATH);
+        g_execlp3(exe_path, "xrdp-ng-chansrv", 0);
         /* should not get here */
-        g_writeln("xrdp-sessvc: g_execlp3() failed");
+        g_writeln("xrdp-ng-sessvc: g_execlp3() failed");
         g_deinit();
         return 1;
     }
@@ -137,10 +137,10 @@ main(int argc, char **argv)
         lerror = g_get_errno();
     }
 
-    g_writeln("xrdp-sessvc: WM is dead (waitpid said %d, errno is %d) "
+    g_writeln("xrdp-ng-sessvc: WM is dead (waitpid said %d, errno is %d) "
               "exiting...", ret, lerror);
     /* kill channel server */
-    g_writeln("xrdp-sessvc: stopping channel server");
+    g_writeln("xrdp-ng-sessvc: stopping channel server");
     g_sigterm(chansrv_pid);
     ret = g_waitpid(chansrv_pid);
 
@@ -152,7 +152,7 @@ main(int argc, char **argv)
 
     chansrv_cleanup(chansrv_pid);
     /* kill X server */
-    g_writeln("xrdp-sessvc: stopping X server");
+    g_writeln("xrdp-ng-sessvc: stopping X server");
     g_sigterm(x_pid);
     ret = g_waitpid(x_pid);
 
@@ -162,7 +162,7 @@ main(int argc, char **argv)
         g_sleep(1);
     }
 
-    g_writeln("xrdp-sessvc: clean exit");
+    g_writeln("xrdp-ng-sessvc: clean exit");
     g_deinit();
     return 0;
 }

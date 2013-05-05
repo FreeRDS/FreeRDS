@@ -313,7 +313,7 @@ clipboard_init(void)
     int ver_min;
     Status st;
 
-    LOGM((LOG_LEVEL_DEBUG, "xrdp-chansrv: in clipboard_init"));
+    LOGM((LOG_LEVEL_DEBUG, "xrdp-ng-chansrv: in clipboard_init"));
 
     if (g_clip_up)
     {
@@ -447,7 +447,7 @@ clipboard_init(void)
     }
     else
     {
-        LOGM((LOG_LEVEL_ERROR, "xrdp-chansrv: clipboard_init: error on exit"));
+        LOGM((LOG_LEVEL_ERROR, "xrdp-ng-chansrv: clipboard_init: error on exit"));
     }
 
     return rv;

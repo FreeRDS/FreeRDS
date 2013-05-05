@@ -391,7 +391,7 @@ int xfuse_init()
     g_xfuse_ops.getattr = xfuse_cb_getattr;
     g_xfuse_ops.setattr = xfuse_cb_setattr;
 
-    fuse_opt_add_arg(&args, "xrdp-chansrv");
+    fuse_opt_add_arg(&args, "xrdp-ng-chansrv");
     fuse_opt_add_arg(&args, g_fuse_root_path);
 
     if (xfuse_init_lib(&args))

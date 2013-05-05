@@ -36,6 +36,7 @@ set(${MODULE_PREFIX}_SRCS
 	xrdp_bitmap_compress.c
 	xrdp_jpeg_compress.c
 	xrdp_orders_rail.c
+	xrdp_orders_rail.h
 	xrdp_mppc_enc.c
 	${${MODULE_PREFIX}_HEADERS})
 

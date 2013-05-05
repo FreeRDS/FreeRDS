@@ -60,10 +60,6 @@ set(${MODULE_PREFIX}_SRCS
 	verify_user_pam.c
 	${${MODULE_PREFIX}_HEADERS})
 
-set(${MODULE_PREFIX}_CFG_DATA
-	sesman.ini
-	startwm.sh)
-
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 add_subdirectory(libscp)
@@ -81,5 +77,6 @@ target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
 
-install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${XRDP_CFG_PATH})
+install(FILES "sesman.ini" DESTINATION ${XRDP_CFG_PATH})
+install(PROGRAMS "startwm.sh" DESTINATION ${XRDP_CFG_PATH})
 

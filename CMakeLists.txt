@@ -19,6 +19,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(xrdp-ng C)
 
+if(FREERDP_VERSION)
+	set(FREERDP_BUILD)
+endif()
+
 set(CMAKE_COLOR_MAKEFILE ON)
 
 include(CheckIncludeFiles)
@@ -27,7 +31,9 @@ include(CheckStructHasMember)
 include(FindPkgConfig)
 include(TestBigEndian)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/)
+if(NOT FREERDP_VERSION)
+	set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/)
+endif()
 
 include(CheckCmakeCompat)
 
@@ -49,7 +55,10 @@ set(XRDP_NG_VERSION_REVISION "0")
 set(XRDP_NG_VERSION "${XRDP_NG_VERSION_MAJOR}.${XRDP_NG_VERSION_MINOR}")
 set(XRDP_NG_VERSION_FULL "${XRDP_NG_VERSION}.${XRDP_NG_VERSION_REVISION}")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+get_directory_property(INCLUDE_DIRECTORIES INCLUDE_DIRECTORIES)
+list(REMOVE_ITEM INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}")
+set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES "${INCLUDE_DIRECTORIES}")
+include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(SBINDIR "${CMAKE_INSTALL_PREFIX}/sbin")
 set(SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc")
@@ -85,8 +94,8 @@ endif()
 add_subdirectory(common)
 add_subdirectory(libxrdp)
 add_subdirectory(xrdp)
+#add_subdirectory(freerdp)
 add_subdirectory(sesman)
-add_subdirectory(rdp)
 add_subdirectory(xup)
 add_subdirectory(mc)
 add_subdirectory(keygen)
