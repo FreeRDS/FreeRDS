@@ -17,7 +17,14 @@
  * limitations under the License.
  */
 
-/* include other h files */
+#include <winpr/crt.h>
+
+#include <freerdp/freerdp.h>
+#include <freerdp/settings.h>
+#include <freerdp/rail.h>
+#include <freerdp/rail/rail.h>
+#include <freerdp/codec/bitmap.h>
+
 #include "arch.h"
 #include "parse.h"
 #include "os_calls.h"
@@ -25,13 +32,7 @@
 #include "xrdp_rail.h"
 #include "xrdp_client_info.h"
 
-/* this is the freerdp main header */
-#include <freerdp/freerdp.h>
-#include <freerdp/rail.h>
-#include <freerdp/rail/rail.h>
-#include <freerdp/codec/bitmap.h>
-//#include <freerdp/utils/memory.h>
-//#include "/home/jay/git/jsorg71/staging/include/freerdp/freerdp.h"
+#include <X11/Xlib.h>
 
 struct bitmap_item
 {
@@ -176,5 +177,4 @@ struct mod
   struct bitmap_item bitmap_cache[4][4096];
   struct brush_item brush_cache[64];
   struct pointer_item pointer_cache[32];
-
 };

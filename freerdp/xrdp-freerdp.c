@@ -17,9 +17,8 @@
  * limitations under the License.
  */
 
-#include <freerdp/settings.h>
-#include <X11/Xlib.h>
 #include "xrdp-freerdp.h"
+
 #include "xrdp-color.h"
 #include "xrdp_rail.h"
 #include "log.h"
@@ -955,15 +954,13 @@ lfreerdp_cache_glyph(rdpContext *context, CACHE_GLYPH_ORDER *cache_glyph_order)
 
     for (index = 0; index < cache_glyph_order->cGlyphs; index++)
     {
-        gd = cache_glyph_order->glyphData[index];
+        gd = &cache_glyph_order->glyphData[index];
         LLOGLN(10, ("  %d %d %d %d %d", gd->cacheIndex, gd->x, gd->y,
                     gd->cx, gd->cy));
         mod->server_add_char(mod, cache_glyph_order->cacheId, gd->cacheIndex,
                              gd->x, gd->y, gd->cx, gd->cy, (char *)(gd->aj));
         free(gd->aj);
-        gd->aj = 0;
-        free(gd);
-        cache_glyph_order->glyphData[index] = 0;
+        gd->aj = NULL;
     }
 
     free(cache_glyph_order->unicodeCharacters);
@@ -1028,10 +1025,6 @@ lfreerdp_cache_brush(rdpContext *context, CACHE_BRUSH_ORDER *cache_brush_order)
 
     LLOGLN(10, ("lfreerdp_cache_brush: out bpp %d cx %d cy %d idx %d bytes %d",
                 bpp, cx, cy, idx, bytes));
-
-    free(cache_brush_order->data);
-    cache_brush_order->data = 0;
-
 }
 
 /******************************************************************************/
@@ -1237,13 +1230,13 @@ lfreerdp_pointer_cached(rdpContext *context,
 
 static void DEFAULT_CC lfreerdp_polygon_cb(rdpContext* context, POLYGON_CB_ORDER* polygon_cb)
 {
-    LLOGLN(0, ("lfreerdp_polygon_sc called:- not supported!!!!!!!!!!!!!!!!!!!!"));    
+    LLOGLN(0, ("lfreerdp_polygon_cb called:- not supported!!!!!!!!!!!!!!!!!!!!"));
 }
 
 static void DEFAULT_CC lfreerdp_polygon_sc(rdpContext* context, POLYGON_SC_ORDER* polygon_sc)
 {
+    int i;
     struct mod *mod;
-    int i, npoints;
     XPoint points[4];
     int fgcolor;
     int server_bpp, client_bpp;    
@@ -1443,7 +1436,8 @@ lrail_WindowCreate(rdpContext *context, WINDOW_ORDER_INFO *orderInfo,
 
     if (orderInfo->fieldFlags & WINDOW_ORDER_FIELD_TITLE)
     {
-        freerdp_UnicodeToAsciiAlloc(window_state->titleInfo.string, &wso.title_info, window_state->titleInfo.length / 2);
+        ConvertFromUnicode(CP_UTF8, 0, (WCHAR*) window_state->titleInfo.string,
+        		window_state->titleInfo.length / 2, &wso.title_info, 0, NULL, NULL);
     }
 
     LLOGLN(0, ("lrail_WindowCreate: %s", wso.title_info));
@@ -1579,18 +1573,20 @@ lrail_NotifyIconCreate(rdpContext *context, WINDOW_ORDER_INFO *orderInfo,
 
     if (orderInfo->fieldFlags & WINDOW_ORDER_FIELD_NOTIFY_TIP)
     {
-        freerdp_UnicodeToAsciiAlloc(notify_icon_state->toolTip.string, 
-                    &rnso.tool_tip, notify_icon_state->toolTip.length / 2);
+	ConvertFromUnicode(CP_UTF8, 0, (WCHAR*) notify_icon_state->toolTip.string,
+			notify_icon_state->toolTip.length / 2, &rnso.tool_tip, 0, NULL, NULL);
     }
 
     if (orderInfo->fieldFlags & WINDOW_ORDER_FIELD_NOTIFY_INFO_TIP)
     {
         rnso.infotip.timeout = notify_icon_state->infoTip.timeout;
         rnso.infotip.flags = notify_icon_state->infoTip.flags;
-        freerdp_UnicodeToAsciiAlloc(notify_icon_state->infoTip.text.string, 
-                    &rnso.infotip.text, notify_icon_state->infoTip.text.length / 2);
-        freerdp_UnicodeToAsciiAlloc(notify_icon_state->infoTip.title.string, 
-                    &rnso.infotip.title, notify_icon_state->infoTip.title.length / 2);
+
+	ConvertFromUnicode(CP_UTF8, 0, (WCHAR*) notify_icon_state->infoTip.text.string,
+			notify_icon_state->infoTip.text.length / 2, &rnso.infotip.text, 0, NULL, NULL);
+
+	ConvertFromUnicode(CP_UTF8, 0, (WCHAR*) notify_icon_state->infoTip.title.string,
+			notify_icon_state->infoTip.title.length / 2, &rnso.infotip.title, 0, NULL, NULL);
     }
 
     rnso.state = notify_icon_state->state;

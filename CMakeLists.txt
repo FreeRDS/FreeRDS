@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 2.8)
 project(xrdp-ng C)
 
 if(FREERDP_VERSION)
-	set(FREERDP_BUILD)
+	set(FREERDP_BUILD ON)
 endif()
 
 set(CMAKE_COLOR_MAKEFILE ON)
@@ -31,7 +31,7 @@ include(CheckStructHasMember)
 include(FindPkgConfig)
 include(TestBigEndian)
 
-if(NOT FREERDP_VERSION)
+if(NOT FREERDP_BUILD)
 	set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/)
 endif()
 
@@ -94,7 +94,11 @@ endif()
 add_subdirectory(common)
 add_subdirectory(libxrdp)
 add_subdirectory(xrdp)
-#add_subdirectory(freerdp)
+
+if(FREERDP_BUILD)
+	add_subdirectory(freerdp)
+endif()
+
 add_subdirectory(sesman)
 add_subdirectory(xup)
 add_subdirectory(mc)
