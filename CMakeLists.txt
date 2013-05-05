@@ -39,6 +39,10 @@ include(FeatureSummary)
 include(CheckCCompilerFlag)
 include(GNUInstallDirsWrapper)
 
+if(NOT DEFINED XRDP_NG_MODULE)
+	set(XRDP_NG_MODULE "xrdp-ng")
+endif()
+
 set(XRDP_NG_VERSION_MAJOR "0")
 set(XRDP_NG_VERSION_MINOR "1")
 set(XRDP_NG_VERSION_REVISION "0")
@@ -57,6 +61,9 @@ set(XRDP_SBIN_PATH "${SBINDIR}")
 set(XRDP_SHARE_PATH "${DATADIR}/xrdp")
 set(XRDP_PID_PATH "${LOCALSTATEDIR}/run")
 set(XRDP_LOG_PATH "${LOCALSTATEDIR}/log")
+
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
 
 add_definitions("-DHAVE_CONFIG_H")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)

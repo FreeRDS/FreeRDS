@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "xrdp-ng-sesman")
+set(MODULE_NAME "${XRDP_NG_MODULE}-sesman")
 set(MODULE_PREFIX "FREERDP_XRDP_SESMAN")
 
 set(PAM_FEATURE_TYPE "REQUIRED")
@@ -74,8 +74,8 @@ add_subdirectory(chansrv)
 set(${MODULE_PREFIX}_LIBS
 	${PAM_LIBRARY})
 
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-common)
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} xrdp-ng-libscp)
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-libscp)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
