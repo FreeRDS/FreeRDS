@@ -36,50 +36,51 @@
 int DEFAULT_CC
 auth_userpass(char *user, char *pass, int *errorcode)
 {
-    pam_handle_t *pamh;
-    pam_userpass_t userpass;
-    struct pam_conv conv = {pam_userpass_conv, &userpass};
-    const void *template1;
-    int status;
+	pam_handle_t *pamh;
+	pam_userpass_t userpass;
+	struct pam_conv conv =
+	{ pam_userpass_conv, &userpass };
+	const void *template1;
+	int status;
 
-    userpass.user = user;
-    userpass.pass = pass;
+	userpass.user = user;
+	userpass.pass = pass;
 
-    if (pam_start(SERVICE, user, &conv, &pamh) != PAM_SUCCESS)
-    {
-        return 0;
-    }
+	if (pam_start(SERVICE, user, &conv, &pamh) != PAM_SUCCESS)
+	{
+		return 0;
+	}
 
-    status = pam_authenticate(pamh, 0);
+	status = pam_authenticate(pamh, 0);
 
-    if (status != PAM_SUCCESS)
-    {
-        pam_end(pamh, status);
-        return 0;
-    }
+	if (status != PAM_SUCCESS)
+	{
+		pam_end(pamh, status);
+		return 0;
+	}
 
-    status = pam_acct_mgmt(pamh, 0);
+	status = pam_acct_mgmt(pamh, 0);
 
-    if (status != PAM_SUCCESS)
-    {
-        pam_end(pamh, status);
-        return 0;
-    }
+	if (status != PAM_SUCCESS)
+	{
+		pam_end(pamh, status);
+		return 0;
+	}
 
-    status = pam_get_item(pamh, PAM_USER, &template1);
+	status = pam_get_item(pamh, PAM_USER, &template1);
 
-    if (status != PAM_SUCCESS)
-    {
-        pam_end(pamh, status);
-        return 0;
-    }
+	if (status != PAM_SUCCESS)
+	{
+		pam_end(pamh, status);
+		return 0;
+	}
 
-    if (pam_end(pamh, PAM_SUCCESS) != PAM_SUCCESS)
-    {
-        return 0;
-    }
+	if (pam_end(pamh, PAM_SUCCESS) != PAM_SUCCESS)
+	{
+		return 0;
+	}
 
-    return 1;
+	return 1;
 }
 
 /******************************************************************************/
@@ -87,19 +88,19 @@ auth_userpass(char *user, char *pass, int *errorcode)
 int DEFAULT_CC
 auth_start_session(void)
 {
-    return 0;
+	return 0;
 }
 
 /******************************************************************************/
 int DEFAULT_CC
 auth_end(void)
 {
-    return 0;
+	return 0;
 }
 
 /******************************************************************************/
 int DEFAULT_CC
 auth_set_env(void)
 {
-    return 0;
+	return 0;
 }

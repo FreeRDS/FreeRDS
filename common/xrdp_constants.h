@@ -294,7 +294,7 @@
                   (var = ((var & ~mask) | (active ? mask : 0)))
 
 /* Clipboard constants, "borrowed" from GCC system headers in
-   the w32 cross compiler */
+ the w32 cross compiler */
 
 #define CF_TEXT                        1
 #define CF_BITMAP                      2
@@ -427,7 +427,7 @@
 #define RDP_ORDER_BMPCACHE3     8
 
 /* orderSupportExFlags (2 bytes): A 16-bit, unsigned integer.
-   Extended order support flags. */
+ Extended order support flags. */
 #define XR_ORDERFLAGS_EX_CACHE_BITMAP_REV3_SUPPORT   0x0002
 #define XR_ORDERFLAGS_EX_ALTSEC_FRAME_MARKER_SUPPORT 0x0004
 

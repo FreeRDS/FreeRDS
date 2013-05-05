@@ -24,7 +24,6 @@
  *
  */
 
-
 #ifndef SESSION_H
 #define SESSION_H
 
@@ -37,8 +36,8 @@
 #define SESMAN_SESSION_STATUS_IDLE          0x02
 #define SESMAN_SESSION_STATUS_DISCONNECTED  0x04
 /* future expansion
-#define SESMAN_SESSION_STATUS_REMCONTROL    0x08
-*/
+ #define SESMAN_SESSION_STATUS_REMCONTROL    0x08
+ */
 #define SESMAN_SESSION_STATUS_ALL           0xFF
 
 #define SESMAN_SESSION_KILL_OK        0
@@ -47,40 +46,40 @@
 
 struct session_date
 {
-  tui16 year;
-  tui8  month;
-  tui8  day;
-  tui8  hour;
-  tui8  minute;
+	tui16 year;
+	tui8 month;
+	tui8 day;
+	tui8 hour;
+	tui8 minute;
 };
 
 #define zero_time(s) { (s)->year=0; (s)->month=0; (s)->day=0; (s)->hour=0; (s)->minute=0; }
 
 struct session_item
 {
-  char name[256];
-  int pid; /* pid of sesman waiting for wm to end */
-  int display;
-  int width;
-  int height;
-  int bpp;
-  long data;
+	char name[256];
+	int pid; /* pid of sesman waiting for wm to end */
+	int display;
+	int width;
+	int height;
+	int bpp;
+	long data;
 
-  /* status info */
-  unsigned char status;
-  unsigned char type;
+	/* status info */
+	unsigned char status;
+	unsigned char type;
 
-  /* time data  */
-  struct session_date connect_time;
-  struct session_date disconnect_time;
-  struct session_date idle_time;
-  char client_ip[256];
+	/* time data  */
+	struct session_date connect_time;
+	struct session_date disconnect_time;
+	struct session_date idle_time;
+	char client_ip[256];
 };
 
 struct session_chain
 {
-  struct session_chain* next;
-  struct session_item* item;
+	struct session_chain* next;
+	struct session_item* item;
 };
 
 /**
@@ -92,7 +91,7 @@ struct session_chain
 struct session_item* DEFAULT_CC
 session_get_bydata(char* name, int width, int height, int bpp, int type);
 #ifndef session_find_item
-  #define session_find_item(a, b, c, d, e) session_get_bydata(a, b, c, d, e);
+#define session_find_item(a, b, c, d, e) session_get_bydata(a, b, c, d, e);
 #endif
 
 /**
@@ -103,8 +102,8 @@ session_get_bydata(char* name, int width, int height, int bpp, int type);
  */
 int DEFAULT_CC
 session_start(int width, int height, int bpp, char* username, char* password,
-              long data, tui8 type, char* domain, char* program,
-              char* directory, char* client_ip);
+		long data, tui8 type, char* domain, char* program,
+		char* directory, char* client_ip);
 
 int DEFAULT_CC
 session_reconnect(int display, char* username);

@@ -41,17 +41,17 @@ typedef int (*ttrans_conn_in)(struct trans* self, struct trans* new_self);
 
 struct trans
 {
-  tbus sck; /* socket handle */
-  int mode; /* 1 tcp, 2 unix socket */
-  int status;
-  int type1; /* 1 listener 2 server 3 client */
-  ttrans_data_in trans_data_in;
-  ttrans_conn_in trans_conn_in;
-  void* callback_data;
-  int header_size;
-  struct stream* in_s;
-  struct stream* out_s;
-  char* listen_filename;
+	tbus sck; /* socket handle */
+	int mode; /* 1 tcp, 2 unix socket */
+	int status;
+	int type1; /* 1 listener 2 server 3 client */
+	ttrans_data_in trans_data_in;
+	ttrans_conn_in trans_conn_in;
+	void* callback_data;
+	int header_size;
+	struct stream* in_s;
+	struct stream* out_s;
+	char* listen_filename;
 };
 
 struct trans* APP_CC
@@ -72,7 +72,7 @@ int APP_CC
 trans_force_write(struct trans* self);
 int APP_CC
 trans_connect(struct trans* self, const char* server, const char* port,
-              int timeout);
+		int timeout);
 int APP_CC
 trans_listen_address(struct trans* self, char* port, const char* address);
 int APP_CC

@@ -69,7 +69,6 @@ auth_end(long in_val);
 int DEFAULT_CC
 auth_set_env(long in_val);
 
-
 #define AUTH_PWD_CHG_OK                0
 #define AUTH_PWD_CHG_CHANGE            1
 #define AUTH_PWD_CHG_CHANGE_MANDATORY  2

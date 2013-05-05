@@ -45,12 +45,12 @@
 #define SESMAN_CFG_VNC_PARAMS        "Xvnc"
 
 /*
-#define SESMAN_CFG_LOGGING           "Logging"
-#define SESMAN_CFG_LOG_FILE          "LogFile"
-#define SESMAN_CFG_LOG_LEVEL         "LogLevel"
-#define SESMAN_CFG_LOG_ENABLE_SYSLOG "EnableSyslog"
-#define SESMAN_CFG_LOG_SYSLOG_LEVEL  "SyslogLevel"
-*/
+ #define SESMAN_CFG_LOGGING           "Logging"
+ #define SESMAN_CFG_LOG_FILE          "LogFile"
+ #define SESMAN_CFG_LOG_LEVEL         "LogLevel"
+ #define SESMAN_CFG_LOG_ENABLE_SYSLOG "EnableSyslog"
+ #define SESMAN_CFG_LOG_SYSLOG_LEVEL  "SyslogLevel"
+ */
 #define SESMAN_CFG_SECURITY          "Security"
 #define SESMAN_CFG_SEC_LOGIN_RETRY   "MaxLoginRetry"
 #define SESMAN_CFG_SEC_ALLOW_ROOT    "AllowRootLogin"
@@ -72,33 +72,33 @@
  */
 struct config_security
 {
-  /**
-   * @var allow_root
-   * @brief allow root login on TS
-   */
-  int allow_root;
-  /**
-   * @var login_retry
-   * @brief maximum login attempts
-   */
-  int login_retry;
-  /**
-   * @var ts_users
-   * @brief Terminal Server Users group
-   */
-  int ts_users_enable;
-  int ts_users;
-  /**
-   * @var ts_admins
-   * @brief Terminal Server Adminnistrators group
-   */
-  int ts_admins_enable;
-  int ts_admins;
-  /**
-   * @var ts_always_group_check
-   * @brief if the Groups are not found deny access
-   */
-  int ts_always_group_check;
+	/**
+	 * @var allow_root
+	 * @brief allow root login on TS
+	 */
+	int allow_root;
+	/**
+	 * @var login_retry
+	 * @brief maximum login attempts
+	 */
+	int login_retry;
+	/**
+	 * @var ts_users
+	 * @brief Terminal Server Users group
+	 */
+	int ts_users_enable;
+	int ts_users;
+	/**
+	 * @var ts_admins
+	 * @brief Terminal Server Adminnistrators group
+	 */
+	int ts_admins_enable;
+	int ts_admins;
+	/**
+	 * @var ts_always_group_check
+	 * @brief if the Groups are not found deny access
+	 */
+	int ts_always_group_check;
 };
 
 /**
@@ -109,31 +109,31 @@ struct config_security
  */
 struct config_sessions
 {
-  /**
-   * @var x11_display_offset
-   * @brief X11 TCP port offset. default value: 10
-   */
-  int x11_display_offset;
-  /**
-   * @var max_sessions
-   * @brief maximum number of allowed sessions. 0 for unlimited
-   */
-  int max_sessions;
-  /**
-   * @var max_idle_time
-   * @brief maximum idle time for each session
-   */
-  int max_idle_time;
-  /**
-   * @var max_disc_time
-   * @brief maximum disconnected time for each session
-   */
-  int max_disc_time;
-  /**
-   * @var kill_disconnected
-   * @brief enables automatic killing of disconnected session
-   */
-  int kill_disconnected;
+	/**
+	 * @var x11_display_offset
+	 * @brief X11 TCP port offset. default value: 10
+	 */
+	int x11_display_offset;
+	/**
+	 * @var max_sessions
+	 * @brief maximum number of allowed sessions. 0 for unlimited
+	 */
+	int max_sessions;
+	/**
+	 * @var max_idle_time
+	 * @brief maximum idle time for each session
+	 */
+	int max_idle_time;
+	/**
+	 * @var max_disc_time
+	 * @brief maximum disconnected time for each session
+	 */
+	int max_disc_time;
+	/**
+	 * @var kill_disconnected
+	 * @brief enables automatic killing of disconnected session
+	 */
+	int kill_disconnected;
 };
 
 /**
@@ -148,61 +148,61 @@ struct config_sessions
  */
 struct config_sesman
 {
-  /**
-   * @var listen_address
-   * @brief Listening address
-   */
-  char listen_address[32];
-  /**
-   * @var listen_port
-   * @brief Listening port
-   */
-  char listen_port[16];
-  /**
-   * @var enable_user_wm
-   * @brief Flag that enables user specific wm
-   */
-  int enable_user_wm;
-  /**
-   * @var default_wm
-   * @brief Default window manager
-   */
-  char default_wm[32];
-  /**
-   * @var user_wm
-   * @brief Default window manager
-   */
-  char user_wm[32];
-  /**
-   * @var auth_file_path
-   * @brief Auth file path
-   */
-  char* auth_file_path;
-  /**
-   * @var vnc_params
-   * @brief Xvnc additional parameter list
-   */
-  struct list* vnc_params;
-  /**
-   * @var rdp_params
-   * @brief X11rdp additional parameter list
-   */
-  struct list* rdp_params;
-  /**
-   * @var log
-   * @brief Log configuration struct
-   */
-  //struct log_config log;
-  /**
-   * @var sec
-   * @brief Security configuration options struct
-   */
-  struct config_security sec;
-  /**
-   * @var sess
-   * @brief Session configuration options struct
-   */
-  struct config_sessions sess;
+	/**
+	 * @var listen_address
+	 * @brief Listening address
+	 */
+	char listen_address[32];
+	/**
+	 * @var listen_port
+	 * @brief Listening port
+	 */
+	char listen_port[16];
+	/**
+	 * @var enable_user_wm
+	 * @brief Flag that enables user specific wm
+	 */
+	int enable_user_wm;
+	/**
+	 * @var default_wm
+	 * @brief Default window manager
+	 */
+	char default_wm[32];
+	/**
+	 * @var user_wm
+	 * @brief Default window manager
+	 */
+	char user_wm[32];
+	/**
+	 * @var auth_file_path
+	 * @brief Auth file path
+	 */
+	char* auth_file_path;
+	/**
+	 * @var vnc_params
+	 * @brief Xvnc additional parameter list
+	 */
+	struct list* vnc_params;
+	/**
+	 * @var rdp_params
+	 * @brief X11rdp additional parameter list
+	 */
+	struct list* rdp_params;
+	/**
+	 * @var log
+	 * @brief Log configuration struct
+	 */
+	//struct log_config log;
+	/**
+	 * @var sec
+	 * @brief Security configuration options struct
+	 */
+	struct config_security sec;
+	/**
+	 * @var sess
+	 * @brief Session configuration options struct
+	 */
+	struct config_sessions sess;
 };
 
 /**
@@ -227,7 +227,7 @@ config_read(struct config_sesman* cfg);
  */
 int DEFAULT_CC
 config_read_globals(int file, struct config_sesman* cf,
-                    struct list* param_n, struct list* param_v);
+		struct list* param_n, struct list* param_v);
 
 /**
  *
@@ -241,7 +241,7 @@ config_read_globals(int file, struct config_sesman* cf,
  */
 int DEFAULT_CC
 config_read_logging(int file, struct log_config* lc, struct list* param_n,
-                    struct list* param_v);
+		struct list* param_v);
 
 /**
  *
@@ -255,7 +255,7 @@ config_read_logging(int file, struct log_config* lc, struct list* param_n,
  */
 int DEFAULT_CC
 config_read_security(int file, struct config_security* sc,
-                     struct list* param_n, struct list* param_v);
+		struct list* param_n, struct list* param_v);
 
 /**
  *
@@ -269,7 +269,7 @@ config_read_security(int file, struct config_security* sc,
  */
 int DEFAULT_CC
 config_read_sessions(int file, struct config_sessions* ss,
-                     struct list* param_n, struct list* param_v);
+		struct list* param_n, struct list* param_v);
 
 /**
  *
@@ -283,8 +283,7 @@ config_read_sessions(int file, struct config_sessions* ss,
  */
 int DEFAULT_CC
 config_read_rdp_params(int file, struct config_sesman* cs, struct list* param_n,
-                       struct list* param_v);
-
+		struct list* param_v);
 
 /**
  *
@@ -298,6 +297,6 @@ config_read_rdp_params(int file, struct config_sesman* cs, struct list* param_n,
  */
 int DEFAULT_CC
 config_read_vnc_params(int file, struct config_sesman* cs, struct list* param_n,
-                       struct list* param_v);
+		struct list* param_v);
 
 #endif

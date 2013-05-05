@@ -26,168 +26,168 @@
 struct list *APP_CC
 list_create(void)
 {
-    struct list *self;
+	struct list *self;
 
-    self = (struct list *)g_malloc(sizeof(struct list), 1);
-    self->grow_by = 10;
-    self->alloc_size = 10;
-    self->items = (tbus *)g_malloc(sizeof(tbus) * 10, 1);
-    return self;
+	self = (struct list *) g_malloc(sizeof(struct list), 1);
+	self->grow_by = 10;
+	self->alloc_size = 10;
+	self->items = (tbus *) g_malloc(sizeof(tbus) * 10, 1);
+	return self;
 }
 
 /*****************************************************************************/
 void APP_CC
 list_delete(struct list *self)
 {
-    int i;
+	int i;
 
-    if (self == 0)
-    {
-        return;
-    }
+	if (self == 0)
+	{
+		return;
+	}
 
-    if (self->auto_free)
-    {
-        for (i = 0; i < self->count; i++)
-        {
-            g_free((void *)self->items[i]);
-            self->items[i] = 0;
-        }
-    }
+	if (self->auto_free)
+	{
+		for (i = 0; i < self->count; i++)
+		{
+			g_free((void *) self->items[i]);
+			self->items[i] = 0;
+		}
+	}
 
-    g_free(self->items);
-    g_free(self);
+	g_free(self->items);
+	g_free(self);
 }
 
 /*****************************************************************************/
 void APP_CC
 list_add_item(struct list *self, tbus item)
 {
-    tbus *p;
-    int i;
+	tbus *p;
+	int i;
 
-    if (self->count >= self->alloc_size)
-    {
-        i = self->alloc_size;
-        self->alloc_size += self->grow_by;
-        p = (tbus *)g_malloc(sizeof(tbus) * self->alloc_size, 1);
-        g_memcpy(p, self->items, sizeof(tbus) * i);
-        g_free(self->items);
-        self->items = p;
-    }
+	if (self->count >= self->alloc_size)
+	{
+		i = self->alloc_size;
+		self->alloc_size += self->grow_by;
+		p = (tbus *) g_malloc(sizeof(tbus) * self->alloc_size, 1);
+		g_memcpy(p, self->items, sizeof(tbus) * i);
+		g_free(self->items);
+		self->items = p;
+	}
 
-    self->items[self->count] = item;
-    self->count++;
+	self->items[self->count] = item;
+	self->count++;
 }
 
 /*****************************************************************************/
 tbus APP_CC
 list_get_item(struct list *self, int index)
 {
-    if (index < 0 || index >= self->count)
-    {
-        return 0;
-    }
+	if (index < 0 || index >= self->count)
+	{
+		return 0;
+	}
 
-    return self->items[index];
+	return self->items[index];
 }
 
 /*****************************************************************************/
 void APP_CC
 list_clear(struct list *self)
 {
-    int i;
+	int i;
 
-    if (self->auto_free)
-    {
-        for (i = 0; i < self->count; i++)
-        {
-            g_free((void *)self->items[i]);
-            self->items[i] = 0;
-        }
-    }
+	if (self->auto_free)
+	{
+		for (i = 0; i < self->count; i++)
+		{
+			g_free((void *) self->items[i]);
+			self->items[i] = 0;
+		}
+	}
 
-    g_free(self->items);
-    self->count = 0;
-    self->grow_by = 10;
-    self->alloc_size = 10;
-    self->items = (tbus *)g_malloc(sizeof(tbus) * 10, 1);
+	g_free(self->items);
+	self->count = 0;
+	self->grow_by = 10;
+	self->alloc_size = 10;
+	self->items = (tbus *) g_malloc(sizeof(tbus) * 10, 1);
 }
 
 /*****************************************************************************/
 int APP_CC
 list_index_of(struct list *self, tbus item)
 {
-    int i;
+	int i;
 
-    for (i = 0; i < self->count; i++)
-    {
-        if (self->items[i] == item)
-        {
-            return i;
-        }
-    }
+	for (i = 0; i < self->count; i++)
+	{
+		if (self->items[i] == item)
+		{
+			return i;
+		}
+	}
 
-    return -1;
+	return -1;
 }
 
 /*****************************************************************************/
 void APP_CC
 list_remove_item(struct list *self, int index)
 {
-    int i;
+	int i;
 
-    if (index >= 0 && index < self->count)
-    {
-        if (self->auto_free)
-        {
-            g_free((void *)self->items[index]);
-            self->items[index] = 0;
-        }
+	if (index >= 0 && index < self->count)
+	{
+		if (self->auto_free)
+		{
+			g_free((void *) self->items[index]);
+			self->items[index] = 0;
+		}
 
-        for (i = index; i < (self->count - 1); i++)
-        {
-            self->items[i] = self->items[i + 1];
-        }
+		for (i = index; i < (self->count - 1); i++)
+		{
+			self->items[i] = self->items[i + 1];
+		}
 
-        self->count--;
-    }
+		self->count--;
+	}
 }
 
 /*****************************************************************************/
 void APP_CC
 list_insert_item(struct list *self, int index, tbus item)
 {
-    tbus *p;
-    int i;
+	tbus *p;
+	int i;
 
-    if (index == self->count)
-    {
-        list_add_item(self, item);
-        return;
-    }
+	if (index == self->count)
+	{
+		list_add_item(self, item);
+		return;
+	}
 
-    if (index >= 0 && index < self->count)
-    {
-        self->count++;
+	if (index >= 0 && index < self->count)
+	{
+		self->count++;
 
-        if (self->count > self->alloc_size)
-        {
-            i = self->alloc_size;
-            self->alloc_size += self->grow_by;
-            p = (tbus *)g_malloc(sizeof(tbus) * self->alloc_size, 1);
-            g_memcpy(p, self->items, sizeof(tbus) * i);
-            g_free(self->items);
-            self->items = p;
-        }
+		if (self->count > self->alloc_size)
+		{
+			i = self->alloc_size;
+			self->alloc_size += self->grow_by;
+			p = (tbus *) g_malloc(sizeof(tbus) * self->alloc_size, 1);
+			g_memcpy(p, self->items, sizeof(tbus) * i);
+			g_free(self->items);
+			self->items = p;
+		}
 
-        for (i = (self->count - 2); i >= index; i--)
-        {
-            self->items[i + 1] = self->items[i];
-        }
+		for (i = (self->count - 2); i >= index; i--)
+		{
+			self->items[i + 1] = self->items[i];
+		}
 
-        self->items[index] = item;
-    }
+		self->items[index] = item;
+	}
 }
 
 /*****************************************************************************/
@@ -196,31 +196,31 @@ list_insert_item(struct list *self, int index, tbus item)
 void APP_CC
 list_append_list_strdup(struct list *self, struct list *dest, int start_index)
 {
-    int index;
-    tbus item;
-    char *dup;
+	int index;
+	tbus item;
+	char *dup;
 
-    for (index = start_index; index < self->count; index++)
-    {
-        item = list_get_item(self, index);
-        dup = g_strdup((char *)item);
-        list_add_item(dest, (tbus)dup);
-    }
+	for (index = start_index; index < self->count; index++)
+	{
+		item = list_get_item(self, index);
+		dup = g_strdup((char *) item);
+		list_add_item(dest, (tbus) dup);
+	}
 }
 
 /*****************************************************************************/
 void APP_CC
 list_dump_items(struct list *self)
 {
-    int index;
+	int index;
 
-    if (self->count == 0)
-    {
-        g_writeln("List is empty");
-    }
+	if (self->count == 0)
+	{
+		g_writeln("List is empty");
+	}
 
-    for (index = 0; index < self->count; index++)
-    {
-        g_writeln("%d: %s", index, list_get_item(self, index));
-    }
+	for (index = 0; index < self->count; index++)
+	{
+		g_writeln("%d: %s", index, list_get_item(self, index));
+	}
 }

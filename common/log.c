@@ -43,7 +43,7 @@
 static struct log_config *staticLogConfig = NULL;
 
 /* This file first start with all private functions.
-   In the end of the file the public functions is defined */
+ In the end of the file the public functions is defined */
 
 /**
  *
@@ -55,15 +55,14 @@ static struct log_config *staticLogConfig = NULL;
 int DEFAULT_CC
 internal_log_file_open(const char *fname)
 {
-    int ret = -1;
+	int ret = -1;
 
-    if (fname != NULL)
-    {
-        ret = open(fname, O_WRONLY | O_CREAT | O_APPEND | O_SYNC,
-                   S_IRUSR | S_IWUSR);
-    }
+	if (fname != NULL)
+	{
+		ret = open(fname, O_WRONLY | O_CREAT | O_APPEND | O_SYNC, S_IRUSR | S_IWUSR);
+	}
 
-    return ret;
+	return ret;
 }
 
 /**
@@ -76,22 +75,22 @@ internal_log_file_open(const char *fname)
 int DEFAULT_CC
 internal_log_xrdp2syslog(const enum logLevels lvl)
 {
-    switch (lvl)
-    {
-        case LOG_LEVEL_ALWAYS:
-            return LOG_CRIT;
-        case LOG_LEVEL_ERROR:
-            return LOG_ERR;
-        case LOG_LEVEL_WARNING:
-            return LOG_WARNING;
-        case LOG_LEVEL_INFO:
-            return LOG_INFO;
-        case LOG_LEVEL_DEBUG:
-            return LOG_DEBUG;
-        default:
-            g_writeln("Undefined log level - programming error");
-            return LOG_DEBUG;
-    }
+	switch (lvl)
+	{
+		case LOG_LEVEL_ALWAYS:
+			return LOG_CRIT;
+		case LOG_LEVEL_ERROR:
+			return LOG_ERR;
+		case LOG_LEVEL_WARNING:
+			return LOG_WARNING;
+		case LOG_LEVEL_INFO:
+			return LOG_INFO;
+		case LOG_LEVEL_DEBUG:
+			return LOG_DEBUG;
+		default:
+			g_writeln("Undefined log level - programming error");
+			return LOG_DEBUG;
+	}
 }
 
 /**
@@ -104,119 +103,119 @@ internal_log_xrdp2syslog(const enum logLevels lvl)
 void DEFAULT_CC
 internal_log_lvl2str(const enum logLevels lvl, char *str)
 {
-    switch (lvl)
-    {
-        case LOG_LEVEL_ALWAYS:
-            snprintf(str, 9, "%s", "[CORE ] ");
-            break;
-        case LOG_LEVEL_ERROR:
-            snprintf(str, 9, "%s", "[ERROR] ");
-            break;
-        case LOG_LEVEL_WARNING:
-            snprintf(str, 9, "%s", "[WARN ] ");
-            break;
-        case LOG_LEVEL_INFO:
-            snprintf(str, 9, "%s", "[INFO ] ");
-            break;
-        case LOG_LEVEL_DEBUG:
-            snprintf(str, 9, "%s", "[DEBUG] ");
-            break;
-        default:
-            snprintf(str, 9, "%s", "PRG ERR!");
-            g_writeln("Programming error - undefined log level!!!");
-    }
+	switch (lvl)
+	{
+		case LOG_LEVEL_ALWAYS:
+			snprintf(str, 9, "%s", "[CORE ] ");
+			break;
+		case LOG_LEVEL_ERROR:
+			snprintf(str, 9, "%s", "[ERROR] ");
+			break;
+		case LOG_LEVEL_WARNING:
+			snprintf(str, 9, "%s", "[WARN ] ");
+			break;
+		case LOG_LEVEL_INFO:
+			snprintf(str, 9, "%s", "[INFO ] ");
+			break;
+		case LOG_LEVEL_DEBUG:
+			snprintf(str, 9, "%s", "[DEBUG] ");
+			break;
+		default:
+			snprintf(str, 9, "%s", "PRG ERR!");
+			g_writeln("Programming error - undefined log level!!!");
+	}
 }
 
 /******************************************************************************/
 enum logReturns DEFAULT_CC
 internal_log_start(struct log_config *l_cfg)
 {
-    enum logReturns ret = LOG_GENERAL_ERROR;
+	enum logReturns ret = LOG_GENERAL_ERROR;
 
-    if (0 == l_cfg)
-    {
-        ret = LOG_ERROR_MALLOC;
-        return ret;
-    }
+	if (0 == l_cfg)
+	{
+		ret = LOG_ERROR_MALLOC;
+		return ret;
+	}
 
-    /* if logfile is NULL, we return error */
-    if (0 == l_cfg->log_file)
-    {
-        g_writeln("log_file not properly assigned");
-        return ret;
-    }
+	/* if logfile is NULL, we return error */
+	if (0 == l_cfg->log_file)
+	{
+		g_writeln("log_file not properly assigned");
+		return ret;
+	}
 
-    /* if progname is NULL, we ureturn error */
-    if (0 == l_cfg->program_name)
-    {
-        g_writeln("program_name not properly assigned");
-        return ret;
-    }
+	/* if progname is NULL, we ureturn error */
+	if (0 == l_cfg->program_name)
+	{
+		g_writeln("program_name not properly assigned");
+		return ret;
+	}
 
-    /* open file */
-    l_cfg->fd = internal_log_file_open(l_cfg->log_file);
+	/* open file */
+	l_cfg->fd = internal_log_file_open(l_cfg->log_file);
 
-    if (-1 == l_cfg->fd)
-    {
-        return LOG_ERROR_FILE_OPEN;
-    }
+	if (-1 == l_cfg->fd)
+	{
+		return LOG_ERROR_FILE_OPEN;
+	}
 
-    /* if syslog is enabled, open it */
-    if (l_cfg->enable_syslog)
-    {
-        openlog(l_cfg->program_name, LOG_CONS | LOG_PID, LOG_DAEMON);
-    }
+	/* if syslog is enabled, open it */
+	if (l_cfg->enable_syslog)
+	{
+		openlog(l_cfg->program_name, LOG_CONS | LOG_PID, LOG_DAEMON);
+	}
 
 #ifdef LOG_ENABLE_THREAD
-    pthread_mutexattr_init(&(l_cfg->log_lock_attr));
-    pthread_mutex_init(&(l_cfg->log_lock), &(l_cfg->log_lock_attr));
+	pthread_mutexattr_init(&(l_cfg->log_lock_attr));
+	pthread_mutex_init(&(l_cfg->log_lock), &(l_cfg->log_lock_attr));
 #endif
 
-    return LOG_STARTUP_OK;
+	return LOG_STARTUP_OK;
 }
 
 /******************************************************************************/
 enum logReturns DEFAULT_CC
 internal_log_end(struct log_config *l_cfg)
 {
-    enum logReturns ret = LOG_GENERAL_ERROR;
+	enum logReturns ret = LOG_GENERAL_ERROR;
 
-    /* if log is closed, quit silently */
-    if (0 == l_cfg)
-    {
-        return ret;
-    }
+	/* if log is closed, quit silently */
+	if (0 == l_cfg)
+	{
+		return ret;
+	}
 
-    /* closing log file */
-    log_message(LOG_LEVEL_ALWAYS, "shutting down log subsystem...");
+	/* closing log file */
+	log_message(LOG_LEVEL_ALWAYS, "shutting down log subsystem...");
 
-    if (0 > l_cfg->fd)
-    {
-        /* closing logfile... */
-        g_file_close(l_cfg->fd);
-    }
+	if (0 > l_cfg->fd)
+	{
+		/* closing logfile... */
+		g_file_close(l_cfg->fd);
+	}
 
-    /* if syslog is enabled, close it */
-    if (l_cfg->enable_syslog)
-    {
-        closelog();
-    }
+	/* if syslog is enabled, close it */
+	if (l_cfg->enable_syslog)
+	{
+		closelog();
+	}
 
-    /* freeing allocated memory */
-    if (0 != l_cfg->log_file)
-    {
-        g_free(l_cfg->log_file);
-        l_cfg->log_file = 0;
-    }
+	/* freeing allocated memory */
+	if (0 != l_cfg->log_file)
+	{
+		g_free(l_cfg->log_file);
+		l_cfg->log_file = 0;
+	}
 
-    if (0 != l_cfg->program_name)
-    {
-        g_free(l_cfg->program_name);
-        l_cfg->program_name = 0;
-    }
+	if (0 != l_cfg->program_name)
+	{
+		g_free(l_cfg->program_name);
+		l_cfg->program_name = 0;
+	}
 
-    ret = LOG_STARTUP_OK;
-    return ret;
+	ret = LOG_STARTUP_OK;
+	return ret;
 }
 
 /**
@@ -227,196 +226,186 @@ internal_log_end(struct log_config *l_cfg)
 enum logLevels DEFAULT_CC
 internal_log_text2level(char *buf)
 {
-    if (0 == g_strcasecmp(buf, "0") ||
-            0 == g_strcasecmp(buf, "core"))
-    {
-        return LOG_LEVEL_ALWAYS;
-    }
-    else if (0 == g_strcasecmp(buf, "1") ||
-             0 == g_strcasecmp(buf, "error"))
-    {
-        return LOG_LEVEL_ERROR;
-    }
-    else if (0 == g_strcasecmp(buf, "2") ||
-             0 == g_strcasecmp(buf, "warn") ||
-             0 == g_strcasecmp(buf, "warning"))
-    {
-        return LOG_LEVEL_WARNING;
-    }
-    else if (0 == g_strcasecmp(buf, "3") ||
-             0 == g_strcasecmp(buf, "info"))
-    {
-        return LOG_LEVEL_INFO;
-    }
-    else if (0 == g_strcasecmp(buf, "4") ||
-             0 == g_strcasecmp(buf, "debug"))
-    {
-        return LOG_LEVEL_DEBUG;
-    }
+	if (0 == g_strcasecmp(buf, "0") || 0 == g_strcasecmp(buf, "core"))
+	{
+		return LOG_LEVEL_ALWAYS;
+	} else
+		if (0 == g_strcasecmp(buf, "1") || 0 == g_strcasecmp(buf, "error"))
+		{
+			return LOG_LEVEL_ERROR;
+		} else
+			if (0 == g_strcasecmp(buf, "2") || 0 == g_strcasecmp(buf, "warn") || 0 == g_strcasecmp(buf,
+					"warning"))
+			{
+				return LOG_LEVEL_WARNING;
+			} else
+				if (0 == g_strcasecmp(buf, "3") || 0 == g_strcasecmp(buf, "info"))
+				{
+					return LOG_LEVEL_INFO;
+				} else
+					if (0 == g_strcasecmp(buf, "4") || 0 == g_strcasecmp(buf, "debug"))
+					{
+						return LOG_LEVEL_DEBUG;
+					}
 
-    g_writeln("Your configured log level is corrupt - we use debug log level");
-    return LOG_LEVEL_DEBUG;
+	g_writeln("Your configured log level is corrupt - we use debug log level");
+	return LOG_LEVEL_DEBUG;
 }
 
 enum logReturns DEFAULT_CC
 internalReadConfiguration(const char *inFilename, const char *applicationName)
 {
-    int fd;
-    enum logReturns ret = LOG_GENERAL_ERROR;
-    struct list *sec;
-    struct list *param_n;
-    struct list *param_v;
+	int fd;
+	enum logReturns ret = LOG_GENERAL_ERROR;
+	struct list *sec;
+	struct list *param_n;
+	struct list *param_v;
 
-    if (inFilename == NULL)
-    {
-        g_writeln("The inifile is null to readConfiguration!");
-        return ret;
-    }
+	if (inFilename == NULL)
+	{
+		g_writeln("The inifile is null to readConfiguration!");
+		return ret;
+	}
 
-    fd = g_file_open(inFilename);
+	fd = g_file_open(inFilename);
 
-    if (-1 == fd)
-    {
-        ret = LOG_ERROR_NO_CFG;
-        g_writeln("We could not open the configuration file to read log parameters");
-        return ret;
-    }
+	if (-1 == fd)
+	{
+		ret = LOG_ERROR_NO_CFG;
+		g_writeln("We could not open the configuration file to read log parameters");
+		return ret;
+	}
 
-    /* we initialize the memory for the configuration and set all content
-       to zero. */
-    ret = internalInitAndAllocStruct();
+	/* we initialize the memory for the configuration and set all content
+	 to zero. */
+	ret = internalInitAndAllocStruct();
 
-    if (ret != LOG_STARTUP_OK)
-    {
-        return ret;
-    }
+	if (ret != LOG_STARTUP_OK)
+	{
+		return ret;
+	}
 
-    sec = list_create();
-    sec->auto_free = 1;
-    file_read_sections(fd, sec);
-    param_n = list_create();
-    param_n->auto_free = 1;
-    param_v = list_create();
-    param_v->auto_free = 1;
+	sec = list_create();
+	sec->auto_free = 1;
+	file_read_sections(fd, sec);
+	param_n = list_create();
+	param_n->auto_free = 1;
+	param_v = list_create();
+	param_v->auto_free = 1;
 
-    /* read logging config */
-    ret = internal_config_read_logging(fd, staticLogConfig, param_n,
-                                       param_v, applicationName);
+	/* read logging config */
+	ret = internal_config_read_logging(fd, staticLogConfig, param_n, param_v, applicationName);
 
-    if (ret != LOG_STARTUP_OK)
-    {
-        return ret;
-    }
+	if (ret != LOG_STARTUP_OK)
+	{
+		return ret;
+	}
 
-    /* cleanup */
-    list_delete(sec);
-    list_delete(param_v);
-    list_delete(param_n);
-    g_file_close(fd);
-    return ret;
+	/* cleanup */
+	list_delete(sec);
+	list_delete(param_v);
+	list_delete(param_n);
+	g_file_close(fd);
+	return ret;
 }
 
 /******************************************************************************/
 enum logReturns DEFAULT_CC
-internal_config_read_logging(int file, struct log_config *lc,
-                             struct list *param_n,
-                             struct list *param_v,
-                             const char *applicationName)
+internal_config_read_logging(int file, struct log_config *lc, struct list *param_n, struct list *param_v,
+		const char *applicationName)
 {
-    int i;
-    char *buf;
-    char *temp_buf;
+	int i;
+	char *buf;
+	char *temp_buf;
 
-    list_clear(param_v);
-    list_clear(param_n);
+	list_clear(param_v);
+	list_clear(param_n);
 
-    /* setting defaults */
-    lc->program_name = g_strdup(applicationName);
-    lc->log_file = 0;
-    lc->fd = 0;
-    lc->log_level = LOG_LEVEL_DEBUG;
-    lc->enable_syslog = 0;
-    lc->syslog_level = LOG_LEVEL_DEBUG;
+	/* setting defaults */
+	lc->program_name = g_strdup(applicationName);
+	lc->log_file = 0;
+	lc->fd = 0;
+	lc->log_level = LOG_LEVEL_DEBUG;
+	lc->enable_syslog = 0;
+	lc->syslog_level = LOG_LEVEL_DEBUG;
 
-    file_read_section(file, SESMAN_CFG_LOGGING, param_n, param_v);
+	file_read_section(file, SESMAN_CFG_LOGGING, param_n, param_v);
 
-    for (i = 0; i < param_n->count; i++)
-    {
-        buf = (char *)list_get_item(param_n, i);
+	for (i = 0; i < param_n->count; i++)
+	{
+		buf = (char *) list_get_item(param_n, i);
 
-        if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_FILE))
-        {
-            lc->log_file = g_strdup((char *)list_get_item(param_v, i));
+		if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_FILE))
+		{
+			lc->log_file = g_strdup((char *) list_get_item(param_v, i));
 
-            if (lc->log_file != NULL)
-            {
-                if (lc->log_file[0] != '/')
-                {
-                    temp_buf = (char *)g_malloc(512, 0);
-                    g_snprintf(temp_buf, 511, "%s/%s", XRDP_LOG_PATH, lc->log_file);
-                    g_free(lc->log_file);
-                    lc->log_file = temp_buf;
-                }
-            }
-        }
+			if (lc->log_file != NULL)
+			{
+				if (lc->log_file[0] != '/')
+				{
+					temp_buf = (char *) g_malloc(512, 0);
+					g_snprintf(temp_buf, 511, "%s/%s", XRDP_LOG_PATH, lc->log_file);
+					g_free(lc->log_file);
+					lc->log_file = temp_buf;
+				}
+			}
+		}
 
-        if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_LEVEL))
-        {
-            lc->log_level = internal_log_text2level((char *)list_get_item(param_v, i));
-        }
+		if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_LEVEL))
+		{
+			lc->log_level = internal_log_text2level((char *) list_get_item(param_v, i));
+		}
 
-        if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_ENABLE_SYSLOG))
-        {
-            lc->enable_syslog = text2bool((char *)list_get_item(param_v, i));
-        }
+		if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_ENABLE_SYSLOG))
+		{
+			lc->enable_syslog = text2bool((char *) list_get_item(param_v, i));
+		}
 
-        if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_SYSLOG_LEVEL))
-        {
-            lc->syslog_level = internal_log_text2level((char *)list_get_item(param_v, i));
-        }
-    }
+		if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_SYSLOG_LEVEL))
+		{
+			lc->syslog_level = internal_log_text2level((char *) list_get_item(param_v, i));
+		}
+	}
 
-    if (0 == lc->log_file)
-    {
-        lc->log_file = g_strdup("./sesman.log");
-    }
+	if (0 == lc->log_file)
+	{
+		lc->log_file = g_strdup("./sesman.log");
+	}
 
-    /* try to create path if not exist */
-    g_create_path(lc->log_file);
+	/* try to create path if not exist */
+	g_create_path(lc->log_file);
 
-    g_printf("logging configuration:\r\n");
-    g_printf("\tLogFile:       %s\r\n", lc->log_file);
-    g_printf("\tLogLevel:      %i\r\n", lc->log_level);
-    g_printf("\tEnableSyslog:  %i\r\n", lc->enable_syslog);
-    g_printf("\tSyslogLevel:   %i\r\n", lc->syslog_level);
-    return LOG_STARTUP_OK;
+	g_printf("logging configuration:\r\n");
+	g_printf("\tLogFile:       %s\r\n", lc->log_file);
+	g_printf("\tLogLevel:      %i\r\n", lc->log_level);
+	g_printf("\tEnableSyslog:  %i\r\n", lc->enable_syslog);
+	g_printf("\tSyslogLevel:   %i\r\n", lc->syslog_level);
+	return LOG_STARTUP_OK;
 }
 
 enum logReturns DEFAULT_CC
 internalInitAndAllocStruct(void)
 {
-    enum logReturns ret = LOG_GENERAL_ERROR;
-    staticLogConfig = g_malloc(sizeof(struct log_config), 1);
+	enum logReturns ret = LOG_GENERAL_ERROR;
+	staticLogConfig = g_malloc(sizeof(struct log_config), 1);
 
-    if (staticLogConfig != NULL)
-    {
-        staticLogConfig->fd = -1;
-        staticLogConfig->enable_syslog = 0;
-        ret = LOG_STARTUP_OK;
-    }
-    else
-    {
-        g_writeln("could not allocate memory for log struct");
-        ret = LOG_ERROR_MALLOC;
-    }
+	if (staticLogConfig != NULL)
+	{
+		staticLogConfig->fd = -1;
+		staticLogConfig->enable_syslog = 0;
+		ret = LOG_STARTUP_OK;
+	} else
+	{
+		g_writeln("could not allocate memory for log struct");
+		ret = LOG_ERROR_MALLOC;
+	}
 
-    return ret;
+	return ret;
 }
 
 /*
  * Here below the public functions
  */
-
 
 /**
  *
@@ -428,67 +417,64 @@ internalInitAndAllocStruct(void)
 int APP_CC
 text2bool(char *s)
 {
-    if ( (g_atoi(s) != 0) ||
-         (0 == g_strcasecmp(s, "true")) ||
-         (0 == g_strcasecmp(s, "on")) ||
-         (0 == g_strcasecmp(s, "yes")))
-    {
-        return 1;
-    }
+	if ((g_atoi(s) != 0) || (0 == g_strcasecmp(s, "true")) || (0 == g_strcasecmp(s, "on")) || (0 == g_strcasecmp(s,
+			"yes")))
+	{
+		return 1;
+	}
 
-    return 0;
+	return 0;
 }
 
 enum logReturns DEFAULT_CC
 log_start_from_param(const struct log_config *iniParams)
 {
-    enum logReturns ret = LOG_GENERAL_ERROR;
+	enum logReturns ret = LOG_GENERAL_ERROR;
 
-    if (staticLogConfig != NULL)
-    {
-        log_message(LOG_LEVEL_ALWAYS, "Log already initialized");
-        return ret;
-    }
+	if (staticLogConfig != NULL)
+	{
+		log_message(LOG_LEVEL_ALWAYS, "Log already initialized");
+		return ret;
+	}
 
-    if (iniParams == NULL)
-    {
-        g_writeln("inparam to log_start_from_param is NULL");
-        return ret;
-    }
-    else
-    {
-        /*Copy the struct information*/
-        ret = internalInitAndAllocStruct();
+	if (iniParams == NULL)
+	{
+		g_writeln("inparam to log_start_from_param is NULL");
+		return ret;
+	} else
+	{
+		/*Copy the struct information*/
+		ret = internalInitAndAllocStruct();
 
-        if (ret != LOG_STARTUP_OK)
-        {
-            g_writeln("internalInitAndAllocStruct failed");
-            return ret;
-        }
+		if (ret != LOG_STARTUP_OK)
+		{
+			g_writeln("internalInitAndAllocStruct failed");
+			return ret;
+		}
 
-        staticLogConfig->enable_syslog = iniParams->enable_syslog;
-        staticLogConfig->fd = iniParams->fd;
-        staticLogConfig->log_file = g_strdup(iniParams->log_file);
-        staticLogConfig->log_level = iniParams->log_level;
-        staticLogConfig->log_lock = iniParams->log_lock;
-        staticLogConfig->log_lock_attr = iniParams->log_lock_attr;
-        staticLogConfig->program_name = g_strdup(iniParams->program_name);
-        staticLogConfig->syslog_level = iniParams->syslog_level;
-        ret = internal_log_start(staticLogConfig);
+		staticLogConfig->enable_syslog = iniParams->enable_syslog;
+		staticLogConfig->fd = iniParams->fd;
+		staticLogConfig->log_file = g_strdup(iniParams->log_file);
+		staticLogConfig->log_level = iniParams->log_level;
+		staticLogConfig->log_lock = iniParams->log_lock;
+		staticLogConfig->log_lock_attr = iniParams->log_lock_attr;
+		staticLogConfig->program_name = g_strdup(iniParams->program_name);
+		staticLogConfig->syslog_level = iniParams->syslog_level;
+		ret = internal_log_start(staticLogConfig);
 
-        if (ret != LOG_STARTUP_OK)
-        {
-            g_writeln("Could not start log");
+		if (ret != LOG_STARTUP_OK)
+		{
+			g_writeln("Could not start log");
 
-            if (staticLogConfig != NULL)
-            {
-                g_free(staticLogConfig);
-                staticLogConfig = NULL;
-            }
-        }
-    }
+			if (staticLogConfig != NULL)
+			{
+				g_free(staticLogConfig);
+				staticLogConfig = NULL;
+			}
+		}
+	}
 
-    return ret;
+	return ret;
 }
 
 /**
@@ -501,38 +487,36 @@ log_start_from_param(const struct log_config *iniParams)
 enum logReturns DEFAULT_CC
 log_start(const char *iniFile, const char *applicationName)
 {
-    enum logReturns ret = LOG_GENERAL_ERROR;
+	enum logReturns ret = LOG_GENERAL_ERROR;
 
-    if (applicationName == NULL)
-    {
-        g_writeln("Programming error your application name cannot be null");
-        return ret;
-    }
+	if (applicationName == NULL)
+	{
+		g_writeln("Programming error your application name cannot be null");
+		return ret;
+	}
 
-    ret = internalReadConfiguration(iniFile, applicationName);
+	ret = internalReadConfiguration(iniFile, applicationName);
 
-    if (ret == LOG_STARTUP_OK)
-    {
-        ret = internal_log_start(staticLogConfig);
+	if (ret == LOG_STARTUP_OK)
+	{
+		ret = internal_log_start(staticLogConfig);
 
-        if (ret != LOG_STARTUP_OK)
-        {
-            g_writeln("Could not start log");
+		if (ret != LOG_STARTUP_OK)
+		{
+			g_writeln("Could not start log");
 
-            if (staticLogConfig != NULL)
-            {
-                g_free(staticLogConfig);
-                staticLogConfig = NULL;
-            }
-        }
-    }
-    else
-    {
-        g_writeln("Error reading configuration for log based on config: %s",
-                  iniFile);
-    }
+			if (staticLogConfig != NULL)
+			{
+				g_free(staticLogConfig);
+				staticLogConfig = NULL;
+			}
+		}
+	} else
+	{
+		g_writeln("Error reading configuration for log based on config: %s", iniFile);
+	}
 
-    return ret;
+	return ret;
 }
 
 /**
@@ -542,108 +526,106 @@ log_start(const char *iniFile, const char *applicationName)
 enum logReturns DEFAULT_CC
 log_end(void)
 {
-    enum logReturns ret = LOG_GENERAL_ERROR;
-    ret = internal_log_end(staticLogConfig);
+	enum logReturns ret = LOG_GENERAL_ERROR;
+	ret = internal_log_end(staticLogConfig);
 
-    if (staticLogConfig != NULL)
-    {
-        g_free(staticLogConfig);
-        staticLogConfig = NULL;
-    }
+	if (staticLogConfig != NULL)
+	{
+		g_free(staticLogConfig);
+		staticLogConfig = NULL;
+	}
 
-    return ret;
+	return ret;
 }
 
 enum logReturns DEFAULT_CC
 log_message(const enum logLevels lvl, const char *msg, ...)
 {
-    char buff[LOG_BUFFER_SIZE + 31]; /* 19 (datetime) 4 (space+cr+lf+\0) */
-    va_list ap;
-    int len = 0;
-    enum logReturns rv = LOG_STARTUP_OK;
-    int writereply = 0;
-    time_t now_t;
-    struct tm *now;
+	char buff[LOG_BUFFER_SIZE + 31]; /* 19 (datetime) 4 (space+cr+lf+\0) */
+	va_list ap;
+	int len = 0;
+	enum logReturns rv = LOG_STARTUP_OK;
+	int writereply = 0;
+	time_t now_t;
+	struct tm *now;
 
-    if (staticLogConfig == NULL)
-    {
-        g_writeln("The log reference is NULL - log not initialized properly");
-        return LOG_ERROR_NO_CFG;
-    }
+	if (staticLogConfig == NULL)
+	{
+		g_writeln("The log reference is NULL - log not initialized properly");
+		return LOG_ERROR_NO_CFG;
+	}
 
-    if (0 > staticLogConfig->fd && staticLogConfig->enable_syslog == 0)
-    {
-        return LOG_ERROR_FILE_NOT_OPEN;
-    }
+	if (0 > staticLogConfig->fd && staticLogConfig->enable_syslog == 0)
+	{
+		return LOG_ERROR_FILE_NOT_OPEN;
+	}
 
-    now_t = time(&now_t);
-    now = localtime(&now_t);
+	now_t = time(&now_t);
+	now = localtime(&now_t);
 
-    snprintf(buff, 21, "[%.4d%.2d%.2d-%.2d:%.2d:%.2d] ", now->tm_year + 1900,
-             now->tm_mon + 1, now->tm_mday, now->tm_hour, now->tm_min,
-             now->tm_sec);
+	snprintf(buff, 21, "[%.4d%.2d%.2d-%.2d:%.2d:%.2d] ", now->tm_year + 1900, now->tm_mon + 1, now->tm_mday,
+			now->tm_hour, now->tm_min, now->tm_sec);
 
-    internal_log_lvl2str(lvl, buff + 20);
+	internal_log_lvl2str(lvl, buff + 20);
 
-    va_start(ap, msg);
-    len = vsnprintf(buff + 28, LOG_BUFFER_SIZE, msg, ap);
-    va_end(ap);
+	va_start(ap, msg);
+	len = vsnprintf(buff + 28, LOG_BUFFER_SIZE, msg, ap);
+	va_end(ap);
 
-    /* checking for truncated messages */
-    if (len > LOG_BUFFER_SIZE)
-    {
-        log_message(LOG_LEVEL_WARNING, "next message will be truncated");
-    }
+	/* checking for truncated messages */
+	if (len > LOG_BUFFER_SIZE)
+	{
+		log_message(LOG_LEVEL_WARNING, "next message will be truncated");
+	}
 
-    /* forcing the end of message string */
+	/* forcing the end of message string */
 #ifdef _WIN32
-    buff[len + 28] = '\r';
-    buff[len + 29] = '\n';
-    buff[len + 30] = '\0';
+	buff[len + 28] = '\r';
+	buff[len + 29] = '\n';
+	buff[len + 30] = '\0';
 #else
 #ifdef _MACOS
-    buff[len + 28] = '\r';
-    buff[len + 29] = '\0';
+	buff[len + 28] = '\r';
+	buff[len + 29] = '\0';
 #else
-    buff[len + 28] = '\n';
-    buff[len + 29] = '\0';
+	buff[len + 28] = '\n';
+	buff[len + 29] = '\0';
 #endif
 #endif
 
-    if (staticLogConfig->enable_syslog && (lvl <= staticLogConfig->syslog_level))
-    {
-        /* log to syslog*/
-        /* %s fix compiler warning 'not a string literal' */
-        syslog(internal_log_xrdp2syslog(lvl), "(%d)(%ld)%s", g_getpid(),
-               tc_get_threadid(), buff + 20);
-    }
+	if (staticLogConfig->enable_syslog && (lvl <= staticLogConfig->syslog_level))
+	{
+		/* log to syslog*/
+		/* %s fix compiler warning 'not a string literal' */
+		syslog(internal_log_xrdp2syslog(lvl), "(%d)(%ld)%s", g_getpid(), tc_get_threadid(), buff + 20);
+	}
 
-    if (lvl <= staticLogConfig->log_level)
-    {
-        /* log to console */
-        g_printf("%s", buff);
+	if (lvl <= staticLogConfig->log_level)
+	{
+		/* log to console */
+		g_printf("%s", buff);
 
-        /* log to application logfile */
+		/* log to application logfile */
 #ifdef LOG_ENABLE_THREAD
-        pthread_mutex_lock(&(staticLogConfig->log_lock));
+		pthread_mutex_lock(&(staticLogConfig->log_lock));
 #endif
 
-        if (staticLogConfig->fd > 0)
-        {
-            writereply = g_file_write(staticLogConfig->fd, buff, g_strlen(buff));
+		if (staticLogConfig->fd > 0)
+		{
+			writereply = g_file_write(staticLogConfig->fd, buff, g_strlen(buff));
 
-            if (writereply <= 0)
-            {
-                rv = LOG_ERROR_NULL_FILE;
-            }
-        }
+			if (writereply <= 0)
+			{
+				rv = LOG_ERROR_NULL_FILE;
+			}
+		}
 
 #ifdef LOG_ENABLE_THREAD
-        pthread_mutex_unlock(&(staticLogConfig->log_lock));
+		pthread_mutex_unlock(&(staticLogConfig->log_lock));
 #endif
-    }
+	}
 
-    return rv;
+	return rv;
 }
 
 /**
@@ -653,21 +635,19 @@ log_message(const enum logLevels lvl, const char *msg, ...)
 char *DEFAULT_CC
 getLogFile(char *replybuf, int bufsize)
 {
-    if (staticLogConfig)
-    {
-        if (staticLogConfig->log_file)
-        {
-            g_strncpy(replybuf, staticLogConfig->log_file, bufsize);
-        }
-        else
-        {
-            g_sprintf(replybuf, "The log_file name is NULL");
-        }
-    }
-    else
-    {
-        g_snprintf(replybuf, bufsize, "The log is not properly started");
-    }
+	if (staticLogConfig)
+	{
+		if (staticLogConfig->log_file)
+		{
+			g_strncpy(replybuf, staticLogConfig->log_file, bufsize);
+		} else
+		{
+			g_sprintf(replybuf, "The log_file name is NULL");
+		}
+	} else
+	{
+		g_snprintf(replybuf, bufsize, "The log is not properly started");
+	}
 
-    return replybuf;
+	return replybuf;
 }

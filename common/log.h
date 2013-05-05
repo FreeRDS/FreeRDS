@@ -29,23 +29,23 @@
 /* logging levels */
 enum logLevels
 {
-  LOG_LEVEL_ALWAYS = 0,
-  LOG_LEVEL_ERROR,
-  LOG_LEVEL_WARNING,
-  LOG_LEVEL_INFO,
-  LOG_LEVEL_DEBUG
+	LOG_LEVEL_ALWAYS = 0,
+	LOG_LEVEL_ERROR,
+	LOG_LEVEL_WARNING,
+	LOG_LEVEL_INFO,
+	LOG_LEVEL_DEBUG
 };
 
 /* startup return values */
 enum logReturns
 {
-  LOG_STARTUP_OK = 0,
-  LOG_ERROR_MALLOC,
-  LOG_ERROR_NULL_FILE,
-  LOG_ERROR_FILE_OPEN,
-  LOG_ERROR_NO_CFG,
-  LOG_ERROR_FILE_NOT_OPEN,
-  LOG_GENERAL_ERROR
+	LOG_STARTUP_OK = 0,
+	LOG_ERROR_MALLOC,
+	LOG_ERROR_NULL_FILE,
+	LOG_ERROR_FILE_OPEN,
+	LOG_ERROR_NO_CFG,
+	LOG_ERROR_FILE_NOT_OPEN,
+	LOG_GENERAL_ERROR
 };
 
 #define SESMAN_CFG_LOGGING           "Logging"
@@ -65,14 +65,14 @@ enum logReturns
 
 struct log_config
 {
-  char* program_name;
-  char* log_file;
-  int fd;
-  unsigned int log_level;
-  int enable_syslog;
-  unsigned int syslog_level;
-  pthread_mutex_t log_lock;
-  pthread_mutexattr_t log_lock_attr;
+	char* program_name;
+	char* log_file;
+	int fd;
+	unsigned int log_level;
+	int enable_syslog;
+	unsigned int syslog_level;
+	pthread_mutex_t log_lock;
+	pthread_mutexattr_t log_lock_attr;
 };
 
 /* internal functions, only used in log.c if this ifdef is defined.*/
@@ -134,9 +134,9 @@ internalInitAndAllocStruct(void);
  */
 enum logReturns DEFAULT_CC
 internal_config_read_logging(int file, struct log_config* lc,
-                             struct list* param_n,
-                             struct list* param_v,
-                             const char *applicationName);
+		struct list* param_n,
+		struct list* param_v,
+		const char *applicationName);
 /*End of internal functions*/
 #endif
 /**

@@ -113,230 +113,223 @@ char inst_pub_sig[] = "0x6a,0x41,0xb1,0x43,0xcf,0x47,0x6f,0xf1,0xe6,0xcc,0xa1,\
 static int APP_CC
 out_params(void)
 {
-    g_writeln("");
-    g_writeln("xrdp rsa key gen utility examples");
-    g_writeln("  xrdp-keygen xrdp ['path and file name' | auto]");
-    g_writeln("  xrdp-keygen test");
-    g_writeln("");
-    return 0;
+	g_writeln("");
+	g_writeln("xrdp rsa key gen utility examples");
+	g_writeln("  xrdp-keygen xrdp ['path and file name' | auto]");
+	g_writeln("  xrdp-keygen test");
+	g_writeln("");
+	return 0;
 }
 
 /*****************************************************************************/
 /* this is the special key signing algorithm */
 static int APP_CC
-sign_key(char *e_data, int e_len, char *n_data, int n_len,
-         char *sign_data, int sign_len)
+sign_key(char *e_data, int e_len, char *n_data, int n_len, char *sign_data, int sign_len)
 {
-    char *key;
-    char *md5_final;
-    void *md5;
+	char *key;
+	char *md5_final;
+	void *md5;
 
-    if ((e_len != 4) || (n_len != 64) || (sign_len != 64))
-    {
-        return 1;
-    }
+	if ((e_len != 4) || (n_len != 64) || (sign_len != 64))
+	{
+		return 1;
+	}
 
-    key = (char *)g_malloc(176, 0);
-    md5_final = (char *)g_malloc(64, 0);
-    md5 = ssl_md5_info_create();
-    /* copy the test key */
-    g_memcpy(key, g_testkey, 176);
-    /* replace e and n */
-    g_memcpy(key + 32, e_data, 4);
-    g_memcpy(key + 36, n_data, 64);
-    ssl_md5_clear(md5);
-    /* the first 108 bytes */
-    ssl_md5_transform(md5, key, 108);
-    /* set the whole thing with 0xff */
-    g_memset(md5_final, 0xff, 64);
-    /* digest 16 bytes */
-    ssl_md5_complete(md5, md5_final);
-    /* set non 0xff array items */
-    md5_final[16] = 0;
-    md5_final[62] = 1;
-    md5_final[63] = 0;
-    /* encrypt */
-    ssl_mod_exp(sign_data, 64, md5_final, 64, (char *)g_ppk_n, 64,
-                (char *)g_ppk_d, 64);
-    /* cleanup */
-    ssl_md5_info_delete(md5);
-    g_free(key);
-    g_free(md5_final);
-    return 0;
+	key = (char *) g_malloc(176, 0);
+	md5_final = (char *) g_malloc(64, 0);
+	md5 = ssl_md5_info_create();
+	/* copy the test key */
+	g_memcpy(key, g_testkey, 176);
+	/* replace e and n */
+	g_memcpy(key + 32, e_data, 4);
+	g_memcpy(key + 36, n_data, 64);
+	ssl_md5_clear(md5);
+	/* the first 108 bytes */
+	ssl_md5_transform(md5, key, 108);
+	/* set the whole thing with 0xff */
+	g_memset(md5_final, 0xff, 64);
+	/* digest 16 bytes */
+	ssl_md5_complete(md5, md5_final);
+	/* set non 0xff array items */
+	md5_final[16] = 0;
+	md5_final[62] = 1;
+	md5_final[63] = 0;
+	/* encrypt */
+	ssl_mod_exp(sign_data, 64, md5_final, 64, (char *) g_ppk_n, 64, (char *) g_ppk_d, 64);
+	/* cleanup */
+	ssl_md5_info_delete(md5);
+	g_free(key);
+	g_free(md5_final);
+	return 0;
 }
 
 /*****************************************************************************/
 static int APP_CC
 write_out_line(int fd, char *name, char *data, int len)
 {
-    int max;
-    int error;
-    int index;
-    int data_item;
-    int buf_pos;
-    char *buf;
-    char *text;
+	int max;
+	int error;
+	int index;
+	int data_item;
+	int buf_pos;
+	char *buf;
+	char *text;
 
-    text = (char *)g_malloc(256, 0);
-    max = len;
-    max = max * 10;
-    buf_pos = g_strlen(name);
-    max = max + buf_pos + 16;
-    buf = (char *)g_malloc(max, 0);
-    g_strncpy(buf, name, max - 1);
-    buf[buf_pos] = '=';
-    buf_pos++;
+	text = (char *) g_malloc(256, 0);
+	max = len;
+	max = max * 10;
+	buf_pos = g_strlen(name);
+	max = max + buf_pos + 16;
+	buf = (char *) g_malloc(max, 0);
+	g_strncpy(buf, name, max - 1);
+	buf[buf_pos] = '=';
+	buf_pos++;
 
-    for (index = 0; index < len; index++)
-    {
-        data_item = (tui8)(data[index]);
-        g_snprintf(text, 255, "0x%2.2x", data_item);
+	for (index = 0; index < len; index++)
+	{
+		data_item = (tui8) (data[index]);
+		g_snprintf(text, 255, "0x%2.2x", data_item);
 
-        if (index != 0)
-        {
-            buf[buf_pos] = ',';
-            buf_pos++;
-        }
+		if (index != 0)
+		{
+			buf[buf_pos] = ',';
+			buf_pos++;
+		}
 
-        buf[buf_pos] = text[0];
-        buf_pos++;
-        buf[buf_pos] = text[1];
-        buf_pos++;
-        buf[buf_pos] = text[2];
-        buf_pos++;
-        buf[buf_pos] = text[3];
-        buf_pos++;
-    }
+		buf[buf_pos] = text[0];
+		buf_pos++;
+		buf[buf_pos] = text[1];
+		buf_pos++;
+		buf[buf_pos] = text[2];
+		buf_pos++;
+		buf[buf_pos] = text[3];
+		buf_pos++;
+	}
 
-    buf[buf_pos] = '\n';
-    buf_pos++;
-    buf[buf_pos] = 0;
-    error = g_file_write(fd, buf, buf_pos) == -1;
-    g_free(buf);
-    g_free(text);
-    return error;
+	buf[buf_pos] = '\n';
+	buf_pos++;
+	buf[buf_pos] = 0;
+	error = g_file_write(fd, buf, buf_pos) == -1;
+	g_free(buf);
+	g_free(text);
+	return error;
 }
 
 /*****************************************************************************/
 static int APP_CC
-save_all(char *e_data, int e_len, char *n_data, int n_len,
-         char *d_data, int d_len, char *sign_data, int sign_len,
-         const char *path_and_file_name)
+save_all(char *e_data, int e_len, char *n_data, int n_len, char *d_data, int d_len, char *sign_data, int sign_len,
+		const char *path_and_file_name)
 {
-    int fd;
-    char filename[256];
+	int fd;
+	char filename[256];
 
-    if (path_and_file_name == 0)
-    {
-        g_strncpy(filename, "rsakeys.ini", 255);
-    }
-    else
-    {
-        g_strncpy(filename, path_and_file_name, 255);
-    }
+	if (path_and_file_name == 0)
+	{
+		g_strncpy(filename, "rsakeys.ini", 255);
+	} else
+	{
+		g_strncpy(filename, path_and_file_name, 255);
+	}
 
-    g_writeln("saving to %s", filename);
-    g_writeln("");
+	g_writeln("saving to %s", filename);
+	g_writeln("");
 
-    if (g_file_exist(filename))
-    {
-        if (g_file_delete(filename) == 0)
-        {
-            g_writeln("problem deleting %s, maybe no rights", filename);
-            return 1;
-        }
-    }
+	if (g_file_exist(filename))
+	{
+		if (g_file_delete(filename) == 0)
+		{
+			g_writeln("problem deleting %s, maybe no rights", filename);
+			return 1;
+		}
+	}
 
-    fd = g_file_open(filename);
+	fd = g_file_open(filename);
 
-    if (fd > 0)
-    {
-        if (g_file_write(fd, "[keys]\n", 7) == -1)
-        {
-            g_writeln("problem writing to %s, maybe no rights", filename);
-            return 1;
-        }
+	if (fd > 0)
+	{
+		if (g_file_write(fd, "[keys]\n", 7) == -1)
+		{
+			g_writeln("problem writing to %s, maybe no rights", filename);
+			return 1;
+		}
 
-        write_out_line(fd, "pub_exp", e_data, e_len);
-        write_out_line(fd, "pub_mod", n_data, n_len);
-        write_out_line(fd, "pub_sig", sign_data, sign_len);
-        write_out_line(fd, "pri_exp", d_data, d_len);
-    }
-    else
-    {
-        g_writeln("problem opening %s, maybe no rights", filename);
-        return 1;
-    }
+		write_out_line(fd, "pub_exp", e_data, e_len);
+		write_out_line(fd, "pub_mod", n_data, n_len);
+		write_out_line(fd, "pub_sig", sign_data, sign_len);
+		write_out_line(fd, "pri_exp", d_data, d_len);
+	} else
+	{
+		g_writeln("problem opening %s, maybe no rights", filename);
+		return 1;
+	}
 
-    g_file_close(fd);
-    return 0;
+	g_file_close(fd);
+	return 0;
 }
 
 /*****************************************************************************/
 static int APP_CC
 key_gen(const char *path_and_file_name)
 {
-    char *e_data;
-    char *n_data;
-    char *d_data;
-    char *sign_data;
-    int e_len;
-    int n_len;
-    int d_len;
-    int sign_len;
-    int error;
+	char *e_data;
+	char *n_data;
+	char *d_data;
+	char *sign_data;
+	int e_len;
+	int n_len;
+	int d_len;
+	int sign_len;
+	int error;
 
-    e_data = (char *)g_exponent;
-    n_data = (char *)g_malloc(64, 0);
-    d_data = (char *)g_malloc(64, 0);
-    sign_data = (char *)g_malloc(64, 0);
-    e_len = 4;
-    n_len = 64;
-    d_len = 64;
-    sign_len = 64;
-    error = 0;
-    g_writeln("");
-    g_writeln("Generating %d bit rsa key...", MY_KEY_SIZE);
-    g_writeln("");
+	e_data = (char *) g_exponent;
+	n_data = (char *) g_malloc(64, 0);
+	d_data = (char *) g_malloc(64, 0);
+	sign_data = (char *) g_malloc(64, 0);
+	e_len = 4;
+	n_len = 64;
+	d_len = 64;
+	sign_len = 64;
+	error = 0;
+	g_writeln("");
+	g_writeln("Generating %d bit rsa key...", MY_KEY_SIZE);
+	g_writeln("");
 
-    if (error == 0)
-    {
-        error = ssl_gen_key_xrdp1(MY_KEY_SIZE, e_data, e_len, n_data, n_len,
-                                  d_data, d_len);
+	if (error == 0)
+	{
+		error = ssl_gen_key_xrdp1(MY_KEY_SIZE, e_data, e_len, n_data, n_len, d_data, d_len);
 
-        if (error != 0)
-        {
-            g_writeln("error %d in key_gen, ssl_gen_key_xrdp1", error);
-        }
-    }
+		if (error != 0)
+		{
+			g_writeln("error %d in key_gen, ssl_gen_key_xrdp1", error);
+		}
+	}
 
-    if (error == 0)
-    {
-        g_writeln("ssl_gen_key_xrdp1 ok");
-        g_writeln("");
-        error = sign_key(e_data, e_len, n_data, n_len, sign_data, sign_len);
+	if (error == 0)
+	{
+		g_writeln("ssl_gen_key_xrdp1 ok");
+		g_writeln("");
+		error = sign_key(e_data, e_len, n_data, n_len, sign_data, sign_len);
 
-        if (error != 0)
-        {
-            g_writeln("error %d in key_gen, sign_key", error);
-        }
-    }
+		if (error != 0)
+		{
+			g_writeln("error %d in key_gen, sign_key", error);
+		}
+	}
 
-    if (error == 0)
-    {
-        error = save_all(e_data, e_len, n_data, n_len, d_data, d_len,
-                         sign_data, sign_len, path_and_file_name);
+	if (error == 0)
+	{
+		error = save_all(e_data, e_len, n_data, n_len, d_data, d_len, sign_data, sign_len, path_and_file_name);
 
-        if (error != 0)
-        {
-            g_writeln("error %d in key_gen, save_all", error);
-        }
-    }
+		if (error != 0)
+		{
+			g_writeln("error %d in key_gen, save_all", error);
+		}
+	}
 
-    g_free(n_data);
-    g_free(d_data);
-    g_free(sign_data);
-    return error;
+	g_free(n_data);
+	g_free(d_data);
+	g_free(sign_data);
+	return error;
 }
 
 /*****************************************************************************/
@@ -344,156 +337,152 @@ key_gen(const char *path_and_file_name)
 static int APP_CC
 key_gen_run_it(void)
 {
-    int fd;
-    int index;
-    int rv;
-    struct list *names;
-    struct list *values;
-    char *name;
-    char *value;
+	int fd;
+	int index;
+	int rv;
+	struct list *names;
+	struct list *values;
+	char *name;
+	char *value;
 
-    if (!g_file_exist("/etc/xrdp/rsakeys.ini"))
-    {
-        return 1;
-    }
+	if (!g_file_exist("/etc/xrdp/rsakeys.ini"))
+	{
+		return 1;
+	}
 
-    if (g_file_get_size("/etc/xrdp/rsakeys.ini") < 10)
-    {
-        return 1;
-    }
+	if (g_file_get_size("/etc/xrdp/rsakeys.ini") < 10)
+	{
+		return 1;
+	}
 
-    fd = g_file_open("/etc/xrdp/rsakeys.ini");
+	fd = g_file_open("/etc/xrdp/rsakeys.ini");
 
-    if (fd < 0)
-    {
-        return 1;
-    }
+	if (fd < 0)
+	{
+		return 1;
+	}
 
-    rv = 0;
-    names = list_create();
-    names->auto_free = 1;
-    values = list_create();
-    values->auto_free = 1;
+	rv = 0;
+	names = list_create();
+	names->auto_free = 1;
+	values = list_create();
+	values->auto_free = 1;
 
-    if (file_read_section(fd, "keys", names, values) == 0)
-    {
-        for (index = 0; index < names->count; index++)
-        {
-            name = (char *)list_get_item(names, index);
-            value = (char *)list_get_item(values, index);
+	if (file_read_section(fd, "keys", names, values) == 0)
+	{
+		for (index = 0; index < names->count; index++)
+		{
+			name = (char *) list_get_item(names, index);
+			value = (char *) list_get_item(values, index);
 
-            if (g_strcasecmp(name, "pub_sig") == 0)
-            {
-                if (g_strcasecmp(value, inst_pub_sig) == 0)
-                {
-                    rv = 1;
-                }
-            }
-        }
-    }
-    else
-    {
-        g_writeln("error reading keys section of rsakeys.ini");
-    }
+			if (g_strcasecmp(name, "pub_sig") == 0)
+			{
+				if (g_strcasecmp(value, inst_pub_sig) == 0)
+				{
+					rv = 1;
+				}
+			}
+		}
+	} else
+	{
+		g_writeln("error reading keys section of rsakeys.ini");
+	}
 
-    list_delete(names);
-    list_delete(values);
-    g_file_close(fd);
-    return rv;
+	list_delete(names);
+	list_delete(values);
+	g_file_close(fd);
+	return rv;
 }
 
 /*****************************************************************************/
 static int APP_CC
 key_gen_auto(void)
 {
-    if (key_gen_run_it())
-    {
-        return key_gen("/etc/xrdp/rsakeys.ini");
-    }
+	if (key_gen_run_it())
+	{
+		return key_gen("/etc/xrdp/rsakeys.ini");
+	}
 
-    g_writeln("xrdp-keygen does not need to run");
-    return 0;
+	g_writeln("xrdp-keygen does not need to run");
+	return 0;
 }
 
 /*****************************************************************************/
 static int APP_CC
 key_test(void)
 {
-    char *md5_final;
-    char *sig;
-    void *md5;
+	char *md5_final;
+	char *sig;
+	void *md5;
 
-    md5_final = (char *)g_malloc(64, 0);
-    sig = (char *)g_malloc(64, 0);
-    md5 = ssl_md5_info_create();
-    g_writeln("original key is:");
-    g_hexdump((char *)g_testkey, 176);
-    g_writeln("original exponent is:");
-    g_hexdump((char *)g_testkey + 32, 4);
-    g_writeln("original modulus is:");
-    g_hexdump((char *)g_testkey + 36, 64);
-    g_writeln("original signature is:");
-    g_hexdump((char *)g_testkey + 112, 64);
-    ssl_md5_clear(md5);
-    ssl_md5_transform(md5, (char *)g_testkey, 108);
-    g_memset(md5_final, 0xff, 64);
-    ssl_md5_complete(md5, md5_final);
-    g_writeln("md5 hash of first 108 bytes of this key is:");
-    g_hexdump(md5_final, 16);
-    md5_final[16] = 0;
-    md5_final[62] = 1;
-    md5_final[63] = 0;
-    ssl_mod_exp(sig, 64, md5_final, 64, (char *)g_ppk_n, 64, (char *)g_ppk_d, 64);
-    g_writeln("produced signature(this should match original \
+	md5_final = (char *) g_malloc(64, 0);
+	sig = (char *) g_malloc(64, 0);
+	md5 = ssl_md5_info_create();
+	g_writeln("original key is:");
+	g_hexdump((char *) g_testkey, 176);
+	g_writeln("original exponent is:");
+	g_hexdump((char *) g_testkey + 32, 4);
+	g_writeln("original modulus is:");
+	g_hexdump((char *) g_testkey + 36, 64);
+	g_writeln("original signature is:");
+	g_hexdump((char *) g_testkey + 112, 64);
+	ssl_md5_clear(md5);
+	ssl_md5_transform(md5, (char *) g_testkey, 108);
+	g_memset(md5_final, 0xff, 64);
+	ssl_md5_complete(md5, md5_final);
+	g_writeln("md5 hash of first 108 bytes of this key is:");
+	g_hexdump(md5_final, 16);
+	md5_final[16] = 0;
+	md5_final[62] = 1;
+	md5_final[63] = 0;
+	ssl_mod_exp(sig, 64, md5_final, 64, (char *) g_ppk_n, 64, (char *) g_ppk_d, 64);
+	g_writeln("produced signature(this should match original \
 signature above) is:");
-    g_hexdump(sig, 64);
-    g_memset(md5_final, 0, 64);
-    ssl_mod_exp(md5_final, 64, (char *)g_testkey + 112, 64, (char *)g_ppk_n, 64,
-                (char *)g_ppk_e, 4);
-    g_writeln("decrypted hash of first 108 bytes of this key is:");
-    g_hexdump(md5_final, 64);
-    ssl_md5_info_delete(md5);
-    g_free(md5_final);
-    g_free(sig);
-    return 0;
+	g_hexdump(sig, 64);
+	g_memset(md5_final, 0, 64);
+	ssl_mod_exp(md5_final, 64, (char *) g_testkey + 112, 64, (char *) g_ppk_n, 64, (char *) g_ppk_e, 4);
+	g_writeln("decrypted hash of first 108 bytes of this key is:");
+	g_hexdump(md5_final, 64);
+	ssl_md5_info_delete(md5);
+	g_free(md5_final);
+	g_free(sig);
+	return 0;
 }
 
 /*****************************************************************************/
 int DEFAULT_CC
 main(int argc, char **argv)
 {
-    if (argc > 1)
-    {
-        if (g_strcasecmp(argv[1], "xrdp") == 0)
-        {
-            if (argc > 2)
-            {
-                if (g_strcasecmp(argv[2], "auto") == 0)
-                {
-                    if (g_getuid() != 0)
-                    {
-                        g_writeln("must run as root");
-                        return 0;
-                    }
+	if (argc > 1)
+	{
+		if (g_strcasecmp(argv[1], "xrdp") == 0)
+		{
+			if (argc > 2)
+			{
+				if (g_strcasecmp(argv[2], "auto") == 0)
+				{
+					if (g_getuid() != 0)
+					{
+						g_writeln("must run as root");
+						return 0;
+					}
 
-                    return key_gen_auto();
-                }
-                else
-                {
-                    return key_gen(argv[2]);
-                }
-            }
-            else
-            {
-                return key_gen(0);
-            }
-        }
-        else if (g_strcasecmp(argv[1], "test") == 0)
-        {
-            return key_test();
-        }
-    }
+					return key_gen_auto();
+				} else
+				{
+					return key_gen(argv[2]);
+				}
+			} else
+			{
+				return key_gen(0);
+			}
+		} else
+			if (g_strcasecmp(argv[1], "test") == 0)
+			{
+				return key_test();
+			}
+	}
 
-    out_params();
-    return 0;
+	out_params();
+	return 0;
 }

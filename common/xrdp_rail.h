@@ -20,21 +20,21 @@
 #define _RAIL_H
 
 /*
-  ORDER_TYPE_WINDOW
-    WINDOW_ORDER_TYPE_WINDOW
-      WINDOW_ORDER_ICON
-      WINDOW_ORDER_CACHED_ICON
-      WINDOW_ORDER_STATE_DELETED
-      WINDOW_ORDER_STATE_NEW on
-      WINDOW_ORDER_STATE_NEW off
-    WINDOW_ORDER_TYPE_NOTIFY
-      WINDOW_ORDER_STATE_DELETED
-      WINDOW_ORDER_STATE_NEW on
-      WINDOW_ORDER_STATE_NEW off
-    WINDOW_ORDER_TYPE_DESKTOP
-      WINDOW_ORDER_FIELD_DESKTOP_NONE on
-      WINDOW_ORDER_FIELD_DESKTOP_NONE off
-*/
+ ORDER_TYPE_WINDOW
+ WINDOW_ORDER_TYPE_WINDOW
+ WINDOW_ORDER_ICON
+ WINDOW_ORDER_CACHED_ICON
+ WINDOW_ORDER_STATE_DELETED
+ WINDOW_ORDER_STATE_NEW on
+ WINDOW_ORDER_STATE_NEW off
+ WINDOW_ORDER_TYPE_NOTIFY
+ WINDOW_ORDER_STATE_DELETED
+ WINDOW_ORDER_STATE_NEW on
+ WINDOW_ORDER_STATE_NEW off
+ WINDOW_ORDER_TYPE_DESKTOP
+ WINDOW_ORDER_FIELD_DESKTOP_NONE on
+ WINDOW_ORDER_FIELD_DESKTOP_NONE off
+ */
 
 /* Window Order Header Flags */
 #define WINDOW_ORDER_TYPE_WINDOW                        0x01000000
@@ -72,76 +72,76 @@
 
 struct rail_icon_info
 {
-  int bpp;
-  int width;
-  int height;
-  int cmap_bytes;
-  int mask_bytes;
-  int data_bytes;
-  char* mask;
-  char* cmap;
-  char* data;
+	int bpp;
+	int width;
+	int height;
+	int cmap_bytes;
+	int mask_bytes;
+	int data_bytes;
+	char* mask;
+	char* cmap;
+	char* data;
 };
 
 struct rail_window_rect
 {
-  short left;
-  short top;
-  short right;
-  short bottom;
+	short left;
+	short top;
+	short right;
+	short bottom;
 };
 
 struct rail_notify_icon_infotip
 {
-  int timeout;
-  int flags;
-  char* text;
-  char* title;
+	int timeout;
+	int flags;
+	char* text;
+	char* title;
 };
 
 struct rail_window_state_order
 {
-  int owner_window_id;
-  int style;
-  int extended_style;
-  int show_state;
-  char* title_info;
-  int client_offset_x;
-  int client_offset_y;
-  int client_area_width;
-  int client_area_height;
-  int rp_content;
-  int root_parent_handle;
-  int window_offset_x;
-  int window_offset_y;
-  int window_client_delta_x;
-  int window_client_delta_y;
-  int window_width;
-  int window_height;
-  int num_window_rects;
-  struct rail_window_rect* window_rects;
-  int visible_offset_x;
-  int visible_offset_y;
-  int num_visibility_rects;
-  struct rail_window_rect* visibility_rects;
+	int owner_window_id;
+	int style;
+	int extended_style;
+	int show_state;
+	char* title_info;
+	int client_offset_x;
+	int client_offset_y;
+	int client_area_width;
+	int client_area_height;
+	int rp_content;
+	int root_parent_handle;
+	int window_offset_x;
+	int window_offset_y;
+	int window_client_delta_x;
+	int window_client_delta_y;
+	int window_width;
+	int window_height;
+	int num_window_rects;
+	struct rail_window_rect* window_rects;
+	int visible_offset_x;
+	int visible_offset_y;
+	int num_visibility_rects;
+	struct rail_window_rect* visibility_rects;
 };
 
 struct rail_notify_state_order
 {
-  int version;
-  char* tool_tip;
-  struct rail_notify_icon_infotip infotip;
-  int state;
-  int icon_cache_entry;
-  int icon_cache_id;
-  struct rail_icon_info icon_info;
+	int version;
+	char* tool_tip;
+	struct rail_notify_icon_infotip infotip;
+	int state;
+	int icon_cache_entry;
+	int icon_cache_id;
+	struct rail_icon_info icon_info;
 };
 
 struct rail_monitored_desktop_order
 {
-  int active_window_id;
-  int num_window_ids;
-  int* window_ids;
+	int active_window_id;
+	int num_window_ids;
+	int* window_ids;
 };
 
 #endif

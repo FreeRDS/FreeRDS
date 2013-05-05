@@ -24,21 +24,21 @@
 struct xrdp_tcp *APP_CC
 xrdp_tcp_create(struct xrdp_iso *owner, struct trans *trans)
 {
-    struct xrdp_tcp *self;
+	struct xrdp_tcp *self;
 
-    DEBUG(("    in xrdp_tcp_create"));
-    self = (struct xrdp_tcp *)g_malloc(sizeof(struct xrdp_tcp), 1);
-    self->iso_layer = owner;
-    self->trans = trans;
-    DEBUG(("    out xrdp_tcp_create"));
-    return self;
+	DEBUG(("    in xrdp_tcp_create"));
+	self = (struct xrdp_tcp *) g_malloc(sizeof(struct xrdp_tcp), 1);
+	self->iso_layer = owner;
+	self->trans = trans;
+	DEBUG(("    out xrdp_tcp_create"));
+	return self;
 }
 
 /*****************************************************************************/
 void APP_CC
 xrdp_tcp_delete(struct xrdp_tcp *self)
 {
-    g_free(self);
+	g_free(self);
 }
 
 /*****************************************************************************/
@@ -47,8 +47,8 @@ xrdp_tcp_delete(struct xrdp_tcp *self)
 int APP_CC
 xrdp_tcp_init(struct xrdp_tcp *self, struct stream *s)
 {
-    init_stream(s, 8192);
-    return 0;
+	init_stream(s, 8192);
+	return 0;
 }
 
 /*****************************************************************************/
@@ -56,17 +56,17 @@ xrdp_tcp_init(struct xrdp_tcp *self, struct stream *s)
 int APP_CC
 xrdp_tcp_recv(struct xrdp_tcp *self, struct stream *s, int len)
 {
-    DEBUG(("    in xrdp_tcp_recv, gota get %d bytes", len));
-    init_stream(s, len);
+	DEBUG(("    in xrdp_tcp_recv, gota get %d bytes", len));
+	init_stream(s, len);
 
-    if (trans_force_read_s(self->trans, s, len) != 0)
-    {
-        DEBUG(("    error in trans_force_read_s"));
-        return 1;
-    }
+	if (trans_force_read_s(self->trans, s, len) != 0)
+	{
+		DEBUG(("    error in trans_force_read_s"));
+		return 1;
+	}
 
-    DEBUG(("    out xrdp_tcp_recv"));
-    return 0;
+	DEBUG(("    out xrdp_tcp_recv"));
+	return 0;
 }
 
 /*****************************************************************************/
@@ -74,16 +74,16 @@ xrdp_tcp_recv(struct xrdp_tcp *self, struct stream *s, int len)
 int APP_CC
 xrdp_tcp_send(struct xrdp_tcp *self, struct stream *s)
 {
-    int len;
-    len = s->end - s->data;
-    DEBUG(("    in xrdp_tcp_send, gota send %d bytes", len));
+	int len;
+	len = s->end - s->data;
+	DEBUG(("    in xrdp_tcp_send, gota send %d bytes", len));
 
-    if (trans_force_write_s(self->trans, s) != 0)
-    {
-        DEBUG(("    error in trans_force_write_s"));
-        return 1;
-    }
+	if (trans_force_write_s(self->trans, s) != 0)
+	{
+		DEBUG(("    error in trans_force_write_s"));
+		return 1;
+	}
 
-    DEBUG(("    out xrdp_tcp_send, sent %d bytes ok", len));
-    return 0;
+	DEBUG(("    out xrdp_tcp_send, sent %d bytes ok", len));
+	return 0;
 }

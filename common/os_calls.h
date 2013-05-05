@@ -123,7 +123,7 @@ int APP_CC
 g_close_wait_obj(tbus obj);
 int APP_CC
 g_obj_wait(tbus* read_objs, int rcount, tbus* write_objs, int wcount,
-           int mstimeout);
+		int mstimeout);
 void APP_CC
 g_random(char* data, int len);
 int APP_CC
@@ -134,7 +134,7 @@ int APP_CC
 g_file_open(const char* file_name);
 int APP_CC
 g_file_open_ex(const char *file_name, int aread, int awrite,
-               int acreate, int atrunc);
+		int acreate, int atrunc);
 int APP_CC
 g_file_close(int fd);
 int APP_CC
@@ -263,7 +263,7 @@ int APP_CC
 g_sigterm(int pid);
 int APP_CC
 g_getuser_info(const char* username, int* gid, int* uid, char* shell,
-               char* dir, char* gecos);
+		char* dir, char* gecos);
 int APP_CC
 g_getgroup_info(const char* groupname, int* gid);
 int APP_CC
