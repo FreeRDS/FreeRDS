@@ -1037,7 +1037,7 @@ xrdp_wm_mouse_move(struct xrdp_wm *self, int x, int y)
         {
             if (self->mm->mod->mod_event != 0)
             {
-                self->mm->mod->mod_event(self->mm->mod, WM_MOUSEMOVE, x, y, 0, 0);
+                self->mm->mod->mod_event(self->mm->mod, WM_XRDP_MOUSEMOVE, x, y, 0, 0);
             }
         }
     }
@@ -1066,7 +1066,7 @@ xrdp_wm_mouse_move(struct xrdp_wm *self, int x, int y)
                 self->current_pointer = b->pointer;
             }
 
-            xrdp_bitmap_def_proc(b, WM_MOUSEMOVE,
+            xrdp_bitmap_def_proc(b, WM_XRDP_MOUSEMOVE,
                                  xrdp_bitmap_from_screenx(b, x),
                                  xrdp_bitmap_from_screeny(b, y));
 
@@ -1178,44 +1178,44 @@ xrdp_wm_mouse_click(struct xrdp_wm *self, int x, int y, int but, int down)
             {
                 if (but == 1 && down)
                 {
-                    self->mm->mod->mod_event(self->mm->mod, WM_LBUTTONDOWN, x, y, 0, 0);
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_LBUTTONDOWN, x, y, 0, 0);
                 }
                 else if (but == 1 && !down)
                 {
-                    self->mm->mod->mod_event(self->mm->mod, WM_LBUTTONUP, x, y, 0, 0);
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_LBUTTONUP, x, y, 0, 0);
                 }
 
                 if (but == 2 && down)
                 {
-                    self->mm->mod->mod_event(self->mm->mod, WM_RBUTTONDOWN, x, y, 0, 0);
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_RBUTTONDOWN, x, y, 0, 0);
                 }
                 else if (but == 2 && !down)
                 {
-                    self->mm->mod->mod_event(self->mm->mod, WM_RBUTTONUP, x, y, 0, 0);
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_RBUTTONUP, x, y, 0, 0);
                 }
 
                 if (but == 3 && down)
                 {
-                    self->mm->mod->mod_event(self->mm->mod, WM_BUTTON3DOWN, x, y, 0, 0);
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_BUTTON3DOWN, x, y, 0, 0);
                 }
                 else if (but == 3 && !down)
                 {
-                    self->mm->mod->mod_event(self->mm->mod, WM_BUTTON3UP, x, y, 0, 0);
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_BUTTON3UP, x, y, 0, 0);
                 }
 
                 if (but == 4)
                 {
-                    self->mm->mod->mod_event(self->mm->mod, WM_BUTTON4DOWN,
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_BUTTON4DOWN,
                                              self->mouse_x, self->mouse_y, 0, 0);
-                    self->mm->mod->mod_event(self->mm->mod, WM_BUTTON4UP,
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_BUTTON4UP,
                                              self->mouse_x, self->mouse_y, 0, 0);
                 }
 
                 if (but == 5)
                 {
-                    self->mm->mod->mod_event(self->mm->mod, WM_BUTTON5DOWN,
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_BUTTON5DOWN,
                                              self->mouse_x, self->mouse_y, 0, 0);
-                    self->mm->mod->mod_event(self->mm->mod, WM_BUTTON5UP,
+                    self->mm->mod->mod_event(self->mm->mod, WM_XRDP_BUTTON5UP,
                                              self->mouse_x, self->mouse_y, 0, 0);
                 }
             }
@@ -1226,7 +1226,7 @@ xrdp_wm_mouse_click(struct xrdp_wm *self, int x, int y, int but, int down)
     {
         if (self->popup_wnd == control && !down)
         {
-            xrdp_bitmap_def_proc(self->popup_wnd, WM_LBUTTONUP, x, y);
+            xrdp_bitmap_def_proc(self->popup_wnd, WM_XRDP_LBUTTONUP, x, y);
             xrdp_wm_clear_popup(self);
             self->button_down = 0;
             return 0;
@@ -1362,12 +1362,12 @@ xrdp_wm_key(struct xrdp_wm *self, int device_flags, int scan_code)
     if (device_flags & KBD_FLAG_UP) /* 0x8000 */
     {
         self->keys[scan_code] = 0;
-        msg = WM_KEYUP;
+        msg = WM_XRDP_KEYUP;
     }
     else /* key down */
     {
         self->keys[scan_code] = 1 | device_flags;
-        msg = WM_KEYDOWN;
+        msg = WM_XRDP_KEYDOWN;
 
         switch (scan_code)
         {
@@ -1719,7 +1719,7 @@ xrdp_wm_log_wnd_notify(struct xrdp_bitmap *wnd,
             }
         }
     }
-    else if (msg == WM_PAINT) /* 3 */
+    else if (msg == WM_XRDP_PAINT) /* 3 */
     {
         painter = (struct xrdp_painter *)param1;
 

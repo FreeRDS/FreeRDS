@@ -54,7 +54,7 @@ xrdp_wm_login_help_notify(struct xrdp_bitmap *wnd, struct xrdp_bitmap *sender, i
 			}
 		}
 	} else
-		if (msg == WM_PAINT) /* 3 */
+		if (msg == WM_XRDP_PAINT) /* 3 */
 		{
 			p = (struct xrdp_painter *) param1;
 

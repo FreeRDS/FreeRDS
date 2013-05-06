@@ -1201,7 +1201,7 @@ xrdp_bitmap_invalidate(struct xrdp_bitmap *self, struct xrdp_rect *rect)
 
 						if (check_bounds(self->wm->screen, &x, &y, &w, &h))
 						{
-							self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_INVALIDATE,
+							self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_XRDP_INVALIDATE,
 									MAKELONG(y, x), MAKELONG(h, w), 0, 0);
 						}
 					} else
@@ -1210,7 +1210,7 @@ xrdp_bitmap_invalidate(struct xrdp_bitmap *self, struct xrdp_rect *rect)
 						y = 0;
 						w = self->wm->screen->width;
 						h = self->wm->screen->height;
-						self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_INVALIDATE,
+						self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_XRDP_INVALIDATE,
 								MAKELONG(y, x), MAKELONG(h, w), 0, 0);
 					}
 				}
@@ -1499,7 +1499,7 @@ xrdp_bitmap_invalidate(struct xrdp_bitmap *self, struct xrdp_rect *rect)
 	/* notify */
 	if (self->notify != 0)
 	{
-		self->notify(self, self, WM_PAINT, (long) painter, 0); /* 3 */
+		self->notify(self, self, WM_XRDP_PAINT, (long) painter, 0); /* 3 */
 	}
 
 	/* draw any child windows in the area */
@@ -1555,7 +1555,7 @@ xrdp_bitmap_def_proc(struct xrdp_bitmap *self, int msg, int param1, int param2)
 
 	if (self->type == WND_TYPE_WND)
 	{
-		if (msg == WM_KEYDOWN)
+		if (msg == WM_XRDP_KEYDOWN)
 		{
 			scan_code = param1 % 128;
 
@@ -1658,7 +1658,7 @@ xrdp_bitmap_def_proc(struct xrdp_bitmap *self, int msg, int param1, int param2)
 	} else
 		if (self->type == WND_TYPE_EDIT)
 		{
-			if (msg == WM_KEYDOWN)
+			if (msg == WM_XRDP_KEYDOWN)
 			{
 				scan_code = param1 % 128;
 				ext = param2 & 0x0100;
@@ -1764,7 +1764,7 @@ xrdp_bitmap_def_proc(struct xrdp_bitmap *self, int msg, int param1, int param2)
 		} else
 			if (self->type == WND_TYPE_COMBO)
 			{
-				if (msg == WM_KEYDOWN)
+				if (msg == WM_XRDP_KEYDOWN)
 				{
 					scan_code = param1 % 128;
 					ext = param2 & 0x0100;
@@ -1806,7 +1806,7 @@ xrdp_bitmap_def_proc(struct xrdp_bitmap *self, int msg, int param1, int param2)
 			} else
 				if (self->type == WND_TYPE_SPECIAL)
 				{
-					if (msg == WM_MOUSEMOVE)
+					if (msg == WM_XRDP_MOUSEMOVE)
 					{
 						if (self->item_height > 0 && self->popped_from != 0)
 						{
@@ -1821,7 +1821,7 @@ xrdp_bitmap_def_proc(struct xrdp_bitmap *self, int msg, int param1, int param2)
 							}
 						}
 					} else
-						if (msg == WM_LBUTTONUP)
+						if (msg == WM_XRDP_LBUTTONUP)
 						{
 							if (self->popped_from != 0)
 							{

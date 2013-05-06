@@ -22,6 +22,8 @@
 #include "config.h"
 #endif
 
+#include <freerdp/freerdp.h>
+
 #include "arch.h"
 #include "parse.h"
 #include "trans.h"
