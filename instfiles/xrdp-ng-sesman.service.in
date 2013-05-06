@@ -1,0 +1,15 @@
+[Unit]
+Description=xrdp-ng session manager
+After=syslog.target network.target
+StopWhenUnneeded=true
+
+[Service]
+Type=forking
+PIDFile=${XRDP_PID_PATH}/xrdp-sesman.pid
+EnvironmentFile=/etc/sysconfig/xrdp
+ExecStart=${XRDP_SBIN_PATH}/xrdp-ng-sesman $SESMAN_OPTIONS
+ExecStop=${XRDP_SBIN_PATH}/xrdp-ng-sesman $SESMAN_OPTIONS --kill
+
+[Install]
+WantedBy=multi-user.target
+

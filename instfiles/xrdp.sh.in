@@ -1,0 +1,154 @@
+#!/bin/sh
+# xrdp-ng control script
+# Written : 1-13-2006 - Mark Balliet - posicat@pobox.com
+# maintaned by Jay Sorg
+# chkconfig: 2345 11 89
+# description: starts xrdp-ng
+
+### BEGIN INIT INFO
+# Provides: xrdp-ng
+# Required-Start:
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Start and stop xrdp-ng
+# Description: starts xrdp-ng
+### END INIT INFO
+
+SBINDIR=${XRDP_SBIN_PATH}
+CFGDIR=${XRDP_CFG_PATH}
+PIDDIR=${XRDP_PID_PATH}
+LOG=/dev/null
+
+if ! test -x $SBINDIR/xrdp-ng
+then
+	echo "xrdp-ng is not executable"
+	exit 0
+fi
+if ! test -x $SBINDIR/xrdp-ng-sesman
+then
+	echo "xrdp-ng-sesman is not executable"
+	exit 0
+fi
+if ! test -x $CFGDIR/startwm.sh
+then
+	echo "startwm.sh is not executable"
+	exit 0
+fi
+
+xrdp_start()
+{
+	echo -n "Starting: xrdp-ng and xrdp-ng-sesman . . "
+	$SBINDIR/xrdp-ng >> $LOG
+	$SBINDIR/xrdp-ng-sesman >> $LOG
+	echo "."
+	sleep 1
+	return 0;
+}
+
+xrdp_stop()
+{
+	echo -n "Stopping: xrdp-ng and xrdp-ng-sesman . . "
+	$SBINDIR/xrdp-ng-sesman --kill >> $LOG
+	$SBINDIR/xrdp-ng --kill >> $LOG
+	echo "."
+	return 0;
+}
+
+is_xrdp_running()
+{
+	ps u --noheading -C xrdp-ng | grep -q -i xrdp-ng
+	if test $? -eq 0
+	then
+		return 1;
+	else
+	return 0;
+	fi
+}
+
+is_sesman_running()
+{
+	ps u --noheading -C xrdp-ng-sesman | grep -q -i xrdp-ng-sesman
+	if test $? -eq 0
+	then
+		return 1;
+	else
+		return 0;
+	fi
+}
+
+check_up()
+{
+	# Cleanup : If sesman isn't running, but the pid exists, erase it.
+	is_sesman_running
+	if test $? -eq 0
+	then
+		if test -e $PIDDIR/xrdp-sesman.pid
+		then
+			rm $PIDDIR/xrdp-sesman.pid
+		fi
+	fi
+	# Cleanup : If xrdp isn't running, but the pid exists, erase it.
+	is_xrdp_running
+	if test $? -eq 0
+	then
+		if test -e $PIDDIR/xrdp.pid
+		then
+			rm $PIDDIR/xrdp.pid
+		fi
+	fi
+	return 0;
+}
+
+case "$1" in
+	start)
+		check_up
+		is_xrdp_running
+		if ! test $? -eq 0
+		then
+			echo "xrdp-ng is already loaded"
+			exit 1
+		fi
+		is_sesman_running
+		if ! test $? -eq 0
+		then
+			echo "xrdp-ng-sesman is already loaded"
+			exit 1
+		fi
+		xrdp_start
+		;;
+	stop)
+		check_up
+		is_xrdp_running
+		if test $? -eq 0
+		then
+			echo "xrdp-ng is not loaded."
+		fi
+		is_sesman_running
+		if test $? -eq 0
+		then
+			echo "xrdp-ng-sesman is not loaded."
+		fi
+		xrdp_stop
+		;;
+	force-reload|restart)
+		check_up
+		echo "Restarting xrdp-ng ..."
+		xrdp_stop
+		is_xrdp_running
+		while ! test $? -eq 0
+		do
+			check_up
+			sleep 1
+			is_xrdp_running
+		done
+		xrdp_start
+		;;
+	*)
+		echo "Usage: xrdp.sh {start|stop|restart|force-reload}"
+		exit 1
+esac
+
+exit 0

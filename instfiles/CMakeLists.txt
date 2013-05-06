@@ -15,8 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp.sh.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp.sh)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng.service.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng.service)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng-sesman.service.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng-sesman.service)
+
 set(${MODULE_PREFIX}_CFG_DATA
-	xrdp.sh
 	km-0407.ini
 	km-0409.ini
 	km-040c.ini
@@ -26,5 +30,5 @@ set(${MODULE_PREFIX}_CFG_DATA
 	km-0816.ini)
 
 install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${XRDP_CFG_PATH})
-
+install(PROGRAMS "xrdp.sh" DESTINATION ${XRDP_CFG_PATH})
 

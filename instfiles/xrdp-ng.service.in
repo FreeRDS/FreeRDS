@@ -1,0 +1,15 @@
+[Unit]
+Description=xrdp-ng daemon
+Requires=xrdp-ng-sesman.service
+After=syslog.target network.target xrdp-ng-sesman.service
+
+[Service]
+Type=forking
+PIDFile=${XRDP_PID_PATH}/xrdp.pid
+EnvironmentFile=/etc/sysconfig/xrdp
+ExecStart=${XRDP_SBIN_PATH}/xrdp-ng $XRDP_OPTIONS
+ExecStop=${XRDP_SBIN_PATH}/xrdp-ng $XRDP_OPTIONS --kill
+
+[Install]
+WantedBy=multi-user.target
+
