@@ -21,6 +21,15 @@
 #include "xrdp.h"
 #include "log.h"
 
+struct xrdp_listener
+{
+	int status;
+	struct trans* listen_trans; /* in tcp listen mode */
+	struct list* process_list;
+	tbus pro_done_event;
+	struct xrdp_startup_params* startup_params;
+};
+
 /* 'g_process' is protected by the semaphore 'g_process_sem'.  One thread sets
    g_process and waits for the other to process it */
 static tbus g_process_sem = 0;
@@ -85,6 +94,12 @@ void xrdp_listen_delete(xrdpListener *self)
 	g_delete_wait_obj(self->pro_done_event);
 	list_delete(self->process_list);
 	g_free(self);
+}
+
+int xrdp_listen_set_startup_params(xrdpListener *self, struct xrdp_startup_params* startup_params)
+{
+	self->startup_params = startup_params;
+	return 0;
 }
 
 /*****************************************************************************/

@@ -109,6 +109,7 @@ int APP_CC xrdp_process_main_loop(struct xrdp_process* self);
 xrdpListener* APP_CC xrdp_listen_create(void);
 void APP_CC xrdp_listen_delete(xrdpListener* self);
 int APP_CC xrdp_listen_main_loop(xrdpListener* self);
+int xrdp_listen_set_startup_params(xrdpListener *self, struct xrdp_startup_params* startup_params);
 
 /* xrdp_region.c */
 struct xrdp_region* APP_CC xrdp_region_create(struct xrdp_wm* wm);

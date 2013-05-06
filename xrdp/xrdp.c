@@ -555,7 +555,7 @@ main(int argc, char **argv)
 		g_writeln("error creating g_sync_event");
 	}
 
-	g_listen->startup_params = startup_params;
+	xrdp_listen_set_startup_params(g_listen, startup_params);
 	xrdp_listen_main_loop(g_listen);
 	xrdp_listen_delete(g_listen);
 	tc_mutex_delete(g_sync_mutex);
