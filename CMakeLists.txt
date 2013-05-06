@@ -92,6 +92,7 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 
 add_subdirectory(common)
+add_subdirectory(core)
 add_subdirectory(libxrdp)
 add_subdirectory(xrdp)
 

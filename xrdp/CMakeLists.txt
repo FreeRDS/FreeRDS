@@ -19,7 +19,12 @@ set(MODULE_NAME "${XRDP_NG_MODULE}")
 set(MODULE_PREFIX "FREERDP_XRDP")
 
 include_directories("../common")
-include_directories("../libxrdp")
+
+if(XRDP_NG_CORE)
+	include_directories("../core")
+else()
+	include_directories("../libxrdp")
+endif()
 
 set(${MODULE_PREFIX}_SRCS
 	funcs.c
@@ -50,7 +55,13 @@ set(${MODULE_PREFIX}_SHARE_DATA
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-lib)
+if(XRDP_NG_CORE)
+	add_definitions(-DWITH_XRDP_NG_CORE)
+	set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-core)
+else()
+	set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-lib)
+endif()
+
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})

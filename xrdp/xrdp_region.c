@@ -24,54 +24,53 @@
 struct xrdp_region *APP_CC
 xrdp_region_create(struct xrdp_wm *wm)
 {
-    struct xrdp_region *self;
+	struct xrdp_region *self;
 
-    self = (struct xrdp_region *)g_malloc(sizeof(struct xrdp_region), 1);
-    self->wm = wm;
-    self->rects = list_create();
-    self->rects->auto_free = 1;
-    return self;
+	self = (struct xrdp_region *) g_malloc(sizeof(struct xrdp_region), 1);
+	self->wm = wm;
+	self->rects = list_create();
+	self->rects->auto_free = 1;
+	return self;
 }
 
 /*****************************************************************************/
 void APP_CC
 xrdp_region_delete(struct xrdp_region *self)
 {
-    if (self == 0)
-    {
-        return;
-    }
+	if (self == 0)
+	{
+		return;
+	}
 
-    list_delete(self->rects);
-    g_free(self);
+	list_delete(self->rects);
+	g_free(self);
 }
 
 /*****************************************************************************/
 int APP_CC
 xrdp_region_add_rect(struct xrdp_region *self, struct xrdp_rect *rect)
 {
-    struct xrdp_rect *r;
+	struct xrdp_rect *r;
 
-    r = (struct xrdp_rect *)g_malloc(sizeof(struct xrdp_rect), 1);
-    *r = *rect;
-    list_add_item(self->rects, (long)r);
-    return 0;
+	r = (struct xrdp_rect *) g_malloc(sizeof(struct xrdp_rect), 1);
+	*r = *rect;
+	list_add_item(self->rects, (long) r);
+	return 0;
 }
 
 /*****************************************************************************/
 int APP_CC
-xrdp_region_insert_rect(struct xrdp_region *self, int i, int left,
-                        int top, int right, int bottom)
+xrdp_region_insert_rect(struct xrdp_region *self, int i, int left, int top, int right, int bottom)
 {
-    struct xrdp_rect *r;
+	struct xrdp_rect *r;
 
-    r = (struct xrdp_rect *)g_malloc(sizeof(struct xrdp_rect), 1);
-    r->left = left;
-    r->top = top;
-    r->right = right;
-    r->bottom = bottom;
-    list_insert_item(self->rects, i, (long)r);
-    return 0;
+	r = (struct xrdp_rect *) g_malloc(sizeof(struct xrdp_rect), 1);
+	r->left = left;
+	r->top = top;
+	r->right = right;
+	r->bottom = bottom;
+	list_insert_item(self->rects, i, (long) r);
+	return 0;
 }
 
 /*****************************************************************************/
@@ -299,18 +298,17 @@ xrdp_region_subtract_rect(struct xrdp_region *self,
 
 /*****************************************************************************/
 int APP_CC
-xrdp_region_get_rect(struct xrdp_region *self, int index,
-                     struct xrdp_rect *rect)
+xrdp_region_get_rect(struct xrdp_region *self, int index, struct xrdp_rect *rect)
 {
-    struct xrdp_rect *r;
+	struct xrdp_rect *r;
 
-    r = (struct xrdp_rect *)list_get_item(self->rects, index);
+	r = (struct xrdp_rect *) list_get_item(self->rects, index);
 
-    if (r == 0)
-    {
-        return 1;
-    }
+	if (r == 0)
+	{
+		return 1;
+	}
 
-    *rect = *r;
-    return 0;
+	*rect = *r;
+	return 0;
 }
