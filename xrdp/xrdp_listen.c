@@ -21,6 +21,10 @@
 #include "xrdp.h"
 #include "log.h"
 
+//#define NEW_XRDP_LISTENER	1
+
+#ifndef NEW_XRDP_LISTENER
+
 struct xrdp_listener
 {
 	int status;
@@ -296,7 +300,8 @@ int xrdp_listen_conn_in(struct trans *self, struct trans *new_self)
 		g_process = process;
 		tc_thread_create(xrdp_process_run, 0);
 		tc_sem_dec(g_process_sem); /* this will wait */
-	} else
+	}
+	else
 	{
 		xrdp_process_delete(process);
 	}
@@ -459,3 +464,105 @@ int xrdp_listen_main_loop(xrdpListener *self)
 	self->status = -1;
 	return 0;
 }
+
+#else
+
+#include <winpr/crt.h>
+#include <freerdp/listener.h>
+
+#include <errno.h>
+#include <sys/select.h>
+#include <sys/signal.h>
+
+void xrdp_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
+{
+	printf("xrdp_peer_accepted\n");
+}
+
+xrdpListener* xrdp_listen_create(void)
+{
+	freerdp_listener* listener;
+
+	listener = freerdp_listener_new();
+	listener->PeerAccepted = xrdp_peer_accepted;
+
+	return (xrdpListener*) listener;
+}
+
+void xrdp_listen_delete(xrdpListener* self)
+{
+	freerdp_listener_free((freerdp_listener*) self);
+}
+
+int xrdp_listen_main_loop(xrdpListener* self)
+{
+	int i;
+	int fds;
+	int max_fds;
+	int rcount;
+	void* rfds[32];
+	fd_set rfds_set;
+	freerdp_listener* listener;
+
+	ZeroMemory(rfds, sizeof(rfds));
+	listener = (freerdp_listener*) self;
+
+	listener->Open(listener, NULL, 3389);
+
+	while (1)
+	{
+		rcount = 0;
+
+		if (listener->GetFileDescriptor(listener, rfds, &rcount) != TRUE)
+		{
+			fprintf(stderr, "Failed to get FreeRDP file descriptor\n");
+			break;
+		}
+
+		max_fds = 0;
+		FD_ZERO(&rfds_set);
+
+		for (i = 0; i < rcount; i++)
+		{
+			fds = (int)(long)(rfds[i]);
+
+			if (fds > max_fds)
+				max_fds = fds;
+
+			FD_SET(fds, &rfds_set);
+		}
+
+		if (max_fds == 0)
+			break;
+
+		if (select(max_fds + 1, &rfds_set, NULL, NULL, NULL) == -1)
+		{
+			/* these are not really errors */
+			if (!((errno == EAGAIN) ||
+				(errno == EWOULDBLOCK) ||
+				(errno == EINPROGRESS) ||
+				(errno == EINTR))) /* signal occurred */
+			{
+				fprintf(stderr, "select failed\n");
+				break;
+			}
+		}
+
+		if (listener->CheckFileDescriptor(listener) != TRUE)
+		{
+			fprintf(stderr, "Failed to check FreeRDP file descriptor\n");
+			break;
+		}
+	}
+
+	listener->Close(listener);
+
+	return 0;
+}
+
+int xrdp_listen_set_startup_params(xrdpListener* self, struct xrdp_startup_params* startup_params)
+{
+	return 0;
+}
+
+#endif
