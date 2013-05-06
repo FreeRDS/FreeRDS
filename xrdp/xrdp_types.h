@@ -301,20 +301,20 @@ struct xrdp_wm
 typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_process xrdpProcess;
 
+#if 0
 /* rdp process */
 struct xrdp_process
 {
 	int status;
 	struct trans* server_trans; /* in tcp server mode */
 	tbus self_term_event;
-	xrdpListener* lis_layer; /* owner */
 	struct xrdp_session* session;
 	/* create these when up and running */
 	struct xrdp_wm* wm;
-	//int app_sck;
 	tbus done_event;
 	int session_id;
 };
+#endif
 
 /* region */
 struct xrdp_region

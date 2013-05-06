@@ -69,7 +69,7 @@ int APP_CC xrdp_cache_remove_os_bitmap(struct xrdp_cache* self, int rdpindex);
 struct xrdp_os_bitmap_item* APP_CC xrdp_cache_get_os_bitmap(struct xrdp_cache* self, int rdpindex);
 
 /* xrdp_wm.c */
-struct xrdp_wm* APP_CC xrdp_wm_create(struct xrdp_process* owner, struct xrdp_client_info* client_info);
+struct xrdp_wm* APP_CC xrdp_wm_create(xrdpProcess* owner, struct xrdp_client_info* client_info);
 void APP_CC xrdp_wm_delete(struct xrdp_wm* self);
 int APP_CC xrdp_wm_send_palette(struct xrdp_wm* self);
 int APP_CC xrdp_wm_send_bell(struct xrdp_wm* self);
@@ -101,9 +101,15 @@ int APP_CC xrdp_wm_check_wait_objs(struct xrdp_wm* self);
 int APP_CC xrdp_wm_set_login_mode(struct xrdp_wm* self, int login_mode);
 
 /* xrdp_process.c */
-struct xrdp_process* APP_CC xrdp_process_create(xrdpListener* owner, tbus done_event);
-void APP_CC xrdp_process_delete(struct xrdp_process* self);
-int APP_CC xrdp_process_main_loop(struct xrdp_process* self);
+xrdpProcess* APP_CC xrdp_process_create(xrdpListener* owner, tbus done_event);
+void APP_CC xrdp_process_delete(xrdpProcess* self);
+int APP_CC xrdp_process_get_status(xrdpProcess* self);
+tbus APP_CC xrdp_process_get_term_event(xrdpProcess* self);
+struct xrdp_session* APP_CC xrdp_process_get_session(xrdpProcess* self);
+int APP_CC xrdp_process_get_session_id(xrdpProcess* self);
+struct xrdp_wm* APP_CC xrdp_process_get_wm(xrdpProcess* self);
+void APP_CC xrdp_process_set_transport(xrdpProcess* self, struct trans* transport);
+int APP_CC xrdp_process_main_loop(xrdpProcess* self);
 
 /* xrdp_listen.c */
 xrdpListener* APP_CC xrdp_listen_create(void);

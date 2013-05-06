@@ -441,16 +441,16 @@ xrdp_mm_setup_mod2(struct xrdp_mm *self)
 	rv = 1; /* failure */
 	g_memset(text, 0, sizeof(text));
 
-	if (!g_is_wait_obj_set(self->wm->pro_layer->self_term_event))
+	if (!g_is_wait_obj_set(xrdp_process_get_term_event(self->wm->pro_layer)))
 	{
 		if (self->mod->mod_start(self->mod, self->wm->screen->width, self->wm->screen->height,
 				self->wm->screen->bpp) != 0)
 		{
-			g_set_wait_obj(self->wm->pro_layer->self_term_event); /* kill session */
+			g_set_wait_obj(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
 		}
 	}
 
-	if (!g_is_wait_obj_set(self->wm->pro_layer->self_term_event))
+	if (!g_is_wait_obj_set(xrdp_process_get_term_event(self->wm->pro_layer)))
 	{
 		if (self->display > 0)
 		{
@@ -479,12 +479,12 @@ xrdp_mm_setup_mod2(struct xrdp_mm *self)
 					}
 				} else
 				{
-					g_set_wait_obj(self->wm->pro_layer->self_term_event); /* kill session */
+					g_set_wait_obj(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
 				}
 		}
 	}
 
-	if (!g_is_wait_obj_set(self->wm->pro_layer->self_term_event))
+	if (!g_is_wait_obj_set(xrdp_process_get_term_event(self->wm->pro_layer)))
 	{
 		/* this adds the port to the end of the list, it will already be in
 		 the list as -1

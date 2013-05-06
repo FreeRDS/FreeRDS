@@ -118,15 +118,15 @@ static int xrdp_listen_add_pro(xrdpListener *self, xrdpProcess *process)
 static int xrdp_listen_delete_done_pro(xrdpListener *self)
 {
 	int i;
-	xrdpProcess *pro;
+	xrdpProcess* pro;
 
 	for (i = self->process_list->count - 1; i >= 0; i--)
 	{
-		pro = (xrdpProcess *) list_get_item(self->process_list, i);
+		pro = (xrdpProcess*) list_get_item(self->process_list, i);
 
 		if (pro != 0)
 		{
-			if (pro->status < 0)
+			if (xrdp_process_get_status(pro) < 0)
 			{
 				xrdp_process_delete(pro);
 				list_remove_item(self->process_list, i);
@@ -263,7 +263,7 @@ static int xrdp_listen_fork(xrdpListener *self, struct trans *server_trans)
 		self->listen_trans = 0;
 		/* new connect instance */
 		process = xrdp_process_create(self, 0);
-		process->server_trans = server_trans;
+		xrdp_process_set_transport(process, server_trans);
 		g_process = process;
 		xrdp_process_run(0);
 		xrdp_process_delete(process);
@@ -296,7 +296,7 @@ int xrdp_listen_conn_in(struct trans *self, struct trans *new_self)
 	if (xrdp_listen_add_pro(lis, process) == 0)
 	{
 		/* start thread */
-		process->server_trans = new_self;
+		xrdp_process_set_transport(process, new_self);
 		g_process = process;
 		tc_thread_create(xrdp_process_run, 0);
 		tc_sem_dec(g_process_sem); /* this will wait */

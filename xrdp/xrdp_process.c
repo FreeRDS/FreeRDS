@@ -20,18 +20,30 @@
 
 #include "xrdp.h"
 
+struct xrdp_process
+{
+	int status;
+	struct trans* server_trans; /* in tcp server mode */
+	tbus self_term_event;
+	struct xrdp_session* session;
+	/* create these when up and running */
+	struct xrdp_wm* wm;
+	tbus done_event;
+	int session_id;
+};
+
 static int g_session_id = 0;
 
 /*****************************************************************************/
 /* always called from xrdp_listen thread */
 xrdpProcess* xrdp_process_create(xrdpListener *owner, tbus done_event)
 {
-	xrdpProcess *self;
-	char event_name[256];
 	int pid;
+	xrdpProcess* self;
+	char event_name[256];
 
-	self = (xrdpProcess *) g_malloc(sizeof(xrdpProcess), 1);
-	self->lis_layer = owner;
+	self = (xrdpProcess*) g_malloc(sizeof(xrdpProcess), 1);
+
 	self->done_event = done_event;
 	g_session_id++;
 	self->session_id = g_session_id;
@@ -122,6 +134,36 @@ static int xrdp_process_data_in(struct trans *self)
 	}
 
 	return 0;
+}
+
+int APP_CC xrdp_process_get_status(xrdpProcess* self)
+{
+	return self->status;
+}
+
+struct xrdp_session* APP_CC xrdp_process_get_session(xrdpProcess* self)
+{
+	return self->session;
+}
+
+int APP_CC xrdp_process_get_session_id(xrdpProcess* self)
+{
+	return self->session_id;
+}
+
+struct xrdp_wm* APP_CC xrdp_process_get_wm(xrdpProcess* self)
+{
+	return self->wm;
+}
+
+tbus APP_CC xrdp_process_get_term_event(xrdpProcess* self)
+{
+	return self->self_term_event;
+}
+
+void APP_CC xrdp_process_set_transport(xrdpProcess* self, struct trans* transport)
+{
+	self->server_trans = transport;
 }
 
 /*****************************************************************************/

@@ -23,182 +23,174 @@
 
 /*****************************************************************************/
 struct xrdp_wm *APP_CC
-xrdp_wm_create(struct xrdp_process *owner,
-               struct xrdp_client_info *client_info)
+xrdp_wm_create(xrdpProcess* owner, struct xrdp_client_info *client_info)
 {
-    struct xrdp_wm *self = (struct xrdp_wm *)NULL;
-    char event_name[256];
-    int pid = 0;
+	struct xrdp_wm *self = (struct xrdp_wm *) NULL;
+	char event_name[256];
+	int pid = 0;
 
-    /* initialize (zero out) local variables: */
-    g_memset(event_name, 0, sizeof(char) * 256);
+	/* initialize (zero out) local variables: */
+	g_memset(event_name, 0, sizeof(char) * 256);
 
-    self = (struct xrdp_wm *)g_malloc(sizeof(struct xrdp_wm), 1);
-    self->client_info = client_info;
-    self->screen = xrdp_bitmap_create(client_info->width,
-                                      client_info->height,
-                                      client_info->bpp,
-                                      WND_TYPE_SCREEN, self);
-    self->screen->wm = self;
-    self->pro_layer = owner;
-    self->session = owner->session;
-    pid = g_getpid();
-    g_snprintf(event_name, 255, "xrdp_%8.8x_wm_login_mode_event_%8.8x",
-               pid, owner->session_id);
-    log_message(LOG_LEVEL_DEBUG,event_name);
-    self->login_mode_event = g_create_wait_obj(event_name);
-    self->painter = xrdp_painter_create(self, self->session);
-    self->cache = xrdp_cache_create(self, self->session, self->client_info);
-    self->log = list_create();
-    self->log->auto_free = 1;
-    self->mm = xrdp_mm_create(self);
-    self->default_font = xrdp_font_create(self);
-    /* this will use built in keymap or load from file */
-    get_keymaps(self->session->client_info->keylayout, &(self->keymap));
-    xrdp_wm_set_login_mode(self, 0);
-    self->target_surface = self->screen;
-    self->current_surface_index = 0xffff; /* screen */
-    return self;
+	self = (struct xrdp_wm *) g_malloc(sizeof(struct xrdp_wm), 1);
+	self->client_info = client_info;
+	self->screen = xrdp_bitmap_create(client_info->width, client_info->height, client_info->bpp, WND_TYPE_SCREEN, self);
+	self->screen->wm = self;
+	self->pro_layer = owner;
+	self->session = xrdp_process_get_session(owner);
+	pid = g_getpid();
+	g_snprintf(event_name, 255, "xrdp_%8.8x_wm_login_mode_event_%8.8x", pid, xrdp_process_get_session_id(owner));
+	log_message(LOG_LEVEL_DEBUG, event_name);
+	self->login_mode_event = g_create_wait_obj(event_name);
+	self->painter = xrdp_painter_create(self, self->session);
+	self->cache = xrdp_cache_create(self, self->session, self->client_info);
+	self->log = list_create();
+	self->log->auto_free = 1;
+	self->mm = xrdp_mm_create(self);
+	self->default_font = xrdp_font_create(self);
+	/* this will use built in keymap or load from file */
+	get_keymaps(self->session->client_info->keylayout, &(self->keymap));
+	xrdp_wm_set_login_mode(self, 0);
+	self->target_surface = self->screen;
+	self->current_surface_index = 0xffff; /* screen */
+	return self;
 }
 
 /*****************************************************************************/
 void APP_CC
 xrdp_wm_delete(struct xrdp_wm *self)
 {
-    if (self == 0)
-    {
-        return;
-    }
+	if (self == 0)
+	{
+		return;
+	}
 
-    xrdp_mm_delete(self->mm);
-    xrdp_cache_delete(self->cache);
-    xrdp_painter_delete(self->painter);
-    xrdp_bitmap_delete(self->screen);
-    /* free the log */
-    list_delete(self->log);
-    /* free default font */
-    xrdp_font_delete(self->default_font);
-    g_delete_wait_obj(self->login_mode_event);
-    /* free self */
-    g_free(self);
+	xrdp_mm_delete(self->mm);
+	xrdp_cache_delete(self->cache);
+	xrdp_painter_delete(self->painter);
+	xrdp_bitmap_delete(self->screen);
+	/* free the log */
+	list_delete(self->log);
+	/* free default font */
+	xrdp_font_delete(self->default_font);
+	g_delete_wait_obj(self->login_mode_event);
+	/* free self */
+	g_free(self);
 }
 
 /*****************************************************************************/
 int APP_CC
 xrdp_wm_send_palette(struct xrdp_wm *self)
 {
-    return libxrdp_send_palette(self->session, self->palette);
+	return libxrdp_send_palette(self->session, self->palette);
 }
 
 /*****************************************************************************/
 int APP_CC
 xrdp_wm_send_bell(struct xrdp_wm *self)
 {
-    return libxrdp_send_bell(self->session);
+	return libxrdp_send_bell(self->session);
 }
 
 /*****************************************************************************/
 int APP_CC
-xrdp_wm_send_bitmap(struct xrdp_wm *self, struct xrdp_bitmap *bitmap,
-                    int x, int y, int cx, int cy)
+xrdp_wm_send_bitmap(struct xrdp_wm *self, struct xrdp_bitmap *bitmap, int x, int y, int cx, int cy)
 {
-    return libxrdp_send_bitmap(self->session, bitmap->width, bitmap->height,
-                               bitmap->bpp, bitmap->data, x, y, cx, cy);
+	return libxrdp_send_bitmap(self->session, bitmap->width, bitmap->height, bitmap->bpp, bitmap->data, x, y, cx,
+			cy);
 }
 
 /*****************************************************************************/
 int APP_CC
 xrdp_wm_set_focused(struct xrdp_wm *self, struct xrdp_bitmap *wnd)
 {
-    struct xrdp_bitmap *focus_out_control;
-    struct xrdp_bitmap *focus_in_control;
+	struct xrdp_bitmap *focus_out_control;
+	struct xrdp_bitmap *focus_in_control;
 
-    if (self == 0)
-    {
-        return 0;
-    }
+	if (self == 0)
+	{
+		return 0;
+	}
 
-    if (self->focused_window == wnd)
-    {
-        return 0;
-    }
+	if (self->focused_window == wnd)
+	{
+		return 0;
+	}
 
-    focus_out_control = 0;
-    focus_in_control = 0;
+	focus_out_control = 0;
+	focus_in_control = 0;
 
-    if (self->focused_window != 0)
-    {
-        xrdp_bitmap_set_focus(self->focused_window, 0);
-        focus_out_control = self->focused_window->focused_control;
-    }
+	if (self->focused_window != 0)
+	{
+		xrdp_bitmap_set_focus(self->focused_window, 0);
+		focus_out_control = self->focused_window->focused_control;
+	}
 
-    self->focused_window = wnd;
+	self->focused_window = wnd;
 
-    if (self->focused_window != 0)
-    {
-        xrdp_bitmap_set_focus(self->focused_window, 1);
-        focus_in_control = self->focused_window->focused_control;
-    }
+	if (self->focused_window != 0)
+	{
+		xrdp_bitmap_set_focus(self->focused_window, 1);
+		focus_in_control = self->focused_window->focused_control;
+	}
 
-    xrdp_bitmap_invalidate(focus_out_control, 0);
-    xrdp_bitmap_invalidate(focus_in_control, 0);
-    return 0;
+	xrdp_bitmap_invalidate(focus_out_control, 0);
+	xrdp_bitmap_invalidate(focus_in_control, 0);
+	return 0;
 }
 
 /******************************************************************************/
 static int APP_CC
 xrdp_wm_get_pixel(char *data, int x, int y, int width, int bpp)
 {
-    int start;
-    int shift;
+	int start;
+	int shift;
 
-    if (bpp == 1)
-    {
-        width = (width + 7) / 8;
-        start = (y * width) + x / 8;
-        shift = x % 8;
-        return (data[start] & (0x80 >> shift)) != 0;
-    }
-    else if (bpp == 4)
-    {
-        width = (width + 1) / 2;
-        start = y * width + x / 2;
-        shift = x % 2;
+	if (bpp == 1)
+	{
+		width = (width + 7) / 8;
+		start = (y * width) + x / 8;
+		shift = x % 8;
+		return (data[start] & (0x80 >> shift)) != 0;
+	} else
+		if (bpp == 4)
+		{
+			width = (width + 1) / 2;
+			start = y * width + x / 2;
+			shift = x % 2;
 
-        if (shift == 0)
-        {
-            return (data[start] & 0xf0) >> 4;
-        }
-        else
-        {
-            return data[start] & 0x0f;
-        }
-    }
+			if (shift == 0)
+			{
+				return (data[start] & 0xf0) >> 4;
+			} else
+			{
+				return data[start] & 0x0f;
+			}
+		}
 
-    return 0;
+	return 0;
 }
 
 /*****************************************************************************/
 int APP_CC
-xrdp_wm_pointer(struct xrdp_wm *self, char *data, char *mask, int x, int y,
-                int bpp)
+xrdp_wm_pointer(struct xrdp_wm *self, char *data, char *mask, int x, int y, int bpp)
 {
-    int bytes;
-    struct xrdp_pointer_item pointer_item;
+	int bytes;
+	struct xrdp_pointer_item pointer_item;
 
-    if (bpp == 0)
-    {
-        bpp = 24;
-    }
-    bytes = ((bpp + 7) / 8) * 32 * 32;
-    g_memset(&pointer_item, 0, sizeof(struct xrdp_pointer_item));
-    pointer_item.x = x;
-    pointer_item.y = y;
-    pointer_item.bpp = bpp;
-    g_memcpy(pointer_item.data, data, bytes);
-    g_memcpy(pointer_item.mask, mask, 32 * 32 / 8);
-    self->screen->pointer = xrdp_cache_add_pointer(self->cache, &pointer_item);
-    return 0;
+	if (bpp == 0)
+	{
+		bpp = 24;
+	}
+	bytes = ((bpp + 7) / 8) * 32 * 32;
+	g_memset(&pointer_item, 0, sizeof(struct xrdp_pointer_item));
+	pointer_item.x = x;
+	pointer_item.y = y;
+	pointer_item.bpp = bpp;
+	g_memcpy(pointer_item.data, data, bytes);
+	g_memcpy(pointer_item.mask, mask, 32 * 32 / 8);
+	self->screen->pointer = xrdp_cache_add_pointer(self->cache, &pointer_item);
+	return 0;
 }
 
 /*****************************************************************************/
@@ -1593,7 +1585,7 @@ callback(long id, int msg, long param1, long param2, long param3, long param4)
         return 0;
     }
 
-    wm = ((struct xrdp_process *)id)->wm;
+    wm = xrdp_process_get_wm((struct xrdp_process*) id);
 
     if (wm == 0)
     {

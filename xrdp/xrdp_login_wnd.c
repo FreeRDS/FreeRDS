@@ -178,7 +178,7 @@ xrdp_wm_cancel_clicked(struct xrdp_bitmap *wnd)
 		{
 			if (wnd->wm->pro_layer != 0)
 			{
-				g_set_wait_obj(wnd->wm->pro_layer->self_term_event);
+				g_set_wait_obj(xrdp_process_get_term_event(wnd->wm->pro_layer));
 			}
 		}
 	}
