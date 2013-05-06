@@ -20,7 +20,7 @@
 
 #include "xrdp.h"
 
-//#define NEW_XRDP_PROCESS	1
+#define NEW_XRDP_PROCESS	1
 
 #ifndef NEW_XRDP_PROCESS
 
@@ -29,9 +29,9 @@ struct xrdp_process
 	int status;
 	struct trans* server_trans; /* in tcp server mode */
 	tbus self_term_event;
-	struct xrdp_session* session;
+	xrdpSession* session;
 	/* create these when up and running */
-	struct xrdp_wm* wm;
+	xrdpWm* wm;
 	tbus done_event;
 	int session_id;
 };
@@ -151,7 +151,7 @@ int APP_CC xrdp_process_get_status(xrdpProcess* self)
 	return self->status;
 }
 
-struct xrdp_session* APP_CC xrdp_process_get_session(xrdpProcess* self)
+xrdpSession* APP_CC xrdp_process_get_session(xrdpProcess* self)
 {
 	return self->session;
 }
@@ -161,7 +161,7 @@ int APP_CC xrdp_process_get_session_id(xrdpProcess* self)
 	return self->session_id;
 }
 
-struct xrdp_wm* APP_CC xrdp_process_get_wm(xrdpProcess* self)
+xrdpWm* APP_CC xrdp_process_get_wm(xrdpProcess* self)
 {
 	return self->wm;
 }
@@ -278,17 +278,35 @@ void* xrdp_process_main_thread(void* arg)
 
 struct xrdp_process
 {
+	rdpContext context;
+
 	int status;
 	int session_id;
+	BOOL activated;
 	tbus done_event;
 	tbus term_event;
-	struct xrdp_wm* wm;
-	struct xrdp_session* session;
+	xrdpWm* wm;
+	xrdpSession* session;
+	xrdpClientInfo* info;
 };
 
 void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
 {
+	context->info = (xrdpClientInfo*) malloc(sizeof(xrdpClientInfo));
 
+	if (context->info)
+	{
+		ZeroMemory(context->info, sizeof(xrdpClientInfo));
+		context->info->size = sizeof(xrdpClientInfo);
+	}
+
+	context->session = (xrdpSession*) malloc(sizeof(xrdpSession));
+
+	if (context->session)
+	{
+		ZeroMemory(context->session, sizeof(xrdpSession));
+		context->session->client_info = context->info;
+	}
 }
 
 void xrdp_peer_context_free(freerdp_peer* client, xrdpProcess* context)
@@ -333,9 +351,9 @@ tbus xrdp_process_get_term_event(xrdpProcess* self)
 	return 0;
 }
 
-struct xrdp_session* xrdp_process_get_session(xrdpProcess* self)
+xrdpSession* xrdp_process_get_session(xrdpProcess* self)
 {
-	return NULL;
+	return self->session;
 }
 
 int xrdp_process_get_session_id(xrdpProcess* self)
@@ -343,7 +361,7 @@ int xrdp_process_get_session_id(xrdpProcess* self)
 	return 0;
 }
 
-struct xrdp_wm* xrdp_process_get_wm(xrdpProcess* self)
+xrdpWm* xrdp_process_get_wm(xrdpProcess* self)
 {
 	return NULL;
 }
@@ -388,7 +406,10 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 
 BOOL xrdp_peer_activate(freerdp_peer* client)
 {
-	//xrdpProcess* xfp = (xrdpProcess*) client->context;
+	xrdpProcess* xfp = (xrdpProcess*) client->context;
+
+	xfp->activated = TRUE;
+
 	return TRUE;
 }
 
@@ -444,7 +465,14 @@ void* xrdp_process_main_thread(void* arg)
 	int fds;
 	int max_fds;
 	int rcount;
+	int wcount;
+	int robjc;
+	int wobjc;
+	long robjs[32];
+	long wobjs[32];
+	int itimeout;
 	void* rfds[32];
+	void* wfds[32];
 	fd_set rfds_set;
 	xrdpProcess* xfp;
 	rdpSettings* settings;
@@ -452,6 +480,7 @@ void* xrdp_process_main_thread(void* arg)
 	freerdp_peer* client = (freerdp_peer*) arg;
 
 	ZeroMemory(rfds, sizeof(rfds));
+	ZeroMemory(wfds, sizeof(wfds));
 	ZeroMemory(&timeout, sizeof(struct timeval));
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
@@ -461,23 +490,45 @@ void* xrdp_process_main_thread(void* arg)
 
 	xrdp_generate_certificate(settings);
 
-	//settings->RemoteFxCodec = TRUE;
-	//settings->ColorDepth = 32;
-
 	client->Capabilities = xrdp_peer_capabilities;
 	client->PostConnect = xrdp_peer_post_connect;
 	client->Activate = xrdp_peer_activate;
 
 	client->Initialize(client);
 
+	xfp->info->bpp = settings->ColorDepth;
+	xfp->info->width = settings->DesktopWidth;
+	xfp->info->height = settings->DesktopHeight;
+	xfp->info->bitmap_cache_version = 2;
+	xfp->info->build = settings->ClientBuild;
+	xfp->info->keylayout = settings->KeyboardLayout;
+
+	if (settings->Username)
+		strcpy(xfp->info->username, settings->Username);
+
+	if (settings->Password)
+		strcpy(xfp->info->password, settings->Password);
+
+	xfp->wm = xrdp_wm_create(xfp, xfp->info);
+
 	while (1)
 	{
 		rcount = 0;
+		wcount = 0;
+
+		robjc = 0;
+		wobjc = 0;
+		itimeout = 0;
 
 		if (client->GetFileDescriptor(client, rfds, &rcount) != TRUE)
 		{
 			fprintf(stderr, "Failed to get FreeRDP file descriptor\n");
 			break;
+		}
+
+		if (xfp->activated)
+		{
+			xrdp_wm_get_wait_objs(xfp->wm, robjs, &robjc, wobjs, &wobjc, &itimeout);
 		}
 
 		max_fds = 0;
@@ -486,6 +537,16 @@ void* xrdp_process_main_thread(void* arg)
 		for (i = 0; i < rcount; i++)
 		{
 			fds = (int)(long)(rfds[i]);
+
+			if (fds > max_fds)
+				max_fds = fds;
+
+			FD_SET(fds, &rfds_set);
+		}
+
+		for (i = 0; i < robjc; i++)
+		{
+			fds = robjs[i];
 
 			if (fds > max_fds)
 				max_fds = fds;
@@ -516,6 +577,14 @@ void* xrdp_process_main_thread(void* arg)
 		{
 			fprintf(stderr, "Failed to check freerdp file descriptor\n");
 			break;
+		}
+
+		if (xfp->activated)
+		{
+			if (xrdp_wm_check_wait_objs(xfp->wm) != 0)
+			{
+				break;
+			}
 		}
 	}
 

@@ -21,7 +21,7 @@
 
 /*****************************************************************************/
 struct xrdp_fastpath *APP_CC
-xrdp_fastpath_create(struct xrdp_session *session)
+xrdp_fastpath_create(xrdpSession *session)
 {
 	struct xrdp_fastpath *self;
 

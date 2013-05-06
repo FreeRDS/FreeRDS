@@ -977,7 +977,7 @@ static void APP_CC
 xrdp_sec_in_mcs_data(struct xrdp_sec *self)
 {
 	struct stream *s = (struct stream *) NULL;
-	struct xrdp_client_info *client_info = (struct xrdp_client_info *) NULL;
+	xrdpClientInfo *client_info = (xrdpClientInfo *) NULL;
 	int index = 0;
 	char c = 0;
 

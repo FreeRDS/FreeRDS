@@ -63,7 +63,7 @@ static char w_char[] =
 
 /*****************************************************************************/
 struct xrdp_font *APP_CC
-xrdp_font_create(struct xrdp_wm *wm)
+xrdp_font_create(xrdpWm *wm)
 {
 	struct xrdp_font *self;
 	struct stream *s;

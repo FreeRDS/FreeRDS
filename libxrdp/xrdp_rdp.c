@@ -60,7 +60,7 @@ static tui8 g_unknown2[8] =
 
 /*****************************************************************************/
 static int APP_CC
-xrdp_rdp_read_config(struct xrdp_client_info *client_info)
+xrdp_rdp_read_config(xrdpClientInfo *client_info)
 {
 	int index = 0;
 	struct list *items = (struct list *) NULL;
@@ -195,7 +195,7 @@ xrdp_rdp_detect_cpu(void)
 
 /*****************************************************************************/
 struct xrdp_rdp *APP_CC
-xrdp_rdp_create(struct xrdp_session *session, struct trans *trans)
+xrdp_rdp_create(xrdpSession *session, struct trans *trans)
 {
 	struct xrdp_rdp *self = (struct xrdp_rdp *) NULL;
 	int bytes;

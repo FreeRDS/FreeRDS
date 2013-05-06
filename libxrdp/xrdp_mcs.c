@@ -704,7 +704,7 @@ static int APP_CC
 xrdp_mcs_call_callback(struct xrdp_mcs *self)
 {
 	int rv;
-	struct xrdp_session *session;
+	xrdpSession *session;
 
 	rv = 0;
 	/* if there is a callback, call it here */

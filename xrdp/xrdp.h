@@ -53,10 +53,10 @@ tbus APP_CC g_get_sync_event(void);
 void APP_CC g_process_waiting_function(void);
 
 /* xrdp_cache.c */
-struct xrdp_cache* APP_CC xrdp_cache_create(struct xrdp_wm* owner, struct xrdp_session* session,
-		struct xrdp_client_info* client_info);
+struct xrdp_cache* APP_CC xrdp_cache_create(xrdpWm* owner, xrdpSession* session,
+		xrdpClientInfo* client_info);
 void APP_CC xrdp_cache_delete(struct xrdp_cache* self);
-int APP_CC xrdp_cache_reset(struct xrdp_cache* self, struct xrdp_client_info* client_info);
+int APP_CC xrdp_cache_reset(struct xrdp_cache* self, xrdpClientInfo* client_info);
 int APP_CC xrdp_cache_add_bitmap(struct xrdp_cache* self, struct xrdp_bitmap* bitmap, int hints);
 int APP_CC xrdp_cache_add_palette(struct xrdp_cache* self, int* palette);
 int APP_CC xrdp_cache_add_char(struct xrdp_cache* self, struct xrdp_font_char* font_item);
@@ -68,36 +68,36 @@ int APP_CC xrdp_cache_remove_os_bitmap(struct xrdp_cache* self, int rdpindex);
 struct xrdp_os_bitmap_item* APP_CC xrdp_cache_get_os_bitmap(struct xrdp_cache* self, int rdpindex);
 
 /* xrdp_wm.c */
-struct xrdp_wm* APP_CC xrdp_wm_create(xrdpProcess* owner, struct xrdp_client_info* client_info);
-void APP_CC xrdp_wm_delete(struct xrdp_wm* self);
-int APP_CC xrdp_wm_send_palette(struct xrdp_wm* self);
-int APP_CC xrdp_wm_send_bell(struct xrdp_wm* self);
-int APP_CC xrdp_wm_load_static_colors_plus(struct xrdp_wm* self, char* autorun_name);
-int APP_CC xrdp_wm_load_static_pointers(struct xrdp_wm* self);
-int APP_CC xrdp_wm_init(struct xrdp_wm* self);
-int APP_CC xrdp_wm_send_bitmap(struct xrdp_wm* self, struct xrdp_bitmap* bitmap,
+xrdpWm* APP_CC xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo* client_info);
+void APP_CC xrdp_wm_delete(xrdpWm* self);
+int APP_CC xrdp_wm_send_palette(xrdpWm* self);
+int APP_CC xrdp_wm_send_bell(xrdpWm* self);
+int APP_CC xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name);
+int APP_CC xrdp_wm_load_static_pointers(xrdpWm* self);
+int APP_CC xrdp_wm_init(xrdpWm* self);
+int APP_CC xrdp_wm_send_bitmap(xrdpWm* self, struct xrdp_bitmap* bitmap,
 		int x, int y, int cx, int cy);
-int APP_CC xrdp_wm_set_pointer(struct xrdp_wm* self, int cache_idx);
-int APP_CC xrdp_wm_set_focused(struct xrdp_wm* self, struct xrdp_bitmap* wnd);
-int APP_CC xrdp_wm_get_vis_region(struct xrdp_wm* self, struct xrdp_bitmap* bitmap,
+int APP_CC xrdp_wm_set_pointer(xrdpWm* self, int cache_idx);
+int APP_CC xrdp_wm_set_focused(xrdpWm* self, struct xrdp_bitmap* wnd);
+int APP_CC xrdp_wm_get_vis_region(xrdpWm* self, struct xrdp_bitmap* bitmap,
 		int x, int y, int cx, int cy,
 		struct xrdp_region* region, int clip_children);
-int APP_CC xrdp_wm_mouse_move(struct xrdp_wm* self, int x, int y);
-int APP_CC xrdp_wm_mouse_click(struct xrdp_wm* self, int x, int y, int but, int down);
-int APP_CC xrdp_wm_key(struct xrdp_wm* self, int device_flags, int scan_code);
-int APP_CC xrdp_wm_key_sync(struct xrdp_wm* self, int device_flags, int key_flags);
-int APP_CC xrdp_wm_pu(struct xrdp_wm* self, struct xrdp_bitmap* control);
-int APP_CC xrdp_wm_send_pointer(struct xrdp_wm* self, int cache_idx,
+int APP_CC xrdp_wm_mouse_move(xrdpWm* self, int x, int y);
+int APP_CC xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down);
+int APP_CC xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code);
+int APP_CC xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
+int APP_CC xrdp_wm_pu(xrdpWm* self, struct xrdp_bitmap* control);
+int APP_CC xrdp_wm_send_pointer(xrdpWm* self, int cache_idx,
 		char* data, char* mask, int x, int y, int bpp);
-int APP_CC xrdp_wm_pointer(struct xrdp_wm* self, char* data, char* mask, int x, int y,
+int APP_CC xrdp_wm_pointer(xrdpWm* self, char* data, char* mask, int x, int y,
 		int bpp);
 int callback(long id, int msg, long param1, long param2, long param3, long param4);
-int APP_CC xrdp_wm_delete_all_childs(struct xrdp_wm* self);
-int APP_CC xrdp_wm_log_msg(struct xrdp_wm* self, char* msg);
-int APP_CC xrdp_wm_get_wait_objs(struct xrdp_wm* self, tbus* robjs, int* rc,
+int APP_CC xrdp_wm_delete_all_childs(xrdpWm* self);
+int APP_CC xrdp_wm_log_msg(xrdpWm* self, char* msg);
+int APP_CC xrdp_wm_get_wait_objs(xrdpWm* self, tbus* robjs, int* rc,
 		tbus* wobjs, int* wc, int* timeout);
-int APP_CC xrdp_wm_check_wait_objs(struct xrdp_wm* self);
-int APP_CC xrdp_wm_set_login_mode(struct xrdp_wm* self, int login_mode);
+int APP_CC xrdp_wm_check_wait_objs(xrdpWm* self);
+int APP_CC xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
 
 /* xrdp_process.c */
 xrdpProcess* APP_CC xrdp_process_create(xrdpListener* owner, tbus done_event);
@@ -105,9 +105,9 @@ xrdpProcess* APP_CC xrdp_process_create_ex(xrdpListener* owner, tbus done_event,
 void APP_CC xrdp_process_delete(xrdpProcess* self);
 int APP_CC xrdp_process_get_status(xrdpProcess* self);
 tbus APP_CC xrdp_process_get_term_event(xrdpProcess* self);
-struct xrdp_session* APP_CC xrdp_process_get_session(xrdpProcess* self);
+xrdpSession* APP_CC xrdp_process_get_session(xrdpProcess* self);
 int APP_CC xrdp_process_get_session_id(xrdpProcess* self);
-struct xrdp_wm* APP_CC xrdp_process_get_wm(xrdpProcess* self);
+xrdpWm* APP_CC xrdp_process_get_wm(xrdpProcess* self);
 void APP_CC xrdp_process_set_transport(xrdpProcess* self, struct trans* transport);
 int APP_CC xrdp_process_main_loop(xrdpProcess* self);
 void* xrdp_process_main_thread(void* arg);
@@ -119,7 +119,7 @@ int APP_CC xrdp_listen_main_loop(xrdpListener* self);
 int APP_CC xrdp_listen_set_startup_params(xrdpListener *self, struct xrdp_startup_params* startup_params);
 
 /* xrdp_region.c */
-struct xrdp_region* APP_CC xrdp_region_create(struct xrdp_wm* wm);
+struct xrdp_region* APP_CC xrdp_region_create(xrdpWm* wm);
 void APP_CC xrdp_region_delete(struct xrdp_region* self);
 int APP_CC xrdp_region_add_rect(struct xrdp_region* self, struct xrdp_rect* rect);
 int APP_CC xrdp_region_insert_rect(struct xrdp_region* self, int i, int left,
@@ -128,8 +128,8 @@ int APP_CC xrdp_region_subtract_rect(struct xrdp_region* self, struct xrdp_rect*
 int APP_CC xrdp_region_get_rect(struct xrdp_region* self, int index, struct xrdp_rect* rect);
 
 /* xrdp_bitmap.c */
-struct xrdp_bitmap* APP_CC xrdp_bitmap_create(int width, int height, int bpp, int type, struct xrdp_wm* wm);
-struct xrdp_bitmap* APP_CC xrdp_bitmap_create_with_data(int width, int height, int bpp, char* data, struct xrdp_wm* wm);
+struct xrdp_bitmap* APP_CC xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm* wm);
+struct xrdp_bitmap* APP_CC xrdp_bitmap_create_with_data(int width, int height, int bpp, char* data, xrdpWm* wm);
 void APP_CC xrdp_bitmap_delete(struct xrdp_bitmap* self);
 struct xrdp_bitmap* APP_CC xrdp_bitmap_get_child_by_id(struct xrdp_bitmap* self, int id);
 int APP_CC xrdp_bitmap_set_focus(struct xrdp_bitmap* self, int focused);
@@ -153,7 +153,7 @@ int APP_CC xrdp_bitmap_get_screen_clip(struct xrdp_bitmap* self,
 		struct xrdp_painter* painter, struct xrdp_rect* rect, int* dx, int* dy);
 
 /* xrdp_painter.c */
-struct xrdp_painter* APP_CC xrdp_painter_create(struct xrdp_wm* wm, struct xrdp_session* session);
+struct xrdp_painter* APP_CC xrdp_painter_create(xrdpWm* wm, xrdpSession* session);
 void APP_CC xrdp_painter_delete(struct xrdp_painter* self);
 int APP_CC wm_painter_set_target(struct xrdp_painter* self);
 int APP_CC xrdp_painter_begin_update(struct xrdp_painter* self);
@@ -189,7 +189,7 @@ int APP_CC xrdp_painter_line(struct xrdp_painter* self,
 		int x1, int y1, int x2, int y2);
 
 /* xrdp_font.c */
-struct xrdp_font* APP_CC xrdp_font_create(struct xrdp_wm* wm);
+struct xrdp_font* APP_CC xrdp_font_create(xrdpWm* wm);
 void APP_CC xrdp_font_delete(struct xrdp_font* self);
 int APP_CC xrdp_font_item_compare(struct xrdp_font_char* font1,
 		struct xrdp_font_char* font2);
@@ -219,7 +219,7 @@ twchar APP_CC get_char_from_scan_code(int device_flags, int scan_code, int* keys
 int APP_CC get_keymaps(int keylayout, struct xrdp_keymap* keymap);
 
 /* xrdp_login_wnd.c */
-int APP_CC xrdp_login_wnd_create(struct xrdp_wm* self);
+int APP_CC xrdp_login_wnd_create(xrdpWm* self);
 
 /* xrdp_bitmap_compress.c */
 int APP_CC xrdp_bitmap_compress(char* in_data, int width, int height,
@@ -227,7 +227,7 @@ int APP_CC xrdp_bitmap_compress(char* in_data, int width, int height,
 		int start_line, struct stream* temp, int e);
 
 /* xrdp_mm.c */
-struct xrdp_mm* APP_CC xrdp_mm_create(struct xrdp_wm* owner);
+struct xrdp_mm* APP_CC xrdp_mm_create(xrdpWm* owner);
 void APP_CC xrdp_mm_delete(struct xrdp_mm* self);
 int APP_CC xrdp_mm_connect(struct xrdp_mm* self);
 int APP_CC xrdp_mm_process_channel_data(struct xrdp_mm* self, tbus param1, tbus param2,
@@ -267,7 +267,7 @@ int DEFAULT_CC server_draw_text(struct xrdp_mod* mod, int font,
 		int box_right, int box_bottom,
 		int x, int y, char* data, int data_len);
 int DEFAULT_CC server_reset(struct xrdp_mod* mod, int width, int height, int bpp);
-int DEFAULT_CC is_channel_allowed(struct xrdp_wm* wm, int channel_id);
+int DEFAULT_CC is_channel_allowed(xrdpWm* wm, int channel_id);
 int DEFAULT_CC server_query_channel(struct xrdp_mod* mod, int index, char* channel_name, int* channel_flags);
 int DEFAULT_CC server_get_channel_id(struct xrdp_mod* mod, char* name);
 int DEFAULT_CC server_send_to_channel(struct xrdp_mod* mod, int channel_id,

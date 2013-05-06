@@ -79,7 +79,7 @@ static int g_crc_table[256] =
 
 /*****************************************************************************/
 struct xrdp_bitmap *APP_CC
-xrdp_bitmap_create(int width, int height, int bpp, int type, struct xrdp_wm *wm)
+xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm *wm)
 {
 	struct xrdp_bitmap *self = (struct xrdp_bitmap *) NULL;
 	int Bpp = 0;
@@ -130,7 +130,7 @@ xrdp_bitmap_create(int width, int height, int bpp, int type, struct xrdp_wm *wm)
 
 /*****************************************************************************/
 struct xrdp_bitmap *APP_CC
-xrdp_bitmap_create_with_data(int width, int height, int bpp, char *data, struct xrdp_wm *wm)
+xrdp_bitmap_create_with_data(int width, int height, int bpp, char *data, xrdpWm *wm)
 {
 	struct xrdp_bitmap *self = (struct xrdp_bitmap *) NULL;
 

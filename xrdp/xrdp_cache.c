@@ -23,7 +23,7 @@
 
 /*****************************************************************************/
 struct xrdp_cache *APP_CC
-xrdp_cache_create(struct xrdp_wm *owner, struct xrdp_session *session, struct xrdp_client_info *client_info)
+xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo *client_info)
 {
 	struct xrdp_cache *self;
 
@@ -87,10 +87,10 @@ xrdp_cache_delete(struct xrdp_cache *self)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_cache_reset(struct xrdp_cache *self, struct xrdp_client_info *client_info)
+xrdp_cache_reset(struct xrdp_cache *self, xrdpClientInfo *client_info)
 {
-	struct xrdp_wm *wm;
-	struct xrdp_session *session;
+	xrdpWm *wm;
+	xrdpSession *session;
 	int i;
 	int j;
 

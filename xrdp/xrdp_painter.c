@@ -22,7 +22,7 @@
 
 /*****************************************************************************/
 struct xrdp_painter *APP_CC
-xrdp_painter_create(struct xrdp_wm *wm, struct xrdp_session *session)
+xrdp_painter_create(xrdpWm *wm, xrdpSession *session)
 {
 	struct xrdp_painter *self;
 

@@ -25,6 +25,12 @@
 #include "config.h"
 #endif
 
+/* alsa defined in xrdp_types.h */
+typedef struct xrdp_wm xrdpWm;
+typedef struct xrdp_session xrdpSession;
+typedef struct xrdp_listener xrdpListener;
+typedef struct xrdp_process xrdpProcess;
+
 #include "arch.h"
 #include "parse.h"
 #include "trans.h"
@@ -111,11 +117,11 @@ struct xrdp_channel
 /* rdp */
 struct xrdp_rdp
 {
-	struct xrdp_session* session;
+	xrdpSession* session;
 	struct xrdp_sec* sec_layer;
 	int share_id;
 	int mcs_channel;
-	struct xrdp_client_info client_info;
+	xrdpClientInfo client_info;
 	struct xrdp_mppc_enc* mppc_enc;
 	void* rfx_enc;
 };
@@ -204,8 +210,8 @@ struct xrdp_orders
 {
 	struct stream* out_s;
 	struct xrdp_rdp* rdp_layer;
-	struct xrdp_session* session;
-	struct xrdp_wm* wm;
+	xrdpSession* session;
+	xrdpWm* wm;
 
 	char* order_count_ptr; /* pointer to count, set when sending */
 	int order_count;
@@ -305,7 +311,7 @@ xrdp_sec_disconnect(struct xrdp_sec* self);
 
 /* xrdp_rdp.c */
 struct xrdp_rdp* APP_CC
-xrdp_rdp_create(struct xrdp_session* session, struct trans* trans);
+xrdp_rdp_create(xrdpSession* session, struct trans* trans);
 void APP_CC
 xrdp_rdp_delete(struct xrdp_rdp* self);
 int APP_CC
@@ -336,7 +342,7 @@ xrdp_rdp_send_deactive(struct xrdp_rdp* self);
 
 /* xrdp_orders.c */
 struct xrdp_orders* APP_CC
-xrdp_orders_create(struct xrdp_session* session,
+xrdp_orders_create(xrdpSession* session,
 		struct xrdp_rdp* rdp_layer);
 void APP_CC
 xrdp_orders_delete(struct xrdp_orders* self);

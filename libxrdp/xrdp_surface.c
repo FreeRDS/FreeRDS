@@ -22,7 +22,7 @@
 
 /*****************************************************************************/
 struct xrdp_surface *APP_CC
-xrdp_surface_create(struct xrdp_session *session, struct xrdp_fastpath *fastpath)
+xrdp_surface_create(xrdpSession *session, struct xrdp_fastpath *fastpath)
 {
 	struct xrdp_surface *self;
 

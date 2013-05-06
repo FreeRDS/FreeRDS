@@ -21,6 +21,8 @@
 #if !defined(XRDP_CLIENT_INFO_H)
 #define XRDP_CLIENT_INFO_H
 
+typedef struct xrdp_client_info xrdpClientInfo;
+
 struct xrdp_client_info
 {
 	int size; /* bytes for this structure */

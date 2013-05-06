@@ -36,7 +36,7 @@
 
 /*****************************************************************************/
 struct xrdp_orders *APP_CC
-xrdp_orders_create(struct xrdp_session *session, struct xrdp_rdp *rdp_layer)
+xrdp_orders_create(xrdpSession *session, struct xrdp_rdp *rdp_layer)
 {
 	struct xrdp_orders *self;
 
@@ -2197,7 +2197,7 @@ xrdp_orders_send_bitmap3(struct xrdp_orders *self, int width, int height, int bp
 	int quality;
 	struct stream *xr_s; /* xrdp stream */
 	struct stream *temp_s; /* xrdp stream */
-	struct xrdp_client_info *ci;
+	xrdpClientInfo *ci;
 #if defined(XRDP_FREERDP1)
 	STREAM *fr_s; /* FreeRDP stream */
 	RFX_CONTEXT *context;

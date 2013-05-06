@@ -113,5 +113,5 @@ struct mod
 	char port[256];
 	tbus sck_obj;
 	int shift_state;
-	struct xrdp_client_info client_info;
+	xrdpClientInfo client_info;
 };

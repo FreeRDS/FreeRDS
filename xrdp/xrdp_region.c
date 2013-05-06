@@ -22,7 +22,7 @@
 
 /*****************************************************************************/
 struct xrdp_region *APP_CC
-xrdp_region_create(struct xrdp_wm *wm)
+xrdp_region_create(xrdpWm *wm)
 {
 	struct xrdp_region *self;
 

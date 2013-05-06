@@ -21,7 +21,7 @@
 #include "xrdp.h"
 #include "log.h"
 
-//#define NEW_XRDP_LISTENER	1
+#define NEW_XRDP_LISTENER	1
 
 #ifndef NEW_XRDP_LISTENER
 
@@ -336,7 +336,6 @@ int xrdp_listen_main_loop(xrdpListener *self)
 		return 1;
 	}
 
-	/*Create socket*/
 	error = trans_listen_address(self->listen_trans, port, address);
 
 	if (error == 0)
@@ -455,7 +454,8 @@ int xrdp_listen_main_loop(xrdpListener *self)
 				xrdp_listen_delete_done_pro(self);
 			}
 		}
-	} else
+	}
+	else
 	{
 		log_message(LOG_LEVEL_ERROR, "xrdp_listen_main_loop: listen error, possible port "
 			"already in use");
@@ -485,8 +485,6 @@ void xrdp_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 	process = xrdp_process_create_ex(NULL, 0, (void*) client);
 
 	thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) xrdp_process_main_thread, client, 0, NULL);
-
-	return 0;
 }
 
 xrdpListener* xrdp_listen_create(void)

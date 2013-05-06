@@ -18,6 +18,11 @@
  * types
  */
 
+typedef struct xrdp_wm xrdpWm;
+typedef struct xrdp_session xrdpSession;
+typedef struct xrdp_listener xrdpListener;
+typedef struct xrdp_process xrdpProcess;
+
 #define DEFAULT_STRING_LEN 255
 #define LOG_WINDOW_CHAR_PER_LINE 60
 
@@ -25,6 +30,7 @@
 
 #define MAX_NR_CHANNELS 16
 #define MAX_CHANNEL_NAME 16
+
 /* lib */
 struct xrdp_mod
 {
@@ -98,7 +104,7 @@ struct xrdp_mod
 	 functions above */
 	/* common */
 	long handle; /* pointer to self as int */
-	long wm; /* struct xrdp_wm* */
+	long wm; /* xrdpWm* */
 	long painter;
 	int sck;
 };
@@ -164,8 +170,8 @@ struct xrdp_brush_item
 /* differnce caches */
 struct xrdp_cache
 {
-	struct xrdp_wm* wm; /* owner */
-	struct xrdp_session* session;
+	xrdpWm* wm; /* owner */
+	xrdpSession* session;
 	/* palette */
 	int palette_stamp;
 	struct xrdp_palette_item palette_items[6];
@@ -196,7 +202,7 @@ struct xrdp_cache
 
 struct xrdp_mm
 {
-	struct xrdp_wm* wm; /* owner */
+	xrdpWm* wm; /* owner */
 	int connected_state; /* true if connected to sesman else false */
 	struct trans* sesman_trans; /* connection to sesman */
 	int sesman_trans_up; /* true once connected to sesman */
@@ -233,11 +239,12 @@ struct xrdp_keymap
 };
 
 /* the window manager */
+
 struct xrdp_wm
 {
 	struct xrdp_process* pro_layer; /* owner */
 	struct xrdp_bitmap* screen;
-	struct xrdp_session* session;
+	xrdpSession* session;
 	struct xrdp_painter* painter;
 	struct xrdp_cache* cache;
 	int palette[256];
@@ -280,7 +287,7 @@ struct xrdp_wm
 	int scroll_lock;
 	int num_lock;
 	/* client info */
-	struct xrdp_client_info* client_info;
+	xrdpClientInfo* client_info;
 	/* session log */
 	struct list* log;
 	struct xrdp_bitmap* log_wnd;
@@ -298,13 +305,10 @@ struct xrdp_wm
 	char pamerrortxt[256];
 };
 
-typedef struct xrdp_listener xrdpListener;
-typedef struct xrdp_process xrdpProcess;
-
 /* region */
 struct xrdp_region
 {
-	struct xrdp_wm* wm; /* owner */
+	xrdpWm* wm; /* owner */
 	struct list* rects;
 };
 
@@ -320,8 +324,8 @@ struct xrdp_painter
 	int mix_mode;
 	struct xrdp_brush brush;
 	struct xrdp_pen pen;
-	struct xrdp_session* session;
-	struct xrdp_wm* wm; /* owner */
+	xrdpSession* session;
+	xrdpWm* wm; /* owner */
 	struct xrdp_font* font;
 };
 
@@ -333,7 +337,7 @@ struct xrdp_bitmap
 	int type;
 	int width;
 	int height;
-	struct xrdp_wm* wm;
+	xrdpWm* wm;
 	/* msg 1 = click 2 = mouse move 3 = paint 100 = modal result */
 	/* see messages in constants.h */
 	int (*notify)(struct xrdp_bitmap* wnd, struct xrdp_bitmap* sender, int msg, long param1, long param2);
@@ -398,7 +402,7 @@ struct xrdp_bitmap
 /* font */
 struct xrdp_font
 {
-	struct xrdp_wm* wm;
+	xrdpWm* wm;
 	struct xrdp_font_char font_items[NUM_FONTS];
 	char name[32];
 	int size;

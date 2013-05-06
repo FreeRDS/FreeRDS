@@ -96,7 +96,7 @@ xrdp_wm_popup_notify(struct xrdp_bitmap *wnd,
 
 /*****************************************************************************/
 int APP_CC
-xrdp_wm_delete_all_childs(struct xrdp_wm *self)
+xrdp_wm_delete_all_childs(xrdpWm *self)
 {
 	int index;
 	struct xrdp_bitmap *b;
@@ -193,7 +193,7 @@ xrdp_wm_ok_clicked(struct xrdp_bitmap *wnd)
 	struct xrdp_bitmap *combo;
 	struct xrdp_bitmap *label;
 	struct xrdp_bitmap *edit;
-	struct xrdp_wm *wm;
+	xrdpWm *wm;
 	struct xrdp_mod_data *mod_data;
 	int i;
 
@@ -240,7 +240,7 @@ xrdp_wm_ok_clicked(struct xrdp_bitmap *wnd)
 
 /******************************************************************************/
 static int APP_CC
-xrdp_wm_show_edits(struct xrdp_wm *self, struct xrdp_bitmap *combo)
+xrdp_wm_show_edits(xrdpWm *self, struct xrdp_bitmap *combo)
 {
 	int count;
 	int index;
@@ -415,7 +415,7 @@ xrdp_wm_login_notify(struct xrdp_bitmap *wnd, struct xrdp_bitmap *sender, int ms
 
 /******************************************************************************/
 static int APP_CC
-xrdp_wm_login_fill_in_combo(struct xrdp_wm *self, struct xrdp_bitmap *b)
+xrdp_wm_login_fill_in_combo(xrdpWm *self, struct xrdp_bitmap *b)
 {
 	struct list *sections;
 	struct list *section_names;
@@ -491,7 +491,7 @@ xrdp_wm_login_fill_in_combo(struct xrdp_wm *self, struct xrdp_bitmap *b)
 
 /******************************************************************************/
 int APP_CC
-xrdp_login_wnd_create(struct xrdp_wm *self)
+xrdp_login_wnd_create(xrdpWm *self)
 {
 	struct xrdp_bitmap *but;
 	struct xrdp_bitmap *combo;

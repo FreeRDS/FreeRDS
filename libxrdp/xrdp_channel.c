@@ -126,7 +126,7 @@ xrdp_channel_send(struct xrdp_channel *self, struct stream *s, int channel_id, i
 static int APP_CC
 xrdp_channel_call_callback(struct xrdp_channel *self, struct stream *s, int channel_id, int total_data_len, int flags)
 {
-	struct xrdp_session *session;
+	xrdpSession *session;
 	int rv;
 	int size;
 

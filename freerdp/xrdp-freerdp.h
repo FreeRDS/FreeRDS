@@ -147,7 +147,7 @@ struct mod
 	char username[256];
 	char password[256];
 
-	struct xrdp_client_info client_info;
+	xrdpClientInfo client_info;
 
 	struct rdp_freerdp* inst;
 	struct bitmap_item bitmap_cache[4][4096];

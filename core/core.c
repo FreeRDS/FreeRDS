@@ -21,99 +21,99 @@
 
 #include "core.h"
 
-struct xrdp_session* libxrdp_init(tbus id, struct trans* trans)
+xrdpSession* libxrdp_init(tbus id, struct trans* trans)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_exit(struct xrdp_session* session)
+int libxrdp_exit(xrdpSession* session)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_disconnect(struct xrdp_session* session)
+int libxrdp_disconnect(xrdpSession* session)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_process_incomming(struct xrdp_session* session)
+int libxrdp_process_incomming(xrdpSession* session)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_process_data(struct xrdp_session* session)
+int libxrdp_process_data(xrdpSession* session)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_send_palette(struct xrdp_session* session, int* palette)
+int libxrdp_send_palette(xrdpSession* session, int* palette)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_send_bell(struct xrdp_session* session)
+int libxrdp_send_bell(xrdpSession* session)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_send_bitmap(struct xrdp_session* session, int width, int height, int bpp, char* data, int x, int y, int cx, int cy)
+int libxrdp_send_bitmap(xrdpSession* session, int width, int height, int bpp, char* data, int x, int y, int cx, int cy)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_send_pointer(struct xrdp_session* session, int cache_idx, char* data, char* mask, int x, int y, int bpp)
+int libxrdp_send_pointer(xrdpSession* session, int cache_idx, char* data, char* mask, int x, int y, int bpp)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_set_pointer(struct xrdp_session* session, int cache_idx)
+int libxrdp_set_pointer(xrdpSession* session, int cache_idx)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_init(struct xrdp_session* session)
+int libxrdp_orders_init(xrdpSession* session)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_send(struct xrdp_session* session)
+int libxrdp_orders_send(xrdpSession* session)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_force_send(struct xrdp_session* session)
+int libxrdp_orders_force_send(xrdpSession* session)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_rect(struct xrdp_session* session, int x, int y,
+int libxrdp_orders_rect(xrdpSession* session, int x, int y,
 		int cx, int cy, int color, struct xrdp_rect* rect)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_screen_blt(struct xrdp_session* session, int x, int y,
+int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
 		int cx, int cy, int srcx, int srcy, int rop, struct xrdp_rect* rect)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_pat_blt(struct xrdp_session* session, int x, int y,
+int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
 		struct xrdp_brush* brush, struct xrdp_rect* rect)
 {
@@ -121,14 +121,14 @@ int libxrdp_orders_pat_blt(struct xrdp_session* session, int x, int y,
 	return 0;
 }
 
-int libxrdp_orders_dest_blt(struct xrdp_session* session,
+int libxrdp_orders_dest_blt(xrdpSession* session,
 		int x, int y, int cx, int cy, int rop, struct xrdp_rect* rect)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_line(struct xrdp_session* session, int mix_mode,
+int libxrdp_orders_line(xrdpSession* session, int mix_mode,
 		int startx, int starty,	int endx, int endy, int rop,
 		int bg_color, struct xrdp_pen* pen, struct xrdp_rect* rect)
 {
@@ -136,7 +136,7 @@ int libxrdp_orders_line(struct xrdp_session* session, int mix_mode,
 	return 0;
 }
 
-int libxrdp_orders_mem_blt(struct xrdp_session* session, int cache_id,
+int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
 		int srcy, int cache_idx, struct xrdp_rect* rect)
 {
@@ -144,7 +144,7 @@ int libxrdp_orders_mem_blt(struct xrdp_session* session, int cache_id,
 	return 0;
 }
 
-int libxrdp_orders_text(struct xrdp_session* session,
+int libxrdp_orders_text(xrdpSession* session,
 		int font, int flags, int mixmode,
 		int fg_color, int bg_color,
 		int clip_left, int clip_top,
@@ -158,13 +158,13 @@ int libxrdp_orders_text(struct xrdp_session* session,
 	return 0;
 }
 
-int libxrdp_orders_send_palette(struct xrdp_session* session, int* palette, int cache_id)
+int libxrdp_orders_send_palette(xrdpSession* session, int* palette, int cache_id)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_send_raw_bitmap(struct xrdp_session* session,
+int libxrdp_orders_send_raw_bitmap(xrdpSession* session,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx)
 {
@@ -172,7 +172,7 @@ int libxrdp_orders_send_raw_bitmap(struct xrdp_session* session,
 	return 0;
 }
 
-int libxrdp_orders_send_bitmap(struct xrdp_session* session,
+int libxrdp_orders_send_bitmap(xrdpSession* session,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx)
 {
@@ -180,121 +180,121 @@ int libxrdp_orders_send_bitmap(struct xrdp_session* session,
 	return 0;
 }
 
-int libxrdp_orders_send_font(struct xrdp_session* session,
+int libxrdp_orders_send_font(xrdpSession* session,
 		struct xrdp_font_char* font_char, int font_index, int char_index)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_reset(struct xrdp_session* session, int width, int height, int bpp)
+int libxrdp_reset(xrdpSession* session, int width, int height, int bpp)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_send_raw_bitmap2(struct xrdp_session* session,
+int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_send_bitmap2(struct xrdp_session* session,
+int libxrdp_orders_send_bitmap2(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_send_bitmap3(struct xrdp_session* session,
+int libxrdp_orders_send_bitmap3(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_query_channel(struct xrdp_session* session, int index,
+int libxrdp_query_channel(xrdpSession* session, int index,
 		char* channel_name, int* channel_flags)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_get_channel_id(struct xrdp_session* session, char* name)
+int libxrdp_get_channel_id(xrdpSession* session, char* name)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_send_to_channel(struct xrdp_session* session, int channel_id,
+int libxrdp_send_to_channel(xrdpSession* session, int channel_id,
 		char* data, int data_len, int total_data_len, int flags)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_send_brush(struct xrdp_session* session, int width, int height,
+int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
 		int bpp, int type, int size, char* data, int cache_id)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_send_create_os_surface(struct xrdp_session* session, int id,
+int libxrdp_orders_send_create_os_surface(xrdpSession* session, int id,
 		int width, int height, struct list* del_list)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_orders_send_switch_os_surface(struct xrdp_session* session, int id)
+int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_window_new_update(struct xrdp_session* session, int window_id,
+int libxrdp_window_new_update(xrdpSession* session, int window_id,
 		struct rail_window_state_order* window_state, int flags)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_window_delete(struct xrdp_session* session, int window_id)
+int libxrdp_window_delete(xrdpSession* session, int window_id)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_window_icon(struct xrdp_session* session, int window_id,
+int libxrdp_window_icon(xrdpSession* session, int window_id,
 		int cache_entry, int cache_id, struct rail_icon_info* icon_info, int flags)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_window_cached_icon(struct xrdp_session* session, int window_id,
+int libxrdp_window_cached_icon(xrdpSession* session, int window_id,
 		int cache_entry, int cache_id, int flags)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_notify_new_update(struct xrdp_session* session,
+int libxrdp_notify_new_update(xrdpSession* session,
 		int window_id, int notify_id, struct rail_notify_state_order* notify_state, int flags)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_notify_delete(struct xrdp_session* session, int window_id, int notify_id)
+int libxrdp_notify_delete(xrdpSession* session, int window_id, int notify_id)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_monitored_desktop(struct xrdp_session* session, struct rail_monitored_desktop_order* mdo, int flags)
+int libxrdp_monitored_desktop(xrdpSession* session, struct rail_monitored_desktop_order* mdo, int flags)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
