@@ -23,7 +23,7 @@
 
 #define THREAD_WAITING 100
 
-static struct xrdp_listen *g_listen = 0;
+static xrdpListener *g_listen = 0;
 static long g_threadid = 0; /* main threadid */
 
 static long g_sync_mutex = 0;

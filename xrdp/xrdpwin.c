@@ -20,13 +20,9 @@
 
 #include "xrdp.h"
 
-static struct xrdp_listen *g_listen = 0;
+static xrdpListener *g_listen = 0;
 static long g_threadid = 0; /* main threadid */
 
-#if defined(_WIN32)
-static SERVICE_STATUS_HANDLE g_ssh = 0;
-static SERVICE_STATUS g_service_status;
-#endif
 static long g_sync_mutex = 0;
 static long g_sync1_mutex = 0;
 static tbus g_term_event = 0;

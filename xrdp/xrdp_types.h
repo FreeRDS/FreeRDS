@@ -298,13 +298,16 @@ struct xrdp_wm
 	char pamerrortxt[256];
 };
 
+typedef struct xrdp_listener xrdpListener;
+typedef struct xrdp_process xrdpProcess;
+
 /* rdp process */
 struct xrdp_process
 {
 	int status;
 	struct trans* server_trans; /* in tcp server mode */
 	tbus self_term_event;
-	struct xrdp_listen* lis_layer; /* owner */
+	xrdpListener* lis_layer; /* owner */
 	struct xrdp_session* session;
 	/* create these when up and running */
 	struct xrdp_wm* wm;
@@ -314,7 +317,8 @@ struct xrdp_process
 };
 
 /* rdp listener */
-struct xrdp_listen
+
+struct xrdp_listener
 {
 	int status;
 	struct trans* listen_trans; /* in tcp listen mode */

@@ -24,13 +24,13 @@ static int g_session_id = 0;
 
 /*****************************************************************************/
 /* always called from xrdp_listen thread */
-struct xrdp_process* xrdp_process_create(struct xrdp_listen *owner, tbus done_event)
+xrdpProcess* xrdp_process_create(xrdpListener *owner, tbus done_event)
 {
-	struct xrdp_process *self;
+	xrdpProcess *self;
 	char event_name[256];
 	int pid;
 
-	self = (struct xrdp_process *) g_malloc(sizeof(struct xrdp_process), 1);
+	self = (xrdpProcess *) g_malloc(sizeof(xrdpProcess), 1);
 	self->lis_layer = owner;
 	self->done_event = done_event;
 	g_session_id++;
@@ -42,7 +42,7 @@ struct xrdp_process* xrdp_process_create(struct xrdp_listen *owner, tbus done_ev
 }
 
 /*****************************************************************************/
-void xrdp_process_delete(struct xrdp_process *self)
+void xrdp_process_delete(xrdpProcess *self)
 {
 	if (self == 0)
 	{
@@ -57,7 +57,7 @@ void xrdp_process_delete(struct xrdp_process *self)
 }
 
 /*****************************************************************************/
-static int xrdp_process_loop(struct xrdp_process *self)
+static int xrdp_process_loop(xrdpProcess *self)
 {
 	int rv;
 
@@ -89,7 +89,7 @@ static int xrdp_is_term(void)
 }
 
 /*****************************************************************************/
-static int xrdp_process_mod_end(struct xrdp_process *self)
+static int xrdp_process_mod_end(xrdpProcess *self)
 {
 	if (self->wm != 0)
 	{
@@ -111,10 +111,10 @@ static int xrdp_process_mod_end(struct xrdp_process *self)
 /*****************************************************************************/
 static int xrdp_process_data_in(struct trans *self)
 {
-	struct xrdp_process *pro;
+	xrdpProcess *pro;
 
 	DEBUG(("xrdp_process_data_in"));
-	pro = (struct xrdp_process *) (self->callback_data);
+	pro = (xrdpProcess *) (self->callback_data);
 
 	if (xrdp_process_loop(pro) != 0)
 	{
@@ -125,7 +125,7 @@ static int xrdp_process_data_in(struct trans *self)
 }
 
 /*****************************************************************************/
-int xrdp_process_main_loop(struct xrdp_process *self)
+int xrdp_process_main_loop(xrdpProcess *self)
 {
 	int robjs_count;
 	int wobjs_count;

@@ -24,10 +24,10 @@
 /* 'g_process' is protected by the semaphore 'g_process_sem'.  One thread sets
    g_process and waits for the other to process it */
 static tbus g_process_sem = 0;
-static struct xrdp_process *g_process = 0;
+static xrdpProcess *g_process = 0;
 
 /*****************************************************************************/
-static int xrdp_listen_create_pro_done(struct xrdp_listen *self)
+static int xrdp_listen_create_pro_done(xrdpListener *self)
 {
 	int pid;
 	char text[256];
@@ -45,11 +45,11 @@ static int xrdp_listen_create_pro_done(struct xrdp_listen *self)
 }
 
 /*****************************************************************************/
-struct xrdp_listen* xrdp_listen_create(void)
+xrdpListener* xrdp_listen_create(void)
 {
-	struct xrdp_listen *self;
+	xrdpListener *self;
 
-	self = (struct xrdp_listen *) g_malloc(sizeof(struct xrdp_listen), 1);
+	self = (xrdpListener *) g_malloc(sizeof(xrdpListener), 1);
 	xrdp_listen_create_pro_done(self);
 	self->process_list = list_create();
 
@@ -69,7 +69,7 @@ struct xrdp_listen* xrdp_listen_create(void)
 }
 
 /*****************************************************************************/
-void xrdp_listen_delete(struct xrdp_listen *self)
+void xrdp_listen_delete(xrdpListener *self)
 {
 	if (self->listen_trans != 0)
 	{
@@ -89,21 +89,21 @@ void xrdp_listen_delete(struct xrdp_listen *self)
 
 /*****************************************************************************/
 /* returns error */
-static int xrdp_listen_add_pro(struct xrdp_listen *self, struct xrdp_process *process)
+static int xrdp_listen_add_pro(xrdpListener *self, xrdpProcess *process)
 {
 	list_add_item(self->process_list, (tbus) process);
 	return 0;
 }
 
 /*****************************************************************************/
-static int xrdp_listen_delete_done_pro(struct xrdp_listen *self)
+static int xrdp_listen_delete_done_pro(xrdpListener *self)
 {
 	int i;
-	struct xrdp_process *pro;
+	xrdpProcess *pro;
 
 	for (i = self->process_list->count - 1; i >= 0; i--)
 	{
-		pro = (struct xrdp_process *) list_get_item(self->process_list, i);
+		pro = (xrdpProcess *) list_get_item(self->process_list, i);
 
 		if (pro != 0)
 		{
@@ -122,7 +122,7 @@ static int xrdp_listen_delete_done_pro(struct xrdp_listen *self)
 /* i can't get stupid in_val to work, hum using global var for now */
 THREAD_RV THREAD_CC xrdp_process_run(void *in_val)
 {
-	struct xrdp_process *process;
+	xrdpProcess *process;
 
 	DEBUG(("process started"));
 	process = g_process;
@@ -223,10 +223,10 @@ static int xrdp_listen_get_port_address(char *port, int port_bytes, char *addres
 }
 
 /*****************************************************************************/
-static int xrdp_listen_fork(struct xrdp_listen *self, struct trans *server_trans)
+static int xrdp_listen_fork(xrdpListener *self, struct trans *server_trans)
 {
 	int pid;
-	struct xrdp_process *process;
+	xrdpProcess *process;
 
 	pid = g_fork();
 
@@ -262,10 +262,10 @@ static int xrdp_listen_fork(struct xrdp_listen *self, struct trans *server_trans
 /* a new connection is coming in */
 int xrdp_listen_conn_in(struct trans *self, struct trans *new_self)
 {
-	struct xrdp_process *process;
-	struct xrdp_listen *lis;
+	xrdpProcess *process;
+	xrdpListener *lis;
 
-	lis = (struct xrdp_listen *) (self->callback_data);
+	lis = (xrdpListener *) (self->callback_data);
 
 	if (lis->startup_params->fork)
 	{
@@ -291,7 +291,7 @@ int xrdp_listen_conn_in(struct trans *self, struct trans *new_self)
 
 /*****************************************************************************/
 /* wait for incoming connections */
-int xrdp_listen_main_loop(struct xrdp_listen *self)
+int xrdp_listen_main_loop(xrdpListener *self)
 {
 	int error;
 	int robjs_count;

@@ -101,14 +101,14 @@ int APP_CC xrdp_wm_check_wait_objs(struct xrdp_wm* self);
 int APP_CC xrdp_wm_set_login_mode(struct xrdp_wm* self, int login_mode);
 
 /* xrdp_process.c */
-struct xrdp_process* APP_CC xrdp_process_create(struct xrdp_listen* owner, tbus done_event);
+struct xrdp_process* APP_CC xrdp_process_create(xrdpListener* owner, tbus done_event);
 void APP_CC xrdp_process_delete(struct xrdp_process* self);
 int APP_CC xrdp_process_main_loop(struct xrdp_process* self);
 
 /* xrdp_listen.c */
-struct xrdp_listen* APP_CC xrdp_listen_create(void);
-void APP_CC xrdp_listen_delete(struct xrdp_listen* self);
-int APP_CC xrdp_listen_main_loop(struct xrdp_listen* self);
+xrdpListener* APP_CC xrdp_listen_create(void);
+void APP_CC xrdp_listen_delete(xrdpListener* self);
+int APP_CC xrdp_listen_main_loop(xrdpListener* self);
 
 /* xrdp_region.c */
 struct xrdp_region* APP_CC xrdp_region_create(struct xrdp_wm* wm);
