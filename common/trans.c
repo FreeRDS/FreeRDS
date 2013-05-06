@@ -24,12 +24,11 @@
 #include "parse.h"
 
 /*****************************************************************************/
-struct trans *APP_CC
-trans_create(int mode, int in_size, int out_size)
+struct trans *APP_CC trans_create(int mode, int in_size, int out_size)
 {
-	struct trans *self = (struct trans *) NULL;
+	struct trans* self = (struct trans *) NULL;
 
-	self = (struct trans *) g_malloc(sizeof(struct trans), 1);
+	self = (struct trans*) g_malloc(sizeof(struct trans), 1);
 
 	if (self != NULL)
 	{
@@ -44,8 +43,7 @@ trans_create(int mode, int in_size, int out_size)
 }
 
 /*****************************************************************************/
-void APP_CC
-trans_delete(struct trans *self)
+void APP_CC trans_delete(struct trans* self)
 {
 	if (self == 0)
 	{
@@ -72,8 +70,7 @@ trans_delete(struct trans *self)
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_get_wait_objs(struct trans *self, tbus *objs, int *count)
+int APP_CC trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
 {
 	if (self == 0)
 	{
@@ -91,11 +88,10 @@ trans_get_wait_objs(struct trans *self, tbus *objs, int *count)
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_check_wait_objs(struct trans *self)
+int APP_CC trans_check_wait_objs(struct trans* self)
 {
 	tbus in_sck = (tbus) 0;
-	struct trans *in_trans = (struct trans *) NULL;
+	struct trans* in_trans = (struct trans*) NULL;
 	int read_bytes = 0;
 	int to_read = 0;
 	int read_so_far = 0;
@@ -151,7 +147,8 @@ trans_check_wait_objs(struct trans *self)
 				}
 			}
 		}
-	} else /* connected server or client (2 or 3) */
+	}
+	else /* connected server or client (2 or 3) */
 	{
 		if (g_tcp_can_recv(self->sck, 0))
 		{
@@ -202,8 +199,7 @@ trans_check_wait_objs(struct trans *self)
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_force_read_s(struct trans *self, struct stream *in_s, int size)
+int APP_CC trans_force_read_s(struct trans* self, struct stream* in_s, int size)
 {
 	int rcvd;
 
@@ -224,13 +220,16 @@ trans_force_read_s(struct trans *self, struct stream *in_s, int size)
 				{
 					/* check for term here */
 				}
-			} else
+			}
+			else
 			{
 				/* error */
 				self->status = TRANS_STATUS_DOWN;
 				return 1;
 			}
-		} else
+		}
+		else
+		{
 			if (rcvd == 0)
 			{
 				/* error */
@@ -241,21 +240,20 @@ trans_force_read_s(struct trans *self, struct stream *in_s, int size)
 				in_s->end += rcvd;
 				size -= rcvd;
 			}
+		}
 	}
 
 	return 0;
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_force_read(struct trans *self, int size)
+int APP_CC trans_force_read(struct trans* self, int size)
 {
 	return trans_force_read_s(self, self->in_s, size);
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_force_write_s(struct trans *self, struct stream *out_s)
+int APP_CC trans_force_write_s(struct trans* self, struct stream *out_s)
 {
 	int size;
 	int total;
@@ -303,15 +301,13 @@ trans_force_write_s(struct trans *self, struct stream *out_s)
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_force_write(struct trans *self)
+int APP_CC trans_force_write(struct trans* self)
 {
 	return trans_force_write_s(self, self->out_s);
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_connect(struct trans *self, const char *server, const char *port, int timeout)
+int APP_CC trans_connect(struct trans* self, const char *server, const char *port, int timeout)
 {
 	int error;
 
@@ -358,8 +354,7 @@ trans_connect(struct trans *self, const char *server, const char *port, int time
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_listen_address(struct trans *self, char *port, const char *address)
+int APP_CC trans_listen_address(struct trans* self, char *port, const char *address)
 {
 	if (self->sck != 0)
 	{
@@ -380,7 +375,9 @@ trans_listen_address(struct trans *self, char *port, const char *address)
 				return 0;
 			}
 		}
-	} else
+	}
+	else
+	{
 		if (self->mode == TRANS_MODE_UNIX) /* unix socket */
 		{
 			g_free(self->listen_filename);
@@ -402,20 +399,19 @@ trans_listen_address(struct trans *self, char *port, const char *address)
 				}
 			}
 		}
+	}
 
 	return 1;
 }
 
 /*****************************************************************************/
-int APP_CC
-trans_listen(struct trans *self, char *port)
+int APP_CC trans_listen(struct trans* self, char *port)
 {
 	return trans_listen_address(self, port, "0.0.0.0");
 }
 
 /*****************************************************************************/
-struct stream *APP_CC
-trans_get_in_s(struct trans *self)
+struct stream* APP_CC trans_get_in_s(struct trans* self)
 {
 	struct stream *rv = (struct stream *) NULL;
 
@@ -431,8 +427,7 @@ trans_get_in_s(struct trans *self)
 }
 
 /*****************************************************************************/
-struct stream *APP_CC
-trans_get_out_s(struct trans *self, int size)
+struct stream* APP_CC trans_get_out_s(struct trans *self, int size)
 {
 	struct stream *rv = (struct stream *) NULL;
 

@@ -40,7 +40,6 @@ set(${MODULE_PREFIX}_HEADERS
 	file.h
 	parse.h
 	defines.h
-	file_loc.h
 	log.h
 	os_calls.h
 	ssl_calls.h

@@ -50,6 +50,7 @@ xrdpProcess* xrdp_process_create(xrdpListener *owner, tbus done_event)
 	pid = g_getpid();
 	g_snprintf(event_name, 255, "xrdp_%8.8x_process_self_term_event_%8.8x", pid, self->session_id);
 	self->self_term_event = g_create_wait_obj(event_name);
+
 	return self;
 }
 
@@ -121,12 +122,12 @@ static int xrdp_process_mod_end(xrdpProcess *self)
 }
 
 /*****************************************************************************/
-static int xrdp_process_data_in(struct trans *self)
+static int xrdp_process_data_in(struct trans* self)
 {
 	xrdpProcess *pro;
 
 	DEBUG(("xrdp_process_data_in"));
-	pro = (xrdpProcess *) (self->callback_data);
+	pro = (xrdpProcess*) (self->callback_data);
 
 	if (xrdp_process_loop(pro) != 0)
 	{

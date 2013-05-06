@@ -54,32 +54,18 @@ struct trans
 	char* listen_filename;
 };
 
-struct trans* APP_CC
-trans_create(int mode, int in_size, int out_size);
-void APP_CC
-trans_delete(struct trans* self);
-int APP_CC
-trans_get_wait_objs(struct trans* self, tbus* objs, int* count);
-int APP_CC
-trans_check_wait_objs(struct trans* self);
-int APP_CC
-trans_force_read_s(struct trans* self, struct stream* in_s, int size);
-int APP_CC
-trans_force_write_s(struct trans* self, struct stream* out_s);
-int APP_CC
-trans_force_read(struct trans* self, int size);
-int APP_CC
-trans_force_write(struct trans* self);
-int APP_CC
-trans_connect(struct trans* self, const char* server, const char* port,
-		int timeout);
-int APP_CC
-trans_listen_address(struct trans* self, char* port, const char* address);
-int APP_CC
-trans_listen(struct trans* self, char* port);
-struct stream* APP_CC
-trans_get_in_s(struct trans* self);
-struct stream* APP_CC
-trans_get_out_s(struct trans* self, int size);
+struct trans* APP_CC trans_create(int mode, int in_size, int out_size);
+void APP_CC trans_delete(struct trans* self);
+int APP_CC trans_get_wait_objs(struct trans* self, tbus* objs, int* count);
+int APP_CC trans_check_wait_objs(struct trans* self);
+int APP_CC trans_force_read_s(struct trans* self, struct stream* in_s, int size);
+int APP_CC trans_force_write_s(struct trans* self, struct stream* out_s);
+int APP_CC trans_force_read(struct trans* self, int size);
+int APP_CC trans_force_write(struct trans* self);
+int APP_CC trans_connect(struct trans* self, const char* server, const char* port, int timeout);
+int APP_CC trans_listen_address(struct trans* self, char* port, const char* address);
+int APP_CC trans_listen(struct trans* self, char* port);
+struct stream* APP_CC trans_get_in_s(struct trans* self);
+struct stream* APP_CC trans_get_out_s(struct trans* self, int size);
 
 #endif

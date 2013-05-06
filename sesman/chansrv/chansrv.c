@@ -17,6 +17,10 @@
  * limitations under the License.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "arch.h"
 #include "os_calls.h"
 #include "thread_calls.h"
@@ -28,7 +32,6 @@
 #include "devredir.h"
 #include "list.h"
 #include "file.h"
-#include "file_loc.h"
 #include "log.h"
 #include "rail.h"
 #include "xcommon.h"
