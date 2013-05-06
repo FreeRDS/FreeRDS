@@ -19,6 +19,7 @@ set(MODULE_NAME "${XRDP_NG_MODULE}")
 set(MODULE_PREFIX "FREERDP_XRDP")
 
 include_directories("../common")
+include_directories("../../../winpr/tools/makecert")
 
 if(XRDP_NG_CORE)
 	include_directories("../core")
@@ -66,8 +67,15 @@ set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
+	MODULE winpr
+	MODULES winpr-thread winpr-synch winpr-file winpr-path winpr-sysinfo winpr-utils winpr-crt)
+
+set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
+	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE freerdp
 	MODULES freerdp-core)
+
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} winpr-makecert-tool)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

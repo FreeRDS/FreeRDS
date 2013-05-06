@@ -468,6 +468,8 @@ int xrdp_listen_main_loop(xrdpListener *self)
 #else
 
 #include <winpr/crt.h>
+#include <winpr/thread.h>
+
 #include <freerdp/listener.h>
 
 #include <errno.h>
@@ -476,7 +478,15 @@ int xrdp_listen_main_loop(xrdpListener *self)
 
 void xrdp_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 {
+	HANDLE thread;
+	xrdpProcess* process;
 	printf("xrdp_peer_accepted\n");
+
+	process = xrdp_process_create_ex(NULL, 0, (void*) client);
+
+	thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) xrdp_process_main_thread, client, 0, NULL);
+
+	return 0;
 }
 
 xrdpListener* xrdp_listen_create(void)

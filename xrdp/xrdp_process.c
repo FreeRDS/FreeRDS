@@ -20,6 +20,10 @@
 
 #include "xrdp.h"
 
+//#define NEW_XRDP_PROCESS	1
+
+#ifndef NEW_XRDP_PROCESS
+
 struct xrdp_process
 {
 	int status;
@@ -52,6 +56,11 @@ xrdpProcess* xrdp_process_create(xrdpListener *owner, tbus done_event)
 	self->self_term_event = g_create_wait_obj(event_name);
 
 	return self;
+}
+
+xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* transport)
+{
+	return xrdp_process_create(owner, done_event);
 }
 
 /*****************************************************************************/
@@ -245,3 +254,279 @@ int xrdp_process_main_loop(xrdpProcess *self)
 	g_set_wait_obj(self->done_event);
 	return 0;
 }
+
+void* xrdp_process_main_thread(void* arg)
+{
+	return NULL;
+}
+
+#else
+
+#include <winpr/crt.h>
+#include <winpr/file.h>
+#include <winpr/path.h>
+#include <winpr/thread.h>
+
+#include <freerdp/freerdp.h>
+#include <freerdp/listener.h>
+
+#include <errno.h>
+#include <sys/select.h>
+#include <sys/signal.h>
+
+#include "makecert.h"
+
+struct xrdp_process
+{
+	int status;
+	int session_id;
+	tbus done_event;
+	tbus term_event;
+	struct xrdp_wm* wm;
+	struct xrdp_session* session;
+};
+
+void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
+{
+
+}
+
+void xrdp_peer_context_free(freerdp_peer* client, xrdpProcess* context)
+{
+
+}
+
+xrdpProcess* xrdp_process_create(xrdpListener* owner, tbus done_event)
+{
+	return NULL;
+}
+
+xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* transport)
+{
+	xrdpProcess* xfp;
+	freerdp_peer* client;
+
+	client = (freerdp_peer*) transport;
+
+	client->context_size = sizeof(xrdpProcess);
+	client->ContextNew = (psPeerContextNew) xrdp_peer_context_new;
+	client->ContextFree = (psPeerContextFree) xrdp_peer_context_free;
+	freerdp_peer_context_new(client);
+
+	xfp = (xrdpProcess*) client->context;
+
+	return xfp;
+}
+
+void xrdp_process_delete(xrdpProcess* self)
+{
+
+}
+
+int xrdp_process_get_status(xrdpProcess* self)
+{
+	return 0;
+}
+
+tbus xrdp_process_get_term_event(xrdpProcess* self)
+{
+	return 0;
+}
+
+struct xrdp_session* xrdp_process_get_session(xrdpProcess* self)
+{
+	return NULL;
+}
+
+int xrdp_process_get_session_id(xrdpProcess* self)
+{
+	return 0;
+}
+
+struct xrdp_wm* xrdp_process_get_wm(xrdpProcess* self)
+{
+	return NULL;
+}
+
+void xrdp_process_set_transport(xrdpProcess* self, struct trans* transport)
+{
+
+}
+
+int xrdp_process_main_loop(xrdpProcess* self)
+{
+	return 0;
+}
+
+BOOL xrdp_peer_capabilities(freerdp_peer* client)
+{
+	return TRUE;
+}
+
+BOOL xrdp_peer_post_connect(freerdp_peer* client)
+{
+	xrdpProcess* xfp;
+
+	xfp = (xrdpProcess*) client->context;
+
+	fprintf(stderr, "Client %s is activated", client->hostname);
+	if (client->settings->AutoLogonEnabled)
+	{
+		fprintf(stderr, " and wants to login automatically as %s\\%s",
+			client->settings->Domain ? client->settings->Domain : "",
+			client->settings->Username);
+	}
+	fprintf(stderr, "\n");
+
+	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
+		client->settings->DesktopWidth, client->settings->DesktopHeight, client->settings->ColorDepth);
+
+	client->update->DesktopResize(client->update->context);
+
+	return TRUE;
+}
+
+BOOL xrdp_peer_activate(freerdp_peer* client)
+{
+	//xrdpProcess* xfp = (xrdpProcess*) client->context;
+	return TRUE;
+}
+
+const char* makecert_argv[4] =
+{
+	"makecert",
+	"-rdp",
+	"-live",
+	"-silent"
+};
+
+int makecert_argc = (sizeof(makecert_argv) / sizeof(char*));
+
+int xrdp_generate_certificate(rdpSettings* settings)
+{
+	char* server_file_path;
+	MAKECERT_CONTEXT* context;
+
+	server_file_path = GetCombinedPath(settings->ConfigPath, "server");
+
+	if (!PathFileExistsA(server_file_path))
+		CreateDirectoryA(server_file_path, 0);
+
+	settings->CertificateFile = GetCombinedPath(server_file_path, "server.crt");
+	settings->PrivateKeyFile = GetCombinedPath(server_file_path, "server.key");
+
+	if ((!PathFileExistsA(settings->CertificateFile)) ||
+			(!PathFileExistsA(settings->PrivateKeyFile)))
+	{
+		context = makecert_context_new();
+
+		makecert_context_process(context, makecert_argc, (char**) makecert_argv);
+
+		makecert_context_set_output_file_name(context, "server");
+
+		if (!PathFileExistsA(settings->CertificateFile))
+			makecert_context_output_certificate_file(context, server_file_path);
+
+		if (!PathFileExistsA(settings->PrivateKeyFile))
+			makecert_context_output_private_key_file(context, server_file_path);
+
+		makecert_context_free(context);
+	}
+
+	free(server_file_path);
+
+	return 0;
+}
+
+void* xrdp_process_main_thread(void* arg)
+{
+	int i;
+	int fds;
+	int max_fds;
+	int rcount;
+	void* rfds[32];
+	fd_set rfds_set;
+	xrdpProcess* xfp;
+	rdpSettings* settings;
+	struct timeval timeout;
+	freerdp_peer* client = (freerdp_peer*) arg;
+
+	ZeroMemory(rfds, sizeof(rfds));
+	ZeroMemory(&timeout, sizeof(struct timeval));
+
+	fprintf(stderr, "We've got a client %s\n", client->hostname);
+
+	xfp = (xrdpProcess*) client->context;
+	settings = client->settings;
+
+	xrdp_generate_certificate(settings);
+
+	//settings->RemoteFxCodec = TRUE;
+	//settings->ColorDepth = 32;
+
+	client->Capabilities = xrdp_peer_capabilities;
+	client->PostConnect = xrdp_peer_post_connect;
+	client->Activate = xrdp_peer_activate;
+
+	client->Initialize(client);
+
+	while (1)
+	{
+		rcount = 0;
+
+		if (client->GetFileDescriptor(client, rfds, &rcount) != TRUE)
+		{
+			fprintf(stderr, "Failed to get FreeRDP file descriptor\n");
+			break;
+		}
+
+		max_fds = 0;
+		FD_ZERO(&rfds_set);
+
+		for (i = 0; i < rcount; i++)
+		{
+			fds = (int)(long)(rfds[i]);
+
+			if (fds > max_fds)
+				max_fds = fds;
+
+			FD_SET(fds, &rfds_set);
+		}
+
+		if (max_fds == 0)
+			break;
+
+		timeout.tv_sec = 0;
+		timeout.tv_usec = 100;
+
+		if (select(max_fds + 1, &rfds_set, NULL, NULL, &timeout) == -1)
+		{
+			/* these are not really errors */
+			if (!((errno == EAGAIN) ||
+				(errno == EWOULDBLOCK) ||
+				(errno == EINPROGRESS) ||
+				(errno == EINTR))) /* signal occurred */
+			{
+				fprintf(stderr, "select failed\n");
+				break;
+			}
+		}
+
+		if (client->CheckFileDescriptor(client) != TRUE)
+		{
+			fprintf(stderr, "Failed to check freerdp file descriptor\n");
+			break;
+		}
+	}
+
+	fprintf(stderr, "Client %s disconnected.\n", client->hostname);
+
+	client->Disconnect(client);
+
+	freerdp_peer_context_free(client);
+	freerdp_peer_free(client);
+
+	return NULL;
+}
+
+#endif
