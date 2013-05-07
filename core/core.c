@@ -146,7 +146,28 @@ int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
 		struct xrdp_brush* brush, struct xrdp_rect* rect)
 {
+	PATBLT_ORDER patblt;
+	//rdpPrimaryUpdate* primary = session->client->update->primary;
+
 	printf("%s\n", __FUNCTION__);
+
+	patblt.nLeftRect = x;
+	patblt.nTopRect = y;
+	patblt.nWidth = cx;
+	patblt.nHeight = cy;
+	patblt.bRop = (UINT32) rop;
+	patblt.backColor = (UINT32) bg_color;
+	patblt.foreColor = (UINT32) fg_color;
+
+	patblt.brush.x = brush->x_orgin;
+	patblt.brush.y = brush->y_orgin;
+	patblt.brush.style = brush->style;
+	patblt.brush.data = patblt.brush.p8x8;
+	CopyMemory(patblt.brush.data, brush->pattern, 8);
+	patblt.brush.hatch = patblt.brush.data[0];
+
+	//primary->PatBlt(session->context, &patblt);
+
 	return 0;
 }
 
@@ -170,7 +191,7 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 		int srcy, int cache_idx, struct xrdp_rect* rect)
 {
 	MEMBLT_ORDER memblt;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	//rdpPrimaryUpdate* primary = session->client->update->primary;
 
 	printf("%s\n", __FUNCTION__);
 
@@ -184,7 +205,7 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	memblt.cacheId = cache_id;
 	memblt.cacheIndex = cache_idx;
 
-	primary->MemBlt(session->context, &memblt);
+	//primary->MemBlt(session->context, &memblt);
 
 	return 0;
 }
