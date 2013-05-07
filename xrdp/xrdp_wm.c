@@ -1471,9 +1471,7 @@ xrdp_wm_pu(xrdpWm *self, struct xrdp_bitmap *control)
 }
 
 /*****************************************************************************/
-static int APP_CC
-xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags,
-                            int x, int y)
+int APP_CC xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
 {
     DEBUG(("mouse event flags %4.4x x %d y %d", device_flags, x, y));
 
@@ -1577,48 +1575,47 @@ xrdp_wm_process_channel_data(xrdpWm *self,
 int DEFAULT_CC
 callback(long id, int msg, long param1, long param2, long param3, long param4)
 {
-    int rv;
-    xrdpWm *wm;
-    struct xrdp_rect rect;
+	int rv;
+	xrdpWm *wm;
+	struct xrdp_rect rect;
 
-    if (id == 0) /* "id" should be "struct xrdp_process*" as long */
-    {
-        return 0;
-    }
+	if (!id)
+	{
+		/* "id" should be "xrdpProcess*" as long */
+		return 0;
+	}
 
-    wm = xrdp_process_get_wm((struct xrdp_process*) id);
+	wm = xrdp_process_get_wm((xrdpProcess*) id);
 
-    if (wm == 0)
-    {
-        return 0;
-    }
+	if (!wm)
+		return 0;
 
-    rv = 0;
+	rv = 0;
 
-    switch (msg)
-    {
-        case 0: /* RDP_INPUT_SYNCHRONIZE */
-            rv = xrdp_wm_key_sync(wm, param3, param1);
-            break;
-        case 4: /* RDP_INPUT_SCANCODE */
-            rv = xrdp_wm_key(wm, param3, param1);
-            break;
-        case 0x8001: /* RDP_INPUT_MOUSE */
-            rv = xrdp_wm_process_input_mouse(wm, param3, param1, param2);
-            break;
-        case 0x4444: /* invalidate, this is not from RDP_DATA_PDU_INPUT */
-            /* like the rest, its from RDP_PDU_DATA with code 33 */
-            /* its the rdp client asking for a screen update */
-            MAKERECT(rect, param1, param2, param3, param4);
-            rv = xrdp_bitmap_invalidate(wm->screen, &rect);
-            break;
-        case 0x5555: /* called from xrdp_channel.c, channel data has come in,
-                    pass it to module if there is one */
-            rv = xrdp_wm_process_channel_data(wm, param1, param2, param3, param4);
-            break;
-    }
+	switch (msg)
+	{
+		case 0: /* RDP_INPUT_SYNCHRONIZE */
+			rv = xrdp_wm_key_sync(wm, param3, param1);
+			break;
+		case 4: /* RDP_INPUT_SCANCODE */
+			rv = xrdp_wm_key(wm, param3, param1);
+			break;
+		case 0x8001: /* RDP_INPUT_MOUSE */
+			rv = xrdp_wm_process_input_mouse(wm, param3, param1, param2);
+			break;
+		case 0x4444: /* invalidate, this is not from RDP_DATA_PDU_INPUT */
+			/* like the rest, its from RDP_PDU_DATA with code 33 */
+			/* its the rdp client asking for a screen update */
+			MAKERECT(rect, param1, param2, param3, param4);
+			rv = xrdp_bitmap_invalidate(wm->screen, &rect);
+			break;
+		case 0x5555: /* called from xrdp_channel.c, channel data has come in,
+		 pass it to module if there is one */
+			rv = xrdp_wm_process_channel_data(wm, param1, param2, param3, param4);
+			break;
+	}
 
-    return rv;
+	return rv;
 }
 
 /******************************************************************************/

@@ -84,6 +84,7 @@ int APP_CC xrdp_wm_get_vis_region(xrdpWm* self, struct xrdp_bitmap* bitmap,
 		struct xrdp_region* region, int clip_children);
 int APP_CC xrdp_wm_mouse_move(xrdpWm* self, int x, int y);
 int APP_CC xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down);
+int APP_CC xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y);
 int APP_CC xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code);
 int APP_CC xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
 int APP_CC xrdp_wm_pu(xrdpWm* self, struct xrdp_bitmap* control);

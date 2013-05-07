@@ -366,7 +366,7 @@ int xrdp_process_get_session_id(xrdpProcess* self)
 
 xrdpWm* xrdp_process_get_wm(xrdpProcess* self)
 {
-	return NULL;
+	return self->wm;
 }
 
 void xrdp_process_set_transport(xrdpProcess* self, struct trans* transport)
@@ -462,6 +462,43 @@ int xrdp_generate_certificate(rdpSettings* settings)
 	return 0;
 }
 
+void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
+{
+
+}
+
+void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
+{
+	xrdpProcess* xfp = (xrdpProcess*) input->context;
+	xrdp_wm_key(xfp->wm, flags, code);
+}
+
+void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
+{
+
+}
+
+void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
+{
+	xrdpProcess* xfp = (xrdpProcess*) input->context;
+	xrdp_wm_process_input_mouse(xfp->wm, flags, x, y);
+}
+
+void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
+{
+	xrdpProcess* xfp = (xrdpProcess*) input->context;
+	xrdp_wm_process_input_mouse(xfp->wm, flags, x, y);
+}
+
+void xrdp_input_register_callbacks(rdpInput* input)
+{
+	input->SynchronizeEvent = xrdp_input_synchronize_event;
+	input->KeyboardEvent = xrdp_input_keyboard_event;
+	input->UnicodeKeyboardEvent = xrdp_input_unicode_keyboard_event;
+	input->MouseEvent = xrdp_input_mouse_event;
+	input->ExtendedMouseEvent = xrdp_input_extended_mouse_event;
+}
+
 void* xrdp_process_main_thread(void* arg)
 {
 	int i;
@@ -478,6 +515,7 @@ void* xrdp_process_main_thread(void* arg)
 	void* wfds[32];
 	fd_set rfds_set;
 	xrdpProcess* xfp;
+	int bytesPerPixel;
 	rdpSettings* settings;
 	struct timeval timeout;
 	freerdp_peer* client = (freerdp_peer*) arg;
@@ -502,19 +540,21 @@ void* xrdp_process_main_thread(void* arg)
 	xfp->info->bpp = settings->ColorDepth;
 	xfp->info->width = settings->DesktopWidth;
 	xfp->info->height = settings->DesktopHeight;
-	xfp->info->bitmap_cache_version = 2;
 	xfp->info->build = settings->ClientBuild;
 	xfp->info->keylayout = settings->KeyboardLayout;
 
-	xfp->info->use_bitmap_comp = 0;
-	xfp->info->cache1_entries = 0;
-	xfp->info->cache1_size = 0;
-	xfp->info->cache2_entries = settings->BitmapCacheV2CellInfo[0].numEntries;
-	xfp->info->cache2_size = settings->BitmapCacheV2NumCells;
-	xfp->info->cache3_entries = 0;
-	xfp->info->cache3_size = 0;
+	bytesPerPixel = (xfp->info->bpp + 7) / 8;
+
+	xfp->info->cache1_entries = 600;
+	xfp->info->cache1_size = 256 * bytesPerPixel;
+	xfp->info->cache2_entries = 600;
+	xfp->info->cache2_size = 1024 * bytesPerPixel;
+	xfp->info->cache3_entries = 2000;
+	xfp->info->cache3_size = 4096 * bytesPerPixel;
+
+	xfp->info->use_bitmap_comp = 1;
+	xfp->info->bitmap_cache_version = 2;
 	xfp->info->bitmap_cache_persist_enable = 0;
-	xfp->info->bitmap_cache_version = settings->BitmapCacheVersion;
 	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
 
 	if (settings->Username)
@@ -524,6 +564,9 @@ void* xrdp_process_main_thread(void* arg)
 		strcpy(xfp->info->password, settings->Password);
 
 	xfp->wm = xrdp_wm_create(xfp, xfp->info);
+
+	xfp->session->callback = callback;
+	xrdp_input_register_callbacks(client->input);
 
 	while (1)
 	{

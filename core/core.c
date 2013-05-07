@@ -226,7 +226,7 @@ int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx)
 {
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	//rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
 	cache_bitmap_v2.bitmapBpp = bpp;
 	cache_bitmap_v2.bitmapWidth = width;
@@ -235,7 +235,7 @@ int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 	cache_bitmap_v2.cacheId = cache_id;
 	cache_bitmap_v2.cacheIndex = cache_idx;
 
-	secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
+	//secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
 
 	printf("%s\n", __FUNCTION__);
 

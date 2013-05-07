@@ -281,16 +281,16 @@ xrdp_process_params(int argc, char **argv, struct xrdp_startup_params *startup_p
 int DEFAULT_CC
 main(int argc, char **argv)
 {
+	int fd;
+	int pid;
 	int test;
 	int host_be;
-	char cfg_file[256];
-	enum logReturns error;
-	struct xrdp_startup_params *startup_params;
-	int pid;
-	int fd;
 	int no_daemon;
 	char text[256];
 	char pid_file[256];
+	char cfg_file[256];
+	enum logReturns error;
+	struct xrdp_startup_params *startup_params;
 
 	g_init("xrdp");
 	ssl_init();
