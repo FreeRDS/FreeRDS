@@ -191,7 +191,7 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 		int srcy, int cache_idx, struct xrdp_rect* rect)
 {
 	MEMBLT_ORDER memblt;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	//rdpPrimaryUpdate* primary = session->client->update->primary;
 
 	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
@@ -206,7 +206,7 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	memblt.cacheIndex = cache_idx;
 	memblt.colorIndex = color_table;
 
-	primary->MemBlt(session->context, &memblt);
+	//primary->MemBlt(session->context, &memblt);
 
 	return 0;
 }
@@ -221,7 +221,32 @@ int libxrdp_orders_text(xrdpSession* session,
 		int x, int y, char* data, int data_len,
 		struct xrdp_rect* rect)
 {
+	GLYPH_INDEX_ORDER glyph_index;
+	rdpPrimaryUpdate* primary = session->client->update->primary;
+
 	printf("%s\n", __FUNCTION__);
+
+	glyph_index.cacheId = font;
+	glyph_index.flAccel = flags;
+	glyph_index.ulCharInc = mixmode;
+	glyph_index.fOpRedundant = 0;
+	glyph_index.backColor = bg_color;
+	glyph_index.foreColor = fg_color;
+	glyph_index.bkLeft = clip_left;
+	glyph_index.bkTop = clip_top;
+	glyph_index.bkRight = clip_right;
+	glyph_index.bkBottom = clip_bottom;
+	glyph_index.opLeft = box_left;
+	glyph_index.opTop = box_top;
+	glyph_index.opRight = box_right;
+	glyph_index.opBottom = box_bottom;
+	glyph_index.x = x;
+	glyph_index.y = y;
+	glyph_index.cbData = data_len;
+	CopyMemory(glyph_index.data, data, data_len);
+
+	primary->GlyphIndex(session->context, &glyph_index);
+
 	return 0;
 }
 
@@ -250,21 +275,43 @@ int libxrdp_orders_send_bitmap(xrdpSession* session,
 int libxrdp_orders_send_font(xrdpSession* session,
 		struct xrdp_font_char* font_char, int font_index, int char_index)
 {
-	CACHE_GLYPH_V2_ORDER cache_glyph_v2;
-	//rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
 	printf("%s\n", __FUNCTION__);
 
-	cache_glyph_v2.cacheId = font_index;
-	cache_glyph_v2.cGlyphs = 1;
-	cache_glyph_v2.glyphData[0].cacheIndex = char_index;
-	cache_glyph_v2.glyphData[0].x = font_char->offset;
-	cache_glyph_v2.glyphData[0].y = font_char->baseline;
-	cache_glyph_v2.glyphData[0].cx = font_char->width;
-	cache_glyph_v2.glyphData[0].cy = font_char->height;
-	cache_glyph_v2.glyphData[0].aj = (BYTE*) font_char->data;
+	if (secondary->glyph_v2)
+	{
+		CACHE_GLYPH_V2_ORDER cache_glyph_v2;
 
-	//secondary->CacheGlyphV2(session->context, &cache_glyph_v2);
+		cache_glyph_v2.flags = 0;
+		cache_glyph_v2.cacheId = font_index;
+		cache_glyph_v2.cGlyphs = 1;
+		cache_glyph_v2.glyphData[0].cacheIndex = char_index;
+		cache_glyph_v2.glyphData[0].x = font_char->offset;
+		cache_glyph_v2.glyphData[0].y = font_char->baseline;
+		cache_glyph_v2.glyphData[0].cx = font_char->width;
+		cache_glyph_v2.glyphData[0].cy = font_char->height;
+		cache_glyph_v2.glyphData[0].aj = (BYTE*) font_char->data;
+		cache_glyph_v2.unicodeCharacters = NULL;
+
+		secondary->CacheGlyphV2(session->context, &cache_glyph_v2);
+	}
+	else
+	{
+		CACHE_GLYPH_ORDER cache_glyph;
+
+		cache_glyph.cacheId = font_index;
+		cache_glyph.cGlyphs = 1;
+		cache_glyph.glyphData[0].cacheIndex = char_index;
+		cache_glyph.glyphData[0].x = font_char->offset;
+		cache_glyph.glyphData[0].y = font_char->baseline;
+		cache_glyph.glyphData[0].cx = font_char->width;
+		cache_glyph.glyphData[0].cy = font_char->height;
+		cache_glyph.glyphData[0].aj = (BYTE*) font_char->data;
+		cache_glyph.unicodeCharacters = NULL;
+
+		secondary->CacheGlyph(session->context, &cache_glyph);
+	}
 
 	return 0;
 }
