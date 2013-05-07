@@ -47,12 +47,8 @@ xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 	self->log = list_create();
 	self->log->auto_free = 1;
 	self->mm = xrdp_mm_create(self);
-	printf("dohz %d\n", 1);
 	self->default_font = xrdp_font_create(self);
-	printf("dohz %d\n", 2);
 	/* this will use built in keymap or load from file */
-	printf("self->session: %p\n", self->session);
-	printf("self->session->client_info: %p\n", self->session->client_info);
 	get_keymaps(self->session->client_info->keylayout, &(self->keymap));
 	xrdp_wm_set_login_mode(self, 0);
 	self->target_surface = self->screen;

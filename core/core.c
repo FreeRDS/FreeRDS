@@ -19,6 +19,9 @@
 
 #include <winpr/crt.h>
 
+#include <freerdp/freerdp.h>
+#include <freerdp/listener.h>
+
 #include "core.h"
 
 xrdpSession* libxrdp_init(tbus id, struct trans* trans)
@@ -102,14 +105,40 @@ int libxrdp_orders_force_send(xrdpSession* session)
 int libxrdp_orders_rect(xrdpSession* session, int x, int y,
 		int cx, int cy, int color, struct xrdp_rect* rect)
 {
+	OPAQUE_RECT_ORDER opaqueRect;
+	rdpPrimaryUpdate* primary = session->client->update->primary;
+
 	printf("%s\n", __FUNCTION__);
+
+	opaqueRect.nLeftRect = x;
+	opaqueRect.nTopRect = y;
+	opaqueRect.nWidth = cx;
+	opaqueRect.nHeight = cy;
+	opaqueRect.color = color;
+
+	primary->OpaqueRect(session->context, &opaqueRect);
+
 	return 0;
 }
 
 int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
 		int cx, int cy, int srcx, int srcy, int rop, struct xrdp_rect* rect)
 {
+	SCRBLT_ORDER scrblt;
+	rdpPrimaryUpdate* primary = session->client->update->primary;
+
 	printf("%s\n", __FUNCTION__);
+
+	scrblt.nLeftRect = x;
+	scrblt.nTopRect = y;
+	scrblt.nWidth = cx;
+	scrblt.nHeight = cy;
+	scrblt.bRop = rop;
+	scrblt.nXSrc = srcx;
+	scrblt.nYSrc = srcy;
+
+	primary->ScrBlt(session->context, &scrblt);
+
 	return 0;
 }
 
@@ -196,7 +225,20 @@ int libxrdp_reset(xrdpSession* session, int width, int height, int bpp)
 int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx)
 {
+	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
+	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+
+	cache_bitmap_v2.bitmapBpp = bpp;
+	cache_bitmap_v2.bitmapWidth = width;
+	cache_bitmap_v2.bitmapHeight = height;
+	cache_bitmap_v2.bitmapDataStream = (BYTE*) data;
+	cache_bitmap_v2.cacheId = cache_id;
+	cache_bitmap_v2.cacheIndex = cache_idx;
+
+	secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
+
 	printf("%s\n", __FUNCTION__);
+
 	return 0;
 }
 

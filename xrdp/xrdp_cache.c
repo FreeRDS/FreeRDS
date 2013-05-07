@@ -178,7 +178,9 @@ xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int h
 				return MAKELONG(j, i);
 			}
 		}
-	} else
+	}
+	else
+	{
 		if (bmp_size <= self->cache2_size)
 		{
 			i = 1;
@@ -198,7 +200,9 @@ xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int h
 					return MAKELONG(j, i);
 				}
 			}
-		} else
+		}
+		else
+		{
 			if (bmp_size <= self->cache3_size)
 			{
 				i = 2;
@@ -218,10 +222,13 @@ xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int h
 						return MAKELONG(j, i);
 					}
 				}
-			} else
+			}
+			else
 			{
 				log_message(LOG_LEVEL_ERROR, "error in xrdp_cache_add_bitmap, too big(%d)", bmp_size);
 			}
+		}
+	}
 
 	/* look for oldest */
 	cache_id = 0;
@@ -241,7 +248,9 @@ xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int h
 				cache_idx = j;
 			}
 		}
-	} else
+	}
+	else
+	{
 		if (bmp_size <= self->cache2_size)
 		{
 			i = 1;
@@ -255,7 +264,9 @@ xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int h
 					cache_idx = j;
 				}
 			}
-		} else
+		}
+		else
+		{
 			if (bmp_size <= self->cache3_size)
 			{
 				i = 2;
@@ -270,6 +281,8 @@ xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int h
 					}
 				}
 			}
+		}
+	}
 
 	DEBUG(("adding bitmap at %d %d", cache_id, cache_idx));
 	/* set, send bitmap and return */
@@ -292,24 +305,31 @@ xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int h
 		{
 			libxrdp_orders_send_bitmap2(self->session, bitmap->width, bitmap->height, bitmap->bpp,
 					bitmap->data, cache_id, cache_idx, hints);
-		} else
+		}
+		else
+		{
 			if (self->bitmap_cache_version & 1)
 			{
 				libxrdp_orders_send_bitmap(self->session, bitmap->width, bitmap->height, bitmap->bpp,
 						bitmap->data, cache_id, cache_idx);
 			}
-	} else
+		}
+	}
+	else
 	{
 		if (self->bitmap_cache_version & 2)
 		{
 			libxrdp_orders_send_raw_bitmap2(self->session, bitmap->width, bitmap->height, bitmap->bpp,
 					bitmap->data, cache_id, cache_idx);
-		} else
+		}
+		else
+		{
 			if (self->bitmap_cache_version & 1)
 			{
 				libxrdp_orders_send_raw_bitmap(self->session, bitmap->width, bitmap->height,
 						bitmap->bpp, bitmap->data, cache_id, cache_idx);
 			}
+		}
 	}
 
 	return MAKELONG(cache_idx, cache_id);

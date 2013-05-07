@@ -237,7 +237,7 @@ int APP_CC get_keymaps(int keylayout, struct xrdp_keymap* keymap)
 		if (fd > 0)
 		{
 			lkeymap = (struct xrdp_keymap *) g_malloc(sizeof(struct xrdp_keymap), 0);
-			/* make a copy of the build in kaymap */
+			/* make a copy of the build in keymap */
 			g_memcpy(lkeymap, keymap, sizeof(struct xrdp_keymap));
 			/* clear the keymaps */
 			g_memset(keymap, 0, sizeof(struct xrdp_keymap));

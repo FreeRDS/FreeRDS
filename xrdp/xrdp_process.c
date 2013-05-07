@@ -306,6 +306,9 @@ void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
 	{
 		ZeroMemory(context->session, sizeof(xrdpSession));
 		context->session->client_info = context->info;
+
+		context->session->context = (rdpContext*) context;
+		context->session->client = client;
 	}
 }
 
@@ -502,6 +505,17 @@ void* xrdp_process_main_thread(void* arg)
 	xfp->info->bitmap_cache_version = 2;
 	xfp->info->build = settings->ClientBuild;
 	xfp->info->keylayout = settings->KeyboardLayout;
+
+	xfp->info->use_bitmap_comp = 0;
+	xfp->info->cache1_entries = 0;
+	xfp->info->cache1_size = 0;
+	xfp->info->cache2_entries = settings->BitmapCacheV2CellInfo[0].numEntries;
+	xfp->info->cache2_size = settings->BitmapCacheV2NumCells;
+	xfp->info->cache3_entries = 0;
+	xfp->info->cache3_size = 0;
+	xfp->info->bitmap_cache_persist_enable = 0;
+	xfp->info->bitmap_cache_version = settings->BitmapCacheVersion;
+	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
 
 	if (settings->Username)
 		strcpy(xfp->info->username, settings->Username);

@@ -21,6 +21,7 @@
 #define FREERDP_XRDP_NG_CORE_H
 
 #include <freerdp/api.h>
+#include <freerdp/freerdp.h>
 
 /*
  * Phase 1: Export same interface as libxrdp and adapt internally to FreeRDP
@@ -85,6 +86,10 @@ struct xrdp_session
 	int up_and_running;
 	//struct stream* s;
 	int (*is_term)(void);
+
+	/* FreeRDP */
+	rdpContext* context;
+	freerdp_peer* client;
 };
 
 FREERDP_API xrdpSession* libxrdp_init(tbus id, struct trans* trans);
