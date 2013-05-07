@@ -191,9 +191,9 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 		int srcy, int cache_idx, struct xrdp_rect* rect)
 {
 	MEMBLT_ORDER memblt;
-	//rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s\n", __FUNCTION__);
+	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
 	memblt.nLeftRect = x;
 	memblt.nTopRect = y;
@@ -204,8 +204,9 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	memblt.nYSrc = srcy;
 	memblt.cacheId = cache_id;
 	memblt.cacheIndex = cache_idx;
+	memblt.colorIndex = color_table;
 
-	//primary->MemBlt(session->context, &memblt);
+	primary->MemBlt(session->context, &memblt);
 
 	return 0;
 }
@@ -281,7 +282,7 @@ int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s\n", __FUNCTION__);
+	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
 	cache_bitmap_v2.bitmapBpp = bpp;
 	cache_bitmap_v2.bitmapWidth = width;
@@ -290,8 +291,10 @@ int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 	cache_bitmap_v2.cacheId = cache_id;
 	cache_bitmap_v2.cacheIndex = cache_idx;
 	cache_bitmap_v2.compressed = FALSE;
+	cache_bitmap_v2.flags = 0;
 
 	bytesPerPixel = (bpp + 7) / 8;
+	cache_bitmap_v2.cbUncompressedSize = width * height * bytesPerPixel;
 	cache_bitmap_v2.bitmapLength = width * height * bytesPerPixel;
 
 	secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
@@ -306,7 +309,7 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s\n", __FUNCTION__);
+	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
 	cache_bitmap_v2.bitmapBpp = bpp;
 	cache_bitmap_v2.bitmapWidth = width;
@@ -315,8 +318,10 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	cache_bitmap_v2.cacheId = cache_id;
 	cache_bitmap_v2.cacheIndex = cache_idx;
 	cache_bitmap_v2.compressed = FALSE;
+	cache_bitmap_v2.flags = 0;
 
 	bytesPerPixel = (bpp + 7) / 8;
+	cache_bitmap_v2.cbUncompressedSize = width * height * bytesPerPixel;
 	cache_bitmap_v2.bitmapLength = width * height * bytesPerPixel;
 
 	secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
