@@ -19,7 +19,6 @@
  */
 
 typedef struct xrdp_wm xrdpWm;
-typedef struct xrdp_session xrdpSession;
 typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_process xrdpProcess;
 

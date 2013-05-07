@@ -24,6 +24,8 @@
 #include "xrdp_rail.h"
 #include "xrdp_client_info.h"
 
+typedef struct xrdp_session xrdpSession;
+
 struct xrdp_brush
 {
 	int x_orgin;
