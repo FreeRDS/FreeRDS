@@ -41,8 +41,7 @@ static long (*g_sync_func)(long param1, long param2);
 /* This function is used to run a function from the main thread.
  Sync_func is the function pointer that will run from main thread
  The function can have two long in parameters and must return long */
-long APP_CC
-g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
+long APP_CC g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
 {
 	long sync_result;
 	int sync_command;
@@ -93,8 +92,7 @@ g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long s
 }
 
 /*****************************************************************************/
-void DEFAULT_CC
-xrdp_shutdown(int sig)
+void DEFAULT_CC xrdp_shutdown(int sig)
 {
 	tbus threadid;
 
@@ -109,16 +107,14 @@ xrdp_shutdown(int sig)
 }
 
 /*****************************************************************************/
-void DEFAULT_CC
-xrdp_child(int sig)
+void DEFAULT_CC xrdp_child(int sig)
 {
 	g_waitchild();
 }
 
 /*****************************************************************************/
 /* called in child just after fork */
-int APP_CC
-xrdp_child_fork(void)
+int APP_CC xrdp_child_fork(void)
 {
 	int pid;
 	char text[256];
@@ -135,15 +131,13 @@ xrdp_child_fork(void)
 }
 
 /*****************************************************************************/
-int APP_CC
-g_is_term(void)
+int APP_CC g_is_term(void)
 {
 	return g_is_wait_obj_set(g_term_event);
 }
 
 /*****************************************************************************/
-void APP_CC
-g_set_term(int in_val)
+void APP_CC g_set_term(int in_val)
 {
 	if (in_val)
 	{
@@ -155,22 +149,19 @@ g_set_term(int in_val)
 }
 
 /*****************************************************************************/
-tbus APP_CC
-g_get_term_event(void)
+tbus APP_CC g_get_term_event(void)
 {
 	return g_term_event;
 }
 
 /*****************************************************************************/
-tbus APP_CC
-g_get_sync_event(void)
+tbus APP_CC g_get_sync_event(void)
 {
 	return g_sync_event;
 }
 
 /*****************************************************************************/
-void DEFAULT_CC
-pipe_sig(int sig_num)
+void DEFAULT_CC pipe_sig(int sig_num)
 {
 	/* do nothing */
 	g_writeln("got XRDP SIGPIPE(%d)", sig_num);

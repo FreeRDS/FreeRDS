@@ -191,7 +191,7 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 		int srcy, int cache_idx, struct xrdp_rect* rect)
 {
 	MEMBLT_ORDER memblt;
-	//rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = session->client->update->primary;
 
 	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
@@ -206,7 +206,7 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	memblt.cacheIndex = cache_idx;
 	memblt.colorIndex = color_table;
 
-	//primary->MemBlt(session->context, &memblt);
+	primary->MemBlt(session->context, &memblt);
 
 	return 0;
 }

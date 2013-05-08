@@ -508,6 +508,7 @@ void* xrdp_process_main_thread(void* arg)
 	int wcount;
 	int robjc;
 	int wobjc;
+	int entries;
 	long robjs[32];
 	long wobjs[32];
 	int itimeout;
@@ -545,17 +546,31 @@ void* xrdp_process_main_thread(void* arg)
 
 	bytesPerPixel = (xfp->info->bpp + 7) / 8;
 
-	xfp->info->cache1_entries = 600;
+	entries = settings->BitmapCacheV2CellInfo[0].numEntries;
+	entries = MIN(entries, 2000);
+	xfp->info->cache1_entries = entries;
 	xfp->info->cache1_size = 256 * bytesPerPixel;
-	xfp->info->cache2_entries = 600;
+
+	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
+	entries = MIN(entries, 2000);
+	xfp->info->cache2_entries = entries;
 	xfp->info->cache2_size = 1024 * bytesPerPixel;
-	xfp->info->cache3_entries = 2000;
+
+	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
+	entries = MIN(entries, 2000);
+	xfp->info->cache3_entries = entries;
 	xfp->info->cache3_size = 4096 * bytesPerPixel;
 
-	xfp->info->use_bitmap_comp = 1;
+	xfp->info->use_bitmap_comp = 0;
 	xfp->info->bitmap_cache_version = 2;
 	xfp->info->bitmap_cache_persist_enable = 0;
 	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
+
+	xfp->info->offscreen_support_level = settings->OffscreenSupportLevel;
+	xfp->info->offscreen_cache_size = settings->OffscreenCacheSize;
+	xfp->info->offscreen_cache_entries = settings->OffscreenCacheEntries;
+
+	CopyMemory(xfp->info->orders, settings->OrderSupport, 32);
 
 	if (settings->Username)
 		strcpy(xfp->info->username, settings->Username);
