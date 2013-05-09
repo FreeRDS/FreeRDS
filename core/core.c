@@ -86,13 +86,23 @@ int libxrdp_set_pointer(xrdpSession* session, int cache_idx)
 
 int libxrdp_orders_init(xrdpSession* session)
 {
+	rdpUpdate* update = session->context->update;
+
 	printf("%s\n", __FUNCTION__);
+
+	update->BeginPaint(session->context);
+
 	return 0;
 }
 
 int libxrdp_orders_send(xrdpSession* session)
 {
+	rdpUpdate* update = session->context->update;
+
 	printf("%s\n", __FUNCTION__);
+
+	update->EndPaint(session->context);
+
 	return 0;
 }
 
