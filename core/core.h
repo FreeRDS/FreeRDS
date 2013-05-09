@@ -37,6 +37,7 @@ struct xrdp_brush
 	int style;
 	char pattern[8];
 };
+typedef struct xrdp_brush xrdpBrush;
 
 struct xrdp_pen
 {
@@ -44,6 +45,7 @@ struct xrdp_pen
 	int width;
 	int color;
 };
+typedef struct xrdp_pen xrdpPen;
 
 struct xrdp_font_char
 {
@@ -54,6 +56,7 @@ struct xrdp_font_char
 	int incby;
 	char* data;
 };
+typedef struct xrdp_font_char xrdpFontChar;
 
 struct xrdp_rect
 {
@@ -62,6 +65,7 @@ struct xrdp_rect
 	int right;
 	int bottom;
 };
+typedef struct xrdp_rect xrdpRect;
 
 #include "arch.h"
 #include "parse.h"
@@ -119,25 +123,25 @@ FREERDP_API int libxrdp_orders_send(xrdpSession* session);
 FREERDP_API int libxrdp_orders_force_send(xrdpSession* session);
 
 FREERDP_API int libxrdp_orders_rect(xrdpSession* session, int x, int y,
-		int cx, int cy, int color, struct xrdp_rect* rect);
+		int cx, int cy, int color, xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
-		int cx, int cy, int srcx, int srcy, int rop, struct xrdp_rect* rect);
+		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
-		struct xrdp_brush* brush, struct xrdp_rect* rect);
+		struct xrdp_brush* brush, xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_dest_blt(xrdpSession* session,
-		int x, int y, int cx, int cy, int rop, struct xrdp_rect* rect);
+		int x, int y, int cx, int cy, int rop, xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_line(xrdpSession* session, int mix_mode,
 		int startx, int starty,	int endx, int endy, int rop,
-		int bg_color, struct xrdp_pen* pen, struct xrdp_rect* rect);
+		int bg_color, struct xrdp_pen* pen, xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
-		int srcy, int cache_idx, struct xrdp_rect* rect);
+		int srcy, int cache_idx, xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_text(xrdpSession* session,
 		int font, int flags, int mixmode,
@@ -147,7 +151,7 @@ FREERDP_API int libxrdp_orders_text(xrdpSession* session,
 		int box_left, int box_top,
 		int box_right, int box_bottom,
 		int x, int y, char* data, int data_len,
-		struct xrdp_rect* rect);
+		xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_send_palette(xrdpSession* session, int* palette, int cache_id);
 
@@ -160,7 +164,7 @@ FREERDP_API int libxrdp_orders_send_bitmap(xrdpSession* session,
 		int cache_id, int cache_idx);
 
 FREERDP_API int libxrdp_orders_send_font(xrdpSession* session,
-		struct xrdp_font_char* font_char, int font_index, int char_index);
+		xrdpFontChar* font_char, int font_index, int char_index);
 
 FREERDP_API int libxrdp_reset(xrdpSession* session, int width, int height, int bpp);
 

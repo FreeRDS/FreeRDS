@@ -48,11 +48,11 @@ xrdp_region_delete(struct xrdp_region *self)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_region_add_rect(struct xrdp_region *self, struct xrdp_rect *rect)
+xrdp_region_add_rect(struct xrdp_region *self, xrdpRect *rect)
 {
-	struct xrdp_rect *r;
+	xrdpRect *r;
 
-	r = (struct xrdp_rect *) g_malloc(sizeof(struct xrdp_rect), 1);
+	r = (xrdpRect *) g_malloc(sizeof(xrdpRect), 1);
 	*r = *rect;
 	list_add_item(self->rects, (long) r);
 	return 0;
@@ -62,9 +62,9 @@ xrdp_region_add_rect(struct xrdp_region *self, struct xrdp_rect *rect)
 int APP_CC
 xrdp_region_insert_rect(struct xrdp_region *self, int i, int left, int top, int right, int bottom)
 {
-	struct xrdp_rect *r;
+	xrdpRect *r;
 
-	r = (struct xrdp_rect *) g_malloc(sizeof(struct xrdp_rect), 1);
+	r = (xrdpRect *) g_malloc(sizeof(xrdpRect), 1);
 	r->left = left;
 	r->top = top;
 	r->right = right;
@@ -76,15 +76,15 @@ xrdp_region_insert_rect(struct xrdp_region *self, int i, int left, int top, int 
 /*****************************************************************************/
 int APP_CC
 xrdp_region_subtract_rect(struct xrdp_region *self,
-                          struct xrdp_rect *rect)
+                          xrdpRect *rect)
 {
-    struct xrdp_rect *r;
-    struct xrdp_rect rect1;
+    xrdpRect *r;
+    xrdpRect rect1;
     int i;
 
     for (i = self->rects->count - 1; i >= 0; i--)
     {
-        r = (struct xrdp_rect *)list_get_item(self->rects, i);
+        r = (xrdpRect *)list_get_item(self->rects, i);
         rect1 = *r;
         r = &rect1;
 
@@ -298,11 +298,11 @@ xrdp_region_subtract_rect(struct xrdp_region *self,
 
 /*****************************************************************************/
 int APP_CC
-xrdp_region_get_rect(struct xrdp_region *self, int index, struct xrdp_rect *rect)
+xrdp_region_get_rect(struct xrdp_region *self, int index, xrdpRect *rect)
 {
-	struct xrdp_rect *r;
+	xrdpRect *r;
 
-	r = (struct xrdp_rect *) list_get_item(self->rects, index);
+	r = (xrdpRect *) list_get_item(self->rects, index);
 
 	if (r == 0)
 	{

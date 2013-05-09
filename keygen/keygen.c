@@ -340,8 +340,8 @@ key_gen_run_it(void)
 	int fd;
 	int index;
 	int rv;
-	struct list *names;
-	struct list *values;
+	xrdpList *names;
+	xrdpList *values;
 	char *name;
 	char *value;
 

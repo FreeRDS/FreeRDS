@@ -257,9 +257,9 @@ internalReadConfiguration(const char *inFilename, const char *applicationName)
 {
 	int fd;
 	enum logReturns ret = LOG_GENERAL_ERROR;
-	struct list *sec;
-	struct list *param_n;
-	struct list *param_v;
+	xrdpList *sec;
+	xrdpList *param_n;
+	xrdpList *param_v;
 
 	if (inFilename == NULL)
 	{
@@ -311,7 +311,7 @@ internalReadConfiguration(const char *inFilename, const char *applicationName)
 
 /******************************************************************************/
 enum logReturns DEFAULT_CC
-internal_config_read_logging(int file, struct log_config *lc, struct list *param_n, struct list *param_v,
+internal_config_read_logging(int file, struct log_config *lc, xrdpList *param_n, xrdpList *param_v,
 		const char *applicationName)
 {
 	int i;

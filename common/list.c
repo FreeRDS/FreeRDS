@@ -23,12 +23,12 @@
 #include "list.h"
 
 /*****************************************************************************/
-struct list *APP_CC
+xrdpList *APP_CC
 list_create(void)
 {
-	struct list *self;
+	xrdpList *self;
 
-	self = (struct list *) g_malloc(sizeof(struct list), 1);
+	self = (xrdpList *) g_malloc(sizeof(xrdpList), 1);
 	self->grow_by = 10;
 	self->alloc_size = 10;
 	self->items = (tbus *) g_malloc(sizeof(tbus) * 10, 1);
@@ -37,7 +37,7 @@ list_create(void)
 
 /*****************************************************************************/
 void APP_CC
-list_delete(struct list *self)
+list_delete(xrdpList *self)
 {
 	int i;
 
@@ -61,7 +61,7 @@ list_delete(struct list *self)
 
 /*****************************************************************************/
 void APP_CC
-list_add_item(struct list *self, tbus item)
+list_add_item(xrdpList *self, tbus item)
 {
 	tbus *p;
 	int i;
@@ -82,7 +82,7 @@ list_add_item(struct list *self, tbus item)
 
 /*****************************************************************************/
 tbus APP_CC
-list_get_item(struct list *self, int index)
+list_get_item(xrdpList *self, int index)
 {
 	if (index < 0 || index >= self->count)
 	{
@@ -94,7 +94,7 @@ list_get_item(struct list *self, int index)
 
 /*****************************************************************************/
 void APP_CC
-list_clear(struct list *self)
+list_clear(xrdpList *self)
 {
 	int i;
 
@@ -116,7 +116,7 @@ list_clear(struct list *self)
 
 /*****************************************************************************/
 int APP_CC
-list_index_of(struct list *self, tbus item)
+list_index_of(xrdpList *self, tbus item)
 {
 	int i;
 
@@ -133,7 +133,7 @@ list_index_of(struct list *self, tbus item)
 
 /*****************************************************************************/
 void APP_CC
-list_remove_item(struct list *self, int index)
+list_remove_item(xrdpList *self, int index)
 {
 	int i;
 
@@ -156,7 +156,7 @@ list_remove_item(struct list *self, int index)
 
 /*****************************************************************************/
 void APP_CC
-list_insert_item(struct list *self, int index, tbus item)
+list_insert_item(xrdpList *self, int index, tbus item)
 {
 	tbus *p;
 	int i;
@@ -194,7 +194,7 @@ list_insert_item(struct list *self, int index, tbus item)
 /* append one list to another using strdup for each item in the list */
 /* begins copy at start_index, a zero based index on the soure list */
 void APP_CC
-list_append_list_strdup(struct list *self, struct list *dest, int start_index)
+list_append_list_strdup(xrdpList *self, xrdpList *dest, int start_index)
 {
 	int index;
 	tbus item;
@@ -210,7 +210,7 @@ list_append_list_strdup(struct list *self, struct list *dest, int start_index)
 
 /*****************************************************************************/
 void APP_CC
-list_dump_items(struct list *self)
+list_dump_items(xrdpList *self)
 {
 	int index;
 

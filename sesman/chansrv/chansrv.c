@@ -1106,8 +1106,8 @@ static int APP_CC
 read_ini(void)
 {
     char filename[256];
-    struct list *names;
-    struct list *values;
+    xrdpList *names;
+    xrdpList *values;
     char *name;
     char *value;
     int index;

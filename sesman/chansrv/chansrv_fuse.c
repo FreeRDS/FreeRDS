@@ -209,7 +209,7 @@ struct req_list_item
     int size;
 };
 
-static struct list *g_req_list = 0;
+static xrdpList *g_req_list = 0;
 static struct xrdp_fs g_xrdp_fs;             /* an inst of xrdp file system */
 static char *g_mount_point = 0;              /* our FUSE mount point        */
 static struct fuse_lowlevel_ops g_xfuse_ops; /* setup FUSE callbacks        */

@@ -32,16 +32,17 @@ struct list
 	int grow_by;
 	int auto_free;
 };
+typedef struct list xrdpList;
 
-struct list* APP_CC list_create(void);
-void APP_CC list_delete(struct list* self);
-void APP_CC list_add_item(struct list* self, tbus item);
-tbus APP_CC list_get_item(struct list* self, int index);
-void APP_CC list_clear(struct list* self);
-int APP_CC list_index_of(struct list* self, tbus item);
-void APP_CC list_remove_item(struct list* self, int index);
-void APP_CC list_insert_item(struct list* self, int index, tbus item);
-void APP_CC list_append_list_strdup(struct list* self, struct list* dest, int start_index);
-void APP_CC list_dump_items(struct list* self);
+xrdpList* APP_CC list_create(void);
+void APP_CC list_delete(xrdpList* self);
+void APP_CC list_add_item(xrdpList* self, tbus item);
+tbus APP_CC list_get_item(xrdpList* self, int index);
+void APP_CC list_clear(xrdpList* self);
+int APP_CC list_index_of(xrdpList* self, tbus item);
+void APP_CC list_remove_item(xrdpList* self, int index);
+void APP_CC list_insert_item(xrdpList* self, int index, tbus item);
+void APP_CC list_append_list_strdup(xrdpList* self, xrdpList* dest, int start_index);
+void APP_CC list_dump_items(xrdpList* self);
 
 #endif

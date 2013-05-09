@@ -29,7 +29,7 @@ struct xrdp_listener
 {
 	int status;
 	struct trans* listen_trans; /* in tcp listen mode */
-	struct list* process_list;
+	xrdpList* process_list;
 	tbus pro_done_event;
 	struct xrdp_startup_params* startup_params;
 };
@@ -160,8 +160,8 @@ static int xrdp_listen_get_port_address(char *port, int port_bytes, char *addres
 	int error;
 	int index;
 	char *val;
-	struct list *names;
-	struct list *values;
+	xrdpList *names;
+	xrdpList *values;
 	char cfg_file[256];
 
 	/* default to port 3389 */

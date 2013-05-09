@@ -63,8 +63,8 @@ static int APP_CC
 xrdp_rdp_read_config(xrdpClientInfo *client_info)
 {
 	int index = 0;
-	struct list *items = (struct list *) NULL;
-	struct list *values = (struct list *) NULL;
+	xrdpList *items = (xrdpList *) NULL;
+	xrdpList *values = (xrdpList *) NULL;
 	char *item = (char *) NULL;
 	char *value = (char *) NULL;
 	char cfg_file[256];

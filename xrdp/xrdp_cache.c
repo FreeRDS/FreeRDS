@@ -394,7 +394,7 @@ xrdp_cache_add_palette(struct xrdp_cache *self, int *palette)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_cache_add_char(struct xrdp_cache *self, struct xrdp_font_char *font_item)
+xrdp_cache_add_char(struct xrdp_cache *self, xrdpFontChar *font_item)
 {
 	int i;
 	int j;
@@ -402,7 +402,7 @@ xrdp_cache_add_char(struct xrdp_cache *self, struct xrdp_font_char *font_item)
 	int f;
 	int c;
 	int datasize;
-	struct xrdp_font_char *fi;
+	xrdpFontChar *fi;
 
 	self->char_stamp++;
 

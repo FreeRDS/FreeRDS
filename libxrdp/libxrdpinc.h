@@ -33,6 +33,7 @@ struct xrdp_brush
 	int style;
 	char pattern[8];
 };
+typedef struct xrdp_brush xrdpBrush;
 
 struct xrdp_pen
 {
@@ -40,6 +41,7 @@ struct xrdp_pen
 	int width;
 	int color;
 };
+typedef struct xrdp_pen xrdpPen;
 
 struct xrdp_font_char
 {
@@ -50,6 +52,7 @@ struct xrdp_font_char
 	int incby;
 	char* data;
 };
+typedef struct xrdp_font_char xrdpFontChar;
 
 struct xrdp_rect
 {
@@ -58,6 +61,7 @@ struct xrdp_rect
 	int right;
 	int bottom;
 };
+typedef struct xrdp_rect xrdpRect;
 
 struct xrdp_session
 {

@@ -1100,7 +1100,7 @@ xrdp_bitmap_draw_button(struct xrdp_bitmap *self, struct xrdp_painter *painter, 
 /* nil for rect means the whole thing */
 /* returns error */
 int APP_CC
-xrdp_bitmap_invalidate(struct xrdp_bitmap *self, struct xrdp_rect *rect)
+xrdp_bitmap_invalidate(struct xrdp_bitmap *self, xrdpRect *rect)
 {
 	int i;
 	int w;
@@ -1108,8 +1108,8 @@ xrdp_bitmap_invalidate(struct xrdp_bitmap *self, struct xrdp_rect *rect)
 	int x;
 	int y;
 	struct xrdp_bitmap *b;
-	struct xrdp_rect r1;
-	struct xrdp_rect r2;
+	xrdpRect r1;
+	xrdpRect r2;
 	struct xrdp_painter *painter;
 	twchar wtext[256];
 	char text[256];
@@ -1916,7 +1916,7 @@ xrdp_bitmap_from_screeny(struct xrdp_bitmap *self, int y)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_bitmap_get_screen_clip(struct xrdp_bitmap *self, struct xrdp_painter *painter, struct xrdp_rect *rect, int *dx,
+xrdp_bitmap_get_screen_clip(struct xrdp_bitmap *self, struct xrdp_painter *painter, xrdpRect *rect, int *dx,
 		int *dy)
 {
 	int ldx;

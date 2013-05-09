@@ -58,7 +58,7 @@ static int g_sync_cmd;
  * @return
  */
 char *APP_CC
-dumpItemsToString(struct list *self, char *outstr, int len)
+dumpItemsToString(xrdpList *self, char *outstr, int len)
 {
 	int index;
 	int totalLen = 0;
@@ -220,7 +220,7 @@ x_server_running(int display)
 static void DEFAULT_CC
 session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
 {
-	struct list *sessvc_params = (struct list *) NULL;
+	xrdpList *sessvc_params = (xrdpList *) NULL;
 	char wmpid_str[25];
 	char xpid_str[25];
 	char exe_path[262];
@@ -377,7 +377,7 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 	char passwd_file[256];
 	char **pp1 = (char **) NULL;
 	struct session_chain *temp = (struct session_chain *) NULL;
-	struct list *xserver_params = (struct list *) NULL;
+	xrdpList *xserver_params = (xrdpList *) NULL;
 	time_t ltime;
 	struct tm stime;
 	char execvpparams[2048];

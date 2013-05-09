@@ -162,8 +162,8 @@ get_char_from_scan_code(int device_flags, int scan_code, int *keys,
 static int APP_CC
 km_read_section(int fd, const char *section_name, struct xrdp_key_info *keymap)
 {
-    struct list *names;
-    struct list *values;
+    xrdpList *names;
+    xrdpList *values;
     int index;
     int code;
     int pos1;

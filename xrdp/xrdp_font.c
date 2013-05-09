@@ -73,7 +73,7 @@ xrdp_font_create(xrdpWm *wm)
 	int index;
 	int datasize;
 	int file_size;
-	struct xrdp_font_char *f;
+	xrdpFontChar *f;
 	char file_path[256];
 
 	DEBUG(("in xrdp_font_create"));
@@ -189,7 +189,7 @@ xrdp_font_delete(struct xrdp_font *self)
 /*****************************************************************************/
 /* compare the two font items returns 1 if they match */
 int APP_CC
-xrdp_font_item_compare(struct xrdp_font_char *font1, struct xrdp_font_char *font2)
+xrdp_font_item_compare(xrdpFontChar *font1, xrdpFontChar *font2)
 {
 	int datasize;
 

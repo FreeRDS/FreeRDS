@@ -100,7 +100,7 @@ xrdp_wm_delete_all_childs(xrdpWm *self)
 {
 	int index;
 	struct xrdp_bitmap *b;
-	struct xrdp_rect rect;
+	xrdpRect rect;
 
 	for (index = self->screen->child_list->count - 1; index >= 0; index--)
 	{
@@ -363,7 +363,7 @@ static int DEFAULT_CC
 xrdp_wm_login_notify(struct xrdp_bitmap *wnd, struct xrdp_bitmap *sender, int msg, long param1, long param2)
 {
 	struct xrdp_bitmap *b;
-	struct xrdp_rect rect;
+	xrdpRect rect;
 	int i;
 
 	if (wnd->modal_dialog != 0 && msg != 100)
@@ -417,9 +417,9 @@ xrdp_wm_login_notify(struct xrdp_bitmap *wnd, struct xrdp_bitmap *sender, int ms
 static int APP_CC
 xrdp_wm_login_fill_in_combo(xrdpWm *self, struct xrdp_bitmap *b)
 {
-	struct list *sections;
-	struct list *section_names;
-	struct list *section_values;
+	xrdpList *sections;
+	xrdpList *section_names;
+	xrdpList *section_values;
 	int fd;
 	int i;
 	int j;

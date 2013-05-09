@@ -542,7 +542,7 @@ libxrdp_orders_force_send(xrdpSession *session)
 
 /******************************************************************************/
 int EXPORT_CC
-libxrdp_orders_rect(xrdpSession *session, int x, int y, int cx, int cy, int color, struct xrdp_rect *rect)
+libxrdp_orders_rect(xrdpSession *session, int x, int y, int cx, int cy, int color, xrdpRect *rect)
 {
 	return xrdp_orders_rect((struct xrdp_orders *) session->orders, x, y, cx, cy, color, rect);
 }
@@ -550,7 +550,7 @@ libxrdp_orders_rect(xrdpSession *session, int x, int y, int cx, int cy, int colo
 /******************************************************************************/
 int EXPORT_CC
 libxrdp_orders_screen_blt(xrdpSession *session, int x, int y, int cx, int cy, int srcx, int srcy, int rop,
-		struct xrdp_rect *rect)
+		xrdpRect *rect)
 {
 	return xrdp_orders_screen_blt((struct xrdp_orders *) session->orders, x, y, cx, cy, srcx, srcy, rop, rect);
 }
@@ -558,7 +558,7 @@ libxrdp_orders_screen_blt(xrdpSession *session, int x, int y, int cx, int cy, in
 /******************************************************************************/
 int EXPORT_CC
 libxrdp_orders_pat_blt(xrdpSession *session, int x, int y, int cx, int cy, int rop, int bg_color, int fg_color,
-		struct xrdp_brush *brush, struct xrdp_rect *rect)
+		xrdpBrush *brush, xrdpRect *rect)
 {
 	return xrdp_orders_pat_blt((struct xrdp_orders *) session->orders, x, y, cx, cy, rop, bg_color, fg_color,
 			brush, rect);
@@ -566,7 +566,7 @@ libxrdp_orders_pat_blt(xrdpSession *session, int x, int y, int cx, int cy, int r
 
 /******************************************************************************/
 int EXPORT_CC
-libxrdp_orders_dest_blt(xrdpSession *session, int x, int y, int cx, int cy, int rop, struct xrdp_rect *rect)
+libxrdp_orders_dest_blt(xrdpSession *session, int x, int y, int cx, int cy, int rop, xrdpRect *rect)
 {
 	return xrdp_orders_dest_blt((struct xrdp_orders *) session->orders, x, y, cx, cy, rop, rect);
 }
@@ -574,7 +574,7 @@ libxrdp_orders_dest_blt(xrdpSession *session, int x, int y, int cx, int cy, int 
 /******************************************************************************/
 int EXPORT_CC
 libxrdp_orders_line(xrdpSession *session, int mix_mode, int startx, int starty, int endx, int endy, int rop,
-		int bg_color, struct xrdp_pen *pen, struct xrdp_rect *rect)
+		int bg_color, xrdpPen *pen, xrdpRect *rect)
 {
 	return xrdp_orders_line((struct xrdp_orders *) session->orders, mix_mode, startx, starty, endx, endy, rop,
 			bg_color, pen, rect);
@@ -583,7 +583,7 @@ libxrdp_orders_line(xrdpSession *session, int mix_mode, int startx, int starty, 
 /******************************************************************************/
 int EXPORT_CC
 libxrdp_orders_mem_blt(xrdpSession *session, int cache_id, int color_table, int x, int y, int cx, int cy,
-		int rop, int srcx, int srcy, int cache_idx, struct xrdp_rect *rect)
+		int rop, int srcx, int srcy, int cache_idx, xrdpRect *rect)
 {
 	return xrdp_orders_mem_blt((struct xrdp_orders *) session->orders, cache_id, color_table, x, y, cx, cy, rop,
 			srcx, srcy, cache_idx, rect);
@@ -593,7 +593,7 @@ libxrdp_orders_mem_blt(xrdpSession *session, int cache_id, int color_table, int 
 int EXPORT_CC
 libxrdp_orders_text(xrdpSession *session, int font, int flags, int mixmode, int fg_color, int bg_color,
 		int clip_left, int clip_top, int clip_right, int clip_bottom, int box_left, int box_top, int box_right,
-		int box_bottom, int x, int y, char *data, int data_len, struct xrdp_rect *rect)
+		int box_bottom, int x, int y, char *data, int data_len, xrdpRect *rect)
 {
 	return xrdp_orders_text((struct xrdp_orders *) session->orders, font, flags, mixmode, fg_color, bg_color,
 			clip_left, clip_top, clip_right, clip_bottom, box_left, box_top, box_right, box_bottom, x, y,
@@ -627,7 +627,7 @@ libxrdp_orders_send_bitmap(xrdpSession *session, int width, int height, int bpp,
 
 /*****************************************************************************/
 int EXPORT_CC
-libxrdp_orders_send_font(xrdpSession *session, struct xrdp_font_char *font_char, int font_index, int char_index)
+libxrdp_orders_send_font(xrdpSession *session, xrdpFontChar *font_char, int font_index, int char_index)
 {
 	return xrdp_orders_send_font((struct xrdp_orders *) session->orders, font_char, font_index, char_index);
 }
@@ -856,7 +856,7 @@ libxrdp_orders_send_brush(xrdpSession *session, int width, int height, int bpp, 
 /*****************************************************************************/
 int EXPORT_CC
 libxrdp_orders_send_create_os_surface(xrdpSession *session, int id, int width, int height,
-		struct list *del_list)
+		xrdpList *del_list)
 {
 	return xrdp_orders_send_create_os_surface((struct xrdp_orders *) (session->orders), id, width, height, del_list);
 }

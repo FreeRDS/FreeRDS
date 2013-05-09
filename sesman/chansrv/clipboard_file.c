@@ -64,7 +64,7 @@ struct cb_file_info
     tui64 time;
 };
 
-static struct list *g_files_list = 0;
+static xrdpList *g_files_list = 0;
 
 /* used when server is asking for file info from the client */
 static int g_file_request_sent_type = 0;

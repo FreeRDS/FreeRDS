@@ -907,8 +907,8 @@ static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
 	int index;
 	char *val;
 	char cfg_file[256];
-	struct list *names;
-	struct list *values;
+	xrdpList *names;
+	xrdpList *values;
 
 	g_memset(cfg_file, 0, sizeof(char) * 256);
 	/* default to port 3350 */
@@ -1321,8 +1321,8 @@ getPAMAdditionalErrorInfo(const int pamError, struct xrdp_mm *self)
 int APP_CC
 xrdp_mm_connect(struct xrdp_mm *self)
 {
-	struct list *names;
-	struct list *values;
+	xrdpList *names;
+	xrdpList *values;
 	int index;
 	int count;
 	int ok;
@@ -1986,7 +1986,7 @@ int DEFAULT_CC
 server_add_char(struct xrdp_mod *mod, int font, int charactor, int offset, int baseline, int width, int height,
 		char *data)
 {
-	struct xrdp_font_char fi;
+	xrdpFontChar fi;
 
 	fi.offset = offset;
 	fi.baseline = baseline;
@@ -2061,7 +2061,7 @@ server_reset(struct xrdp_mod *mod, int width, int height, int bpp)
 
 /* read the channel section of the ini file into lists
  * return 1 on success 0 on failure */
-int read_allowed_channel_names(struct list *names, struct list *values)
+int read_allowed_channel_names(xrdpList *names, xrdpList *values)
 {
 	int fd;
 	int ret = 0;
@@ -2093,7 +2093,7 @@ int read_allowed_channel_names(struct list *names, struct list *values)
 /* internal function return -1 if name is not in list
  * otherwise return the index 0->count-1*/
 int DEFAULT_CC
-find_name_in_lists(char *inName, struct list *names)
+find_name_in_lists(char *inName, xrdpList *names)
 {
 	int reply = -1; /*means not in the list*/
 	int index;
@@ -2115,7 +2115,7 @@ find_name_in_lists(char *inName, struct list *names)
 #define CHANNEL_NAME_PREFIX "channel."
 /* update the channel lists from connection specific overrides
  * return 1 on success 0 on failure */
-int update_allowed_channel_names(xrdpWm *wm, struct list *names, struct list *values)
+int update_allowed_channel_names(xrdpWm *wm, xrdpList *names, xrdpList *values)
 {
 	int ret = 1;
 	int index;
@@ -2148,7 +2148,7 @@ int update_allowed_channel_names(xrdpWm *wm, struct list *names, struct list *va
 /* internal function return 1 if name is in list of channels
  * and if the value is allowed */
 int DEFAULT_CC
-is_channel_enabled(char *inName, struct list *names, struct list *values)
+is_channel_enabled(char *inName, xrdpList *names, xrdpList *values)
 {
 	int reply = 0; /*means not in the list*/
 	int index;
@@ -2180,8 +2180,8 @@ void init_channel_allowed(xrdpWm *wm)
 	char channelname[MAX_CHANNEL_NAME];
 	int index = 0;
 	int allowindex = 0;
-	struct list *names;
-	struct list *values;
+	xrdpList *names;
+	xrdpList *values;
 
 	/* first reset allowedchannels */
 	for (i = 0; i < MAX_NR_CHANNELS; i++)

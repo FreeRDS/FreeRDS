@@ -103,7 +103,7 @@ int libxrdp_orders_force_send(xrdpSession* session)
 }
 
 int libxrdp_orders_rect(xrdpSession* session, int x, int y,
-		int cx, int cy, int color, struct xrdp_rect* rect)
+		int cx, int cy, int color, xrdpRect* rect)
 {
 	OPAQUE_RECT_ORDER opaqueRect;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
@@ -122,7 +122,7 @@ int libxrdp_orders_rect(xrdpSession* session, int x, int y,
 }
 
 int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
-		int cx, int cy, int srcx, int srcy, int rop, struct xrdp_rect* rect)
+		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect)
 {
 	SCRBLT_ORDER scrblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
@@ -144,10 +144,10 @@ int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
 
 int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
-		struct xrdp_brush* brush, struct xrdp_rect* rect)
+		xrdpBrush* brush, xrdpRect* rect)
 {
 	PATBLT_ORDER patblt;
-	//rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = session->client->update->primary;
 
 	printf("%s\n", __FUNCTION__);
 
@@ -166,13 +166,13 @@ int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 	CopyMemory(patblt.brush.data, brush->pattern, 8);
 	patblt.brush.hatch = patblt.brush.data[0];
 
-	//primary->PatBlt(session->context, &patblt);
+	primary->PatBlt(session->context, &patblt);
 
 	return 0;
 }
 
 int libxrdp_orders_dest_blt(xrdpSession* session,
-		int x, int y, int cx, int cy, int rop, struct xrdp_rect* rect)
+		int x, int y, int cx, int cy, int rop, xrdpRect* rect)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
@@ -180,7 +180,7 @@ int libxrdp_orders_dest_blt(xrdpSession* session,
 
 int libxrdp_orders_line(xrdpSession* session, int mix_mode,
 		int startx, int starty,	int endx, int endy, int rop,
-		int bg_color, struct xrdp_pen* pen, struct xrdp_rect* rect)
+		int bg_color, xrdpPen* pen, xrdpRect* rect)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
@@ -188,7 +188,7 @@ int libxrdp_orders_line(xrdpSession* session, int mix_mode,
 
 int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
-		int srcy, int cache_idx, struct xrdp_rect* rect)
+		int srcy, int cache_idx, xrdpRect* rect)
 {
 	MEMBLT_ORDER memblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
@@ -219,7 +219,7 @@ int libxrdp_orders_text(xrdpSession* session,
 		int box_left, int box_top,
 		int box_right, int box_bottom,
 		int x, int y, char* data, int data_len,
-		struct xrdp_rect* rect)
+		xrdpRect* rect)
 {
 	GLYPH_INDEX_ORDER glyph_index;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
@@ -273,7 +273,7 @@ int libxrdp_orders_send_bitmap(xrdpSession* session,
 }
 
 int libxrdp_orders_send_font(xrdpSession* session,
-		struct xrdp_font_char* font_char, int font_index, int char_index)
+		xrdpFontChar* font_char, int font_index, int char_index)
 {
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
@@ -411,7 +411,7 @@ int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
 }
 
 int libxrdp_orders_send_create_os_surface(xrdpSession* session, int id,
-		int width, int height, struct list* del_list)
+		int width, int height, xrdpList* del_list)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;

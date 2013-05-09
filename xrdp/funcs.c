@@ -23,7 +23,7 @@
 /*****************************************************************************/
 /* returns boolean */
 int APP_CC
-rect_contains_pt(struct xrdp_rect *in, int x, int y)
+rect_contains_pt(xrdpRect *in, int x, int y)
 {
     if (x < in->left)
     {
@@ -50,11 +50,11 @@ rect_contains_pt(struct xrdp_rect *in, int x, int y)
 
 /*****************************************************************************/
 int APP_CC
-rect_intersect(struct xrdp_rect *in1, struct xrdp_rect *in2,
-               struct xrdp_rect *out)
+rect_intersect(xrdpRect *in1, xrdpRect *in2,
+               xrdpRect *out)
 {
     int rv;
-    struct xrdp_rect dumby;
+    xrdpRect dumby;
 
     if (out == 0)
     {
@@ -87,7 +87,7 @@ rect_intersect(struct xrdp_rect *in1, struct xrdp_rect *in2,
 
     if (!rv)
     {
-        g_memset(out, 0, sizeof(struct xrdp_rect));
+        g_memset(out, 0, sizeof(xrdpRect));
     }
 
     return rv;
@@ -96,7 +96,7 @@ rect_intersect(struct xrdp_rect *in1, struct xrdp_rect *in2,
 /*****************************************************************************/
 /* returns boolean */
 int APP_CC
-rect_contained_by(struct xrdp_rect *in1, int left, int top,
+rect_contained_by(xrdpRect *in1, int left, int top,
                   int right, int bottom)
 {
     if (left < in1->left || top < in1->top ||

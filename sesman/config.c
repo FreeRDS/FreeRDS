@@ -37,9 +37,9 @@ int DEFAULT_CC
 config_read(struct config_sesman *cfg)
 {
 	int fd;
-	struct list *sec;
-	struct list *param_n;
-	struct list *param_v;
+	xrdpList *sec;
+	xrdpList *param_n;
+	xrdpList *param_v;
 	char cfg_file[256];
 
 	g_snprintf(cfg_file, 255, "%s/sesman.ini", XRDP_CFG_PATH);
@@ -95,7 +95,7 @@ config_read(struct config_sesman *cfg)
 
 /******************************************************************************/
 int DEFAULT_CC
-config_read_globals(int file, struct config_sesman *cf, struct list *param_n, struct list *param_v)
+config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 	char *buf;
@@ -180,8 +180,8 @@ config_read_globals(int file, struct config_sesman *cf, struct list *param_n, st
 
 /******************************************************************************
  int DEFAULT_CC
- config_read_logging(int file, struct log_config* lc, struct list* param_n,
- struct list* param_v)
+ config_read_logging(int file, struct log_config* lc, xrdpList* param_n,
+ xrdpList* param_v)
  {
  int i;
  char* buf;
@@ -235,7 +235,7 @@ config_read_globals(int file, struct config_sesman *cf, struct list *param_n, st
  */
 /******************************************************************************/
 int DEFAULT_CC
-config_read_security(int file, struct config_security *sc, struct list *param_n, struct list *param_v)
+config_read_security(int file, struct config_security *sc, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 	int gid;
@@ -316,7 +316,7 @@ config_read_security(int file, struct config_security *sc, struct list *param_n,
 
 /******************************************************************************/
 int DEFAULT_CC
-config_read_sessions(int file, struct config_sessions *se, struct list *param_n, struct list *param_v)
+config_read_sessions(int file, struct config_sessions *se, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 	char *buf;
@@ -376,7 +376,7 @@ config_read_sessions(int file, struct config_sessions *se, struct list *param_n,
 
 /******************************************************************************/
 int DEFAULT_CC
-config_read_rdp_params(int file, struct config_sesman *cs, struct list *param_n, struct list *param_v)
+config_read_rdp_params(int file, struct config_sesman *cs, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 
@@ -405,7 +405,7 @@ config_read_rdp_params(int file, struct config_sesman *cs, struct list *param_n,
 
 /******************************************************************************/
 int DEFAULT_CC
-config_read_vnc_params(int file, struct config_sesman *cs, struct list *param_n, struct list *param_v)
+config_read_vnc_params(int file, struct config_sesman *cs, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 

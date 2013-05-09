@@ -1013,8 +1013,8 @@ xrdp_sec_in_mcs_data(struct xrdp_sec *self)
 int APP_CC
 xrdp_sec_incoming(struct xrdp_sec *self)
 {
-	struct list *items = NULL;
-	struct list *values = NULL;
+	xrdpList *items = NULL;
+	xrdpList *values = NULL;
 	int index = 0;
 	char *item = NULL;
 	char *value = NULL;

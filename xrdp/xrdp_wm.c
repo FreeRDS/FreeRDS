@@ -352,8 +352,8 @@ xrdp_wm_load_static_colors_plus(xrdpWm *self, char *autorun_name)
     int fd;
     int index;
     char *val;
-    struct list *names;
-    struct list *values;
+    xrdpList *names;
+    xrdpList *values;
     char cfg_file[256];
 
     if (autorun_name != 0)
@@ -520,8 +520,8 @@ xrdp_wm_init(xrdpWm *self)
 {
     int fd;
     int index;
-    struct list *names;
-    struct list *values;
+    xrdpList *names;
+    xrdpList *values;
     char *q;
     char *r;
     char section_name[256];
@@ -646,8 +646,8 @@ xrdp_wm_get_vis_region(xrdpWm *self, struct xrdp_bitmap *bitmap,
 {
     int i;
     struct xrdp_bitmap *p;
-    struct xrdp_rect a;
-    struct xrdp_rect b;
+    xrdpRect a;
+    xrdpRect b;
 
     /* area we are drawing */
     MAKERECT(a, bitmap->left + x, bitmap->top + y, cx, cy);
@@ -805,9 +805,9 @@ xrdp_wm_bitblt(xrdpWm *self,
 /* from wnd up */
 static int APP_CC
 xrdp_wm_is_rect_vis(xrdpWm *self, struct xrdp_bitmap *wnd,
-                    struct xrdp_rect *rect)
+                    xrdpRect *rect)
 {
-    struct xrdp_rect wnd_rect;
+    xrdpRect wnd_rect;
     struct xrdp_bitmap *b;
     int i;;
 
@@ -856,8 +856,8 @@ static int APP_CC
 xrdp_wm_move_window(xrdpWm *self, struct xrdp_bitmap *wnd,
                     int dx, int dy)
 {
-    struct xrdp_rect rect1;
-    struct xrdp_rect rect2;
+    xrdpRect rect1;
+    xrdpRect rect2;
     struct xrdp_region *r;
     int i;
 
@@ -1081,7 +1081,7 @@ static int APP_CC
 xrdp_wm_clear_popup(xrdpWm *self)
 {
     int i;
-    struct xrdp_rect rect;
+    xrdpRect rect;
     //struct xrdp_bitmap* b;
 
     //b = 0;
@@ -1577,7 +1577,7 @@ callback(long id, int msg, long param1, long param2, long param3, long param4)
 {
 	int rv;
 	xrdpWm *wm;
-	struct xrdp_rect rect;
+	xrdpRect rect;
 
 	if (!id)
 	{
@@ -1670,7 +1670,7 @@ xrdp_wm_log_wnd_notify(struct xrdp_bitmap *wnd,
 {
     struct xrdp_painter *painter;
     xrdpWm *wm;
-    struct xrdp_rect rect;
+    xrdpRect rect;
     int index;
     char *text;
 
@@ -1728,7 +1728,7 @@ xrdp_wm_log_wnd_notify(struct xrdp_bitmap *wnd,
     return 0;
 }
 
-void add_string_to_logwindow(char *msg, struct list *log)
+void add_string_to_logwindow(char *msg, xrdpList *log)
 {
 
     char *new_part_message;

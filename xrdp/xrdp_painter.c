@@ -52,7 +52,7 @@ wm_painter_set_target(struct xrdp_painter *self)
 {
 	int surface_index;
 	int index;
-	struct list *del_list;
+	xrdpList *del_list;
 
 	if (self->wm->target_surface->type == WND_TYPE_SCREEN)
 	{
@@ -264,7 +264,7 @@ xrdp_painter_text_width(struct xrdp_painter *self, char *text)
 	int index;
 	int rv;
 	int len;
-	struct xrdp_font_char *font_item;
+	xrdpFontChar *font_item;
 	twchar *wstr;
 
 	xrdp_painter_font_needed(self);
@@ -301,7 +301,7 @@ xrdp_painter_text_height(struct xrdp_painter *self, char *text)
 	int index;
 	int rv;
 	int len;
-	struct xrdp_font_char *font_item;
+	xrdpFontChar *font_item;
 	twchar *wstr;
 
 	xrdp_painter_font_needed(self);
@@ -333,11 +333,11 @@ xrdp_painter_text_height(struct xrdp_painter *self, char *text)
 
 /*****************************************************************************/
 static int APP_CC
-xrdp_painter_setup_brush(struct xrdp_painter *self, struct xrdp_brush *out_brush, struct xrdp_brush *in_brush)
+xrdp_painter_setup_brush(struct xrdp_painter *self, xrdpBrush *out_brush, xrdpBrush *in_brush)
 {
 	int cache_id;
 
-	g_memcpy(out_brush, in_brush, sizeof(struct xrdp_brush));
+	g_memcpy(out_brush, in_brush, sizeof(xrdpBrush));
 
 	if (in_brush->style == 3)
 	{
@@ -358,11 +358,11 @@ xrdp_painter_setup_brush(struct xrdp_painter *self, struct xrdp_brush *out_brush
 int APP_CC
 xrdp_painter_fill_rect(struct xrdp_painter *self, struct xrdp_bitmap *dst, int x, int y, int cx, int cy)
 {
-	struct xrdp_rect clip_rect;
-	struct xrdp_rect draw_rect;
-	struct xrdp_rect rect;
+	xrdpRect clip_rect;
+	xrdpRect draw_rect;
+	xrdpRect rect;
 	struct xrdp_region *region;
-	struct xrdp_brush brush;
+	xrdpBrush brush;
 	int k;
 	int dx;
 	int dy;
@@ -485,11 +485,11 @@ xrdp_painter_draw_text(struct xrdp_painter *self, struct xrdp_bitmap *dst, int x
 	int dy;
 	char *data;
 	struct xrdp_region *region;
-	struct xrdp_rect rect;
-	struct xrdp_rect clip_rect;
-	struct xrdp_rect draw_rect;
+	xrdpRect rect;
+	xrdpRect clip_rect;
+	xrdpRect draw_rect;
 	struct xrdp_font *font;
-	struct xrdp_font_char *font_item;
+	xrdpFontChar *font_item;
 	twchar *wstr;
 
 	if (self == 0)
@@ -582,9 +582,9 @@ xrdp_painter_draw_text2(struct xrdp_painter *self, struct xrdp_bitmap *dst, int 
 		int clip_left, int clip_top, int clip_right, int clip_bottom, int box_left, int box_top, int box_right,
 		int box_bottom, int x, int y, char *data, int data_len)
 {
-	struct xrdp_rect clip_rect;
-	struct xrdp_rect draw_rect;
-	struct xrdp_rect rect;
+	xrdpRect clip_rect;
+	xrdpRect draw_rect;
+	xrdpRect rect;
 	struct xrdp_region *region;
 	int k;
 	int dx;
@@ -654,10 +654,10 @@ int APP_CC
 xrdp_painter_copy(struct xrdp_painter *self, struct xrdp_bitmap *src, struct xrdp_bitmap *dst, int x, int y, int cx,
 		int cy, int srcx, int srcy)
 {
-	struct xrdp_rect clip_rect;
-	struct xrdp_rect draw_rect;
-	struct xrdp_rect rect1;
-	struct xrdp_rect rect2;
+	xrdpRect clip_rect;
+	xrdpRect draw_rect;
+	xrdpRect rect1;
+	xrdpRect rect2;
 	struct xrdp_region *region;
 	struct xrdp_bitmap *b;
 	int i;
@@ -674,7 +674,7 @@ xrdp_painter_copy(struct xrdp_painter *self, struct xrdp_bitmap *src, struct xrd
 	int w;
 	int h;
 	int index;
-	struct list *del_list;
+	xrdpList *del_list;
 
 	if (self == 0 || src == 0 || dst == 0)
 	{
@@ -846,9 +846,9 @@ xrdp_painter_copy(struct xrdp_painter *self, struct xrdp_bitmap *src, struct xrd
 int APP_CC
 xrdp_painter_line(struct xrdp_painter *self, struct xrdp_bitmap *dst, int x1, int y1, int x2, int y2)
 {
-	struct xrdp_rect clip_rect;
-	struct xrdp_rect draw_rect;
-	struct xrdp_rect rect;
+	xrdpRect clip_rect;
+	xrdpRect draw_rect;
+	xrdpRect rect;
 	struct xrdp_region *region;
 	int k;
 	int dx;

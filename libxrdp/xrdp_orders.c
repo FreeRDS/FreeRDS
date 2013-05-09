@@ -231,7 +231,7 @@ xrdp_orders_check(struct xrdp_orders *self, int max_size)
 /* check if rect is the same as the last one sent */
 /* returns boolean */
 static int APP_CC
-xrdp_orders_last_bounds(struct xrdp_orders *self, struct xrdp_rect *rect)
+xrdp_orders_last_bounds(struct xrdp_orders *self, xrdpRect *rect)
 {
 	if (rect == 0)
 	{
@@ -269,7 +269,7 @@ xrdp_orders_send_delta(struct xrdp_orders *self, int *vals, int count)
 /*****************************************************************************/
 /* returns error */
 static int APP_CC
-xrdp_orders_out_bounds(struct xrdp_orders *self, struct xrdp_rect *rect)
+xrdp_orders_out_bounds(struct xrdp_orders *self, xrdpRect *rect)
 {
 	char *bounds_flags_ptr;
 	int bounds_flags;
@@ -434,7 +434,7 @@ xrdp_order_pack_small_or_tiny(struct xrdp_orders *self, char *order_flags_ptr, i
 /* send a solid rect to client */
 /* max size 23 */
 int APP_CC
-xrdp_orders_rect(struct xrdp_orders *self, int x, int y, int cx, int cy, int color, struct xrdp_rect *rect)
+xrdp_orders_rect(struct xrdp_orders *self, int x, int y, int cx, int cy, int color, xrdpRect *rect)
 {
 	int order_flags;
 	int vals[8];
@@ -591,7 +591,7 @@ xrdp_orders_rect(struct xrdp_orders *self, int x, int y, int cx, int cy, int col
 /* max size 25 */
 int APP_CC
 xrdp_orders_screen_blt(struct xrdp_orders *self, int x, int y, int cx, int cy, int srcx, int srcy, int rop,
-		struct xrdp_rect *rect)
+		xrdpRect *rect)
 {
 	int order_flags = 0;
 	int vals[12] =
@@ -769,14 +769,14 @@ xrdp_orders_screen_blt(struct xrdp_orders *self, int x, int y, int cx, int cy, i
 /* max size 39 */
 int APP_CC
 xrdp_orders_pat_blt(struct xrdp_orders *self, int x, int y, int cx, int cy, int rop, int bg_color, int fg_color,
-		struct xrdp_brush *brush, struct xrdp_rect *rect)
+		xrdpBrush *brush, xrdpRect *rect)
 {
 	int order_flags;
 	int present;
 	int vals[8];
 	char *present_ptr;
 	char *order_flags_ptr;
-	struct xrdp_brush blank_brush;
+	xrdpBrush blank_brush;
 
 	xrdp_orders_check(self, 39);
 	self->order_count++;
@@ -925,7 +925,7 @@ xrdp_orders_pat_blt(struct xrdp_orders *self, int x, int y, int cx, int cy, int 
 	if (brush == 0) /* if nil use blank one */
 	{
 		/* todo can we just set style to zero */
-		g_memset(&blank_brush, 0, sizeof(struct xrdp_brush));
+		g_memset(&blank_brush, 0, sizeof(xrdpBrush));
 		brush = &blank_brush;
 	}
 
@@ -973,7 +973,7 @@ xrdp_orders_pat_blt(struct xrdp_orders *self, int x, int y, int cx, int cy, int 
 /* send a dest blt order */
 /* max size 21 */
 int APP_CC
-xrdp_orders_dest_blt(struct xrdp_orders *self, int x, int y, int cx, int cy, int rop, struct xrdp_rect *rect)
+xrdp_orders_dest_blt(struct xrdp_orders *self, int x, int y, int cx, int cy, int rop, xrdpRect *rect)
 {
 	int order_flags;
 	int vals[8];
@@ -1116,7 +1116,7 @@ xrdp_orders_dest_blt(struct xrdp_orders *self, int x, int y, int cx, int cy, int
 /* max size 32 */
 int APP_CC
 xrdp_orders_line(struct xrdp_orders *self, int mix_mode, int startx, int starty, int endx, int endy, int rop,
-		int bg_color, struct xrdp_pen *pen, struct xrdp_rect *rect)
+		int bg_color, xrdpPen *pen, xrdpRect *rect)
 {
 	int order_flags = 0;
 	int vals[8] =
@@ -1124,9 +1124,9 @@ xrdp_orders_line(struct xrdp_orders *self, int mix_mode, int startx, int starty,
 	int present = 0;
 	char *present_ptr = (char *) NULL;
 	char *order_flags_ptr = (char *) NULL;
-	struct xrdp_pen blank_pen;
+	xrdpPen blank_pen;
 
-	g_memset(&blank_pen, 0, sizeof(struct xrdp_pen));
+	g_memset(&blank_pen, 0, sizeof(xrdpPen));
 
 	/* if mix mode or rop are out of range, mstsc build 6000+ will parse the orders
 	 wrong */
@@ -1284,7 +1284,7 @@ xrdp_orders_line(struct xrdp_orders *self, int mix_mode, int startx, int starty,
 
 	if (pen == 0)
 	{
-		g_memset(&blank_pen, 0, sizeof(struct xrdp_pen));
+		g_memset(&blank_pen, 0, sizeof(xrdpPen));
 		pen = &blank_pen;
 	}
 
@@ -1321,7 +1321,7 @@ xrdp_orders_line(struct xrdp_orders *self, int mix_mode, int startx, int starty,
 /* max size  30 */
 int APP_CC
 xrdp_orders_mem_blt(struct xrdp_orders *self, int cache_id, int color_table, int x, int y, int cx, int cy, int rop,
-		int srcx, int srcy, int cache_idx, struct xrdp_rect *rect)
+		int srcx, int srcy, int cache_idx, xrdpRect *rect)
 {
 	int order_flags = 0;
 	int vals[12] =
@@ -1514,7 +1514,7 @@ xrdp_orders_mem_blt(struct xrdp_orders *self, int cache_id, int color_table, int
 int APP_CC
 xrdp_orders_text(struct xrdp_orders *self, int font, int flags, int mixmode, int fg_color, int bg_color, int clip_left,
 		int clip_top, int clip_right, int clip_bottom, int box_left, int box_top, int box_right,
-		int box_bottom, int x, int y, char *data, int data_len, struct xrdp_rect *rect)
+		int box_bottom, int x, int y, char *data, int data_len, xrdpRect *rect)
 {
 	int order_flags = 0;
 	int present = 0;
@@ -1909,7 +1909,7 @@ height(%d)", lines_sending, height);
 /* max size datasize + 18*/
 /* todo, only sends one for now */
 int APP_CC
-xrdp_orders_send_font(struct xrdp_orders *self, struct xrdp_font_char *font_char, int font_index, int char_index)
+xrdp_orders_send_font(struct xrdp_orders *self, xrdpFontChar *font_char, int font_index, int char_index)
 {
 	int order_flags = 0;
 	int datasize = 0;
@@ -2319,7 +2319,7 @@ xrdp_orders_send_brush(struct xrdp_orders *self, int width, int height, int bpp,
 /* returns error */
 /* send an off screen bitmap entry */
 int APP_CC
-xrdp_orders_send_create_os_surface(struct xrdp_orders *self, int id, int width, int height, struct list *del_list)
+xrdp_orders_send_create_os_surface(struct xrdp_orders *self, int id, int width, int height, xrdpList *del_list)
 {
 	int order_flags;
 	int cache_id;

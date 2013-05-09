@@ -29,7 +29,7 @@
  returns 0 if everything is ok
  returns 1 if problem reading file */
 static int APP_CC
-l_file_read_sections(int fd, int max_file_size, struct list *names)
+l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 {
 	struct stream *s;
 	char text[256];
@@ -207,7 +207,7 @@ file_split_name_value(char *text, char *name, char *value)
 /*****************************************************************************/
 /* return error */
 static int APP_CC
-l_file_read_section(int fd, int max_file_size, const char *section, struct list *names, struct list *values)
+l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *names, xrdpList *values)
 {
 	struct stream *s;
 	char text[512];
@@ -312,7 +312,7 @@ l_file_read_section(int fd, int max_file_size, const char *section, struct list 
  returns 1 if problem reading file */
 /* 32 K file size limit */
 int APP_CC
-file_read_sections(int fd, struct list *names)
+file_read_sections(int fd, xrdpList *names)
 {
 	return l_file_read_sections(fd, 32 * 1024, names);
 }
@@ -322,7 +322,7 @@ file_read_sections(int fd, struct list *names)
 /* this function should be prefered over file_read_sections because it can
  read any file size */
 int APP_CC
-file_by_name_read_sections(const char *file_name, struct list *names)
+file_by_name_read_sections(const char *file_name, xrdpList *names)
 {
 	int fd;
 	int file_size;
@@ -351,7 +351,7 @@ file_by_name_read_sections(const char *file_name, struct list *names)
 /* return error */
 /* 32 K file size limit */
 int APP_CC
-file_read_section(int fd, const char *section, struct list *names, struct list *values)
+file_read_section(int fd, const char *section, xrdpList *names, xrdpList *values)
 {
 	return l_file_read_section(fd, 32 * 1024, section, names, values);
 }
@@ -361,7 +361,7 @@ file_read_section(int fd, const char *section, struct list *names, struct list *
 /* this function should be prefered over file_read_section because it can
  read any file size */
 int APP_CC
-file_by_name_read_section(const char *file_name, const char *section, struct list *names, struct list *values)
+file_by_name_read_section(const char *file_name, const char *section, xrdpList *names, xrdpList *values)
 {
 	int fd;
 	int file_size;
