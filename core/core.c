@@ -24,6 +24,37 @@
 
 #include "core.h"
 
+/**
+ * Custom helpers
+ */
+
+int libxrdp_set_bounds_rect(xrdpSession* session, xrdpRect* rect)
+{
+	rdpUpdate* update = session->client->update;
+
+	if (rect)
+	{
+		rdpBounds bounds;
+
+		bounds.left = rect->left;
+		bounds.top = rect->top;
+		bounds.right = rect->right;
+		bounds.bottom = rect->bottom;
+
+		update->SetBounds(session->context, &bounds);
+	}
+	else
+	{
+		update->SetBounds(session->context, NULL);
+	}
+
+	return 0;
+}
+
+/**
+ * Original XRDP stubbed interface
+ */
+
 xrdpSession* libxrdp_init(tbus id, struct trans* trans)
 {
 	printf("%s\n", __FUNCTION__);
@@ -126,6 +157,7 @@ int libxrdp_orders_rect(xrdpSession* session, int x, int y,
 	opaqueRect.nHeight = cy;
 	opaqueRect.color = color;
 
+	libxrdp_set_bounds_rect(session, rect);
 	primary->OpaqueRect(session->context, &opaqueRect);
 
 	return 0;
@@ -147,6 +179,7 @@ int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
 	scrblt.nXSrc = srcx;
 	scrblt.nYSrc = srcy;
 
+	libxrdp_set_bounds_rect(session, rect);
 	primary->ScrBlt(session->context, &scrblt);
 
 	return 0;
@@ -176,6 +209,7 @@ int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 	CopyMemory(patblt.brush.data, brush->pattern, 8);
 	patblt.brush.hatch = patblt.brush.data[0];
 
+	libxrdp_set_bounds_rect(session, rect);
 	primary->PatBlt(session->context, &patblt);
 
 	return 0;
@@ -216,6 +250,7 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	memblt.cacheIndex = cache_idx;
 	memblt.colorIndex = color_table;
 
+	libxrdp_set_bounds_rect(session, rect);
 	primary->MemBlt(session->context, &memblt);
 
 	return 0;
@@ -255,6 +290,7 @@ int libxrdp_orders_text(xrdpSession* session,
 	glyph_index.cbData = data_len;
 	CopyMemory(glyph_index.data, data, data_len);
 
+	libxrdp_set_bounds_rect(session, rect);
 	primary->GlyphIndex(session->context, &glyph_index);
 
 	return 0;
