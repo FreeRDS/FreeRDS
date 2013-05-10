@@ -201,8 +201,8 @@ int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 	patblt.nWidth = cx;
 	patblt.nHeight = cy;
 	patblt.bRop = (UINT32) rop;
-	patblt.backColor = (UINT32) bg_color;
-	patblt.foreColor = (UINT32) fg_color;
+	patblt.backColor = (UINT32) fg_color;
+	patblt.foreColor = (UINT32) bg_color;
 
 	patblt.brush.x = brush->x_orgin;
 	patblt.brush.y = brush->y_orgin;
@@ -277,8 +277,8 @@ int libxrdp_orders_text(xrdpSession* session,
 	glyph_index.flAccel = flags;
 	glyph_index.ulCharInc = mixmode;
 	glyph_index.fOpRedundant = 0;
-	glyph_index.backColor = bg_color;
-	glyph_index.foreColor = fg_color;
+	glyph_index.backColor = fg_color;
+	glyph_index.foreColor = bg_color;
 	glyph_index.bkLeft = clip_left;
 	glyph_index.bkTop = clip_top;
 	glyph_index.bkRight = clip_right;
