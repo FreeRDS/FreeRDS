@@ -62,10 +62,10 @@ static char w_char[] =
 #endif
 
 /*****************************************************************************/
-struct xrdp_font *APP_CC
+xrdpFont *APP_CC
 xrdp_font_create(xrdpWm *wm)
 {
-	struct xrdp_font *self;
+	xrdpFont *self;
 	struct stream *s;
 	int fd;
 	int b;
@@ -93,7 +93,7 @@ xrdp_font_create(xrdpWm *wm)
 		return 0;
 	}
 
-	self = (struct xrdp_font *) g_malloc(sizeof(struct xrdp_font), 1);
+	self = (xrdpFont *) g_malloc(sizeof(xrdpFont), 1);
 	self->wm = wm;
 	make_stream(s);
 	init_stream(s, file_size + 1024);
@@ -169,7 +169,7 @@ xrdp_font_create(xrdpWm *wm)
 /*****************************************************************************/
 /* free the font and all the items */
 void APP_CC
-xrdp_font_delete(struct xrdp_font *self)
+xrdp_font_delete(xrdpFont *self)
 {
 	int i;
 

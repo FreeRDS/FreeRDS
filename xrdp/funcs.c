@@ -114,7 +114,7 @@ rect_contained_by(xrdpRect *in1, int left, int top,
 /* adjust the bounds to fit in the bitmap */
 /* return false if there is nothing to draw else return true */
 int APP_CC
-check_bounds(struct xrdp_bitmap *b, int *x, int *y, int *cx, int *cy)
+check_bounds(xrdpBitmap *b, int *x, int *y, int *cx, int *cy)
 {
     if (*x >= b->width)
     {

@@ -21,12 +21,12 @@
 #include "xrdp.h"
 
 /*****************************************************************************/
-struct xrdp_region *APP_CC
+xrdpRegion *APP_CC
 xrdp_region_create(xrdpWm *wm)
 {
-	struct xrdp_region *self;
+	xrdpRegion *self;
 
-	self = (struct xrdp_region *) g_malloc(sizeof(struct xrdp_region), 1);
+	self = (xrdpRegion *) g_malloc(sizeof(xrdpRegion), 1);
 	self->wm = wm;
 	self->rects = list_create();
 	self->rects->auto_free = 1;
@@ -35,7 +35,7 @@ xrdp_region_create(xrdpWm *wm)
 
 /*****************************************************************************/
 void APP_CC
-xrdp_region_delete(struct xrdp_region *self)
+xrdp_region_delete(xrdpRegion *self)
 {
 	if (self == 0)
 	{
@@ -48,7 +48,7 @@ xrdp_region_delete(struct xrdp_region *self)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_region_add_rect(struct xrdp_region *self, xrdpRect *rect)
+xrdp_region_add_rect(xrdpRegion *self, xrdpRect *rect)
 {
 	xrdpRect *r;
 
@@ -60,7 +60,7 @@ xrdp_region_add_rect(struct xrdp_region *self, xrdpRect *rect)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_region_insert_rect(struct xrdp_region *self, int i, int left, int top, int right, int bottom)
+xrdp_region_insert_rect(xrdpRegion *self, int i, int left, int top, int right, int bottom)
 {
 	xrdpRect *r;
 
@@ -75,7 +75,7 @@ xrdp_region_insert_rect(struct xrdp_region *self, int i, int left, int top, int 
 
 /*****************************************************************************/
 int APP_CC
-xrdp_region_subtract_rect(struct xrdp_region *self,
+xrdp_region_subtract_rect(xrdpRegion *self,
                           xrdpRect *rect)
 {
     xrdpRect *r;
@@ -298,7 +298,7 @@ xrdp_region_subtract_rect(struct xrdp_region *self,
 
 /*****************************************************************************/
 int APP_CC
-xrdp_region_get_rect(struct xrdp_region *self, int index, xrdpRect *rect)
+xrdp_region_get_rect(xrdpRegion *self, int index, xrdpRect *rect)
 {
 	xrdpRect *r;
 

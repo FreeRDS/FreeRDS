@@ -31,7 +31,7 @@ struct xrdp_listener
 	struct trans* listen_trans; /* in tcp listen mode */
 	xrdpList* process_list;
 	tbus pro_done_event;
-	struct xrdp_startup_params* startup_params;
+	xrdpStartupParams* startup_params;
 };
 
 /* 'g_process' is protected by the semaphore 'g_process_sem'.  One thread sets
@@ -100,7 +100,7 @@ void xrdp_listen_delete(xrdpListener *self)
 	g_free(self);
 }
 
-int xrdp_listen_set_startup_params(xrdpListener *self, struct xrdp_startup_params* startup_params)
+int xrdp_listen_set_startup_params(xrdpListener *self, xrdpStartupParams* startup_params)
 {
 	self->startup_params = startup_params;
 	return 0;
@@ -154,7 +154,7 @@ THREAD_RV THREAD_CC xrdp_process_run(void *in_val)
 
 /*****************************************************************************/
 static int xrdp_listen_get_port_address(char *port, int port_bytes, char *address, int address_bytes, int *tcp_nodelay,
-		int *tcp_keepalive, struct xrdp_startup_params *startup_param)
+		int *tcp_keepalive, xrdpStartupParams *startup_param)
 {
 	int fd;
 	int error;
@@ -568,7 +568,7 @@ int xrdp_listen_main_loop(xrdpListener* self)
 	return 0;
 }
 
-int xrdp_listen_set_startup_params(xrdpListener* self, struct xrdp_startup_params* startup_params)
+int xrdp_listen_set_startup_params(xrdpListener* self, xrdpStartupParams* startup_params)
 {
 	return 0;
 }

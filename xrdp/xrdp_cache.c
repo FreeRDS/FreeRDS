@@ -22,12 +22,12 @@
 #include "log.h"
 
 /*****************************************************************************/
-struct xrdp_cache *APP_CC
+xrdpCache *APP_CC
 xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo *client_info)
 {
-	struct xrdp_cache *self;
+	xrdpCache *self;
 
-	self = (struct xrdp_cache *) g_malloc(sizeof(struct xrdp_cache), 1);
+	self = (xrdpCache *) g_malloc(sizeof(xrdpCache), 1);
 	self->wm = owner;
 	self->session = session;
 	self->use_bitmap_comp = client_info->use_bitmap_comp;
@@ -46,7 +46,7 @@ xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo *client_in
 
 /*****************************************************************************/
 void APP_CC
-xrdp_cache_delete(struct xrdp_cache *self)
+xrdp_cache_delete(xrdpCache *self)
 {
 	int i;
 	int j;
@@ -87,7 +87,7 @@ xrdp_cache_delete(struct xrdp_cache *self)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_cache_reset(struct xrdp_cache *self, xrdpClientInfo *client_info)
+xrdp_cache_reset(xrdpCache *self, xrdpClientInfo *client_info)
 {
 	xrdpWm *wm;
 	xrdpSession *session;
@@ -116,7 +116,7 @@ xrdp_cache_reset(struct xrdp_cache *self, xrdpClientInfo *client_info)
 	wm = self->wm;
 	session = self->session;
 	/* set whole struct to zero */
-	g_memset(self, 0, sizeof(struct xrdp_cache));
+	g_memset(self, 0, sizeof(xrdpCache));
 	/* set some stuff back */
 	self->wm = wm;
 	self->session = session;
@@ -136,7 +136,7 @@ xrdp_cache_reset(struct xrdp_cache *self, xrdpClientInfo *client_info)
 /*****************************************************************************/
 /* returns cache id */
 int APP_CC
-xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int hints)
+xrdp_cache_add_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int hints)
 {
 	int i = 0;
 	int j = 0;
@@ -339,7 +339,7 @@ xrdp_cache_add_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int h
 /* not used */
 /* not sure how to use a palette in rdp */
 int APP_CC
-xrdp_cache_add_palette(struct xrdp_cache *self, int *palette)
+xrdp_cache_add_palette(xrdpCache *self, int *palette)
 {
 	int i;
 	int oldest;
@@ -394,7 +394,7 @@ xrdp_cache_add_palette(struct xrdp_cache *self, int *palette)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_cache_add_char(struct xrdp_cache *self, xrdpFontChar *font_item)
+xrdp_cache_add_char(xrdpCache *self, xrdpFontChar *font_item)
 {
 	int i;
 	int j;
@@ -460,7 +460,7 @@ xrdp_cache_add_char(struct xrdp_cache *self, xrdpFontChar *font_item)
  returns the index in the cache
  does not take ownership of pointer_item */
 int APP_CC
-xrdp_cache_add_pointer(struct xrdp_cache *self, struct xrdp_pointer_item *pointer_item)
+xrdp_cache_add_pointer(xrdpCache *self, xrdpPointerItem *pointer_item)
 {
 	int i;
 	int oldest;
@@ -518,7 +518,7 @@ xrdp_cache_add_pointer(struct xrdp_cache *self, struct xrdp_pointer_item *pointe
 /*****************************************************************************/
 /* this does not take owership of pointer_item, it makes a copy */
 int APP_CC
-xrdp_cache_add_pointer_static(struct xrdp_cache *self, struct xrdp_pointer_item *pointer_item, int index)
+xrdp_cache_add_pointer_static(xrdpCache *self, xrdpPointerItem *pointer_item, int index)
 {
 
 	if (self == 0)
@@ -542,7 +542,7 @@ xrdp_cache_add_pointer_static(struct xrdp_cache *self, struct xrdp_pointer_item 
 /*****************************************************************************/
 /* this does not take owership of brush_item_data, it makes a copy */
 int APP_CC
-xrdp_cache_add_brush(struct xrdp_cache *self, char *brush_item_data)
+xrdp_cache_add_brush(xrdpCache *self, char *brush_item_data)
 {
 	int i;
 	int oldest;
@@ -589,9 +589,9 @@ xrdp_cache_add_brush(struct xrdp_cache *self, char *brush_item_data)
 /*****************************************************************************/
 /* returns error */
 int APP_CC
-xrdp_cache_add_os_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, int rdpindex)
+xrdp_cache_add_os_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int rdpindex)
 {
-	struct xrdp_os_bitmap_item *bi;
+	xrdpOffscreenBitmapItem *bi;
 
 	if ((rdpindex < 0) || (rdpindex >= 2000))
 	{
@@ -606,9 +606,9 @@ xrdp_cache_add_os_bitmap(struct xrdp_cache *self, struct xrdp_bitmap *bitmap, in
 /*****************************************************************************/
 /* returns error */
 int APP_CC
-xrdp_cache_remove_os_bitmap(struct xrdp_cache *self, int rdpindex)
+xrdp_cache_remove_os_bitmap(xrdpCache *self, int rdpindex)
 {
-	struct xrdp_os_bitmap_item *bi;
+	xrdpOffscreenBitmapItem *bi;
 	int index;
 
 	if ((rdpindex < 0) || (rdpindex >= 2000))
@@ -629,15 +629,15 @@ xrdp_cache_remove_os_bitmap(struct xrdp_cache *self, int rdpindex)
 	}
 
 	xrdp_bitmap_delete(bi->bitmap);
-	g_memset(bi, 0, sizeof(struct xrdp_os_bitmap_item));
+	g_memset(bi, 0, sizeof(xrdpOffscreenBitmapItem));
 	return 0;
 }
 
 /*****************************************************************************/
-struct xrdp_os_bitmap_item *APP_CC
-xrdp_cache_get_os_bitmap(struct xrdp_cache *self, int rdpindex)
+xrdpOffscreenBitmapItem *APP_CC
+xrdp_cache_get_os_bitmap(xrdpCache *self, int rdpindex)
 {
-	struct xrdp_os_bitmap_item *bi;
+	xrdpOffscreenBitmapItem *bi;
 
 	if ((rdpindex < 0) || (rdpindex >= 2000))
 	{

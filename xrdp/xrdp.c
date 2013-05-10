@@ -193,7 +193,7 @@ g_process_waiting_function(void)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_process_params(int argc, char **argv, struct xrdp_startup_params *startup_params)
+xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
 {
 	int index;
 	char option[128];
@@ -281,7 +281,7 @@ main(int argc, char **argv)
 	char pid_file[256];
 	char cfg_file[256];
 	enum logReturns error;
-	struct xrdp_startup_params *startup_params;
+	xrdpStartupParams *startup_params;
 
 	g_init("xrdp");
 	ssl_init();
@@ -355,7 +355,7 @@ main(int argc, char **argv)
 		g_exit(1);
 	}
 
-	startup_params = (struct xrdp_startup_params *) g_malloc(sizeof(struct xrdp_startup_params), 1);
+	startup_params = (xrdpStartupParams *) g_malloc(sizeof(xrdpStartupParams), 1);
 
 	if (xrdp_process_params(argc, argv, startup_params) != 0)
 	{

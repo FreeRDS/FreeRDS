@@ -95,7 +95,7 @@ xrdp_wm_send_bell(xrdpWm *self)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_wm_send_bitmap(xrdpWm *self, struct xrdp_bitmap *bitmap, int x, int y, int cx, int cy)
+xrdp_wm_send_bitmap(xrdpWm *self, xrdpBitmap *bitmap, int x, int y, int cx, int cy)
 {
 	return libxrdp_send_bitmap(self->session, bitmap->width, bitmap->height, bitmap->bpp, bitmap->data, x, y, cx,
 			cy);
@@ -103,10 +103,10 @@ xrdp_wm_send_bitmap(xrdpWm *self, struct xrdp_bitmap *bitmap, int x, int y, int 
 
 /*****************************************************************************/
 int APP_CC
-xrdp_wm_set_focused(xrdpWm *self, struct xrdp_bitmap *wnd)
+xrdp_wm_set_focused(xrdpWm *self, xrdpBitmap *wnd)
 {
-	struct xrdp_bitmap *focus_out_control;
-	struct xrdp_bitmap *focus_in_control;
+	xrdpBitmap *focus_out_control;
+	xrdpBitmap *focus_in_control;
 
 	if (self == 0)
 	{
@@ -177,14 +177,14 @@ int APP_CC
 xrdp_wm_pointer(xrdpWm *self, char *data, char *mask, int x, int y, int bpp)
 {
 	int bytes;
-	struct xrdp_pointer_item pointer_item;
+	xrdpPointerItem pointer_item;
 
 	if (bpp == 0)
 	{
 		bpp = 24;
 	}
 	bytes = ((bpp + 7) / 8) * 32 * 32;
-	g_memset(&pointer_item, 0, sizeof(struct xrdp_pointer_item));
+	g_memset(&pointer_item, 0, sizeof(xrdpPointerItem));
 	pointer_item.x = x;
 	pointer_item.y = y;
 	pointer_item.bpp = bpp;
@@ -496,7 +496,7 @@ xrdp_wm_load_static_colors_plus(xrdpWm *self, char *autorun_name)
 int APP_CC
 xrdp_wm_load_static_pointers(xrdpWm *self)
 {
-    struct xrdp_pointer_item pointer_item;
+    xrdpPointerItem pointer_item;
     char file_path[256];
 
     DEBUG(("sending cursor"));
@@ -640,12 +640,12 @@ xrdp_wm_init(xrdpWm *self)
 /* returns the number for rects visible for an area relative to a drawable */
 /* putting the rects in region */
 int APP_CC
-xrdp_wm_get_vis_region(xrdpWm *self, struct xrdp_bitmap *bitmap,
+xrdp_wm_get_vis_region(xrdpWm *self, xrdpBitmap *bitmap,
                        int x, int y, int cx, int cy,
-                       struct xrdp_region *region, int clip_children)
+                       xrdpRegion *region, int clip_children)
 {
     int i;
-    struct xrdp_bitmap *p;
+    xrdpBitmap *p;
     xrdpRect a;
     xrdpRect b;
 
@@ -670,7 +670,7 @@ xrdp_wm_get_vis_region(xrdpWm *self, struct xrdp_bitmap *bitmap,
         /* loop through all windows in z order */
         for (i = 0; i < self->screen->child_list->count; i++)
         {
-            p = (struct xrdp_bitmap *)list_get_item(self->screen->child_list, i);
+            p = (xrdpBitmap *)list_get_item(self->screen->child_list, i);
 
             if (p == bitmap || p == bitmap->parent)
             {
@@ -687,18 +687,18 @@ xrdp_wm_get_vis_region(xrdpWm *self, struct xrdp_bitmap *bitmap,
 
 /*****************************************************************************/
 /* return the window at x, y on the screen */
-static struct xrdp_bitmap *APP_CC
-xrdp_wm_at_pos(struct xrdp_bitmap *wnd, int x, int y,
-               struct xrdp_bitmap **wnd1)
+static xrdpBitmap *APP_CC
+xrdp_wm_at_pos(xrdpBitmap *wnd, int x, int y,
+               xrdpBitmap **wnd1)
 {
     int i;
-    struct xrdp_bitmap *p;
-    struct xrdp_bitmap *q;
+    xrdpBitmap *p;
+    xrdpBitmap *q;
 
     /* loop through all windows in z order */
     for (i = 0; i < wnd->child_list->count; i++)
     {
-        p = (struct xrdp_bitmap *)list_get_item(wnd->child_list, i);
+        p = (xrdpBitmap *)list_get_item(wnd->child_list, i);
 
         if (x >= p->left && y >= p->top && x < p->left + p->width &&
                 y < p->top + p->height)
@@ -767,8 +767,8 @@ xrdp_wm_xor_pat(xrdpWm *self, int x, int y, int cx, int cy)
 /* no clipping rects, no windows in the way, nothing */
 static int APP_CC
 xrdp_wm_bitblt(xrdpWm *self,
-               struct xrdp_bitmap *dst, int dx, int dy,
-               struct xrdp_bitmap *src, int sx, int sy,
+               xrdpBitmap *dst, int dx, int dy,
+               xrdpBitmap *src, int sx, int sy,
                int sw, int sh, int rop)
 {
     //  int i;
@@ -804,11 +804,11 @@ xrdp_wm_bitblt(xrdpWm *self,
 /* return true is rect is totaly exposed going in reverse z order */
 /* from wnd up */
 static int APP_CC
-xrdp_wm_is_rect_vis(xrdpWm *self, struct xrdp_bitmap *wnd,
+xrdp_wm_is_rect_vis(xrdpWm *self, xrdpBitmap *wnd,
                     xrdpRect *rect)
 {
     xrdpRect wnd_rect;
-    struct xrdp_bitmap *b;
+    xrdpBitmap *b;
     int i;;
 
     /* if rect is part off screen */
@@ -837,7 +837,7 @@ xrdp_wm_is_rect_vis(xrdpWm *self, struct xrdp_bitmap *wnd,
 
     while (i >= 0)
     {
-        b = (struct xrdp_bitmap *)list_get_item(self->screen->child_list, i);
+        b = (xrdpBitmap *)list_get_item(self->screen->child_list, i);
         MAKERECT(wnd_rect, b->left, b->top, b->width, b->height);
 
         if (rect_intersect(rect, &wnd_rect, 0))
@@ -853,12 +853,12 @@ xrdp_wm_is_rect_vis(xrdpWm *self, struct xrdp_bitmap *wnd,
 
 /*****************************************************************************/
 static int APP_CC
-xrdp_wm_move_window(xrdpWm *self, struct xrdp_bitmap *wnd,
+xrdp_wm_move_window(xrdpWm *self, xrdpBitmap *wnd,
                     int dx, int dy)
 {
     xrdpRect rect1;
     xrdpRect rect2;
-    struct xrdp_region *r;
+    xrdpRegion *r;
     int i;
 
     MAKERECT(rect1, wnd->left, wnd->top, wnd->width, wnd->height);
@@ -975,7 +975,7 @@ xrdp_wm_draw_dragging_box(xrdpWm *self, int do_begin_end)
 int APP_CC
 xrdp_wm_mouse_move(xrdpWm *self, int x, int y)
 {
-    struct xrdp_bitmap *b;
+    xrdpBitmap *b;
 
     if (self == 0)
     {
@@ -1082,7 +1082,7 @@ xrdp_wm_clear_popup(xrdpWm *self)
 {
     int i;
     xrdpRect rect;
-    //struct xrdp_bitmap* b;
+    //xrdpBitmap* b;
 
     //b = 0;
     if (self->popup_wnd != 0)
@@ -1104,9 +1104,9 @@ xrdp_wm_clear_popup(xrdpWm *self)
 int APP_CC
 xrdp_wm_mouse_click(xrdpWm *self, int x, int y, int but, int down)
 {
-    struct xrdp_bitmap *control;
-    struct xrdp_bitmap *focus_out_control;
-    struct xrdp_bitmap *wnd;
+    xrdpBitmap *control;
+    xrdpBitmap *focus_out_control;
+    xrdpBitmap *wnd;
     int newx;
     int newy;
     int oldx;
@@ -1341,7 +1341,7 @@ int APP_CC
 xrdp_wm_key(xrdpWm *self, int device_flags, int scan_code)
 {
     int msg;
-    struct xrdp_key_info *ki;
+    xrdpKeyInfo *ki;
 
     /*g_printf("count %d\n", self->key_down_list->count);*/
     scan_code = scan_code % 128;
@@ -1439,7 +1439,7 @@ xrdp_wm_key_sync(xrdpWm *self, int device_flags, int key_flags)
 
 /*****************************************************************************/
 int APP_CC
-xrdp_wm_pu(xrdpWm *self, struct xrdp_bitmap *control)
+xrdp_wm_pu(xrdpWm *self, xrdpBitmap *control)
 {
     int x;
     int y;
@@ -1664,11 +1664,11 @@ xrdp_wm_login_mode_changed(xrdpWm *self)
 /*****************************************************************************/
 /* this is the log windows nofity function */
 static int DEFAULT_CC
-xrdp_wm_log_wnd_notify(struct xrdp_bitmap *wnd,
-                       struct xrdp_bitmap *sender,
+xrdp_wm_log_wnd_notify(xrdpBitmap *wnd,
+                       xrdpBitmap *sender,
                        int msg, long param1, long param2)
 {
-    struct xrdp_painter *painter;
+    xrdpPainter *painter;
     xrdpWm *wm;
     xrdpRect rect;
     int index;
@@ -1711,7 +1711,7 @@ xrdp_wm_log_wnd_notify(struct xrdp_bitmap *wnd,
     }
     else if (msg == WM_XRDP_PAINT) /* 3 */
     {
-        painter = (struct xrdp_painter *)param1;
+        painter = (xrdpPainter *)param1;
 
         if (painter != 0)
         {
@@ -1750,7 +1750,7 @@ void add_string_to_logwindow(char *msg, xrdpList *log)
 int APP_CC
 xrdp_wm_log_msg(xrdpWm *self, char *msg)
 {
-    struct xrdp_bitmap *but;
+    xrdpBitmap *but;
     int w;
     int h;
     int xoffset;

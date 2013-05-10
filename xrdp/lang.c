@@ -64,12 +64,12 @@ static struct codepair g_map[] =
 };
 
 /*****************************************************************************/
-struct xrdp_key_info *APP_CC
+xrdpKeyInfo *APP_CC
 get_key_info_from_scan_code(int device_flags, int scan_code, int *keys,
                             int caps_lock, int num_lock, int scroll_lock,
-                            struct xrdp_keymap *keymap)
+                            xrdpKeymap *keymap)
 {
-    struct xrdp_key_info *rv;
+    xrdpKeyInfo *rv;
     int shift;
     int altgr;
     int ext;
@@ -122,9 +122,9 @@ get_key_info_from_scan_code(int device_flags, int scan_code, int *keys,
 int APP_CC
 get_keysym_from_scan_code(int device_flags, int scan_code, int *keys,
                           int caps_lock, int num_lock, int scroll_lock,
-                          struct xrdp_keymap *keymap)
+                          xrdpKeymap *keymap)
 {
-    struct xrdp_key_info *ki;
+    xrdpKeyInfo *ki;
 
     ki = get_key_info_from_scan_code(device_flags, scan_code, keys,
                                      caps_lock, num_lock, scroll_lock,
@@ -142,9 +142,9 @@ get_keysym_from_scan_code(int device_flags, int scan_code, int *keys,
 twchar APP_CC
 get_char_from_scan_code(int device_flags, int scan_code, int *keys,
                         int caps_lock, int num_lock, int scroll_lock,
-                        struct xrdp_keymap *keymap)
+                        xrdpKeymap *keymap)
 {
-    struct xrdp_key_info *ki;
+    xrdpKeyInfo *ki;
 
     ki = get_key_info_from_scan_code(device_flags, scan_code, keys,
                                      caps_lock, num_lock, scroll_lock,
@@ -160,7 +160,7 @@ get_char_from_scan_code(int device_flags, int scan_code, int *keys,
 
 /*****************************************************************************/
 static int APP_CC
-km_read_section(int fd, const char *section_name, struct xrdp_key_info *keymap)
+km_read_section(int fd, const char *section_name, xrdpKeyInfo *keymap)
 {
     xrdpList *names;
     xrdpList *values;
@@ -214,11 +214,11 @@ km_read_section(int fd, const char *section_name, struct xrdp_key_info *keymap)
 }
 
 /*****************************************************************************/
-int APP_CC get_keymaps(int keylayout, struct xrdp_keymap* keymap)
+int APP_CC get_keymaps(int keylayout, xrdpKeymap* keymap)
 {
 	int fd;
 	char* filename;
-	struct xrdp_keymap* lkeymap;
+	xrdpKeymap* lkeymap;
 
 	filename = (char*) g_malloc(256, 0);
 	/* check if there is a keymap file */
@@ -236,11 +236,11 @@ int APP_CC get_keymaps(int keylayout, struct xrdp_keymap* keymap)
 
 		if (fd > 0)
 		{
-			lkeymap = (struct xrdp_keymap *) g_malloc(sizeof(struct xrdp_keymap), 0);
+			lkeymap = (xrdpKeymap *) g_malloc(sizeof(xrdpKeymap), 0);
 			/* make a copy of the build in keymap */
-			g_memcpy(lkeymap, keymap, sizeof(struct xrdp_keymap));
+			g_memcpy(lkeymap, keymap, sizeof(xrdpKeymap));
 			/* clear the keymaps */
-			g_memset(keymap, 0, sizeof(struct xrdp_keymap));
+			g_memset(keymap, 0, sizeof(xrdpKeymap));
 			/* read the keymaps */
 			km_read_section(fd, "noshift", keymap->keys_noshift);
 			km_read_section(fd, "shift", keymap->keys_shift);
@@ -248,7 +248,7 @@ int APP_CC get_keymaps(int keylayout, struct xrdp_keymap* keymap)
 			km_read_section(fd, "capslock", keymap->keys_capslock);
 			km_read_section(fd, "shiftcapslock", keymap->keys_shiftcapslock);
 
-			if (g_memcmp(lkeymap, keymap, sizeof(struct xrdp_keymap)) != 0)
+			if (g_memcmp(lkeymap, keymap, sizeof(xrdpKeymap)) != 0)
 			{
 				log_message(LOG_LEVEL_WARNING, "local keymap file for 0x%4.4x found and dosen't match "
 							"built in keymap, using local keymap file", keylayout);
