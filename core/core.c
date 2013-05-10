@@ -22,6 +22,8 @@
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
 
+#include "bitmap.h"
+
 #include "core.h"
 
 /**
@@ -398,6 +400,9 @@ int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 int libxrdp_orders_send_bitmap2(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints)
 {
+	wStream* s;
+	wStream* ts;
+	int e, lines;
 	int bytesPerPixel;
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
@@ -407,17 +412,33 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	cache_bitmap_v2.bitmapBpp = bpp;
 	cache_bitmap_v2.bitmapWidth = width;
 	cache_bitmap_v2.bitmapHeight = height;
-	cache_bitmap_v2.bitmapDataStream = (BYTE*) data;
 	cache_bitmap_v2.cacheId = cache_id;
 	cache_bitmap_v2.cacheIndex = cache_idx;
-	cache_bitmap_v2.compressed = FALSE;
-	cache_bitmap_v2.flags = 0;
+	cache_bitmap_v2.compressed = TRUE;
+	cache_bitmap_v2.flags = CBR2_NO_BITMAP_COMPRESSION_HDR;
+
+	e = width % 4;
+
+	if (e != 0)
+		e = 4 - e;
+
+	s = Stream_New(NULL, 16384);
+	ts = Stream_New(NULL, 16384);
+
+	lines = freerdp_bitmap_compress(data, width, height, s, bpp, 16384, height - 1, ts, e);
+	Stream_SealLength(s);
+
+	cache_bitmap_v2.bitmapDataStream = Stream_Buffer(s);
+	cache_bitmap_v2.bitmapLength = Stream_Length(s);
+	cache_bitmap_v2.cbCompMainBodySize = Stream_Length(s);
 
 	bytesPerPixel = (bpp + 7) / 8;
 	cache_bitmap_v2.cbUncompressedSize = width * height * bytesPerPixel;
-	cache_bitmap_v2.bitmapLength = width * height * bytesPerPixel;
 
 	secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
+
+	Stream_Free(s, TRUE);
+	Stream_Free(ts, TRUE);
 
 	return 0;
 }

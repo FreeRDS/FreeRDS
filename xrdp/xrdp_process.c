@@ -561,7 +561,7 @@ void* xrdp_process_main_thread(void* arg)
 	xfp->info->cache3_entries = entries;
 	xfp->info->cache3_size = 4096 * bytesPerPixel;
 
-	xfp->info->use_bitmap_comp = 0;
+	xfp->info->use_bitmap_comp = 1;
 	xfp->info->bitmap_cache_version = 2;
 	xfp->info->bitmap_cache_persist_enable = 0;
 	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
