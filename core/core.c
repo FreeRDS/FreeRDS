@@ -454,20 +454,20 @@ int libxrdp_query_channel(xrdpSession* session, int index,
 		char* channel_name, int* channel_flags)
 {
 	printf("%s\n", __FUNCTION__);
-	return 0;
+	return 1;
 }
 
 int libxrdp_get_channel_id(xrdpSession* session, char* name)
 {
 	printf("%s\n", __FUNCTION__);
-	return 0;
+	return -1;
 }
 
 int libxrdp_send_to_channel(xrdpSession* session, int channel_id,
 		char* data, int data_len, int total_data_len, int flags)
 {
 	printf("%s\n", __FUNCTION__);
-	return 0;
+	return 1;
 }
 
 int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,

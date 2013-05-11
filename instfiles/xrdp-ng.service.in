@@ -5,8 +5,8 @@ After=syslog.target network.target xrdp-ng-sesman.service
 
 [Service]
 Type=forking
-PIDFile=${XRDP_PID_PATH}/xrdp.pid
-EnvironmentFile=/etc/sysconfig/xrdp
+PIDFile=${XRDP_PID_PATH}/xrdp-ng.pid
+EnvironmentFile=/etc/sysconfig/xrdp-ng
 ExecStart=${XRDP_SBIN_PATH}/xrdp-ng $XRDP_OPTIONS
 ExecStop=${XRDP_SBIN_PATH}/xrdp-ng $XRDP_OPTIONS --kill
 

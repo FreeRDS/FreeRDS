@@ -507,6 +507,13 @@ int xrdp_listen_main_loop(xrdpListener* self)
 	int i;
 	int fds;
 	int max_fds;
+	int robjc;
+	int wobjc;
+	long sync_obj;
+	long term_obj;
+	long robjs[32];
+	long wobjs[32];
+	int itimeout;
 	int rcount;
 	void* rfds[32];
 	fd_set rfds_set;
@@ -517,9 +524,19 @@ int xrdp_listen_main_loop(xrdpListener* self)
 
 	listener->Open(listener, NULL, 3389);
 
+	term_obj = g_get_term_event();
+	sync_obj = g_get_sync_event();
+
 	while (1)
 	{
 		rcount = 0;
+
+		robjc = 0;
+		wobjc = 0;
+		itimeout = -1;
+
+		robjs[robjc++] = term_obj;
+		robjs[robjc++] = sync_obj;
 
 		if (listener->GetFileDescriptor(listener, rfds, &rcount) != TRUE)
 		{
@@ -533,6 +550,16 @@ int xrdp_listen_main_loop(xrdpListener* self)
 		for (i = 0; i < rcount; i++)
 		{
 			fds = (int)(long)(rfds[i]);
+
+			if (fds > max_fds)
+				max_fds = fds;
+
+			FD_SET(fds, &rfds_set);
+		}
+
+		for (i = 0; i < robjc; i++)
+		{
+			fds = robjs[i];
 
 			if (fds > max_fds)
 				max_fds = fds;
@@ -560,6 +587,17 @@ int xrdp_listen_main_loop(xrdpListener* self)
 		{
 			fprintf(stderr, "Failed to check FreeRDP file descriptor\n");
 			break;
+		}
+
+		if (g_is_wait_obj_set(term_obj))
+		{
+			break;
+		}
+
+		if (g_is_wait_obj_set(sync_obj))
+		{
+			g_reset_wait_obj(sync_obj);
+			g_process_waiting_function();
 		}
 	}
 

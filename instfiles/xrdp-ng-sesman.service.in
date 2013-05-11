@@ -6,7 +6,7 @@ StopWhenUnneeded=true
 [Service]
 Type=forking
 PIDFile=${XRDP_PID_PATH}/xrdp-ng-sesman.pid
-EnvironmentFile=/etc/sysconfig/xrdp
+EnvironmentFile=/etc/sysconfig/xrdp-ng
 ExecStart=${XRDP_SBIN_PATH}/xrdp-ng-sesman $SESMAN_OPTIONS
 ExecStop=${XRDP_SBIN_PATH}/xrdp-ng-sesman $SESMAN_OPTIONS --kill
 

@@ -34,24 +34,22 @@
 static int g_term = 0;
 
 /*****************************************************************************/
-void DEFAULT_CC
-term_signal_handler(int sig)
+void DEFAULT_CC term_signal_handler(int sig)
 {
 	g_writeln("xrdp-ng-sessvc: term_signal_handler: got signal %d", sig);
 	g_term = 1;
 }
 
 /*****************************************************************************/
-void DEFAULT_CC
-nil_signal_handler(int sig)
+void DEFAULT_CC nil_signal_handler(int sig)
 {
 	g_writeln("xrdp-ng-sessvc: nil_signal_handler: got signal %d", sig);
 }
 
 /******************************************************************************/
 /* chansrv can exit at any time without cleaning up, its an xlib app */
-int APP_CC
-chansrv_cleanup(int pid) {
+int APP_CC chansrv_cleanup(int pid)
+{
 	char text[256];
 
 	g_snprintf(text, 255, "/tmp/.xrdp/xrdp_chansrv_%8.8x_main_term", pid);
@@ -72,8 +70,7 @@ chansrv_cleanup(int pid) {
 }
 
 /******************************************************************************/
-int DEFAULT_CC
-main(int argc, char **argv)
+int DEFAULT_CC main(int argc, char **argv)
 {
 	int ret = 0;
 	int chansrv_pid = 0;
@@ -136,6 +133,7 @@ main(int argc, char **argv)
 
 	g_writeln("xrdp-ng-sessvc: WM is dead (waitpid said %d, errno is %d) "
 		"exiting...", ret, lerror);
+
 	/* kill channel server */
 	g_writeln("xrdp-ng-sessvc: stopping channel server");
 	g_sigterm(chansrv_pid);
@@ -161,5 +159,6 @@ main(int argc, char **argv)
 
 	g_writeln("xrdp-ng-sessvc: clean exit");
 	g_deinit();
+
 	return 0;
 }
