@@ -20,6 +20,8 @@
 
 #include "xrdp.h"
 
+static int g_session_id = 0;
+
 #define NEW_XRDP_PROCESS	1
 
 #ifndef NEW_XRDP_PROCESS
@@ -35,8 +37,6 @@ struct xrdp_process
 	tbus done_event;
 	int session_id;
 };
-
-static int g_session_id = 0;
 
 /*****************************************************************************/
 /* always called from xrdp_listen thread */
@@ -324,8 +324,10 @@ xrdpProcess* xrdp_process_create(xrdpListener* owner, tbus done_event)
 
 xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* transport)
 {
+	int pid;
 	xrdpProcess* xfp;
 	freerdp_peer* client;
+	char event_name[256];
 
 	client = (freerdp_peer*) transport;
 
@@ -335,6 +337,13 @@ xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* 
 	freerdp_peer_context_new(client);
 
 	xfp = (xrdpProcess*) client->context;
+
+	xfp->done_event = done_event;
+	g_session_id++;
+	xfp->session_id = g_session_id;
+	pid = g_getpid();
+	g_snprintf(event_name, 255, "xrdp_%8.8x_process_self_term_event_%8.8x", pid, xfp->session_id);
+	xfp->term_event = g_create_wait_obj(event_name);
 
 	return xfp;
 }
@@ -351,7 +360,7 @@ int xrdp_process_get_status(xrdpProcess* self)
 
 tbus xrdp_process_get_term_event(xrdpProcess* self)
 {
-	return 0;
+	return self->term_event;
 }
 
 xrdpSession* xrdp_process_get_session(xrdpProcess* self)
@@ -361,7 +370,7 @@ xrdpSession* xrdp_process_get_session(xrdpProcess* self)
 
 int xrdp_process_get_session_id(xrdpProcess* self)
 {
-	return 0;
+	return self->session_id;
 }
 
 xrdpWm* xrdp_process_get_wm(xrdpProcess* self)
@@ -509,6 +518,7 @@ void* xrdp_process_main_thread(void* arg)
 	int robjc;
 	int wobjc;
 	int entries;
+	long term_obj;
 	long robjs[32];
 	long wobjs[32];
 	int itimeout;
@@ -583,6 +593,8 @@ void* xrdp_process_main_thread(void* arg)
 	xfp->session->callback = callback;
 	xrdp_input_register_callbacks(client->input);
 
+	term_obj = g_get_term_event();
+
 	while (1)
 	{
 		rcount = 0;
@@ -602,6 +614,9 @@ void* xrdp_process_main_thread(void* arg)
 		{
 			xrdp_wm_get_wait_objs(xfp->wm, robjs, &robjc, wobjs, &wobjc, &itimeout);
 		}
+
+		robjs[robjc++] = term_obj;
+		robjs[robjc++] = xfp->term_event;
 
 		max_fds = 0;
 		FD_ZERO(&rfds_set);
@@ -657,6 +672,16 @@ void* xrdp_process_main_thread(void* arg)
 			{
 				break;
 			}
+		}
+
+		if (g_is_wait_obj_set(term_obj))
+		{
+			break;
+		}
+
+		if (g_is_wait_obj_set(xfp->term_event))
+		{
+			break;
 		}
 	}
 

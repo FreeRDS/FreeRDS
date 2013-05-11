@@ -81,15 +81,15 @@ verify_pam_conv(int num_msg, const struct pam_message **msg, struct pam_response
 }
 
 /******************************************************************************/
-static void DEFAULT_CC
-get_service_name(char *service_name)
+static void DEFAULT_CC get_service_name(char *service_name)
 {
 	service_name[0] = 0;
 
-	if (g_file_exist("/etc/pam.d/xrdp-sesman"))
+	if (g_file_exist("/etc/pam.d/xrdp-ng-sesman"))
 	{
-		g_strncpy(service_name, "xrdp-sesman", 255);
-	} else
+		g_strncpy(service_name, "xrdp-ng-sesman", 255);
+	}
+	else
 	{
 		g_strncpy(service_name, "gdm", 255);
 	}

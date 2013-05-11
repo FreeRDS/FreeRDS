@@ -85,18 +85,18 @@ check_up()
 	is_sesman_running
 	if test $? -eq 0
 	then
-		if test -e $PIDDIR/xrdp-sesman.pid
+		if test -e $PIDDIR/xrdp-ng-sesman.pid
 		then
-			rm $PIDDIR/xrdp-sesman.pid
+			rm $PIDDIR/xrdp-ng-sesman.pid
 		fi
 	fi
 	# Cleanup : If xrdp isn't running, but the pid exists, erase it.
 	is_xrdp_running
 	if test $? -eq 0
 	then
-		if test -e $PIDDIR/xrdp.pid
+		if test -e $PIDDIR/xrdp-ng.pid
 		then
-			rm $PIDDIR/xrdp.pid
+			rm $PIDDIR/xrdp-ng.pid
 		fi
 	fi
 	return 0;

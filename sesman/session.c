@@ -147,8 +147,7 @@ session_get_bydata(char *name, int width, int height, int bpp, int type)
  * @return 0 if there isn't a display running, nonzero otherwise
  *
  */
-static int DEFAULT_CC
-x_server_running_check_ports(int display)
+static int DEFAULT_CC x_server_running_check_ports(int display)
 {
 	char text[256];
 	int x_running;
@@ -198,8 +197,7 @@ x_server_running_check_ports(int display)
  * @return 0 if there isn't a display running, nonzero otherwise
  *
  */
-static int DEFAULT_CC
-x_server_running(int display)
+static int DEFAULT_CC x_server_running(int display)
 {
 	char text[256];
 	int x_running;
@@ -217,8 +215,7 @@ x_server_running(int display)
 }
 
 /******************************************************************************/
-static void DEFAULT_CC
-session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
+static void DEFAULT_CC session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
 {
 	xrdpList *sessvc_params = (xrdpList *) NULL;
 	char wmpid_str[25];
@@ -281,8 +278,7 @@ session_start_sessvc(int xpid, int wmpid, long data, char *username, int display
 /******************************************************************************/
 /* called with the main thread
  returns boolean */
-static int APP_CC
-session_is_display_in_chain(int display)
+static int APP_CC session_is_display_in_chain(int display)
 {
 	struct session_chain *chain;
 	struct session_item *item;
@@ -294,9 +290,7 @@ session_is_display_in_chain(int display)
 		item = chain->item;
 
 		if (item->display == display)
-		{
 			return 1;
-		}
 
 		chain = chain->next;
 	}
@@ -306,8 +300,7 @@ session_is_display_in_chain(int display)
 
 /******************************************************************************/
 /* called with the main thread */
-static int APP_CC
-session_get_aval_display_from_chain(void)
+static int APP_CC session_get_aval_display_from_chain(void)
 {
 	int display;
 
@@ -334,8 +327,7 @@ session_get_aval_display_from_chain(void)
 }
 
 /******************************************************************************/
-static int APP_CC
-wait_for_xserver(int display)
+static int APP_CC wait_for_xserver(int display)
 {
 	int i;
 
@@ -517,7 +509,8 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 						/* logging parameters */
 						log_message(LOG_LEVEL_DEBUG, "errno: %d, description: "
 							"%s", errno, g_get_strerror());
-					} else
+					}
+					else
 					{
 						log_message(LOG_LEVEL_ERROR, "another Xserver might "
 							"already be active on display %d - see log", display);
@@ -525,7 +518,8 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 
 					log_message(LOG_LEVEL_DEBUG, "aborting connection...");
 					g_exit(0);
-				} else /* parent (child sesman) */
+				}
+				else /* parent (child sesman) */
 				{
 					xpid = g_fork();
 
@@ -629,7 +623,8 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 
 							list_delete(xserver_params);
 							g_exit(1);
-						} else /* parent (child sesman)*/
+						}
+						else /* parent (child sesman)*/
 						{
 							wait_for_xserver(display);
 							g_snprintf(text, 255, "%d", display);
@@ -640,7 +635,8 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 							session_start_sessvc(xpid, wmpid, data, username, display);
 						}
 				}
-		} else /* parent sesman process */
+		}
+		else /* parent sesman process */
 		{
 			temp->item->pid = pid;
 			temp->item->display = display;
@@ -674,8 +670,7 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 
 /******************************************************************************/
 /* called with the main thread */
-static int APP_CC
-session_reconnect_fork(int display, char *username)
+static int APP_CC session_reconnect_fork(int display, char *username)
 {
 	int pid;
 	char text[256];
@@ -684,19 +679,19 @@ session_reconnect_fork(int display, char *username)
 
 	if (pid == -1)
 	{
-	} else
-		if (pid == 0)
+	}
+	else if (pid == 0)
+	{
+		env_set_user(username, 0, display);
+		g_snprintf(text, 255, "%s/%s", XRDP_CFG_PATH, "reconnectwm.sh");
+
+		if (g_file_exist(text))
 		{
-			env_set_user(username, 0, display);
-			g_snprintf(text, 255, "%s/%s", XRDP_CFG_PATH, "reconnectwm.sh");
-
-			if (g_file_exist(text))
-			{
-				g_execlp3(text, g_cfg->default_wm, 0);
-			}
-
-			g_exit(0);
+			g_execlp3(text, g_cfg->default_wm, 0);
 		}
+
+		g_exit(0);
+	}
 
 	return display;
 }
@@ -704,8 +699,7 @@ session_reconnect_fork(int display, char *username)
 /******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
-int DEFAULT_CC
-session_start(int width, int height, int bpp, char *username, char *password, long data, tui8 type, char *domain,
+int DEFAULT_CC session_start(int width, int height, int bpp, char *username, char *password, long data, tui8 type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
 	int display;
@@ -739,8 +733,7 @@ session_start(int width, int height, int bpp, char *username, char *password, lo
 /******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
-int DEFAULT_CC
-session_reconnect(int display, char *username)
+int DEFAULT_CC session_reconnect(int display, char *username)
 {
 	/* lock mutex */
 	lock_sync_acquire();
@@ -759,15 +752,15 @@ session_reconnect(int display, char *username)
 
 /******************************************************************************/
 /* called with the main thread */
-int APP_CC
-session_sync_start(void)
+int APP_CC session_sync_start(void)
 {
 	if (g_sync_cmd == 0)
 	{
 		g_sync_result = session_start_fork(g_sync_width, g_sync_height, g_sync_bpp, g_sync_username,
 				g_sync_password, g_sync_data, g_sync_type, g_sync_domain, g_sync_program,
 				g_sync_directory, g_sync_client_ip);
-	} else
+	}
+	else
 	{
 		/* g_sync_width is really display */
 		g_sync_result = session_reconnect_fork(g_sync_width, g_sync_username);
@@ -778,8 +771,7 @@ session_sync_start(void)
 }
 
 /******************************************************************************/
-int DEFAULT_CC
-session_kill(int pid)
+int DEFAULT_CC session_kill(int pid)
 {
 	struct session_chain *tmp;
 	struct session_chain *prev;
@@ -802,7 +794,8 @@ session_kill(int pid)
 				/* prev does no exist, so it's the first element - so we set
 				 g_sessions */
 				g_sessions = tmp->next;
-			} else
+			}
+			else
 			{
 				prev->next = tmp->next;
 			}
@@ -825,7 +818,8 @@ session_kill(int pid)
 				/* prev does no exist, so it's the first element - so we set
 				 g_sessions */
 				g_sessions = tmp->next;
-			} else
+			}
+			else
 			{
 				prev->next = tmp->next;
 			}
@@ -848,8 +842,7 @@ session_kill(int pid)
 }
 
 /******************************************************************************/
-void DEFAULT_CC
-session_sigkill_all()
+void DEFAULT_CC session_sigkill_all()
 {
 	struct session_chain *tmp;
 
@@ -864,7 +857,8 @@ session_sigkill_all()
 		{
 			log_message(LOG_LEVEL_ERROR, "found null session "
 				"descriptor!");
-		} else
+		}
+		else
 		{
 			g_sigterm(tmp->item->pid);
 		}
@@ -878,8 +872,7 @@ session_sigkill_all()
 }
 
 /******************************************************************************/
-struct session_item *DEFAULT_CC
-session_get_bypid(int pid)
+struct session_item *DEFAULT_CC session_get_bypid(int pid)
 {
 	struct session_chain *tmp;
 	struct session_item *dummy;
@@ -927,8 +920,7 @@ session_get_bypid(int pid)
 }
 
 /******************************************************************************/
-struct SCP_DISCONNECTED_SESSION *
-session_get_byuser(char *user, int *cnt, unsigned char flags)
+struct SCP_DISCONNECTED_SESSION * session_get_byuser(char *user, int *cnt, unsigned char flags)
 {
 	struct session_chain *tmp;
 	struct SCP_DISCONNECTED_SESSION *sess;

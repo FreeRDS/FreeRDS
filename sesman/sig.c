@@ -55,7 +55,7 @@ sig_sesman_shutdown(int sig)
 
 	session_sigkill_all();
 
-	g_snprintf(pid_file, 255, "%s/xrdp-sesman.pid", XRDP_PID_PATH);
+	g_snprintf(pid_file, 255, "%s/xrdp-ng-sesman.pid", XRDP_PID_PATH);
 	g_file_delete(pid_file);
 }
 

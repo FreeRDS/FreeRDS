@@ -596,104 +596,102 @@ g_tcp_set_non_blocking(int sck)
 
 /*****************************************************************************/
 /* return boolean */
-static int APP_CC
-address_match(const char *address, struct addrinfo *j)
+static int APP_CC address_match(const char *address, struct addrinfo *j)
 {
-	struct sockaddr_in *ipv4_in;
-	struct sockaddr_in6 *ipv6_in;
+	struct sockaddr_in* ipv4_in;
+	struct sockaddr_in6* ipv6_in;
 
-	if (address == 0)
-	{
+	if (!address)
 		return 1;
-	}
-	if (address[0] == 0)
-	{
+
+	if (strlen(address) < 1)
 		return 1;
-	}
+
 	if (g_strcmp(address, "0.0.0.0") == 0)
-	{
 		return 1;
-	}
-	if ((g_strcmp(address, "127.0.0.1") == 0) || (g_strcmp(address, "::1") == 0) || (g_strcmp(address, "localhost")
-			== 0))
+
+	if ((g_strcmp(address, "127.0.0.1") == 0) ||
+			(g_strcmp(address, "::1") == 0) || (g_strcmp(address, "localhost") == 0))
 	{
 		if (j->ai_addr != 0)
 		{
 			if (j->ai_addr->sa_family == AF_INET)
 			{
-				ipv4_in = (struct sockaddr_in *) (j->ai_addr);
+				ipv4_in = (struct sockaddr_in*) (j->ai_addr);
+
 				if (inet_pton(AF_INET, "127.0.0.1", &(ipv4_in->sin_addr)))
-				{
 					return 1;
-				}
 			}
+
 			if (j->ai_addr->sa_family == AF_INET6)
 			{
-				ipv6_in = (struct sockaddr_in6 *) (j->ai_addr);
+				ipv6_in = (struct sockaddr_in6*) (j->ai_addr);
+
 				if (inet_pton(AF_INET6, "::1", &(ipv6_in->sin6_addr)))
-				{
 					return 1;
-				}
 			}
 		}
 	}
+
 	if (j->ai_addr != 0)
 	{
 		if (j->ai_addr->sa_family == AF_INET)
 		{
-			ipv4_in = (struct sockaddr_in *) (j->ai_addr);
+			ipv4_in = (struct sockaddr_in*) (j->ai_addr);
+
 			if (inet_pton(AF_INET, address, &(ipv4_in->sin_addr)))
-			{
 				return 1;
-			}
 		}
+
 		if (j->ai_addr->sa_family == AF_INET6)
 		{
-			ipv6_in = (struct sockaddr_in6 *) (j->ai_addr);
+			ipv6_in = (struct sockaddr_in6*) (j->ai_addr);
+
 			if (inet_pton(AF_INET6, address, &(ipv6_in->sin6_addr)))
-			{
 				return 1;
-			}
 		}
 	}
+
 	return 0;
 }
 
 /*****************************************************************************/
 /* returns error, zero is good */
-static int APP_CC
-g_tcp_bind_flags(int sck, const char *port, const char *address, int flags)
+static int APP_CC g_tcp_bind_flags(int sck, const char* port, const char* address, int flags)
 {
-	int res;
 	int error;
-	struct addrinfo hints;
-	struct addrinfo *i;
+	int status;
+	struct addrinfo* res;
+	struct addrinfo hints = { 0 };
 
-	res = -1;
-	g_memset(&hints, 0, sizeof(hints));
+	status = -1;
+	g_memset(&hints, 0, sizeof(struct addrinfo));
+
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_flags = flags;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
-	error = getaddrinfo(NULL, port, &hints, &i);
+	error = getaddrinfo(NULL, port, &hints, &res);
+
 	if (error == 0)
 	{
-		while ((i != 0) && (res < 0))
+		while ((res != 0) && (status < 0))
 		{
-			if (address_match(address, i))
+			if (address_match(address, res))
 			{
-				res = bind(sck, i->ai_addr, i->ai_addrlen);
+				status = bind(sck, res->ai_addr, res->ai_addrlen);
 			}
-			i = i->ai_next;
+
+			res = res->ai_next;
 		}
 	}
-	return res;
+
+	return status;
 }
 
 /*****************************************************************************/
 /* returns error, zero is good */
-int APP_CC
-g_tcp_bind(int sck, const char *port)
+int APP_CC g_tcp_bind(int sck, const char *port)
 {
 	int flags;
 
@@ -702,8 +700,7 @@ g_tcp_bind(int sck, const char *port)
 }
 
 /*****************************************************************************/
-int APP_CC
-g_tcp_local_bind(int sck, const char *port)
+int APP_CC g_tcp_local_bind(int sck, const char *port)
 {
 #if defined(_WIN32)
 	return -1;
@@ -719,8 +716,7 @@ g_tcp_local_bind(int sck, const char *port)
 
 /*****************************************************************************/
 /* returns error, zero is good */
-int APP_CC
-g_tcp_bind_address(int sck, const char *port, const char *address)
+int APP_CC g_tcp_bind_address(int sck, const char *port, const char *address)
 {
 	int flags;
 
@@ -730,15 +726,13 @@ g_tcp_bind_address(int sck, const char *port, const char *address)
 
 /*****************************************************************************/
 /* returns error, zero is good */
-int APP_CC
-g_tcp_listen(int sck)
+int APP_CC g_tcp_listen(int sck)
 {
 	return listen(sck, 2);
 }
 
 /*****************************************************************************/
-int APP_CC
-g_tcp_accept(int sck)
+int APP_CC g_tcp_accept(int sck)
 {
 	int ret;
 	char ipAddr[256];
@@ -762,8 +756,7 @@ g_tcp_accept(int sck)
 }
 
 /*****************************************************************************/
-void APP_CC
-g_write_ip_address(int rcv_sck, char *ip_address, int bytes)
+void APP_CC g_write_ip_address(int rcv_sck, char *ip_address, int bytes)
 {
 	struct sockaddr_in s;
 	struct in_addr in;
@@ -799,8 +792,7 @@ g_write_ip_address(int rcv_sck, char *ip_address, int bytes)
 }
 
 /*****************************************************************************/
-void APP_CC
-g_sleep(int msecs)
+void APP_CC g_sleep(int msecs)
 {
 #if defined(_WIN32)
 	Sleep(msecs);
@@ -810,8 +802,7 @@ g_sleep(int msecs)
 }
 
 /*****************************************************************************/
-int APP_CC
-g_tcp_last_error_would_block(int sck)
+int APP_CC g_tcp_last_error_would_block(int sck)
 {
 #if defined(_WIN32)
 	return WSAGetLastError() == WSAEWOULDBLOCK;
@@ -821,8 +812,7 @@ g_tcp_last_error_would_block(int sck)
 }
 
 /*****************************************************************************/
-int APP_CC
-g_tcp_recv(int sck, void *ptr, int len, int flags)
+int APP_CC g_tcp_recv(int sck, void *ptr, int len, int flags)
 {
 #if defined(_WIN32)
 	return recv(sck, (char *)ptr, len, flags);
@@ -832,8 +822,7 @@ g_tcp_recv(int sck, void *ptr, int len, int flags)
 }
 
 /*****************************************************************************/
-int APP_CC
-g_tcp_send(int sck, const void *ptr, int len, int flags)
+int APP_CC g_tcp_send(int sck, const void *ptr, int len, int flags)
 {
 #if defined(_WIN32)
 	return send(sck, (const char *)ptr, len, flags);
@@ -844,8 +833,7 @@ g_tcp_send(int sck, const void *ptr, int len, int flags)
 
 /*****************************************************************************/
 /* returns boolean */
-int APP_CC
-g_tcp_socket_ok(int sck)
+int APP_CC g_tcp_socket_ok(int sck)
 {
 #if defined(_WIN32)
 	int opt;
@@ -871,8 +859,7 @@ g_tcp_socket_ok(int sck)
 /*****************************************************************************/
 /* wait 'millis' milliseconds for the socket to be able to write */
 /* returns boolean */
-int APP_CC
-g_tcp_can_send(int sck, int millis)
+int APP_CC g_tcp_can_send(int sck, int millis)
 {
 	fd_set wfds;
 	struct timeval time;
@@ -899,8 +886,7 @@ g_tcp_can_send(int sck, int millis)
 /*****************************************************************************/
 /* wait 'millis' milliseconds for the socket to be able to receive */
 /* returns boolean */
-int APP_CC
-g_tcp_can_recv(int sck, int millis)
+int APP_CC g_tcp_can_recv(int sck, int millis)
 {
 	fd_set rfds;
 	struct timeval time;
@@ -925,8 +911,7 @@ g_tcp_can_recv(int sck, int millis)
 }
 
 /*****************************************************************************/
-int APP_CC
-g_tcp_select(int sck1, int sck2)
+int APP_CC g_tcp_select(int sck1, int sck2)
 {
 	fd_set rfds;
 	struct timeval time;
@@ -982,8 +967,7 @@ g_tcp_select(int sck1, int sck2)
 
 /*****************************************************************************/
 /* returns 0 on error */
-tbus APP_CC
-g_create_wait_obj(char *name)
+tbus APP_CC g_create_wait_obj(char *name)
 {
 #ifdef _WIN32
 	tbus obj;
@@ -1063,8 +1047,7 @@ g_create_wait_obj(char *name)
 
 /*****************************************************************************/
 /* returns 0 on error */
-tbus APP_CC
-g_create_wait_obj_from_socket(tbus socket, int write)
+tbus APP_CC g_create_wait_obj_from_socket(tbus socket, int write)
 {
 #ifdef _WIN32
 	/* Create and return corresponding event handle for WaitForMultipleObjets */
@@ -1091,8 +1074,7 @@ g_create_wait_obj_from_socket(tbus socket, int write)
 }
 
 /*****************************************************************************/
-void APP_CC
-g_delete_wait_obj_from_socket(tbus wait_obj)
+void APP_CC g_delete_wait_obj_from_socket(tbus wait_obj)
 {
 #ifdef _WIN32
 
@@ -1108,8 +1090,7 @@ g_delete_wait_obj_from_socket(tbus wait_obj)
 
 /*****************************************************************************/
 /* returns error */
-int APP_CC
-g_set_wait_obj(tbus obj)
+int APP_CC g_set_wait_obj(tbus obj)
 {
 #ifdef _WIN32
 
@@ -1132,7 +1113,7 @@ g_set_wait_obj(tbus obj)
 
 	if (g_tcp_can_recv((int) obj, 0))
 	{
-		/* already signalled */
+		/* already signaled */
 		return 0;
 	}
 
@@ -1158,8 +1139,7 @@ g_set_wait_obj(tbus obj)
 
 /*****************************************************************************/
 /* returns error */
-int APP_CC
-g_reset_wait_obj(tbus obj)
+int APP_CC g_reset_wait_obj(tbus obj)
 {
 #ifdef _WIN32
 
@@ -1189,8 +1169,7 @@ g_reset_wait_obj(tbus obj)
 
 /*****************************************************************************/
 /* returns boolean */
-int APP_CC
-g_is_wait_obj_set(tbus obj)
+int APP_CC g_is_wait_obj_set(tbus obj)
 {
 #ifdef _WIN32
 
@@ -1218,8 +1197,7 @@ g_is_wait_obj_set(tbus obj)
 
 /*****************************************************************************/
 /* returns error */
-int APP_CC
-g_delete_wait_obj(tbus obj)
+int APP_CC g_delete_wait_obj(tbus obj)
 {
 #ifdef _WIN32
 
@@ -1256,8 +1234,7 @@ g_delete_wait_obj(tbus obj)
 /*****************************************************************************/
 /* returns error */
 /* close but do not delete the wait obj, used after fork */
-int APP_CC
-g_close_wait_obj(tbus obj)
+int APP_CC g_close_wait_obj(tbus obj)
 {
 #ifdef _WIN32
 #else
@@ -1268,8 +1245,7 @@ g_close_wait_obj(tbus obj)
 
 /*****************************************************************************/
 /* returns error */
-int APP_CC
-g_obj_wait(tbus *read_objs, int rcount, tbus *write_objs, int wcount, int mstimeout)
+int APP_CC g_obj_wait(tbus *read_objs, int rcount, tbus *write_objs, int wcount, int mstimeout)
 {
 #ifdef _WIN32
 	HANDLE handles[256];

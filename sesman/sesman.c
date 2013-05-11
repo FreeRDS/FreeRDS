@@ -43,8 +43,7 @@ extern int g_thread_sck; /* in thread.c */
  * @brief Starts sesman main loop
  *
  */
-static void DEFAULT_CC
-sesman_main_loop(void)
+static void DEFAULT_CC sesman_main_loop(void)
 {
 	int in_sck;
 	int error;
@@ -53,7 +52,6 @@ sesman_main_loop(void)
 	tbus sck_obj;
 	tbus robjs[8];
 
-	/*main program loop*/
 	log_message(LOG_LEVEL_INFO, "listening...");
 	g_sck = g_tcp_socket();
 	g_tcp_set_non_blocking(g_sck);
@@ -102,27 +100,33 @@ sesman_main_loop(void)
 					{
 						/* should not get here */
 						g_sleep(100);
-					} else
+					}
+					else
+					{
 						if (in_sck == -1)
 						{
 							/* error, should not get here */
 							break;
-						} else
+						}
+						else
 						{
 							/* we've got a connection, so we pass it to scp code */
 							LOG_DBG("new connection");
 							thread_scp_start(in_sck);
 							/* todo, do we have to wait here ? */
 						}
+					}
 				}
 			}
 
 			g_delete_wait_obj_from_socket(sck_obj);
-		} else
+		}
+		else
 		{
 			log_message(LOG_LEVEL_ERROR, "listen error %d (%s)", g_get_errno(), g_get_strerror());
 		}
-	} else
+	}
+	else
 	{
 		log_message(LOG_LEVEL_ERROR, "bind error on "
 			"port '%s': %d (%s)", g_cfg->listen_port, g_get_errno(), g_get_strerror());
@@ -132,8 +136,7 @@ sesman_main_loop(void)
 }
 
 /******************************************************************************/
-int DEFAULT_CC
-main(int argc, char **argv)
+int DEFAULT_CC main(int argc, char **argv)
 {
 	int fd;
 	enum logReturns error;
@@ -144,13 +147,13 @@ main(int argc, char **argv)
 	char pid_file[256];
 	char cfg_file[256];
 
-	g_init("xrdp-sesman");
-	g_snprintf(pid_file, 255, "%s/xrdp-sesman.pid", XRDP_PID_PATH);
+	g_init("xrdp-ng-sesman");
+	g_snprintf(pid_file, 255, "%s/xrdp-ng-sesman.pid", XRDP_PID_PATH);
 
 	if (1 == argc)
 	{
 		/* no options on command line. normal startup */
-		g_printf("starting sesman...\n");
+		g_printf("starting xrdp-ng-sesman...\n");
 		daemon = 1;
 	} else
 		if ((2 == argc) && ((0 == g_strcasecmp(argv[1], "--nodaemon")) || (0 == g_strcasecmp(argv[1],
@@ -165,7 +168,7 @@ main(int argc, char **argv)
 					"-help")) || (0 == g_strcasecmp(argv[1], "-h"))))
 			{
 				/* help screen */
-				g_printf("sesman - xrdp session manager\n\n");
+				g_printf("xrdp-ng-sesman - xrdp session manager\n\n");
 				g_printf("usage: sesman [command]\n\n");
 				g_printf("command can be one of the following:\n");
 				g_printf("-n, -ns, --nodaemon  starts sesman in foreground\n");
