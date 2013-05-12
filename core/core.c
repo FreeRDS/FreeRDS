@@ -264,7 +264,20 @@ int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 int libxrdp_orders_dest_blt(xrdpSession* session,
 		int x, int y, int cx, int cy, int rop, xrdpRect* rect)
 {
+	DSTBLT_ORDER dstblt;
+	rdpPrimaryUpdate* primary = session->client->update->primary;
+
 	printf("%s\n", __FUNCTION__);
+
+	dstblt.nLeftRect = x;
+	dstblt.nTopRect = y;
+	dstblt.nWidth = cx;
+	dstblt.nHeight = cy;
+	dstblt.bRop = rop;
+
+	libxrdp_set_bounds_rect(session, rect);
+	primary->DstBlt(session->context, &dstblt);
+
 	return 0;
 }
 
@@ -272,7 +285,35 @@ int libxrdp_orders_line(xrdpSession* session, int mix_mode,
 		int startx, int starty,	int endx, int endy, int rop,
 		int bg_color, xrdpPen* pen, xrdpRect* rect)
 {
+	LINE_TO_ORDER line_to;
+	rdpPrimaryUpdate* primary = session->client->update->primary;
+
 	printf("%s\n", __FUNCTION__);
+
+	line_to.backMode = mix_mode;
+	line_to.nXStart = startx;
+	line_to.nYStart = starty;
+	line_to.nXEnd = endx;
+	line_to.nYEnd = endy;
+	line_to.backColor = bg_color;
+	line_to.bRop2 = rop;
+
+	if (pen)
+	{
+		line_to.penStyle = pen->style;
+		line_to.penWidth = pen->width;
+		line_to.penColor = pen->color;
+	}
+	else
+	{
+		line_to.penStyle = 0;
+		line_to.penWidth = 0;
+		line_to.penColor = 0;
+	}
+
+	libxrdp_set_bounds_rect(session, rect);
+	primary->LineTo(session->context, &line_to);
+
 	return 0;
 }
 
@@ -344,7 +385,17 @@ int libxrdp_orders_text(xrdpSession* session,
 
 int libxrdp_orders_send_palette(xrdpSession* session, int* palette, int cache_id)
 {
+	CACHE_COLOR_TABLE_ORDER cache_color_table;
+	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+
 	printf("%s\n", __FUNCTION__);
+
+	cache_color_table.cacheIndex = cache_id;
+	cache_color_table.numberColors = 256;
+	CopyMemory(&(cache_color_table.colorTable), palette, 256 * 4);
+
+	secondary->CacheColorTable(session->context, &cache_color_table);
+
 	return 0;
 }
 
@@ -352,7 +403,25 @@ int libxrdp_orders_send_raw_bitmap(xrdpSession* session,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx)
 {
-	printf("%s\n", __FUNCTION__);
+	int bytesPerPixel;
+	CACHE_BITMAP_ORDER cache_bitmap;
+	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+
+	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
+
+	cache_bitmap.bitmapBpp = bpp;
+	cache_bitmap.bitmapWidth = width;
+	cache_bitmap.bitmapHeight = height;
+	cache_bitmap.bitmapDataStream = (BYTE*) data;
+	cache_bitmap.cacheId = cache_id;
+	cache_bitmap.cacheIndex = cache_idx;
+	cache_bitmap.compressed = FALSE;
+
+	bytesPerPixel = (bpp + 7) / 8;
+	cache_bitmap.bitmapLength = width * height * bytesPerPixel;
+
+	secondary->CacheBitmap(session->context, &cache_bitmap);
+
 	return 0;
 }
 
@@ -360,7 +429,40 @@ int libxrdp_orders_send_bitmap(xrdpSession* session,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx)
 {
-	printf("%s\n", __FUNCTION__);
+	wStream* s;
+	wStream* ts;
+	int e, lines;
+	CACHE_BITMAP_ORDER cache_bitmap;
+	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+
+	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
+
+	e = width % 4;
+
+	if (e != 0)
+		e = 4 - e;
+
+	cache_bitmap.bitmapBpp = bpp;
+	cache_bitmap.bitmapWidth = width + e;
+	cache_bitmap.bitmapHeight = height;
+	cache_bitmap.cacheId = cache_id;
+	cache_bitmap.cacheIndex = cache_idx;
+	cache_bitmap.compressed = TRUE;
+
+	s = Stream_New(NULL, 16384);
+	ts = Stream_New(NULL, 16384);
+
+	lines = freerdp_bitmap_compress(data, width, height, s, bpp, 16384, height - 1, ts, e);
+	Stream_SealLength(s);
+
+	cache_bitmap.bitmapDataStream = Stream_Buffer(s);
+	cache_bitmap.bitmapLength = Stream_Length(s);
+
+	secondary->CacheBitmap(session->context, &cache_bitmap);
+
+	Stream_Free(s, TRUE);
+	Stream_Free(ts, TRUE);
+
 	return 0;
 }
 
@@ -490,7 +592,30 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 int libxrdp_orders_send_bitmap3(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints)
 {
+	BITMAP_DATA_EX* bitmapData;
+	CACHE_BITMAP_V3_ORDER cache_bitmap_v3;
+	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+
 	printf("%s\n", __FUNCTION__);
+
+	bitmapData = &(cache_bitmap_v3.bitmapData);
+
+	cache_bitmap_v3.cacheId = cache_id;
+	cache_bitmap_v3.bpp = bpp;
+	cache_bitmap_v3.flags = 0;
+	cache_bitmap_v3.cacheIndex = cache_idx;
+	cache_bitmap_v3.key1 = 0;
+	cache_bitmap_v3.key2 = 0;
+
+	bitmapData->bpp = 32;
+	bitmapData->codecID = 0;
+	bitmapData->width = width;
+	bitmapData->height = height;
+	bitmapData->length = 0;
+	bitmapData->data = (BYTE*) data;
+
+	secondary->CacheBitmapV3(session->context, &cache_bitmap_v3);
+
 	return 0;
 }
 
@@ -517,7 +642,21 @@ int libxrdp_send_to_channel(xrdpSession* session, int channel_id,
 int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
 		int bpp, int type, int size, char* data, int cache_id)
 {
+	CACHE_BRUSH_ORDER cache_brush;
+	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+
 	printf("%s\n", __FUNCTION__);
+
+	cache_brush.index = cache_id;
+	cache_brush.bpp = bpp;
+	cache_brush.cx = width;
+	cache_brush.cy = height;
+	cache_brush.style = type;
+	cache_brush.length = size;
+	CopyMemory(cache_brush.data, data, cache_brush.length);
+
+	secondary->CacheBrush(session->context, &cache_brush);
+
 	return 0;
 }
 
