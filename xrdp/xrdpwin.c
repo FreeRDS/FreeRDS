@@ -203,7 +203,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	g_snprintf(pid_file, 255, "%s/xrdp.pid", XRDP_PID_PATH);
+	g_snprintf(pid_file, 255, "%s/xrdp-ng.pid", XRDP_PID_PATH);
 	no_daemon = 0;
 
 	if (argc == 2)
@@ -211,18 +211,18 @@ int main(int argc, char **argv)
 		if ((g_strncasecmp(argv[1], "-kill", 255) == 0) || (g_strncasecmp(argv[1], "--kill", 255) == 0)
 				|| (g_strncasecmp(argv[1], "-k", 255) == 0))
 		{
-			g_writeln("stopping xrdp");
-			/* read the xrdp.pid file */
+			g_writeln("stopping xrdp-ng");
+			/* read the xrdp-ng.pid file */
 			fd = -1;
 
-			if (g_file_exist(pid_file)) /* xrdp.pid */
+			if (g_file_exist(pid_file)) /* xrdp-ng.pid */
 			{
-				fd = g_file_open(pid_file); /* xrdp.pid */
+				fd = g_file_open(pid_file); /* xrdp-ng.pid */
 			}
 
 			if (fd == -1)
 			{
-				g_writeln("problem opening to xrdp.pid");
+				g_writeln("problem opening to xrdp-ng.pid");
 				g_writeln("maybe its not running");
 			} else
 			{
@@ -289,17 +289,17 @@ int main(int argc, char **argv)
 			g_exit(0);
 		}
 
-	if (g_file_exist(pid_file)) /* xrdp.pid */
+	if (g_file_exist(pid_file)) /* xrdp-ng.pid */
 	{
-		g_writeln("It looks like xrdp is allready running,");
-		g_writeln("if not delete the xrdp.pid file and try again");
+		g_writeln("It looks like xrdp-ng is already running,");
+		g_writeln("if not delete the xrdp-ng.pid file and try again");
 		g_exit(0);
 	}
 
 	if (!no_daemon)
 	{
 		/* make sure we can write to pid file */
-		fd = g_file_open(pid_file); /* xrdp.pid */
+		fd = g_file_open(pid_file); /* xrdp-ng.pid */
 
 		if (fd == -1)
 		{
@@ -349,12 +349,12 @@ int main(int argc, char **argv)
 	{
 		/* write the pid to file */
 		pid = g_getpid();
-		fd = g_file_open(pid_file); /* xrdp.pid */
+		fd = g_file_open(pid_file); /* xrdp-ng.pid */
 
 		if (fd == -1)
 		{
-			g_writeln("trying to write process id to xrdp.pid");
-			g_writeln("problem opening xrdp.pid");
+			g_writeln("trying to write process id to xrdp-ng.pid");
+			g_writeln("problem opening xrdp-ng.pid");
 			g_writeln("maybe no rights");
 		} else
 		{

@@ -480,13 +480,50 @@ int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
 int libxrdp_orders_send_create_os_surface(xrdpSession* session, int id,
 		int width, int height, xrdpList* del_list)
 {
+	int index;
+	OFFSCREEN_DELETE_LIST* deleteList;
+	CREATE_OFFSCREEN_BITMAP_ORDER create_offscreen_bitmap;
+	rdpAltSecUpdate* altsec = session->client->update->altsec;
+
 	printf("%s\n", __FUNCTION__);
+
+	create_offscreen_bitmap.id = id & 0x7FFF;
+	create_offscreen_bitmap.cx = width;
+	create_offscreen_bitmap.cy = height;
+
+	deleteList = &(create_offscreen_bitmap.deleteList);
+	deleteList->cIndices = deleteList->sIndices = del_list->count;
+	deleteList->indices = NULL;
+
+	if (deleteList->cIndices > 0)
+	{
+		deleteList->indices = (UINT16*) malloc(sizeof(UINT16) * deleteList->cIndices);
+
+		for (index = 0; index < deleteList->cIndices; index++)
+		{
+			deleteList->indices[index] = list_get_item(del_list, index) & 0x7FFF;
+		}
+	}
+
+	altsec->CreateOffscreenBitmap(session->context, &create_offscreen_bitmap);
+
+	if (deleteList->indices)
+		free(deleteList->indices);
+
 	return 0;
 }
 
 int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id)
 {
+	SWITCH_SURFACE_ORDER switch_surface;
+	rdpAltSecUpdate* altsec = session->client->update->altsec;
+
 	printf("%s\n", __FUNCTION__);
+
+	switch_surface.bitmapId = id & 0xFFFF;
+
+	altsec->SwitchSurface(session->context, &switch_surface);
+
 	return 0;
 }
 

@@ -366,7 +366,7 @@ main(int argc, char **argv)
 		g_exit(0);
 	}
 
-	g_snprintf(pid_file, 255, "%s/xrdp.pid", XRDP_PID_PATH);
+	g_snprintf(pid_file, 255, "%s/xrdp-ng.pid", XRDP_PID_PATH);
 	no_daemon = 0;
 
 	if (startup_params->kill)
@@ -375,14 +375,14 @@ main(int argc, char **argv)
 		/* read the xrdp.pid file */
 		fd = -1;
 
-		if (g_file_exist(pid_file)) /* xrdp.pid */
+		if (g_file_exist(pid_file)) /* xrdp-ng.pid */
 		{
-			fd = g_file_open(pid_file); /* xrdp.pid */
+			fd = g_file_open(pid_file); /* xrdp-ng.pid */
 		}
 
 		if (fd == -1)
 		{
-			g_writeln("problem opening to xrdp.pid [%s]", pid_file);
+			g_writeln("problem opening to xrdp-ng.pid [%s]", pid_file);
 			g_writeln("maybe its not running");
 		} else
 		{
@@ -438,10 +438,10 @@ main(int argc, char **argv)
 		g_exit(0);
 	}
 
-	if (g_file_exist(pid_file)) /* xrdp.pid */
+	if (g_file_exist(pid_file)) /* xrdp-ng.pid */
 	{
-		g_writeln("It looks like xrdp is allready running,");
-		g_writeln("if not delete the xrdp.pid file and try again");
+		g_writeln("It looks like xrdp is already running,");
+		g_writeln("if not delete the xrdp-ng.pid file and try again");
 		g_deinit();
 		g_exit(0);
 	}
@@ -453,7 +453,7 @@ main(int argc, char **argv)
 		g_create_path(pid_file);
 
 		/* make sure we can write to pid file */
-		fd = g_file_open(pid_file); /* xrdp.pid */
+		fd = g_file_open(pid_file); /* xrdp-ng.pid */
 
 		if (fd == -1)
 		{
@@ -496,12 +496,12 @@ main(int argc, char **argv)
 		g_sleep(1000);
 		/* write the pid to file */
 		pid = g_getpid();
-		fd = g_file_open(pid_file); /* xrdp.pid */
+		fd = g_file_open(pid_file); /* xrdp-ng.pid */
 
 		if (fd == -1)
 		{
-			g_writeln("trying to write process id to xrdp.pid");
-			g_writeln("problem opening xrdp.pid");
+			g_writeln("trying to write process id to xrdp-ng.pid");
+			g_writeln("problem opening xrdp-ng.pid");
 			g_writeln("maybe no rights");
 		} else
 		{
@@ -557,7 +557,7 @@ main(int argc, char **argv)
 	/* only main process should delete pid file */
 	if ((!no_daemon) && (pid == g_getpid()))
 	{
-		/* delete the xrdp.pid file */
+		/* delete the xrdp-ng.pid file */
 		g_file_delete(pid_file);
 	}
 
