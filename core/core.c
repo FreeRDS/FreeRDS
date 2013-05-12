@@ -107,13 +107,52 @@ int libxrdp_send_bitmap(xrdpSession* session, int width, int height, int bpp, ch
 
 int libxrdp_send_pointer(xrdpSession* session, int cache_idx, char* data, char* mask, int x, int y, int bpp)
 {
+	POINTER_NEW_UPDATE pointer_new;
+	POINTER_COLOR_UPDATE* pointer_color;
+	rdpPointerUpdate* pointer = session->client->update->pointer;
+
 	printf("%s\n", __FUNCTION__);
+
+	pointer_color = &(pointer_new.colorPtrAttr);
+
+	pointer_color->cacheIndex = cache_idx;
+	pointer_color->xPos = x;
+	pointer_color->yPos = y;
+	pointer_color->width = 32;
+	pointer_color->height = 32;
+	pointer_color->lengthAndMask = 128;
+	pointer_color->lengthXorMask = 0;
+	pointer_color->xorMaskData = (BYTE*) data;
+	pointer_color->andMaskData = (BYTE*) mask;
+
+	if (bpp == 0)
+	{
+		pointer_color->lengthXorMask = 3072;
+
+		pointer->PointerColor(session->context, pointer_color);
+	}
+	else
+	{
+		pointer_new.xorBpp = bpp;
+		pointer_color->lengthXorMask = ((bpp + 7) / 8) * 32 * 32;
+
+		pointer->PointerNew(session->context, &pointer_new);
+	}
+
 	return 0;
 }
 
 int libxrdp_set_pointer(xrdpSession* session, int cache_idx)
 {
+	POINTER_CACHED_UPDATE pointer_cached;
+	rdpPointerUpdate* pointer = session->client->update->pointer;
+
 	printf("%s\n", __FUNCTION__);
+
+	pointer_cached.cacheIndex = cache_idx;
+
+	pointer->PointerCached(session->context, &pointer_cached);
+
 	return 0;
 }
 
@@ -141,7 +180,12 @@ int libxrdp_orders_send(xrdpSession* session)
 
 int libxrdp_orders_force_send(xrdpSession* session)
 {
+	rdpUpdate* update = session->context->update;
+
 	printf("%s\n", __FUNCTION__);
+
+	update->EndPaint(session->context);
+
 	return 0;
 }
 

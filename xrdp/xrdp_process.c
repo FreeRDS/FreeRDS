@@ -310,6 +310,8 @@ void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
 		context->session->context = (rdpContext*) context;
 		context->session->client = client;
 	}
+
+	context->status = 1;
 }
 
 void xrdp_peer_context_free(freerdp_peer* client, xrdpProcess* context)
@@ -355,7 +357,7 @@ void xrdp_process_delete(xrdpProcess* self)
 
 int xrdp_process_get_status(xrdpProcess* self)
 {
-	return 0;
+	return self->status;
 }
 
 tbus xrdp_process_get_term_event(xrdpProcess* self)
@@ -577,7 +579,7 @@ void* xrdp_process_main_thread(void* arg)
 	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
 
 	xfp->info->offscreen_support_level = settings->OffscreenSupportLevel;
-	xfp->info->offscreen_cache_size = settings->OffscreenCacheSize;
+	xfp->info->offscreen_cache_size = settings->OffscreenCacheSize * 1024;
 	xfp->info->offscreen_cache_entries = settings->OffscreenCacheEntries;
 
 	CopyMemory(xfp->info->orders, settings->OrderSupport, 32);
