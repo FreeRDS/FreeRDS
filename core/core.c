@@ -453,18 +453,18 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 
 	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
+	e = width % 4;
+
+	if (e != 0)
+		e = 4 - e;
+
 	cache_bitmap_v2.bitmapBpp = bpp;
-	cache_bitmap_v2.bitmapWidth = width;
+	cache_bitmap_v2.bitmapWidth = width + e;
 	cache_bitmap_v2.bitmapHeight = height;
 	cache_bitmap_v2.cacheId = cache_id;
 	cache_bitmap_v2.cacheIndex = cache_idx;
 	cache_bitmap_v2.compressed = TRUE;
 	cache_bitmap_v2.flags = CBR2_NO_BITMAP_COMPRESSION_HDR;
-
-	e = width % 4;
-
-	if (e != 0)
-		e = 4 - e;
 
 	s = Stream_New(NULL, 16384);
 	ts = Stream_New(NULL, 16384);
