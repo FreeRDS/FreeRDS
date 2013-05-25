@@ -45,6 +45,10 @@ include(FeatureSummary)
 include(CheckCCompilerFlag)
 include(GNUInstallDirsWrapper)
 
+if(NOT DEFINED XRDP_NG_CORE)
+	set(XRDP_NG_CORE 1)
+endif()
+
 if(NOT DEFINED XRDP_NG_MODULE)
 	set(XRDP_NG_MODULE "xrdp-ng")
 endif()
