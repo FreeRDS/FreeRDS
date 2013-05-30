@@ -1,6 +1,10 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+project(X11rdp)
+
+include(GNUInstallDirs)
+
 #    Copyright (C) 2012 Modelon AB
 
 #    This program is free software: you can redistribute it and/or modify
@@ -16,7 +20,7 @@ cmake_minimum_required(VERSION 2.8)
 
 # Merge_static_libs(outlib lib1 lib2 ... libn) merges a number of static
 # libs into a single static library
-function(merge_static_libs outlib )
+function(merge_static_libs outlib)
 	set(libs ${ARGV})
 	list(REMOVE_AT libs 0)
 # Create a dummy file that the target will depend on
@@ -99,11 +103,11 @@ function(merge_static_libs outlib )
 "# Extract object files from the library
 message(STATUS \"Extracting object files from ${lib}\")
 EXECUTE_PROCESS(COMMAND ${CMAKE_AR} -x ${lib}                
-                WORKING_DIRECTORY ${objdir})
+		WORKING_DIRECTORY ${objdir})
 # save the list of object files
 EXECUTE_PROCESS(COMMAND ls . 
 				OUTPUT_FILE ${objlistfile}
-                WORKING_DIRECTORY ${objdir})")
+		WORKING_DIRECTORY ${objdir})")
 #---------------------------------					
 			file(MAKE_DIRECTORY ${objdir})
 			add_custom_command(
@@ -129,7 +133,7 @@ EXECUTE_PROCESS(COMMAND ls .
 		COMMAND ${CMAKE_COMMAND}  -E copy ${dummyfile}.base ${dummyfile}
 		DEPENDS ${libs} ${extrafiles})
 
- endfunction()
+endfunction()
 
 # X11rdp
 
@@ -307,3 +311,4 @@ merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
