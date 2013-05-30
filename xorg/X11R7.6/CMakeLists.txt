@@ -309,7 +309,7 @@ set(${EXTERNAL_PROJECT}_URL "http://ftp.x.org/pub/individual/lib/${${EXTERNAL_PR
 set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX}")
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")
-set(${EXTERNAL_PROJECT}_DEPENDS "libX11;xextproto;libXau")
+set(${EXTERNAL_PROJECT}_DEPENDS "libX11;xextproto;libXau;libXrender")
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECT})
 
 set(EXTERNAL_PROJECT "libICE")
@@ -397,7 +397,7 @@ set(${EXTERNAL_PROJECT}_URL "ftp://ftp.freedesktop.org/pub/mesa/7.10.3/${${EXTER
 set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX};--with-expat=${X11RDP_PREFIX};--disable-gallium")
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")
-set(${EXTERNAL_PROJECT}_DEPENDS "expat;dri2proto;libdrm;python;makedepend;libX11;libXdamage;libXfixes")
+set(${EXTERNAL_PROJECT}_DEPENDS "expat;dri2proto;glproto;libdrm;python;makedepend;libX11;libXdamage;libXfixes;libXt")
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECT})
 
 set(EXTERNAL_PROJECT "randrproto")
@@ -661,7 +661,7 @@ set(${EXTERNAL_PROJECT}_URL "http://ftp.x.org/pub/individual/lib/${${EXTERNAL_PR
 set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX}")
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")
-set(${EXTERNAL_PROJECT}_DEPENDS "libX11;libXau")
+set(${EXTERNAL_PROJECT}_DEPENDS "libX11;libXau;libXrender")
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECT})
 
 set(EXTERNAL_PROJECT "libXaw")
@@ -672,7 +672,7 @@ set(${EXTERNAL_PROJECT}_URL "http://ftp.x.org/pub/individual/lib/${${EXTERNAL_PR
 set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX}")
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")
-set(${EXTERNAL_PROJECT}_DEPENDS "libXmu;libXt;libXext;libSM;libICE;libX11;libxcb;libXau")
+set(${EXTERNAL_PROJECT}_DEPENDS "libXmu;libXt;libXext;libSM;libICE;libX11;libxcb;libXau;libXpm")
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECT})
 
 set(EXTERNAL_PROJECT "mkfontdir")
