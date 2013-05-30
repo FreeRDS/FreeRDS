@@ -1,0 +1,4 @@
+*.a
+*_dummy.c
+*_dummy.c.base
+

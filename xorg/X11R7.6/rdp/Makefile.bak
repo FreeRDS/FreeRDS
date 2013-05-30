@@ -4,7 +4,7 @@
 INCBASE = $(X11RDPBASE)/include
 LIBBASE = $(X11RDPBASE)/lib
 
-XSRCBASE = ../build_dir/xorg-server-1.9.3
+XSRCBASE = ../X11rdp/Source/xorg-server
 
 OBJS = rdpmain.o rdpdraw.o rdpinput.o rdpmisc.o rdpup.o rdprandr.o \
 rdpCopyArea.o rdpPolyFillRect.o rdpPutImage.o rdpPolyRectangle.o \
@@ -101,11 +101,12 @@ X11rdp: $(OBJS)
 clean:
 	rm -f $(OBJS) librdp.a
 
-miinitext.o: ../build_dir/xorg-server-1.9.3/mi/miinitext.c Makefile
-	$(CC) $(CFLAGS) -I../build_dir/xorg-server-1.9.3/Xext -c ../build_dir/xorg-server-1.9.3/mi/miinitext.c
+miinitext.o: ../X11rdp/Source/xorg-server/mi/miinitext.c Makefile
+	$(CC) $(CFLAGS) -I../X11rdp/Source/xorg-server/Xext -c ../X11rdp/Source/xorg-server/mi/miinitext.c
 
-fbcmap.o: ../build_dir/xorg-server-1.9.3/fb/fbcmap.c
-	$(CC) $(CFLAGS) -c ../build_dir/xorg-server-1.9.3/fb/fbcmap.c
+fbcmap.o: ../X11rdp/Source/xorg-server/fb/fbcmap.c
+	$(CC) $(CFLAGS) -c ../X11rdp/Source/xorg-server/fb/fbcmap.c
 
-fbcmap_mi.o: ../build_dir/xorg-server-1.9.3/fb/fbcmap_mi.c
-	$(CC) $(CFLAGS) -c ../build_dir/xorg-server-1.9.3/fb/fbcmap_mi.c
+fbcmap_mi.o: ../X11rdp/Source/xorg-server/fb/fbcmap_mi.c
+	$(CC) $(CFLAGS) -c ../X11rdp/Source/xorg-server/fb/fbcmap_mi.c
+
