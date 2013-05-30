@@ -650,7 +650,7 @@ set(${EXTERNAL_PROJECT}_URL "http://ftp.x.org/pub/individual/lib/${${EXTERNAL_PR
 set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX}")
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")
-set(${EXTERNAL_PROJECT}_DEPENDS "libX11;libXext;libXau")
+set(${EXTERNAL_PROJECT}_DEPENDS "libX11;libXext;libXau;xf86vidmodeproto;xf86driproto;xf86dgaproto;xf86bigfontproto")
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECT})
 
 set(EXTERNAL_PROJECT "libXpm")
