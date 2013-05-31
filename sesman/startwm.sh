@@ -11,4 +11,7 @@ elif [ -r /etc/gdm/Xsession ]; then
   . /etc/gdm/Xsession
 elif [ -r /etc/X11/xinit/Xsession ]; then
   . /etc/X11/xinit/Xsession
+elif [ -r /etc/X11/xinit/xinitrc ]; then
+  . /etc/X11/xinit/xinitrc
 fi
+
