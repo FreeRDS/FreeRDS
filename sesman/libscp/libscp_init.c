@@ -29,7 +29,7 @@
 //struct log_config* s_log;
 
 /* server API */
-int DEFAULT_CC
+int 
 scp_init()
 {
     /*

@@ -24,7 +24,7 @@
 
 /*****************************************************************************/
 /* all login help screen events go here */
-static int DEFAULT_CC
+static int 
 xrdp_wm_login_help_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
 {
 	xrdpPainter *p;
@@ -85,7 +85,7 @@ logging on.");
 
 #if 0
 /*****************************************************************************/
-static int DEFAULT_CC
+static int 
 xrdp_wm_popup_notify(xrdpBitmap *wnd,
 		xrdpBitmap *sender,
 		int msg, int param1, int param2)
@@ -95,7 +95,7 @@ xrdp_wm_popup_notify(xrdpBitmap *wnd,
 #endif
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_wm_delete_all_childs(xrdpWm *self)
 {
 	int index;
@@ -114,7 +114,7 @@ xrdp_wm_delete_all_childs(xrdpWm *self)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 set_mod_data_item(xrdpModuleData *mod, char *name, char *value)
 {
 	int index;
@@ -132,7 +132,7 @@ set_mod_data_item(xrdpModuleData *mod, char *name, char *value)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 xrdp_wm_help_clicked(xrdpBitmap *wnd)
 {
 	xrdpBitmap *help;
@@ -169,7 +169,7 @@ xrdp_wm_help_clicked(xrdpBitmap *wnd)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 xrdp_wm_cancel_clicked(xrdpBitmap *wnd)
 {
 	if (wnd != 0)
@@ -187,7 +187,7 @@ xrdp_wm_cancel_clicked(xrdpBitmap *wnd)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 xrdp_wm_ok_clicked(xrdpBitmap *wnd)
 {
 	xrdpBitmap *combo;
@@ -239,7 +239,7 @@ xrdp_wm_ok_clicked(xrdpBitmap *wnd)
 }
 
 /******************************************************************************/
-static int APP_CC
+static int 
 xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 {
 	int count;
@@ -359,7 +359,7 @@ xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 
 /*****************************************************************************/
 /* all login screen events go here */
-static int DEFAULT_CC
+static int 
 xrdp_wm_login_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
 {
 	xrdpBitmap *b;
@@ -414,7 +414,7 @@ xrdp_wm_login_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, 
 }
 
 /******************************************************************************/
-static int APP_CC
+static int 
 xrdp_wm_login_fill_in_combo(xrdpWm *self, xrdpBitmap *b)
 {
 	xrdpList *sections;
@@ -490,7 +490,7 @@ xrdp_wm_login_fill_in_combo(xrdpWm *self, xrdpBitmap *b)
 }
 
 /******************************************************************************/
-int APP_CC
+int 
 xrdp_login_wnd_create(xrdpWm *self)
 {
 	xrdpBitmap *but;

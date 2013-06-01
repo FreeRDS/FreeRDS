@@ -29,7 +29,7 @@
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
 /******************************************************************************/
-void DEFAULT_CC
+void 
 scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	int display = 0;
@@ -68,81 +68,81 @@ scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 		}
 
 		auth_end(data);
-	} else
-		if (data)
+	}
+	else if (data)
+	{
+		s_item = session_get_bydata(s->username, s->width, s->height, s->bpp, s->type);
+
+		if (s_item != 0)
 		{
-			s_item = session_get_bydata(s->username, s->width, s->height, s->bpp, s->type);
+			display = s_item->display;
 
-			if (s_item != 0)
+			if (0 != s->client_ip)
 			{
-				display = s_item->display;
-
-				if (0 != s->client_ip)
-				{
-					log_message(LOG_LEVEL_INFO, "++ reconnected session: username %s, "
-						"display :%d.0, session_pid %d, ip %s", s->username, display,
-							s_item->pid, s->client_ip);
-				}
-				else
-				{
-					log_message(LOG_LEVEL_INFO, "++ reconnected session: username %s, "
-						"display :%d.0, session_pid %d", s->username, display, s_item->pid);
-				}
-
-				session_reconnect(display, s->username);
-				auth_end(data);
-				/* don't set data to null here */
+				log_message(LOG_LEVEL_INFO, "++ reconnected session: username %s, "
+					"display :%d.0, session_pid %d, ip %s", s->username, display,
+						s_item->pid, s->client_ip);
 			}
 			else
 			{
-				LOG_DBG("pre auth");
-
-				if (1 == access_login_allowed(s->username))
-				{
-					if (0 != s->client_ip)
-					{
-						log_message(LOG_LEVEL_INFO, "++ created session (access granted): "
-							"username %s, ip %s", s->username, s->client_ip);
-					}
-					else
-					{
-						log_message(LOG_LEVEL_INFO, "++ created session (access granted): "
-							"username %s", s->username);
-					}
-
-					if (SCP_SESSION_TYPE_XVNC == s->type)
-					{
-						log_message(LOG_LEVEL_INFO, "starting Xvnc session...");
-						display = session_start(s->width, s->height, s->bpp, s->username,
-								s->password, data, SESMAN_SESSION_TYPE_XVNC, s->domain,
-								s->program, s->directory, s->client_ip);
-					}
-					else
-					{
-						log_message(LOG_LEVEL_INFO, "starting X11rdp session...");
-						display = session_start(s->width, s->height, s->bpp, s->username,
-								s->password, data, SESMAN_SESSION_TYPE_XRDP, s->domain,
-								s->program, s->directory, s->client_ip);
-					}
-				}
-				else
-				{
-					display = 0;
-				}
+				log_message(LOG_LEVEL_INFO, "++ reconnected session: username %s, "
+					"display :%d.0, session_pid %d", s->username, display, s_item->pid);
 			}
 
-			if (display == 0)
-			{
-				auth_end(data);
-				scp_v0s_deny_connection(c);
-			}
-			else
-			{
-				scp_v0s_allow_connection(c, display);
-			}
+			session_reconnect(display, s->username);
+			auth_end(data);
+			/* don't set data to null here */
 		}
 		else
 		{
+			LOG_DBG("pre auth");
+
+			if (1 == access_login_allowed(s->username))
+			{
+				if (0 != s->client_ip)
+				{
+					log_message(LOG_LEVEL_INFO, "++ created session (access granted): "
+						"username %s, ip %s", s->username, s->client_ip);
+				}
+				else
+				{
+					log_message(LOG_LEVEL_INFO, "++ created session (access granted): "
+						"username %s", s->username);
+				}
+
+				if (SCP_SESSION_TYPE_XVNC == s->type)
+				{
+					log_message(LOG_LEVEL_INFO, "starting Xvnc session...");
+					display = session_start(s->width, s->height, s->bpp, s->username,
+							s->password, data, SESMAN_SESSION_TYPE_XVNC, s->domain,
+							s->program, s->directory, s->client_ip);
+				}
+				else
+				{
+					log_message(LOG_LEVEL_INFO, "starting X11rdp session...");
+					display = session_start(s->width, s->height, s->bpp, s->username,
+							s->password, data, SESMAN_SESSION_TYPE_XRDP, s->domain,
+							s->program, s->directory, s->client_ip);
+				}
+			}
+			else
+			{
+				display = 0;
+			}
+		}
+
+		if (display == 0)
+		{
+			auth_end(data);
 			scp_v0s_deny_connection(c);
 		}
+		else
+		{
+			scp_v0s_allow_connection(c, display);
+		}
+	}
+	else
+	{
+		scp_v0s_deny_connection(c);
+	}
 }

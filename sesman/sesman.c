@@ -43,7 +43,7 @@ extern int g_thread_sck; /* in thread.c */
  * @brief Starts sesman main loop
  *
  */
-static void DEFAULT_CC sesman_main_loop(void)
+static void  sesman_main_loop(void)
 {
 	int in_sck;
 	int error;
@@ -136,7 +136,7 @@ static void DEFAULT_CC sesman_main_loop(void)
 }
 
 /******************************************************************************/
-int DEFAULT_CC main(int argc, char **argv)
+int  main(int argc, char **argv)
 {
 	int fd;
 	enum logReturns error;
@@ -155,83 +155,84 @@ int DEFAULT_CC main(int argc, char **argv)
 		/* no options on command line. normal startup */
 		g_printf("starting xrdp-ng-sesman...\n");
 		daemon = 1;
-	} else
-		if ((2 == argc) && ((0 == g_strcasecmp(argv[1], "--nodaemon")) || (0 == g_strcasecmp(argv[1],
-				"-nodaemon")) || (0 == g_strcasecmp(argv[1], "-n")) || (0 == g_strcasecmp(argv[1],
-				"-ns"))))
+	}
+	else if ((2 == argc) && ((0 == g_strcasecmp(argv[1], "--nodaemon")) || (0 == g_strcasecmp(argv[1],
+		"-nodaemon")) || (0 == g_strcasecmp(argv[1], "-n")) || (0 == g_strcasecmp(argv[1], "-ns"))))
+	{
+		/* starts sesman not daemonized */
+		g_printf("starting sesman in foreground...\n");
+		daemon = 0;
+	}
+	else if ((2 == argc) && ((0 == g_strcasecmp(argv[1], "--help")) || (0 == g_strcasecmp(argv[1],
+			"-help")) || (0 == g_strcasecmp(argv[1], "-h"))))
+	{
+		/* help screen */
+		g_printf("xrdp-ng-sesman - xrdp session manager\n\n");
+		g_printf("usage: sesman [command]\n\n");
+		g_printf("command can be one of the following:\n");
+		g_printf("-n, -ns, --nodaemon  starts sesman in foreground\n");
+		g_printf("-k, --kill           kills running sesman\n");
+		g_printf("-h, --help           shows this help\n");
+		g_printf("if no command is specified, sesman is started in background");
+		g_deinit();
+		g_exit(0);
+	}
+	else if ((2 == argc) && ((0 == g_strcasecmp(argv[1], "--kill")) || (0 == g_strcasecmp(
+			argv[1], "-kill")) || (0 == g_strcasecmp(argv[1], "-k"))))
+	{
+		/* killing running sesman */
+		/* check if sesman is running */
+		if (!g_file_exist(pid_file))
 		{
-			/* starts sesman not daemonized */
-			g_printf("starting sesman in foreground...\n");
-			daemon = 0;
-		} else
-			if ((2 == argc) && ((0 == g_strcasecmp(argv[1], "--help")) || (0 == g_strcasecmp(argv[1],
-					"-help")) || (0 == g_strcasecmp(argv[1], "-h"))))
-			{
-				/* help screen */
-				g_printf("xrdp-ng-sesman - xrdp session manager\n\n");
-				g_printf("usage: sesman [command]\n\n");
-				g_printf("command can be one of the following:\n");
-				g_printf("-n, -ns, --nodaemon  starts sesman in foreground\n");
-				g_printf("-k, --kill           kills running sesman\n");
-				g_printf("-h, --help           shows this help\n");
-				g_printf("if no command is specified, sesman is started in background");
-				g_deinit();
-				g_exit(0);
-			} else
-				if ((2 == argc) && ((0 == g_strcasecmp(argv[1], "--kill")) || (0 == g_strcasecmp(
-						argv[1], "-kill")) || (0 == g_strcasecmp(argv[1], "-k"))))
-				{
-					/* killing running sesman */
-					/* check if sesman is running */
-					if (!g_file_exist(pid_file))
-					{
-						g_printf("sesman is not running (pid file not found - %s)\n", pid_file);
-						g_deinit();
-						g_exit(1);
-					}
+			g_printf("sesman is not running (pid file not found - %s)\n", pid_file);
+			g_deinit();
+			g_exit(1);
+		}
 
-					fd = g_file_open(pid_file);
+		fd = g_file_open(pid_file);
 
-					if (-1 == fd)
-					{
-						g_printf("error opening pid file[%s]: %s\n", pid_file, g_get_strerror());
-						return 1;
-					}
+		if (-1 == fd)
+		{
+			g_printf("error opening pid file[%s]: %s\n", pid_file, g_get_strerror());
+			return 1;
+		}
 
-					error = g_file_read(fd, pid_s, 7);
+		error = g_file_read(fd, pid_s, 7);
 
-					if (-1 == error)
-					{
-						g_printf("error reading pid file: %s\n", g_get_strerror());
-						g_file_close(fd);
-						g_deinit();
-						g_exit(error);
-					}
+		if (-1 == error)
+		{
+			g_printf("error reading pid file: %s\n", g_get_strerror());
+			g_file_close(fd);
+			g_deinit();
+			g_exit(error);
+		}
 
-					g_file_close(fd);
-					pid = g_atoi(pid_s);
+		g_file_close(fd);
+		pid = g_atoi(pid_s);
 
-					error = g_sigterm(pid);
+		error = g_sigterm(pid);
 
-					if (0 != error)
-					{
-						g_printf("error killing sesman: %s\n", g_get_strerror());
-					} else
-					{
-						g_file_delete(pid_file);
-					}
+		if (0 != error)
+		{
+			g_printf("error killing sesman: %s\n", g_get_strerror());
+		}
+		else
+		{
+			g_file_delete(pid_file);
+		}
 
-					g_deinit();
-					g_exit(error);
-				} else
-				{
-					/* there's something strange on the command line */
-					g_printf("sesman - xrdp session manager\n\n");
-					g_printf("error: invalid command line\n");
-					g_printf("usage: sesman [ --nodaemon | --kill | --help ]\n");
-					g_deinit();
-					g_exit(1);
-				}
+		g_deinit();
+		g_exit(error);
+	}
+	else
+	{
+		/* there's something strange on the command line */
+		g_printf("sesman - xrdp session manager\n\n");
+		g_printf("error: invalid command line\n");
+		g_printf("usage: sesman [ --nodaemon | --kill | --help ]\n");
+		g_deinit();
+		g_exit(1);
+	}
 
 	if (g_file_exist(pid_file))
 	{

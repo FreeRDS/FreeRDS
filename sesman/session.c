@@ -57,7 +57,7 @@ static int g_sync_cmd;
  * @param len the allocated len for outstr
  * @return
  */
-char *APP_CC
+char *
 dumpItemsToString(xrdpList *self, char *outstr, int len)
 {
 	int index;
@@ -85,7 +85,7 @@ dumpItemsToString(xrdpList *self, char *outstr, int len)
 }
 
 /******************************************************************************/
-struct session_item *DEFAULT_CC
+struct session_item *
 session_get_bydata(char *name, int width, int height, int bpp, int type)
 {
 	struct session_chain *tmp;
@@ -147,7 +147,7 @@ session_get_bydata(char *name, int width, int height, int bpp, int type)
  * @return 0 if there isn't a display running, nonzero otherwise
  *
  */
-static int DEFAULT_CC x_server_running_check_ports(int display)
+static int  x_server_running_check_ports(int display)
 {
 	char text[256];
 	int x_running;
@@ -197,7 +197,7 @@ static int DEFAULT_CC x_server_running_check_ports(int display)
  * @return 0 if there isn't a display running, nonzero otherwise
  *
  */
-static int DEFAULT_CC x_server_running(int display)
+static int  x_server_running(int display)
 {
 	char text[256];
 	int x_running;
@@ -215,7 +215,7 @@ static int DEFAULT_CC x_server_running(int display)
 }
 
 /******************************************************************************/
-static void DEFAULT_CC session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
+static void  session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
 {
 	xrdpList *sessvc_params = (xrdpList *) NULL;
 	char wmpid_str[25];
@@ -278,7 +278,7 @@ static void DEFAULT_CC session_start_sessvc(int xpid, int wmpid, long data, char
 /******************************************************************************/
 /* called with the main thread
  returns boolean */
-static int APP_CC session_is_display_in_chain(int display)
+static int  session_is_display_in_chain(int display)
 {
 	struct session_chain *chain;
 	struct session_item *item;
@@ -300,7 +300,7 @@ static int APP_CC session_is_display_in_chain(int display)
 
 /******************************************************************************/
 /* called with the main thread */
-static int APP_CC session_get_aval_display_from_chain(void)
+static int  session_get_aval_display_from_chain(void)
 {
 	int display;
 
@@ -327,7 +327,7 @@ static int APP_CC session_get_aval_display_from_chain(void)
 }
 
 /******************************************************************************/
-static int APP_CC wait_for_xserver(int display)
+static int  wait_for_xserver(int display)
 {
 	int i;
 
@@ -353,7 +353,7 @@ static int APP_CC wait_for_xserver(int display)
 
 /******************************************************************************/
 /* called with the main thread */
-static int APP_CC
+static int 
 session_start_fork(int width, int height, int bpp, char *username, char *password, tbus data, tui8 type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
@@ -663,7 +663,7 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 
 /******************************************************************************/
 /* called with the main thread */
-static int APP_CC session_reconnect_fork(int display, char *username)
+static int  session_reconnect_fork(int display, char *username)
 {
 	int pid;
 	char text[256];
@@ -692,7 +692,7 @@ static int APP_CC session_reconnect_fork(int display, char *username)
 /******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
-int DEFAULT_CC session_start(int width, int height, int bpp, char *username, char *password, long data, tui8 type, char *domain,
+int  session_start(int width, int height, int bpp, char *username, char *password, long data, tui8 type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
 	int display;
@@ -726,7 +726,7 @@ int DEFAULT_CC session_start(int width, int height, int bpp, char *username, cha
 /******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
-int DEFAULT_CC session_reconnect(int display, char *username)
+int  session_reconnect(int display, char *username)
 {
 	/* lock mutex */
 	lock_sync_acquire();
@@ -745,7 +745,7 @@ int DEFAULT_CC session_reconnect(int display, char *username)
 
 /******************************************************************************/
 /* called with the main thread */
-int APP_CC session_sync_start(void)
+int  session_sync_start(void)
 {
 	if (g_sync_cmd == 0)
 	{
@@ -764,7 +764,7 @@ int APP_CC session_sync_start(void)
 }
 
 /******************************************************************************/
-int DEFAULT_CC session_kill(int pid)
+int  session_kill(int pid)
 {
 	struct session_chain *tmp;
 	struct session_chain *prev;
@@ -835,7 +835,7 @@ int DEFAULT_CC session_kill(int pid)
 }
 
 /******************************************************************************/
-void DEFAULT_CC session_sigkill_all()
+void  session_sigkill_all()
 {
 	struct session_chain *tmp;
 
@@ -865,7 +865,7 @@ void DEFAULT_CC session_sigkill_all()
 }
 
 /******************************************************************************/
-struct session_item *DEFAULT_CC session_get_bypid(int pid)
+struct session_item * session_get_bypid(int pid)
 {
 	struct session_chain *tmp;
 	struct session_item *dummy;

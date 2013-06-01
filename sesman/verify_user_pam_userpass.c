@@ -33,7 +33,7 @@
 
 /******************************************************************************/
 /* returns boolean */
-int DEFAULT_CC
+int 
 auth_userpass(char *user, char *pass, int *errorcode)
 {
 	pam_handle_t *pamh;
@@ -85,21 +85,21 @@ auth_userpass(char *user, char *pass, int *errorcode)
 
 /******************************************************************************/
 /* returns error */
-int DEFAULT_CC
+int 
 auth_start_session(void)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 auth_end(void)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 auth_set_env(void)
 {
 	return 0;

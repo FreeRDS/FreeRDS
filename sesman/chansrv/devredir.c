@@ -56,7 +56,7 @@ struct stream *g_input_stream = NULL;
 void xfuse_devredir_cb_write_file(void *vp, char *buf, size_t length);
 
 /*****************************************************************************/
-int APP_CC
+int 
 dev_redir_init(void)
 {
     struct  stream *s;
@@ -101,7 +101,7 @@ dev_redir_init(void)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 dev_redir_deinit(void)
 {
     return 0;
@@ -113,7 +113,7 @@ dev_redir_deinit(void)
  * @return 0 on success, -1 on failure
  *****************************************************************************/
 
-int APP_CC
+int 
 dev_redir_data_in(struct stream *s, int chan_id, int chan_flags, int length,
                   int total_length)
 {
@@ -231,14 +231,14 @@ done:
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 dev_redir_get_wait_objs(tbus *objs, int *count, int *timeout)
 {
     return 0;
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 dev_redir_check_wait_objs(void)
 {
     return 0;

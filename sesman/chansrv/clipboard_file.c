@@ -73,7 +73,7 @@ static int g_file_request_sent_type = 0;
 #define CB_EPOCH_DIFF 11644473600LL
 
 /*****************************************************************************/
-static tui64 APP_CC
+static tui64 
 timeval2wintime(struct timeval *tv)
 {
     tui64 result;
@@ -88,7 +88,7 @@ timeval2wintime(struct timeval *tv)
 /*****************************************************************************/
 /* this will replace %20 or any hex with the space or correct char
  * returns error */
-static int APP_CC
+static int 
 clipboard_check_file(char *filename)
 {
     char lfilename[256];
@@ -123,7 +123,7 @@ clipboard_check_file(char *filename)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 clipboard_get_file(char* file, int bytes)
 {
     int sindex;
@@ -200,7 +200,7 @@ clipboard_get_file(char* file, int bytes)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 clipboard_get_files(char *files, int bytes)
 {
     int index;
@@ -242,7 +242,7 @@ clipboard_get_files(char *files, int bytes)
 /*****************************************************************************/
 /* server to client */
 /* response to client asking for clipboard contents that is file list */
-int APP_CC
+int 
 clipboard_send_data_response_for_file(char *data, int data_size)
 {
     struct stream *s;
@@ -308,7 +308,7 @@ clipboard_send_data_response_for_file(char *data, int data_size)
 
 /*****************************************************************************/
 /* send the file size from server to the client */
-static int APP_CC
+static int 
 clipboard_send_file_size(int streamId, int lindex)
 {
     struct stream *s;
@@ -349,7 +349,7 @@ clipboard_send_file_size(int streamId, int lindex)
 
 /*****************************************************************************/
 /* ask the client to send the file size */
-int APP_CC
+int 
 clipboard_request_file_size(int stream_id, int lindex)
 {
     struct stream *s;
@@ -385,7 +385,7 @@ clipboard_request_file_size(int stream_id, int lindex)
 
 /*****************************************************************************/
 /* send a chunk of the file from server to client */
-static int APP_CC
+static int 
 clipboard_send_file_data(int streamId, int lindex,
                          int nPositionLow, int cbRequested)
 {
@@ -446,7 +446,7 @@ clipboard_send_file_data(int streamId, int lindex,
 
 /*****************************************************************************/
 /* ask the client to send the file size */
-int APP_CC
+int 
 clipboard_request_file_data(int stream_id, int lindex, int offset,
                             int request_bytes)
 {
@@ -486,7 +486,7 @@ clipboard_request_file_data(int stream_id, int lindex, int offset,
 
 /*****************************************************************************/
 /* client is asking from info about a file */
-int APP_CC
+int 
 clipboard_process_file_request(struct stream *s, int clip_msg_status,
                                int clip_msg_len)
 {
@@ -521,7 +521,7 @@ clipboard_process_file_request(struct stream *s, int clip_msg_status,
 /*****************************************************************************/
 /* server requested info about the file and this is the responce
    it's either the file size or file data */
-int APP_CC
+int 
 clipboard_process_file_response(struct stream *s, int clip_msg_status,
                                 int clip_msg_len)
 {
@@ -554,7 +554,7 @@ clipboard_process_file_response(struct stream *s, int clip_msg_status,
 
 /*****************************************************************************/
 /* read in CLIPRDR_FILEDESCRIPTOR */
-static int APP_CC
+static int 
 clipboard_c2s_in_file_info(struct stream *s, struct clip_file_desc *cfd)
 {
     int num_chars;
@@ -586,7 +586,7 @@ clipboard_c2s_in_file_info(struct stream *s, struct clip_file_desc *cfd)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 clipboard_c2s_in_files(struct stream *s, char *file_list)
 {
     int cItems;

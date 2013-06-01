@@ -30,7 +30,7 @@ static long g_sync_mutex = 0;
 static long g_sync1_mutex = 0;
 static tbus g_term_event = 0;
 static tbus g_sync_event = 0;
-/* syncronize stuff */
+/* synchronize stuff */
 static int g_sync_command = 0;
 static long g_sync_result = 0;
 static long g_sync_param1 = 0;
@@ -41,7 +41,7 @@ static long (*g_sync_func)(long param1, long param2);
 /* This function is used to run a function from the main thread.
  Sync_func is the function pointer that will run from main thread
  The function can have two long in parameters and must return long */
-long APP_CC g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
+long  g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
 {
 	long sync_result;
 	int sync_command;
@@ -54,7 +54,8 @@ long APP_CC g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_pa
 		/* in fork mode, this always happens too */
 		sync_result = sync_func(sync_param1, sync_param2);
 		/*g_writeln("g_xrdp_sync processed IN main thread -> continue");*/
-	} else
+	}
+	else
 	{
 		/* All threads have to wait here until the main thread
 		 * process the function. g_process_waiting_function() is called
@@ -92,7 +93,7 @@ long APP_CC g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_pa
 }
 
 /*****************************************************************************/
-void DEFAULT_CC xrdp_shutdown(int sig)
+void  xrdp_shutdown(int sig)
 {
 	tbus threadid;
 
@@ -107,14 +108,14 @@ void DEFAULT_CC xrdp_shutdown(int sig)
 }
 
 /*****************************************************************************/
-void DEFAULT_CC xrdp_child(int sig)
+void  xrdp_child(int sig)
 {
 	g_waitchild();
 }
 
 /*****************************************************************************/
 /* called in child just after fork */
-int APP_CC xrdp_child_fork(void)
+int  xrdp_child_fork(void)
 {
 	int pid;
 	char text[256];
@@ -131,37 +132,38 @@ int APP_CC xrdp_child_fork(void)
 }
 
 /*****************************************************************************/
-int APP_CC g_is_term(void)
+int  g_is_term(void)
 {
 	return g_is_wait_obj_set(g_term_event);
 }
 
 /*****************************************************************************/
-void APP_CC g_set_term(int in_val)
+void  g_set_term(int in_val)
 {
 	if (in_val)
 	{
 		g_set_wait_obj(g_term_event);
-	} else
+	}
+	else
 	{
 		g_reset_wait_obj(g_term_event);
 	}
 }
 
 /*****************************************************************************/
-tbus APP_CC g_get_term_event(void)
+tbus  g_get_term_event(void)
 {
 	return g_term_event;
 }
 
 /*****************************************************************************/
-tbus APP_CC g_get_sync_event(void)
+tbus  g_get_sync_event(void)
 {
 	return g_sync_event;
 }
 
 /*****************************************************************************/
-void DEFAULT_CC pipe_sig(int sig_num)
+void  pipe_sig(int sig_num)
 {
 	/* do nothing */
 	g_writeln("got XRDP SIGPIPE(%d)", sig_num);
@@ -170,7 +172,7 @@ void DEFAULT_CC pipe_sig(int sig_num)
 /*****************************************************************************/
 /*Some function must be called from the main thread.
  if g_sync_command==THREAD_WAITING a function is waiting to be processed*/
-void APP_CC
+void 
 g_process_waiting_function(void)
 {
 	tc_mutex_lock(g_sync_mutex);
@@ -192,7 +194,7 @@ g_process_waiting_function(void)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
 {
 	int index;
@@ -217,50 +219,49 @@ xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
 				|| (g_strncasecmp(option, "-h", 255)) == 0)
 		{
 			startup_params->help = 1;
-		} else
-			if ((g_strncasecmp(option, "-kill", 255) == 0) || (g_strncasecmp(option, "--kill", 255) == 0)
+		}
+		else if ((g_strncasecmp(option, "-kill", 255) == 0) || (g_strncasecmp(option, "--kill", 255) == 0)
 					|| (g_strncasecmp(option, "-k", 255) == 0))
-			{
-				startup_params->kill = 1;
-			} else
-				if ((g_strncasecmp(option, "-nodaemon", 255) == 0) || (g_strncasecmp(option,
+		{
+			startup_params->kill = 1;
+		}
+		else if ((g_strncasecmp(option, "-nodaemon", 255) == 0) || (g_strncasecmp(option,
 						"--nodaemon", 255) == 0) || (g_strncasecmp(option, "-nd", 255) == 0)
 						|| (g_strncasecmp(option, "--nd", 255) == 0) || (g_strncasecmp(option,
 						"-ns", 255) == 0) || (g_strncasecmp(option, "--ns", 255) == 0))
-				{
-					startup_params->no_daemon = 1;
-				} else
-					if ((g_strncasecmp(option, "-v", 255) == 0) || (g_strncasecmp(option,
+		{
+			startup_params->no_daemon = 1;
+		}
+		else if ((g_strncasecmp(option, "-v", 255) == 0) || (g_strncasecmp(option,
 							"--version", 255) == 0))
-					{
-						startup_params->version = 1;
-					} else
-						if ((g_strncasecmp(option, "-p", 255) == 0) || (g_strncasecmp(option,
+		{
+			startup_params->version = 1;
+		}
+		else if ((g_strncasecmp(option, "-p", 255) == 0) || (g_strncasecmp(option,
 								"--port", 255) == 0))
-						{
-							index++;
-							g_strncpy(startup_params->port, value, 127);
+		{
+			index++;
+			g_strncpy(startup_params->port, value, 127);
 
-							if (g_strlen(startup_params->port) < 1)
-							{
-								g_writeln("error processing params, port [%s]",
-										startup_params->port);
-								return 1;
-							} else
-							{
-								g_writeln("--port parameter found, ini override [%s]",
-										startup_params->port);
-							}
-						} else
-							if ((g_strncasecmp(option, "-f", 255) == 0) || (g_strncasecmp(
-									option, "--fork", 255) == 0))
-							{
-								startup_params->fork = 1;
-								g_writeln("--fork parameter found, ini override");
-							} else
-							{
-								return 1;
-							}
+			if (g_strlen(startup_params->port) < 1)
+			{
+				g_writeln("error processing params, port [%s]", startup_params->port);
+				return 1;
+			}
+			else
+			{
+				g_writeln("--port parameter found, ini override [%s]", startup_params->port);
+			}
+		}
+		else if ((g_strncasecmp(option, "-f", 255) == 0) || (g_strncasecmp(option, "--fork", 255) == 0))
+		{
+			startup_params->fork = 1;
+			g_writeln("--fork parameter found, ini override");
+		}
+		else
+		{
+			return 1;
+		}
 
 		index++;
 	}
@@ -269,7 +270,7 @@ xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
 }
 
 /*****************************************************************************/
-int DEFAULT_CC
+int 
 main(int argc, char **argv)
 {
 	int fd;
@@ -384,7 +385,8 @@ main(int argc, char **argv)
 		{
 			g_writeln("problem opening to xrdp-ng.pid [%s]", pid_file);
 			g_writeln("maybe its not running");
-		} else
+		}
+		else
 		{
 			g_memset(text, 0, 32);
 			g_file_read(fd, text, 31);
@@ -503,7 +505,8 @@ main(int argc, char **argv)
 			g_writeln("trying to write process id to xrdp-ng.pid");
 			g_writeln("problem opening xrdp-ng.pid");
 			g_writeln("maybe no rights");
-		} else
+		}
+		else
 		{
 			g_sprintf(text, "%d", pid);
 			g_file_write(fd, text, g_strlen(text));

@@ -33,7 +33,7 @@
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 config_read(struct config_sesman *cfg)
 {
 	int fd;
@@ -94,7 +94,7 @@ config_read(struct config_sesman *cfg)
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
@@ -179,7 +179,7 @@ config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, xrdpL
 }
 
 /******************************************************************************
- int DEFAULT_CC
+ int 
  config_read_logging(int file, struct log_config* lc, xrdpList* param_n,
  xrdpList* param_v)
  {
@@ -234,7 +234,7 @@ config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, xrdpL
  }
  */
 /******************************************************************************/
-int DEFAULT_CC
+int 
 config_read_security(int file, struct config_security *sc, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
@@ -315,7 +315,7 @@ config_read_security(int file, struct config_security *sc, xrdpList *param_n, xr
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 config_read_sessions(int file, struct config_sessions *se, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
@@ -375,7 +375,7 @@ config_read_sessions(int file, struct config_sessions *se, xrdpList *param_n, xr
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 config_read_rdp_params(int file, struct config_sesman *cs, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
@@ -404,7 +404,7 @@ config_read_rdp_params(int file, struct config_sesman *cs, xrdpList *param_n, xr
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 config_read_vnc_params(int file, struct config_sesman *cs, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;

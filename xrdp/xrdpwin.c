@@ -27,7 +27,7 @@ static long g_sync_mutex = 0;
 static long g_sync1_mutex = 0;
 static tbus g_term_event = 0;
 static tbus g_sync_event = 0;
-/* syncronize stuff */
+/* synchronize stuff */
 static int g_sync_command = 0;
 static long g_sync_result = 0;
 static long g_sync_param1 = 0;
@@ -35,7 +35,7 @@ static long g_sync_param2 = 0;
 static long (*g_sync_func)(long param1, long param2);
 
 /*****************************************************************************/
-long APP_CC
+long 
 g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
 {
 	long sync_result;
@@ -72,7 +72,7 @@ g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long s
 }
 
 /*****************************************************************************/
-void DEFAULT_CC
+void 
 xrdp_shutdown(int sig)
 {
 	tbus threadid;
@@ -88,14 +88,14 @@ xrdp_shutdown(int sig)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 g_is_term(void)
 {
 	return g_is_wait_obj_set(g_term_event);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 g_set_term(int in_val)
 {
 	if (in_val)
@@ -108,21 +108,21 @@ g_set_term(int in_val)
 }
 
 /*****************************************************************************/
-tbus APP_CC
+tbus 
 g_get_term_event(void)
 {
 	return g_term_event;
 }
 
 /*****************************************************************************/
-tbus APP_CC
+tbus 
 g_get_sync_event(void)
 {
 	return g_sync_event;
 }
 
 /*****************************************************************************/
-void DEFAULT_CC
+void 
 pipe_sig(int sig_num)
 {
 	/* do nothing */
@@ -130,7 +130,7 @@ pipe_sig(int sig_num)
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 g_process_waiting_function(void)
 {
 	tc_mutex_lock(g_sync_mutex);
@@ -153,30 +153,14 @@ g_process_waiting_function(void)
 
 int main(int argc, char **argv)
 {
-	int test;
-	int host_be;
-	int pid;
 	int fd;
+	int pid;
 	int no_daemon;
 	char text[256];
 	char pid_file[256];
 
 	g_init();
 	ssl_init();
-	/* check compiled endian with actual endian */
-	test = 1;
-	host_be = !((int) (*(unsigned char *) (&test)));
-#if defined(B_ENDIAN)
-
-	if (!host_be)
-#endif
-#if defined(L_ENDIAN)
-	if (host_be)
-#endif
-	{
-		g_writeln("endian wrong, edit arch.h");
-		return 0;
-	}
 
 	/* check long, int and void* sizes */
 	if (sizeof(int) != 4)
@@ -224,7 +208,8 @@ int main(int argc, char **argv)
 			{
 				g_writeln("problem opening to xrdp-ng.pid");
 				g_writeln("maybe its not running");
-			} else
+			}
+			else
 			{
 				g_memset(text, 0, 32);
 				g_file_read(fd, text, 31);
@@ -240,54 +225,55 @@ int main(int argc, char **argv)
 			}
 
 			g_exit(0);
-		} else
-			if (g_strncasecmp(argv[1], "-nodaemon", 255) == 0 || g_strncasecmp(argv[1], "--nodaemon", 255)
+		}
+		else if (g_strncasecmp(argv[1], "-nodaemon", 255) == 0 || g_strncasecmp(argv[1], "--nodaemon", 255)
 					== 0 || g_strncasecmp(argv[1], "-nd", 255) == 0 || g_strncasecmp(argv[1],
 					"--nd", 255) == 0 || g_strncasecmp(argv[1], "-ns", 255) == 0 || g_strncasecmp(
 					argv[1], "--ns", 255) == 0)
-			{
-				no_daemon = 1;
-			} else
-				if (g_strncasecmp(argv[1], "-help", 255) == 0 || g_strncasecmp(argv[1], "--help", 255)
+		{
+			no_daemon = 1;
+		}
+		else if (g_strncasecmp(argv[1], "-help", 255) == 0 || g_strncasecmp(argv[1], "--help", 255)
 						== 0 || g_strncasecmp(argv[1], "-h", 255) == 0)
-				{
-					g_writeln("");
-					g_writeln("xrdp: A Remote Desktop Protocol server.");
-					g_writeln("Copyright (C) Jay Sorg 2004-2011");
-					g_writeln("See http://xrdp.sourceforge.net for more information.");
-					g_writeln("");
-					g_writeln("Usage: xrdp [options]");
-					g_writeln("   -h: show help");
-					g_writeln("   -nodaemon: don't fork into background");
-					g_writeln("   -kill: shut down xrdp");
-					g_writeln("");
-					g_exit(0);
-				} else
-					if ((g_strncasecmp(argv[1], "-v", 255) == 0) || (g_strncasecmp(argv[1],
+		{
+			g_writeln("");
+			g_writeln("xrdp: A Remote Desktop Protocol server.");
+			g_writeln("Copyright (C) Jay Sorg 2004-2011");
+			g_writeln("See http://xrdp.sourceforge.net for more information.");
+			g_writeln("");
+			g_writeln("Usage: xrdp [options]");
+			g_writeln("   -h: show help");
+			g_writeln("   -nodaemon: don't fork into background");
+			g_writeln("   -kill: shut down xrdp");
+			g_writeln("");
+			g_exit(0);
+		}
+		else if ((g_strncasecmp(argv[1], "-v", 255) == 0) || (g_strncasecmp(argv[1],
 							"--version", 255) == 0))
-					{
-						g_writeln("");
-						g_writeln("xrdp: A Remote Desktop Protocol server.");
-						g_writeln("Copyright (C) Jay Sorg 2004-2011");
-						g_writeln("See http://xrdp.sourceforge.net for more information.");
-						g_writeln("Version %s", PACKAGE_VERSION);
-						g_writeln("");
-						g_exit(0);
-					} else
-					{
-						g_writeln("Unknown Parameter");
-						g_writeln("xrdp -h for help");
-						g_writeln("");
-						g_exit(0);
-					}
-	} else
-		if (argc > 1)
+		{
+			g_writeln("");
+			g_writeln("xrdp: A Remote Desktop Protocol server.");
+			g_writeln("Copyright (C) Jay Sorg 2004-2011");
+			g_writeln("See http://xrdp.sourceforge.net for more information.");
+			g_writeln("Version %s", PACKAGE_VERSION);
+			g_writeln("");
+			g_exit(0);
+		}
+		else
 		{
 			g_writeln("Unknown Parameter");
 			g_writeln("xrdp -h for help");
 			g_writeln("");
 			g_exit(0);
 		}
+	}
+	else if (argc > 1)
+	{
+		g_writeln("Unknown Parameter");
+		g_writeln("xrdp -h for help");
+		g_writeln("");
+		g_exit(0);
+	}
 
 	if (g_file_exist(pid_file)) /* xrdp-ng.pid */
 	{
@@ -356,7 +342,8 @@ int main(int argc, char **argv)
 			g_writeln("trying to write process id to xrdp-ng.pid");
 			g_writeln("problem opening xrdp-ng.pid");
 			g_writeln("maybe no rights");
-		} else
+		}
+		else
 		{
 			g_sprintf(text, "%d", pid);
 			g_file_write(fd, text, g_strlen(text));

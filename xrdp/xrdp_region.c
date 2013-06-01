@@ -21,7 +21,7 @@
 #include "xrdp.h"
 
 /*****************************************************************************/
-xrdpRegion *APP_CC
+xrdpRegion *
 xrdp_region_create(xrdpWm *wm)
 {
 	xrdpRegion *self;
@@ -34,7 +34,7 @@ xrdp_region_create(xrdpWm *wm)
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 xrdp_region_delete(xrdpRegion *self)
 {
 	if (self == 0)
@@ -47,7 +47,7 @@ xrdp_region_delete(xrdpRegion *self)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_region_add_rect(xrdpRegion *self, xrdpRect *rect)
 {
 	xrdpRect *r;
@@ -59,7 +59,7 @@ xrdp_region_add_rect(xrdpRegion *self, xrdpRect *rect)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_region_insert_rect(xrdpRegion *self, int i, int left, int top, int right, int bottom)
 {
 	xrdpRect *r;
@@ -74,7 +74,7 @@ xrdp_region_insert_rect(xrdpRegion *self, int i, int left, int top, int right, i
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_region_subtract_rect(xrdpRegion *self,
                           xrdpRect *rect)
 {
@@ -297,7 +297,7 @@ xrdp_region_subtract_rect(xrdpRegion *self,
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_region_get_rect(xrdpRegion *self, int index, xrdpRect *rect)
 {
 	xrdpRect *r;

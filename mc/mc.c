@@ -22,7 +22,7 @@
 
 /*****************************************************************************/
 /* return error */
-int DEFAULT_CC lib_mod_start(struct mod *mod, int w, int h, int bpp)
+int  lib_mod_start(struct mod *mod, int w, int h, int bpp)
 {
 	LIB_DEBUG(mod, "in lib_mod_start");
 	mod->width = w;
@@ -34,7 +34,7 @@ int DEFAULT_CC lib_mod_start(struct mod *mod, int w, int h, int bpp)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC lib_mod_connect(struct mod *mod)
+int  lib_mod_connect(struct mod *mod)
 {
 	LIB_DEBUG(mod, "in lib_mod_connect"); LIB_DEBUG(mod, "out lib_mod_connect");
 	return 0;
@@ -42,7 +42,7 @@ int DEFAULT_CC lib_mod_connect(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC lib_mod_event(struct mod *mod, int msg, long param1, long param2, long param3, long param4)
+int  lib_mod_event(struct mod *mod, int msg, long param1, long param2, long param3, long param4)
 {
 	LIB_DEBUG(mod, "in lib_mod_event"); LIB_DEBUG(mod, "out lib_mod_event");
 	return 0;
@@ -50,7 +50,7 @@ int DEFAULT_CC lib_mod_event(struct mod *mod, int msg, long param1, long param2,
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC lib_mod_signal(struct mod *mod)
+int  lib_mod_signal(struct mod *mod)
 {
 	LIB_DEBUG(mod, "in lib_mod_signal"); LIB_DEBUG(mod, "out lib_mod_signal");
 	return 0;
@@ -58,20 +58,20 @@ int DEFAULT_CC lib_mod_signal(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC lib_mod_end(struct mod *mod)
+int  lib_mod_end(struct mod *mod)
 {
 	return 0;
 }
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC lib_mod_set_param(struct mod *mod, char *name, char *value)
+int  lib_mod_set_param(struct mod *mod, char *name, char *value)
 {
 	return 0;
 }
 
 /******************************************************************************/
-struct mod *EXPORT_CC mod_init(void)
+struct mod * mod_init(void)
 {
 	struct mod *mod;
 
@@ -89,7 +89,7 @@ struct mod *EXPORT_CC mod_init(void)
 }
 
 /******************************************************************************/
-int EXPORT_CC mod_exit(struct mod *mod)
+int  mod_exit(struct mod *mod)
 {
 	if (mod == 0)
 		return 0;

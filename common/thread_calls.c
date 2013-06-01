@@ -31,7 +31,7 @@
 /*****************************************************************************/
 /* returns error */
 #if defined(_WIN32)
-int APP_CC
+int 
 tc_thread_create(unsigned long (__stdcall *start_routine)(void *), void *arg)
 {
 	int rv = 0;
@@ -45,7 +45,7 @@ tc_thread_create(unsigned long (__stdcall *start_routine)(void *), void *arg)
 	return rv;
 }
 #else
-int APP_CC
+int 
 tc_thread_create(void * (* start_routine)(void *), void *arg)
 {
 	int rv = 0;
@@ -66,7 +66,7 @@ tc_thread_create(void * (* start_routine)(void *), void *arg)
 #endif
 
 /*****************************************************************************/
-tbus APP_CC
+tbus 
 tc_get_threadid(void)
 {
 #if defined(_WIN32)
@@ -78,7 +78,7 @@ tc_get_threadid(void)
 
 /*****************************************************************************/
 /* returns boolean */
-int APP_CC
+int 
 tc_threadid_equal(tbus tid1, tbus tid2)
 {
 #if defined(_WIN32)
@@ -89,7 +89,7 @@ tc_threadid_equal(tbus tid1, tbus tid2)
 }
 
 /*****************************************************************************/
-tbus APP_CC
+tbus 
 tc_mutex_create(void)
 {
 #if defined(_WIN32)
@@ -104,7 +104,7 @@ tc_mutex_create(void)
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 tc_mutex_delete(tbus mutex)
 {
 #if defined(_WIN32)
@@ -119,7 +119,7 @@ tc_mutex_delete(tbus mutex)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 tc_mutex_lock(tbus mutex)
 {
 #if defined(_WIN32)
@@ -132,7 +132,7 @@ tc_mutex_lock(tbus mutex)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 tc_mutex_unlock(tbus mutex)
 {
 	int rv = 0;
@@ -150,7 +150,7 @@ tc_mutex_unlock(tbus mutex)
 }
 
 /*****************************************************************************/
-tbus APP_CC
+tbus 
 tc_sem_create(int init_count)
 {
 #if defined(_WIN32)
@@ -168,7 +168,7 @@ tc_sem_create(int init_count)
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 tc_sem_delete(tbus sem)
 {
 #if defined(_WIN32)
@@ -183,7 +183,7 @@ tc_sem_delete(tbus sem)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 tc_sem_dec(tbus sem)
 {
 #if defined(_WIN32)
@@ -196,7 +196,7 @@ tc_sem_dec(tbus sem)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 tc_sem_inc(tbus sem)
 {
 #if defined(_WIN32)

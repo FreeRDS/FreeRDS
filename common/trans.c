@@ -24,7 +24,7 @@
 #include "parse.h"
 
 /*****************************************************************************/
-struct trans *APP_CC trans_create(int mode, int in_size, int out_size)
+struct trans * trans_create(int mode, int in_size, int out_size)
 {
 	struct trans* self = (struct trans *) NULL;
 
@@ -43,7 +43,7 @@ struct trans *APP_CC trans_create(int mode, int in_size, int out_size)
 }
 
 /*****************************************************************************/
-void APP_CC trans_delete(struct trans* self)
+void  trans_delete(struct trans* self)
 {
 	if (self == 0)
 	{
@@ -70,7 +70,7 @@ void APP_CC trans_delete(struct trans* self)
 }
 
 /*****************************************************************************/
-int APP_CC trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
+int  trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
 {
 	if (self == 0)
 	{
@@ -88,7 +88,7 @@ int APP_CC trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
 }
 
 /*****************************************************************************/
-int APP_CC trans_check_wait_objs(struct trans* self)
+int  trans_check_wait_objs(struct trans* self)
 {
 	tbus in_sck = (tbus) 0;
 	struct trans* in_trans = (struct trans*) NULL;
@@ -199,7 +199,7 @@ int APP_CC trans_check_wait_objs(struct trans* self)
 }
 
 /*****************************************************************************/
-int APP_CC trans_force_read_s(struct trans* self, struct stream* in_s, int size)
+int  trans_force_read_s(struct trans* self, struct stream* in_s, int size)
 {
 	int rcvd;
 
@@ -247,13 +247,13 @@ int APP_CC trans_force_read_s(struct trans* self, struct stream* in_s, int size)
 }
 
 /*****************************************************************************/
-int APP_CC trans_force_read(struct trans* self, int size)
+int  trans_force_read(struct trans* self, int size)
 {
 	return trans_force_read_s(self, self->in_s, size);
 }
 
 /*****************************************************************************/
-int APP_CC trans_force_write_s(struct trans* self, struct stream *out_s)
+int  trans_force_write_s(struct trans* self, struct stream *out_s)
 {
 	int size;
 	int total;
@@ -301,13 +301,13 @@ int APP_CC trans_force_write_s(struct trans* self, struct stream *out_s)
 }
 
 /*****************************************************************************/
-int APP_CC trans_force_write(struct trans* self)
+int  trans_force_write(struct trans* self)
 {
 	return trans_force_write_s(self, self->out_s);
 }
 
 /*****************************************************************************/
-int APP_CC trans_connect(struct trans* self, const char *server, const char *port, int timeout)
+int  trans_connect(struct trans* self, const char *server, const char *port, int timeout)
 {
 	int error;
 
@@ -354,7 +354,7 @@ int APP_CC trans_connect(struct trans* self, const char *server, const char *por
 }
 
 /*****************************************************************************/
-int APP_CC trans_listen_address(struct trans* self, char *port, const char *address)
+int  trans_listen_address(struct trans* self, char *port, const char *address)
 {
 	if (self->sck != 0)
 	{
@@ -405,13 +405,13 @@ int APP_CC trans_listen_address(struct trans* self, char *port, const char *addr
 }
 
 /*****************************************************************************/
-int APP_CC trans_listen(struct trans* self, char *port)
+int  trans_listen(struct trans* self, char *port)
 {
 	return trans_listen_address(self, port, "0.0.0.0");
 }
 
 /*****************************************************************************/
-struct stream* APP_CC trans_get_in_s(struct trans* self)
+struct stream*  trans_get_in_s(struct trans* self)
 {
 	struct stream *rv = (struct stream *) NULL;
 
@@ -427,7 +427,7 @@ struct stream* APP_CC trans_get_in_s(struct trans* self)
 }
 
 /*****************************************************************************/
-struct stream* APP_CC trans_get_out_s(struct trans *self, int size)
+struct stream*  trans_get_out_s(struct trans *self, int size)
 {
 	struct stream *rv = (struct stream *) NULL;
 

@@ -19,7 +19,7 @@
 
 #include "xrdp-freerdp.h"
 
-char *APP_CC
+char *
 convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int height, int *palette)
 {
 	char *out;
@@ -218,7 +218,7 @@ convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int height, in
 
 /*****************************************************************************/
 /* returns color or 0 */
-int APP_CC
+int 
 convert_color(int in_bpp, int out_bpp, int in_color, int *palette)
 {
 	int pixel;

@@ -21,7 +21,7 @@
 #include "xrdp.h"
 
 /*****************************************************************************/
-xrdpPainter *APP_CC
+xrdpPainter *
 xrdp_painter_create(xrdpWm *wm, xrdpSession *session)
 {
 	xrdpPainter *self;
@@ -35,7 +35,7 @@ xrdp_painter_create(xrdpWm *wm, xrdpSession *session)
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 xrdp_painter_delete(xrdpPainter *self)
 {
 	if (self == 0)
@@ -47,7 +47,7 @@ xrdp_painter_delete(xrdpPainter *self)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 wm_painter_set_target(xrdpPainter *self)
 {
 	int surface_index;
@@ -92,7 +92,7 @@ wm_painter_set_target(xrdpPainter *self)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_begin_update(xrdpPainter *self)
 {
 	if (self == 0)
@@ -106,7 +106,7 @@ xrdp_painter_begin_update(xrdpPainter *self)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_end_update(xrdpPainter *self)
 {
 	if (self == 0)
@@ -119,7 +119,7 @@ xrdp_painter_end_update(xrdpPainter *self)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_font_needed(xrdpPainter *self)
 {
 	if (self->font == 0)
@@ -133,7 +133,7 @@ xrdp_painter_font_needed(xrdpPainter *self)
 #if 0
 /*****************************************************************************/
 /* returns boolean, true if there is something to draw */
-static int APP_CC
+static int 
 xrdp_painter_clip_adj(xrdpPainter *self, int *x, int *y,
 		int *cx, int *cy)
 {
@@ -193,7 +193,7 @@ xrdp_painter_clip_adj(xrdpPainter *self, int *x, int *y,
 #endif
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_set_clip(xrdpPainter *self, int x, int y, int cx, int cy)
 {
 	self->use_clip = &self->clip;
@@ -205,7 +205,7 @@ xrdp_painter_set_clip(xrdpPainter *self, int x, int y, int cx, int cy)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_clr_clip(xrdpPainter *self)
 {
 	self->use_clip = 0;
@@ -214,7 +214,7 @@ xrdp_painter_clr_clip(xrdpPainter *self)
 
 #if 0
 /*****************************************************************************/
-static int APP_CC
+static int 
 xrdp_painter_rop(int rop, int src, int dst)
 {
 	switch (rop & 0x0f)
@@ -258,7 +258,7 @@ xrdp_painter_rop(int rop, int src, int dst)
 #endif
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_text_width(xrdpPainter *self, char *text)
 {
 	int index;
@@ -295,7 +295,7 @@ xrdp_painter_text_width(xrdpPainter *self, char *text)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_text_height(xrdpPainter *self, char *text)
 {
 	int index;
@@ -332,7 +332,7 @@ xrdp_painter_text_height(xrdpPainter *self, char *text)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 xrdp_painter_setup_brush(xrdpPainter *self, xrdpBrush *out_brush, xrdpBrush *in_brush)
 {
 	int cache_id;
@@ -355,7 +355,7 @@ xrdp_painter_setup_brush(xrdpPainter *self, xrdpBrush *out_brush, xrdpBrush *in_
 
 /*****************************************************************************/
 /* fill in an area of the screen with one color */
-int APP_CC
+int 
 xrdp_painter_fill_rect(xrdpPainter *self, xrdpBitmap *dst, int x, int y, int cx, int cy)
 {
 	xrdpRect clip_rect;
@@ -467,7 +467,7 @@ xrdp_painter_fill_rect(xrdpPainter *self, xrdpBitmap *dst, int x, int y, int cx,
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, const char *text)
 {
 	int i;
@@ -577,7 +577,7 @@ xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, const c
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap *dst, int font, int flags, int mixmode,
 		int clip_left, int clip_top, int clip_right, int clip_bottom, int box_left, int box_top, int box_right,
 		int box_bottom, int x, int y, char *data, int data_len)
@@ -650,7 +650,7 @@ xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap *dst, int font, int flags,
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_copy(xrdpPainter *self, xrdpBitmap *src, xrdpBitmap *dst, int x, int y, int cx,
 		int cy, int srcx, int srcy)
 {
@@ -843,7 +843,7 @@ xrdp_painter_copy(xrdpPainter *self, xrdpBitmap *src, xrdpBitmap *dst, int x, in
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_painter_line(xrdpPainter *self, xrdpBitmap *dst, int x1, int y1, int x2, int y2)
 {
 	xrdpRect clip_rect;

@@ -29,7 +29,7 @@ static tbus g_sync_sem = 0;
 static tbus g_lock_socket = 0;
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_init(void)
 {
 	g_sync_mutex = tc_mutex_create();
@@ -39,7 +39,7 @@ lock_init(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_deinit(void)
 {
 	tc_mutex_delete(g_sync_mutex);
@@ -49,7 +49,7 @@ lock_deinit(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_chain_acquire(void)
 {
 	/* lock the chain */
@@ -58,7 +58,7 @@ lock_chain_acquire(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_chain_release(void)
 {
 	/* unlock the chain */
@@ -67,7 +67,7 @@ lock_chain_release(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_socket_acquire(void)
 {
 	/* lock socket variable */
@@ -76,7 +76,7 @@ lock_socket_acquire(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_socket_release(void)
 {
 	/* unlock socket variable */
@@ -85,7 +85,7 @@ lock_socket_release(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_sync_acquire(void)
 {
 	/* lock sync variable */
@@ -94,7 +94,7 @@ lock_sync_acquire(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_sync_release(void)
 {
 	/* unlock socket variable */
@@ -103,7 +103,7 @@ lock_sync_release(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_sync_sem_acquire(void)
 {
 	/* dec sem */
@@ -112,7 +112,7 @@ lock_sync_sem_acquire(void)
 }
 
 /******************************************************************************/
-void APP_CC
+void 
 lock_sync_sem_release(void)
 {
 	/* inc sem */

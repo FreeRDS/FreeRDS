@@ -54,28 +54,28 @@ int ssl_finish(void)
 /* rc4 stuff */
 
 /*****************************************************************************/
-void *APP_CC
+void *
 ssl_rc4_info_create(void)
 {
 	return g_malloc(sizeof(RC4_KEY), 1);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_rc4_info_delete(void *rc4_info)
 {
 	g_free(rc4_info);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_rc4_set_key(void *rc4_info, char *key, int len)
 {
 	RC4_set_key((RC4_KEY *) rc4_info, len, (tui8 *) key);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_rc4_crypt(void *rc4_info, char *data, int len)
 {
 	RC4((RC4_KEY *) rc4_info, len, (tui8 *) data, (tui8 *) data);
@@ -84,35 +84,35 @@ ssl_rc4_crypt(void *rc4_info, char *data, int len)
 /* sha1 stuff */
 
 /*****************************************************************************/
-void *APP_CC
+void *
 ssl_sha1_info_create(void)
 {
 	return g_malloc(sizeof(SHA_CTX), 1);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_sha1_info_delete(void *sha1_info)
 {
 	g_free(sha1_info);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_sha1_clear(void *sha1_info)
 {
 	SHA1_Init((SHA_CTX *) sha1_info);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_sha1_transform(void *sha1_info, char *data, int len)
 {
 	SHA1_Update((SHA_CTX *) sha1_info, data, len);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_sha1_complete(void *sha1_info, char *data)
 {
 	SHA1_Final((tui8 *) data, (SHA_CTX *) sha1_info);
@@ -121,42 +121,42 @@ ssl_sha1_complete(void *sha1_info, char *data)
 /* md5 stuff */
 
 /*****************************************************************************/
-void *APP_CC
+void *
 ssl_md5_info_create(void)
 {
 	return g_malloc(sizeof(MD5_CTX), 1);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_md5_info_delete(void *md5_info)
 {
 	g_free(md5_info);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_md5_clear(void *md5_info)
 {
 	MD5_Init((MD5_CTX *) md5_info);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_md5_transform(void *md5_info, char *data, int len)
 {
 	MD5_Update((MD5_CTX *) md5_info, data, len);
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 ssl_md5_complete(void *md5_info, char *data)
 {
 	MD5_Final((tui8 *) data, (MD5_CTX *) md5_info);
 }
 
 /*****************************************************************************/
-static void APP_CC
+static void 
 ssl_reverse_it(char *p, int len)
 {
 	int i;
@@ -177,7 +177,7 @@ ssl_reverse_it(char *p, int len)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 ssl_mod_exp(char *out, int out_len, char *in, int in_len, char *mod, int mod_len, char *exp, int exp_len)
 {
 	BN_CTX *ctx;
@@ -238,7 +238,7 @@ ssl_mod_exp(char *out, int out_len, char *in, int in_len, char *mod, int mod_len
 /* returns error
  generates a new rsa key
  exp is passed in and mod and pri are passed out */
-int APP_CC
+int 
 ssl_gen_key_xrdp1(int key_size_in_bits, char *exp, int exp_len,
 		char *mod, int mod_len, char *pri, int pri_len)
 {
@@ -307,7 +307,7 @@ ssl_gen_key_xrdp1(int key_size_in_bits, char *exp, int exp_len,
 /* returns error
  generates a new rsa key
  exp is passed in and mod and pri are passed out */
-int APP_CC
+int 
 ssl_gen_key_xrdp1(int key_size_in_bits, char *exp, int exp_len, char *mod, int mod_len, char *pri, int pri_len)
 {
 	BIGNUM *my_e;

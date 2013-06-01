@@ -32,7 +32,7 @@ int g_pid;
 struct config_sesman g_cfg; /* config.h */
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 main(int argc, char **argv)
 {
     int sck;

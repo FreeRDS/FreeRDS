@@ -28,7 +28,7 @@
 /* returns error
  returns 0 if everything is ok
  returns 1 if problem reading file */
-static int APP_CC
+static int 
 l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 {
 	struct stream *s;
@@ -86,7 +86,7 @@ l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 file_read_line(struct stream *s, char *text)
 {
 	int i;
@@ -164,7 +164,7 @@ file_read_line(struct stream *s, char *text)
 
 /*****************************************************************************/
 /* returns error */
-static int APP_CC
+static int 
 file_split_name_value(char *text, char *name, char *value)
 {
 	int len;
@@ -206,7 +206,7 @@ file_split_name_value(char *text, char *name, char *value)
 
 /*****************************************************************************/
 /* return error */
-static int APP_CC
+static int 
 l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *names, xrdpList *values)
 {
 	struct stream *s;
@@ -311,7 +311,7 @@ l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *na
  returns 0 if everything is ok
  returns 1 if problem reading file */
 /* 32 K file size limit */
-int APP_CC
+int 
 file_read_sections(int fd, xrdpList *names)
 {
 	return l_file_read_sections(fd, 32 * 1024, names);
@@ -321,7 +321,7 @@ file_read_sections(int fd, xrdpList *names)
 /* return error */
 /* this function should be prefered over file_read_sections because it can
  read any file size */
-int APP_CC
+int 
 file_by_name_read_sections(const char *file_name, xrdpList *names)
 {
 	int fd;
@@ -350,7 +350,7 @@ file_by_name_read_sections(const char *file_name, xrdpList *names)
 /*****************************************************************************/
 /* return error */
 /* 32 K file size limit */
-int APP_CC
+int 
 file_read_section(int fd, const char *section, xrdpList *names, xrdpList *values)
 {
 	return l_file_read_section(fd, 32 * 1024, section, names, values);
@@ -360,7 +360,7 @@ file_read_section(int fd, const char *section, xrdpList *names, xrdpList *values
 /* return error */
 /* this function should be prefered over file_read_section because it can
  read any file size */
-int APP_CC
+int 
 file_by_name_read_section(const char *file_name, const char *section, xrdpList *names, xrdpList *values)
 {
 	int fd;

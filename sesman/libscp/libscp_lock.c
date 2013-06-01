@@ -32,7 +32,7 @@ int lock_fork_forkers_count;          /* threads that want to fork */
 int lock_fork_blockers_count;         /* threads thar are blocking fork */
 int lock_fork_waiting_count;          /* threads suspended until the fork finishes */
 
-void DEFAULT_CC
+void 
 scp_lock_init(void)
 {
     /* initializing fork lock */
@@ -49,7 +49,7 @@ scp_lock_init(void)
 }
 
 /******************************************************************************/
-void DEFAULT_CC
+void 
 scp_lock_fork_request(void)
 {
     /* lock mutex */
@@ -69,7 +69,7 @@ scp_lock_fork_request(void)
 }
 
 /******************************************************************************/
-void DEFAULT_CC
+void 
 scp_lock_fork_release(void)
 {
     pthread_mutex_lock(&lock_fork);
@@ -91,7 +91,7 @@ scp_lock_fork_release(void)
 }
 
 /******************************************************************************/
-void DEFAULT_CC
+void 
 scp_lock_fork_critical_section_end(int blocking)
 {
     //LOG_DBG("lock_fork_critical_secection_end()",0);
@@ -114,7 +114,7 @@ scp_lock_fork_critical_section_end(int blocking)
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 scp_lock_fork_critical_section_start(void)
 {
     //LOG_DBG("lock_fork_critical_secection_start()",0);

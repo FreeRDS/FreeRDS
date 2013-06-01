@@ -46,7 +46,7 @@ struct t_auth_info
 };
 
 /******************************************************************************/
-static int DEFAULT_CC
+static int 
 verify_pam_conv(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr)
 {
 	int i;
@@ -81,7 +81,7 @@ verify_pam_conv(int num_msg, const struct pam_message **msg, struct pam_response
 }
 
 /******************************************************************************/
-static void DEFAULT_CC get_service_name(char *service_name)
+static void  get_service_name(char *service_name)
 {
 	service_name[0] = 0;
 
@@ -99,7 +99,7 @@ static void DEFAULT_CC get_service_name(char *service_name)
 /* returns long, zero is no go 
  Stores the detailed error code in the errorcode variable*/
 
-long DEFAULT_CC
+long 
 auth_userpass(char *user, char *pass, int *errorcode)
 {
 	int error;
@@ -161,7 +161,7 @@ auth_userpass(char *user, char *pass, int *errorcode)
 
 /******************************************************************************/
 /* returns error */
-int DEFAULT_CC
+int 
 auth_start_session(long in_val, int in_display)
 {
 	struct t_auth_info *auth_info;
@@ -202,7 +202,7 @@ auth_start_session(long in_val, int in_display)
 /******************************************************************************/
 /* returns error */
 /* cleanup */
-int DEFAULT_CC
+int 
 auth_end(long in_val)
 {
 	struct t_auth_info *auth_info;
@@ -235,7 +235,7 @@ auth_end(long in_val)
 /******************************************************************************/
 /* returns error */
 /* set any pam env vars */
-int DEFAULT_CC
+int 
 auth_set_env(long in_val)
 {
 	struct t_auth_info *auth_info;

@@ -76,7 +76,7 @@ struct user_info
 
 /******************************************************************************/
 /* returns boolean */
-static int DEFAULT_CC
+static int 
 k5_begin(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
 {
 	krb5_error_code code = 0;
@@ -163,7 +163,7 @@ k5_begin(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
 }
 
 /******************************************************************************/
-static void DEFAULT_CC
+static void 
 k5_end(struct k5_data *k5)
 {
 	if (k5->name)
@@ -383,7 +383,7 @@ static int k5_kinit(struct k_opts *opts, struct k5_data *k5, struct user_info *u
 
 /******************************************************************************/
 /* returns boolean */
-int DEFAULT_CC
+int 
 auth_userpass(char *user, char *pass, int *errorcode)
 {
 	struct k_opts opts;
@@ -412,21 +412,21 @@ auth_userpass(char *user, char *pass, int *errorcode)
 
 /******************************************************************************/
 /* returns error */
-int DEFAULT_CC
+int 
 auth_start_session(void)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 auth_end(void)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 auth_set_env(void)
 {
 	return 0;

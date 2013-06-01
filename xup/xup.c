@@ -22,7 +22,7 @@
 
 /******************************************************************************/
 /* returns error */
-int DEFAULT_CC
+int 
 lib_recv(struct mod *mod, char *data, int len)
 {
 	int rcvd;
@@ -67,7 +67,7 @@ lib_recv(struct mod *mod, char *data, int len)
 
 /*****************************************************************************/
 /* returns error */
-int DEFAULT_CC
+int 
 lib_send(struct mod *mod, char *data, int len)
 {
 	int sent;
@@ -112,7 +112,7 @@ lib_send(struct mod *mod, char *data, int len)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC
+int 
 lib_mod_start(struct mod *mod, int w, int h, int bpp)
 {
 	LIB_DEBUG(mod, "in lib_mod_start");
@@ -125,7 +125,7 @@ lib_mod_start(struct mod *mod, int w, int h, int bpp)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC
+int 
 lib_mod_connect(struct mod *mod)
 {
 	int error;
@@ -312,7 +312,7 @@ lib_mod_connect(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC
+int 
 lib_mod_event(struct mod *mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
 {
 	struct stream *s;
@@ -381,7 +381,7 @@ lib_mod_event(struct mod *mod, int msg, tbus param1, tbus param2, tbus param3, t
 
 /******************************************************************************/
 /* return error */
-static int APP_CC
+static int 
 process_server_window_new_update(struct mod *mod, struct stream *s)
 {
 	int flags;
@@ -464,7 +464,7 @@ process_server_window_new_update(struct mod *mod, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int APP_CC
+static int 
 process_server_window_delete(struct mod *mod, struct stream *s)
 {
 	int window_id;
@@ -478,7 +478,7 @@ process_server_window_delete(struct mod *mod, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int APP_CC
+static int 
 process_server_set_pointer_ex(struct mod *mod, struct stream *s)
 {
 	int rv;
@@ -652,7 +652,7 @@ static int lib_mod_process_orders(struct mod *mod, int type, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int APP_CC
+static int 
 lib_send_client_info(struct mod *mod)
 {
 	struct stream *s;
@@ -675,7 +675,7 @@ lib_send_client_info(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC
+int 
 lib_mod_signal(struct mod *mod)
 {
 	struct stream *s;
@@ -778,7 +778,7 @@ lib_mod_signal(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC
+int 
 lib_mod_end(struct mod *mod)
 {
 	return 0;
@@ -786,7 +786,7 @@ lib_mod_end(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC
+int 
 lib_mod_set_param(struct mod *mod, char *name, char *value)
 {
 	if (g_strcasecmp(name, "username") == 0)
@@ -815,7 +815,7 @@ lib_mod_set_param(struct mod *mod, char *name, char *value)
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC
+int 
 lib_mod_get_wait_objs(struct mod *mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
 {
 	int i;
@@ -836,7 +836,7 @@ lib_mod_get_wait_objs(struct mod *mod, tbus *read_objs, int *rcount, tbus *write
 
 /******************************************************************************/
 /* return error */
-int DEFAULT_CC
+int 
 lib_mod_check_wait_objs(struct mod *mod)
 {
 	int rv;
@@ -858,7 +858,7 @@ lib_mod_check_wait_objs(struct mod *mod)
 }
 
 /******************************************************************************/
-struct mod *EXPORT_CC
+struct mod *
 mod_init(void)
 {
 	struct mod *mod;
@@ -879,7 +879,7 @@ mod_init(void)
 }
 
 /******************************************************************************/
-int EXPORT_CC
+int 
 mod_exit(struct mod *mod)
 {
 	if (mod == 0)

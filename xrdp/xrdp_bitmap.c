@@ -78,7 +78,7 @@ static int g_crc_table[256] =
 #define CRC_END(in_crc) (in_crc) = ((in_crc) ^ g_crc_seed)
 
 /*****************************************************************************/
-xrdpBitmap *APP_CC
+xrdpBitmap *
 xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm *wm)
 {
 	xrdpBitmap *self = (xrdpBitmap *) NULL;
@@ -129,7 +129,7 @@ xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm *wm)
 }
 
 /*****************************************************************************/
-xrdpBitmap *APP_CC
+xrdpBitmap *
 xrdp_bitmap_create_with_data(int width, int height, int bpp, char *data, xrdpWm *wm)
 {
 	xrdpBitmap *self = (xrdpBitmap *) NULL;
@@ -146,7 +146,7 @@ xrdp_bitmap_create_with_data(int width, int height, int bpp, char *data, xrdpWm 
 }
 
 /*****************************************************************************/
-void APP_CC
+void 
 xrdp_bitmap_delete(xrdpBitmap *self)
 {
 	int i = 0;
@@ -249,7 +249,7 @@ xrdp_bitmap_delete(xrdpBitmap *self)
 }
 
 /*****************************************************************************/
-xrdpBitmap *APP_CC
+xrdpBitmap *
 xrdp_bitmap_get_child_by_id(xrdpBitmap *self, int id)
 {
 	int i = 0;
@@ -271,7 +271,7 @@ xrdp_bitmap_get_child_by_id(xrdpBitmap *self, int id)
 /*****************************************************************************/
 /* if focused is true focus this window else unfocus it */
 /* returns error */
-int APP_CC
+int 
 xrdp_bitmap_set_focus(xrdpBitmap *self, int focused)
 {
 	xrdpPainter *painter = (xrdpPainter *) NULL;
@@ -311,7 +311,7 @@ xrdp_bitmap_set_focus(xrdpBitmap *self, int focused)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 xrdp_bitmap_get_index(xrdpBitmap *self, int *palette, int color)
 {
 	int r = 0;
@@ -329,7 +329,7 @@ xrdp_bitmap_get_index(xrdpBitmap *self, int *palette, int color)
 
 /*****************************************************************************/
 /* returns error */
-int APP_CC
+int 
 xrdp_bitmap_resize(xrdpBitmap *self, int width, int height)
 {
 	int Bpp = 0;
@@ -371,7 +371,7 @@ xrdp_bitmap_resize(xrdpBitmap *self, int width, int height)
 /* load a bmp file */
 /* return 0 ok */
 /* return 1 error */
-int APP_CC
+int 
 xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 {
 	int fd = 0;
@@ -641,7 +641,7 @@ xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_bitmap_get_pixel(xrdpBitmap *self, int x, int y)
 {
 	if (self == 0)
@@ -674,7 +674,7 @@ xrdp_bitmap_get_pixel(xrdpBitmap *self, int x, int y)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
 {
 	if (self == 0)
@@ -709,7 +709,7 @@ xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
 /*****************************************************************************/
 /* copy part of self at x, y to 0, 0 in dest */
 /* returns error */
-int APP_CC
+int 
 xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
 {
 	int i = 0;
@@ -799,7 +799,7 @@ xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, i
 /*****************************************************************************/
 /* copy part of self at x, y to 0, 0 in dest */
 /* returns error */
-int APP_CC
+int 
 xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
 {
 	int i = 0;
@@ -925,7 +925,7 @@ xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, 
 
 /*****************************************************************************/
 /* returns true if they are the same, else returns false */
-int APP_CC
+int 
 xrdp_bitmap_compare(xrdpBitmap *self, xrdpBitmap *b)
 {
 	if (self == 0)
@@ -963,7 +963,7 @@ xrdp_bitmap_compare(xrdpBitmap *self, xrdpBitmap *b)
 
 /*****************************************************************************/
 /* returns true if they are the same, else returns false */
-int APP_CC
+int 
 xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
 {
 	if (self == 0)
@@ -1000,7 +1000,7 @@ xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int cx, int cy)
 {
 	painter->rop = 0xf0;
@@ -1036,7 +1036,7 @@ xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, int x, int y,
 
 /*****************************************************************************/
 /* x and y are in relation to self for 0, 0 is the top left of the control */
-static int APP_CC
+static int 
 xrdp_bitmap_draw_button(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int w, int h, int down)
 {
 	if (down)
@@ -1099,7 +1099,7 @@ xrdp_bitmap_draw_button(xrdpBitmap *self, xrdpPainter *painter, int x, int y, in
 /*****************************************************************************/
 /* nil for rect means the whole thing */
 /* returns error */
-int APP_CC
+int 
 xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 {
 	int i;
@@ -1529,7 +1529,7 @@ xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 
 /*****************************************************************************/
 /* returns error */
-int APP_CC
+int 
 xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 {
 	twchar c;
@@ -1844,7 +1844,7 @@ xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 
 /*****************************************************************************/
 /* convert the controls coords to screen coords */
-int APP_CC
+int 
 xrdp_bitmap_to_screenx(xrdpBitmap *self, int x)
 {
 	int i;
@@ -1862,7 +1862,7 @@ xrdp_bitmap_to_screenx(xrdpBitmap *self, int x)
 
 /*****************************************************************************/
 /* convert the controls coords to screen coords */
-int APP_CC
+int 
 xrdp_bitmap_to_screeny(xrdpBitmap *self, int y)
 {
 	int i;
@@ -1880,7 +1880,7 @@ xrdp_bitmap_to_screeny(xrdpBitmap *self, int y)
 
 /*****************************************************************************/
 /* convert the screen coords to controls coords */
-int APP_CC
+int 
 xrdp_bitmap_from_screenx(xrdpBitmap *self, int x)
 {
 	int i;
@@ -1898,7 +1898,7 @@ xrdp_bitmap_from_screenx(xrdpBitmap *self, int x)
 
 /*****************************************************************************/
 /* convert the screen coords to controls coords */
-int APP_CC
+int 
 xrdp_bitmap_from_screeny(xrdpBitmap *self, int y)
 {
 	int i;
@@ -1915,7 +1915,7 @@ xrdp_bitmap_from_screeny(xrdpBitmap *self, int y)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xrdp_bitmap_get_screen_clip(xrdpBitmap *self, xrdpPainter *painter, xrdpRect *rect, int *dx,
 		int *dy)
 {

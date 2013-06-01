@@ -42,7 +42,7 @@ Atom g_wm_delete_window_atom = 0;
 Atom g_wm_protocols_atom = 0;
 
 /*****************************************************************************/
-static int DEFAULT_CC
+static int 
 xcommon_error_handler(Display *dis, XErrorEvent *xer)
 {
     char text[256];
@@ -58,7 +58,7 @@ xcommon_error_handler(Display *dis, XErrorEvent *xer)
 /* The X server had an internal error.  This is the last function called.
    Do any cleanup that needs to be done on exit, like removing temporary files.
    Don't worry about memory leaks */
-static int DEFAULT_CC
+static int 
 xcommon_fatal_handler(Display *dis)
 {
     return 0;
@@ -69,7 +69,7 @@ xcommon_fatal_handler(Display *dis)
    this is like g_time2 in os_calls, but not miliseconds since machine was
    up, something else
    this is a time value similar to what the xserver uses */
-int APP_CC
+int 
 xcommon_get_local_time(void)
 {
     return g_time3();
@@ -77,7 +77,7 @@ xcommon_get_local_time(void)
 
 /******************************************************************************/
 /* this should be called first */
-int APP_CC
+int 
 xcommon_init(void)
 {
     if (g_display != 0)
@@ -125,7 +125,7 @@ xcommon_init(void)
 /* returns error
    this is called to get any wait objects for the main loop
    timeout can be nil */
-int APP_CC
+int 
 xcommon_get_wait_objs(tbus *objs, int *count, int *timeout)
 {
     int lcount;
@@ -142,7 +142,7 @@ xcommon_get_wait_objs(tbus *objs, int *count, int *timeout)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 xcommon_check_wait_objs(void)
 {
     XEvent xevent;

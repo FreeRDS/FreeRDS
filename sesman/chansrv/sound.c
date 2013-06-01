@@ -28,12 +28,12 @@ static int g_training_sent_time = 0;
 static int g_cBlockNo = 0;
 
 #if defined(XRDP_SIMPLESOUND)
-static void *DEFAULT_CC
+static void *
 read_raw_audio_data(void *arg);
 #endif
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 sound_send_server_formats(void)
 {
     struct stream *s;
@@ -131,7 +131,7 @@ sound_send_training(void)
     0020 10 b1 02 00 04 00 10 00 00 00
 */
 
-static int APP_CC
+static int 
 sound_process_formats(struct stream *s, int size)
 {
     int num_formats;
@@ -238,7 +238,7 @@ sound_send_close(void)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 sound_process_training(struct stream *s, int size)
 {
     int time_diff;
@@ -251,7 +251,7 @@ sound_process_training(struct stream *s, int size)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 sound_process_wave_confirm(struct stream *s, int size)
 {
     int wTimeStamp;
@@ -269,7 +269,7 @@ sound_process_wave_confirm(struct stream *s, int size)
 }
 
 /*****************************************************************************/
-static int APP_CC
+static int 
 process_pcm_message(int id, int size, struct stream *s)
 {
     print_got_here();
@@ -291,7 +291,7 @@ process_pcm_message(int id, int size, struct stream *s)
 
 /*****************************************************************************/
 /* data coming in from audio source, eg pulse, alsa */
-static int DEFAULT_CC
+static int 
 sound_trans_audio_data_in(struct trans *trans)
 {
     struct stream *s;
@@ -332,7 +332,7 @@ sound_trans_audio_data_in(struct trans *trans)
 }
 
 /*****************************************************************************/
-static int DEFAULT_CC
+static int 
 sound_trans_audio_conn_in(struct trans *trans, struct trans *new_trans)
 {
     LOG(0, ("sound_trans_audio_conn_in:"));
@@ -369,7 +369,7 @@ sound_trans_audio_conn_in(struct trans *trans, struct trans *new_trans)
 #define CHANSRV_PORT_STR "/tmp/.xrdp/xrdp_chansrv_audio_socket_%d"
 
 /*****************************************************************************/
-int APP_CC
+int 
 sound_init(void)
 {
     char port[256];
@@ -400,7 +400,7 @@ sound_init(void)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 sound_deinit(void)
 {
     print_got_here();
@@ -422,7 +422,7 @@ sound_deinit(void)
 
 /*****************************************************************************/
 /* data in from client ( clinet -> xrdp -> chansrv ) */
-int APP_CC
+int 
 sound_data_in(struct stream *s, int chan_id, int chan_flags, int length,
               int total_length)
 {
@@ -458,7 +458,7 @@ sound_data_in(struct stream *s, int chan_id, int chan_flags, int length,
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 sound_get_wait_objs(tbus *objs, int *count, int *timeout)
 {
     int lcount;
@@ -482,7 +482,7 @@ sound_get_wait_objs(tbus *objs, int *count, int *timeout)
 }
 
 /*****************************************************************************/
-int APP_CC
+int 
 sound_check_wait_objs(void)
 {
     if (g_audio_l_trans != 0)
@@ -500,7 +500,7 @@ sound_check_wait_objs(void)
 
 #if defined(XRDP_SIMPLESOUND)
 
-static int DEFAULT_CC
+static int 
 sttrans_data_in(struct trans *self)
 {
     LOG(0, ("sttrans_data_in:\n"));
@@ -512,7 +512,7 @@ sttrans_data_in(struct trans *self)
  * to a unix domain socket on which trans server is listening
  */
 
-static void *DEFAULT_CC
+static void *
 read_raw_audio_data(void *arg)
 {
     pa_sample_spec samp_spec;

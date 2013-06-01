@@ -39,7 +39,7 @@ static pthread_t g_thread_sighandler;
 int g_thread_sck;
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 thread_sighandler_start(void)
 {
 	int ret;
@@ -96,7 +96,7 @@ thread_sighandler_start(void)
 
 #ifdef JUST_TO_AVOID_COMPILER_ERRORS
 /******************************************************************************/
-int DEFAULT_CC
+int 
 thread_session_update_start(void)
 {
 	int ret;
@@ -135,7 +135,7 @@ thread_session_update_start(void)
 #endif
 
 /******************************************************************************/
-int DEFAULT_CC
+int 
 thread_scp_start(int skt)
 {
 	int ret;
