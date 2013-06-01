@@ -115,7 +115,8 @@ scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 		{
 			log_message(LOG_LEVEL_INFO, "++ created session (access granted): username %s, ip %s",
 					s->username, s->client_ip);
-		} else
+		}
+		else
 		{
 			log_message(LOG_LEVEL_INFO, "++ created session (access granted): username %s", s->username);
 		}
@@ -125,7 +126,8 @@ scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 			log_message(LOG_LEVEL_INFO, "starting Xvnc session...");
 			display = session_start(s->width, s->height, s->bpp, s->username, s->password, data,
 					SESMAN_SESSION_TYPE_XVNC, s->domain, s->program, s->directory, s->client_ip);
-		} else
+		}
+		else
 		{
 			log_message(LOG_LEVEL_INFO, "starting X11rdp session...");
 			display = session_start(s->width, s->height, s->bpp, s->username, s->password, data,
@@ -144,7 +146,8 @@ scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 				parseCommonStates(e, "scp_v1s_connect_new_session()");
 				break;
 		}
-	} else
+	}
+	else
 	{
 		/* one or more disconnected sessions - listing */
 		e = scp_v1s_list_sessions(c, scount, slist, &sid);
@@ -164,7 +167,8 @@ scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 				{
 					e = scp_v1s_connection_error(c, "Internal error");
 					log_message(LOG_LEVEL_INFO, "Cannot find session item on the chain");
-				} else
+				}
+				else
 				{
 					display = sitem->display;
 					/*e=scp_v1s_reconnect_session(c, sitem, display);*/
@@ -176,7 +180,8 @@ scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 								LOG_LEVEL_INFO,
 								"++ reconnected session: username %s, display :%d.0, session_pid %d, ip %s",
 								s->username, display, sitem->pid, s->client_ip);
-					} else
+					}
+					else
 					{
 						log_message(
 								LOG_LEVEL_INFO,

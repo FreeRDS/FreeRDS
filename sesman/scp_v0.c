@@ -51,14 +51,16 @@ scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 				scp_v0s_replyauthentication(c, errorcode);
 				log_message(LOG_LEVEL_INFO, "Access permitted for user: %s", s->username);
 				/* g_writeln("Connection allowed"); */
-			} else
+			}
+			else
 			{
 				scp_v0s_replyauthentication(c, 32 + 3); /* all first 32 are reserved for PAM errors */
 				log_message(LOG_LEVEL_INFO, "Username okey but group problem for "
 					"user: %s", s->username);
 				/* g_writeln("user password ok, but group problem"); */
 			}
-		} else
+		}
+		else
 		{
 			/* g_writeln("username or password error"); */
 			log_message(LOG_LEVEL_INFO, "Username or password error for user: %s", s->username);
@@ -80,7 +82,8 @@ scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 					log_message(LOG_LEVEL_INFO, "++ reconnected session: username %s, "
 						"display :%d.0, session_pid %d, ip %s", s->username, display,
 							s_item->pid, s->client_ip);
-				} else
+				}
+				else
 				{
 					log_message(LOG_LEVEL_INFO, "++ reconnected session: username %s, "
 						"display :%d.0, session_pid %d", s->username, display, s_item->pid);
@@ -89,7 +92,8 @@ scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 				session_reconnect(display, s->username);
 				auth_end(data);
 				/* don't set data to null here */
-			} else
+			}
+			else
 			{
 				LOG_DBG("pre auth");
 
@@ -99,7 +103,8 @@ scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 					{
 						log_message(LOG_LEVEL_INFO, "++ created session (access granted): "
 							"username %s, ip %s", s->username, s->client_ip);
-					} else
+					}
+					else
 					{
 						log_message(LOG_LEVEL_INFO, "++ created session (access granted): "
 							"username %s", s->username);
@@ -111,14 +116,16 @@ scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 						display = session_start(s->width, s->height, s->bpp, s->username,
 								s->password, data, SESMAN_SESSION_TYPE_XVNC, s->domain,
 								s->program, s->directory, s->client_ip);
-					} else
+					}
+					else
 					{
 						log_message(LOG_LEVEL_INFO, "starting X11rdp session...");
 						display = session_start(s->width, s->height, s->bpp, s->username,
 								s->password, data, SESMAN_SESSION_TYPE_XRDP, s->domain,
 								s->program, s->directory, s->client_ip);
 					}
-				} else
+				}
+				else
 				{
 					display = 0;
 				}
@@ -128,11 +135,13 @@ scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 			{
 				auth_end(data);
 				scp_v0s_deny_connection(c);
-			} else
+			}
+			else
 			{
 				scp_v0s_allow_connection(c, display);
 			}
-		} else
+		}
+		else
 		{
 			scp_v0s_deny_connection(c);
 		}

@@ -544,6 +544,10 @@ void* xrdp_process_main_thread(void* arg)
 
 	xrdp_generate_certificate(settings);
 
+	settings->RdpSecurity = FALSE;
+	settings->TlsSecurity = TRUE;
+	settings->NlaSecurity = FALSE;
+
 	client->Capabilities = xrdp_peer_capabilities;
 	client->PostConnect = xrdp_peer_post_connect;
 	client->Activate = xrdp_peer_activate;

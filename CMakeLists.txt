@@ -45,10 +45,6 @@ include(FeatureSummary)
 include(CheckCCompilerFlag)
 include(GNUInstallDirsWrapper)
 
-if(NOT DEFINED XRDP_NG_CORE)
-	set(XRDP_NG_CORE 1)
-endif()
-
 if(NOT DEFINED XRDP_NG_MODULE)
 	set(XRDP_NG_MODULE "xrdp-ng")
 endif()
@@ -97,7 +93,6 @@ endif()
 
 add_subdirectory(common)
 add_subdirectory(core)
-add_subdirectory(libxrdp)
 add_subdirectory(xrdp)
 
 if(FREERDP_BUILD)
@@ -107,6 +102,5 @@ endif()
 add_subdirectory(sesman)
 add_subdirectory(xup)
 add_subdirectory(mc)
-add_subdirectory(keygen)
 add_subdirectory(instfiles)
 

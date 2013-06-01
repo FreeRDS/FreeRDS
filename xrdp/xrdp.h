@@ -29,11 +29,7 @@
 #include "trans.h"
 #include "list.h"
 
-#ifdef XRDP_NG_CORE
 #include "core.h"
-#else
-#include "libxrdpinc.h"
-#endif
 
 #include "xrdp_types.h"
 #include "xrdp_constants.h"

@@ -16,8 +16,6 @@
 #define XRDP_LOG_PATH "${XRDP_LOG_PATH}"
 #define XRDP_LIB_PATH "${XRDP_LIB_PATH}"
 
-#cmakedefine XRDP_NG_CORE
-
 /* Include files */
 #cmakedefine HAVE_FCNTL_H
 #cmakedefine HAVE_UNISTD_H

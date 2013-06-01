@@ -21,11 +21,7 @@ set(MODULE_PREFIX "FREERDP_XRDP")
 include_directories("../common")
 include_directories("../../../winpr/tools/makecert")
 
-if(XRDP_NG_CORE)
-	include_directories("../core")
-else()
-	include_directories("../libxrdp")
-endif()
+include_directories("../core")
 
 set(${MODULE_PREFIX}_SRCS
 	funcs.c
@@ -56,12 +52,7 @@ set(${MODULE_PREFIX}_SHARE_DATA
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-if(XRDP_NG_CORE)
-	add_definitions(-DWITH_XRDP_NG_CORE)
-	set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-core)
-else()
-	set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-lib)
-endif()
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-core)
 
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
 

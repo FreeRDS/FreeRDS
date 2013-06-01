@@ -512,7 +512,6 @@ int xrdp_listen_main_loop(xrdpListener* self)
 	long sync_obj;
 	long term_obj;
 	long robjs[32];
-	long wobjs[32];
 	int itimeout;
 	int rcount;
 	void* rfds[32];

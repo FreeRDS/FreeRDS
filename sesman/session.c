@@ -423,247 +423,240 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 
 	if (pid == -1)
 	{
-	} else
-		if (pid == 0) /* child sesman */
+	}
+	else if (pid == 0) /* child sesman */
+	{
+		auth_start_session(data, display);
+		g_sprintf(geometry, "%dx%d", width, height);
+		g_sprintf(depth, "%d", bpp);
+		g_sprintf(screen, ":%d", display);
+		wmpid = g_fork();
+
+		if (wmpid == -1)
 		{
-			auth_start_session(data, display);
-			g_sprintf(geometry, "%dx%d", width, height);
-			g_sprintf(depth, "%d", bpp);
-			g_sprintf(screen, ":%d", display);
-			wmpid = g_fork();
+		}
+		else if (wmpid == 0) /* child (child sesman) xserver */
+		{
+			wait_for_xserver(display);
+			env_set_user(username, 0, display);
 
-			if (wmpid == -1)
+			if (x_server_running(display))
 			{
-			} else
-				if (wmpid == 0) /* child (child sesman) xserver */
+				auth_set_env(data);
+
+				if (directory != 0)
 				{
-					wait_for_xserver(display);
-					env_set_user(username, 0, display);
-
-					if (x_server_running(display))
+					if (directory[0] != 0)
 					{
-						auth_set_env(data);
+						g_set_current_dir(directory);
+					}
+				}
 
-						if (directory != 0)
-						{
-							if (directory[0] != 0)
-							{
-								g_set_current_dir(directory);
-							}
-						}
+				if (program != 0)
+				{
+					if (program[0] != 0)
+					{
+						g_execlp3(program, program, 0);
+						log_message(
+								LOG_LEVEL_ALWAYS,
+								"error starting program %s for user %s - pid %d",
+								program, username, g_getpid());
+					}
+				}
 
-						if (program != 0)
-						{
-							if (program[0] != 0)
-							{
-								g_execlp3(program, program, 0);
-								log_message(
-										LOG_LEVEL_ALWAYS,
-										"error starting program %s for user %s - pid %d",
-										program, username, g_getpid());
-							}
-						}
+				/* try to execute user window manager if enabled */
+				if (g_cfg->enable_user_wm)
+				{
+					g_sprintf(text, "%s/%s", g_getenv("HOME"), g_cfg->user_wm);
 
-						/* try to execute user window manager if enabled */
-						if (g_cfg->enable_user_wm)
-						{
-							g_sprintf(text, "%s/%s", g_getenv("HOME"), g_cfg->user_wm);
-
-							if (g_file_exist(text))
-							{
-								g_execlp3(text, g_cfg->user_wm, 0);
-								log_message(LOG_LEVEL_ALWAYS, "error starting user "
-									"wm for user %s - pid %d", username, g_getpid());
-								/* logging parameters */
-								log_message(LOG_LEVEL_DEBUG, "errno: %d, "
-									"description: %s", errno, g_get_strerror());
-								log_message(LOG_LEVEL_DEBUG, "execlp3 parameter "
-									"list:");
-								log_message(LOG_LEVEL_DEBUG, "        argv[0] = %s",
-										text);
-								log_message(LOG_LEVEL_DEBUG, "        argv[1] = %s",
-										g_cfg->user_wm);
-							}
-						}
-
-						/* if we're here something happened to g_execlp3
-						 so we try running the default window manager */
-						g_sprintf(text, "%s/%s", XRDP_CFG_PATH, g_cfg->default_wm);
-						g_execlp3(text, g_cfg->default_wm, 0);
-
-						log_message(LOG_LEVEL_ALWAYS, "error starting default "
+					if (g_file_exist(text))
+					{
+						g_execlp3(text, g_cfg->user_wm, 0);
+						log_message(LOG_LEVEL_ALWAYS, "error starting user "
 							"wm for user %s - pid %d", username, g_getpid());
 						/* logging parameters */
-						log_message(LOG_LEVEL_DEBUG, "errno: %d, description: "
-							"%s", errno, g_get_strerror());
-						log_message(LOG_LEVEL_DEBUG, "execlp3 parameter list:");
-						log_message(LOG_LEVEL_DEBUG, "        argv[0] = %s", text);
-						log_message(LOG_LEVEL_DEBUG, "        argv[1] = %s", g_cfg->default_wm);
-
-						/* still a problem starting window manager just start xterm */
-						g_execlp3("xterm", "xterm", 0);
-
-						/* should not get here */
-						log_message(LOG_LEVEL_ALWAYS, "error starting xterm "
-							"for user %s - pid %d", username, g_getpid());
-						/* logging parameters */
-						log_message(LOG_LEVEL_DEBUG, "errno: %d, description: "
-							"%s", errno, g_get_strerror());
+						log_message(LOG_LEVEL_DEBUG, "errno: %d, "
+							"description: %s", errno, g_get_strerror());
+						log_message(LOG_LEVEL_DEBUG, "execlp3 parameter "
+							"list:");
+						log_message(LOG_LEVEL_DEBUG, "        argv[0] = %s",
+								text);
+						log_message(LOG_LEVEL_DEBUG, "        argv[1] = %s",
+								g_cfg->user_wm);
 					}
-					else
-					{
-						log_message(LOG_LEVEL_ERROR, "another Xserver might "
-							"already be active on display %d - see log", display);
-					}
-
-					log_message(LOG_LEVEL_DEBUG, "aborting connection...");
-					g_exit(0);
 				}
-				else /* parent (child sesman) */
-				{
-					xpid = g_fork();
 
-					if (xpid == -1)
-					{
-					} else
-						if (xpid == 0) /* child */
-						{
-							env_set_user(username, passwd_file, display);
-							env_check_password_file(passwd_file, password);
+				/* if we're here something happened to g_execlp3
+				 so we try running the default window manager */
+				g_sprintf(text, "%s/%s", XRDP_CFG_PATH, g_cfg->default_wm);
+				g_execlp3(text, g_cfg->default_wm, 0);
 
-							if (type == SESMAN_SESSION_TYPE_XVNC)
-							{
-								xserver_params = list_create();
-								xserver_params->auto_free = 1;
-								/* these are the must have parameters */
-								list_add_item(xserver_params, (long) g_strdup("Xvnc"));
-								list_add_item(xserver_params, (long) g_strdup(screen));
-								list_add_item(xserver_params, (long) g_strdup(
-										"-geometry"));
-								list_add_item(xserver_params, (long) g_strdup(geometry));
-								list_add_item(xserver_params, (long) g_strdup("-depth"));
-								list_add_item(xserver_params, (long) g_strdup(depth));
-								list_add_item(xserver_params, (long) g_strdup(
-										"-rfbauth"));
-								list_add_item(xserver_params, (long) g_strdup(
-										passwd_file));
+				log_message(LOG_LEVEL_ALWAYS, "error starting default "
+					"wm for user %s - pid %d", username, g_getpid());
+				/* logging parameters */
+				log_message(LOG_LEVEL_DEBUG, "errno: %d, description: "
+					"%s", errno, g_get_strerror());
+				log_message(LOG_LEVEL_DEBUG, "execlp3 parameter list:");
+				log_message(LOG_LEVEL_DEBUG, "        argv[0] = %s", text);
+				log_message(LOG_LEVEL_DEBUG, "        argv[1] = %s", g_cfg->default_wm);
 
-								/* additional parameters from sesman.ini file */
-								//config_read_xserver_params(SESMAN_SESSION_TYPE_XVNC,
-								//                           xserver_params);
-								list_append_list_strdup(g_cfg->vnc_params,
-										xserver_params, 0);
+				/* still a problem starting window manager just start xterm */
+				g_execlp3("xterm", "xterm", 0);
 
-								/* make sure it ends with a zero */
-								list_add_item(xserver_params, 0);
-								pp1 = (char **) xserver_params->items;
-								log_message(LOG_LEVEL_INFO, "Xvnc start:%s",
-										dumpItemsToString(xserver_params,
-												execvpparams, 2048));
-								g_execvp("Xvnc", pp1);
-							} else
-								if (type == SESMAN_SESSION_TYPE_XRDP)
-								{
-									xserver_params = list_create();
-									xserver_params->auto_free = 1;
-									/* these are the must have parameters */
-									list_add_item(xserver_params, (long) g_strdup(
-											"X11rdp"));
-									list_add_item(xserver_params, (long) g_strdup(
-											screen));
-									list_add_item(xserver_params, (long) g_strdup(
-											"-geometry"));
-									list_add_item(xserver_params, (long) g_strdup(
-											geometry));
-									list_add_item(xserver_params, (long) g_strdup(
-											"-depth"));
-									list_add_item(xserver_params, (long) g_strdup(
-											depth));
+				/* should not get here */
+				log_message(LOG_LEVEL_ALWAYS, "error starting xterm "
+					"for user %s - pid %d", username, g_getpid());
+				/* logging parameters */
+				log_message(LOG_LEVEL_DEBUG, "errno: %d, description: "
+					"%s", errno, g_get_strerror());
+			}
+			else
+			{
+				log_message(LOG_LEVEL_ERROR, "another Xserver might "
+					"already be active on display %d - see log", display);
+			}
 
-									/* additional parameters from sesman.ini file */
-									//config_read_xserver_params(SESMAN_SESSION_TYPE_XRDP,
-									//                           xserver_params);
-									list_append_list_strdup(g_cfg->rdp_params,
-											xserver_params, 0);
-
-									/* make sure it ends with a zero */
-									list_add_item(xserver_params, 0);
-									pp1 = (char **) xserver_params->items;
-									log_message(LOG_LEVEL_INFO, "X11rdp start:%s",
-											dumpItemsToString(
-													xserver_params,
-													execvpparams,
-													2048));
-									g_execvp("X11rdp", pp1);
-								} else
-								{
-									log_message(LOG_LEVEL_ALWAYS,
-											"bad session type - "
-												"user %s - pid %d",
-											username, g_getpid());
-									g_exit(1);
-								}
-
-							/* should not get here */
-							log_message(LOG_LEVEL_ALWAYS, "error starting X server "
-								"- user %s - pid %d", username, g_getpid());
-
-							/* logging parameters */
-							log_message(LOG_LEVEL_DEBUG, "errno: %d, description: "
-								"%s", errno, g_get_strerror());
-							log_message(LOG_LEVEL_DEBUG, "execve parameter list size: "
-								"%d", (xserver_params)->count);
-
-							for (i = 0; i < (xserver_params->count); i++)
-							{
-								log_message(LOG_LEVEL_DEBUG, "        argv[%d] = %s",
-										i, (char *) list_get_item(
-												xserver_params, i));
-							}
-
-							list_delete(xserver_params);
-							g_exit(1);
-						}
-						else /* parent (child sesman)*/
-						{
-							wait_for_xserver(display);
-							g_snprintf(text, 255, "%d", display);
-							g_setenv("XRDP_SESSVC_DISPLAY", text, 1);
-							g_snprintf(text, 255, ":%d.0", display);
-							g_setenv("DISPLAY", text, 1);
-							/* new style waiting for clients */
-							session_start_sessvc(xpid, wmpid, data, username, display);
-						}
-				}
+			log_message(LOG_LEVEL_DEBUG, "aborting connection...");
+			g_exit(0);
 		}
-		else /* parent sesman process */
+		else /* parent (child sesman) */
 		{
-			temp->item->pid = pid;
-			temp->item->display = display;
-			temp->item->width = width;
-			temp->item->height = height;
-			temp->item->bpp = bpp;
-			temp->item->data = data;
-			g_strncpy(temp->item->client_ip, client_ip, 255); /* store client ip data */
-			g_strncpy(temp->item->name, username, 255);
+			xpid = g_fork();
 
-			ltime = g_time1();
-			localtime_r(&ltime, &stime);
-			temp->item->connect_time.year = (tui16) (stime.tm_year + 1900);
-			temp->item->connect_time.month = (tui8) stime.tm_mon;
-			temp->item->connect_time.day = (tui8) stime.tm_mday;
-			temp->item->connect_time.hour = (tui8) stime.tm_hour;
-			temp->item->connect_time.minute = (tui8) stime.tm_min;
-			zero_time(&(temp->item->disconnect_time));
-			zero_time(&(temp->item->idle_time));
+			if (xpid == -1)
+			{
+			}
+			else if (xpid == 0) /* child */
+			{
+				env_set_user(username, passwd_file, display);
+				env_check_password_file(passwd_file, password);
 
-			temp->item->type = type;
-			temp->item->status = SESMAN_SESSION_STATUS_ACTIVE;
+				if (type == SESMAN_SESSION_TYPE_XVNC)
+				{
+					xserver_params = list_create();
+					xserver_params->auto_free = 1;
 
-			temp->next = g_sessions;
-			g_sessions = temp;
-			g_session_count++;
+					/* these are the must have parameters */
+					list_add_item(xserver_params, (long) g_strdup("Xvnc"));
+					list_add_item(xserver_params, (long) g_strdup(screen));
+					list_add_item(xserver_params, (long) g_strdup("-geometry"));
+					list_add_item(xserver_params, (long) g_strdup(geometry));
+					list_add_item(xserver_params, (long) g_strdup("-depth"));
+					list_add_item(xserver_params, (long) g_strdup(depth));
+					list_add_item(xserver_params, (long) g_strdup("-rfbauth"));
+					list_add_item(xserver_params, (long) g_strdup(passwd_file));
+
+					/* additional parameters from sesman.ini file */
+					//config_read_xserver_params(SESMAN_SESSION_TYPE_XVNC,
+					//                           xserver_params);
+					list_append_list_strdup(g_cfg->vnc_params,
+							xserver_params, 0);
+
+					/* make sure it ends with a zero */
+					list_add_item(xserver_params, 0);
+					pp1 = (char **) xserver_params->items;
+					log_message(LOG_LEVEL_INFO, "Xvnc start:%s",
+							dumpItemsToString(xserver_params,
+									execvpparams, 2048));
+					g_execvp("Xvnc", pp1);
+				}
+				else if (type == SESMAN_SESSION_TYPE_XRDP)
+				{
+					xserver_params = list_create();
+					xserver_params->auto_free = 1;
+					/* these are the must have parameters */
+					list_add_item(xserver_params, (long) g_strdup("X11rdp"));
+					list_add_item(xserver_params, (long) g_strdup(screen));
+					list_add_item(xserver_params, (long) g_strdup("-geometry"));
+					list_add_item(xserver_params, (long) g_strdup(geometry));
+					list_add_item(xserver_params, (long) g_strdup("-depth"));
+					list_add_item(xserver_params, (long) g_strdup(depth));
+
+					/* additional parameters from sesman.ini file */
+					//config_read_xserver_params(SESMAN_SESSION_TYPE_XRDP,
+					//                           xserver_params);
+					list_append_list_strdup(g_cfg->rdp_params,
+							xserver_params, 0);
+
+					/* make sure it ends with a zero */
+					list_add_item(xserver_params, 0);
+					pp1 = (char **) xserver_params->items;
+					log_message(LOG_LEVEL_INFO, "X11rdp start:%s",
+							dumpItemsToString(
+									xserver_params,
+									execvpparams,
+									2048));
+					g_execvp("X11rdp", pp1);
+				}
+				else
+				{
+					log_message(LOG_LEVEL_ALWAYS,
+							"bad session type - "
+								"user %s - pid %d",
+							username, g_getpid());
+					g_exit(1);
+				}
+
+				/* should not get here */
+				log_message(LOG_LEVEL_ALWAYS, "error starting X server "
+					"- user %s - pid %d", username, g_getpid());
+
+				/* logging parameters */
+				log_message(LOG_LEVEL_DEBUG, "errno: %d, description: "
+					"%s", errno, g_get_strerror());
+				log_message(LOG_LEVEL_DEBUG, "execve parameter list size: "
+					"%d", (xserver_params)->count);
+
+				for (i = 0; i < (xserver_params->count); i++)
+				{
+					log_message(LOG_LEVEL_DEBUG, "        argv[%d] = %s",
+							i, (char *) list_get_item(
+									xserver_params, i));
+				}
+
+				list_delete(xserver_params);
+				g_exit(1);
+			}
+			else /* parent (child sesman)*/
+			{
+				wait_for_xserver(display);
+				g_snprintf(text, 255, "%d", display);
+				g_setenv("XRDP_SESSVC_DISPLAY", text, 1);
+				g_snprintf(text, 255, ":%d.0", display);
+				g_setenv("DISPLAY", text, 1);
+				/* new style waiting for clients */
+				session_start_sessvc(xpid, wmpid, data, username, display);
+			}
 		}
+	}
+	else /* parent sesman process */
+	{
+		temp->item->pid = pid;
+		temp->item->display = display;
+		temp->item->width = width;
+		temp->item->height = height;
+		temp->item->bpp = bpp;
+		temp->item->data = data;
+		g_strncpy(temp->item->client_ip, client_ip, 255); /* store client ip data */
+		g_strncpy(temp->item->name, username, 255);
+
+		ltime = g_time1();
+		localtime_r(&ltime, &stime);
+		temp->item->connect_time.year = (tui16) (stime.tm_year + 1900);
+		temp->item->connect_time.month = (tui8) stime.tm_mon;
+		temp->item->connect_time.day = (tui8) stime.tm_mday;
+		temp->item->connect_time.hour = (tui8) stime.tm_hour;
+		temp->item->connect_time.minute = (tui8) stime.tm_min;
+		zero_time(&(temp->item->disconnect_time));
+		zero_time(&(temp->item->idle_time));
+
+		temp->item->type = type;
+		temp->item->status = SESMAN_SESSION_STATUS_ACTIVE;
+
+		temp->next = g_sessions;
+		g_sessions = temp;
+		g_session_count++;
+	}
 
 	return display;
 }

@@ -53,32 +53,32 @@ xrdp_wm_login_help_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long par
 				wnd->owner->notify(wnd->owner, wnd, 100, 1, 0); /* ok */
 			}
 		}
-	} else
-		if (msg == WM_XRDP_PAINT) /* 3 */
-		{
-			p = (xrdpPainter *) param1;
+	}
+	else if (msg == WM_XRDP_PAINT) /* 3 */
+	{
+		p = (xrdpPainter *) param1;
 
-			if (p != 0)
-			{
-				p->fg_color = wnd->wm->black;
-				xrdp_painter_draw_text(p, wnd, 10, 30, "You must be authenticated \
+		if (p != 0)
+		{
+			p->fg_color = wnd->wm->black;
+			xrdp_painter_draw_text(p, wnd, 10, 30, "You must be authenticated \
 before using this");
-				xrdp_painter_draw_text(p, wnd, 10, 46, "session.");
-				xrdp_painter_draw_text(p, wnd, 10, 78,
+			xrdp_painter_draw_text(p, wnd, 10, 46, "session.");
+			xrdp_painter_draw_text(p, wnd, 10, 78,
 						"Enter a valid username in \
 the username edit box.");
-				xrdp_painter_draw_text(p, wnd, 10, 94, "Enter the password in \
+			xrdp_painter_draw_text(p, wnd, 10, 94, "Enter the password in \
 the password edit box.");
-				xrdp_painter_draw_text(p, wnd, 10, 110, "Both the username and \
+			xrdp_painter_draw_text(p, wnd, 10, 110, "Both the username and \
 password are case");
-				xrdp_painter_draw_text(p, wnd, 10, 126, "sensitive.");
-				xrdp_painter_draw_text(p, wnd, 10, 158,
+			xrdp_painter_draw_text(p, wnd, 10, 126, "sensitive.");
+			xrdp_painter_draw_text(p, wnd, 10, 158,
 						"Contact your system \
 administrator if you are");
-				xrdp_painter_draw_text(p, wnd, 10, 174, "having problems \
+			xrdp_painter_draw_text(p, wnd, 10, 174, "having problems \
 logging on.");
-			}
 		}
+	}
 
 	return 0;
 }
@@ -376,39 +376,39 @@ xrdp_wm_login_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, 
 		if (sender->id == 1) /* help button */
 		{
 			xrdp_wm_help_clicked(wnd);
-		} else
-			if (sender->id == 2) /* cancel button */
-			{
-				xrdp_wm_cancel_clicked(wnd);
-			} else
-				if (sender->id == 3) /* ok button */
-				{
-					xrdp_wm_ok_clicked(wnd);
-				}
-	} else
-		if (msg == 2) /* mouse move */
+		}
+		else if (sender->id == 2) /* cancel button */
 		{
-		} else
-			if (msg == 100) /* modal result is done */
-			{
-				i = list_index_of(wnd->wm->screen->child_list, (long) sender);
+			xrdp_wm_cancel_clicked(wnd);
+		}
+		else if (sender->id == 3) /* ok button */
+		{
+			xrdp_wm_ok_clicked(wnd);
+		}
+	}
+	else if (msg == 2) /* mouse move */
+	{
+	}
+	else if (msg == 100) /* modal result is done */
+	{
+		i = list_index_of(wnd->wm->screen->child_list, (long) sender);
 
-				if (i >= 0)
-				{
-					b = (xrdpBitmap *) list_get_item(wnd->wm->screen->child_list, i);
-					list_remove_item(sender->wm->screen->child_list, i);
-					MAKERECT(rect, b->left, b->top, b->width, b->height);
-					xrdp_bitmap_invalidate(wnd->wm->screen, &rect);
-					xrdp_bitmap_delete(sender);
-					wnd->modal_dialog = 0;
-					xrdp_wm_set_focused(wnd->wm, wnd);
-				}
-			} else
-				if (msg == CB_ITEMCHANGE) /* combo box change */
-				{
-					xrdp_wm_show_edits(wnd->wm, sender);
-					xrdp_bitmap_invalidate(wnd, 0); /* invalidate the whole dialog for now */
-				}
+		if (i >= 0)
+		{
+			b = (xrdpBitmap *) list_get_item(wnd->wm->screen->child_list, i);
+			list_remove_item(sender->wm->screen->child_list, i);
+			MAKERECT(rect, b->left, b->top, b->width, b->height);
+			xrdp_bitmap_invalidate(wnd->wm->screen, &rect);
+			xrdp_bitmap_delete(sender);
+			wnd->modal_dialog = 0;
+			xrdp_wm_set_focused(wnd->wm, wnd);
+		}
+	}
+	else if (msg == CB_ITEMCHANGE) /* combo box change */
+	{
+		xrdp_wm_show_edits(wnd->wm, sender);
+		xrdp_bitmap_invalidate(wnd, 0); /* invalidate the whole dialog for now */
+	}
 
 	return 0;
 }
@@ -509,7 +509,8 @@ xrdp_login_wnd_create(xrdpWm *self)
 		if (self->screen->width < 240)
 		{
 			log_width = self->screen->width - 4;
-		} else
+		}
+		else
 		{
 			log_width = 240;
 		}
@@ -526,7 +527,7 @@ xrdp_login_wnd_create(xrdpWm *self)
 	self->login_window->left = self->screen->width / 2 - self->login_window->width / 2;
 	self->login_window->top = self->screen->height / 2 - self->login_window->height / 2;
 	self->login_window->notify = xrdp_wm_login_notify;
-	set_string(&self->login_window->caption1, "Login to xrdp");
+	set_string(&self->login_window->caption1, "Login to xrdp-ng");
 
 	if (regular)
 	{
@@ -536,7 +537,8 @@ xrdp_login_wnd_create(xrdpWm *self)
 		if (self->screen->bpp > 8)
 		{
 			g_snprintf(file_path, 255, "%s/xrdp24b.bmp", XRDP_SHARE_PATH);
-		} else
+		}
+		else
 		{
 			g_snprintf(file_path, 255, "%s/xrdp256.bmp", XRDP_SHARE_PATH);
 		}
@@ -554,7 +556,8 @@ xrdp_login_wnd_create(xrdpWm *self)
 		if (self->screen->bpp > 8)
 		{
 			g_snprintf(file_path, 255, "%s/ad24b.bmp", XRDP_SHARE_PATH);
-		} else
+		}
+		else
 		{
 			g_snprintf(file_path, 255, "%s/ad256.bmp", XRDP_SHARE_PATH);
 		}
