@@ -210,9 +210,12 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	xfp->info->cache3_entries = entries;
 	xfp->info->cache3_size = 4096 * bytesPerPixel;
 
+	settings->BitmapCacheVersion = 2;
+
 	xfp->info->use_bitmap_comp = 1;
-	xfp->info->bitmap_cache_version = 2;
-	xfp->info->bitmap_cache_persist_enable = 0;
+	xfp->info->use_bitmap_cache = settings->BitmapCacheEnabled;
+	xfp->info->bitmap_cache_version = settings->BitmapCacheVersion;
+	xfp->info->bitmap_cache_persist_enable = settings->BitmapCachePersistEnabled;
 	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
 
 	xfp->info->offscreen_support_level = settings->OffscreenSupportLevel;

@@ -41,7 +41,7 @@ static long (*g_sync_func)(long param1, long param2);
 /* This function is used to run a function from the main thread.
  Sync_func is the function pointer that will run from main thread
  The function can have two long in parameters and must return long */
-long  g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
+long g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
 {
 	long sync_result;
 	int sync_command;
@@ -93,7 +93,7 @@ long  g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, 
 }
 
 /*****************************************************************************/
-void  xrdp_shutdown(int sig)
+void xrdp_shutdown(int sig)
 {
 	tbus threadid;
 
@@ -108,14 +108,14 @@ void  xrdp_shutdown(int sig)
 }
 
 /*****************************************************************************/
-void  xrdp_child(int sig)
+void xrdp_child(int sig)
 {
 	g_waitchild();
 }
 
 /*****************************************************************************/
 /* called in child just after fork */
-int  xrdp_child_fork(void)
+int xrdp_child_fork(void)
 {
 	int pid;
 	char text[256];
@@ -132,13 +132,13 @@ int  xrdp_child_fork(void)
 }
 
 /*****************************************************************************/
-int  g_is_term(void)
+int g_is_term(void)
 {
 	return g_is_wait_obj_set(g_term_event);
 }
 
 /*****************************************************************************/
-void  g_set_term(int in_val)
+void g_set_term(int in_val)
 {
 	if (in_val)
 	{
@@ -151,19 +151,19 @@ void  g_set_term(int in_val)
 }
 
 /*****************************************************************************/
-tbus  g_get_term_event(void)
+tbus g_get_term_event(void)
 {
 	return g_term_event;
 }
 
 /*****************************************************************************/
-tbus  g_get_sync_event(void)
+tbus g_get_sync_event(void)
 {
 	return g_sync_event;
 }
 
 /*****************************************************************************/
-void  pipe_sig(int sig_num)
+void pipe_sig(int sig_num)
 {
 	/* do nothing */
 	g_writeln("got XRDP SIGPIPE(%d)", sig_num);
@@ -172,8 +172,7 @@ void  pipe_sig(int sig_num)
 /*****************************************************************************/
 /*Some function must be called from the main thread.
  if g_sync_command==THREAD_WAITING a function is waiting to be processed*/
-void 
-g_process_waiting_function(void)
+void g_process_waiting_function(void)
 {
 	tc_mutex_lock(g_sync_mutex);
 
@@ -194,8 +193,7 @@ g_process_waiting_function(void)
 }
 
 /*****************************************************************************/
-int 
-xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
+int xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
 {
 	int index;
 	char option[128];
@@ -210,7 +208,8 @@ xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
 		if (index + 1 < argc)
 		{
 			g_strncpy(value, argv[index + 1], 127);
-		} else
+		}
+		else
 		{
 			value[0] = 0;
 		}
@@ -270,8 +269,7 @@ xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
 }
 
 /*****************************************************************************/
-int 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int fd;
 	int pid;

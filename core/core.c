@@ -40,8 +40,8 @@ int libxrdp_set_bounds_rect(xrdpSession* session, xrdpRect* rect)
 
 		bounds.left = rect->left;
 		bounds.top = rect->top;
-		bounds.right = rect->right;
-		bounds.bottom = rect->bottom;
+		bounds.right = rect->right - 1;
+		bounds.bottom = rect->bottom - 1;
 
 		update->SetBounds(session->context, &bounds);
 	}
@@ -670,7 +670,7 @@ int libxrdp_orders_send_create_os_surface(xrdpSession* session, int id,
 	CREATE_OFFSCREEN_BITMAP_ORDER create_offscreen_bitmap;
 	rdpAltSecUpdate* altsec = session->client->update->altsec;
 
-	printf("%s\n", __FUNCTION__);
+	printf("%s: id: %d width: %d height: %d\n", __FUNCTION__, id, width, height);
 
 	create_offscreen_bitmap.id = id & 0x7FFF;
 	create_offscreen_bitmap.cx = width;
@@ -703,7 +703,7 @@ int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id)
 	SWITCH_SURFACE_ORDER switch_surface;
 	rdpAltSecUpdate* altsec = session->client->update->altsec;
 
-	printf("%s\n", __FUNCTION__);
+	printf("%s: id: %d\n", __FUNCTION__, id);
 
 	switch_surface.bitmapId = id & 0xFFFF;
 
