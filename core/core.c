@@ -324,7 +324,8 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	MEMBLT_ORDER memblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
+	printf("%s id: %d index: %d width: %d height: %d\n",
+			__FUNCTION__, cache_id, cache_idx, cx, cy);
 
 	memblt.nLeftRect = x;
 	memblt.nTopRect = y;
@@ -553,7 +554,8 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
+	printf("%s id: %d index: %d width: %d height: %d\n",
+			__FUNCTION__, cache_id, cache_idx, width, height);
 
 	e = width % 4;
 

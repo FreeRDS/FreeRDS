@@ -225,7 +225,10 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 		strcpy(xfp->info->username, settings->Username);
 
 	if (settings->Password)
+	{
 		strcpy(xfp->info->password, settings->Password);
+		xfp->info->rdp_autologin = 1;
+	}
 
 	xfp->wm = xrdp_wm_create(xfp, xfp->info);
 	xfp->activated = TRUE;

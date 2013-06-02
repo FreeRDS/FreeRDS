@@ -516,7 +516,7 @@ int xrdp_wm_init(xrdpWm *self)
 	xrdp_wm_load_static_pointers(self);
 	self->screen->bg_color = self->background;
 
-	if (self->session->client_info->rdp_autologin || (autorun_name[0] != 0))
+	if (self->session->client_info->rdp_autologin && (autorun_name[0] != 0))
 	{
 		g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
 		fd = g_file_open(cfg_file); /* xrdp.ini */
@@ -531,8 +531,7 @@ int xrdp_wm_init(xrdpWm *self)
 			 * simplify for the user in a gateway setup */
 			if (self->session->client_info->domain[0] != '_')
 			{
-				g_strncpy(section_name, self->session->client_info->domain,
-						255);
+				g_strncpy(section_name, self->session->client_info->domain, 255);
 			}
 			if (section_name[0] == 0)
 			{
