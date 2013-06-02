@@ -29,24 +29,24 @@
 /* server API */
 enum SCP_SERVER_STATES_E scp_vXs_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s)
 {
-    tui32 version;
+	tui32 version;
 
-    /* reading version and packet size */
-    if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->data, 8))
-    {
-        return SCP_SERVER_STATE_NETWORK_ERR;
-    }
+	/* reading version and packet size */
+	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->data, 8))
+	{
+		return SCP_SERVER_STATE_NETWORK_ERR;
+	}
 
-    in_uint32_be(c->in_s, version);
+	in_uint32_be(c->in_s, version);
 
-    if (version == 0)
-    {
-        return scp_v0s_accept(c, s, 1);
-    }
-    else if (version == 1)
-    {
-        return scp_v1s_accept(c, s, 1);
-    }
+	if (version == 0)
+	{
+		return scp_v0s_accept(c, s, 1);
+	}
+	else if (version == 1)
+	{
+		return scp_v1s_accept(c, s, 1);
+	}
 
-    return SCP_SERVER_STATE_VERSION_ERR;
+	return SCP_SERVER_STATE_VERSION_ERR;
 }

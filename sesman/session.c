@@ -28,12 +28,11 @@
 #include "libscp_types.h"
 
 #include <errno.h>
-//#include <time.h>
 
 extern tbus g_sync_event;
 extern unsigned char g_fixedkey[8];
 extern struct config_sesman *g_cfg; /* in sesman.c */
-struct session_chain *g_sessions;
+xrdpSessionChain *g_sessions;
 int g_session_count;
 
 static int g_sync_width;
@@ -85,10 +84,10 @@ dumpItemsToString(xrdpList *self, char *outstr, int len)
 }
 
 /******************************************************************************/
-struct session_item *
+xrdpSessionItem *
 session_get_bydata(char *name, int width, int height, int bpp, int type)
 {
-	struct session_chain *tmp;
+	xrdpSessionChain *tmp;
 
 	/*THREAD-FIX require chain lock */
 	lock_chain_acquire();
@@ -98,12 +97,10 @@ session_get_bydata(char *name, int width, int height, int bpp, int type)
 	/* convert from SCP_SESSION_TYPE namespace to SESMAN_SESSION_TYPE namespace */
 	switch (type)
 	{
-		case SCP_SESSION_TYPE_XVNC: /* 0 */
-			type = SESMAN_SESSION_TYPE_XVNC; /* 2 */
-			break;
 		case SCP_SESSION_TYPE_XRDP: /* 1 */
 			type = SESMAN_SESSION_TYPE_XRDP; /* 1 */
 			break;
+
 		default:
 			lock_chain_release();
 			return 0;
@@ -280,8 +277,8 @@ static void  session_start_sessvc(int xpid, int wmpid, long data, char *username
  returns boolean */
 static int  session_is_display_in_chain(int display)
 {
-	struct session_chain *chain;
-	struct session_item *item;
+	xrdpSessionChain *chain;
+	xrdpSessionItem *item;
 
 	chain = g_sessions;
 
@@ -353,8 +350,7 @@ static int  wait_for_xserver(int display)
 
 /******************************************************************************/
 /* called with the main thread */
-static int 
-session_start_fork(int width, int height, int bpp, char *username, char *password, tbus data, tui8 type, char *domain,
+static int session_start_fork(int width, int height, int bpp, char *username, char *password, tbus data, tui8 type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
 	int display = 0;
@@ -368,7 +364,7 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 	char text[256];
 	char passwd_file[256];
 	char **pp1 = (char **) NULL;
-	struct session_chain *temp = (struct session_chain *) NULL;
+	xrdpSessionChain *temp = (xrdpSessionChain *) NULL;
 	xrdpList *xserver_params = (xrdpList *) NULL;
 	time_t ltime;
 	struct tm stime;
@@ -391,7 +387,7 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 		return 0;
 	}
 
-	temp = (struct session_chain *) g_malloc(sizeof(struct session_chain), 0);
+	temp = (xrdpSessionChain *) g_malloc(sizeof(xrdpSessionChain), 0);
 
 	if (temp == 0)
 	{
@@ -400,7 +396,7 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 		return 0;
 	}
 
-	temp->item = (struct session_item *) g_malloc(sizeof(struct session_item), 0);
+	temp->item = (xrdpSessionItem *) g_malloc(sizeof(xrdpSessionItem), 0);
 
 	if (temp->item == 0)
 	{
@@ -531,36 +527,7 @@ session_start_fork(int width, int height, int bpp, char *username, char *passwor
 				env_set_user(username, passwd_file, display);
 				env_check_password_file(passwd_file, password);
 
-				if (type == SESMAN_SESSION_TYPE_XVNC)
-				{
-					xserver_params = list_create();
-					xserver_params->auto_free = 1;
-
-					/* these are the must have parameters */
-					list_add_item(xserver_params, (long) g_strdup("Xvnc"));
-					list_add_item(xserver_params, (long) g_strdup(screen));
-					list_add_item(xserver_params, (long) g_strdup("-geometry"));
-					list_add_item(xserver_params, (long) g_strdup(geometry));
-					list_add_item(xserver_params, (long) g_strdup("-depth"));
-					list_add_item(xserver_params, (long) g_strdup(depth));
-					list_add_item(xserver_params, (long) g_strdup("-rfbauth"));
-					list_add_item(xserver_params, (long) g_strdup(passwd_file));
-
-					/* additional parameters from sesman.ini file */
-					//config_read_xserver_params(SESMAN_SESSION_TYPE_XVNC,
-					//                           xserver_params);
-					list_append_list_strdup(g_cfg->vnc_params,
-							xserver_params, 0);
-
-					/* make sure it ends with a zero */
-					list_add_item(xserver_params, 0);
-					pp1 = (char **) xserver_params->items;
-					log_message(LOG_LEVEL_INFO, "Xvnc start:%s",
-							dumpItemsToString(xserver_params,
-									execvpparams, 2048));
-					g_execvp("Xvnc", pp1);
-				}
-				else if (type == SESMAN_SESSION_TYPE_XRDP)
+				if (type == SESMAN_SESSION_TYPE_XRDP)
 				{
 					xserver_params = list_create();
 					xserver_params->auto_free = 1;
@@ -692,7 +659,7 @@ static int  session_reconnect_fork(int display, char *username)
 /******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
-int  session_start(int width, int height, int bpp, char *username, char *password, long data, tui8 type, char *domain,
+int session_start(int width, int height, int bpp, char *username, char *password, long data, tui8 type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
 	int display;
@@ -745,7 +712,7 @@ int  session_reconnect(int display, char *username)
 
 /******************************************************************************/
 /* called with the main thread */
-int  session_sync_start(void)
+int session_sync_start(void)
 {
 	if (g_sync_cmd == 0)
 	{
@@ -764,10 +731,10 @@ int  session_sync_start(void)
 }
 
 /******************************************************************************/
-int  session_kill(int pid)
+int session_kill(int pid)
 {
-	struct session_chain *tmp;
-	struct session_chain *prev;
+	xrdpSessionChain *tmp;
+	xrdpSessionChain *prev;
 
 	/*THREAD-FIX require chain lock */
 	lock_chain_acquire();
@@ -837,7 +804,7 @@ int  session_kill(int pid)
 /******************************************************************************/
 void  session_sigkill_all()
 {
-	struct session_chain *tmp;
+	xrdpSessionChain *tmp;
 
 	/*THREAD-FIX require chain lock */
 	lock_chain_acquire();
@@ -865,12 +832,12 @@ void  session_sigkill_all()
 }
 
 /******************************************************************************/
-struct session_item * session_get_bypid(int pid)
+xrdpSessionItem * session_get_bypid(int pid)
 {
-	struct session_chain *tmp;
-	struct session_item *dummy;
+	xrdpSessionChain *tmp;
+	xrdpSessionItem *dummy;
 
-	dummy = g_malloc(sizeof(struct session_item), 1);
+	dummy = g_malloc(sizeof(xrdpSessionItem), 1);
 
 	if (0 == dummy)
 	{
@@ -897,7 +864,7 @@ struct session_item * session_get_bypid(int pid)
 		if (tmp->item->pid == pid)
 		{
 			/*THREAD-FIX release chain lock */
-			g_memcpy(dummy, tmp->item, sizeof(struct session_item));
+			g_memcpy(dummy, tmp->item, sizeof(xrdpSessionItem));
 			lock_chain_release();
 			/*return tmp->item;*/
 			return dummy;
@@ -915,7 +882,7 @@ struct session_item * session_get_bypid(int pid)
 /******************************************************************************/
 struct SCP_DISCONNECTED_SESSION * session_get_byuser(char *user, int *cnt, unsigned char flags)
 {
-	struct session_chain *tmp;
+	xrdpSessionChain *tmp;
 	struct SCP_DISCONNECTED_SESSION *sess;
 	int count;
 	int index;

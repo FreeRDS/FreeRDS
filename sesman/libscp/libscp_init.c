@@ -26,24 +26,12 @@
 
 #include "libscp_init.h"
 
-//struct log_config* s_log;
-
 /* server API */
-int 
-scp_init()
+int  scp_init()
 {
-    /*
-      if (0 == log)
-      {
-        return 1;
-      }
-    */
+	scp_lock_init();
 
-    //s_log = log;
+	log_message(LOG_LEVEL_WARNING, "[init:%d] libscp initialized", __LINE__);
 
-    scp_lock_init();
-
-    log_message(LOG_LEVEL_WARNING, "[init:%d] libscp initialized", __LINE__);
-
-    return 0;
+	return 0;
 }

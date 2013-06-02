@@ -43,7 +43,7 @@ extern int g_thread_sck; /* in thread.c */
  * @brief Starts sesman main loop
  *
  */
-static void  sesman_main_loop(void)
+static void sesman_main_loop(void)
 {
 	int in_sck;
 	int error;
@@ -136,7 +136,7 @@ static void  sesman_main_loop(void)
 }
 
 /******************************************************************************/
-int  main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	int fd;
 	enum logReturns error;

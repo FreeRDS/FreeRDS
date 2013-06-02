@@ -22,7 +22,7 @@
 #include "log.h"
 
 /*****************************************************************************/
-xrdpWm * xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
+xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 {
 	xrdpWm* self = (xrdpWm*) NULL;
 	char event_name[256];
@@ -57,7 +57,7 @@ xrdpWm * xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 }
 
 /*****************************************************************************/
-void  xrdp_wm_delete(xrdpWm *self)
+void xrdp_wm_delete(xrdpWm *self)
 {
 	if (self == 0)
 		return;
@@ -76,26 +76,26 @@ void  xrdp_wm_delete(xrdpWm *self)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_send_palette(xrdpWm *self)
+int xrdp_wm_send_palette(xrdpWm *self)
 {
 	return libxrdp_send_palette(self->session, self->palette);
 }
 
 /*****************************************************************************/
-int  xrdp_wm_send_bell(xrdpWm *self)
+int xrdp_wm_send_bell(xrdpWm *self)
 {
 	return libxrdp_send_bell(self->session);
 }
 
 /*****************************************************************************/
-int  xrdp_wm_send_bitmap(xrdpWm *self, xrdpBitmap *bitmap, int x, int y, int cx, int cy)
+int xrdp_wm_send_bitmap(xrdpWm *self, xrdpBitmap *bitmap, int x, int y, int cx, int cy)
 {
 	return libxrdp_send_bitmap(self->session, bitmap->width, bitmap->height, bitmap->bpp, bitmap->data, x, y, cx,
 			cy);
 }
 
 /*****************************************************************************/
-int  xrdp_wm_set_focused(xrdpWm *self, xrdpBitmap *wnd)
+int xrdp_wm_set_focused(xrdpWm *self, xrdpBitmap *wnd)
 {
 	xrdpBitmap *focus_out_control;
 	xrdpBitmap *focus_in_control;
@@ -133,7 +133,7 @@ int  xrdp_wm_set_focused(xrdpWm *self, xrdpBitmap *wnd)
 }
 
 /******************************************************************************/
-static int  xrdp_wm_get_pixel(char *data, int x, int y, int width, int bpp)
+static int xrdp_wm_get_pixel(char *data, int x, int y, int width, int bpp)
 {
 	int start;
 	int shift;
@@ -164,7 +164,7 @@ static int  xrdp_wm_get_pixel(char *data, int x, int y, int width, int bpp)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_pointer(xrdpWm *self, char *data, char *mask, int x, int y, int bpp)
+int xrdp_wm_pointer(xrdpWm *self, char *data, char *mask, int x, int y, int bpp)
 {
 	int bytes;
 	xrdpPointerItem pointer_item;
@@ -186,7 +186,7 @@ int  xrdp_wm_pointer(xrdpWm *self, char *data, char *mask, int x, int y, int bpp
 
 /*****************************************************************************/
 /* returns error */
-int  xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data,
+int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data,
 		char *mask, int *x, int *y)
 {
 	int fd;
@@ -280,7 +280,7 @@ int  xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data,
 }
 
 /*****************************************************************************/
-int  xrdp_wm_send_pointer(xrdpWm *self, int cache_idx,
+int xrdp_wm_send_pointer(xrdpWm *self, int cache_idx,
 		char *data, char *mask, int x, int y, int bpp)
 {
 	return libxrdp_send_pointer(self->session, cache_idx, data, mask,
@@ -288,7 +288,7 @@ int  xrdp_wm_send_pointer(xrdpWm *self, int cache_idx,
 }
 
 /*****************************************************************************/
-int  xrdp_wm_set_pointer(xrdpWm *self, int cache_idx)
+int xrdp_wm_set_pointer(xrdpWm *self, int cache_idx)
 {
 	return libxrdp_set_pointer(self->session, cache_idx);
 }
@@ -329,7 +329,7 @@ unsigned int xrdp_wm_htoi (const char *ptr)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_load_static_colors_plus(xrdpWm *self, char *autorun_name)
+int xrdp_wm_load_static_colors_plus(xrdpWm *self, char *autorun_name)
 {
 	int bindex;
 	int gindex;
@@ -479,7 +479,7 @@ int  xrdp_wm_load_static_colors_plus(xrdpWm *self, char *autorun_name)
 
 /*****************************************************************************/
 /* returns error */
-int  xrdp_wm_load_static_pointers(xrdpWm *self)
+int xrdp_wm_load_static_pointers(xrdpWm *self)
 {
 	xrdpPointerItem pointer_item;
 	char file_path[256];
@@ -500,7 +500,7 @@ int  xrdp_wm_load_static_pointers(xrdpWm *self)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_init(xrdpWm *self)
+int xrdp_wm_init(xrdpWm *self)
 {
 	int fd;
 	int index;
@@ -623,7 +623,7 @@ int  xrdp_wm_init(xrdpWm *self)
 /*****************************************************************************/
 /* returns the number for rects visible for an area relative to a drawable */
 /* putting the rects in region */
-int  xrdp_wm_get_vis_region(xrdpWm *self, xrdpBitmap *bitmap,
+int xrdp_wm_get_vis_region(xrdpWm *self, xrdpBitmap *bitmap,
 		int x, int y, int cx, int cy,
 		xrdpRegion *region, int clip_children)
 {
@@ -707,7 +707,7 @@ static xrdpBitmap * xrdp_wm_at_pos(xrdpBitmap *wnd, int x, int y,
 }
 
 /*****************************************************************************/
-static int  xrdp_wm_xor_pat(xrdpWm *self, int x, int y, int cx, int cy)
+static int xrdp_wm_xor_pat(xrdpWm *self, int x, int y, int cx, int cy)
 {
 	self->painter->clip_children = 0;
 	self->painter->rop = 0x5a;
@@ -746,7 +746,7 @@ static int  xrdp_wm_xor_pat(xrdpWm *self, int x, int y, int cx, int cy)
 /*****************************************************************************/
 /* this don't are about nothing, just copy the bits */
 /* no clipping rects, no windows in the way, nothing */
-static int  xrdp_wm_bitblt(xrdpWm *self,
+static int xrdp_wm_bitblt(xrdpWm *self,
 		xrdpBitmap *dst, int dx, int dy,
 		xrdpBitmap *src, int sx, int sy,
 		int sw, int sh, int rop)
@@ -783,7 +783,7 @@ static int  xrdp_wm_bitblt(xrdpWm *self,
 /*****************************************************************************/
 /* return true is rect is totaly exposed going in reverse z order */
 /* from wnd up */
-static int  xrdp_wm_is_rect_vis(xrdpWm *self, xrdpBitmap *wnd,
+static int xrdp_wm_is_rect_vis(xrdpWm *self, xrdpBitmap *wnd,
 		xrdpRect *rect)
 {
 	xrdpRect wnd_rect;
@@ -831,7 +831,7 @@ static int  xrdp_wm_is_rect_vis(xrdpWm *self, xrdpBitmap *wnd,
 }
 
 /*****************************************************************************/
-static int  xrdp_wm_move_window(xrdpWm *self, xrdpBitmap *wnd,
+static int xrdp_wm_move_window(xrdpWm *self, xrdpBitmap *wnd,
 		int dx, int dy)
 {
 	xrdpRect rect1;
@@ -878,7 +878,7 @@ static int  xrdp_wm_move_window(xrdpWm *self, xrdpBitmap *wnd,
 }
 
 /*****************************************************************************/
-static int  xrdp_wm_undraw_dragging_box(xrdpWm *self, int do_begin_end)
+static int xrdp_wm_undraw_dragging_box(xrdpWm *self, int do_begin_end)
 {
 	int boxx;
 	int boxy;
@@ -913,7 +913,7 @@ static int  xrdp_wm_undraw_dragging_box(xrdpWm *self, int do_begin_end)
 }
 
 /*****************************************************************************/
-static int  xrdp_wm_draw_dragging_box(xrdpWm *self, int do_begin_end)
+static int xrdp_wm_draw_dragging_box(xrdpWm *self, int do_begin_end)
 {
 	int boxx;
 	int boxy;
@@ -948,7 +948,7 @@ static int  xrdp_wm_draw_dragging_box(xrdpWm *self, int do_begin_end)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_mouse_move(xrdpWm *self, int x, int y)
+int xrdp_wm_mouse_move(xrdpWm *self, int x, int y)
 {
 	xrdpBitmap *b;
 
@@ -1052,7 +1052,7 @@ int  xrdp_wm_mouse_move(xrdpWm *self, int x, int y)
 }
 
 /*****************************************************************************/
-static int  xrdp_wm_clear_popup(xrdpWm *self)
+static int xrdp_wm_clear_popup(xrdpWm *self)
 {
 	int i;
 	xrdpRect rect;
@@ -1075,7 +1075,7 @@ static int  xrdp_wm_clear_popup(xrdpWm *self)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_mouse_click(xrdpWm *self, int x, int y, int but, int down)
+int xrdp_wm_mouse_click(xrdpWm *self, int x, int y, int but, int down)
 {
 	xrdpBitmap *control;
 	xrdpBitmap *focus_out_control;
@@ -1310,7 +1310,7 @@ int  xrdp_wm_mouse_click(xrdpWm *self, int x, int y, int but, int down)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_key(xrdpWm *self, int device_flags, int scan_code)
+int xrdp_wm_key(xrdpWm *self, int device_flags, int scan_code)
 {
 	int msg;
 	xrdpKeyInfo *ki;
@@ -1375,7 +1375,7 @@ int  xrdp_wm_key(xrdpWm *self, int device_flags, int scan_code)
 
 /*****************************************************************************/
 /* happens when client gets focus and sends key modifier info */
-int  xrdp_wm_key_sync(xrdpWm *self, int device_flags, int key_flags)
+int xrdp_wm_key_sync(xrdpWm *self, int device_flags, int key_flags)
 {
 	self->num_lock = 0;
 	self->scroll_lock = 0;
@@ -1409,7 +1409,7 @@ int  xrdp_wm_key_sync(xrdpWm *self, int device_flags, int key_flags)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_pu(xrdpWm *self, xrdpBitmap *control)
+int xrdp_wm_pu(xrdpWm *self, xrdpBitmap *control)
 {
 	int x;
 	int y;
@@ -1441,7 +1441,7 @@ int  xrdp_wm_pu(xrdpWm *self, xrdpBitmap *control)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
+int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
 {
 	DEBUG(("mouse event flags %4.4x x %d y %d", device_flags, x, y));
 
@@ -1542,8 +1542,7 @@ xrdp_wm_process_channel_data(xrdpWm *self,
 
 /******************************************************************************/
 /* this is the callbacks comming from libxrdp.so */
-int 
-callback(long id, int msg, long param1, long param2, long param3, long param4)
+int callback(long id, int msg, long param1, long param2, long param3, long param4)
 {
 	int rv;
 	xrdpWm *wm;
@@ -1591,8 +1590,7 @@ callback(long id, int msg, long param1, long param2, long param3, long param4)
 /******************************************************************************/
 /* returns error */
 /* this gets called when there is nothing on any socket */
-static int 
-xrdp_wm_login_mode_changed(xrdpWm *self)
+static int xrdp_wm_login_mode_changed(xrdpWm *self)
 {
 	if (self == 0)
 	{
@@ -1662,7 +1660,7 @@ xrdp_wm_log_wnd_notify(xrdpBitmap *wnd,
 	wm = wnd->wm;
 
 	if (msg == 1) /* click */
-			{
+	{
 		if (sender->id == 1) /* ok button */
 		{
 			/* close the log window */
@@ -1678,7 +1676,7 @@ xrdp_wm_log_wnd_notify(xrdpBitmap *wnd,
 				xrdp_wm_set_login_mode(wm, 0); /* reset session */
 			}
 		}
-			}
+	}
 	else if (msg == WM_XRDP_PAINT) /* 3 */
 	{
 		painter = (xrdpPainter *)param1;
@@ -1700,7 +1698,6 @@ xrdp_wm_log_wnd_notify(xrdpBitmap *wnd,
 
 void add_string_to_logwindow(char *msg, xrdpList *log)
 {
-
 	char *new_part_message;
 	char *current_pointer = msg ;
 	int processedlen = 0;
@@ -1717,7 +1714,7 @@ void add_string_to_logwindow(char *msg, xrdpList *log)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_log_msg(xrdpWm *self, char *msg)
+int xrdp_wm_log_msg(xrdpWm *self, char *msg)
 {
 	xrdpBitmap *but;
 	int w;
@@ -1782,7 +1779,7 @@ int  xrdp_wm_log_msg(xrdpWm *self, char *msg)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_get_wait_objs(xrdpWm *self, tbus *robjs, int *rc,
+int xrdp_wm_get_wait_objs(xrdpWm *self, tbus *robjs, int *rc,
 		tbus *wobjs, int *wc, int *timeout)
 {
 	int i;
@@ -1798,7 +1795,7 @@ int  xrdp_wm_get_wait_objs(xrdpWm *self, tbus *robjs, int *rc,
 }
 
 /******************************************************************************/
-int  xrdp_wm_check_wait_objs(xrdpWm *self)
+int xrdp_wm_check_wait_objs(xrdpWm *self)
 {
 	int rv;
 
@@ -1824,7 +1821,7 @@ int  xrdp_wm_check_wait_objs(xrdpWm *self)
 }
 
 /*****************************************************************************/
-int  xrdp_wm_set_login_mode(xrdpWm *self, int login_mode)
+int xrdp_wm_set_login_mode(xrdpWm *self, int login_mode)
 {
 	self->login_mode = login_mode;
 	g_set_wait_obj(self->login_mode_event);

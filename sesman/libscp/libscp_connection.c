@@ -28,32 +28,30 @@
 
 //extern struct log_config* s_log;
 
-struct SCP_CONNECTION *
-scp_connection_create(int sck)
+struct SCP_CONNECTION* scp_connection_create(int sck)
 {
-    struct SCP_CONNECTION *conn;
+	struct SCP_CONNECTION *conn;
 
-    conn = g_malloc(sizeof(struct SCP_CONNECTION), 0);
+	conn = g_malloc(sizeof(struct SCP_CONNECTION), 0);
 
-    if (0 == conn)
-    {
-        log_message(LOG_LEVEL_WARNING, "[connection:%d] connection create: malloc error", __LINE__);
-        return 0;
-    }
+	if (0 == conn)
+	{
+		log_message(LOG_LEVEL_WARNING, "[connection:%d] connection create: malloc error", __LINE__);
+		return 0;
+	}
 
-    conn->in_sck = sck;
-    make_stream(conn->in_s);
-    init_stream(conn->in_s, 8196);
-    make_stream(conn->out_s);
-    init_stream(conn->out_s, 8196);
+	conn->in_sck = sck;
+	make_stream(conn->in_s);
+	init_stream(conn->in_s, 8196);
+	make_stream(conn->out_s);
+	init_stream(conn->out_s, 8196);
 
-    return conn;
+	return conn;
 }
 
-void
-scp_connection_destroy(struct SCP_CONNECTION *c)
+void scp_connection_destroy(struct SCP_CONNECTION *c)
 {
-    free_stream(c->in_s);
-    free_stream(c->out_s);
-    g_free(c);
+	free_stream(c->in_s);
+	free_stream(c->out_s);
+	g_free(c);
 }

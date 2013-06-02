@@ -42,7 +42,7 @@ scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	int current_try;
 	enum SCP_SERVER_STATES_E e;
 	struct SCP_DISCONNECTED_SESSION *slist;
-	struct session_item *sitem;
+	xrdpSessionItem *sitem;
 	int scount;
 	SCP_SID sid;
 
@@ -120,13 +120,7 @@ scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 			log_message(LOG_LEVEL_INFO, "++ created session (access granted): username %s", s->username);
 		}
 
-		if (SCP_SESSION_TYPE_XVNC == s->type)
-		{
-			log_message(LOG_LEVEL_INFO, "starting Xvnc session...");
-			display = session_start(s->width, s->height, s->bpp, s->username, s->password, data,
-					SESMAN_SESSION_TYPE_XVNC, s->domain, s->program, s->directory, s->client_ip);
-		}
-		else
+		if (SCP_SESSION_TYPE_XRDP == s->type)
 		{
 			log_message(LOG_LEVEL_INFO, "starting X11rdp session...");
 			display = session_start(s->width, s->height, s->bpp, s->username, s->password, data,

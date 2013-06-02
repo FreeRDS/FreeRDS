@@ -180,8 +180,54 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 
 BOOL xrdp_peer_activate(freerdp_peer* client)
 {
+	int entries;
+	int bytesPerPixel;
+	rdpSettings* settings;
 	xrdpProcess* xfp = (xrdpProcess*) client->context;
 
+	settings = client->settings;
+
+	xfp->info->bpp = settings->ColorDepth;
+	xfp->info->width = settings->DesktopWidth;
+	xfp->info->height = settings->DesktopHeight;
+	xfp->info->build = settings->ClientBuild;
+	xfp->info->keylayout = settings->KeyboardLayout;
+
+	bytesPerPixel = (xfp->info->bpp + 7) / 8;
+
+	entries = settings->BitmapCacheV2CellInfo[0].numEntries;
+	entries = MIN(entries, 2000);
+	xfp->info->cache1_entries = entries;
+	xfp->info->cache1_size = 256 * bytesPerPixel;
+
+	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
+	entries = MIN(entries, 2000);
+	xfp->info->cache2_entries = entries;
+	xfp->info->cache2_size = 1024 * bytesPerPixel;
+
+	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
+	entries = MIN(entries, 2000);
+	xfp->info->cache3_entries = entries;
+	xfp->info->cache3_size = 4096 * bytesPerPixel;
+
+	xfp->info->use_bitmap_comp = 1;
+	xfp->info->bitmap_cache_version = 2;
+	xfp->info->bitmap_cache_persist_enable = 0;
+	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
+
+	xfp->info->offscreen_support_level = settings->OffscreenSupportLevel;
+	xfp->info->offscreen_cache_size = settings->OffscreenCacheSize * 1024;
+	xfp->info->offscreen_cache_entries = settings->OffscreenCacheEntries;
+
+	CopyMemory(xfp->info->orders, settings->OrderSupport, 32);
+
+	if (settings->Username)
+		strcpy(xfp->info->username, settings->Username);
+
+	if (settings->Password)
+		strcpy(xfp->info->password, settings->Password);
+
+	xfp->wm = xrdp_wm_create(xfp, xfp->info);
 	xfp->activated = TRUE;
 
 	return TRUE;
@@ -279,7 +325,6 @@ void* xrdp_process_main_thread(void* arg)
 	int wcount;
 	int robjc;
 	int wobjc;
-	int entries;
 	long term_obj;
 	long robjs[32];
 	long wobjs[32];
@@ -288,7 +333,6 @@ void* xrdp_process_main_thread(void* arg)
 	void* wfds[32];
 	fd_set rfds_set;
 	xrdpProcess* xfp;
-	int bytesPerPixel;
 	rdpSettings* settings;
 	struct timeval timeout;
 	freerdp_peer* client = (freerdp_peer*) arg;
@@ -313,48 +357,6 @@ void* xrdp_process_main_thread(void* arg)
 	client->Activate = xrdp_peer_activate;
 
 	client->Initialize(client);
-
-	xfp->info->bpp = settings->ColorDepth;
-	xfp->info->width = settings->DesktopWidth;
-	xfp->info->height = settings->DesktopHeight;
-	xfp->info->build = settings->ClientBuild;
-	xfp->info->keylayout = settings->KeyboardLayout;
-
-	bytesPerPixel = (xfp->info->bpp + 7) / 8;
-
-	entries = settings->BitmapCacheV2CellInfo[0].numEntries;
-	entries = MIN(entries, 2000);
-	xfp->info->cache1_entries = entries;
-	xfp->info->cache1_size = 256 * bytesPerPixel;
-
-	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
-	entries = MIN(entries, 2000);
-	xfp->info->cache2_entries = entries;
-	xfp->info->cache2_size = 1024 * bytesPerPixel;
-
-	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
-	entries = MIN(entries, 2000);
-	xfp->info->cache3_entries = entries;
-	xfp->info->cache3_size = 4096 * bytesPerPixel;
-
-	xfp->info->use_bitmap_comp = 1;
-	xfp->info->bitmap_cache_version = 2;
-	xfp->info->bitmap_cache_persist_enable = 0;
-	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
-
-	xfp->info->offscreen_support_level = settings->OffscreenSupportLevel;
-	xfp->info->offscreen_cache_size = settings->OffscreenCacheSize * 1024;
-	xfp->info->offscreen_cache_entries = settings->OffscreenCacheEntries;
-
-	CopyMemory(xfp->info->orders, settings->OrderSupport, 32);
-
-	if (settings->Username)
-		strcpy(xfp->info->username, settings->Username);
-
-	if (settings->Password)
-		strcpy(xfp->info->password, settings->Password);
-
-	xfp->wm = xrdp_wm_create(xfp, xfp->info);
 
 	xfp->session->callback = callback;
 	xrdp_input_register_callbacks(client->input);

@@ -32,117 +32,111 @@ int lock_fork_forkers_count;          /* threads that want to fork */
 int lock_fork_blockers_count;         /* threads thar are blocking fork */
 int lock_fork_waiting_count;          /* threads suspended until the fork finishes */
 
-void 
-scp_lock_init(void)
+void scp_lock_init(void)
 {
-    /* initializing fork lock */
-    pthread_mutexattr_init(&lock_fork_attr);
-    pthread_mutex_init(&lock_fork, &lock_fork_attr);
-    sem_init(&lock_fork_req, 0, 0);
-    sem_init(&lock_fork_wait, 0, 0);
+	/* initializing fork lock */
+	pthread_mutexattr_init(&lock_fork_attr);
+	pthread_mutex_init(&lock_fork, &lock_fork_attr);
+	sem_init(&lock_fork_req, 0, 0);
+	sem_init(&lock_fork_wait, 0, 0);
 
-    /* here we don't use locking because lock_init() should be called BEFORE */
-    /* any thread is created                                                 */
-    lock_fork_blockers_count = 0;
-    lock_fork_waiting_count = 0;
-    lock_fork_forkers_count = 0;
+	/* here we don't use locking because lock_init() should be called BEFORE */
+	/* any thread is created                                                 */
+	lock_fork_blockers_count = 0;
+	lock_fork_waiting_count = 0;
+	lock_fork_forkers_count = 0;
 }
 
 /******************************************************************************/
-void 
-scp_lock_fork_request(void)
+void scp_lock_fork_request(void)
 {
-    /* lock mutex */
-    pthread_mutex_lock(&lock_fork);
+	/* lock mutex */
+	pthread_mutex_lock(&lock_fork);
 
-    if (lock_fork_blockers_count == 0)
-    {
-        /* if noone is blocking fork(), then we're allowed to fork */
-        sem_post(&lock_fork_req);
-    }
+	if (lock_fork_blockers_count == 0)
+	{
+		/* if noone is blocking fork(), then we're allowed to fork */
+		sem_post(&lock_fork_req);
+	}
 
-    lock_fork_forkers_count++;
-    pthread_mutex_unlock(&lock_fork);
+	lock_fork_forkers_count++;
+	pthread_mutex_unlock(&lock_fork);
 
-    /* we wait to be allowed to fork() */
-    sem_wait(&lock_fork_req);
+	/* we wait to be allowed to fork() */
+	sem_wait(&lock_fork_req);
 }
 
 /******************************************************************************/
-void 
-scp_lock_fork_release(void)
+void scp_lock_fork_release(void)
 {
-    pthread_mutex_lock(&lock_fork);
-    lock_fork_forkers_count--;
+	pthread_mutex_lock(&lock_fork);
+	lock_fork_forkers_count--;
 
-    /* if there's someone else that want to fork, we let him fork() */
-    if (lock_fork_forkers_count > 0)
-    {
-        sem_post(&lock_fork_req);
-    }
+	/* if there's someone else that want to fork, we let him fork() */
+	if (lock_fork_forkers_count > 0)
+	{
+		sem_post(&lock_fork_req);
+	}
 
-    for (; lock_fork_waiting_count > 0; lock_fork_waiting_count--)
-    {
-        /* waking up the other processes */
-        sem_post(&lock_fork_wait);
-    }
+	for (; lock_fork_waiting_count > 0; lock_fork_waiting_count--)
+	{
+		/* waking up the other processes */
+		sem_post(&lock_fork_wait);
+	}
 
-    pthread_mutex_unlock(&lock_fork);
+	pthread_mutex_unlock(&lock_fork);
 }
 
 /******************************************************************************/
-void 
-scp_lock_fork_critical_section_end(int blocking)
+void scp_lock_fork_critical_section_end(int blocking)
 {
-    //LOG_DBG("lock_fork_critical_secection_end()",0);
-    /* lock mutex */
-    pthread_mutex_lock(&lock_fork);
+	//LOG_DBG("lock_fork_critical_secection_end()",0);
+	/* lock mutex */
+	pthread_mutex_lock(&lock_fork);
 
-    if (blocking == LIBSCP_LOCK_FORK_BLOCKER)
-    {
-        lock_fork_blockers_count--;
-    }
+	if (blocking == LIBSCP_LOCK_FORK_BLOCKER)
+	{
+		lock_fork_blockers_count--;
+	}
 
-    /* if there's someone who wants to fork and we're the last blocking */
-    /* then we let him go */
-    if ((lock_fork_blockers_count == 0) && (lock_fork_forkers_count > 0))
-    {
-        sem_post(&lock_fork_req);
-    }
+	/* if there's someone who wants to fork and we're the last blocking */
+	/* then we let him go */
+	if ((lock_fork_blockers_count == 0) && (lock_fork_forkers_count > 0))
+	{
+		sem_post(&lock_fork_req);
+	}
 
-    pthread_mutex_unlock(&lock_fork);
+	pthread_mutex_unlock(&lock_fork);
 }
 
 /******************************************************************************/
-int 
-scp_lock_fork_critical_section_start(void)
+int scp_lock_fork_critical_section_start(void)
 {
-    //LOG_DBG("lock_fork_critical_secection_start()",0);
-    do
-    {
-        pthread_mutex_lock(&lock_fork);
+	//LOG_DBG("lock_fork_critical_secection_start()",0);
+	do
+	{
+		pthread_mutex_lock(&lock_fork);
 
-        /* someone requested to fork */
-        if (lock_fork_forkers_count > 0)
-        {
-            lock_fork_waiting_count++;
-            pthread_mutex_unlock(&lock_fork);
+		/* someone requested to fork */
+		if (lock_fork_forkers_count > 0)
+		{
+			lock_fork_waiting_count++;
+			pthread_mutex_unlock(&lock_fork);
 
-            /* we wait until the fork finishes */
-            sem_wait(&lock_fork_wait);
+			/* we wait until the fork finishes */
+			sem_wait(&lock_fork_wait);
+		}
+		else
+		{
+			/* no fork, so we can go on... */
+			lock_fork_blockers_count++;
+			pthread_mutex_unlock(&lock_fork);
 
-        }
-        else
-        {
-            /* no fork, so we can go on... */
-            lock_fork_blockers_count++;
-            pthread_mutex_unlock(&lock_fork);
+			return LIBSCP_LOCK_FORK_BLOCKER;
+		}
+	}
+	while (1);
 
-            return LIBSCP_LOCK_FORK_BLOCKER;
-        }
-    }
-    while (1);
-
-    /* we'll never get here */
-    return LIBSCP_LOCK_FORK_WAITING;
+	/* we'll never get here */
+	return LIBSCP_LOCK_FORK_WAITING;
 }

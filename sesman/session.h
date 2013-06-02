@@ -44,6 +44,8 @@
 #define SESMAN_SESSION_KILL_NULLITEM  1
 #define SESMAN_SESSION_KILL_NOTFOUND  2
 
+typedef struct session_date xrdpSessionDate;
+
 struct session_date
 {
 	tui16 year;
@@ -54,6 +56,8 @@ struct session_date
 };
 
 #define zero_time(s) { (s)->year=0; (s)->month=0; (s)->day=0; (s)->hour=0; (s)->minute=0; }
+
+typedef struct session_item xrdpSessionItem;
 
 struct session_item
 {
@@ -70,16 +74,18 @@ struct session_item
 	unsigned char type;
 
 	/* time data  */
-	struct session_date connect_time;
-	struct session_date disconnect_time;
-	struct session_date idle_time;
+	xrdpSessionDate connect_time;
+	xrdpSessionDate disconnect_time;
+	xrdpSessionDate idle_time;
 	char client_ip[256];
 };
 
+typedef struct session_chain xrdpSessionChain;
+
 struct session_chain
 {
-	struct session_chain* next;
-	struct session_item* item;
+	xrdpSessionChain* next;
+	xrdpSessionItem* item;
 };
 
 /**
@@ -88,7 +94,7 @@ struct session_chain
  * @return session data or 0
  *
  */
-struct session_item* DEFAULT_CC
+xrdpSessionItem* DEFAULT_CC
 session_get_bydata(char* name, int width, int height, int bpp, int type);
 #ifndef session_find_item
 #define session_find_item(a, b, c, d, e) session_get_bydata(a, b, c, d, e);
@@ -143,7 +149,7 @@ session_sigkill_all();
  * @return a pointer to the session descriptor on success, NULL otherwise
  *
  */
-struct session_item* DEFAULT_CC
+xrdpSessionItem* DEFAULT_CC
 session_get_bypid(int pid);
 
 /**

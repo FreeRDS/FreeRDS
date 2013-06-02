@@ -1176,7 +1176,8 @@ xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 			painter->fg_color = self->wm->blue;
 			xrdp_painter_fill_rect(painter, self, 3, 3, self->width - 5, 18);
 			painter->fg_color = self->wm->white;
-		} else
+		}
+		else
 		{
 			/* inactive title bar */
 			painter->fg_color = self->wm->dark_grey;
@@ -1185,316 +1186,297 @@ xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 		}
 
 		xrdp_painter_draw_text(painter, self, 4, 4, self->caption1);
-	} else
-		if (self->type == WND_TYPE_SCREEN) /* 2 */
+	}
+	else if (self->type == WND_TYPE_SCREEN) /* 2 */
+	{
+		if (self->wm->mm->mod != 0)
 		{
-			if (self->wm->mm->mod != 0)
+			if (self->wm->mm->mod->mod_event != 0)
 			{
-				if (self->wm->mm->mod->mod_event != 0)
+				if (rect != 0)
 				{
-					if (rect != 0)
-					{
-						x = rect->left;
-						y = rect->top;
-						w = rect->right - rect->left;
-						h = rect->bottom - rect->top;
+					x = rect->left;
+					y = rect->top;
+					w = rect->right - rect->left;
+					h = rect->bottom - rect->top;
 
-						if (check_bounds(self->wm->screen, &x, &y, &w, &h))
-						{
-							self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_XRDP_INVALIDATE,
-									MAKELONG(y, x), MAKELONG(h, w), 0, 0);
-						}
-					} else
+					if (check_bounds(self->wm->screen, &x, &y, &w, &h))
 					{
-						x = 0;
-						y = 0;
-						w = self->wm->screen->width;
-						h = self->wm->screen->height;
 						self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_XRDP_INVALIDATE,
 								MAKELONG(y, x), MAKELONG(h, w), 0, 0);
 					}
 				}
-			} else
-			{
-				painter->fg_color = self->bg_color;
-				xrdp_painter_fill_rect(painter, self, 0, 0, self->width, self->height);
+				else
+				{
+					x = 0;
+					y = 0;
+					w = self->wm->screen->width;
+					h = self->wm->screen->height;
+					self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_XRDP_INVALIDATE,
+							MAKELONG(y, x), MAKELONG(h, w), 0, 0);
+				}
 			}
-		} else
-			if (self->type == WND_TYPE_BUTTON) /* 3 */
+		}
+		else
+		{
+			painter->fg_color = self->bg_color;
+			xrdp_painter_fill_rect(painter, self, 0, 0, self->width, self->height);
+		}
+	}
+	else if (self->type == WND_TYPE_BUTTON) /* 3 */
+	{
+		if (self->state == BUTTON_STATE_UP) /* 0 */
+		{
+			xrdp_bitmap_draw_button(self, painter, 0, 0, self->width, self->height, 0);
+			w = xrdp_painter_text_width(painter, self->caption1);
+			h = xrdp_painter_text_height(painter, self->caption1);
+			painter->fg_color = self->wm->black;
+			xrdp_painter_draw_text(painter, self, self->width / 2 - w / 2, self->height / 2
+					- h / 2, self->caption1);
+
+			if (self->parent != 0)
 			{
-				if (self->state == BUTTON_STATE_UP) /* 0 */
+				if (self->wm->focused_window == self->parent)
 				{
-					xrdp_bitmap_draw_button(self, painter, 0, 0, self->width, self->height, 0);
-					w = xrdp_painter_text_width(painter, self->caption1);
-					h = xrdp_painter_text_height(painter, self->caption1);
+					if (self->parent->focused_control == self)
+					{
+						xrdp_bitmap_draw_focus_box(self, painter, 4, 4,
+								self->width - 8, self->height - 8);
+					}
+				}
+			}
+		}
+		else if (self->state == BUTTON_STATE_DOWN) /* 1 */
+		{
+			xrdp_bitmap_draw_button(self, painter, 0, 0, self->width, self->height,
+					1);
+			w = xrdp_painter_text_width(painter, self->caption1);
+			h = xrdp_painter_text_height(painter, self->caption1);
+			painter->fg_color = self->wm->black;
+			xrdp_painter_draw_text(painter, self, (self->width / 2 - w / 2) + 1,
+					(self->height / 2 - h / 2) + 1, self->caption1);
+
+			if (self->parent != 0)
+				if (self->wm->focused_window == self->parent)
+					if (self->parent->focused_control == self)
+						xrdp_bitmap_draw_focus_box(self, painter, 4, 4,
+								self->width - 8, self->height
+										- 8);
+		}
+	}
+	else if (self->type == WND_TYPE_IMAGE) /* 4 */
+	{
+		xrdp_painter_copy(painter, self, self, 0, 0, self->width, self->height, 0, 0);
+	}
+	else if (self->type == WND_TYPE_EDIT) /* 5 */
+	{
+		/* draw gray box */
+		painter->fg_color = self->wm->grey;
+		xrdp_painter_fill_rect(painter, self, 0, 0, self->width, self->height);
+		/* main white background */
+		painter->fg_color = self->wm->white;
+		xrdp_painter_fill_rect(painter, self, 1, 1, self->width - 3, self->height - 3);
+		/* dark grey top line */
+		painter->fg_color = self->wm->dark_grey;
+		xrdp_painter_fill_rect(painter, self, 0, 0, self->width, 1);
+		/* dark grey left line */
+		painter->fg_color = self->wm->dark_grey;
+		xrdp_painter_fill_rect(painter, self, 0, 0, 1, self->height);
+		/* white bottom line */
+		painter->fg_color = self->wm->white;
+		xrdp_painter_fill_rect(painter, self, 0, self->height - 1, self->width, 1);
+		/* white right line */
+		painter->fg_color = self->wm->white;
+		xrdp_painter_fill_rect(painter, self, self->width - 1, 0, 1, self->height);
+		/* black left line */
+		painter->fg_color = self->wm->black;
+		xrdp_painter_fill_rect(painter, self, 1, 1, 1, self->height - 3);
+		/* black top line */
+		painter->fg_color = self->wm->black;
+		xrdp_painter_fill_rect(painter, self, 1, 1, self->width - 3, 1);
+		/* draw text */
+		painter->fg_color = self->wm->black;
+
+		if (self->password_char != 0)
+		{
+			i = g_mbstowcs(0, self->caption1, 0);
+			g_memset(text, self->password_char, i);
+			text[i] = 0;
+			xrdp_painter_draw_text(painter, self, 4, 2, text);
+		}
+		else
+		{
+			xrdp_painter_draw_text(painter, self, 4, 2, self->caption1);
+		}
+
+		/* draw xor box(cursor) */
+		if (self->parent != 0)
+		{
+			if (self->parent->focused_control == self)
+			{
+				if (self->password_char != 0)
+				{
+					wchar_repeat(wtext, 255, self->password_char,
+							self->edit_pos);
+					wtext[self->edit_pos] = 0;
+					g_wcstombs(text, wtext, 255);
+				}
+				else
+				{
+					g_mbstowcs(wtext, self->caption1, 255);
+					wtext[self->edit_pos] = 0;
+					g_wcstombs(text, wtext, 255);
+				}
+
+				w = xrdp_painter_text_width(painter, text);
+				painter->fg_color = self->wm->white;
+				painter->rop = 0x5a;
+				xrdp_painter_fill_rect(painter, self, 4 + w, 3, 2,
+						self->height - 6);
+			}
+		}
+
+		/* reset rop back */
+		painter->rop = 0xcc;
+	}
+	else if (self->type == WND_TYPE_LABEL) /* 6 */
+	{
+		painter->fg_color = self->wm->black;
+		xrdp_painter_draw_text(painter, self, 0, 0, self->caption1);
+	}
+	else if (self->type == WND_TYPE_COMBO) /* 7 combo box */
+	{
+		/* draw gray box */
+		painter->fg_color = self->wm->grey;
+		xrdp_painter_fill_rect(painter, self, 0, 0,
+				self->width, self->height);
+		/* white background */
+		painter->fg_color = self->wm->white;
+		xrdp_painter_fill_rect(painter, self, 1, 1, self->width
+				- 3, self->height - 3);
+
+		if (self->parent->focused_control == self)
+		{
+			painter->fg_color = self->wm->dark_blue;
+			xrdp_painter_fill_rect(painter, self, 3, 3,
+					(self->width - 6) - 18,
+					self->height - 5);
+		}
+
+		/* dark grey top line */
+		painter->fg_color = self->wm->dark_grey;
+		xrdp_painter_fill_rect(painter, self, 0, 0, self->width, 1);
+		/* dark grey left line */
+		painter->fg_color = self->wm->dark_grey;
+		xrdp_painter_fill_rect(painter, self, 0, 0, 1, self->height);
+		/* white bottom line */
+		painter->fg_color = self->wm->white;
+		xrdp_painter_fill_rect(painter, self, 0, self->height - 1, self->width, 1);
+		/* white right line */
+		painter->fg_color = self->wm->white;
+		xrdp_painter_fill_rect(painter, self, self->width - 1, 0, 1, self->height);
+		/* black left line */
+		painter->fg_color = self->wm->black;
+		xrdp_painter_fill_rect(painter, self, 1, 1, 1, self->height - 3);
+		/* black top line */
+		painter->fg_color = self->wm->black;
+		xrdp_painter_fill_rect(painter, self, 1, 1, self->width - 3, 1);
+
+		/* draw text */
+		if (self->parent->focused_control == self)
+		{
+			painter->fg_color = self->wm->white;
+		}
+		else
+		{
+			painter->fg_color = self->wm->black;
+		}
+
+		xrdp_painter_draw_text(painter, self, 4, 2,
+				(char *) list_get_item(self->string_list, self->item_index));
+		/* draw button on right */
+		x = self->width - 20;
+		y = 2;
+		w = (self->width - x) - 2;
+		h = self->height - 4;
+		/* looks better with a background around */
+		painter->fg_color = self->wm->grey;
+		xrdp_painter_fill_rect(painter, self, x, y, w, h);
+
+		if (self->state == BUTTON_STATE_UP) /* 0 */
+		{
+			xrdp_bitmap_draw_button(self, painter, x + 1, y
+					+ 1, w - 1, h - 1, 0);
+		}
+		else
+		{
+			xrdp_bitmap_draw_button(self, painter, x + 1, y
+					+ 1, w - 1, h - 1, 1);
+		}
+
+		/* draw the arrow */
+		w = w / 2;
+		x = x + (w / 2) + 1;
+		h = (h / 2) + 2;
+		y = y + (h / 2) + 1;
+		painter->fg_color = self->wm->black;
+
+		for (i = w; i > 0; i = i - 2)
+		{
+			xrdp_painter_fill_rect(painter, self, x, y, i,
+					1);
+			y++;
+			x = x + 1;
+		}
+	}
+	else if (self->type == WND_TYPE_SPECIAL) /* 8 special */
+	{
+		if (self->popped_from != 0)
+		{
+			/* change height if there are too many items in the list */
+			i = xrdp_painter_text_height(painter,
+					"W");
+			i
+					= self->popped_from->string_list->count
+							* i;
+
+			if (i > self->height)
+			{
+				self->height = i;
+			}
+		}
+
+		painter->fg_color = self->wm->white;
+		xrdp_painter_fill_rect(painter, self, 0, 0,
+				self->width, self->height);
+
+		/* draw the list items */
+		if (self->popped_from != 0)
+		{
+			y = 0;
+
+			for (i = 0; i < self->popped_from->string_list->count; i++)
+			{
+				p = (char *) list_get_item(self->popped_from->string_list, i);
+				h = xrdp_painter_text_height(painter, p);
+				self->item_height = h;
+
+				if (i == self->item_index)
+				{
+					painter->fg_color = self->wm->blue;
+					xrdp_painter_fill_rect(painter, self, 0, y, self->width, h);
+					painter->fg_color = self->wm->white;
+				}
+				else
+				{
 					painter->fg_color = self->wm->black;
-					xrdp_painter_draw_text(painter, self, self->width / 2 - w / 2, self->height / 2
-							- h / 2, self->caption1);
+				}
 
-					if (self->parent != 0)
-					{
-						if (self->wm->focused_window == self->parent)
-						{
-							if (self->parent->focused_control == self)
-							{
-								xrdp_bitmap_draw_focus_box(self, painter, 4, 4,
-										self->width - 8, self->height - 8);
-							}
-						}
-					}
-				} else
-					if (self->state == BUTTON_STATE_DOWN) /* 1 */
-					{
-						xrdp_bitmap_draw_button(self, painter, 0, 0, self->width, self->height,
-								1);
-						w = xrdp_painter_text_width(painter, self->caption1);
-						h = xrdp_painter_text_height(painter, self->caption1);
-						painter->fg_color = self->wm->black;
-						xrdp_painter_draw_text(painter, self, (self->width / 2 - w / 2) + 1,
-								(self->height / 2 - h / 2) + 1, self->caption1);
-
-						if (self->parent != 0)
-							if (self->wm->focused_window == self->parent)
-								if (self->parent->focused_control == self)
-									xrdp_bitmap_draw_focus_box(self, painter, 4, 4,
-											self->width - 8, self->height
-													- 8);
-					}
-			} else
-				if (self->type == WND_TYPE_IMAGE) /* 4 */
-				{
-					xrdp_painter_copy(painter, self, self, 0, 0, self->width, self->height, 0, 0);
-				} else
-					if (self->type == WND_TYPE_EDIT) /* 5 */
-					{
-						/* draw gray box */
-						painter->fg_color = self->wm->grey;
-						xrdp_painter_fill_rect(painter, self, 0, 0, self->width, self->height);
-						/* main white background */
-						painter->fg_color = self->wm->white;
-						xrdp_painter_fill_rect(painter, self, 1, 1, self->width - 3,
-								self->height - 3);
-						/* dark grey top line */
-						painter->fg_color = self->wm->dark_grey;
-						xrdp_painter_fill_rect(painter, self, 0, 0, self->width, 1);
-						/* dark grey left line */
-						painter->fg_color = self->wm->dark_grey;
-						xrdp_painter_fill_rect(painter, self, 0, 0, 1, self->height);
-						/* white bottom line */
-						painter->fg_color = self->wm->white;
-						xrdp_painter_fill_rect(painter, self, 0, self->height - 1, self->width,
-								1);
-						/* white right line */
-						painter->fg_color = self->wm->white;
-						xrdp_painter_fill_rect(painter, self, self->width - 1, 0, 1,
-								self->height);
-						/* black left line */
-						painter->fg_color = self->wm->black;
-						xrdp_painter_fill_rect(painter, self, 1, 1, 1, self->height - 3);
-						/* black top line */
-						painter->fg_color = self->wm->black;
-						xrdp_painter_fill_rect(painter, self, 1, 1, self->width - 3, 1);
-						/* draw text */
-						painter->fg_color = self->wm->black;
-
-						if (self->password_char != 0)
-						{
-							i = g_mbstowcs(0, self->caption1, 0);
-							g_memset(text, self->password_char, i);
-							text[i] = 0;
-							xrdp_painter_draw_text(painter, self, 4, 2, text);
-						} else
-						{
-							xrdp_painter_draw_text(painter, self, 4, 2, self->caption1);
-						}
-
-						/* draw xor box(cursor) */
-						if (self->parent != 0)
-						{
-							if (self->parent->focused_control == self)
-							{
-								if (self->password_char != 0)
-								{
-									wchar_repeat(wtext, 255, self->password_char,
-											self->edit_pos);
-									wtext[self->edit_pos] = 0;
-									g_wcstombs(text, wtext, 255);
-								} else
-								{
-									g_mbstowcs(wtext, self->caption1, 255);
-									wtext[self->edit_pos] = 0;
-									g_wcstombs(text, wtext, 255);
-								}
-
-								w = xrdp_painter_text_width(painter, text);
-								painter->fg_color = self->wm->white;
-								painter->rop = 0x5a;
-								xrdp_painter_fill_rect(painter, self, 4 + w, 3, 2,
-										self->height - 6);
-							}
-						}
-
-						/* reset rop back */
-						painter->rop = 0xcc;
-					} else
-						if (self->type == WND_TYPE_LABEL) /* 6 */
-						{
-							painter->fg_color = self->wm->black;
-							xrdp_painter_draw_text(painter, self, 0, 0, self->caption1);
-						} else
-							if (self->type == WND_TYPE_COMBO) /* 7 combo box */
-							{
-								/* draw gray box */
-								painter->fg_color = self->wm->grey;
-								xrdp_painter_fill_rect(painter, self, 0, 0,
-										self->width, self->height);
-								/* white background */
-								painter->fg_color = self->wm->white;
-								xrdp_painter_fill_rect(painter, self, 1, 1, self->width
-										- 3, self->height - 3);
-
-								if (self->parent->focused_control == self)
-								{
-									painter->fg_color = self->wm->dark_blue;
-									xrdp_painter_fill_rect(painter, self, 3, 3,
-											(self->width - 6) - 18,
-											self->height - 5);
-								}
-
-								/* dark grey top line */
-								painter->fg_color = self->wm->dark_grey;
-								xrdp_painter_fill_rect(painter, self, 0, 0,
-										self->width, 1);
-								/* dark grey left line */
-								painter->fg_color = self->wm->dark_grey;
-								xrdp_painter_fill_rect(painter, self, 0, 0, 1,
-										self->height);
-								/* white bottom line */
-								painter->fg_color = self->wm->white;
-								xrdp_painter_fill_rect(painter, self, 0, self->height
-										- 1, self->width, 1);
-								/* white right line */
-								painter->fg_color = self->wm->white;
-								xrdp_painter_fill_rect(painter, self, self->width - 1,
-										0, 1, self->height);
-								/* black left line */
-								painter->fg_color = self->wm->black;
-								xrdp_painter_fill_rect(painter, self, 1, 1, 1,
-										self->height - 3);
-								/* black top line */
-								painter->fg_color = self->wm->black;
-								xrdp_painter_fill_rect(painter, self, 1, 1, self->width
-										- 3, 1);
-
-								/* draw text */
-								if (self->parent->focused_control == self)
-								{
-									painter->fg_color = self->wm->white;
-								} else
-								{
-									painter->fg_color = self->wm->black;
-								}
-
-								xrdp_painter_draw_text(painter, self, 4, 2,
-										(char *) list_get_item(
-												self->string_list,
-												self->item_index));
-								/* draw button on right */
-								x = self->width - 20;
-								y = 2;
-								w = (self->width - x) - 2;
-								h = self->height - 4;
-								/* looks better with a background around */
-								painter->fg_color = self->wm->grey;
-								xrdp_painter_fill_rect(painter, self, x, y, w, h);
-
-								if (self->state == BUTTON_STATE_UP) /* 0 */
-								{
-									xrdp_bitmap_draw_button(self, painter, x + 1, y
-											+ 1, w - 1, h - 1, 0);
-								} else
-								{
-									xrdp_bitmap_draw_button(self, painter, x + 1, y
-											+ 1, w - 1, h - 1, 1);
-								}
-
-								/* draw the arrow */
-								w = w / 2;
-								x = x + (w / 2) + 1;
-								h = (h / 2) + 2;
-								y = y + (h / 2) + 1;
-								painter->fg_color = self->wm->black;
-
-								for (i = w; i > 0; i = i - 2)
-								{
-									xrdp_painter_fill_rect(painter, self, x, y, i,
-											1);
-									y++;
-									x = x + 1;
-								}
-							} else
-								if (self->type == WND_TYPE_SPECIAL) /* 8 special */
-								{
-									if (self->popped_from != 0)
-									{
-										/* change height if there are too many items in the list */
-										i = xrdp_painter_text_height(painter,
-												"W");
-										i
-												= self->popped_from->string_list->count
-														* i;
-
-										if (i > self->height)
-										{
-											self->height = i;
-										}
-									}
-
-									painter->fg_color = self->wm->white;
-									xrdp_painter_fill_rect(painter, self, 0, 0,
-											self->width, self->height);
-
-									/* draw the list items */
-									if (self->popped_from != 0)
-									{
-										y = 0;
-
-										for (i = 0; i
-												< self->popped_from->string_list->count; i++)
-										{
-											p
-													= (char *) list_get_item(
-															self->popped_from->string_list,
-															i);
-											h = xrdp_painter_text_height(
-													painter, p);
-											self->item_height = h;
-
-											if (i == self->item_index)
-											{
-												painter->fg_color
-														= self->wm->blue;
-												xrdp_painter_fill_rect(
-														painter,
-														self,
-														0,
-														y,
-														self->width,
-														h);
-												painter->fg_color
-														= self->wm->white;
-											} else
-											{
-												painter->fg_color
-														= self->wm->black;
-											}
-
-											xrdp_painter_draw_text(painter,
-													self, 2, y, p);
-											y = y + h;
-										}
-									}
-								}
+				xrdp_painter_draw_text(painter, self, 2, y, p);
+				y = y + h;
+			}
+		}
+	}
 
 	/* notify */
 	if (self->notify != 0)
@@ -1505,12 +1487,13 @@ xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 	/* draw any child windows in the area */
 	for (i = 0; i < self->child_list->count; i++)
 	{
-		b = (xrdpBitmap *) list_get_item(self->child_list, i);
+		b = (xrdpBitmap*) list_get_item(self->child_list, i);
 
 		if (rect == 0)
 		{
 			xrdp_bitmap_invalidate(b, 0);
-		} else
+		}
+		else
 		{
 			MAKERECT(r1, b->left, b->top, b->width, b->height);
 
@@ -1524,13 +1507,13 @@ xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 
 	xrdp_painter_end_update(painter);
 	xrdp_painter_delete(painter);
+
 	return 0;
 }
 
 /*****************************************************************************/
 /* returns error */
-int 
-xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
+int xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 {
 	twchar c;
 	int n;
@@ -1578,7 +1561,8 @@ xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 					{
 						i = self->child_list->count - 1;
 					}
-				} else
+				}
+				else
 				{
 					i++;
 
@@ -1612,7 +1596,8 @@ xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 						{
 							i = self->child_list->count - 1;
 						}
-					} else
+					}
+					else
 					{
 						i++;
 
@@ -1624,228 +1609,215 @@ xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 
 					b = (xrdpBitmap *) list_get_item(self->child_list, i);
 				}
-			} else
-				if (scan_code == 28) /* enter */
+			}
+			else if (scan_code == 28) /* enter */
+			{
+				if (self->default_button != 0)
 				{
-					if (self->default_button != 0)
+					if (self->notify != 0)
 					{
-						if (self->notify != 0)
-						{
-							/* I think this should use def_proc */
-							self->notify(self, self->default_button, 1, 0, 0);
-							return 0;
-						}
+						/* I think this should use def_proc */
+						self->notify(self, self->default_button, 1, 0, 0);
+						return 0;
 					}
-				} else
-					if (scan_code == 1) /* esc */
+				}
+			}
+			else if (scan_code == 1) /* esc */
+			{
+				if (self->esc_button != 0)
+				{
+					if (self->notify != 0)
 					{
-						if (self->esc_button != 0)
-						{
-							if (self->notify != 0)
-							{
-								/* I think this should use def_proc */
-								self->notify(self, self->esc_button, 1, 0, 0);
-								return 0;
-							}
-						}
+						/* I think this should use def_proc */
+						self->notify(self, self->esc_button, 1, 0, 0);
+						return 0;
 					}
+				}
+			}
 		}
 
 		if (self->focused_control != 0)
 		{
 			xrdp_bitmap_def_proc(self->focused_control, msg, param1, param2);
 		}
-	} else
-		if (self->type == WND_TYPE_EDIT)
+	}
+	else if (self->type == WND_TYPE_EDIT)
+	{
+		if (msg == WM_XRDP_KEYDOWN)
 		{
-			if (msg == WM_XRDP_KEYDOWN)
-			{
-				scan_code = param1 % 128;
-				ext = param2 & 0x0100;
+			scan_code = param1 % 128;
+			ext = param2 & 0x0100;
 
-				/* left or up arrow */
-				if ((scan_code == 75 || scan_code == 72) && (ext || self->wm->num_lock == 0))
+			/* left or up arrow */
+			if ((scan_code == 75 || scan_code == 72) && (ext || self->wm->num_lock == 0))
+			{
+				if (self->edit_pos > 0)
+				{
+					self->edit_pos--;
+					xrdp_bitmap_invalidate(self, 0);
+				}
+			}
+			/* right or down arrow */
+			else if ((scan_code == 77 || scan_code == 80) && (ext || self->wm->num_lock == 0))
+			{
+				if (self->edit_pos < g_mbstowcs(0, self->caption1, 0))
+				{
+					self->edit_pos++;
+					xrdp_bitmap_invalidate(self, 0);
+				}
+			}
+			/* backspace */
+			else if (scan_code == 14)
+			{
+				n = g_mbstowcs(0, self->caption1, 0);
+
+				if (n > 0)
 				{
 					if (self->edit_pos > 0)
 					{
 						self->edit_pos--;
+						remove_char_at(self->caption1, 255, self->edit_pos);
 						xrdp_bitmap_invalidate(self, 0);
 					}
 				}
-				/* right or down arrow */
-				else
-					if ((scan_code == 77 || scan_code == 80) && (ext || self->wm->num_lock == 0))
-					{
-						if (self->edit_pos < g_mbstowcs(0, self->caption1, 0))
-						{
-							self->edit_pos++;
-							xrdp_bitmap_invalidate(self, 0);
-						}
-					}
-					/* backspace */
-					else
-						if (scan_code == 14)
-						{
-							n = g_mbstowcs(0, self->caption1, 0);
-
-							if (n > 0)
-							{
-								if (self->edit_pos > 0)
-								{
-									self->edit_pos--;
-									remove_char_at(self->caption1, 255,
-											self->edit_pos);
-									xrdp_bitmap_invalidate(self, 0);
-								}
-							}
-						}
-						/* delete */
-						else
-							if (scan_code == 83 && (ext || self->wm->num_lock == 0))
-							{
-								n = g_mbstowcs(0, self->caption1, 0);
-
-								if (n > 0)
-								{
-									if (self->edit_pos < n)
-									{
-										remove_char_at(self->caption1, 255,
-												self->edit_pos);
-										xrdp_bitmap_invalidate(self, 0);
-									}
-								}
-							}
-							/* end */
-							else
-								if (scan_code == 79 && (ext || self->wm->num_lock == 0))
-								{
-									n = g_mbstowcs(0, self->caption1, 0);
-
-									if (self->edit_pos < n)
-									{
-										self->edit_pos = n;
-										xrdp_bitmap_invalidate(self, 0);
-									}
-								}
-								/* home */
-								else
-									if ((scan_code == 71) && (ext
-											|| (self->wm->num_lock == 0)))
-									{
-										if (self->edit_pos > 0)
-										{
-											self->edit_pos = 0;
-											xrdp_bitmap_invalidate(self, 0);
-										}
-									} else
-									{
-										c = get_char_from_scan_code(param2,
-												scan_code,
-												self->wm->keys,
-												self->wm->caps_lock,
-												self->wm->num_lock,
-												self->wm->scroll_lock,
-												&(self->wm->keymap));
-										num_chars = g_mbstowcs(0,
-												self->caption1, 0);
-										num_bytes = g_strlen(self->caption1);
-
-										if ((c >= 32) && (num_chars < 127)
-												&& (num_bytes < 250))
-										{
-											add_char_at(self->caption1,
-													255, c,
-													self->edit_pos);
-											self->edit_pos++;
-											xrdp_bitmap_invalidate(self, 0);
-										}
-									}
 			}
-		} else
-			if (self->type == WND_TYPE_COMBO)
+			/* delete */
+			else if (scan_code == 83 && (ext || self->wm->num_lock == 0))
 			{
-				if (msg == WM_XRDP_KEYDOWN)
+				n = g_mbstowcs(0, self->caption1, 0);
+
+				if (n > 0)
 				{
-					scan_code = param1 % 128;
-					ext = param2 & 0x0100;
-
-					/* left or up arrow */
-					if (((scan_code == 75) || (scan_code == 72)) && (ext || (self->wm->num_lock
-							== 0)))
+					if (self->edit_pos < n)
 					{
-						if (self->item_index > 0)
-						{
-							self->item_index--;
-							xrdp_bitmap_invalidate(self, 0);
-
-							if (self->parent->notify != 0)
-							{
-								self->parent->notify(self->parent, self, CB_ITEMCHANGE,
-										0, 0);
-							}
-						}
+						remove_char_at(self->caption1, 255, self->edit_pos);
+						xrdp_bitmap_invalidate(self, 0);
 					}
-					/* right or down arrow */
-					else
-						if ((scan_code == 77 || scan_code == 80) && (ext || self->wm->num_lock
-								== 0))
-						{
-							if ((self->item_index + 1) < self->string_list->count)
-							{
-								self->item_index++;
-								xrdp_bitmap_invalidate(self, 0);
-
-								if (self->parent->notify != 0)
-								{
-									self->parent->notify(self->parent, self,
-											CB_ITEMCHANGE, 0, 0);
-								}
-							}
-						}
 				}
-			} else
-				if (self->type == WND_TYPE_SPECIAL)
+			}
+			/* end */
+			else if (scan_code == 79 && (ext || self->wm->num_lock == 0))
+			{
+				n = g_mbstowcs(0, self->caption1, 0);
+
+				if (self->edit_pos < n)
 				{
-					if (msg == WM_XRDP_MOUSEMOVE)
-					{
-						if (self->item_height > 0 && self->popped_from != 0)
-						{
-							i = param2;
-							i = i / self->item_height;
-
-							if (i != self->item_index && i
-									< self->popped_from->string_list->count)
-							{
-								self->item_index = i;
-								xrdp_bitmap_invalidate(self, 0);
-							}
-						}
-					} else
-						if (msg == WM_XRDP_LBUTTONUP)
-						{
-							if (self->popped_from != 0)
-							{
-								self->popped_from->item_index = self->item_index;
-								xrdp_bitmap_invalidate(self->popped_from, 0);
-
-								if (self->popped_from->parent->notify != 0)
-								{
-									self->popped_from->parent->notify(
-											self->popped_from->parent,
-											self->popped_from,
-											CB_ITEMCHANGE, 0, 0);
-								}
-							}
-						}
+					self->edit_pos = n;
+					xrdp_bitmap_invalidate(self, 0);
 				}
+			}
+			/* home */
+			else if ((scan_code == 71) && (ext || (self->wm->num_lock == 0)))
+			{
+				if (self->edit_pos > 0)
+				{
+					self->edit_pos = 0;
+					xrdp_bitmap_invalidate(self, 0);
+				}
+			}
+			else
+			{
+				c = get_char_from_scan_code(param2,
+						scan_code,
+						self->wm->keys,
+						self->wm->caps_lock,
+						self->wm->num_lock,
+						self->wm->scroll_lock,
+						&(self->wm->keymap));
+
+				num_chars = g_mbstowcs(0, self->caption1, 0);
+				num_bytes = g_strlen(self->caption1);
+
+				if ((c >= 32) && (num_chars < 127)
+						&& (num_bytes < 250))
+				{
+					add_char_at(self->caption1, 255, c, self->edit_pos);
+					self->edit_pos++;
+					xrdp_bitmap_invalidate(self, 0);
+				}
+			}
+		}
+	}
+	else if (self->type == WND_TYPE_COMBO)
+	{
+		if (msg == WM_XRDP_KEYDOWN)
+		{
+			scan_code = param1 % 128;
+			ext = param2 & 0x0100;
+
+			/* left or up arrow */
+			if (((scan_code == 75) || (scan_code == 72)) && (ext || (self->wm->num_lock
+					== 0)))
+			{
+				if (self->item_index > 0)
+				{
+					self->item_index--;
+					xrdp_bitmap_invalidate(self, 0);
+
+					if (self->parent->notify != 0)
+					{
+						self->parent->notify(self->parent, self, CB_ITEMCHANGE,
+								0, 0);
+					}
+				}
+			}
+			/* right or down arrow */
+			else if ((scan_code == 77 || scan_code == 80) && (ext || self->wm->num_lock == 0))
+			{
+				if ((self->item_index + 1) < self->string_list->count)
+				{
+					self->item_index++;
+					xrdp_bitmap_invalidate(self, 0);
+
+					if (self->parent->notify != 0)
+					{
+						self->parent->notify(self->parent, self, CB_ITEMCHANGE, 0, 0);
+					}
+				}
+			}
+		}
+	}
+	else if (self->type == WND_TYPE_SPECIAL)
+	{
+		if (msg == WM_XRDP_MOUSEMOVE)
+		{
+			if (self->item_height > 0 && self->popped_from != 0)
+			{
+				i = param2;
+				i = i / self->item_height;
+
+				if (i != self->item_index && i
+						< self->popped_from->string_list->count)
+				{
+					self->item_index = i;
+					xrdp_bitmap_invalidate(self, 0);
+				}
+			}
+		}
+		else if (msg == WM_XRDP_LBUTTONUP)
+		{
+			if (self->popped_from != 0)
+			{
+				self->popped_from->item_index = self->item_index;
+				xrdp_bitmap_invalidate(self->popped_from, 0);
+
+				if (self->popped_from->parent->notify != 0)
+				{
+					self->popped_from->parent->notify(
+							self->popped_from->parent,
+							self->popped_from,
+							CB_ITEMCHANGE, 0, 0);
+				}
+			}
+		}
+	}
 
 	return 0;
 }
 
 /*****************************************************************************/
 /* convert the controls coords to screen coords */
-int 
-xrdp_bitmap_to_screenx(xrdpBitmap *self, int x)
+int xrdp_bitmap_to_screenx(xrdpBitmap *self, int x)
 {
 	int i;
 
@@ -1862,8 +1834,7 @@ xrdp_bitmap_to_screenx(xrdpBitmap *self, int x)
 
 /*****************************************************************************/
 /* convert the controls coords to screen coords */
-int 
-xrdp_bitmap_to_screeny(xrdpBitmap *self, int y)
+int xrdp_bitmap_to_screeny(xrdpBitmap *self, int y)
 {
 	int i;
 
@@ -1880,8 +1851,7 @@ xrdp_bitmap_to_screeny(xrdpBitmap *self, int y)
 
 /*****************************************************************************/
 /* convert the screen coords to controls coords */
-int 
-xrdp_bitmap_from_screenx(xrdpBitmap *self, int x)
+int xrdp_bitmap_from_screenx(xrdpBitmap *self, int x)
 {
 	int i;
 
@@ -1898,8 +1868,7 @@ xrdp_bitmap_from_screenx(xrdpBitmap *self, int x)
 
 /*****************************************************************************/
 /* convert the screen coords to controls coords */
-int 
-xrdp_bitmap_from_screeny(xrdpBitmap *self, int y)
+int xrdp_bitmap_from_screeny(xrdpBitmap *self, int y)
 {
 	int i;
 

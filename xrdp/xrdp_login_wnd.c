@@ -83,20 +83,8 @@ logging on.");
 	return 0;
 }
 
-#if 0
 /*****************************************************************************/
-static int 
-xrdp_wm_popup_notify(xrdpBitmap *wnd,
-		xrdpBitmap *sender,
-		int msg, int param1, int param2)
-{
-	return 0;
-}
-#endif
-
-/*****************************************************************************/
-int 
-xrdp_wm_delete_all_childs(xrdpWm *self)
+int xrdp_wm_delete_all_childs(xrdpWm *self)
 {
 	int index;
 	xrdpBitmap *b;
@@ -114,8 +102,7 @@ xrdp_wm_delete_all_childs(xrdpWm *self)
 }
 
 /*****************************************************************************/
-static int 
-set_mod_data_item(xrdpModuleData *mod, char *name, char *value)
+static int set_mod_data_item(xrdpModuleData *mod, char *name, char *value)
 {
 	int index;
 
@@ -132,8 +119,7 @@ set_mod_data_item(xrdpModuleData *mod, char *name, char *value)
 }
 
 /*****************************************************************************/
-static int 
-xrdp_wm_help_clicked(xrdpBitmap *wnd)
+static int xrdp_wm_help_clicked(xrdpBitmap *wnd)
 {
 	xrdpBitmap *help;
 	xrdpBitmap *but;
@@ -169,8 +155,7 @@ xrdp_wm_help_clicked(xrdpBitmap *wnd)
 }
 
 /*****************************************************************************/
-static int 
-xrdp_wm_cancel_clicked(xrdpBitmap *wnd)
+static int xrdp_wm_cancel_clicked(xrdpBitmap *wnd)
 {
 	if (wnd != 0)
 	{
@@ -187,8 +172,7 @@ xrdp_wm_cancel_clicked(xrdpBitmap *wnd)
 }
 
 /*****************************************************************************/
-static int 
-xrdp_wm_ok_clicked(xrdpBitmap *wnd)
+static int xrdp_wm_ok_clicked(xrdpBitmap *wnd)
 {
 	xrdpBitmap *combo;
 	xrdpBitmap *label;
@@ -239,8 +223,7 @@ xrdp_wm_ok_clicked(xrdpBitmap *wnd)
 }
 
 /******************************************************************************/
-static int 
-xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
+static int xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 {
 	int count;
 	int index;
@@ -331,7 +314,6 @@ xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 				}
 
 #ifdef ACCESS
-
 				if ((g_strncmp(name, "password", 255) == 0) || (g_strncmp(name, "pampassword", 255)
 						== 0))
 #else
@@ -359,8 +341,7 @@ xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 
 /*****************************************************************************/
 /* all login screen events go here */
-static int 
-xrdp_wm_login_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
+static int xrdp_wm_login_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
 {
 	xrdpBitmap *b;
 	xrdpRect rect;
@@ -414,8 +395,7 @@ xrdp_wm_login_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, 
 }
 
 /******************************************************************************/
-static int 
-xrdp_wm_login_fill_in_combo(xrdpWm *self, xrdpBitmap *b)
+static int xrdp_wm_login_fill_in_combo(xrdpWm *self, xrdpBitmap *b)
 {
 	xrdpList *sections;
 	xrdpList *section_names;
@@ -454,7 +434,9 @@ xrdp_wm_login_fill_in_combo(xrdpWm *self, xrdpBitmap *b)
 		if ((g_strncmp(p, "globals", 255) == 0) || (g_strncmp(p, "channels", 255) == 0) || (g_strncmp(p,
 				"Logging", 255) == 0))
 		{
-		} else
+
+		}
+		else
 		{
 			g_strncpy(name, p, 255);
 			mod_data = (xrdpModuleData *) g_malloc(sizeof(xrdpModuleData), 1);
@@ -490,8 +472,7 @@ xrdp_wm_login_fill_in_combo(xrdpWm *self, xrdpBitmap *b)
 }
 
 /******************************************************************************/
-int 
-xrdp_login_wnd_create(xrdpWm *self)
+int xrdp_login_wnd_create(xrdpWm *self)
 {
 	xrdpBitmap *but;
 	xrdpBitmap *combo;
