@@ -5,7 +5,7 @@ project(x11rdp C)
 
 include(ExternalProject)
 
-set(X11RDP_PREFIX "/opt/X11rdp")
+set(X11RDP_PREFIX "/opt/X11rdp7")
 
 set(EXTERNAL_PROJECTS_BASE "${CMAKE_BINARY_DIR}/X11rdp")
 set_property(DIRECTORY PROPERTY "EP_BASE" ${EXTERNAL_PROJECTS_BASE})
