@@ -38,6 +38,12 @@ keyboard and mouse stuff
 
 #include "rdp.h"
 
+#include "events.h"
+#include "eventstr.h"
+
+#include "input.h"
+#include "inpututils.h"
+
 #if 1
 #define DEBUG_OUT_INPUT(arg)
 #else
@@ -734,86 +740,72 @@ rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr)
     ErrorF("rdpSpriteDeviceCursorCleanup:\n");
 }
 
-/* TODO: Port old code using EventListPtr to use InternalEvent array */
-
 /******************************************************************************/
-static void
-rdpEnqueueMotion(int x, int y)
+static void rdpEnqueueMotion(int x, int y)
 {
-#if 0
     int i;
-    int n;
+    int nevents;
+    double dx, dy;
     int valuators[2];
-    EventListPtr rdp_events;
-    xEvent *pev;
+    ValuatorMask mask;
+    InternalEvent* rdp_events;
 
-# if 0
+    dx = (double) x;
+    dy = (double) y;
+    nevents = GetMaximumEventsNum();
+    rdp_events = InitEventList(nevents);
 
-    if (x < 128)
-    {
-        rdpup_begin_update();
-        rdpup_send_area(0, 0, 1024, 768);
-        rdpup_end_update();
-    }
+    miPointerSetPosition(g_pointer, Absolute, &dx, &dy, &nevents, rdp_events);
 
-#endif
-    miPointerSetPosition(g_pointer, &x, &y);
-    valuators[0] = x;
-    valuators[1] = y;
+    valuators[0] = dx;
+    valuators[1] = dy;
+    valuator_mask_set_range(&mask, 0, 2, valuators);
 
-    GetEventList(&rdp_events);
-    n = GetPointerEvents(rdp_events, g_pointer, MotionNotify, 0,
-                         POINTER_ABSOLUTE | POINTER_SCREEN,
-                         0, 2, valuators);
+    nevents = GetPointerEvents(rdp_events, g_pointer, MotionNotify, 0,
+                         POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
 
-    for (i = 0; i < n; i++)
-    {
-        pev = (rdp_events + i)->event;
-        mieqEnqueue(g_pointer, (InternalEvent *)pev);
-    }
-#endif
+    for (i = 0; i < nevents; i++)
+        mieqProcessDeviceEvent(g_pointer, &rdp_events[i], 0);
+
+    FreeEventList(rdp_events, GetMaximumEventsNum());
 }
 
-/******************************************************************************/
-static void
-rdpEnqueueButton(int type, int buttons)
+static void rdpEnqueueButton(int type, int buttons)
 {
-#if 0
     int i;
-    int n;
-    EventListPtr rdp_events;
-    xEvent *pev;
+    int nevents;
+    ValuatorMask mask;
+    InternalEvent* rdp_events;
+    int valuators[MAX_VALUATORS] = { 0 };
 
-    i = GetEventList(&rdp_events);
-    n = GetPointerEvents(rdp_events, g_pointer, type, buttons, 0, 0, 0, 0);
+    nevents = GetMaximumEventsNum();
+    rdp_events = InitEventList(nevents);
 
-    for (i = 0; i < n; i++)
-    {
-        pev = (rdp_events + i)->event;
-        mieqEnqueue(g_pointer, (InternalEvent *)pev);
-    }
-#endif
+    valuator_mask_set_range(&mask, 0, 0, valuators);
+
+    nevents = GetPointerEvents(rdp_events, g_pointer, type, buttons, 0, &mask);
+
+    for (i = 0; i < nevents; i++)
+        mieqProcessDeviceEvent(g_pointer, &rdp_events[i], 0);
+
+    FreeEventList(rdp_events, GetMaximumEventsNum());
 }
 
-/******************************************************************************/
-static void
-rdpEnqueueKey(int type, int scancode)
+static void rdpEnqueueKey(int type, int scancode)
 {
-#if 0
     int i;
-    int n;
-    EventListPtr rdp_events;
-    xEvent *pev;
+    int nevents;
+    InternalEvent* rdp_events;
 
-    i = GetEventList(&rdp_events);
-    n = GetKeyboardEvents(rdp_events, g_keyboard, type, scancode);
+    nevents = GetMaximumEventsNum();
+    rdp_events = InitEventList(nevents);
 
-    for (i = 0; i < n; i++)
-    {
-        pev = (rdp_events + i)->event;
-        mieqEnqueue(g_keyboard, (InternalEvent *)pev);
-    }
-#endif
+    nevents = GetKeyboardEvents(rdp_events, g_keyboard, type, scancode, NULL);
+
+    for (i = 0; i < nevents; i++)
+        mieqProcessDeviceEvent(g_pointer, &rdp_events[i], 0);
+
+    FreeEventList(rdp_events, GetMaximumEventsNum());
 }
 
 /******************************************************************************/

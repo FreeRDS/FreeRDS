@@ -350,7 +350,6 @@ set_property(TARGET "sync-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/miext/
 link_directories(${LIBBASE})
 
 set(${MODULE_PREFIX}_INCLUDES
-	"../../include"
 	"../../cfb"
 	"../../mfb"
 	"../../mi"
@@ -365,6 +364,7 @@ set(${MODULE_PREFIX}_INCLUDES
 	"../xfree86/common"
 	"../xfree86/os-support"
 	"../../../common"
+	"${XSRCBASE}/include"
 	"${XSRCBASE}/Xext"
 	"${XSRCBASE}/composite"
 	"${XSRCBASE}/damageext"
