@@ -17,14 +17,13 @@ OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-*/
+ */
 
 #ifndef __RDPCOPYPLANE_H
 #define __RDPCOPYPLANE_H
 
-RegionPtr
-rdpCopyPlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
-             GCPtr pGC, int srcx, int srcy, int width, int height,
-             int dstx, int dsty, unsigned long bitPlane);
+RegionPtr rdpCopyPlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
+		GCPtr pGC, int srcx, int srcy, int width, int height,
+		int dstx, int dsty, unsigned long bitPlane);
 
 #endif

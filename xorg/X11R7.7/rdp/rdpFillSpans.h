@@ -17,13 +17,12 @@ OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-*/
+ */
 
 #ifndef __RDPFILLSPANS_H
 #define __RDPFILLSPANS_H
 
-void
-rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit,
-             DDXPointPtr pptInit, int* pwidthInit, int fSorted);
+void rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+		DDXPointPtr pptInit, int* pwidthInit, int fSorted);
 
 #endif

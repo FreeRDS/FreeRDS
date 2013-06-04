@@ -17,13 +17,12 @@ OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-*/
+ */
 
 #ifndef __RDPPUTIMAGE_H
 #define __RDPPUTIMAGE_H
 
-void
-rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y,
-            int w, int h, int leftPad, int format, char* pBits);
+void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y,
+		int w, int h, int leftPad, int format, char* pBits);
 
 #endif

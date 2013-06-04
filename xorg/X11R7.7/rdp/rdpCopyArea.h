@@ -17,13 +17,12 @@ OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-*/
+ */
 
 #ifndef __RDPCOPYAREA_H
 #define __RDPCOPYAREA_H
 
-RegionPtr
-rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
-            int srcx, int srcy, int w, int h, int dstx, int dsty);
+RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
+		int srcx, int srcy, int w, int h, int dstx, int dsty);
 
 #endif

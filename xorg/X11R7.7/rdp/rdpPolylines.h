@@ -17,13 +17,12 @@ OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-*/
+ */
 
 #ifndef __RDPPOLYLINES_H
 #define __RDPPOLYLINES_H
 
-void
-rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode,
-             int npt, DDXPointPtr pptInit);
+void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode,
+		int npt, DDXPointPtr pptInit);
 
 #endif
