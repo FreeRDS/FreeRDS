@@ -43,8 +43,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-static void
-rdpFillSpansOrg(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+static void rdpFillSpansOrg(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 		DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
 	rdpGCPtr priv;
@@ -56,8 +55,7 @@ rdpFillSpansOrg(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 }
 
 /******************************************************************************/
-void
-rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+void rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 		DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
 	RegionRec clip_reg;

@@ -46,8 +46,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-void
-rdpImageText16Org(DrawablePtr pDrawable, GCPtr pGC,
+void rdpImageText16Org(DrawablePtr pDrawable, GCPtr pGC,
 		int x, int y, int count, unsigned short *chars)
 {
 	rdpGCPtr priv;
@@ -59,8 +58,7 @@ rdpImageText16Org(DrawablePtr pDrawable, GCPtr pGC,
 }
 
 /******************************************************************************/
-void
-rdpImageText16(DrawablePtr pDrawable, GCPtr pGC,
+void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC,
 		int x, int y, int count, unsigned short *chars)
 {
 	RegionRec reg;

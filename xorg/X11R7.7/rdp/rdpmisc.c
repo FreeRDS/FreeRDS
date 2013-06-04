@@ -29,8 +29,7 @@ Bool noFontCacheExtension = 1;
 
 /******************************************************************************/
 /* print a time-stamped message to the log file (stderr). */
-void
-rdpLog(char *format, ...)
+void rdpLog(char *format, ...)
 {
 	va_list args;
 	char buf[256];
@@ -46,8 +45,7 @@ rdpLog(char *format, ...)
 }
 
 /******************************************************************************/
-int
-rdpBitsPerPixel(int depth)
+int rdpBitsPerPixel(int depth)
 {
 	if (depth == 1)
 	{
@@ -68,100 +66,86 @@ rdpBitsPerPixel(int depth)
 }
 
 /******************************************************************************/
-void
-rdpClientStateChange(CallbackListPtr *cbl, pointer myData, pointer clt)
+void rdpClientStateChange(CallbackListPtr *cbl, pointer myData, pointer clt)
 {
 	dispatchException &= ~DE_RESET; /* hack - force server not to reset */
 }
 
 /******************************************************************************/
-int
-DPMSSupported(void)
+int DPMSSupported(void)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int
-DPSMGet(int *level)
+int DPSMGet(int *level)
 {
 	return -1;
 }
 
 /******************************************************************************/
-void
-DPMSSet(int level)
+void DPMSSet(int level)
 {
 }
 
 /******************************************************************************/
-void
-AddOtherInputDevices(void)
+void AddOtherInputDevices(void)
 {
 }
 
 /******************************************************************************/
-void
-OpenInputDevice(DeviceIntPtr dev, ClientPtr client, int *status)
+void OpenInputDevice(DeviceIntPtr dev, ClientPtr client, int *status)
 {
 }
 
 /******************************************************************************/
-int
-SetDeviceValuators(register ClientPtr client, DeviceIntPtr dev,
+int SetDeviceValuators(register ClientPtr client, DeviceIntPtr dev,
 		int *valuators, int first_valuator, int num_valuators)
 {
 	return BadMatch;
 }
 
 /******************************************************************************/
-int
-SetDeviceMode(register ClientPtr client, DeviceIntPtr dev, int mode)
+int SetDeviceMode(register ClientPtr client, DeviceIntPtr dev, int mode)
 {
 	return BadMatch;
 }
 
 /******************************************************************************/
-int
-ChangeKeyboardDevice(DeviceIntPtr old_dev, DeviceIntPtr new_dev)
+int ChangeKeyboardDevice(DeviceIntPtr old_dev, DeviceIntPtr new_dev)
 {
 	return BadMatch;
 }
 
 /******************************************************************************/
-int
-ChangeDeviceControl(register ClientPtr client, DeviceIntPtr dev,
+int ChangeDeviceControl(register ClientPtr client, DeviceIntPtr dev,
 		void *control)
 {
 	return BadMatch;
 }
 
 /******************************************************************************/
-int
-ChangePointerDevice(DeviceIntPtr old_dev, DeviceIntPtr new_dev,
+int ChangePointerDevice(DeviceIntPtr old_dev, DeviceIntPtr new_dev,
 		unsigned char x, unsigned char y)
 {
 	return BadMatch;
 }
 
 /******************************************************************************/
-void
-CloseInputDevice(DeviceIntPtr d, ClientPtr client)
+void CloseInputDevice(DeviceIntPtr d, ClientPtr client)
 {
 }
 
 /* the g_ functions from os_calls.c */
 
 /*****************************************************************************/
-int
-g_tcp_recv(int sck, void *ptr, int len, int flags)
+int g_tcp_recv(int sck, void *ptr, int len, int flags)
 {
 	return recv(sck, ptr, len, flags);
 }
 
 /*****************************************************************************/
-void
-g_tcp_close(int sck)
+void g_tcp_close(int sck)
 {
 	if (sck == 0)
 	{
@@ -173,29 +157,25 @@ g_tcp_close(int sck)
 }
 
 /*****************************************************************************/
-int
-g_tcp_last_error_would_block(int sck)
+int g_tcp_last_error_would_block(int sck)
 {
 	return (errno == EWOULDBLOCK) || (errno == EINPROGRESS);
 }
 
 /*****************************************************************************/
-void
-g_sleep(int msecs)
+void g_sleep(int msecs)
 {
 	usleep(msecs * 1000);
 }
 
 /*****************************************************************************/
-int
-g_tcp_send(int sck, void *ptr, int len, int flags)
+int g_tcp_send(int sck, void *ptr, int len, int flags)
 {
 	return send(sck, ptr, len, flags);
 }
 
 /*****************************************************************************/
-void *
-g_malloc(int size, int zero)
+void* g_malloc(int size, int zero)
 {
 	char *rv;
 
@@ -219,8 +199,7 @@ g_malloc(int size, int zero)
 }
 
 /*****************************************************************************/
-void
-g_free(void *ptr)
+void g_free(void *ptr)
 {
 	if (ptr != 0)
 	{
@@ -235,8 +214,7 @@ g_free(void *ptr)
 }
 
 /*****************************************************************************/
-void
-g_sprintf(char *dest, char *format, ...)
+void g_sprintf(char *dest, char *format, ...)
 {
 	va_list ap;
 
@@ -246,8 +224,7 @@ g_sprintf(char *dest, char *format, ...)
 }
 
 /*****************************************************************************/
-int
-g_tcp_socket(void)
+int g_tcp_socket(void)
 {
 	int rv;
 	int i;
@@ -260,29 +237,25 @@ g_tcp_socket(void)
 }
 
 /*****************************************************************************/
-int
-g_tcp_local_socket_dgram(void)
+int g_tcp_local_socket_dgram(void)
 {
 	return socket(AF_UNIX, SOCK_DGRAM, 0);
 }
 
 /*****************************************************************************/
-int
-g_tcp_local_socket_stream(void)
+int g_tcp_local_socket_stream(void)
 {
 	return socket(AF_UNIX, SOCK_STREAM, 0);
 }
 
 /*****************************************************************************/
-void
-g_memcpy(void *d_ptr, const void *s_ptr, int size)
+void g_memcpy(void *d_ptr, const void *s_ptr, int size)
 {
 	memcpy(d_ptr, s_ptr, size);
 }
 
 /*****************************************************************************/
-int
-g_tcp_set_no_delay(int sck)
+int g_tcp_set_no_delay(int sck)
 {
 	int i;
 
@@ -292,8 +265,7 @@ g_tcp_set_no_delay(int sck)
 }
 
 /*****************************************************************************/
-int
-g_tcp_set_non_blocking(int sck)
+int g_tcp_set_non_blocking(int sck)
 {
 	unsigned long i;
 
@@ -304,8 +276,7 @@ g_tcp_set_non_blocking(int sck)
 }
 
 /*****************************************************************************/
-int
-g_tcp_accept(int sck)
+int g_tcp_accept(int sck)
 {
 	struct sockaddr_in s;
 	unsigned int i;
@@ -316,8 +287,7 @@ g_tcp_accept(int sck)
 }
 
 /*****************************************************************************/
-int
-g_tcp_select(int sck1, int sck2, int sck3)
+int g_tcp_select(int sck1, int sck2, int sck3)
 {
 	fd_set rfds;
 	struct timeval time;
@@ -385,8 +355,7 @@ g_tcp_select(int sck1, int sck2, int sck3)
 }
 
 /*****************************************************************************/
-int
-g_tcp_bind(int sck, char *port)
+int g_tcp_bind(int sck, char *port)
 {
 	struct sockaddr_in s;
 
@@ -398,8 +367,7 @@ g_tcp_bind(int sck, char *port)
 }
 
 /*****************************************************************************/
-int
-g_tcp_local_bind(int sck, char *port)
+int g_tcp_local_bind(int sck, char *port)
 {
 	struct sockaddr_un s;
 
@@ -410,24 +378,21 @@ g_tcp_local_bind(int sck, char *port)
 }
 
 /*****************************************************************************/
-int
-g_tcp_listen(int sck)
+int g_tcp_listen(int sck)
 {
 	return listen(sck, 2);
 }
 
 /*****************************************************************************/
 /* returns boolean */
-int
-g_create_dir(const char *dirname)
+int g_create_dir(const char *dirname)
 {
 	return mkdir(dirname, (mode_t) - 1) == 0;
 }
 
 /*****************************************************************************/
 /* returns boolean, non zero if the directory exists */
-int
-g_directory_exist(const char *dirname)
+int g_directory_exist(const char *dirname)
 {
 	struct stat st;
 
@@ -443,8 +408,7 @@ g_directory_exist(const char *dirname)
 
 /*****************************************************************************/
 /* returns error */
-int
-g_chmod_hex(const char *filename, int flags)
+int g_chmod_hex(const char *filename, int flags)
 {
 	int fl;
 
@@ -465,8 +429,7 @@ g_chmod_hex(const char *filename, int flags)
 }
 
 /* produce a hex dump */
-void
-hexdump(unsigned char *p, unsigned int len)
+void hexdump(unsigned char *p, unsigned int len)
 {
 	unsigned char *line;
 	int i;
@@ -512,53 +475,45 @@ hexdump(unsigned char *p, unsigned int len)
  */
 
 /*****************************************************************************/
-Bool
-XpClientIsBitmapClient(ClientPtr client)
+Bool XpClientIsBitmapClient(ClientPtr client)
 {
 	return 1;
 }
 
 /*****************************************************************************/
-Bool
-XpClientIsPrintClient(ClientPtr client, FontPathElementPtr fpe)
+Bool XpClientIsPrintClient(ClientPtr client, FontPathElementPtr fpe)
 {
 	return 0;
 }
 
 /*****************************************************************************/
-int
-PrinterOptions(int argc, char **argv, int i)
+int PrinterOptions(int argc, char **argv, int i)
 {
 	return i;
 }
 
 /*****************************************************************************/
-void
-PrinterInitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
+void PrinterInitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 {
 }
 
 /*****************************************************************************/
-void
-PrinterUseMsg(void)
+void PrinterUseMsg(void)
 {
 }
 
 /*****************************************************************************/
-void
-PrinterInitGlobals(void)
+void PrinterInitGlobals(void)
 {
 }
 
 /*****************************************************************************/
-void
-FontCacheExtensionInit(INITARGS)
+void FontCacheExtensionInit(INITARGS)
 {
 }
 
 /******************************************************************************/
-void
-RegionAroundSegs(RegionPtr reg, xSegment *segs, int nseg)
+void RegionAroundSegs(RegionPtr reg, xSegment *segs, int nseg)
 {
 	int index;
 	BoxRec box;

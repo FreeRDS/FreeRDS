@@ -89,8 +89,7 @@ GCOps g_rdpGCOps =
 /* return 0, draw nothing */
 /* return 1, draw with no clip */
 /* return 2, draw using clip */
-int
-rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
+int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 {
 	WindowPtr pWindow;
 	RegionPtr temp;
@@ -184,9 +183,7 @@ rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 }
 
 /******************************************************************************/
-void
-GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y,
-		int n, BoxPtr pbox)
+void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n, BoxPtr pbox)
 {
 	int maxAscent;
 	int maxDescent;
@@ -255,8 +252,7 @@ GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y,
 		}
 
 /******************************************************************************/
-static void
-rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
+static void rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
 {
 	rdpGCRec *priv;
 	int wrap;
@@ -300,8 +296,7 @@ rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
 }
 
 /******************************************************************************/
-static void
-rdpChangeGC(GCPtr pGC, unsigned long mask)
+static void rdpChangeGC(GCPtr pGC, unsigned long mask)
 {
 	rdpGCRec *priv;
 
@@ -312,8 +307,7 @@ rdpChangeGC(GCPtr pGC, unsigned long mask)
 }
 
 /******************************************************************************/
-static void
-rdpCopyGC(GCPtr src, unsigned long mask, GCPtr dst)
+static void rdpCopyGC(GCPtr src, unsigned long mask, GCPtr dst)
 {
 	rdpGCRec *priv;
 
@@ -324,8 +318,7 @@ rdpCopyGC(GCPtr src, unsigned long mask, GCPtr dst)
 }
 
 /******************************************************************************/
-static void
-rdpDestroyGC(GCPtr pGC)
+static void rdpDestroyGC(GCPtr pGC)
 {
 	rdpGCRec *priv;
 
@@ -336,8 +329,7 @@ rdpDestroyGC(GCPtr pGC)
 }
 
 /******************************************************************************/
-static void
-rdpChangeClip(GCPtr pGC, int type, pointer pValue, int nrects)
+static void rdpChangeClip(GCPtr pGC, int type, pointer pValue, int nrects)
 {
 	rdpGCRec *priv;
 
@@ -348,8 +340,7 @@ rdpChangeClip(GCPtr pGC, int type, pointer pValue, int nrects)
 }
 
 /******************************************************************************/
-static void
-rdpDestroyClip(GCPtr pGC)
+static void rdpDestroyClip(GCPtr pGC)
 {
 	rdpGCRec *priv;
 
@@ -360,8 +351,7 @@ rdpDestroyClip(GCPtr pGC)
 }
 
 /******************************************************************************/
-static void
-rdpCopyClip(GCPtr dst, GCPtr src)
+static void rdpCopyClip(GCPtr dst, GCPtr src)
 {
 	rdpGCRec *priv;
 
@@ -389,8 +379,7 @@ rdpCopyClip(GCPtr dst, GCPtr src)
 		}
 
 /******************************************************************************/
-Bool
-rdpCloseScreen(int i, ScreenPtr pScreen)
+Bool rdpCloseScreen(int i, ScreenPtr pScreen)
 {
 	LLOGLN(10, ("in rdpCloseScreen"));
 	pScreen->CloseScreen = g_rdpScreen.CloseScreen;
@@ -404,8 +393,7 @@ rdpCloseScreen(int i, ScreenPtr pScreen)
 }
 
 /******************************************************************************/
-int
-draw_item_add(rdpPixmapRec *priv, struct rdp_draw_item *di)
+int draw_item_add(rdpPixmapRec *priv, struct rdp_draw_item *di)
 {
 	if (priv->draw_item_tail == 0)
 	{
@@ -428,8 +416,7 @@ draw_item_add(rdpPixmapRec *priv, struct rdp_draw_item *di)
 }
 
 /******************************************************************************/
-int
-draw_item_remove(rdpPixmapRec *priv, struct rdp_draw_item *di)
+int draw_item_remove(rdpPixmapRec *priv, struct rdp_draw_item *di)
 {
 	if (di->prev != 0)
 	{
@@ -465,8 +452,7 @@ draw_item_remove(rdpPixmapRec *priv, struct rdp_draw_item *di)
 }
 
 /******************************************************************************/
-int
-draw_item_remove_all(rdpPixmapRec *priv)
+int draw_item_remove_all(rdpPixmapRec *priv)
 {
 	struct rdp_draw_item *di;
 
@@ -482,8 +468,7 @@ draw_item_remove_all(rdpPixmapRec *priv)
 }
 
 /******************************************************************************/
-int
-draw_item_pack(PixmapPtr pix, rdpPixmapRec *priv)
+int draw_item_pack(PixmapPtr pix, rdpPixmapRec *priv)
 {
 	struct rdp_draw_item *di;
 	struct rdp_draw_item *di_prev;
@@ -583,9 +568,7 @@ draw_item_pack(PixmapPtr pix, rdpPixmapRec *priv)
 }
 
 /******************************************************************************/
-int
-draw_item_add_img_region(rdpPixmapRec *priv, RegionPtr reg, int opcode,
-		int type)
+int draw_item_add_img_region(rdpPixmapRec *priv, RegionPtr reg, int opcode, int type)
 {
 	struct rdp_draw_item *di;
 
@@ -599,9 +582,7 @@ draw_item_add_img_region(rdpPixmapRec *priv, RegionPtr reg, int opcode,
 }
 
 /******************************************************************************/
-int
-draw_item_add_fill_region(rdpPixmapRec *priv, RegionPtr reg, int color,
-		int opcode)
+int draw_item_add_fill_region(rdpPixmapRec *priv, RegionPtr reg, int color, int opcode)
 {
 	struct rdp_draw_item *di;
 
@@ -616,10 +597,8 @@ draw_item_add_fill_region(rdpPixmapRec *priv, RegionPtr reg, int color,
 }
 
 /******************************************************************************/
-int
-draw_item_add_line_region(rdpPixmapRec *priv, RegionPtr reg, int color,
-		int opcode, int width, xSegment *segs, int nseg,
-		int is_segment)
+int draw_item_add_line_region(rdpPixmapRec *priv, RegionPtr reg, int color,
+		int opcode, int width, xSegment *segs, int nseg, int is_segment)
 {
 	struct rdp_draw_item *di;
 
@@ -646,10 +625,8 @@ draw_item_add_line_region(rdpPixmapRec *priv, RegionPtr reg, int color,
 }
 
 /******************************************************************************/
-int
-draw_item_add_srcblt_region(rdpPixmapRec *priv, RegionPtr reg,
-		int srcx, int srcy, int dstx, int dsty,
-		int cx, int cy)
+int draw_item_add_srcblt_region(rdpPixmapRec *priv, RegionPtr reg,
+		int srcx, int srcy, int dstx, int dsty, int cx, int cy)
 {
 	struct rdp_draw_item *di;
 
@@ -669,9 +646,7 @@ draw_item_add_srcblt_region(rdpPixmapRec *priv, RegionPtr reg,
 }
 
 /******************************************************************************/
-PixmapPtr
-rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth,
-		unsigned usage_hint)
+PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint)
 {
 	PixmapPtr rv;
 	rdpPixmapRec *priv;
@@ -696,8 +671,7 @@ rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth,
 extern struct rdpup_os_bitmap *g_os_bitmaps;
 
 /******************************************************************************/
-Bool
-rdpDestroyPixmap(PixmapPtr pPixmap)
+Bool rdpDestroyPixmap(PixmapPtr pPixmap)
 {
 	Bool rv;
 	ScreenPtr pScreen;
@@ -725,8 +699,7 @@ rdpDestroyPixmap(PixmapPtr pPixmap)
 }
 
 /*****************************************************************************/
-int
-xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
+int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
 {
 	RegionRec reg1;
 	BoxRec box;
@@ -783,8 +756,7 @@ xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
 }
 
 /******************************************************************************/
-Bool
-rdpCreateWindow(WindowPtr pWindow)
+Bool rdpCreateWindow(WindowPtr pWindow)
 {
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
@@ -806,8 +778,7 @@ rdpCreateWindow(WindowPtr pWindow)
 }
 
 /******************************************************************************/
-Bool
-rdpDestroyWindow(WindowPtr pWindow)
+Bool rdpDestroyWindow(WindowPtr pWindow)
 {
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
@@ -828,8 +799,7 @@ rdpDestroyWindow(WindowPtr pWindow)
 }
 
 /******************************************************************************/
-Bool
-rdpPositionWindow(WindowPtr pWindow, int x, int y)
+Bool rdpPositionWindow(WindowPtr pWindow, int x, int y)
 {
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
@@ -855,8 +825,7 @@ rdpPositionWindow(WindowPtr pWindow, int x, int y)
 }
 
 /******************************************************************************/
-Bool
-rdpRealizeWindow(WindowPtr pWindow)
+Bool rdpRealizeWindow(WindowPtr pWindow)
 {
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
@@ -892,8 +861,7 @@ rdpRealizeWindow(WindowPtr pWindow)
 }
 
 /******************************************************************************/
-Bool
-rdpUnrealizeWindow(WindowPtr pWindow)
+Bool rdpUnrealizeWindow(WindowPtr pWindow)
 {
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
@@ -920,8 +888,7 @@ rdpUnrealizeWindow(WindowPtr pWindow)
 }
 
 /******************************************************************************/
-Bool
-rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask)
+Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask)
 {
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
@@ -942,8 +909,7 @@ rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask)
 }
 
 /******************************************************************************/
-void
-rdpWindowExposures(WindowPtr pWindow, RegionPtr pRegion, RegionPtr pBSRegion)
+void rdpWindowExposures(WindowPtr pWindow, RegionPtr pRegion, RegionPtr pBSRegion)
 {
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
@@ -962,8 +928,7 @@ rdpWindowExposures(WindowPtr pWindow, RegionPtr pRegion, RegionPtr pBSRegion)
 }
 
 /******************************************************************************/
-Bool
-rdpCreateGC(GCPtr pGC)
+Bool rdpCreateGC(GCPtr pGC)
 {
 	rdpGCRec *priv;
 	Bool rv;
@@ -989,8 +954,7 @@ rdpCreateGC(GCPtr pGC)
 }
 
 /******************************************************************************/
-void
-rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
+void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 {
 	RegionRec reg;
 	RegionRec clip;
@@ -1068,8 +1032,7 @@ rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 }
 
 /******************************************************************************/
-void
-rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h,
+void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h,
 		Bool generateExposures)
 {
 	int j;
@@ -1124,13 +1087,12 @@ rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h,
 }
 
 /******************************************************************************/
-RegionPtr
-rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
+RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 {
-	RegionRec reg;
-	RegionPtr rv = NULL;
 	int j;
 	BoxRec box;
+	RegionRec reg;
+	RegionPtr rv = NULL;
 
 	LLOGLN(0, ("in rdpRestoreAreas"));
 	RegionInit(&reg, NullBox, 0);
@@ -1161,8 +1123,7 @@ rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 }
 
 /******************************************************************************/
-void
-rdpInstallColormap(ColormapPtr pmap)
+void rdpInstallColormap(ColormapPtr pmap)
 {
 	ColormapPtr oldpmap;
 
@@ -1185,8 +1146,7 @@ rdpInstallColormap(ColormapPtr pmap)
 }
 
 /******************************************************************************/
-void
-rdpUninstallColormap(ColormapPtr pmap)
+void rdpUninstallColormap(ColormapPtr pmap)
 {
 	ColormapPtr curpmap;
 
@@ -1204,30 +1164,26 @@ rdpUninstallColormap(ColormapPtr pmap)
 }
 
 /******************************************************************************/
-int
-rdpListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
+int rdpListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
 {
 	*pmaps = g_rdpInstalledColormap->mid;
 	return 1;
 }
 
 /******************************************************************************/
-void
-rdpStoreColors(ColormapPtr pmap, int ndef, xColorItem *pdefs)
+void rdpStoreColors(ColormapPtr pmap, int ndef, xColorItem *pdefs)
 {
 }
 
 /******************************************************************************/
-Bool
-rdpSaveScreen(ScreenPtr pScreen, int on)
+Bool rdpSaveScreen(ScreenPtr pScreen, int on)
 {
 	return 1;
 }
 
 /******************************************************************************/
 /* it looks like all the antialias draws go through here */
-void
-rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
+void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 		INT16 xSrc, INT16 ySrc, INT16 xMask, INT16 yMask, INT16 xDst,
 		INT16 yDst, CARD16 width, CARD16 height)
 {
@@ -1386,11 +1342,8 @@ rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 }
 
 /******************************************************************************/
-void
-rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst,
-		PictFormatPtr maskFormat,
-		INT16 xSrc, INT16 ySrc, int nlists, GlyphListPtr lists,
-		GlyphPtr *glyphs)
+void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFormat,
+		INT16 xSrc, INT16 ySrc, int nlists, GlyphListPtr lists, GlyphPtr *glyphs)
 {
 	PictureScreenPtr ps;
 	int index;

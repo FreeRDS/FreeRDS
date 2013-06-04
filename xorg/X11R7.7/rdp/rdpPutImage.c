@@ -46,8 +46,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-static void
-rdpPutImageOrg(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y,
+static void rdpPutImageOrg(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y,
 		int w, int h, int leftPad, int format, char *pBits)
 {
 	rdpGCPtr priv;
@@ -60,8 +59,7 @@ rdpPutImageOrg(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y,
 }
 
 /******************************************************************************/
-void
-rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y,
+void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y,
 		int w, int h, int leftPad, int format, char *pBits)
 {
 	RegionRec clip_reg;

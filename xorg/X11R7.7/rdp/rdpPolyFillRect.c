@@ -46,8 +46,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-static void
-rdpPolyFillRectOrg(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
+static void rdpPolyFillRectOrg(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
 		xRectangle *prectInit)
 {
 	rdpGCPtr priv;
@@ -59,8 +58,7 @@ rdpPolyFillRectOrg(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
 }
 
 /******************************************************************************/
-void
-rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
+void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
 		xRectangle *prectInit)
 {
 	int j;

@@ -39,8 +39,7 @@ extern WindowPtr g_invalidate_window; /* in rdpmain.c */
 static XID g_wid = 0;
 
 /******************************************************************************/
-Bool
-rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
+Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 {
 	int mmwidth;
 	int mmheight;
@@ -56,8 +55,7 @@ rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 }
 
 /******************************************************************************/
-Bool
-rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
+Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
 		RRScreenSizePtr pSize)
 {
 	ErrorF("rdpRRSetConfig:\n");
@@ -65,8 +63,7 @@ rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
 }
 
 /******************************************************************************/
-Bool
-rdpRRGetInfo(ScreenPtr pScreen, Rotation *pRotations)
+Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation *pRotations)
 {
 	int width;
 	int height;
@@ -83,8 +80,7 @@ rdpRRGetInfo(ScreenPtr pScreen, Rotation *pRotations)
 /******************************************************************************/
 /* for lack of a better way, a window is created that covers the area and
    when its deleted, it's invalidated */
-static int
-rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
+static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
 {
 	WindowPtr pWin;
 	int result;
@@ -122,8 +118,7 @@ rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
 }
 
 /******************************************************************************/
-Bool
-rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
+Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 		CARD32 mmWidth, CARD32 mmHeight)
 {
 	PixmapPtr screenPixmap;
@@ -184,8 +179,7 @@ rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 }
 
 /******************************************************************************/
-Bool
-rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
+Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		int x, int y, Rotation rotation, int numOutputs,
 		RROutputPtr *outputs)
 {
@@ -194,24 +188,21 @@ rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 }
 
 /******************************************************************************/
-Bool
-rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
+Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
 	ErrorF("rdpRRCrtcSetGamma:\n");
 	return TRUE;
 }
 
 /******************************************************************************/
-Bool
-rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
+Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
 	ErrorF("rdpRRCrtcGetGamma:\n");
 	return TRUE;
 }
 
 /******************************************************************************/
-Bool
-rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property,
+Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property,
 		RRPropertyValuePtr value)
 {
 	ErrorF("rdpRROutputSetProperty:\n");
@@ -219,8 +210,7 @@ rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property,
 }
 
 /******************************************************************************/
-Bool
-rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output,
+Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output,
 		RRModePtr mode)
 {
 	ErrorF("rdpRROutputValidateMode:\n");
@@ -228,23 +218,20 @@ rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output,
 }
 
 /******************************************************************************/
-void
-rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode)
+void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode)
 {
 	ErrorF("rdpRRModeDestroy:\n");
 }
 
 /******************************************************************************/
-Bool
-rdpRROutputGetProperty(ScreenPtr   pScreen, RROutputPtr output, Atom property)
+Bool rdpRROutputGetProperty(ScreenPtr   pScreen, RROutputPtr output, Atom property)
 {
 	ErrorF("rdpRROutputGetProperty:\n");
 	return TRUE;
 }
 
 /******************************************************************************/
-Bool
-rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
+Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 		BoxPtr trackingArea, INT16 *border)
 {
 	ErrorF("rdpRRGetPanning:\n");
@@ -277,8 +264,7 @@ rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 }
 
 /******************************************************************************/
-Bool
-rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
+Bool rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 		BoxPtr trackingArea, INT16 *border)
 {
 	ErrorF("rdpRRSetPanning:\n");

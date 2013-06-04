@@ -46,10 +46,8 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-void
-rdpFillPolygonOrg(DrawablePtr pDrawable, GCPtr pGC,
-		int shape, int mode, int count,
-		DDXPointPtr pPts)
+void rdpFillPolygonOrg(DrawablePtr pDrawable, GCPtr pGC,
+		int shape, int mode, int count, DDXPointPtr pPts)
 {
 	rdpGCPtr priv;
 	GCFuncs *oldFuncs;
@@ -60,10 +58,8 @@ rdpFillPolygonOrg(DrawablePtr pDrawable, GCPtr pGC,
 }
 
 /******************************************************************************/
-void
-rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC,
-		int shape, int mode, int count,
-		DDXPointPtr pPts)
+void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC,
+		int shape, int mode, int count, DDXPointPtr pPts)
 {
 	RegionRec clip_reg;
 	RegionRec box_reg;

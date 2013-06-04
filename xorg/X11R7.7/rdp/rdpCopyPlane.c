@@ -46,8 +46,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-RegionPtr
-rdpCopyPlaneOrg(DrawablePtr pSrc, DrawablePtr pDst,
+RegionPtr rdpCopyPlaneOrg(DrawablePtr pSrc, DrawablePtr pDst,
 		GCPtr pGC, int srcx, int srcy, int w, int h,
 		int dstx, int dsty, unsigned long bitPlane)
 {
@@ -63,8 +62,7 @@ rdpCopyPlaneOrg(DrawablePtr pSrc, DrawablePtr pDst,
 }
 
 /******************************************************************************/
-RegionPtr
-rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst,
+RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst,
 		GCPtr pGC, int srcx, int srcy, int w, int h,
 		int dstx, int dsty, unsigned long bitPlane)
 {

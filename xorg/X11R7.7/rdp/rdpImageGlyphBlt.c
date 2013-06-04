@@ -46,8 +46,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-void
-rdpImageGlyphBltOrg(DrawablePtr pDrawable, GCPtr pGC,
+void rdpImageGlyphBltOrg(DrawablePtr pDrawable, GCPtr pGC,
 		int x, int y, unsigned int nglyph,
 		CharInfoPtr *ppci, pointer pglyphBase)
 {
@@ -60,8 +59,7 @@ rdpImageGlyphBltOrg(DrawablePtr pDrawable, GCPtr pGC,
 }
 
 /******************************************************************************/
-void
-rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC,
+void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC,
 		int x, int y, unsigned int nglyph,
 		CharInfoPtr *ppci, pointer pglyphBase)
 {

@@ -46,8 +46,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-static void
-rdpPolylinesOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
+static void rdpPolylinesOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
 		int npt, DDXPointPtr pptInit)
 {
 	rdpGCPtr priv;
@@ -59,8 +58,7 @@ rdpPolylinesOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
 }
 
 /******************************************************************************/
-void
-rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode,
+void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode,
 		int npt, DDXPointPtr pptInit)
 {
 	RegionRec clip_reg;
@@ -146,145 +144,145 @@ for (i = 0; i < nseg; i++)
 
 #endif
 
-/* do original call */
-rdpPolylinesOrg(pDrawable, pGC, mode, npt, pptInit);
+	/* do original call */
+	rdpPolylinesOrg(pDrawable, pGC, mode, npt, pptInit);
 
-dirty_type = 0;
-pDirtyPriv = 0;
-post_process = 0;
-reset_surface = 0;
-got_id = 0;
+	dirty_type = 0;
+	pDirtyPriv = 0;
+	post_process = 0;
+	reset_surface = 0;
+	got_id = 0;
 
-if (pDrawable->type == DRAWABLE_PIXMAP)
-{
-	pDstPixmap = (PixmapPtr)pDrawable;
-	pDstPriv = GETPIXPRIV(pDstPixmap);
-
-	if (xrdp_is_os(pDstPixmap, pDstPriv))
+	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		post_process = 1;
+		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPriv = GETPIXPRIV(pDstPixmap);
 
-		if (g_do_dirty_os)
-		{
-			LLOGLN(10, ("rdpPolylines: gettig dirty"));
-			pDstPriv->is_dirty = 1;
-			pDirtyPriv = pDstPriv;
-			dirty_type = RDI_IMGLL;
-		}
-		else
-		{
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
-	}
-}
-else
-{
-	if (pDrawable->type == DRAWABLE_WINDOW)
-	{
-		pDstWnd = (WindowPtr)pDrawable;
-
-		if (pDstWnd->viewable)
+		if (xrdp_is_os(pDstPixmap, pDstPriv))
 		{
 			post_process = 1;
 
-			if (g_do_dirty_ons)
+			if (g_do_dirty_os)
 			{
-				LLOGLN(0, ("rdpPolylines: gettig dirty"));
-				g_screenPriv.is_dirty = 1;
-				pDirtyPriv = &g_screenPriv;
+				LLOGLN(10, ("rdpPolylines: gettig dirty"));
+				pDstPriv->is_dirty = 1;
+				pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLL;
 			}
 			else
 			{
-				rdpup_get_screen_image_rect(&id);
+				rdpup_switch_os_surface(pDstPriv->rdpindex);
+				reset_surface = 1;
+				rdpup_get_pixmap_image_rect(pDstPixmap, &id);
 				got_id = 1;
 			}
 		}
 	}
-}
-
-if (!post_process)
-{
-	g_free(segs);
-	return;
-}
-
-RegionInit(&clip_reg, NullBox, 0);
-cd = rdp_get_clip(&clip_reg, pDrawable, pGC);
-
-if (cd == 1)
-{
-	if (segs != 0)
+	else
 	{
-		if (dirty_type != 0)
+		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			RegionUninit(&clip_reg);
-			RegionInit(&clip_reg, NullBox, 0);
-			RegionAroundSegs(&clip_reg, segs, nseg);
-			draw_item_add_line_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
-					pGC->alu, pGC->lineWidth, segs, nseg, 0);
-		}
-		else if (got_id)
-		{
-			rdpup_begin_update();
-			rdpup_set_fgcolor(pGC->fgPixel);
-			rdpup_set_opcode(pGC->alu);
-			rdpup_set_pen(0, pGC->lineWidth);
+			pDstWnd = (WindowPtr)pDrawable;
 
-			for (i = 0; i < nseg; i++)
+			if (pDstWnd->viewable)
 			{
-				rdpup_draw_line(segs[i].x1, segs[i].y1, segs[i].x2, segs[i].y2);
-			}
+				post_process = 1;
 
-			rdpup_set_opcode(GXcopy);
-			rdpup_end_update();
+				if (g_do_dirty_ons)
+				{
+					LLOGLN(0, ("rdpPolylines: gettig dirty"));
+					g_screenPriv.is_dirty = 1;
+					pDirtyPriv = &g_screenPriv;
+					dirty_type = RDI_IMGLL;
+				}
+				else
+				{
+					rdpup_get_screen_image_rect(&id);
+					got_id = 1;
+				}
+			}
 		}
 	}
-}
-else if (cd == 2)
-{
-	num_clips = REGION_NUM_RECTS(&clip_reg);
 
-	if (nseg != 0 && num_clips > 0)
+	if (!post_process)
 	{
-		if (dirty_type != 0)
-		{
-			draw_item_add_line_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
-					pGC->alu, pGC->lineWidth, segs, nseg, 0);
-		}
-		else if (got_id)
-		{
-			rdpup_begin_update();
-			rdpup_set_fgcolor(pGC->fgPixel);
-			rdpup_set_opcode(pGC->alu);
-			rdpup_set_pen(0, pGC->lineWidth);
+		g_free(segs);
+		return;
+	}
 
-			for (j = num_clips - 1; j >= 0; j--)
+	RegionInit(&clip_reg, NullBox, 0);
+	cd = rdp_get_clip(&clip_reg, pDrawable, pGC);
+
+	if (cd == 1)
+	{
+		if (segs != 0)
+		{
+			if (dirty_type != 0)
 			{
-				box = REGION_RECTS(&clip_reg)[j];
-				rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				RegionUninit(&clip_reg);
+				RegionInit(&clip_reg, NullBox, 0);
+				RegionAroundSegs(&clip_reg, segs, nseg);
+				draw_item_add_line_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
+						pGC->alu, pGC->lineWidth, segs, nseg, 0);
+			}
+			else if (got_id)
+			{
+				rdpup_begin_update();
+				rdpup_set_fgcolor(pGC->fgPixel);
+				rdpup_set_opcode(pGC->alu);
+				rdpup_set_pen(0, pGC->lineWidth);
 
 				for (i = 0; i < nseg; i++)
 				{
 					rdpup_draw_line(segs[i].x1, segs[i].y1, segs[i].x2, segs[i].y2);
 				}
-			}
 
-			rdpup_reset_clip();
-			rdpup_set_opcode(GXcopy);
-			rdpup_end_update();
+				rdpup_set_opcode(GXcopy);
+				rdpup_end_update();
+			}
 		}
 	}
-}
+	else if (cd == 2)
+	{
+		num_clips = REGION_NUM_RECTS(&clip_reg);
 
-g_free(segs);
-RegionUninit(&clip_reg);
+		if (nseg != 0 && num_clips > 0)
+		{
+			if (dirty_type != 0)
+			{
+				draw_item_add_line_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
+						pGC->alu, pGC->lineWidth, segs, nseg, 0);
+			}
+			else if (got_id)
+			{
+				rdpup_begin_update();
+				rdpup_set_fgcolor(pGC->fgPixel);
+				rdpup_set_opcode(pGC->alu);
+				rdpup_set_pen(0, pGC->lineWidth);
 
-if (reset_surface)
-{
-	rdpup_switch_os_surface(-1);
-}
+				for (j = num_clips - 1; j >= 0; j--)
+				{
+					box = REGION_RECTS(&clip_reg)[j];
+					rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+					for (i = 0; i < nseg; i++)
+					{
+						rdpup_draw_line(segs[i].x1, segs[i].y1, segs[i].x2, segs[i].y2);
+					}
+				}
+
+				rdpup_reset_clip();
+				rdpup_set_opcode(GXcopy);
+				rdpup_end_update();
+			}
+		}
+	}
+
+	g_free(segs);
+	RegionUninit(&clip_reg);
+
+	if (reset_surface)
+	{
+		rdpup_switch_os_surface(-1);
+	}
 }

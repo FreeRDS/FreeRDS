@@ -46,10 +46,8 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-void
-rdpPolyGlyphBltOrg(DrawablePtr pDrawable, GCPtr pGC,
-		int x, int y, unsigned int nglyph,
-		CharInfoPtr *ppci, pointer pglyphBase)
+void rdpPolyGlyphBltOrg(DrawablePtr pDrawable, GCPtr pGC,
+		int x, int y, unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
 	rdpGCPtr priv;
 	GCFuncs *oldFuncs;
@@ -60,10 +58,8 @@ rdpPolyGlyphBltOrg(DrawablePtr pDrawable, GCPtr pGC,
 }
 
 /******************************************************************************/
-void
-rdpPolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC,
-		int x, int y, unsigned int nglyph,
-		CharInfoPtr *ppci, pointer pglyphBase)
+void rdpPolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC,
+		int x, int y, unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
 	RegionRec reg;
 	RegionRec reg1;

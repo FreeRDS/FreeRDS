@@ -46,8 +46,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-void
-rdpPolyPointOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
+void rdpPolyPointOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
 		int npt, DDXPointPtr in_pts)
 {
 	rdpGCPtr priv;
@@ -59,8 +58,7 @@ rdpPolyPointOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
 }
 
 /******************************************************************************/
-void
-rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
+void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
 		int npt, DDXPointPtr in_pts)
 {
 	RegionRec clip_reg;

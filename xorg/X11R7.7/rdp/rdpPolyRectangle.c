@@ -46,8 +46,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 extern int g_con_number; /* in rdpup.c */
 
 /******************************************************************************/
-static void
-rdpPolyRectangleOrg(DrawablePtr pDrawable, GCPtr pGC, int nrects,
+static void rdpPolyRectangleOrg(DrawablePtr pDrawable, GCPtr pGC, int nrects,
 		xRectangle *rects)
 {
 	rdpGCPtr priv;
@@ -60,8 +59,7 @@ rdpPolyRectangleOrg(DrawablePtr pDrawable, GCPtr pGC, int nrects,
 
 /******************************************************************************/
 /* tested with pGC->lineWidth = 0, 1, 2, 4 and opcodes 3 and 6 */
-void
-rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects,
+void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects,
 		xRectangle *rects)
 {
 	RegionRec clip_reg;
