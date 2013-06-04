@@ -24,11 +24,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 
 #include "xorg-server.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/param.h>
@@ -36,6 +38,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netdb.h>
+
 #include "X.h"
 #define NEED_EVENTS
 #include "Xproto.h"
@@ -44,9 +47,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "servermd.h"
 #define PSZ 8
 
-//#include "cfb.h"
-
-#include "mibstore.h"
 #include "colormapst.h"
 #include "gcstruct.h"
 #include "input.h"
@@ -144,8 +144,11 @@ struct _rdpScreenInfoRec
   ScreenWakeupHandlerProcPtr WakeupHandler;
   CompositeProcPtr Composite;
   GlyphsProcPtr Glyphs;
+
+  /* TODO: port old code using backing store procedures */
+
   /* Backing store procedures */
-  RestoreAreasProcPtr RestoreAreas;
+  //RestoreAreasProcPtr RestoreAreas;
 
   int rdp_width;
   int rdp_height;

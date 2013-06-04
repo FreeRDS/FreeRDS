@@ -203,6 +203,9 @@ set(${MODULE_PREFIX}_SRCS ${${MODULE_PREFIX}_SRCS}
 	../X11rdp/Source/xorg-server/mi/miinitext.c
 	../X11rdp/Source/xorg-server/fb/fbcmap_mi.c)
 
+add_library("composite-static" STATIC IMPORTED)
+set_property(TARGET "composite-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/composite/.libs/libcomposite.a")
+
 add_library("dbe-static" STATIC IMPORTED)
 set_property(TARGET "dbe-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/dbe/.libs/libdbe.a")
 
@@ -251,6 +254,9 @@ set_property(TARGET "damageext-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/d
 add_library("damage-static" STATIC IMPORTED)
 set_property(TARGET "damage-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/miext/damage/.libs/libdamage.a")
 
+add_library("sync-static" STATIC IMPORTED)
+set_property(TARGET "sync-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/miext/sync/.libs/libsync.a")
+
 link_directories(${LIBBASE})
 
 set(${MODULE_PREFIX}_INCLUDES
@@ -276,6 +282,7 @@ set(${MODULE_PREFIX}_INCLUDES
 	"${XSRCBASE}/Xi"
 	"${XSRCBASE}/mi"
 	"${XSRCBASE}/miext/damage"
+	"${XSRCBASE}/miext/sync"
 	"${XSRCBASE}/render"
 	"${XSRCBASE}/randr"
 	"${XSRCBASE}/fb")
@@ -291,7 +298,7 @@ set(${MODULE_PREFIX}_DEFINES
 	-DPART_NET -DDDXTIME -D_HAVE_XALLOC_DECLS -DDAMAGE -DXFIXES 
 	-DSMART_SCHEDULE -DSERVER_LOCK -DGLXEXT -DSHAPE -DRENDER -DRANDR 
 	-DBIGREQS -D_POSIX_SOURCE -D_BSD_SOURCE -DSCREENSAVER 
-	-DXCMISC -DXTEST -DXTRAP -DXV -DXSYNC -DMITMISC -DPANORAMIX 
+	-DXCMISC -DXTEST -DXTRAP -DXV -DXSYNC -DMITMISC -DPANORAMIX
 	-DDPMSExtension -DXvExtension -DXvMCExtension -DXResExtension 
 	-DMITSHM -DPIXPRIV -DNDEBUG -DDDXOSINIT -DXKB -DXINPUT")
 
@@ -304,8 +311,8 @@ set(${MODULE_PREFIX}_LIBS
 	freetype z m Xfont Xau Xdmcp pixman-1 rt dl crypto GL Xdamage)
 
 set(${MODULE_PREFIX}_STATIC_LIBS
-	dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
-	render-static xkb-static Xext-static Xi-static glx-static xfixes-static damageext-static damage-static)
+	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
+	render-static xkb-static Xext-static Xi-static glx-static xfixes-static damageext-static damage-static sync-static)
 
 merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 

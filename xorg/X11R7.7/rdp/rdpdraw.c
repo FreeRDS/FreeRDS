@@ -399,7 +399,7 @@ rdpCloseScreen(int i, ScreenPtr pScreen)
     //pScreen->PaintWindowBorder = g_rdpScreen.PaintWindowBorder;
     pScreen->CopyWindow = g_rdpScreen.CopyWindow;
     pScreen->ClearToBackground = g_rdpScreen.ClearToBackground;
-    pScreen->RestoreAreas = g_rdpScreen.RestoreAreas;
+    //pScreen->RestoreAreas = g_rdpScreen.RestoreAreas;
     return 1;
 }
 
@@ -1128,15 +1128,15 @@ RegionPtr
 rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 {
     RegionRec reg;
-    RegionPtr rv;
+    RegionPtr rv = NULL;
     int j;
     BoxRec box;
 
     LLOGLN(0, ("in rdpRestoreAreas"));
     RegionInit(&reg, NullBox, 0);
     RegionCopy(&reg, prgnExposed);
-    g_pScreen->RestoreAreas = g_rdpScreen.RestoreAreas;
-    rv = g_pScreen->RestoreAreas(pWin, prgnExposed);
+    //g_pScreen->RestoreAreas = g_rdpScreen.RestoreAreas;
+    //rv = g_pScreen->RestoreAreas(pWin, prgnExposed);
 
     if (g_do_dirty_ons)
     {
@@ -1156,7 +1156,7 @@ rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
     }
 
     RegionUninit(&reg);
-    g_pScreen->RestoreAreas = rdpRestoreAreas;
+    //g_pScreen->RestoreAreas = rdpRestoreAreas;
     return rv;
 }
 

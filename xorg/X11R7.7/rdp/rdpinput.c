@@ -734,10 +734,13 @@ rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr)
     ErrorF("rdpSpriteDeviceCursorCleanup:\n");
 }
 
+/* TODO: Port old code using EventListPtr to use InternalEvent array */
+
 /******************************************************************************/
 static void
 rdpEnqueueMotion(int x, int y)
 {
+#if 0
     int i;
     int n;
     int valuators[2];
@@ -768,12 +771,14 @@ rdpEnqueueMotion(int x, int y)
         pev = (rdp_events + i)->event;
         mieqEnqueue(g_pointer, (InternalEvent *)pev);
     }
+#endif
 }
 
 /******************************************************************************/
 static void
 rdpEnqueueButton(int type, int buttons)
 {
+#if 0
     int i;
     int n;
     EventListPtr rdp_events;
@@ -787,12 +792,14 @@ rdpEnqueueButton(int type, int buttons)
         pev = (rdp_events + i)->event;
         mieqEnqueue(g_pointer, (InternalEvent *)pev);
     }
+#endif
 }
 
 /******************************************************************************/
 static void
 rdpEnqueueKey(int type, int scancode)
 {
+#if 0
     int i;
     int n;
     EventListPtr rdp_events;
@@ -806,6 +813,7 @@ rdpEnqueueKey(int type, int scancode)
         pev = (rdp_events + i)->event;
         mieqEnqueue(g_keyboard, (InternalEvent *)pev);
     }
+#endif
 }
 
 /******************************************************************************/

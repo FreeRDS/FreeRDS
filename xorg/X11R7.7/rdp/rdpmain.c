@@ -163,7 +163,10 @@ set_bpp(int bpp)
     return rv;
 }
 
+/* TODO: port rdpWakeupHandler */
+
 /******************************************************************************/
+#if 0
 static void
 rdpWakeupHandler(int i, pointer blockData, unsigned long err,
                  pointer pReadmask)
@@ -172,6 +175,7 @@ rdpWakeupHandler(int i, pointer blockData, unsigned long err,
     g_pScreen->WakeupHandler(i, blockData, err, pReadmask);
     g_pScreen->WakeupHandler = rdpWakeupHandler;
 }
+#endif
 
 /******************************************************************************/
 static void
@@ -223,7 +227,7 @@ rdpDestroyColormap(ColormapPtr pColormap)
 /******************************************************************************/
 /* returns boolean, true if everything is ok */
 static Bool
-rdpScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
+rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 {
     int dpix;
     int dpiy;
@@ -325,7 +329,8 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
         return 0;
     }
 
-    miInitializeBackingStore(pScreen);
+    /* TODO: port miInitializeBackingStore */
+    //miInitializeBackingStore(pScreen);
 
     /* this is for rgb, not bgr, just doing rgb for now */
     vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
@@ -385,8 +390,8 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
     g_rdpScreen.ClearToBackground = pScreen->ClearToBackground;
 
     /* Backing store procedures */
-    g_rdpScreen.RestoreAreas = pScreen->RestoreAreas;
-    g_rdpScreen.WakeupHandler = pScreen->WakeupHandler;
+    //g_rdpScreen.RestoreAreas = pScreen->RestoreAreas;
+    //g_rdpScreen.WakeupHandler = pScreen->WakeupHandler;
 
     g_rdpScreen.CreateColormap = pScreen->CreateColormap;
     g_rdpScreen.DestroyColormap = pScreen->DestroyColormap;
@@ -402,9 +407,10 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 
     pScreen->blackPixel = g_rdpScreen.blackPixel;
     pScreen->whitePixel = g_rdpScreen.whitePixel;
+    
     /* Random screen procedures */
-    pScreen->CloseScreen = rdpCloseScreen;
-    pScreen->WakeupHandler = rdpWakeupHandler;
+    //pScreen->CloseScreen = rdpCloseScreen;
+    //pScreen->WakeupHandler = rdpWakeupHandler;
 
     if (ps)
     {
@@ -439,7 +445,7 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
     pScreen->ClearToBackground = rdpClearToBackground;
 
     /* Backing store procedures */
-    pScreen->RestoreAreas = rdpRestoreAreas;
+    //pScreen->RestoreAreas = rdpRestoreAreas;
 
 #if 0
     pScreen->CreateColormap = rdpCreateColormap;
@@ -691,7 +697,7 @@ InitInput(int argc, char **argv)
 
 /******************************************************************************/
 void
-ddxGiveUp(void)
+ddxGiveUp(enum ExitCode error)
 {
     char unixSocketName[128];
 
@@ -736,14 +742,14 @@ rfbRootPropertyChange(PropertyPtr pProp)
 
 /******************************************************************************/
 void
-AbortDDX(void)
+AbortDDX(enum ExitCode error)
 {
-    ddxGiveUp();
+    ddxGiveUp(error);
 }
 
 /******************************************************************************/
 void
-OsVendorFatalError(void)
+OsVendorFatalError(const char *f, va_list args)
 {
 }
 
