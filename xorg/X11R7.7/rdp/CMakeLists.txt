@@ -147,6 +147,96 @@ set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/../X11rdp/Source/xorg-server")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -fno-strength-reduce")
 
+include(FindPackageHandleStandardArgs)
+
+# Xfont
+
+find_path(XFONT_INCLUDE_DIR NAMES X11/fonts/fontconf.h)
+
+find_library(XFONT_LIBRARY NAMES Xfont
+	PATHS "${X11RDP_PREFIX}/lib"
+	NO_DEFAULT_PATH)
+
+find_package_handle_standard_args(xfont DEFAULT_MSG XFONT_LIBRARY XFONT_INCLUDE_DIR)
+
+if(XFONT_FOUND)
+	set(XFONT_LIBRARIES ${XFONT_LIBRARY})
+	set(XFONT_INCLUDE_DIRS ${XFONT_INCLUDE_DIR})
+endif()
+
+mark_as_advanced(XFONT_INCLUDE_DIR XFONT_LIBRARY)
+
+# Xau
+
+find_path(XAU_INCLUDE_DIR NAMES X11/Xauth.h)
+
+find_library(XAU_LIBRARY NAMES Xau
+	PATHS "${X11RDP_PREFIX}/lib"
+	NO_DEFAULT_PATH)
+
+find_package_handle_standard_args(xau DEFAULT_MSG XAU_LIBRARY XAU_INCLUDE_DIR)
+
+if(XAU_FOUND)
+	set(XAU_LIBRARIES ${XAU_LIBRARY})
+	set(XAU_INCLUDE_DIRS ${XAU_INCLUDE_DIR})
+endif()
+
+mark_as_advanced(XAU_INCLUDE_DIR XAU_LIBRARY)
+
+# Xdmcp
+
+find_path(XDMCP_INCLUDE_DIR NAMES X11/Xdmcp.h)
+
+find_library(XDMCP_LIBRARY NAMES Xdmcp
+	PATHS "${X11RDP_PREFIX}/lib"
+	NO_DEFAULT_PATH)
+
+find_package_handle_standard_args(xdmcp DEFAULT_MSG XDMCP_LIBRARY XDMCP_INCLUDE_DIR)
+
+if(XDMCP_FOUND)
+	set(XDMCP_LIBRARIES ${XDMCP_LIBRARY})
+	set(XDMCP_INCLUDE_DIRS ${XDMCP_INCLUDE_DIR})
+endif()
+
+mark_as_advanced(XDMCP_INCLUDE_DIR XDMCP_LIBRARY)
+
+# pixman
+
+find_path(PIXMAN_INCLUDE_DIR NAMES pixman-1/pixman.h)
+
+find_library(PIXMAN_LIBRARY NAMES pixman-1
+	PATHS "${X11RDP_PREFIX}/lib"
+	NO_DEFAULT_PATH)
+
+find_package_handle_standard_args(pixman-1 DEFAULT_MSG PIXMAN_LIBRARY PIXMAN_INCLUDE_DIR)
+
+if(PIXMAN-1_FOUND)
+	set(PIXMAN_LIBRARIES ${PIXMAN_LIBRARY})
+	set(PIXMAN_INCLUDE_DIRS ${PIXMAN_INCLUDE_DIR})
+endif()
+
+mark_as_advanced(PIXMAN_INCLUDE_DIR PIXMAN_LIBRARY)
+
+# GL
+
+find_path(GL_INCLUDE_DIR NAMES GL/gl.h)
+
+find_library(GL_LIBRARY NAMES GL
+	PATHS "${X11RDP_PREFIX}/lib"
+	NO_DEFAULT_PATH)
+
+find_package_handle_standard_args(GL DEFAULT_MSG GL_LIBRARY GL_INCLUDE_DIR)
+
+if(GL_FOUND)
+	set(GL_LIBRARIES ${GL_LIBRARY})
+	set(GL_INCLUDE_DIRS ${GL_INCLUDE_DIR})
+endif()
+
+mark_as_advanced(GL_INCLUDE_DIR GL_LIBRARY)
+
+include_directories(${XFONT_INCLUDE_DIRS} ${XAU_INCLUDE_DIRS} ${GL_INCLUDE_DIRS}
+	${XDMCP_INCLUDE_DIRS} ${XDAMAGE_INCLUDE_DIRS} ${PIXMAN_INCLUDE_DIRS})
+
 set(${MODULE_PREFIX}_SRCS
 	gcops.h
 	rdpCopyArea.c
@@ -307,8 +397,11 @@ add_definitions(${${MODULE_PREFIX}_DEFINES})
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS
-	freetype z m Xfont Xau Xdmcp pixman-1 rt dl crypto GL Xdamage)
+set(${MODULE_PREFIX}_LIBS z m freetype rt dl crypto)
+
+list(APPEND ${MODULE_PREFIX}_LIBS
+	${XFONT_LIBRARIES} ${XAU_LIBRARIES} ${XDMCP_LIBRARIES}
+	${XDAMAGE_LIBRARIES} ${PIXMAN_LIBRARIES} ${GL_LIBRARIES})
 
 set(${MODULE_PREFIX}_STATIC_LIBS
 	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
@@ -319,3 +412,6 @@ merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+# TODO: fix install rpath
+# temporary workaround: cp X11rdp /opt/X11rdp/bin/X11rdp
+
