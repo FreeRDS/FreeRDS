@@ -46,7 +46,7 @@ Xserver drawing ops and funcs
 #include "rdpPolyGlyphBlt.h"
 #include "rdpPushPixels.h"
 
-#define LOG_LEVEL 1
+#define LOG_LEVEL 100
 #define LLOG(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; } } while (0)
 #define LLOGLN(_level, _args) \
@@ -1341,12 +1341,83 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	}
 }
 
+void GlyphExtents(int nlist, GlyphListPtr list, GlyphPtr* glyphs, BoxPtr extents)
+{
+	int x1;
+	int x2;
+	int y1;
+	int y2;
+	int n;
+	int x;
+	int y;
+	GlyphPtr glyph;
+
+	x = 0;
+	y = 0;
+	extents->x1 = MAXSHORT;
+	extents->x2 = MINSHORT;
+	extents->y1 = MAXSHORT;
+	extents->y2 = MINSHORT;
+
+	while (nlist--)
+	{
+		x += list->xOff;
+		y += list->yOff;
+		n = list->len;
+		list++;
+
+		while (n--)
+		{
+			glyph = *glyphs++;
+			x1 = x - glyph->info.x;
+			if (x1 < MINSHORT)
+			{
+				x1 = MINSHORT;
+			}
+			y1 = y - glyph->info.y;
+			if (y1 < MINSHORT)
+			{
+				y1 = MINSHORT;
+			}
+			x2 = x1 + glyph->info.width;
+			if (x2 > MAXSHORT)
+			{
+				x2 = MAXSHORT;
+			}
+			y2 = y1 + glyph->info.height;
+			if (y2 > MAXSHORT)
+			{
+				y2 = MAXSHORT;
+			}
+			if (x1 < extents->x1)
+			{
+				extents->x1 = x1;
+			}
+			if (x2 > extents->x2)
+			{
+				extents->x2 = x2;
+			}
+			if (y1 < extents->y1)
+			{
+				extents->y1 = y1;
+			}
+			if (y2 > extents->y2)
+			{
+				extents->y2 = y2;
+			}
+			x += glyph->info.xOff;
+			y += glyph->info.yOff;
+		}
+	}
+}
+
 /******************************************************************************/
 void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFormat,
 		INT16 xSrc, INT16 ySrc, int nlists, GlyphListPtr lists, GlyphPtr *glyphs)
 {
-	PictureScreenPtr ps;
 	int index;
+	BoxRec extents;
+	PictureScreenPtr ps;
 
 	LLOGLN(10, ("rdpGlyphs:"));
 	LLOGLN(10, ("rdpGlyphs: nlists %d len %d", nlists, lists->len));
@@ -1362,10 +1433,12 @@ void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFor
 
 	ps = GetPictureScreen(g_pScreen);
 	ps->Glyphs = g_rdpScreen.Glyphs;
-	ps->Glyphs(op, pSrc, pDst, maskFormat, xSrc, ySrc,
-			nlists, lists, glyphs);
+	ps->Glyphs(op, pSrc, pDst, maskFormat, xSrc, ySrc, nlists, lists, glyphs);
 	ps->Glyphs = rdpGlyphs;
 	rdpup_set_hints(0, 1);
 	g_doing_font = 0;
+
+	GlyphExtents(nlists, lists, glyphs, &extents);
+
 	LLOGLN(10, ("rdpGlyphs: out"));
 }
