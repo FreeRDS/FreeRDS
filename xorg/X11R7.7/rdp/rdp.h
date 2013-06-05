@@ -71,8 +71,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xrdp_client_info.h"
 #include "xrdp_constants.h"
 
-//#include "colormapst.h"
-
 /* test to see if this is xorg source or xfree86 */
 #ifdef XORGSERVER
 #  define RDP_IS_XORG
