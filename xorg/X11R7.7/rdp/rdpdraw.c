@@ -105,10 +105,12 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 			case CT_NONE:
 				rv = 1;
 				break;
+
 			case CT_REGION:
 				rv = 2;
 				RegionCopy(pRegion, pGC->clientClip);
 				break;
+
 			default:
 				rdpLog("unimp clip type %d\n", pGC->clientClipType);
 				break;
@@ -164,7 +166,7 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 				}
 
 				if (rv == 2) /* check if the clip is the entire screen */
-						{
+				{
 					box.x1 = 0;
 					box.y1 = 0;
 					box.x2 = g_rdpScreen.width;
@@ -174,7 +176,7 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 					{
 						rv = 1;
 					}
-						}
+				}
 			}
 		}
 	}
@@ -207,8 +209,7 @@ void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n
 		maxDescent = FONTMAXBOUNDS(font, descent);
 	}
 
-	if (FONTMAXBOUNDS(font, rightSideBearing) >
-	FONTMAXBOUNDS(font, characterWidth))
+	if (FONTMAXBOUNDS(font, rightSideBearing) > FONTMAXBOUNDS(font, characterWidth))
 	{
 		maxCharWidth = FONTMAXBOUNDS(font, rightSideBearing);
 	}
@@ -653,18 +654,21 @@ PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, u
 	int org_width;
 
 	org_width = width;
+
 	/* width must be a multiple of 4 in rdp */
 	width = (width + 3) & ~3;
-	LLOGLN(10, ("rdpCreatePixmap: width %d org_width %d depth %d screen depth %d",
-			width, org_width, depth, g_rdpScreen.depth));
+
+	LLOGLN(10, ("rdpCreatePixmap: width %d org_width %d height %d depth %d screen depth %d usage_hint %d",
+			width, org_width, height, depth, g_rdpScreen.depth, usage_hint));
 	pScreen->CreatePixmap = g_rdpScreen.CreatePixmap;
 	rv = pScreen->CreatePixmap(pScreen, width, height, depth, usage_hint);
 	priv = GETPIXPRIV(rv);
 	priv->rdpindex = -1;
 	priv->con_number = g_con_number;
 	priv->kind_width = width;
-	pScreen->ModifyPixmapHeader(rv, org_width, 0, 0, 0, 0, 0);
+	pScreen->ModifyPixmapHeader(rv, org_width, height, depth, 0, 0, 0);
 	pScreen->CreatePixmap = rdpCreatePixmap;
+
 	return rv;
 }
 
@@ -780,9 +784,9 @@ Bool rdpCreateWindow(WindowPtr pWindow)
 /******************************************************************************/
 Bool rdpDestroyWindow(WindowPtr pWindow)
 {
+	Bool rv;
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
-	Bool rv;
 
 	LLOGLN(10, ("rdpDestroyWindow:"));
 	priv = GETWINPRIV(pWindow);
@@ -801,9 +805,9 @@ Bool rdpDestroyWindow(WindowPtr pWindow)
 /******************************************************************************/
 Bool rdpPositionWindow(WindowPtr pWindow, int x, int y)
 {
+	Bool rv;
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
-	Bool rv;
 
 	LLOGLN(10, ("rdpPositionWindow:"));
 	priv = GETWINPRIV(pWindow);
@@ -827,9 +831,9 @@ Bool rdpPositionWindow(WindowPtr pWindow, int x, int y)
 /******************************************************************************/
 Bool rdpRealizeWindow(WindowPtr pWindow)
 {
+	Bool rv;
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
-	Bool rv;
 
 	LLOGLN(10, ("rdpRealizeWindow:"));
 	priv = GETWINPRIV(pWindow);
@@ -863,9 +867,9 @@ Bool rdpRealizeWindow(WindowPtr pWindow)
 /******************************************************************************/
 Bool rdpUnrealizeWindow(WindowPtr pWindow)
 {
+	Bool rv;
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
-	Bool rv;
 
 	LLOGLN(10, ("rdpUnrealizeWindow:"));
 	priv = GETWINPRIV(pWindow);
@@ -890,12 +894,12 @@ Bool rdpUnrealizeWindow(WindowPtr pWindow)
 /******************************************************************************/
 Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask)
 {
-	ScreenPtr pScreen;
-	rdpWindowRec *priv;
 	Bool rv;
+	ScreenPtr pScreen;
+	//rdpWindowRec *priv;
 
 	LLOGLN(10, ("rdpChangeWindowAttributes:"));
-	priv = GETWINPRIV(pWindow);
+	//priv = GETWINPRIV(pWindow);
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->ChangeWindowAttributes = g_rdpScreen.ChangeWindowAttributes;
 	rv = pScreen->ChangeWindowAttributes(pWindow, mask);
@@ -903,6 +907,7 @@ Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask)
 
 	if (g_use_rail)
 	{
+
 	}
 
 	return rv;
@@ -912,16 +917,17 @@ Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask)
 void rdpWindowExposures(WindowPtr pWindow, RegionPtr pRegion, RegionPtr pBSRegion)
 {
 	ScreenPtr pScreen;
-	rdpWindowRec *priv;
+	//rdpWindowRec *priv;
 
 	LLOGLN(10, ("rdpWindowExposures:"));
-	priv = GETWINPRIV(pWindow);
+	//priv = GETWINPRIV(pWindow);
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->WindowExposures = g_rdpScreen.WindowExposures;
 	pScreen->WindowExposures(pWindow, pRegion, pBSRegion);
 
 	if (g_use_rail)
 	{
+
 	}
 
 	pScreen->WindowExposures = rdpWindowExposures;
@@ -989,8 +995,7 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 		num_reg_rects = REGION_NUM_RECTS(&reg);
 
 		/* should maybe sort the rects instead of checking dy < 0 */
-		/* If we can depend on the rects going from top to bottom, left
-           to right we are ok */
+		/* If we can depend on the rects going from top to bottom, left to right we are ok */
 		if (dy < 0 || (dy == 0 && dx < 0))
 		{
 			for (j = 0; j < num_clip_rects; j++)
@@ -1207,8 +1212,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	LLOGLN(10, ("rdpComposite:"));
 	ps = GetPictureScreen(g_pScreen);
 	ps->Composite = g_rdpScreen.Composite;
-	ps->Composite(op, pSrc, pMask, pDst, xSrc, ySrc,
-			xMask, yMask, xDst, yDst, width, height);
+	ps->Composite(op, pSrc, pMask, pDst, xSrc, ySrc, xMask, yMask, xDst, yDst, width, height);
 	ps->Composite = rdpComposite;
 
 	p = pDst->pDrawable;
@@ -1230,7 +1234,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 
 			if (g_do_dirty_os)
 			{
-				LLOGLN(10, ("rdpComposite: gettig dirty"));
+				LLOGLN(10, ("rdpComposite: getting dirty"));
 				pDstPriv->is_dirty = 1;
 				dirty_type = g_doing_font ? RDI_IMGLL : RDI_IMGLY;
 				pDirtyPriv = pDstPriv;
@@ -1416,7 +1420,7 @@ void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFor
 		INT16 xSrc, INT16 ySrc, int nlists, GlyphListPtr lists, GlyphPtr *glyphs)
 {
 	int index;
-	BoxRec extents;
+	BoxRec box;
 	PictureScreenPtr ps;
 
 	LLOGLN(10, ("rdpGlyphs:"));
@@ -1438,7 +1442,11 @@ void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFor
 	rdpup_set_hints(0, 1);
 	g_doing_font = 0;
 
-	GlyphExtents(nlists, lists, glyphs, &extents);
+	GlyphExtents(nlists, lists, glyphs, &box);
+
+	rdpup_begin_update();
+	rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+	rdpup_end_update();
 
 	LLOGLN(10, ("rdpGlyphs: out"));
 }

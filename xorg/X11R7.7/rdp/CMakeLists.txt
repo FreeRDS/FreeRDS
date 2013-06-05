@@ -147,6 +147,10 @@ set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/../X11rdp/Source/xorg-server")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -fno-strength-reduce")
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+
+find_package(Threads REQUIRED)
+
 include(FindPackageHandleStandardArgs)
 
 # Xfont
@@ -397,7 +401,7 @@ add_definitions(${${MODULE_PREFIX}_DEFINES})
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS z m freetype rt dl crypto)
+set(${MODULE_PREFIX}_LIBS z m freetype rt crypto dl ${CMAKE_THREAD_LIBS_INIT})
 
 list(APPEND ${MODULE_PREFIX}_LIBS
 	${XFONT_LIBRARIES} ${XAU_LIBRARIES} ${XDMCP_LIBRARIES}
@@ -412,6 +416,6 @@ merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 # TODO: fix install rpath
 # temporary workaround: cp X11rdp /opt/X11rdp/bin/X11rdp
-

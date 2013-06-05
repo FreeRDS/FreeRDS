@@ -67,7 +67,7 @@ char g_uds_cont[256] = ""; /* control */
 /* set all these at once, use function set_bpp */
 int g_bpp = 16;
 int g_Bpp = 2;
-int g_Bpp_mask = 0xffff;
+int g_Bpp_mask = 0xFFFF;
 static int g_firstTime = 1;
 static int g_redBits = 5;
 static int g_greenBits = 6;
@@ -129,7 +129,7 @@ static int set_bpp(int bpp)
 	else if (g_bpp == 15)
 	{
 		g_Bpp = 2;
-		g_Bpp_mask = 0x7fff;
+		g_Bpp_mask = 0x7FFF;
 		g_redBits = 5;
 		g_greenBits = 5;
 		g_blueBits = 5;
@@ -137,7 +137,7 @@ static int set_bpp(int bpp)
 	else if (g_bpp == 16)
 	{
 		g_Bpp = 2;
-		g_Bpp_mask = 0xffff;
+		g_Bpp_mask = 0xFFFF;
 		g_redBits = 5;
 		g_greenBits = 6;
 		g_blueBits = 5;
@@ -145,7 +145,7 @@ static int set_bpp(int bpp)
 	else if (g_bpp == 24)
 	{
 		g_Bpp = 4;
-		g_Bpp_mask = 0xffffff;
+		g_Bpp_mask = 0xFFFFFF;
 		g_redBits = 8;
 		g_greenBits = 8;
 		g_blueBits = 8;
@@ -153,7 +153,7 @@ static int set_bpp(int bpp)
 	else if (g_bpp == 32)
 	{
 		g_Bpp = 4;
-		g_Bpp_mask = 0xffffff;
+		g_Bpp_mask = 0xFFFFFF;
 		g_redBits = 8;
 		g_greenBits = 8;
 		g_blueBits = 8;
@@ -245,6 +245,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
 	g_rdpScreen.bitsPerPixel = rdpBitsPerPixel(g_rdpScreen.depth);
+
 	ErrorF("\n");
 	ErrorF("X11rdp, an X server for xrdp\n");
 	ErrorF("Version %s\n", X11RDPVER);
@@ -263,8 +264,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	if (g_rdpScreen.pfbMemory == 0)
 	{
-		g_rdpScreen.sizeInBytes =
-				(g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height);
+		g_rdpScreen.sizeInBytes = (g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height);
 		ErrorF("buffer size %d\n", g_rdpScreen.sizeInBytes);
 		g_rdpScreen.pfbMemory = (char *)g_malloc(2048 * 2048 * 4, 1);
 	}
@@ -299,16 +299,19 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 					g_rdpScreen.width, g_rdpScreen.height,
 					dpix, dpiy, g_rdpScreen.paddedWidthInBytes, 8);
 			break;
+
 		case 16:
 			ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
 					g_rdpScreen.width, g_rdpScreen.height,
 					dpix, dpiy, g_rdpScreen.paddedWidthInBytes / 2, 16);
 			break;
+
 		case 32:
 			ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
 					g_rdpScreen.width, g_rdpScreen.height,
 					dpix, dpiy, g_rdpScreen.paddedWidthInBytes / 4, 32);
 			break;
+
 		default:
 			ErrorF("rdpScreenInit: error\n");
 			return 0;

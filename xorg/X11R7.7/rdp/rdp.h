@@ -19,11 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
 
-#if defined(__arm__) && !defined(__arm32__)
-#define __arm32__
-#endif
-
-#include "xorg-server.h"
+#include "xorg-config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -70,6 +66,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "exevents.h"
 #include "xserver-properties.h"
 #include "xkbsrv.h"
+
 /* in xrdp/common */
 #include "xrdp_client_info.h"
 #include "xrdp_constants.h"
@@ -90,7 +87,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #  endif
 #endif
 
-#define X11RDPVER "0.7.0"
+#define X11RDPVER "0.7.7"
 
 #define PixelDPI 100
 #define PixelToMM(_size) (((_size) * 254 + (PixelDPI) * 5) / ((PixelDPI) * 10))
@@ -388,8 +385,7 @@ int rdpup_set_fgcolor(int fgcolor);
 int rdpup_set_bgcolor(int bgcolor);
 int rdpup_set_opcode(int opcode);
 int rdpup_paint_rect(short x, short y, int cx, int cy,
-		char* bmpdata, int width, int height,
-		short srcx, short srcy);
+		char* bmpdata, int width, int height, short srcx, short srcy);
 int rdpup_set_pen(int style, int width);
 int rdpup_draw_line(short x1, short y1, short x2, short y2);
 void rdpup_send_area(struct image_data* id, int x, int y, int w, int h);
@@ -399,8 +395,7 @@ int rdpup_create_os_surface(int rdpindexd, int width, int height);
 int rdpup_switch_os_surface(int rdpindex);
 int rdpup_delete_os_surface(int rdpindex);
 
-void rdpup_paint_rect_os(int x, int y, int cx, int cy,
-		int rdpindex, int srcx, int srcy);
+void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy);
 void rdpup_set_hints(int hints, int mask);
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);
 void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec* priv);

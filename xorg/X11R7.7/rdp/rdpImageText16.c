@@ -58,8 +58,7 @@ void rdpImageText16Org(DrawablePtr pDrawable, GCPtr pGC,
 }
 
 /******************************************************************************/
-void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC,
-		int x, int y, int count, unsigned short *chars)
+void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, unsigned short *chars)
 {
 	RegionRec reg;
 	RegionRec reg1;
