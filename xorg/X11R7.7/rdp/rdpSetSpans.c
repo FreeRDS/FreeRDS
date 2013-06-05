@@ -69,7 +69,7 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
+	//rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(0, ("rdpSetSpans: todo"));
 
@@ -77,7 +77,7 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	rdpSetSpansOrg(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 
 	dirty_type = 0;
-	pDirtyPriv = 0;
+	//pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;
@@ -95,7 +95,7 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 			{
 				LLOGLN(10, ("rdpSetSpans: gettig dirty"));
 				pDstPriv->is_dirty = 1;
-				pDirtyPriv = pDstPriv;
+				//pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLY;
 			}
 			else

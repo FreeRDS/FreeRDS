@@ -786,10 +786,10 @@ Bool rdpDestroyWindow(WindowPtr pWindow)
 {
 	Bool rv;
 	ScreenPtr pScreen;
-	rdpWindowRec *priv;
+	//rdpWindowRec *priv;
 
 	LLOGLN(10, ("rdpDestroyWindow:"));
-	priv = GETWINPRIV(pWindow);
+	//priv = GETWINPRIV(pWindow);
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->DestroyWindow = g_rdpScreen.DestroyWindow;
 	rv = pScreen->DestroyWindow(pWindow);
@@ -797,6 +797,7 @@ Bool rdpDestroyWindow(WindowPtr pWindow)
 
 	if (g_use_rail)
 	{
+
 	}
 
 	return rv;
