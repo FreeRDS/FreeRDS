@@ -26,6 +26,15 @@ if(DEFINED X11RDP_DOWNLOAD_CACHE)
 	message(STATUS "Using local download cache: ${X11RDP_DOWNLOAD_CACHE}")
 endif()
 
+set(WITH_LLVM 0)
+
+execute_process(COMMAND "llvm-config" "--version" RESULT_VARIABLE LLVM_CONFIG_OUTPUT)
+
+if(${LLVM_CONFIG_OUTPUT} VERSION_GREATER "3.0")
+	message(STATUS "llvm detected")
+	set(WITH_LLVM 1)
+endif()
+
 # Non-X11 dependencies
 
 set(EXTERNAL_PROJECT "expat")
@@ -956,7 +965,9 @@ set(${EXTERNAL_PROJECT}_MAKE "")
 set(${EXTERNAL_PROJECT}_DEPENDS "expat;dri2proto;glproto;libdrm;Python;makedepend;libX11;libXdamage;libXfixes;libXt")
 list(APPEND EXTERNAL_PROJECTS_X11_MESA ${EXTERNAL_PROJECT})
 
-#list(APPEND ${EXTERNAL_PROJECT}_CONFIGURE "--disable-gallium-egl;--disable-gallium-llvm;--with-gallium-drivers=i915,r600,swrast")
+if(NOT WITH_LLVM)
+	list(APPEND ${EXTERNAL_PROJECT}_CONFIGURE "--disable-gallium-egl;--disable-gallium-llvm;--with-gallium-drivers=i915,r600,swrast")
+endif()
 
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECTS_X11_MESA})
 
@@ -1521,7 +1532,7 @@ set(${EXTERNAL_PROJECT}_URL "http://www.x.org/releases/individual/data/xkeyboard
 set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX}")
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")
-set(${EXTERNAL_PROJECT}_DEPENDS "fontconfig")
+set(${EXTERNAL_PROJECT}_DEPENDS "fontconfig;intltool")
 list(APPEND EXTERNAL_PROJECTS_X11_FONTS ${EXTERNAL_PROJECT})
 
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECTS_X11_FONTS})
