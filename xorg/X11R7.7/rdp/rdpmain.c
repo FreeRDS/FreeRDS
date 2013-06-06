@@ -25,6 +25,8 @@ Sets up the  functions
 #include "rdp.h"
 #include "rdprandr.h"
 
+#include "glx_extinit.h"
+
 #if 1
 #define DEBUG_OUT(arg)
 #else
@@ -550,7 +552,8 @@ int ddxProcessArgument(int argc, char **argv, int i)
 		set_bpp(24);
 		g_rdpScreen.blackPixel = 1;
 		g_firstTime = 0;
-		RRExtensionInit();
+
+		RRExtensionInit(); /* RANDER */
 	}
 
 	if (strcmp(argv[i], "-geometry") == 0)
@@ -629,6 +632,23 @@ int XkbDDXTerminateServer(DeviceIntPtr dev, KeyCode key, XkbAction *act)
 	return 0;
 }
 
+static const ExtensionModule rdpExtensions[] =
+{
+#ifdef GLXEXT
+	{ GlxExtensionInit, "GLX", &noGlxExtension },
+#endif
+};
+
+static void rdpExtensionInit(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(rdpExtensions); i++)
+	{
+		LoadExtension(&rdpExtensions[i], TRUE);
+	}
+}
+
 /******************************************************************************/
 /* InitOutput is called every time the server resets.  It should call
    AddScreen for each screen (but we only ever have one), and in turn this
@@ -639,6 +659,9 @@ void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
 
 	ErrorF("InitOutput:\n");
 	g_initOutputCalled = 1;
+
+	rdpExtensionInit();
+
 	/* initialize pixmap formats */
 	screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
 	screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;

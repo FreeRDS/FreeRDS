@@ -339,6 +339,9 @@ set_property(TARGET "Xi-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/Xi/.libs
 add_library("glx-static" STATIC IMPORTED)
 set_property(TARGET "glx-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/glx/.libs/libglx.a")
 
+add_library("glxdri-static" STATIC IMPORTED)
+set_property(TARGET "glxdri-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/glx/.libs/libglxdri.a")
+
 add_library("xfixes-static" STATIC IMPORTED)
 set_property(TARGET "xfixes-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/xfixes/.libs/libxfixes.a")
 
@@ -385,10 +388,10 @@ include_directories(${${MODULE_PREFIX}_INCLUDES})
 
 set(${MODULE_PREFIX}_DEFINES
 	"-D_SVID_SOURCE -D_REENTRANT -DHAVE_STRNDUP 
-	-DGLX_USE_MESA -DXRECORD -D_GNU_SOURCE -DXAPPGROUP 
+	-DXRECORD -D_GNU_SOURCE -DXAPPGROUP 
 	-DTOGCUP -DSINGLEDEPTH -DXFree86Server 
 	-DDBE -DEVI -DXVMC -DFONTCACHE -DGCCUSESGAS -DSTATIC_COLOR 
-	-DAVOID_GLYPHBLT -DFUNCPROTO=15 -DNARROWPROTO -DDDXOSFATALERROR 
+	-DAVOID_GLYPHBLT -DDDXOSFATALERROR
 	-DPART_NET -DDDXTIME -D_HAVE_XALLOC_DECLS -DDAMAGE -DXFIXES 
 	-DSMART_SCHEDULE -DSERVER_LOCK -DGLXEXT -DSHAPE -DRENDER -DRANDR 
 	-DBIGREQS -D_POSIX_SOURCE -D_BSD_SOURCE -DSCREENSAVER 
@@ -409,7 +412,7 @@ list(APPEND ${MODULE_PREFIX}_LIBS
 
 set(${MODULE_PREFIX}_STATIC_LIBS
 	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
-	render-static xkb-static Xext-static Xi-static glx-static xfixes-static damageext-static damage-static sync-static)
+	render-static xkb-static Xext-static Xi-static glx-static glxdri-static xfixes-static damageext-static damage-static sync-static)
 
 merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
