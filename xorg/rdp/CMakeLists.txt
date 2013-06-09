@@ -140,12 +140,8 @@ endfunction()
 set(MODULE_NAME "X11rdp")
 set(MODULE_PREFIX "X11RDP")
 
-set(X11RDP_PREFIX "/opt/X11rdp")
-set(INCBASE "${X11RDP_PREFIX}/include")
-set(LIBBASE "${X11RDP_PREFIX}/lib")
-
-#set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/../X11rdp/Source/xorg-server")
-set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/../xorg-server")
+set(XSRCBASE_RELATIVE "../xorg-server")
+set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -fno-strength-reduce")
 
@@ -159,9 +155,7 @@ include(FindPackageHandleStandardArgs)
 
 find_path(XFONT_INCLUDE_DIR NAMES X11/fonts/fontconf.h)
 
-find_library(XFONT_LIBRARY NAMES Xfont
-	PATHS "${X11RDP_PREFIX}/lib"
-	NO_DEFAULT_PATH)
+find_library(XFONT_LIBRARY NAMES Xfont)
 
 find_package_handle_standard_args(xfont DEFAULT_MSG XFONT_LIBRARY XFONT_INCLUDE_DIR)
 
@@ -176,9 +170,7 @@ mark_as_advanced(XFONT_INCLUDE_DIR XFONT_LIBRARY)
 
 find_path(XAU_INCLUDE_DIR NAMES X11/Xauth.h)
 
-find_library(XAU_LIBRARY NAMES Xau
-	PATHS "${X11RDP_PREFIX}/lib"
-	NO_DEFAULT_PATH)
+find_library(XAU_LIBRARY NAMES Xau)
 
 find_package_handle_standard_args(xau DEFAULT_MSG XAU_LIBRARY XAU_INCLUDE_DIR)
 
@@ -193,9 +185,7 @@ mark_as_advanced(XAU_INCLUDE_DIR XAU_LIBRARY)
 
 find_path(XDMCP_INCLUDE_DIR NAMES X11/Xdmcp.h)
 
-find_library(XDMCP_LIBRARY NAMES Xdmcp
-	PATHS "${X11RDP_PREFIX}/lib"
-	NO_DEFAULT_PATH)
+find_library(XDMCP_LIBRARY NAMES Xdmcp)
 
 find_package_handle_standard_args(xdmcp DEFAULT_MSG XDMCP_LIBRARY XDMCP_INCLUDE_DIR)
 
@@ -208,11 +198,9 @@ mark_as_advanced(XDMCP_INCLUDE_DIR XDMCP_LIBRARY)
 
 # pixman
 
-find_path(PIXMAN_INCLUDE_DIR NAMES pixman-1/pixman.h)
+find_path(PIXMAN_INCLUDE_DIR NAMES pixman.h PATH_SUFFIXES pixman-1)
 
-find_library(PIXMAN_LIBRARY NAMES pixman-1
-	PATHS "${X11RDP_PREFIX}/lib"
-	NO_DEFAULT_PATH)
+find_library(PIXMAN_LIBRARY NAMES pixman-1)
 
 find_package_handle_standard_args(pixman-1 DEFAULT_MSG PIXMAN_LIBRARY PIXMAN_INCLUDE_DIR)
 
@@ -227,9 +215,7 @@ mark_as_advanced(PIXMAN_INCLUDE_DIR PIXMAN_LIBRARY)
 
 find_path(GL_INCLUDE_DIR NAMES GL/gl.h)
 
-find_library(GL_LIBRARY NAMES GL
-	PATHS "${X11RDP_PREFIX}/lib"
-	NO_DEFAULT_PATH)
+find_library(GL_LIBRARY NAMES GL)
 
 find_package_handle_standard_args(GL DEFAULT_MSG GL_LIBRARY GL_INCLUDE_DIR)
 
@@ -296,8 +282,8 @@ set(${MODULE_PREFIX}_SRCS
 	rdpup.c)
 
 set(${MODULE_PREFIX}_SRCS ${${MODULE_PREFIX}_SRCS}
-	../X11rdp/Source/xorg-server/mi/miinitext.c
-	../X11rdp/Source/xorg-server/fb/fbcmap_mi.c)
+	${XSRCBASE_RELATIVE}/mi/miinitext.c
+	${XSRCBASE_RELATIVE}/fb/fbcmap_mi.c)
 
 add_library("composite-static" STATIC IMPORTED)
 set_property(TARGET "composite-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/composite/.libs/libcomposite.a")
@@ -356,23 +342,8 @@ set_property(TARGET "damage-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/miex
 add_library("sync-static" STATIC IMPORTED)
 set_property(TARGET "sync-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/miext/sync/.libs/libsync.a")
 
-link_directories(${LIBBASE})
-
 set(${MODULE_PREFIX}_INCLUDES
-	"../../cfb"
-	"../../mfb"
-	"../../mi"
-	"${INCBASE}"
-	"${INCBASE}/X11"
-	"${INCBASE}/X11/fonts"
-	"${INCBASE}/X11/extensions"
-	"${INCBASE}/xorg"
-	"${INCBASE}/pixman-1"
-	"../../os"
-	"../../render"
-	"../xfree86/common"
-	"../xfree86/os-support"
-	"../../../common"
+	"../../common"
 	"${XSRCBASE}/include"
 	"${XSRCBASE}/Xext"
 	"${XSRCBASE}/composite"
@@ -384,24 +355,13 @@ set(${MODULE_PREFIX}_INCLUDES
 	"${XSRCBASE}/miext/sync"
 	"${XSRCBASE}/render"
 	"${XSRCBASE}/randr"
-	"${XSRCBASE}/fb")
+	"${XSRCBASE}/fb"
+	"${XSRCBASE}/hw/xfree86/common")
 
 include_directories(${${MODULE_PREFIX}_INCLUDES})
 
-set(${MODULE_PREFIX}_DEFINES
-	"-D_SVID_SOURCE -D_REENTRANT -DHAVE_STRNDUP 
-	-DXRECORD -D_GNU_SOURCE -DXAPPGROUP 
-	-DTOGCUP -DSINGLEDEPTH -DXFree86Server 
-	-DDBE -DEVI -DXVMC -DFONTCACHE -DGCCUSESGAS -DSTATIC_COLOR 
-	-DAVOID_GLYPHBLT -DDDXOSFATALERROR
-	-DPART_NET -DDDXTIME -D_HAVE_XALLOC_DECLS -DDAMAGE -DXFIXES 
-	-DSMART_SCHEDULE -DSERVER_LOCK -DGLXEXT -DSHAPE -DRENDER -DRANDR 
-	-DBIGREQS -D_POSIX_SOURCE -D_BSD_SOURCE -DSCREENSAVER 
-	-DXCMISC -DXTEST -DXTRAP -DXV -DXSYNC -DMITMISC -DPANORAMIX
-	-DDPMSExtension -DXvExtension -DXvMCExtension -DXResExtension 
-	-DMITSHM -DPIXPRIV -DNDEBUG -DDDXOSINIT -DXKB -DXINPUT")
+set(${MODULE_PREFIX}_DEFINES "-DHAVE_XORG_CONFIG_H -DXF86PM")
 
-add_definitions(-D_POSIX_C_SOURCE=199309L)
 add_definitions(${${MODULE_PREFIX}_DEFINES})
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
@@ -421,6 +381,3 @@ merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-# TODO: fix install rpath
-# temporary workaround: cp X11rdp /opt/X11rdp/bin/X11rdp
