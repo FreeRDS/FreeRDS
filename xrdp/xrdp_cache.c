@@ -22,8 +22,7 @@
 #include "log.h"
 
 /*****************************************************************************/
-xrdpCache *
-xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo *client_info)
+xrdpCache* xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo *client_info)
 {
 	xrdpCache *self;
 
@@ -41,12 +40,12 @@ xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo *client_in
 	self->bitmap_cache_version = client_info->bitmap_cache_version;
 	self->pointer_cache_entries = client_info->pointer_cache_entries;
 	self->xrdp_os_del_list = list_create();
+
 	return self;
 }
 
 /*****************************************************************************/
-void 
-xrdp_cache_delete(xrdpCache *self)
+void xrdp_cache_delete(xrdpCache *self)
 {
 	int i;
 	int j;
@@ -86,8 +85,7 @@ xrdp_cache_delete(xrdpCache *self)
 }
 
 /*****************************************************************************/
-int 
-xrdp_cache_reset(xrdpCache *self, xrdpClientInfo *client_info)
+int xrdp_cache_reset(xrdpCache *self, xrdpClientInfo *client_info)
 {
 	xrdpWm *wm;
 	xrdpSession *session;
@@ -135,8 +133,7 @@ xrdp_cache_reset(xrdpCache *self, xrdpClientInfo *client_info)
 
 /*****************************************************************************/
 /* returns cache id */
-int 
-xrdp_cache_add_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int hints)
+int xrdp_cache_add_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int hints)
 {
 	int i = 0;
 	int j = 0;
@@ -338,8 +335,7 @@ xrdp_cache_add_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int hints)
 /*****************************************************************************/
 /* not used */
 /* not sure how to use a palette in rdp */
-int 
-xrdp_cache_add_palette(xrdpCache *self, int *palette)
+int xrdp_cache_add_palette(xrdpCache *self, int *palette)
 {
 	int i;
 	int oldest;
@@ -393,8 +389,7 @@ xrdp_cache_add_palette(xrdpCache *self, int *palette)
 }
 
 /*****************************************************************************/
-int 
-xrdp_cache_add_char(xrdpCache *self, xrdpFontChar *font_item)
+int xrdp_cache_add_char(xrdpCache *self, xrdpFontChar *font_item)
 {
 	int i;
 	int j;
@@ -459,8 +454,7 @@ xrdp_cache_add_char(xrdpCache *self, xrdpFontChar *font_item)
  client if it finds it
  returns the index in the cache
  does not take ownership of pointer_item */
-int 
-xrdp_cache_add_pointer(xrdpCache *self, xrdpPointerItem *pointer_item)
+int xrdp_cache_add_pointer(xrdpCache *self, xrdpPointerItem *pointer_item)
 {
 	int i;
 	int oldest;
@@ -517,8 +511,7 @@ xrdp_cache_add_pointer(xrdpCache *self, xrdpPointerItem *pointer_item)
 
 /*****************************************************************************/
 /* this does not take owership of pointer_item, it makes a copy */
-int 
-xrdp_cache_add_pointer_static(xrdpCache *self, xrdpPointerItem *pointer_item, int index)
+int xrdp_cache_add_pointer_static(xrdpCache *self, xrdpPointerItem *pointer_item, int index)
 {
 
 	if (self == 0)
@@ -541,8 +534,7 @@ xrdp_cache_add_pointer_static(xrdpCache *self, xrdpPointerItem *pointer_item, in
 
 /*****************************************************************************/
 /* this does not take owership of brush_item_data, it makes a copy */
-int 
-xrdp_cache_add_brush(xrdpCache *self, char *brush_item_data)
+int xrdp_cache_add_brush(xrdpCache *self, char *brush_item_data)
 {
 	int i;
 	int oldest;
@@ -588,8 +580,7 @@ xrdp_cache_add_brush(xrdpCache *self, char *brush_item_data)
 
 /*****************************************************************************/
 /* returns error */
-int 
-xrdp_cache_add_os_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int rdpindex)
+int xrdp_cache_add_os_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int rdpindex)
 {
 	xrdpOffscreenBitmapItem *bi;
 
@@ -605,8 +596,7 @@ xrdp_cache_add_os_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int rdpindex)
 
 /*****************************************************************************/
 /* returns error */
-int 
-xrdp_cache_remove_os_bitmap(xrdpCache *self, int rdpindex)
+int xrdp_cache_remove_os_bitmap(xrdpCache *self, int rdpindex)
 {
 	xrdpOffscreenBitmapItem *bi;
 	int index;
@@ -634,8 +624,7 @@ xrdp_cache_remove_os_bitmap(xrdpCache *self, int rdpindex)
 }
 
 /*****************************************************************************/
-xrdpOffscreenBitmapItem *
-xrdp_cache_get_os_bitmap(xrdpCache *self, int rdpindex)
+xrdpOffscreenBitmapItem* xrdp_cache_get_os_bitmap(xrdpCache *self, int rdpindex)
 {
 	xrdpOffscreenBitmapItem *bi;
 

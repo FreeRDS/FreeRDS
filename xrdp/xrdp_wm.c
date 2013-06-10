@@ -144,21 +144,22 @@ static int xrdp_wm_get_pixel(char *data, int x, int y, int width, int bpp)
 		start = (y * width) + x / 8;
 		shift = x % 8;
 		return (data[start] & (0x80 >> shift)) != 0;
-	} else
-		if (bpp == 4)
-		{
-			width = (width + 1) / 2;
-			start = y * width + x / 2;
-			shift = x % 2;
+	}
+	else if (bpp == 4)
+	{
+		width = (width + 1) / 2;
+		start = y * width + x / 2;
+		shift = x % 2;
 
-			if (shift == 0)
-			{
-				return (data[start] & 0xf0) >> 4;
-			} else
-			{
-				return data[start] & 0x0f;
-			}
+		if (shift == 0)
+		{
+			return (data[start] & 0xf0) >> 4;
 		}
+		else
+		{
+			return data[start] & 0x0f;
+		}
+	}
 
 	return 0;
 }
@@ -173,6 +174,7 @@ int xrdp_wm_pointer(xrdpWm *self, char *data, char *mask, int x, int y, int bpp)
 	{
 		bpp = 24;
 	}
+
 	bytes = ((bpp + 7) / 8) * 32 * 32;
 	g_memset(&pointer_item, 0, sizeof(xrdpPointerItem));
 	pointer_item.x = x;
@@ -186,8 +188,7 @@ int xrdp_wm_pointer(xrdpWm *self, char *data, char *mask, int x, int y, int bpp)
 
 /*****************************************************************************/
 /* returns error */
-int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data,
-		char *mask, int *x, int *y)
+int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, int *x, int *y)
 {
 	int fd;
 	int bpp;
@@ -280,8 +281,7 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data,
 }
 
 /*****************************************************************************/
-int xrdp_wm_send_pointer(xrdpWm *self, int cache_idx,
-		char *data, char *mask, int x, int y, int bpp)
+int xrdp_wm_send_pointer(xrdpWm *self, int cache_idx, char *data, char *mask, int x, int y, int bpp)
 {
 	return libxrdp_send_pointer(self->session, cache_idx, data, mask,
 			x, y, bpp);
@@ -623,8 +623,7 @@ int xrdp_wm_init(xrdpWm *self)
 /* returns the number for rects visible for an area relative to a drawable */
 /* putting the rects in region */
 int xrdp_wm_get_vis_region(xrdpWm *self, xrdpBitmap *bitmap,
-		int x, int y, int cx, int cy,
-		xrdpRegion *region, int clip_children)
+		int x, int y, int cx, int cy, xrdpRegion *region, int clip_children)
 {
 	int i;
 	xrdpBitmap *p;
@@ -669,8 +668,7 @@ int xrdp_wm_get_vis_region(xrdpWm *self, xrdpBitmap *bitmap,
 
 /*****************************************************************************/
 /* return the window at x, y on the screen */
-static xrdpBitmap * xrdp_wm_at_pos(xrdpBitmap *wnd, int x, int y,
-		xrdpBitmap **wnd1)
+static xrdpBitmap * xrdp_wm_at_pos(xrdpBitmap *wnd, int x, int y, xrdpBitmap **wnd1)
 {
 	int i;
 	xrdpBitmap *p;
@@ -745,32 +743,11 @@ static int xrdp_wm_xor_pat(xrdpWm *self, int x, int y, int cx, int cy)
 /*****************************************************************************/
 /* this don't are about nothing, just copy the bits */
 /* no clipping rects, no windows in the way, nothing */
-static int xrdp_wm_bitblt(xrdpWm *self,
-		xrdpBitmap *dst, int dx, int dy,
-		xrdpBitmap *src, int sx, int sy,
-		int sw, int sh, int rop)
+static int xrdp_wm_bitblt(xrdpWm *self, xrdpBitmap *dst, int dx, int dy,
+		xrdpBitmap *src, int sx, int sy, int sw, int sh, int rop)
 {
-	//  int i;
-	//  int line_size;
-	//  int Bpp;
-	//  char* s;
-	//  char* d;
-
-	//  if (sw <= 0 || sh <= 0)
-	//    return 0;
 	if (self->screen == dst && self->screen == src)
 	{
-		/* send a screen blt */
-		//    Bpp = (dst->bpp + 7) / 8;
-		//    line_size = sw * Bpp;
-		//    s = src->data + (sy * src->width + sx) * Bpp;
-		//    d = dst->data + (dy * dst->width + dx) * Bpp;
-		//    for (i = 0; i < sh; i++)
-		//    {
-		//      //g_memcpy(d, s, line_size);
-		//      s += src->width * Bpp;
-		//      d += dst->width * Bpp;
-		//    }
 		libxrdp_orders_init(self->session);
 		libxrdp_orders_screen_blt(self->session, dx, dy, sw, sh, sx, sy, rop, 0);
 		libxrdp_orders_send(self->session);
@@ -782,8 +759,7 @@ static int xrdp_wm_bitblt(xrdpWm *self,
 /*****************************************************************************/
 /* return true is rect is totaly exposed going in reverse z order */
 /* from wnd up */
-static int xrdp_wm_is_rect_vis(xrdpWm *self, xrdpBitmap *wnd,
-		xrdpRect *rect)
+static int xrdp_wm_is_rect_vis(xrdpWm *self, xrdpBitmap *wnd, xrdpRect *rect)
 {
 	xrdpRect wnd_rect;
 	xrdpBitmap *b;
@@ -1055,12 +1031,9 @@ static int xrdp_wm_clear_popup(xrdpWm *self)
 {
 	int i;
 	xrdpRect rect;
-	//xrdpBitmap* b;
 
-	//b = 0;
 	if (self->popup_wnd != 0)
 	{
-		//b = self->popup_wnd->popped_from;
 		i = list_index_of(self->screen->child_list, (long)self->popup_wnd);
 		list_remove_item(self->screen->child_list, i);
 		MAKERECT(rect, self->popup_wnd->left, self->popup_wnd->top,
@@ -1069,7 +1042,6 @@ static int xrdp_wm_clear_popup(xrdpWm *self)
 		xrdp_bitmap_delete(self->popup_wnd);
 	}
 
-	//xrdp_wm_set_focused(self, b->parent);
 	return 0;
 }
 
@@ -1324,10 +1296,10 @@ int xrdp_wm_key(xrdpWm *self, int device_flags, int scan_code)
 	}
 
 	if (device_flags & KBD_FLAG_UP) /* 0x8000 */
-			{
+	{
 		self->keys[scan_code] = 0;
 		msg = WM_XRDP_KEYUP;
-			}
+	}
 	else /* key down */
 	{
 		self->keys[scan_code] = 1 | device_flags;
@@ -1505,10 +1477,8 @@ int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
    param2 = size
    param3 = pointer to data
    param4 = total size */
-static int 
-xrdp_wm_process_channel_data(xrdpWm *self,
-		tbus param1, tbus param2,
-		tbus param3, tbus param4)
+static int xrdp_wm_process_channel_data(xrdpWm *self,
+		tbus param1, tbus param2, tbus param3, tbus param4)
 {
 	int rv;
 	int chanid ;

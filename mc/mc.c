@@ -22,7 +22,7 @@
 
 /*****************************************************************************/
 /* return error */
-int  lib_mod_start(struct mod *mod, int w, int h, int bpp)
+int lib_mod_start(struct mod *mod, int w, int h, int bpp)
 {
 	LIB_DEBUG(mod, "in lib_mod_start");
 	mod->width = w;
@@ -34,7 +34,7 @@ int  lib_mod_start(struct mod *mod, int w, int h, int bpp)
 
 /******************************************************************************/
 /* return error */
-int  lib_mod_connect(struct mod *mod)
+int lib_mod_connect(struct mod *mod)
 {
 	LIB_DEBUG(mod, "in lib_mod_connect"); LIB_DEBUG(mod, "out lib_mod_connect");
 	return 0;
@@ -42,7 +42,7 @@ int  lib_mod_connect(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int  lib_mod_event(struct mod *mod, int msg, long param1, long param2, long param3, long param4)
+int lib_mod_event(struct mod *mod, int msg, long param1, long param2, long param3, long param4)
 {
 	LIB_DEBUG(mod, "in lib_mod_event"); LIB_DEBUG(mod, "out lib_mod_event");
 	return 0;
@@ -50,7 +50,7 @@ int  lib_mod_event(struct mod *mod, int msg, long param1, long param2, long para
 
 /******************************************************************************/
 /* return error */
-int  lib_mod_signal(struct mod *mod)
+int lib_mod_signal(struct mod *mod)
 {
 	LIB_DEBUG(mod, "in lib_mod_signal"); LIB_DEBUG(mod, "out lib_mod_signal");
 	return 0;
@@ -58,20 +58,20 @@ int  lib_mod_signal(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int  lib_mod_end(struct mod *mod)
+int lib_mod_end(struct mod *mod)
 {
 	return 0;
 }
 
 /******************************************************************************/
 /* return error */
-int  lib_mod_set_param(struct mod *mod, char *name, char *value)
+int lib_mod_set_param(struct mod *mod, char *name, char *value)
 {
 	return 0;
 }
 
 /******************************************************************************/
-struct mod * mod_init(void)
+struct mod* mod_init(void)
 {
 	struct mod *mod;
 
@@ -85,6 +85,7 @@ struct mod * mod_init(void)
 	mod->mod_signal = lib_mod_signal;
 	mod->mod_end = lib_mod_end;
 	mod->mod_set_param = lib_mod_set_param;
+
 	return mod;
 }
 
@@ -95,5 +96,6 @@ int  mod_exit(struct mod *mod)
 		return 0;
 
 	g_free(mod);
+
 	return 0;
 }

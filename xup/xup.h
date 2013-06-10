@@ -40,8 +40,7 @@ struct mod
 	int (*mod_end)(struct mod* v);
 	int (*mod_set_param)(struct mod* v, char* name, char* value);
 	int (*mod_session_change)(struct mod* v, int, int);
-	int (*mod_get_wait_objs)(struct mod* v, tbus* read_objs, int* rcount, tbus* write_objs, int* wcount,
-			int* timeout);
+	int (*mod_get_wait_objs)(struct mod* v, tbus* read_objs, int* rcount, tbus* write_objs, int* wcount, int* timeout);
 	int (*mod_check_wait_objs)(struct mod* v);
 	tbus mod_dumby[100 - 9]; /* align, 100 minus the number of mod
 	 functions above */

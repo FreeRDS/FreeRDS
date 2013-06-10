@@ -62,8 +62,7 @@ static char w_char[] =
 #endif
 
 /*****************************************************************************/
-xrdpFont *
-xrdp_font_create(xrdpWm *wm)
+xrdpFont* xrdp_font_create(xrdpWm *wm)
 {
 	xrdpFont *self;
 	struct stream *s;
@@ -168,8 +167,7 @@ xrdp_font_create(xrdpWm *wm)
 
 /*****************************************************************************/
 /* free the font and all the items */
-void 
-xrdp_font_delete(xrdpFont *self)
+void xrdp_font_delete(xrdpFont *self)
 {
 	int i;
 
@@ -188,8 +186,7 @@ xrdp_font_delete(xrdpFont *self)
 
 /*****************************************************************************/
 /* compare the two font items returns 1 if they match */
-int 
-xrdp_font_item_compare(xrdpFontChar *font1, xrdpFontChar *font2)
+int xrdp_font_item_compare(xrdpFontChar *font1, xrdpFontChar *font2)
 {
 	int datasize;
 

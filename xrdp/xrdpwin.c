@@ -35,8 +35,7 @@ static long g_sync_param2 = 0;
 static long (*g_sync_func)(long param1, long param2);
 
 /*****************************************************************************/
-long 
-g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
+long g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
 {
 	long sync_result;
 	int sync_command;
@@ -45,7 +44,8 @@ g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long s
 	{
 		/* this is the main thread, call the function directly */
 		sync_result = sync_func(sync_param1, sync_param2);
-	} else
+	}
+	else
 	{
 		tc_mutex_lock(g_sync1_mutex);
 		tc_mutex_lock(g_sync_mutex);
@@ -72,8 +72,7 @@ g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long s
 }
 
 /*****************************************************************************/
-void 
-xrdp_shutdown(int sig)
+void xrdp_shutdown(int sig)
 {
 	tbus threadid;
 
@@ -88,50 +87,45 @@ xrdp_shutdown(int sig)
 }
 
 /*****************************************************************************/
-int 
-g_is_term(void)
+int g_is_term(void)
 {
 	return g_is_wait_obj_set(g_term_event);
 }
 
 /*****************************************************************************/
-void 
-g_set_term(int in_val)
+void g_set_term(int in_val)
 {
 	if (in_val)
 	{
 		g_set_wait_obj(g_term_event);
-	} else
+	}
+	else
 	{
 		g_reset_wait_obj(g_term_event);
 	}
 }
 
 /*****************************************************************************/
-tbus 
-g_get_term_event(void)
+tbus g_get_term_event(void)
 {
 	return g_term_event;
 }
 
 /*****************************************************************************/
-tbus 
-g_get_sync_event(void)
+tbus g_get_sync_event(void)
 {
 	return g_sync_event;
 }
 
 /*****************************************************************************/
-void 
-pipe_sig(int sig_num)
+void pipe_sig(int sig_num)
 {
 	/* do nothing */
 	g_writeln("got XRDP WIN SIGPIPE(%d)", sig_num);
 }
 
 /*****************************************************************************/
-void 
-g_process_waiting_function(void)
+void g_process_waiting_function(void)
 {
 	tc_mutex_lock(g_sync_mutex);
 

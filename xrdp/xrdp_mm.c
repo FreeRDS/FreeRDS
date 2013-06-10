@@ -32,7 +32,7 @@
 #endif
 
 /*****************************************************************************/
-xrdpMm * xrdp_mm_create(xrdpWm *owner)
+xrdpMm* xrdp_mm_create(xrdpWm *owner)
 {
 	xrdpMm* self;
 
@@ -42,6 +42,7 @@ xrdpMm * xrdp_mm_create(xrdpWm *owner)
 	self->login_names->auto_free = 1;
 	self->login_values = list_create();
 	self->login_values->auto_free = 1;
+
 	return self;
 }
 
@@ -190,7 +191,8 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	if (xserverbpp > 0)
 	{
 		out_uint16_be(s, xserverbpp);
-	} else
+	}
+	else
 	{
 		out_uint16_be(s, self->wm->screen->bpp);
 	}
@@ -246,7 +248,7 @@ static int xrdp_mm_send_login(xrdpMm *self)
 /* this goes through the login_names looking for one called 'aname'
  then it copies the corresponding login_values item into 'dest'
  'dest' must be at least 'dest_len' + 1 bytes in size */
-static int  xrdp_mm_get_value(xrdpMm *self, char *aname, char *dest, int dest_len)
+static int xrdp_mm_get_value(xrdpMm *self, char *aname, char *dest, int dest_len)
 {
 	char *name;
 	char *value;
@@ -280,7 +282,7 @@ static int  xrdp_mm_get_value(xrdpMm *self, char *aname, char *dest, int dest_le
 }
 
 /*****************************************************************************/
-static int  xrdp_mm_setup_mod1(xrdpMm *self)
+static int xrdp_mm_setup_mod1(xrdpMm *self)
 {
 	void *func;
 	char lib[256];
@@ -563,7 +565,7 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 /*****************************************************************************/
 /* returns error
  send a list of channels to the channel handler */
-static int  xrdp_mm_trans_send_channel_setup(xrdpMm *self, struct trans *trans)
+static int xrdp_mm_trans_send_channel_setup(xrdpMm *self, struct trans *trans)
 {
 	int index;
 	int chan_id;
@@ -611,7 +613,7 @@ static int  xrdp_mm_trans_send_channel_setup(xrdpMm *self, struct trans *trans)
 
 /*****************************************************************************/
 /* returns error */
-static int  xrdp_mm_trans_send_channel_data_response(xrdpMm *self, struct trans *trans)
+static int xrdp_mm_trans_send_channel_data_response(xrdpMm *self, struct trans *trans)
 {
 	struct stream *s;
 
@@ -633,7 +635,7 @@ static int  xrdp_mm_trans_send_channel_data_response(xrdpMm *self, struct trans 
 /*****************************************************************************/
 /* returns error
  init is done, sent channel setup */
-static int  xrdp_mm_trans_process_init_response(xrdpMm *self, struct trans *trans)
+static int xrdp_mm_trans_process_init_response(xrdpMm *self, struct trans *trans)
 {
 	return xrdp_mm_trans_send_channel_setup(self, trans);
 }
@@ -641,7 +643,7 @@ static int  xrdp_mm_trans_process_init_response(xrdpMm *self, struct trans *tran
 /*****************************************************************************/
 /* returns error
  data coming in from the channel handler, send it to the client */
-static int  xrdp_mm_trans_process_channel_data(xrdpMm *self, struct trans *trans)
+static int xrdp_mm_trans_process_channel_data(xrdpMm *self, struct trans *trans)
 {
 	struct stream *s;
 	int size;
@@ -674,7 +676,7 @@ static int  xrdp_mm_trans_process_channel_data(xrdpMm *self, struct trans *trans
 /*****************************************************************************/
 /* returns error
  process a message for the channel handler */
-static int  xrdp_mm_chan_process_msg(xrdpMm *self, struct trans *trans, struct stream *s)
+static int xrdp_mm_chan_process_msg(xrdpMm *self, struct trans *trans, struct stream *s)
 {
 	int rv;
 	int id;
@@ -721,7 +723,7 @@ static int  xrdp_mm_chan_process_msg(xrdpMm *self, struct trans *trans, struct s
 /*****************************************************************************/
 /* this is callback from trans obj
  returns error */
-static int  xrdp_mm_chan_data_in(struct trans *trans)
+static int xrdp_mm_chan_data_in(struct trans *trans)
 {
 	xrdpMm *self;
 	struct stream *s;
@@ -756,7 +758,7 @@ static int  xrdp_mm_chan_data_in(struct trans *trans)
 }
 
 /*****************************************************************************/
-static int  xrdp_mm_chan_send_init(xrdpMm *self)
+static int xrdp_mm_chan_send_init(xrdpMm *self)
 {
 	struct stream *s;
 
@@ -777,7 +779,7 @@ static int  xrdp_mm_chan_send_init(xrdpMm *self)
 
 /*****************************************************************************/
 /* connect to chansrv */
-static int  xrdp_mm_connect_chansrv(xrdpMm *self, char *ip, char *port)
+static int xrdp_mm_connect_chansrv(xrdpMm *self, char *ip, char *port)
 {
 	int index;
 
@@ -847,7 +849,7 @@ static void cleanup_sesman_connection(xrdpMm *self)
 }
 
 /*****************************************************************************/
-static int  xrdp_mm_process_login_response(xrdpMm *self, struct stream *s)
+static int xrdp_mm_process_login_response(xrdpMm *self, struct stream *s)
 {
 	int ok;
 	int display;
@@ -961,7 +963,7 @@ static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
 /*****************************************************************************/
 /* returns error
  data coming from client that need to go to channel handler */
-int  xrdp_mm_process_channel_data(xrdpMm *self, tbus param1, tbus param2, tbus param3, tbus param4)
+int xrdp_mm_process_channel_data(xrdpMm *self, tbus param1, tbus param2, tbus param3, tbus param4)
 {
 	struct stream *s;
 	int rv;
@@ -1011,8 +1013,7 @@ int  xrdp_mm_process_channel_data(xrdpMm *self, tbus param1, tbus param2, tbus p
 
 /*****************************************************************************/
 /* This is the callback registered for sesman communication replies. */
-static int 
-xrdp_mm_sesman_data_in(struct trans *trans)
+static int xrdp_mm_sesman_data_in(struct trans *trans)
 {
 	xrdpMm *self;
 	struct stream *s;
@@ -1271,7 +1272,7 @@ static const char *  getPAMError(const int pamError, char *text, int text_bytes)
 	}
 }
 
-static const char *  getPAMAdditionalErrorInfo(const int pamError, xrdpMm *self)
+static const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm *self)
 {
 	switch (pamError)
 	{
@@ -1322,7 +1323,7 @@ static const char *  getPAMAdditionalErrorInfo(const int pamError, xrdpMm *self)
 #endif
 #endif
 /*****************************************************************************/
-int  xrdp_mm_connect(xrdpMm *self)
+int xrdp_mm_connect(xrdpMm *self)
 {
 	xrdpList *names;
 	xrdpList *values;
@@ -1549,7 +1550,7 @@ int  xrdp_mm_connect(xrdpMm *self)
 }
 
 /*****************************************************************************/
-int  xrdp_mm_get_wait_objs(xrdpMm *self, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
+int xrdp_mm_get_wait_objs(xrdpMm *self, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
 {
 	int rv = 0;
 
@@ -1582,7 +1583,7 @@ int  xrdp_mm_get_wait_objs(xrdpMm *self, tbus *read_objs, int *rcount, tbus *wri
 }
 
 /*****************************************************************************/
-int  xrdp_mm_check_wait_objs(xrdpMm *self)
+int xrdp_mm_check_wait_objs(xrdpMm *self)
 {
 	int rv;
 
@@ -1943,8 +1944,7 @@ int server_draw_line(xrdpModule *mod, int x1, int y1, int x2, int y2)
 }
 
 /*****************************************************************************/
-int server_add_char(xrdpModule *mod, int font, int charactor, int offset, int baseline, int width, int height,
-		char *data)
+int server_add_char(xrdpModule *mod, int font, int charactor, int offset, int baseline, int width, int height, char *data)
 {
 	xrdpFontChar fi;
 

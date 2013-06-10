@@ -22,8 +22,7 @@
 
 /******************************************************************************/
 /* returns error */
-int 
-lib_recv(struct mod *mod, char *data, int len)
+int lib_recv(struct mod *mod, char *data, int len)
 {
 	int rcvd;
 
@@ -46,20 +45,22 @@ lib_recv(struct mod *mod, char *data, int len)
 				}
 
 				g_tcp_can_recv(mod->sck, 10);
-			} else
+			}
+			else
 			{
 				return 1;
 			}
-		} else
-			if (rcvd == 0)
-			{
-				mod->sck_closed = 1;
-				return 1;
-			} else
-			{
-				data += rcvd;
-				len -= rcvd;
-			}
+		}
+		else if (rcvd == 0)
+		{
+			mod->sck_closed = 1;
+			return 1;
+		}
+		else
+		{
+			data += rcvd;
+			len -= rcvd;
+		}
 	}
 
 	return 0;
@@ -67,8 +68,7 @@ lib_recv(struct mod *mod, char *data, int len)
 
 /*****************************************************************************/
 /* returns error */
-int 
-lib_send(struct mod *mod, char *data, int len)
+int lib_send(struct mod *mod, char *data, int len)
 {
 	int sent;
 
@@ -91,20 +91,22 @@ lib_send(struct mod *mod, char *data, int len)
 				}
 
 				g_tcp_can_send(mod->sck, 10);
-			} else
+			}
+			else
 			{
 				return 1;
 			}
-		} else
-			if (sent == 0)
-			{
-				mod->sck_closed = 1;
-				return 1;
-			} else
-			{
-				data += sent;
-				len -= sent;
-			}
+		}
+		else if (sent == 0)
+		{
+			mod->sck_closed = 1;
+			return 1;
+		}
+		else
+		{
+			data += sent;
+			len -= sent;
+		}
 	}
 
 	return 0;
@@ -112,8 +114,7 @@ lib_send(struct mod *mod, char *data, int len)
 
 /******************************************************************************/
 /* return error */
-int 
-lib_mod_start(struct mod *mod, int w, int h, int bpp)
+int lib_mod_start(struct mod *mod, int w, int h, int bpp)
 {
 	LIB_DEBUG(mod, "in lib_mod_start");
 	mod->width = w;
@@ -125,8 +126,7 @@ lib_mod_start(struct mod *mod, int w, int h, int bpp)
 
 /******************************************************************************/
 /* return error */
-int 
-lib_mod_connect(struct mod *mod)
+int lib_mod_connect(struct mod *mod)
 {
 	int error;
 	int len;
@@ -176,7 +176,8 @@ lib_mod_connect(struct mod *mod)
 		if (use_uds)
 		{
 			mod->sck = g_tcp_local_socket();
-		} else
+		}
+		else
 		{
 			mod->sck = g_tcp_socket();
 			g_tcp_set_non_blocking(mod->sck);
@@ -188,7 +189,8 @@ lib_mod_connect(struct mod *mod)
 		if (use_uds)
 		{
 			error = g_tcp_local_connect(mod->sck, con_port);
-		} else
+		}
+		else
 		{
 			error = g_tcp_connect(mod->sck, mod->ip, con_port);
 		}
@@ -211,7 +213,8 @@ lib_mod_connect(struct mod *mod)
 						break;
 					}
 				}
-			} else
+			}
+			else
 			{
 				mod->server_msg(mod, "connect error", 0);
 			}
@@ -300,7 +303,8 @@ lib_mod_connect(struct mod *mod)
 		mod->server_msg(mod, "some problem", 0);
 		LIB_DEBUG(mod, "out lib_mod_connect error");
 		return 1;
-	} else
+	}
+	else
 	{
 		mod->server_msg(mod, "connected ok", 0);
 		mod->sck_obj = g_create_wait_obj_from_socket(mod->sck, 0);
@@ -312,8 +316,7 @@ lib_mod_connect(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int 
-lib_mod_event(struct mod *mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
+int lib_mod_event(struct mod *mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
 {
 	struct stream *s;
 	int len;
@@ -376,13 +379,13 @@ lib_mod_event(struct mod *mod, int msg, tbus param1, tbus param2, tbus param3, t
 	out_uint32_le(s, len);
 	rv = lib_send(mod, s->data, len);
 	free_stream(s); LIB_DEBUG(mod, "out lib_mod_event");
+
 	return rv;
 }
 
 /******************************************************************************/
 /* return error */
-static int 
-process_server_window_new_update(struct mod *mod, struct stream *s)
+static int process_server_window_new_update(struct mod *mod, struct stream *s)
 {
 	int flags;
 	int window_id;
@@ -464,8 +467,7 @@ process_server_window_new_update(struct mod *mod, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int 
-process_server_window_delete(struct mod *mod, struct stream *s)
+static int process_server_window_delete(struct mod *mod, struct stream *s)
 {
 	int window_id;
 	int rv;
@@ -473,13 +475,13 @@ process_server_window_delete(struct mod *mod, struct stream *s)
 	in_uint32_le(s, window_id);
 	mod->server_window_delete(mod, window_id);
 	rv = 0;
+
 	return rv;
 }
 
 /******************************************************************************/
 /* return error */
-static int 
-process_server_set_pointer_ex(struct mod *mod, struct stream *s)
+static int process_server_set_pointer_ex(struct mod *mod, struct stream *s)
 {
 	int rv;
 	int x;
@@ -496,6 +498,7 @@ process_server_set_pointer_ex(struct mod *mod, struct stream *s)
 	in_uint8a(s, cur_data, 32 * (32 * Bpp));
 	in_uint8a(s, cur_mask, 32 * (32 / 8));
 	rv = mod->server_set_cursor_ex(mod, x, y, cur_data, cur_mask, bpp);
+
 	return rv;
 }
 
@@ -652,8 +655,7 @@ static int lib_mod_process_orders(struct mod *mod, int type, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int 
-lib_send_client_info(struct mod *mod)
+static int lib_send_client_info(struct mod *mod)
 {
 	struct stream *s;
 	int len;
@@ -670,13 +672,13 @@ lib_send_client_info(struct mod *mod)
 	out_uint32_le(s, len);
 	lib_send(mod, s->data, len);
 	free_stream(s);
+
 	return 0;
 }
 
 /******************************************************************************/
 /* return error */
-int 
-lib_mod_signal(struct mod *mod)
+int lib_mod_signal(struct mod *mod)
 {
 	struct stream *s;
 	int num_orders;
@@ -715,108 +717,107 @@ lib_mod_signal(struct mod *mod)
 					}
 				}
 			}
-		} else
-			if (type == 2) /* caps */
+		}
+		else if (type == 2) /* caps */
+		{
+			g_writeln("lib_mod_signal: type 2 len %d", len);
+			init_stream(s, len);
+			rv = lib_recv(mod, s->data, len);
+
+			if (rv == 0)
 			{
-				g_writeln("lib_mod_signal: type 2 len %d", len);
-				init_stream(s, len);
-				rv = lib_recv(mod, s->data, len);
-
-				if (rv == 0)
+				for (index = 0; index < num_orders; index++)
 				{
-					for (index = 0; index < num_orders; index++)
+					phold = s->p;
+					in_uint16_le(s, type);
+					in_uint16_le(s, len);
+
+					switch (type)
 					{
-						phold = s->p;
-						in_uint16_le(s, type);
-						in_uint16_le(s, len);
-
-						switch (type)
-						{
-							default:
-								g_writeln("lib_mod_signal: unknown cap type %d len %d",
-										type, len);
-								break;
-						}
-
-						s->p = phold + len;
+						default:
+							g_writeln("lib_mod_signal: unknown cap type %d len %d",
+									type, len);
+							break;
 					}
 
-					lib_send_client_info(mod);
+					s->p = phold + len;
 				}
-			} else
-				if (type == 3) /* order list with len after type */
-				{
-					init_stream(s, len);
-					rv = lib_recv(mod, s->data, len);
 
-					if (rv == 0)
+				lib_send_client_info(mod);
+			}
+		}
+		else if (type == 3) /* order list with len after type */
+		{
+			init_stream(s, len);
+			rv = lib_recv(mod, s->data, len);
+
+			if (rv == 0)
+			{
+				for (index = 0; index < num_orders; index++)
+				{
+					phold = s->p;
+					in_uint16_le(s, type);
+					in_uint16_le(s, len);
+					rv = lib_mod_process_orders(mod, type, s);
+
+					if (rv != 0)
 					{
-						for (index = 0; index < num_orders; index++)
-						{
-							phold = s->p;
-							in_uint16_le(s, type);
-							in_uint16_le(s, len);
-							rv = lib_mod_process_orders(mod, type, s);
-
-							if (rv != 0)
-							{
-								break;
-							}
-
-							s->p = phold + len;
-						}
+						break;
 					}
-				} else
-				{
-					g_writeln("unknown type %d", type);
+
+					s->p = phold + len;
 				}
+			}
+		}
+		else
+		{
+			g_writeln("unknown type %d", type);
+		}
 	}
 
 	free_stream(s); LIB_DEBUG(mod, "out lib_mod_signal");
+
 	return rv;
 }
 
 /******************************************************************************/
 /* return error */
-int 
-lib_mod_end(struct mod *mod)
+int lib_mod_end(struct mod *mod)
 {
 	return 0;
 }
 
 /******************************************************************************/
 /* return error */
-int 
-lib_mod_set_param(struct mod *mod, char *name, char *value)
+int lib_mod_set_param(struct mod *mod, char *name, char *value)
 {
 	if (g_strcasecmp(name, "username") == 0)
 	{
 		g_strncpy(mod->username, value, 255);
-	} else
-		if (g_strcasecmp(name, "password") == 0)
-		{
-			g_strncpy(mod->password, value, 255);
-		} else
-			if (g_strcasecmp(name, "ip") == 0)
-			{
-				g_strncpy(mod->ip, value, 255);
-			} else
-				if (g_strcasecmp(name, "port") == 0)
-				{
-					g_strncpy(mod->port, value, 255);
-				} else
-					if (g_strcasecmp(name, "client_info") == 0)
-					{
-						g_memcpy(&(mod->client_info), value, sizeof(mod->client_info));
-					}
+	}
+	else if (g_strcasecmp(name, "password") == 0)
+	{
+		g_strncpy(mod->password, value, 255);
+	}
+	else if (g_strcasecmp(name, "ip") == 0)
+	{
+		g_strncpy(mod->ip, value, 255);
+	}
+	else if (g_strcasecmp(name, "port") == 0)
+	{
+		g_strncpy(mod->port, value, 255);
+	}
+	else if (g_strcasecmp(name, "client_info") == 0)
+	{
+		g_memcpy(&(mod->client_info), value, sizeof(mod->client_info));
+	}
 
 	return 0;
 }
 
 /******************************************************************************/
 /* return error */
-int 
-lib_mod_get_wait_objs(struct mod *mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
+int lib_mod_get_wait_objs(struct mod *mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
 {
 	int i;
 
@@ -836,8 +837,7 @@ lib_mod_get_wait_objs(struct mod *mod, tbus *read_objs, int *rcount, tbus *write
 
 /******************************************************************************/
 /* return error */
-int 
-lib_mod_check_wait_objs(struct mod *mod)
+int lib_mod_check_wait_objs(struct mod *mod)
 {
 	int rv;
 
@@ -858,8 +858,7 @@ lib_mod_check_wait_objs(struct mod *mod)
 }
 
 /******************************************************************************/
-struct mod *
-mod_init(void)
+struct mod* mod_init(void)
 {
 	struct mod *mod;
 
@@ -875,12 +874,12 @@ mod_init(void)
 	mod->mod_set_param = lib_mod_set_param;
 	mod->mod_get_wait_objs = lib_mod_get_wait_objs;
 	mod->mod_check_wait_objs = lib_mod_check_wait_objs;
+
 	return mod;
 }
 
 /******************************************************************************/
-int 
-mod_exit(struct mod *mod)
+int mod_exit(struct mod *mod)
 {
 	if (mod == 0)
 	{
@@ -890,5 +889,6 @@ mod_exit(struct mod *mod)
 	g_delete_wait_obj_from_socket(mod->sck_obj);
 	g_tcp_close(mod->sck);
 	g_free(mod);
+
 	return 0;
 }

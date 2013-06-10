@@ -24,8 +24,7 @@
 
 /*****************************************************************************/
 /* all login help screen events go here */
-static int 
-xrdp_wm_login_help_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
+static int xrdp_wm_login_help_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
 {
 	xrdpPainter *p;
 
@@ -214,7 +213,8 @@ static int xrdp_wm_ok_clicked(xrdpBitmap *wnd)
 			list_append_list_strdup(mod_data->values, wm->mm->login_values, 0);
 			xrdp_wm_set_login_mode(wm, 2);
 		}
-	} else
+	}
+	else
 	{
 		log_message(LOG_LEVEL_ERROR, "Combo is 0 - potential programming error");
 	}
