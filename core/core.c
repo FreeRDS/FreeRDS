@@ -53,39 +53,37 @@ int libxrdp_set_bounds_rect(xrdpSession* session, xrdpRect* rect)
 	return 0;
 }
 
+xrdpSession* libxrdp_session_new()
+{
+	xrdpSession* session;
+
+	session = (xrdpSession*) malloc(sizeof(xrdpSession));
+
+	if (session)
+	{
+		ZeroMemory(session, sizeof(xrdpSession));
+
+		session->bs = Stream_New(NULL, 16384);
+		session->bts = Stream_New(NULL, 16384);
+	}
+
+	return session;
+}
+
+void libxrdp_session_free(xrdpSession* session)
+{
+	if (session)
+	{
+		Stream_Free(session->bs, TRUE);
+		Stream_Free(session->bts, TRUE);
+
+		free(session);
+	}
+}
+
 /**
  * Original XRDP stubbed interface
  */
-
-xrdpSession* libxrdp_init(tbus id, struct trans* trans)
-{
-	printf("%s\n", __FUNCTION__);
-	return 0;
-}
-
-int libxrdp_exit(xrdpSession* session)
-{
-	printf("%s\n", __FUNCTION__);
-	return 0;
-}
-
-int libxrdp_disconnect(xrdpSession* session)
-{
-	printf("%s\n", __FUNCTION__);
-	return 0;
-}
-
-int libxrdp_process_incomming(xrdpSession* session)
-{
-	printf("%s\n", __FUNCTION__);
-	return 0;
-}
-
-int libxrdp_process_data(xrdpSession* session)
-{
-	printf("%s\n", __FUNCTION__);
-	return 0;
-}
 
 int libxrdp_send_palette(xrdpSession* session, int* palette)
 {
@@ -570,8 +568,11 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	cache_bitmap_v2.compressed = TRUE;
 	cache_bitmap_v2.flags = CBR2_NO_BITMAP_COMPRESSION_HDR;
 
-	s = Stream_New(NULL, 16384);
-	ts = Stream_New(NULL, 16384);
+	s = session->bs;
+	ts = session->bts;
+
+	Stream_SetPosition(s, 0);
+	Stream_SetPosition(ts, 0);
 
 	lines = freerdp_bitmap_compress(data, width, height, s, bpp, 16384, height - 1, ts, e);
 	Stream_SealLength(s);
@@ -584,9 +585,6 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	cache_bitmap_v2.cbUncompressedSize = width * height * bytesPerPixel;
 
 	secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
-
-	Stream_Free(s, TRUE);
-	Stream_Free(ts, TRUE);
 
 	return 0;
 }

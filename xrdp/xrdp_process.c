@@ -60,13 +60,11 @@ void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
 		context->info->size = sizeof(xrdpClientInfo);
 	}
 
-	context->session = (xrdpSession*) malloc(sizeof(xrdpSession));
+	context->session = libxrdp_session_new();
 
 	if (context->session)
 	{
-		ZeroMemory(context->session, sizeof(xrdpSession));
 		context->session->client_info = context->info;
-
 		context->session->context = (rdpContext*) context;
 		context->session->client = client;
 	}

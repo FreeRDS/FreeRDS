@@ -88,23 +88,18 @@ struct xrdp_session
 	void* orders;
 	xrdpClientInfo* client_info;
 	int up_and_running;
-	//struct stream* s;
 	int (*is_term)(void);
 
 	/* FreeRDP */
 	rdpContext* context;
 	freerdp_peer* client;
+
+	wStream* bs;
+	wStream* bts;
 };
 
-FREERDP_API xrdpSession* libxrdp_init(tbus id, struct trans* trans);
-
-FREERDP_API int libxrdp_exit(xrdpSession* session);
-
-FREERDP_API int libxrdp_disconnect(xrdpSession* session);
-
-FREERDP_API int libxrdp_process_incomming(xrdpSession* session);
-
-FREERDP_API int libxrdp_process_data(xrdpSession* session);
+FREERDP_API xrdpSession* libxrdp_session_new();
+FREERDP_API void libxrdp_session_free(xrdpSession* session);
 
 FREERDP_API int libxrdp_send_palette(xrdpSession* session, int* palette);
 
