@@ -105,6 +105,7 @@ struct mod
 	int width;
 	int height;
 	int bpp;
+	int rfx;
 	int sck_closed;
 	char username[256];
 	char password[256];

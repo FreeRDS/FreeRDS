@@ -1598,9 +1598,10 @@ static BOOL lfreerdp_post_connect(freerdp *instance)
 }
 
 /******************************************************************************/
-static void lfreerdp_context_new(freerdp *instance, rdpContext *context)
+static int lfreerdp_context_new(freerdp *instance, rdpContext *context)
 {
 	LLOGLN(0, ("lfreerdp_context_new: %p", context));
+	return 0;
 }
 
 /******************************************************************************/
@@ -1688,7 +1689,7 @@ struct mod* mod_init(void)
 	mod->inst = freerdp_new();
 	mod->inst->PreConnect = lfreerdp_pre_connect;
 	mod->inst->PostConnect = lfreerdp_post_connect;
-	mod->inst->context_size = sizeof(modContext);
+	mod->inst->ContextSize = sizeof(modContext);
 	mod->inst->ContextNew = lfreerdp_context_new;
 	mod->inst->ContextFree = lfreerdp_context_free;
 	mod->inst->ReceiveChannelData = lfreerdp_receive_channel_data;

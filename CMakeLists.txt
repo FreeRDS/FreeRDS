@@ -91,6 +91,8 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 	set(BUILD_SHARED_LIBS ON)
 endif()
 
+add_subdirectory(avro)
+
 add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(xrdp)

@@ -91,7 +91,7 @@ xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* 
 
 	client = (freerdp_peer*) transport;
 
-	client->context_size = sizeof(xrdpProcess);
+	client->ContextSize = sizeof(xrdpProcess);
 	client->ContextNew = (psPeerContextNew) xrdp_peer_context_new;
 	client->ContextFree = (psPeerContextFree) xrdp_peer_context_free;
 	freerdp_peer_context_new(client);

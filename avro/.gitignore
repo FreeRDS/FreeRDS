@@ -1,0 +1,7 @@
+avro-c.pc
+avroappend
+avrocat
+avromod
+avropipe
+libavro.*
+
