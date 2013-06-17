@@ -19,6 +19,7 @@ set(MODULE_NAME "${XRDP_NG_MODULE}-xup")
 set(MODULE_PREFIX "FREERDP_XRDP_XUP")
 
 include_directories("../common")
+include_directories("../avro/src")
 
 set(${MODULE_PREFIX}_HEADERS
 	xup.h)
@@ -29,7 +30,7 @@ set(${MODULE_PREFIX}_SRCS
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common avro-static)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

@@ -226,6 +226,11 @@ endif()
 
 mark_as_advanced(GL_INCLUDE_DIR GL_LIBRARY)
 
+include_directories("../../avro/src")
+
+add_library("avro-static" STATIC IMPORTED)
+set_property(TARGET "avro-static" PROPERTY IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../../avro/src/libavro.a")
+
 include_directories(${XFONT_INCLUDE_DIRS} ${XAU_INCLUDE_DIRS} ${GL_INCLUDE_DIRS}
 	${XDMCP_INCLUDE_DIRS} ${XDAMAGE_INCLUDE_DIRS} ${PIXMAN_INCLUDE_DIRS})
 
@@ -375,6 +380,8 @@ list(APPEND ${MODULE_PREFIX}_LIBS
 set(${MODULE_PREFIX}_STATIC_LIBS
 	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
 	render-static xkb-static Xext-static Xi-static glx-static glxdri-static xfixes-static damageext-static damage-static sync-static)
+
+list(APPEND ${MODULE_PREFIX}_STATIC_LIBS avro-static)
 
 merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 

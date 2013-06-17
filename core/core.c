@@ -158,7 +158,7 @@ int libxrdp_orders_init(xrdpSession* session)
 {
 	rdpUpdate* update = session->context->update;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	update->BeginPaint(session->context);
 
@@ -169,7 +169,7 @@ int libxrdp_orders_send(xrdpSession* session)
 {
 	rdpUpdate* update = session->context->update;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	update->EndPaint(session->context);
 
@@ -180,7 +180,7 @@ int libxrdp_orders_force_send(xrdpSession* session)
 {
 	rdpUpdate* update = session->context->update;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	update->EndPaint(session->context);
 
@@ -193,7 +193,7 @@ int libxrdp_orders_rect(xrdpSession* session, int x, int y,
 	OPAQUE_RECT_ORDER opaqueRect;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	opaqueRect.nLeftRect = x;
 	opaqueRect.nTopRect = y;
@@ -322,8 +322,8 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	MEMBLT_ORDER memblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s id: %d index: %d width: %d height: %d\n",
-			__FUNCTION__, cache_id, cache_idx, cx, cy);
+	//printf("%s id: %d index: %d width: %d height: %d\n",
+	//		__FUNCTION__, cache_id, cache_idx, cx, cy);
 
 	memblt.nLeftRect = x;
 	memblt.nTopRect = y;
@@ -470,7 +470,7 @@ int libxrdp_orders_send_font(xrdpSession* session,
 {
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	if (secondary->glyph_v2)
 	{
@@ -552,8 +552,8 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s id: %d index: %d width: %d height: %d\n",
-			__FUNCTION__, cache_id, cache_idx, width, height);
+	//printf("%s id: %d index: %d width: %d height: %d\n",
+	//		__FUNCTION__, cache_id, cache_idx, width, height);
 
 	e = width % 4;
 

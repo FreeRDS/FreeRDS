@@ -22,7 +22,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "rdp.h"
 #include "xrdp_rail.h"
 
-#define LOG_LEVEL 1
+#include <avro.h>
+
+#define LOG_LEVEL 10
 #define LLOG(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; } } while (0)
 #define LLOGLN(_level, _args) \
@@ -33,9 +35,6 @@ static int g_sck = 0;
 static int g_sck_closed = 0;
 static int g_connected = 0;
 static int g_dis_listen_sck = 0;
-//static int g_dis_sck = 0;
-//static int g_dis_sck_closed = 0;
-//static int g_dis_connected = 0;
 
 static int g_begin = 0;
 static struct stream *g_out_s = 0;
@@ -616,6 +615,94 @@ static int rdpup_send_rail(void)
 	return 0;
 }
 
+const char CAPABILITIES_SCHEMA[] =
+"{\"type\":\"record\",\
+	\"name\":\"Capabilities\",\
+	\"fields\":[\
+		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
+		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
+		{\"name\": \"RemoteFX\", \"type\": \"boolean\"}\
+		]}";
+
+static int rdpup_process_capabilities_msg(const char* buffer, int length)
+{
+	size_t index;
+	int bJPEG;
+	int bNSCodec;
+	int bRemoteFX;
+
+	avro_schema_t record_schema;
+	avro_schema_from_json_literal(CAPABILITIES_SCHEMA, &record_schema);
+
+	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
+
+	avro_reader_t reader = avro_reader_memory(buffer, length);
+
+	avro_value_t val;
+	avro_generic_value_new(record_class, &val);
+
+	avro_value_read(reader, &val);
+
+	avro_value_t field;
+
+	avro_value_get_by_name(&val, "JPEG", &field, &index);
+	avro_value_get_boolean(&field, &bJPEG);
+
+	avro_value_get_by_name(&val, "NSCodec", &field, &index);
+	avro_value_get_boolean(&field, &bNSCodec);
+
+	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
+	avro_value_get_boolean(&field, &bRemoteFX);
+
+	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
+			bJPEG, bNSCodec, bRemoteFX));
+
+	{
+		int i1;
+		int bytes = sizeof(g_rdpScreen.client_info);
+
+		memcpy(&(g_rdpScreen.client_info), &buffer[(length - bytes)], bytes);
+		g_rdpScreen.client_info.size = bytes;
+		LLOGLN(0, ("rdpup_process_msg: got client info bytes %d", bytes));
+		LLOGLN(0, ("  jpeg support %d", g_rdpScreen.client_info.jpeg));
+		i1 = g_rdpScreen.client_info.offscreen_support_level;
+		LLOGLN(0, ("  offscreen support %d", i1));
+		i1 = g_rdpScreen.client_info.offscreen_cache_size;
+		LLOGLN(0, ("  offscreen size %d", i1));
+		i1 = g_rdpScreen.client_info.offscreen_cache_entries;
+		LLOGLN(0, ("  offscreen entries %d", i1));
+
+		if (g_rdpScreen.client_info.offscreen_support_level > 0)
+		{
+			if (g_rdpScreen.client_info.offscreen_cache_entries > 0)
+			{
+				g_max_os_bitmaps = g_rdpScreen.client_info.offscreen_cache_entries;
+				g_free(g_os_bitmaps);
+				g_os_bitmaps = (struct rdpup_os_bitmap *)
+                        		       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
+			}
+		}
+
+		if (g_rdpScreen.client_info.rail_support_level > 0)
+		{
+			g_use_rail = 1;
+			rdpup_send_rail();
+		}
+		if (g_rdpScreen.client_info.offscreen_cache_entries == 2000)
+		{
+			LLOGLN(0, ("  client can do offscreen to offscreen blits"));
+			g_can_do_pix_to_pix = 1;
+		}
+		else
+		{
+			LLOGLN(0, ("  client can not do offscreen to offscreen blits"));
+			g_can_do_pix_to_pix = 0;
+		}
+	}
+
+	return 0;
+}
+
 /******************************************************************************/
 static int rdpup_process_msg(struct stream *s)
 {
@@ -629,6 +716,8 @@ static int rdpup_process_msg(struct stream *s)
 	int i1;
 
 	in_uint16_le(s, msg_type);
+
+	LLOGLN(10, ("rdpup_process_msg - msg %d", msg_type));
 
 	if (msg_type == 103)
 	{
@@ -710,6 +799,7 @@ static int rdpup_process_msg(struct stream *s)
 				break;
 		}
 	}
+#if 0
 	else if (msg_type == 104)
 	{
 		in_uint32_le(s, bytes);
@@ -756,6 +846,12 @@ static int rdpup_process_msg(struct stream *s)
 			LLOGLN(0, ("  client can not do offscreen to offscreen blits"));
 			g_can_do_pix_to_pix = 0;
 		}
+	}
+#endif
+	else if (msg_type == 104)
+	{
+		bytes = s->size - 6;
+		rdpup_process_capabilities_msg(s->p, bytes);
 	}
 	else
 	{

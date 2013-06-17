@@ -20,6 +20,10 @@
 
 #include "xup.h"
 
+#include <avro.h>
+
+#include <winpr/crt.h>
+
 /******************************************************************************/
 /* returns error */
 int lib_recv(struct mod *mod, char *data, int len)
@@ -676,6 +680,71 @@ static int lib_send_client_info(struct mod *mod)
 	return 0;
 }
 
+const char CAPABILITIES_SCHEMA[] =
+"{\"type\":\"record\",\
+	\"name\":\"Capabilities\",\
+	\"fields\":[\
+		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
+		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
+		{\"name\": \"RemoteFX\", \"type\": \"boolean\"}\
+		]}";
+
+static int lib_send_capabilities(struct mod* mod)
+{
+	size_t index;
+	size_t length;
+	char* buffer;
+	int info_length;
+
+	avro_schema_t record_schema;
+	avro_schema_from_json_literal(CAPABILITIES_SCHEMA, &record_schema);
+
+	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
+
+	avro_value_t val;
+	avro_generic_value_new(record_class, &val);
+
+	avro_value_t field;
+
+	avro_value_get_by_name(&val, "JPEG", &field, &index);
+	avro_value_set_boolean(&field, 1);
+
+	avro_value_get_by_name(&val, "NSCodec", &field, &index);
+	avro_value_set_boolean(&field, 0);
+
+	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
+	avro_value_set_boolean(&field, 1);
+
+	avro_value_sizeof(&val, &length);
+
+	info_length = sizeof(mod->client_info);
+	buffer = (char*) malloc(length + 10 + info_length);
+
+	avro_writer_t writer = avro_writer_memory(&buffer[6], (int64_t) length);
+	avro_value_write(writer, &val);
+
+	avro_value_iface_decref(record_class);
+	avro_schema_decref(record_schema);
+
+        avro_writer_flush(writer);
+
+        *((UINT32*) &buffer[0]) = (UINT32) length + 6 + info_length;
+        *((UINT16*) &buffer[4]) = 104;
+
+        memcpy(&buffer[6 + length], &(mod->client_info), sizeof(mod->client_info));
+
+        LIB_DEBUG(mod, "lib_send_capabilities start");
+
+	lib_send(mod, buffer, (int) length + 6 + info_length);
+
+	LIB_DEBUG(mod, "lib_send_capabilities end");
+
+        avro_writer_free(writer);
+	free(buffer);
+
+	return 0;
+}
+
 /******************************************************************************/
 /* return error */
 int lib_mod_signal(struct mod *mod)
@@ -743,7 +812,8 @@ int lib_mod_signal(struct mod *mod)
 					s->p = phold + len;
 				}
 
-				lib_send_client_info(mod);
+				//lib_send_client_info(mod);
+				lib_send_capabilities(mod);
 			}
 		}
 		else if (type == 3) /* order list with len after type */
