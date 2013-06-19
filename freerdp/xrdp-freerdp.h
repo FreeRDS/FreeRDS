@@ -30,7 +30,6 @@
 #include "os_calls.h"
 #include "defines.h"
 #include "xrdp_rail.h"
-#include "xrdp_client_info.h"
 
 #include <X11/Xlib.h>
 
@@ -146,8 +145,6 @@ struct mod
 	int vrev;
 	char username[256];
 	char password[256];
-
-	xrdpClientInfo client_info;
 
 	struct rdp_freerdp* inst;
 	struct bitmap_item bitmap_cache[4][4096];

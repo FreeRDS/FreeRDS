@@ -67,6 +67,7 @@ void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
 		context->session->client_info = context->info;
 		context->session->context = (rdpContext*) context;
 		context->session->client = client;
+		context->session->settings = client->settings;
 	}
 
 	context->status = 1;
@@ -228,7 +229,7 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (settings->Password)
 	{
 		strcpy(xfp->info->password, settings->Password);
-		xfp->info->AutoLogonEnabled = 1;
+		client->settings->AutoLogonEnabled = 1;
 	}
 
 	xfp->wm = xrdp_wm_create(xfp, xfp->info);

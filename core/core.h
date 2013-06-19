@@ -92,6 +92,7 @@ struct xrdp_session
 	/* FreeRDP */
 	rdpContext* context;
 	freerdp_peer* client;
+	rdpSettings* settings;
 
 	wStream* bs;
 	wStream* bts;

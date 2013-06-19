@@ -54,7 +54,6 @@ struct xrdp_client_info
 	char program[256];
 	char directory[256];
 	int CompressionEnabled;
-	int AutoLogonEnabled;
 	int BrushSupportLevel;
 	char client_ip[256];
 	int OffscreenSupportLevel;

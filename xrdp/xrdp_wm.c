@@ -24,19 +24,22 @@
 /*****************************************************************************/
 xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 {
-	xrdpWm* self = (xrdpWm*) NULL;
-	char event_name[256];
 	int pid = 0;
+	char event_name[256];
+	rdpSettings* settings;
+	xrdpWm* self = (xrdpWm*) NULL;
 
 	/* initialize (zero out) local variables: */
 	g_memset(event_name, 0, sizeof(char) * 256);
 
 	self = (xrdpWm*) g_malloc(sizeof(xrdpWm), 1);
-	self->client_info = client_info;
-	self->screen = xrdp_bitmap_create(client_info->DesktopWidth, client_info->DesktopHeight, client_info->ColorDepth, WND_TYPE_SCREEN, self);
-	self->screen->wm = self;
 	self->pro_layer = owner;
 	self->session = xrdp_process_get_session(owner);
+	settings = self->session->settings;
+
+	self->client_info = client_info;
+	self->screen = xrdp_bitmap_create(settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth, WND_TYPE_SCREEN, self);
+	self->screen->wm = self;
 	pid = g_getpid();
 	g_snprintf(event_name, 255, "xrdp_%8.8x_wm_login_mode_event_%8.8x", pid, xrdp_process_get_session_id(owner));
 	log_message(LOG_LEVEL_DEBUG, event_name);
@@ -48,7 +51,7 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 	self->mm = xrdp_mm_create(self);
 	self->default_font = xrdp_font_create(self);
 	/* this will use built in keymap or load from file */
-	get_keymaps(self->session->client_info->KeyboardLayout, &(self->keymap));
+	get_keymaps(settings->KeyboardLayout, &(self->keymap));
 	xrdp_wm_set_login_mode(self, 0);
 	self->target_surface = self->screen;
 	self->current_surface_index = 0xFFFF; /* screen */
@@ -516,7 +519,7 @@ int xrdp_wm_init(xrdpWm *self)
 	xrdp_wm_load_static_pointers(self);
 	self->screen->bg_color = self->background;
 
-	if (self->session->client_info->AutoLogonEnabled && (autorun_name[0] != 0))
+	if (self->session->settings->AutoLogonEnabled && (autorun_name[0] != 0))
 	{
 		g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
 		fd = g_file_open(cfg_file); /* xrdp.ini */
@@ -529,10 +532,15 @@ int xrdp_wm_init(xrdpWm *self)
 			values->auto_free = 1;
 			/* domain names that starts with '_' are reserved for IP/DNS to
 			 * simplify for the user in a gateway setup */
-			if (self->session->client_info->domain[0] != '_')
+			if (self->session->settings->Domain)
 			{
-				g_strncpy(section_name, self->session->client_info->domain, 255);
+				strcpy(section_name, self->session->settings->Domain);
 			}
+			else
+			{
+				section_name[0] = 0;
+			}
+
 			if (section_name[0] == 0)
 			{
 				if (autorun_name[0] == 0)
@@ -568,7 +576,7 @@ int xrdp_wm_init(xrdpWm *self)
 					q = (char *)list_get_item(names, index);
 					r = (char *)list_get_item(values, index);
 
-					if (g_strncmp("password", q, 255) == 0)
+					if (strcmp("password", q) == 0)
 					{
 						/* if the password has been asked for by the module, use what the
                            client says.
@@ -576,23 +584,23 @@ int xrdp_wm_init(xrdpWm *self)
                            instead of what the client says. */
 						if (g_strncmp("ask", r, 3) == 0)
 						{
-							r = self->session->client_info->password;
+							r = self->session->settings->Password;
 						}
 					}
-					else if (g_strncmp("username", q, 255) == 0)
+					else if (strcmp("username", q) == 0)
 					{
 						/* if the username has been asked for by the module, use what the
                            client says.
                            if the username has been manually set in the config, use that
                            instead of what the client says. */
-						if (g_strncmp("ask", r, 3) == 0)
+						if (strcmp("ask", r) == 0)
 						{
-							r = self->session->client_info->username;
+							r = self->session->settings->Username;
 						}
 					}
 
-					list_add_item(self->mm->login_names, (long)g_strdup(q));
-					list_add_item(self->mm->login_values, (long)g_strdup(r));
+					list_add_item(self->mm->login_names, (long) g_strdup(q));
+					list_add_item(self->mm->login_values, (long) g_strdup(r));
 				}
 
 				xrdp_wm_set_login_mode(self, 2);
@@ -1641,7 +1649,7 @@ xrdp_wm_log_wnd_notify(xrdpBitmap *wnd,
 			if (wm->mm->mod_handle == 0)
 			{
 				/* make sure autologin is off */
-				wm->session->client_info->AutoLogonEnabled = 0;
+				wm->session->settings->AutoLogonEnabled = 0;
 				xrdp_wm_set_login_mode(wm, 0); /* reset session */
 			}
 		}

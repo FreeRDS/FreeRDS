@@ -418,12 +418,6 @@ static int lxrdp_set_param(struct mod *mod, char *name, char *value)
 	{
 		g_strncpy(mod->password, value, 255);
 	}
-	else if (g_strcmp(name, "client_info") == 0)
-	{
-		g_memcpy(&(mod->client_info), value, sizeof(mod->client_info));
-		/* This is a Struct and cannot be printed in next else*/
-		LLOGLN(10, ("Client_info struct ignored"));
-	}
 	else
 	{
 		LLOGLN(0, ("lxrdp_set_param: unknown name [%s] value [%s]", name, value));
@@ -1279,7 +1273,9 @@ static BOOL lfreerdp_pre_connect(freerdp *instance)
 	instance->settings->Username = g_strdup(mod->username);
 	instance->settings->Password = g_strdup(mod->password);
 
-	if (mod->client_info.rail_support_level > 0)
+	//instance->settings->RemoteApplicationMode = 1;
+
+	if (instance->settings->RemoteApplicationMode)
 	{
 		LLOGLN(0, ("Railsupport !!!!!!!!!!!!!!!!!!"));
 		instance->settings->RemoteApplicationMode = TRUE;
@@ -1295,9 +1291,6 @@ static BOOL lfreerdp_pre_connect(freerdp *instance)
 	}
 	instance->settings->CompressionEnabled = FALSE;
 	instance->settings->IgnoreCertificate = TRUE;
-
-	// here
-	//instance->settings->RdpVersion = 4;
 
 	instance->update->BeginPaint = lfreerdp_begin_paint;
 	instance->update->EndPaint = lfreerdp_end_paint;

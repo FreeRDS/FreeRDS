@@ -48,8 +48,7 @@ tbus g_get_sync_event(void);
 void g_process_waiting_function(void);
 
 /* xrdp_cache.c */
-struct xrdp_cache* xrdp_cache_create(xrdpWm* owner, xrdpSession* session,
-		xrdpClientInfo* client_info);
+struct xrdp_cache* xrdp_cache_create(xrdpWm* owner, xrdpSession* session, xrdpClientInfo* client_info);
 void xrdp_cache_delete(struct xrdp_cache* self);
 int xrdp_cache_reset(struct xrdp_cache* self, xrdpClientInfo* client_info);
 int xrdp_cache_add_bitmap(struct xrdp_cache* self, struct xrdp_bitmap* bitmap, int hints);
