@@ -630,8 +630,6 @@ static int rdpup_process_capabilities_msg(const char* buffer, int length)
 	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
 	avro_value_get_boolean(&field, &g_rdpScreen.RemoteFX);
 
-#if 1
-
 	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
 	avro_value_get_int(&field, &g_rdpScreen.OffscreenSupportLevel);
 
@@ -646,53 +644,31 @@ static int rdpup_process_capabilities_msg(const char* buffer, int length)
 
 	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
 	avro_value_get_int(&field, &g_rdpScreen.PointerFlags);
-#endif
 
 	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
 			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
 
+	if (g_rdpScreen.OffscreenSupportLevel > 0)
 	{
-		int i1;
-		int bytes = sizeof(g_rdpScreen.client_info);
-
-		memcpy(&(g_rdpScreen.client_info), &buffer[(length - bytes)], bytes);
-		g_rdpScreen.client_info.size = bytes;
-		LLOGLN(0, ("rdpup_process_msg: got client info bytes %d", bytes));
-		LLOGLN(0, ("  jpeg support %d", g_rdpScreen.client_info.jpeg));
-		i1 = g_rdpScreen.client_info.offscreen_support_level;
-		LLOGLN(0, ("  offscreen support %d", i1));
-		i1 = g_rdpScreen.client_info.offscreen_cache_size;
-		LLOGLN(0, ("  offscreen size %d", i1));
-		i1 = g_rdpScreen.client_info.offscreen_cache_entries;
-		LLOGLN(0, ("  offscreen entries %d", i1));
-
-		if (g_rdpScreen.client_info.offscreen_support_level > 0)
+		if (g_rdpScreen.OffscreenCacheEntries > 0)
 		{
-			if (g_rdpScreen.client_info.offscreen_cache_entries > 0)
-			{
-				g_max_os_bitmaps = g_rdpScreen.client_info.offscreen_cache_entries;
-				g_free(g_os_bitmaps);
-				g_os_bitmaps = (struct rdpup_os_bitmap *)
-                        		       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
-			}
-		}
-
-		if (g_rdpScreen.client_info.rail_support_level > 0)
-		{
-			g_use_rail = 1;
-			rdpup_send_rail();
-		}
-		if (g_rdpScreen.client_info.offscreen_cache_entries == 2000)
-		{
-			LLOGLN(0, ("  client can do offscreen to offscreen blits"));
-			g_can_do_pix_to_pix = 1;
-		}
-		else
-		{
-			LLOGLN(0, ("  client can not do offscreen to offscreen blits"));
-			g_can_do_pix_to_pix = 0;
+			g_max_os_bitmaps = g_rdpScreen.OffscreenCacheEntries;
+			g_free(g_os_bitmaps);
+			g_os_bitmaps = (struct rdpup_os_bitmap*)
+                		       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
 		}
 	}
+
+	if (g_rdpScreen.RailSupportLevel > 0)
+	{
+		g_use_rail = 1;
+		rdpup_send_rail();
+	}
+
+	g_can_do_pix_to_pix = 0;
+
+	if (g_rdpScreen.OffscreenCacheEntries == 2000)
+		g_can_do_pix_to_pix = 1;
 
 	return 0;
 }

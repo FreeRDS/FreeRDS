@@ -637,8 +637,8 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 
 	w = pCurs->bits->width;
 	h = pCurs->bits->height;
-	if ((pCurs->bits->argb != 0) &&
-			(g_rdpScreen.client_info.pointer_flags & 1))
+
+	if ((pCurs->bits->argb != 0) && (g_rdpScreen.PointerFlags & 1))
 	{
 		bpp = 32;
 		paddedRowBytes = PixmapBytePad(w, 32);

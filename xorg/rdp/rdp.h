@@ -66,7 +66,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xkbsrv.h"
 
 /* in xrdp/common */
-#include "xrdp_client_info.h"
 #include "xrdp_constants.h"
 
 #define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
@@ -150,8 +149,6 @@ struct _rdpScreenInfoRec
 	int rdp_bpp;
 	int rdp_Bpp;
 	int rdp_Bpp_mask;
-
-	struct xrdp_client_info client_info;
 
 	int Jpeg;
 	int NSCodec;

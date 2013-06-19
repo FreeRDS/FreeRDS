@@ -676,7 +676,6 @@ static int lib_send_capabilities(struct mod* mod)
 	size_t index;
 	size_t length;
 	char* buffer;
-	int info_length;
 
 	avro_schema_t record_schema;
 	avro_schema_from_json_literal(CAPABILITIES_SCHEMA, &record_schema);
@@ -697,7 +696,6 @@ static int lib_send_capabilities(struct mod* mod)
 	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
 	avro_value_set_boolean(&field, 1);
 
-#if 1
 	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
 	avro_value_set_int(&field, mod->client_info.offscreen_support_level);
 
@@ -712,12 +710,10 @@ static int lib_send_capabilities(struct mod* mod)
 
 	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
 	avro_value_set_int(&field, mod->client_info.pointer_flags);
-#endif
 
 	avro_value_sizeof(&val, &length);
 
-	info_length = sizeof(mod->client_info);
-	buffer = (char*) malloc(length + 6 + info_length);
+	buffer = (char*) malloc(length + 6);
 
 	avro_writer_t writer = avro_writer_memory(&buffer[6], (int64_t) length);
 	avro_value_write(writer, &val);
@@ -727,16 +723,10 @@ static int lib_send_capabilities(struct mod* mod)
 
         avro_writer_flush(writer);
 
-        *((UINT32*) &buffer[0]) = (UINT32) length + 6 + info_length;
+        *((UINT32*) &buffer[0]) = (UINT32) length + 6;
         *((UINT16*) &buffer[4]) = 104;
 
-        memcpy(&buffer[6 + length], &(mod->client_info), sizeof(mod->client_info));
-
-        LIB_DEBUG(mod, "lib_send_capabilities start");
-
-	lib_send(mod, buffer, (int) length + 6 + info_length);
-
-	LIB_DEBUG(mod, "lib_send_capabilities end");
+	lib_send(mod, buffer, (int) length + 6);
 
         avro_writer_free(writer);
 	free(buffer);
