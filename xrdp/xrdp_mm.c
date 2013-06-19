@@ -198,11 +198,11 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	}
 
 	/* send domain */
-	if (self->wm->client_info->domain[0] != '_')
+	if (self->wm->session->settings->Domain)
 	{
-		index = g_strlen(self->wm->client_info->domain);
+		index = g_strlen(self->wm->session->settings->Domain);
 		out_uint16_be(s, index);
-		out_uint8a(s, self->wm->client_info->domain, index);
+		out_uint8a(s, self->wm->session->settings->Domain, index);
 	}
 	else
 	{
@@ -211,19 +211,19 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	}
 
 	/* send program / shell */
-	index = g_strlen(self->wm->client_info->program);
+	index = g_strlen(self->wm->session->settings->AlternateShell);
 	out_uint16_be(s, index);
-	out_uint8a(s, self->wm->client_info->program, index);
+	out_uint8a(s, self->wm->session->settings->AlternateShell, index);
 
 	/* send directory */
-	index = g_strlen(self->wm->client_info->directory);
+	index = g_strlen(self->wm->session->settings->ShellWorkingDirectory);
 	out_uint16_be(s, index);
-	out_uint8a(s, self->wm->client_info->directory, index);
+	out_uint8a(s, self->wm->session->settings->ShellWorkingDirectory, index);
 
 	/* send client ip */
-	index = g_strlen(self->wm->client_info->client_ip);
+	index = g_strlen(self->wm->session->settings->ClientAddress);
 	out_uint16_be(s, index);
-	out_uint8a(s, self->wm->client_info->client_ip, index);
+	out_uint8a(s, self->wm->session->settings->ClientAddress, index);
 
 	s_mark_end(s);
 
@@ -510,9 +510,9 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 
 		self->mod->mod_set_param(self->mod, "client_info", (char *) (self->wm->session->client_info));
 
-		name = self->wm->session->client_info->hostname;
+		name = self->wm->session->settings->ServerHostname;
 		self->mod->mod_set_param(self->mod, "hostname", name);
-		g_snprintf(text, 255, "%d", self->wm->session->client_info->KeyboardLayout);
+		g_snprintf(text, 255, "%d", self->wm->session->settings->KeyboardLayout);
 		self->mod->mod_set_param(self->mod, "keylayout", text);
 
 		for (i = 0; i < self->login_names->count; i++)
@@ -1980,9 +1980,11 @@ int server_draw_text(xrdpModule *mod, int font, int flags, int mixmode, int clip
 /*****************************************************************************/
 int server_reset(xrdpModule *mod, int width, int height, int bpp)
 {
-	xrdpWm *wm;
+	xrdpWm* wm;
+	rdpSettings* settings;
 
 	wm = (xrdpWm *) (mod->wm);
+	settings = wm->session->settings;
 
 	if (wm->client_info == 0)
 	{
@@ -1990,13 +1992,13 @@ int server_reset(xrdpModule *mod, int width, int height, int bpp)
 	}
 
 	/* older client can't resize */
-	if (wm->client_info->ClientBuild <= 419)
+	if (settings->ClientBuild <= 419)
 	{
 		return 0;
 	}
 
 	/* if same, don't need to do anything */
-	if (wm->client_info->DesktopWidth == width && wm->client_info->DesktopHeight == height && wm->client_info->ColorDepth == bpp)
+	if (settings->DesktopWidth == width && settings->DesktopHeight == height && settings->ColorDepth == bpp)
 	{
 		return 0;
 	}
@@ -2010,7 +2012,7 @@ int server_reset(xrdpModule *mod, int width, int height, int bpp)
 	/* reset cache */
 	xrdp_cache_reset(wm->cache, wm->client_info);
 	/* resize the main window */
-	xrdp_bitmap_resize(wm->screen, wm->client_info->DesktopWidth, wm->client_info->DesktopHeight);
+	xrdp_bitmap_resize(wm->screen, settings->DesktopWidth, settings->DesktopHeight);
 	/* load some stuff */
 	xrdp_wm_load_static_colors_plus(wm, 0);
 	xrdp_wm_load_static_pointers(wm);
@@ -2038,7 +2040,8 @@ int read_allowed_channel_names(xrdpList *names, xrdpList *values)
 		if (file_read_section(fd, "channels", names, values) == 0)
 		{
 			ret = 1;
-		} else
+		}
+		else
 		{
 			log_message(LOG_LEVEL_ERROR, "Failure reading channel section of configuration");
 		}

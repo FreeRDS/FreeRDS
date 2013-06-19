@@ -24,21 +24,37 @@
 /*****************************************************************************/
 xrdpCache* xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo *client_info)
 {
+	int entries;
 	xrdpCache *self;
+	int bytesPerPixel;
+	rdpSettings* settings;
 
-	self = (xrdpCache *) g_malloc(sizeof(xrdpCache), 1);
+	self = (xrdpCache*) g_malloc(sizeof(xrdpCache), 1);
 	self->wm = owner;
 	self->session = session;
-	self->BitmapCompressionDisabled = client_info->BitmapCompressionDisabled;
-	self->cache1_entries = client_info->cache1_entries;
-	self->cache1_size = client_info->cache1_size;
-	self->cache2_entries = client_info->cache2_entries;
-	self->cache2_size = client_info->cache2_size;
-	self->cache3_entries = client_info->cache3_entries;
-	self->cache3_size = client_info->cache3_size;
-	self->bitmap_cache_persist_enable = client_info->BitmapCachePersistEnabled;
-	self->bitmap_cache_version = client_info->BitmapCacheVersion;
-	self->pointer_cache_entries = client_info->PointerCacheSize;
+	settings = session->settings;
+
+	bytesPerPixel = (settings->ColorDepth + 7) / 8;
+
+	entries = settings->BitmapCacheV2CellInfo[0].numEntries;
+	entries = MIN(entries, 2000);
+	self->cache1_entries = entries;
+	self->cache1_size = 256 * bytesPerPixel;
+
+	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
+	entries = MIN(entries, 2000);
+	self->cache2_entries = entries;
+	self->cache2_size = 1024 * bytesPerPixel;
+
+	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
+	entries = MIN(entries, 2000);
+	self->cache3_entries = entries;
+	self->cache3_size = 4096 * bytesPerPixel;
+
+	self->BitmapCompressionDisabled = settings->BitmapCompressionDisabled;
+	self->bitmap_cache_persist_enable = settings->BitmapCachePersistEnabled;
+	self->bitmap_cache_version = settings->BitmapCacheVersion;
+	self->pointer_cache_entries = settings->PointerCacheSize;
 	self->xrdp_os_del_list = list_create();
 
 	return self;
@@ -87,10 +103,14 @@ void xrdp_cache_delete(xrdpCache *self)
 /*****************************************************************************/
 int xrdp_cache_reset(xrdpCache *self, xrdpClientInfo *client_info)
 {
+	int i, j;
+	int entries;
 	xrdpWm *wm;
+	int bytesPerPixel;
 	xrdpSession *session;
-	int i;
-	int j;
+	rdpSettings* settings;
+
+	settings = self->session->settings;
 
 	/* free all the cached bitmaps */
 	for (i = 0; i < 3; i++)
@@ -118,16 +138,29 @@ int xrdp_cache_reset(xrdpCache *self, xrdpClientInfo *client_info)
 	/* set some stuff back */
 	self->wm = wm;
 	self->session = session;
-	self->BitmapCompressionDisabled = client_info->BitmapCompressionDisabled;
-	self->cache1_entries = client_info->cache1_entries;
-	self->cache1_size = client_info->cache1_size;
-	self->cache2_entries = client_info->cache2_entries;
-	self->cache2_size = client_info->cache2_size;
-	self->cache3_entries = client_info->cache3_entries;
-	self->cache3_size = client_info->cache3_size;
-	self->bitmap_cache_persist_enable = client_info->BitmapCachePersistEnabled;
-	self->bitmap_cache_version = client_info->BitmapCacheVersion;
-	self->pointer_cache_entries = client_info->PointerCacheSize;
+
+	bytesPerPixel = (settings->ColorDepth + 7) / 8;
+
+	entries = settings->BitmapCacheV2CellInfo[0].numEntries;
+	entries = MIN(entries, 2000);
+	self->cache1_entries = entries;
+	self->cache1_size = 256 * bytesPerPixel;
+
+	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
+	entries = MIN(entries, 2000);
+	self->cache2_entries = entries;
+	self->cache2_size = 1024 * bytesPerPixel;
+
+	entries = settings->BitmapCacheV2CellInfo[1].numEntries;
+	entries = MIN(entries, 2000);
+	self->cache3_entries = entries;
+	self->cache3_size = 4096 * bytesPerPixel;
+
+	self->BitmapCompressionDisabled = settings->BitmapCompressionDisabled;
+	self->bitmap_cache_persist_enable = settings->BitmapCachePersistEnabled;
+	self->bitmap_cache_version = settings->BitmapCacheVersion;
+	self->pointer_cache_entries = settings->PointerCacheSize;
+
 	return 0;
 }
 

@@ -290,21 +290,10 @@ static int xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 				{
 					self->login_window->focused_control = b;
 				}
-				/*Use the domain name as the destination IP/DNS
-				 This is useful in a gateway setup.*/
-				if (g_strncmp(name, "ip", 255) == 0)
-				{
-					/* If the first char in the domain name is '_' we use the domain name as IP*/
-					if (self->session->client_info->domain[0] == '_')
-					{
-						g_strncpy(b->caption1, &self->session->client_info->domain[1], 255);
-						b->edit_pos = g_mbstowcs(0, b->caption1, 0);
-					}
 
-				}
 				if (g_strncmp(name, "username", 255) == 0)
 				{
-					g_strncpy(b->caption1, self->session->client_info->username, 255);
+					strcpy(b->caption1, self->session->settings->Username);
 					b->edit_pos = g_mbstowcs(0, b->caption1, 0);
 
 					if (b->edit_pos > 0)
@@ -314,8 +303,7 @@ static int xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 				}
 
 #ifdef ACCESS
-				if ((g_strncmp(name, "password", 255) == 0) || (g_strncmp(name, "pampassword", 255)
-						== 0))
+				if ((g_strncmp(name, "password", 255) == 0) || (g_strncmp(name, "pampassword", 255) == 0))
 #else
 				if (g_strncmp(name, "password", 255) == 0)
 #endif
