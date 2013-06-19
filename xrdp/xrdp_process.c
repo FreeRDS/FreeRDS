@@ -185,13 +185,13 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 
 	settings = client->settings;
 
-	xfp->info->bpp = settings->ColorDepth;
-	xfp->info->width = settings->DesktopWidth;
-	xfp->info->height = settings->DesktopHeight;
-	xfp->info->build = settings->ClientBuild;
-	xfp->info->keylayout = settings->KeyboardLayout;
+	xfp->info->ColorDepth = settings->ColorDepth;
+	xfp->info->DesktopWidth = settings->DesktopWidth;
+	xfp->info->DesktopHeight = settings->DesktopHeight;
+	xfp->info->ClientBuild = settings->ClientBuild;
+	xfp->info->KeyboardLayout = settings->KeyboardLayout;
 
-	bytesPerPixel = (xfp->info->bpp + 7) / 8;
+	bytesPerPixel = (xfp->info->ColorDepth + 7) / 8;
 
 	entries = settings->BitmapCacheV2CellInfo[0].numEntries;
 	entries = MIN(entries, 2000);
@@ -210,15 +210,15 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 
 	settings->BitmapCacheVersion = 2;
 
-	xfp->info->use_bitmap_comp = 1;
-	xfp->info->use_bitmap_cache = settings->BitmapCacheEnabled;
-	xfp->info->bitmap_cache_version = settings->BitmapCacheVersion;
-	xfp->info->bitmap_cache_persist_enable = settings->BitmapCachePersistEnabled;
-	xfp->info->pointer_cache_entries = settings->PointerCacheSize;
+	xfp->info->BitmapCompressionDisabled = settings->BitmapCompressionDisabled;
+	xfp->info->BitmapCacheEnabled = settings->BitmapCacheEnabled;
+	xfp->info->BitmapCacheVersion = settings->BitmapCacheVersion;
+	xfp->info->BitmapCachePersistEnabled = settings->BitmapCachePersistEnabled;
+	xfp->info->PointerCacheSize = settings->PointerCacheSize;
 
-	xfp->info->offscreen_support_level = settings->OffscreenSupportLevel;
-	xfp->info->offscreen_cache_size = settings->OffscreenCacheSize * 1024;
-	xfp->info->offscreen_cache_entries = settings->OffscreenCacheEntries;
+	xfp->info->OffscreenSupportLevel = settings->OffscreenSupportLevel;
+	xfp->info->OffscreenCacheSize = settings->OffscreenCacheSize * 1024;
+	xfp->info->OffscreenCacheEntries = settings->OffscreenCacheEntries;
 
 	CopyMemory(xfp->info->orders, settings->OrderSupport, 32);
 
@@ -228,7 +228,7 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (settings->Password)
 	{
 		strcpy(xfp->info->password, settings->Password);
-		xfp->info->rdp_autologin = 1;
+		xfp->info->AutoLogonEnabled = 1;
 	}
 
 	xfp->wm = xrdp_wm_create(xfp, xfp->info);

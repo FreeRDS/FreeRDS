@@ -330,7 +330,7 @@ static int xrdp_painter_setup_brush(xrdpPainter *self, xrdpBrush *out_brush, xrd
 
 	if (in_brush->style == 3)
 	{
-		if (self->session->client_info->brush_cache_code == 1)
+		if (self->session->client_info->BrushSupportLevel == 1)
 		{
 			cache_id = xrdp_cache_add_brush(self->wm->cache, in_brush->pattern);
 			g_memset(out_brush->pattern, 0, 8);

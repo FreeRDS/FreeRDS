@@ -195,7 +195,7 @@ struct xrdp_cache
 	/* bitmap */
 	int bitmap_stamp;
 	xrdpBitmapItem bitmap_items[3][2000];
-	int use_bitmap_comp;
+	int BitmapCompressionDisabled;
 	int cache1_entries;
 	int cache1_size;
 	int cache2_entries;

@@ -29,16 +29,16 @@ xrdpCache* xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo
 	self = (xrdpCache *) g_malloc(sizeof(xrdpCache), 1);
 	self->wm = owner;
 	self->session = session;
-	self->use_bitmap_comp = client_info->use_bitmap_comp;
+	self->BitmapCompressionDisabled = client_info->BitmapCompressionDisabled;
 	self->cache1_entries = client_info->cache1_entries;
 	self->cache1_size = client_info->cache1_size;
 	self->cache2_entries = client_info->cache2_entries;
 	self->cache2_size = client_info->cache2_size;
 	self->cache3_entries = client_info->cache3_entries;
 	self->cache3_size = client_info->cache3_size;
-	self->bitmap_cache_persist_enable = client_info->bitmap_cache_persist_enable;
-	self->bitmap_cache_version = client_info->bitmap_cache_version;
-	self->pointer_cache_entries = client_info->pointer_cache_entries;
+	self->bitmap_cache_persist_enable = client_info->BitmapCachePersistEnabled;
+	self->bitmap_cache_version = client_info->BitmapCacheVersion;
+	self->pointer_cache_entries = client_info->PointerCacheSize;
 	self->xrdp_os_del_list = list_create();
 
 	return self;
@@ -118,16 +118,16 @@ int xrdp_cache_reset(xrdpCache *self, xrdpClientInfo *client_info)
 	/* set some stuff back */
 	self->wm = wm;
 	self->session = session;
-	self->use_bitmap_comp = client_info->use_bitmap_comp;
+	self->BitmapCompressionDisabled = client_info->BitmapCompressionDisabled;
 	self->cache1_entries = client_info->cache1_entries;
 	self->cache1_size = client_info->cache1_size;
 	self->cache2_entries = client_info->cache2_entries;
 	self->cache2_size = client_info->cache2_size;
 	self->cache3_entries = client_info->cache3_entries;
 	self->cache3_size = client_info->cache3_size;
-	self->bitmap_cache_persist_enable = client_info->bitmap_cache_persist_enable;
-	self->bitmap_cache_version = client_info->bitmap_cache_version;
-	self->pointer_cache_entries = client_info->pointer_cache_entries;
+	self->bitmap_cache_persist_enable = client_info->BitmapCachePersistEnabled;
+	self->bitmap_cache_version = client_info->BitmapCacheVersion;
+	self->pointer_cache_entries = client_info->PointerCacheSize;
 	return 0;
 }
 
@@ -287,7 +287,7 @@ int xrdp_cache_add_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int hints)
 	self->bitmap_items[cache_id][cache_idx].bitmap = bitmap;
 	self->bitmap_items[cache_id][cache_idx].stamp = self->bitmap_stamp;
 
-	if (self->use_bitmap_comp)
+	if (!self->BitmapCompressionDisabled)
 	{
 		if (self->bitmap_cache_version & 4)
 		{

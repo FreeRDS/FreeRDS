@@ -723,18 +723,18 @@ static int rdpup_process_msg(struct stream *s)
 		g_rdpScreen.client_info.size = bytes;
 		LLOGLN(0, ("rdpup_process_msg: got client info bytes %d", bytes));
 		LLOGLN(0, ("  jpeg support %d", g_rdpScreen.client_info.jpeg));
-		i1 = g_rdpScreen.client_info.offscreen_support_level;
+		i1 = g_rdpScreen.client_info.OffscreenSupportLevel;
 		LLOGLN(0, ("  offscreen support %d", i1));
-		i1 = g_rdpScreen.client_info.offscreen_cache_size;
+		i1 = g_rdpScreen.client_info.OffscreenCacheSize;
 		LLOGLN(0, ("  offscreen size %d", i1));
-		i1 = g_rdpScreen.client_info.offscreen_cache_entries;
+		i1 = g_rdpScreen.client_info.OffscreenCacheEntries;
 		LLOGLN(0, ("  offscreen entries %d", i1));
 
-		if (g_rdpScreen.client_info.offscreen_support_level > 0)
+		if (g_rdpScreen.client_info.OffscreenSupportLevel > 0)
 		{
-			if (g_rdpScreen.client_info.offscreen_cache_entries > 0)
+			if (g_rdpScreen.client_info.OffscreenCacheEntries > 0)
 			{
-				g_max_os_bitmaps = g_rdpScreen.client_info.offscreen_cache_entries;
+				g_max_os_bitmaps = g_rdpScreen.client_info.OffscreenCacheEntries;
 				g_free(g_os_bitmaps);
 				g_os_bitmaps = (struct rdpup_os_bitmap *)
                         		       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
@@ -746,7 +746,7 @@ static int rdpup_process_msg(struct stream *s)
 			g_use_rail = 1;
 			rdpup_send_rail();
 		}
-		if (g_rdpScreen.client_info.offscreen_cache_entries == 2000)
+		if (g_rdpScreen.client_info.OffscreenCacheEntries == 2000)
 		{
 			LLOGLN(0, ("  client can do offscreen to offscreen blits"));
 			g_can_do_pix_to_pix = 1;

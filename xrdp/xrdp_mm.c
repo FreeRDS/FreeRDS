@@ -512,7 +512,7 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 
 		name = self->wm->session->client_info->hostname;
 		self->mod->mod_set_param(self->mod, "hostname", name);
-		g_snprintf(text, 255, "%d", self->wm->session->client_info->keylayout);
+		g_snprintf(text, 255, "%d", self->wm->session->client_info->KeyboardLayout);
 		self->mod->mod_set_param(self->mod, "keylayout", text);
 
 		for (i = 0; i < self->login_names->count; i++)
@@ -1990,13 +1990,13 @@ int server_reset(xrdpModule *mod, int width, int height, int bpp)
 	}
 
 	/* older client can't resize */
-	if (wm->client_info->build <= 419)
+	if (wm->client_info->ClientBuild <= 419)
 	{
 		return 0;
 	}
 
 	/* if same, don't need to do anything */
-	if (wm->client_info->width == width && wm->client_info->height == height && wm->client_info->bpp == bpp)
+	if (wm->client_info->DesktopWidth == width && wm->client_info->DesktopHeight == height && wm->client_info->ColorDepth == bpp)
 	{
 		return 0;
 	}
@@ -2010,7 +2010,7 @@ int server_reset(xrdpModule *mod, int width, int height, int bpp)
 	/* reset cache */
 	xrdp_cache_reset(wm->cache, wm->client_info);
 	/* resize the main window */
-	xrdp_bitmap_resize(wm->screen, wm->client_info->width, wm->client_info->height);
+	xrdp_bitmap_resize(wm->screen, wm->client_info->DesktopWidth, wm->client_info->DesktopHeight);
 	/* load some stuff */
 	xrdp_wm_load_static_colors_plus(wm, 0);
 	xrdp_wm_load_static_pointers(wm);

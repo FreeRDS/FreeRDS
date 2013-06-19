@@ -697,13 +697,13 @@ static int lib_send_capabilities(struct mod* mod)
 	avro_value_set_boolean(&field, 1);
 
 	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
-	avro_value_set_int(&field, mod->client_info.offscreen_support_level);
+	avro_value_set_int(&field, mod->client_info.OffscreenSupportLevel);
 
 	avro_value_get_by_name(&val, "OffscreenCacheSize", &field, &index);
-	avro_value_set_int(&field, mod->client_info.offscreen_cache_size);
+	avro_value_set_int(&field, mod->client_info.OffscreenCacheSize);
 
 	avro_value_get_by_name(&val, "OffscreenCacheEntries", &field, &index);
-	avro_value_set_int(&field, mod->client_info.offscreen_cache_entries);
+	avro_value_set_int(&field, mod->client_info.OffscreenCacheEntries);
 
 	avro_value_get_by_name(&val, "RailSupportLevel", &field, &index);
 	avro_value_set_int(&field, mod->client_info.rail_support_level);

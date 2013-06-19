@@ -33,7 +33,7 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 
 	self = (xrdpWm*) g_malloc(sizeof(xrdpWm), 1);
 	self->client_info = client_info;
-	self->screen = xrdp_bitmap_create(client_info->width, client_info->height, client_info->bpp, WND_TYPE_SCREEN, self);
+	self->screen = xrdp_bitmap_create(client_info->DesktopWidth, client_info->DesktopHeight, client_info->ColorDepth, WND_TYPE_SCREEN, self);
 	self->screen->wm = self;
 	self->pro_layer = owner;
 	self->session = xrdp_process_get_session(owner);
@@ -48,7 +48,7 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 	self->mm = xrdp_mm_create(self);
 	self->default_font = xrdp_font_create(self);
 	/* this will use built in keymap or load from file */
-	get_keymaps(self->session->client_info->keylayout, &(self->keymap));
+	get_keymaps(self->session->client_info->KeyboardLayout, &(self->keymap));
 	xrdp_wm_set_login_mode(self, 0);
 	self->target_surface = self->screen;
 	self->current_surface_index = 0xFFFF; /* screen */
@@ -516,7 +516,7 @@ int xrdp_wm_init(xrdpWm *self)
 	xrdp_wm_load_static_pointers(self);
 	self->screen->bg_color = self->background;
 
-	if (self->session->client_info->rdp_autologin && (autorun_name[0] != 0))
+	if (self->session->client_info->AutoLogonEnabled && (autorun_name[0] != 0))
 	{
 		g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
 		fd = g_file_open(cfg_file); /* xrdp.ini */
@@ -1641,7 +1641,7 @@ xrdp_wm_log_wnd_notify(xrdpBitmap *wnd,
 			if (wm->mm->mod_handle == 0)
 			{
 				/* make sure autologin is off */
-				wm->session->client_info->rdp_autologin = 0;
+				wm->session->client_info->AutoLogonEnabled = 0;
 				xrdp_wm_set_login_mode(wm, 0); /* reset session */
 			}
 		}
