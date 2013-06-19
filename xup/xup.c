@@ -657,36 +657,18 @@ static int lib_mod_process_orders(struct mod *mod, int type, struct stream *s)
 	return rv;
 }
 
-/******************************************************************************/
-/* return error */
-static int lib_send_client_info(struct mod *mod)
-{
-	struct stream *s;
-	int len;
-
-	make_stream(s);
-	init_stream(s, 8192);
-	s_push_layer(s, iso_hdr, 4);
-	out_uint16_le(s, 104);
-	g_memcpy(s->p, &(mod->client_info), sizeof(mod->client_info));
-	s->p += sizeof(mod->client_info);
-	s_mark_end(s);
-	len = (int) (s->end - s->data);
-	s_pop_layer(s, iso_hdr);
-	out_uint32_le(s, len);
-	lib_send(mod, s->data, len);
-	free_stream(s);
-
-	return 0;
-}
-
 const char CAPABILITIES_SCHEMA[] =
 "{\"type\":\"record\",\
 	\"name\":\"Capabilities\",\
 	\"fields\":[\
 		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
 		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
-		{\"name\": \"RemoteFX\", \"type\": \"boolean\"}\
+		{\"name\": \"RemoteFX\", \"type\": \"boolean\"},\
+		{\"name\": \"OffscreenSupportLevel\", \"type\": \"int\"},\
+		{\"name\": \"OffscreenCacheSize\", \"type\": \"int\"},\
+		{\"name\": \"OffscreenCacheEntries\", \"type\": \"int\"},\
+		{\"name\": \"RailSupportLevel\", \"type\": \"int\"},\
+		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
 		]}";
 
 static int lib_send_capabilities(struct mod* mod)
@@ -715,10 +697,27 @@ static int lib_send_capabilities(struct mod* mod)
 	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
 	avro_value_set_boolean(&field, 1);
 
+#if 1
+	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
+	avro_value_set_int(&field, mod->client_info.offscreen_support_level);
+
+	avro_value_get_by_name(&val, "OffscreenCacheSize", &field, &index);
+	avro_value_set_int(&field, mod->client_info.offscreen_cache_size);
+
+	avro_value_get_by_name(&val, "OffscreenCacheEntries", &field, &index);
+	avro_value_set_int(&field, mod->client_info.offscreen_cache_entries);
+
+	avro_value_get_by_name(&val, "RailSupportLevel", &field, &index);
+	avro_value_set_int(&field, mod->client_info.rail_support_level);
+
+	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
+	avro_value_set_int(&field, mod->client_info.pointer_flags);
+#endif
+
 	avro_value_sizeof(&val, &length);
 
 	info_length = sizeof(mod->client_info);
-	buffer = (char*) malloc(length + 10 + info_length);
+	buffer = (char*) malloc(length + 6 + info_length);
 
 	avro_writer_t writer = avro_writer_memory(&buffer[6], (int64_t) length);
 	avro_value_write(writer, &val);
@@ -812,7 +811,6 @@ int lib_mod_signal(struct mod *mod)
 					s->p = phold + len;
 				}
 
-				//lib_send_client_info(mod);
 				lib_send_capabilities(mod);
 			}
 		}

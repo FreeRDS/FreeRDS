@@ -152,6 +152,15 @@ struct _rdpScreenInfoRec
 	int rdp_Bpp_mask;
 
 	struct xrdp_client_info client_info;
+
+	int Jpeg;
+	int NSCodec;
+	int RemoteFX;
+	int OffscreenSupportLevel;
+	int OffscreenCacheSize;
+	int OffscreenCacheEntries;
+	int RailSupportLevel;
+	int PointerFlags;
 };
 typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
 typedef rdpScreenInfoRec* rdpScreenInfoPtr;

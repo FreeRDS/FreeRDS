@@ -122,7 +122,6 @@ static int g_rdp_opcodes[16] =
 		0xff  /* GXset          0xf 1 */
 };
 
-/*****************************************************************************/
 static int rdpup_disconnect(void)
 {
 	int index;
@@ -157,7 +156,6 @@ static int rdpup_disconnect(void)
 	return 0;
 }
 
-/*****************************************************************************/
 int rdpup_add_os_bitmap(PixmapPtr pixmap, rdpPixmapPtr priv)
 {
 	int index;
@@ -230,7 +228,6 @@ int rdpup_add_os_bitmap(PixmapPtr pixmap, rdpPixmapPtr priv)
 	return rv;
 }
 
-/*****************************************************************************/
 int rdpup_remove_os_bitmap(int rdpindex)
 {
 	LLOGLN(10, ("rdpup_remove_os_bitmap: index %d stamp %d",
@@ -258,7 +255,6 @@ int rdpup_remove_os_bitmap(int rdpindex)
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns error */
 static int rdpup_send(char *data, int len)
 {
@@ -302,7 +298,6 @@ static int rdpup_send(char *data, int len)
 	return 0;
 }
 
-/******************************************************************************/
 static int rdpup_send_msg(struct stream *s)
 {
 	int len;
@@ -334,7 +329,6 @@ static int rdpup_send_msg(struct stream *s)
 	return rv;
 }
 
-/******************************************************************************/
 static int rdpup_send_pending(void)
 {
 	if (g_connected && g_begin)
@@ -352,7 +346,6 @@ static int rdpup_send_pending(void)
 	return 0;
 }
 
-/******************************************************************************/
 static CARD32 rdpDeferredUpdateCallback(OsTimerPtr timer, CARD32 now, pointer arg)
 {
 	LLOGLN(10, ("rdpDeferredUpdateCallback"));
@@ -370,7 +363,6 @@ static CARD32 rdpDeferredUpdateCallback(OsTimerPtr timer, CARD32 now, pointer ar
 	return 0;
 }
 
-/******************************************************************************/
 void rdpScheduleDeferredUpdate(void)
 {
 	if (!g_scheduled)
@@ -380,7 +372,6 @@ void rdpScheduleDeferredUpdate(void)
 	}
 }
 
-/******************************************************************************/
 /* returns error */
 static int rdpup_recv(char *data, int len)
 {
@@ -422,7 +413,6 @@ static int rdpup_recv(char *data, int len)
 	return 0;
 }
 
-/******************************************************************************/
 static int rdpup_recv_msg(struct stream *s)
 {
 	int len;
@@ -455,7 +445,6 @@ static int rdpup_recv_msg(struct stream *s)
 	return rv;
 }
 
-/******************************************************************************/
 /*
     this from miScreenInit
     pScreen->mmWidth = (xsize * 254 + dpix * 5) / (dpix * 10);
@@ -511,7 +500,6 @@ static int process_screen_size_msg(int width, int height, int bpp)
 	return 0;
 }
 
-/******************************************************************************/
 static int l_bound_by(int val, int low, int high)
 {
 	if (val > high)
@@ -527,7 +515,6 @@ static int l_bound_by(int val, int low, int high)
 	return val;
 }
 
-/******************************************************************************/
 static int rdpup_send_caps(void)
 {
 	int len;
@@ -542,18 +529,6 @@ static int rdpup_send_caps(void)
 
 	cap_count = 0;
 	cap_bytes = 0;
-
-#if 0
-	out_uint16_le(ls, 0);
-	out_uint16_le(ls, 4);
-	cap_count++;
-	cap_bytes += 4;
-
-	out_uint16_le(ls, 1);
-	out_uint16_le(ls, 4);
-	cap_count++;
-	cap_bytes += 4;
-#endif
 
 	s_mark_end(ls);
 	len = (int)(ls->end - ls->data);
@@ -573,7 +548,6 @@ static int rdpup_send_caps(void)
 	return rv;
 }
 
-/******************************************************************************/
 static int process_version_msg(int param1, int param2, int param3, int param4)
 {
 	LLOGLN(0, ("process_version_msg: version %d %d %d %d", param1, param2,
@@ -587,7 +561,7 @@ static int process_version_msg(int param1, int param2, int param3, int param4)
 	return 0;
 }
 
-/******************************************************************************/
+
 static int rdpup_send_rail(void)
 {
 	WindowPtr wnd;
@@ -621,15 +595,17 @@ const char CAPABILITIES_SCHEMA[] =
 	\"fields\":[\
 		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
 		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
-		{\"name\": \"RemoteFX\", \"type\": \"boolean\"}\
+		{\"name\": \"RemoteFX\", \"type\": \"boolean\"},\
+		{\"name\": \"OffscreenSupportLevel\", \"type\": \"int\"},\
+		{\"name\": \"OffscreenCacheSize\", \"type\": \"int\"},\
+		{\"name\": \"OffscreenCacheEntries\", \"type\": \"int\"},\
+		{\"name\": \"RailSupportLevel\", \"type\": \"int\"},\
+		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
 		]}";
 
 static int rdpup_process_capabilities_msg(const char* buffer, int length)
 {
 	size_t index;
-	int bJPEG;
-	int bNSCodec;
-	int bRemoteFX;
 
 	avro_schema_t record_schema;
 	avro_schema_from_json_literal(CAPABILITIES_SCHEMA, &record_schema);
@@ -646,16 +622,34 @@ static int rdpup_process_capabilities_msg(const char* buffer, int length)
 	avro_value_t field;
 
 	avro_value_get_by_name(&val, "JPEG", &field, &index);
-	avro_value_get_boolean(&field, &bJPEG);
+	avro_value_get_boolean(&field, &g_rdpScreen.Jpeg);
 
 	avro_value_get_by_name(&val, "NSCodec", &field, &index);
-	avro_value_get_boolean(&field, &bNSCodec);
+	avro_value_get_boolean(&field, &g_rdpScreen.NSCodec);
 
 	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
-	avro_value_get_boolean(&field, &bRemoteFX);
+	avro_value_get_boolean(&field, &g_rdpScreen.RemoteFX);
+
+#if 1
+
+	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
+	avro_value_get_int(&field, &g_rdpScreen.OffscreenSupportLevel);
+
+	avro_value_get_by_name(&val, "OffscreenCacheSize", &field, &index);
+	avro_value_get_int(&field, &g_rdpScreen.OffscreenCacheSize);
+
+	avro_value_get_by_name(&val, "OffscreenCacheEntries", &field, &index);
+	avro_value_get_int(&field, &g_rdpScreen.OffscreenCacheEntries);
+
+	avro_value_get_by_name(&val, "RailSupportLevel", &field, &index);
+	avro_value_get_int(&field, &g_rdpScreen.RailSupportLevel);
+
+	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
+	avro_value_get_int(&field, &g_rdpScreen.PointerFlags);
+#endif
 
 	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
-			bJPEG, bNSCodec, bRemoteFX));
+			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
 
 	{
 		int i1;
@@ -703,7 +697,6 @@ static int rdpup_process_capabilities_msg(const char* buffer, int length)
 	return 0;
 }
 
-/******************************************************************************/
 static int rdpup_process_msg(struct stream *s)
 {
 	int msg_type;
@@ -713,7 +706,6 @@ static int rdpup_process_msg(struct stream *s)
 	int param3;
 	int param4;
 	int bytes;
-	int i1;
 
 	in_uint16_le(s, msg_type);
 
@@ -740,7 +732,7 @@ static int rdpup_process_msg(struct stream *s)
 				break;
 			case 100:
 				/* without the minus 2, strange things happen when dragging
-                   past the width or height */
+                   	   	   past the width or height */
 				g_cursor_x = l_bound_by(param1, 0, g_rdpScreen.width - 2);
 				g_cursor_y = l_bound_by(param2, 0, g_rdpScreen.height - 2);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
@@ -799,55 +791,6 @@ static int rdpup_process_msg(struct stream *s)
 				break;
 		}
 	}
-#if 0
-	else if (msg_type == 104)
-	{
-		in_uint32_le(s, bytes);
-
-		if (bytes > sizeof(g_rdpScreen.client_info))
-		{
-			bytes = sizeof(g_rdpScreen.client_info);
-		}
-
-		memcpy(&(g_rdpScreen.client_info), s->p - 4, bytes);
-		g_rdpScreen.client_info.size = bytes;
-		LLOGLN(0, ("rdpup_process_msg: got client info bytes %d", bytes));
-		LLOGLN(0, ("  jpeg support %d", g_rdpScreen.client_info.jpeg));
-		i1 = g_rdpScreen.client_info.offscreen_support_level;
-		LLOGLN(0, ("  offscreen support %d", i1));
-		i1 = g_rdpScreen.client_info.offscreen_cache_size;
-		LLOGLN(0, ("  offscreen size %d", i1));
-		i1 = g_rdpScreen.client_info.offscreen_cache_entries;
-		LLOGLN(0, ("  offscreen entries %d", i1));
-
-		if (g_rdpScreen.client_info.offscreen_support_level > 0)
-		{
-			if (g_rdpScreen.client_info.offscreen_cache_entries > 0)
-			{
-				g_max_os_bitmaps = g_rdpScreen.client_info.offscreen_cache_entries;
-				g_free(g_os_bitmaps);
-				g_os_bitmaps = (struct rdpup_os_bitmap *)
-                        		       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
-			}
-		}
-
-		if (g_rdpScreen.client_info.rail_support_level > 0)
-		{
-			g_use_rail = 1;
-			rdpup_send_rail();
-		}
-		if (g_rdpScreen.client_info.offscreen_cache_entries == 2000)
-		{
-			LLOGLN(0, ("  client can do offscreen to offscreen blits"));
-			g_can_do_pix_to_pix = 1;
-		}
-		else
-		{
-			LLOGLN(0, ("  client can not do offscreen to offscreen blits"));
-			g_can_do_pix_to_pix = 0;
-		}
-	}
-#endif
 	else if (msg_type == 104)
 	{
 		bytes = s->size - 6;
@@ -861,7 +804,6 @@ static int rdpup_process_msg(struct stream *s)
 	return 0;
 }
 
-/******************************************************************************/
 void rdpup_get_screen_image_rect(struct image_data *id)
 {
 	id->width = g_rdpScreen.width;
@@ -872,7 +814,6 @@ void rdpup_get_screen_image_rect(struct image_data *id)
 	id->pixels = g_rdpScreen.pfbMemory;
 }
 
-/******************************************************************************/
 void rdpup_get_pixmap_image_rect(PixmapPtr pPixmap, struct image_data *id)
 {
 	id->width = pPixmap->drawable.width;
@@ -883,7 +824,6 @@ void rdpup_get_pixmap_image_rect(PixmapPtr pPixmap, struct image_data *id)
 	id->pixels = (char *)(pPixmap->devPrivate.ptr);
 }
 
-/******************************************************************************/
 int rdpup_init(void)
 {
 	int i;
@@ -974,7 +914,6 @@ int rdpup_init(void)
 	return 1;
 }
 
-/******************************************************************************/
 int rdpup_check(void)
 {
 	int sel;
@@ -1034,7 +973,6 @@ int rdpup_check(void)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_begin_update(void)
 {
 	LLOGLN(10, ("rdpup_begin_update"));
@@ -1058,7 +996,6 @@ int rdpup_begin_update(void)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_end_update(void)
 {
 	LLOGLN(10, ("rdpup_end_update"));
@@ -1078,7 +1015,6 @@ int rdpup_end_update(void)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_pre_check(int in_size)
 {
 	if (!g_begin)
@@ -1098,7 +1034,6 @@ int rdpup_pre_check(int in_size)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_fill_rect(short x, short y, int cx, int cy)
 {
 	if (g_connected)
@@ -1117,7 +1052,6 @@ int rdpup_fill_rect(short x, short y, int cx, int cy)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 {
 	if (g_connected)
@@ -1138,7 +1072,6 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_set_clip(short x, short y, int cx, int cy)
 {
 	if (g_connected)
@@ -1157,7 +1090,6 @@ int rdpup_set_clip(short x, short y, int cx, int cy)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_reset_clip(void)
 {
 	if (g_connected)
@@ -1312,7 +1244,6 @@ int convert_pixels(void *src, void *dst, int num_pixels)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_set_fgcolor(int fgcolor)
 {
 	if (g_connected)
@@ -1330,7 +1261,6 @@ int rdpup_set_fgcolor(int fgcolor)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_set_bgcolor(int bgcolor)
 {
 	if (g_connected)
@@ -1348,7 +1278,6 @@ int rdpup_set_bgcolor(int bgcolor)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_set_opcode(int opcode)
 {
 	if (g_connected)
@@ -1364,7 +1293,6 @@ int rdpup_set_opcode(int opcode)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_set_pen(int style, int width)
 {
 	if (g_connected)
@@ -1381,7 +1309,7 @@ int rdpup_set_pen(int style, int width)
 	return 0;
 }
 
-/******************************************************************************/
+
 int rdpup_draw_line(short x1, short y1, short x2, short y2)
 {
 	if (g_connected)
@@ -1400,7 +1328,7 @@ int rdpup_draw_line(short x1, short y1, short x2, short y2)
 	return 0;
 }
 
-/******************************************************************************/
+
 int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
 {
 	int size;
@@ -1426,7 +1354,6 @@ int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bpp)
 {
 	int size;
@@ -1455,7 +1382,6 @@ int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bp
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_create_os_surface(int rdpindex, int width, int height)
 {
 	LLOGLN(10, ("rdpup_create_os_surface:"));
@@ -1475,7 +1401,6 @@ int rdpup_create_os_surface(int rdpindex, int width, int height)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_switch_os_surface(int rdpindex)
 {
 	LLOGLN(10, ("rdpup_switch_os_surface:"));
@@ -1500,7 +1425,6 @@ int rdpup_switch_os_surface(int rdpindex)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_delete_os_surface(int rdpindex)
 {
 	LLOGLN(10, ("rdpup_delete_os_surface: rdpindex %d", rdpindex));
@@ -1518,7 +1442,6 @@ int rdpup_delete_os_surface(int rdpindex)
 	return 0;
 }
 
-/******************************************************************************/
 static int get_single_color(struct image_data *id, int x, int y, int w, int h)
 {
 	int rv;
@@ -1605,7 +1528,6 @@ static int get_single_color(struct image_data *id, int x, int y, int w, int h)
 	return rv;
 }
 
-/******************************************************************************/
 /* split the bitmap up into 64 x 64 pixel areas */
 void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 {
@@ -1727,7 +1649,6 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 	}
 }
 
-/******************************************************************************/
 void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
 {
 	if (g_connected)
@@ -1746,7 +1667,6 @@ void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, i
 	}
 }
 
-/******************************************************************************/
 void rdpup_set_hints(int hints, int mask)
 {
 	if (g_connected)
@@ -1760,7 +1680,6 @@ void rdpup_set_hints(int hints, int mask)
 	}
 }
 
-/******************************************************************************/
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec *priv)
 {
 	int bytes;
@@ -1867,7 +1786,7 @@ void rdpup_create_window(WindowPtr pWindow, rdpWindowRec *priv)
 	}
 }
 
-/******************************************************************************/
+
 void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 {
 	LLOGLN(10, ("rdpup_delete_window: id 0x%8.8x",
@@ -1883,7 +1802,6 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	}
 }
 
-/******************************************************************************/
 int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 {
 	int index;
@@ -2016,7 +1934,6 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 	return 0;
 }
 
-/******************************************************************************/
 int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 {
 	int index;
