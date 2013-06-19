@@ -331,9 +331,6 @@ int main(int argc, char** argv)
 	g_signal_terminate(sig_sesman_shutdown); /* SIGTERM */
 	g_signal_child_stop(sig_sesman_session_end); /* SIGCHLD */
 #endif
-#if 0
-	thread_sighandler_start();
-#endif
 
 	if (daemon)
 	{

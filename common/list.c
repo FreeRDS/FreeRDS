@@ -23,8 +23,7 @@
 #include "list.h"
 
 /*****************************************************************************/
-xrdpList *
-list_create(void)
+xrdpList* list_create(void)
 {
 	xrdpList *self;
 
@@ -36,8 +35,7 @@ list_create(void)
 }
 
 /*****************************************************************************/
-void 
-list_delete(xrdpList *self)
+void list_delete(xrdpList *self)
 {
 	int i;
 
@@ -60,8 +58,7 @@ list_delete(xrdpList *self)
 }
 
 /*****************************************************************************/
-void 
-list_add_item(xrdpList *self, tbus item)
+void list_add_item(xrdpList *self, tbus item)
 {
 	tbus *p;
 	int i;
@@ -81,8 +78,7 @@ list_add_item(xrdpList *self, tbus item)
 }
 
 /*****************************************************************************/
-tbus 
-list_get_item(xrdpList *self, int index)
+tbus list_get_item(xrdpList *self, int index)
 {
 	if (index < 0 || index >= self->count)
 	{
@@ -93,8 +89,7 @@ list_get_item(xrdpList *self, int index)
 }
 
 /*****************************************************************************/
-void 
-list_clear(xrdpList *self)
+void list_clear(xrdpList *self)
 {
 	int i;
 
@@ -115,8 +110,7 @@ list_clear(xrdpList *self)
 }
 
 /*****************************************************************************/
-int 
-list_index_of(xrdpList *self, tbus item)
+int list_index_of(xrdpList *self, tbus item)
 {
 	int i;
 
@@ -132,8 +126,7 @@ list_index_of(xrdpList *self, tbus item)
 }
 
 /*****************************************************************************/
-void 
-list_remove_item(xrdpList *self, int index)
+void list_remove_item(xrdpList *self, int index)
 {
 	int i;
 
@@ -155,8 +148,7 @@ list_remove_item(xrdpList *self, int index)
 }
 
 /*****************************************************************************/
-void 
-list_insert_item(xrdpList *self, int index, tbus item)
+void list_insert_item(xrdpList *self, int index, tbus item)
 {
 	tbus *p;
 	int i;
@@ -193,8 +185,7 @@ list_insert_item(xrdpList *self, int index, tbus item)
 /*****************************************************************************/
 /* append one list to another using strdup for each item in the list */
 /* begins copy at start_index, a zero based index on the soure list */
-void 
-list_append_list_strdup(xrdpList *self, xrdpList *dest, int start_index)
+void list_append_list_strdup(xrdpList *self, xrdpList *dest, int start_index)
 {
 	int index;
 	tbus item;
@@ -209,8 +200,7 @@ list_append_list_strdup(xrdpList *self, xrdpList *dest, int start_index)
 }
 
 /*****************************************************************************/
-void 
-list_dump_items(xrdpList *self)
+void list_dump_items(xrdpList *self)
 {
 	int index;
 

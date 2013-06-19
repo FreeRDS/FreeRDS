@@ -125,67 +125,6 @@ int xrdp_painter_font_needed(xrdpPainter *self)
 	return 0;
 }
 
-#if 0
-/*****************************************************************************/
-/* returns boolean, true if there is something to draw */
-static int xrdp_painter_clip_adj(xrdpPainter *self, int *x, int *y,
-		int *cx, int *cy)
-{
-	int dx;
-	int dy;
-
-	if (!self->use_clip)
-	{
-		return 1;
-	}
-
-	if (self->clip.left > *x)
-	{
-		dx = self->clip.left - *x;
-	}
-	else
-	{
-		dx = 0;
-	}
-
-	if (self->clip.top > *y)
-	{
-		dy = self->clip.top - *y;
-	}
-	else
-	{
-		dy = 0;
-	}
-
-	if (*x + *cx > self->clip.right)
-	{
-		*cx = *cx - ((*x + *cx) - self->clip.right);
-	}
-
-	if (*y + *cy > self->clip.bottom)
-	{
-		*cy = *cy - ((*y + *cy) - self->clip.bottom);
-	}
-
-	*cx = *cx - dx;
-	*cy = *cy - dy;
-
-	if (*cx <= 0)
-	{
-		return 0;
-	}
-
-	if (*cy <= 0)
-	{
-		return 0;
-	}
-
-	*x = *x + dx;
-	*y = *y + dy;
-	return 1;
-}
-#endif
-
 /*****************************************************************************/
 int xrdp_painter_set_clip(xrdpPainter *self, int x, int y, int cx, int cy)
 {
@@ -203,51 +142,6 @@ int xrdp_painter_clr_clip(xrdpPainter *self)
 	self->use_clip = 0;
 	return 0;
 }
-
-#if 0
-/*****************************************************************************/
-static int 
-xrdp_painter_rop(int rop, int src, int dst)
-{
-	switch (rop & 0x0f)
-	{
-		case 0x0:
-		return 0;
-		case 0x1:
-		return ~(src | dst);
-		case 0x2:
-		return (~src) & dst;
-		case 0x3:
-		return ~src;
-		case 0x4:
-		return src & (~dst);
-		case 0x5:
-		return ~(dst);
-		case 0x6:
-		return src ^ dst;
-		case 0x7:
-		return ~(src & dst);
-		case 0x8:
-		return src & dst;
-		case 0x9:
-		return ~(src) ^ dst;
-		case 0xa:
-		return dst;
-		case 0xb:
-		return (~src) | dst;
-		case 0xc:
-		return src;
-		case 0xd:
-		return src | (~dst);
-		case 0xe:
-		return src | dst;
-		case 0xf:
-		return ~0;
-	}
-
-	return dst;
-}
-#endif
 
 /*****************************************************************************/
 int xrdp_painter_text_width(xrdpPainter *self, char *text)

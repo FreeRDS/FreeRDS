@@ -28,8 +28,7 @@
 /* returns error
  returns 0 if everything is ok
  returns 1 if problem reading file */
-static int 
-l_file_read_sections(int fd, int max_file_size, xrdpList *names)
+static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 {
 	struct stream *s;
 	char text[256];
@@ -61,33 +60,32 @@ l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 			if (c == '[')
 			{
 				in_it = 1;
-			} else
-				if (c == ']')
-				{
+			}
+			else if (c == ']')
+			{
 					list_add_item(names, (tbus) g_strdup(text));
 					in_it = 0;
 					in_it_index = 0;
 					g_memset(text, 0, 256);
-				} else
-					if (in_it)
-					{
-						text[in_it_index] = c;
-						in_it_index++;
-					}
+			}
+			else if (in_it)
+			{
+				text[in_it_index] = c;
+				in_it_index++;
+			}
 		}
-	} else
-		if (len < 0)
-		{
-			rv = 1;
-		}
+	}
+	else if (len < 0)
+	{
+		rv = 1;
+	}
 
 	free_stream(s);
 	return rv;
 }
 
 /*****************************************************************************/
-static int 
-file_read_line(struct stream *s, char *text)
+static int file_read_line(struct stream *s, char *text)
 {
 	int i;
 	int skip_to_end;
@@ -122,7 +120,8 @@ file_read_line(struct stream *s, char *text)
 		if (s_check_rem(s, 1))
 		{
 			in_uint8(s, c);
-		} else
+		}
+		else
 		{
 			c = 0;
 			break;
@@ -138,7 +137,8 @@ file_read_line(struct stream *s, char *text)
 			if (s_check_rem(s, 1))
 			{
 				in_uint8(s, c);
-			} else
+			}
+			else
 			{
 				at_end = 1;
 				break;
@@ -164,8 +164,7 @@ file_read_line(struct stream *s, char *text)
 
 /*****************************************************************************/
 /* returns error */
-static int 
-file_split_name_value(char *text, char *name, char *value)
+static int file_split_name_value(char *text, char *name, char *value)
 {
 	int len;
 	int i;
@@ -185,18 +184,19 @@ file_split_name_value(char *text, char *name, char *value)
 		if (text[i] == '=')
 		{
 			on_to = 1;
-		} else
-			if (on_to)
-			{
-				value[value_index] = text[i];
-				value_index++;
-				value[value_index] = 0;
-			} else
-			{
-				name[name_index] = text[i];
-				name_index++;
-				name[name_index] = 0;
-			}
+		}
+		else if (on_to)
+		{
+			value[value_index] = text[i];
+			value_index++;
+			value[value_index] = 0;
+		}
+		else
+		{
+			name[name_index] = text[i];
+			name_index++;
+			name[name_index] = 0;
+		}
 	}
 
 	g_strtrim(name, 3); /* trim both right and left */
@@ -206,8 +206,7 @@ file_split_name_value(char *text, char *name, char *value)
 
 /*****************************************************************************/
 /* return error */
-static int 
-l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *names, xrdpList *values)
+static int l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *names, xrdpList *values)
 {
 	struct stream *s;
 	char text[512];
@@ -242,7 +241,9 @@ l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *na
 			{
 				break;
 			}
+
 			in_uint8(s, c);
+
 			if ((c == '#') || (c == ';'))
 			{
 				file_read_line(s, text);
@@ -251,57 +252,60 @@ l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *na
 				g_memset(text, 0, 512);
 				continue;
 			}
+
 			if (c == '[')
 			{
 				in_it = 1;
-			} else
-				if (c == ']')
+			}
+			else if (c == ']')
+			{
+				if (g_strcasecmp(section, text) == 0)
 				{
-					if (g_strcasecmp(section, text) == 0)
+					file_read_line(s, text);
+
+					while (file_read_line(s, text) == 0)
 					{
-						file_read_line(s, text);
-						while (file_read_line(s, text) == 0)
+						if (g_strlen(text) > 0)
 						{
-							if (g_strlen(text) > 0)
+							file_split_name_value(text, name, value);
+							list_add_item(names, (tbus) g_strdup(name));
+
+							if (value[0] == '$')
 							{
-								file_split_name_value(text, name, value);
-								list_add_item(names, (tbus) g_strdup(name));
+								lvalue = g_getenv(value + 1);
 
-								if (value[0] == '$')
+								if (lvalue != 0)
 								{
-									lvalue = g_getenv(value + 1);
-
-									if (lvalue != 0)
-									{
-										list_add_item(values, (tbus) g_strdup(
-												lvalue));
-									} else
-									{
-										list_add_item(values, (tbus) g_strdup(
-												""));
-									}
-								} else
+									list_add_item(values, (tbus) g_strdup(lvalue));
+								}
+								else
 								{
-									list_add_item(values, (tbus) g_strdup(value));
+									list_add_item(values, (tbus) g_strdup(""));
 								}
 							}
+							else
+							{
+								list_add_item(values, (tbus) g_strdup(value));
+							}
 						}
-
-						free_stream(s);
-						return 0;
 					}
 
-					in_it = 0;
-					in_it_index = 0;
-					g_memset(text, 0, 512);
-				} else
-					if (in_it)
-					{
-						text[in_it_index] = c;
-						in_it_index++;
-					}
+					free_stream(s);
+					return 0;
+				}
+
+				in_it = 0;
+				in_it_index = 0;
+				g_memset(text, 0, 512);
+			}
+			else if (in_it)
+			{
+				text[in_it_index] = c;
+				in_it_index++;
+			}
 		}
 	}
+
 	free_stream(s);
 	return 1;
 }
@@ -311,8 +315,7 @@ l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *na
  returns 0 if everything is ok
  returns 1 if problem reading file */
 /* 32 K file size limit */
-int 
-file_read_sections(int fd, xrdpList *names)
+int file_read_sections(int fd, xrdpList *names)
 {
 	return l_file_read_sections(fd, 32 * 1024, names);
 }
@@ -321,8 +324,7 @@ file_read_sections(int fd, xrdpList *names)
 /* return error */
 /* this function should be prefered over file_read_sections because it can
  read any file size */
-int 
-file_by_name_read_sections(const char *file_name, xrdpList *names)
+int file_by_name_read_sections(const char *file_name, xrdpList *names)
 {
 	int fd;
 	int file_size;
@@ -350,8 +352,7 @@ file_by_name_read_sections(const char *file_name, xrdpList *names)
 /*****************************************************************************/
 /* return error */
 /* 32 K file size limit */
-int 
-file_read_section(int fd, const char *section, xrdpList *names, xrdpList *values)
+int file_read_section(int fd, const char *section, xrdpList *names, xrdpList *values)
 {
 	return l_file_read_section(fd, 32 * 1024, section, names, values);
 }
@@ -360,8 +361,7 @@ file_read_section(int fd, const char *section, xrdpList *names, xrdpList *values
 /* return error */
 /* this function should be prefered over file_read_section because it can
  read any file size */
-int 
-file_by_name_read_section(const char *file_name, const char *section, xrdpList *names, xrdpList *values)
+int file_by_name_read_section(const char *file_name, const char *section, xrdpList *names, xrdpList *values)
 {
 	int fd;
 	int file_size;
@@ -383,5 +383,6 @@ file_by_name_read_section(const char *file_name, const char *section, xrdpList *
 
 	rv = l_file_read_section(fd, file_size, section, names, values);
 	g_file_close(fd);
+
 	return rv;
 }
