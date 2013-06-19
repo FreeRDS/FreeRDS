@@ -103,6 +103,5 @@ endif()
 
 add_subdirectory(sesman)
 add_subdirectory(xup)
-add_subdirectory(mc)
 add_subdirectory(instfiles)
 

@@ -245,7 +245,6 @@ static KeySym g_kbdMap[] =
 };
 
 #if 0
-/******************************************************************************/
 static void
 rdpSendBell(void)
 {
@@ -253,7 +252,6 @@ rdpSendBell(void)
 }
 #endif
 
-/******************************************************************************/
 void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 {
 	int i;
@@ -298,31 +296,26 @@ void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 	}
 }
 
-/******************************************************************************/
 void KbdDeviceOn(void)
 {
 	DEBUG_OUT_INPUT(("KbdDeviceOn\n"));
 }
 
-/******************************************************************************/
 void KbdDeviceOff(void)
 {
 	DEBUG_OUT_INPUT(("KbdDeviceOff\n"));
 }
 
-/******************************************************************************/
 void rdpBell(int volume, DeviceIntPtr pDev, pointer ctrl, int cls)
 {
 	ErrorF("rdpBell:\n");
 }
 
-/******************************************************************************/
 void rdpChangeKeyboardControl(DeviceIntPtr pDev, KeybdCtrl *ctrl)
 {
 	ErrorF("rdpChangeKeyboardControl:\n");
 }
 
-/******************************************************************************/
 int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 {
 	KeySymsRec keySyms;
@@ -347,14 +340,17 @@ int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 					rdpChangeKeyboardControl);
 			//XkbDDXChangeControls(pDevice, 0, 0);
 			break;
+
 		case DEVICE_ON:
 			pDev->on = 1;
 			KbdDeviceOn();
 			break;
+
 		case DEVICE_OFF:
 			pDev->on = 0;
 			KbdDeviceOff();
 			break;
+
 		case DEVICE_CLOSE:
 
 			if (pDev->on)
@@ -368,37 +364,31 @@ int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 	return Success;
 }
 
-/******************************************************************************/
 void PtrDeviceControl(DeviceIntPtr dev, PtrCtrl *ctrl)
 {
 	DEBUG_OUT_INPUT(("PtrDeviceControl\n"));
 }
 
-/******************************************************************************/
 void PtrDeviceInit(void)
 {
 	DEBUG_OUT_INPUT(("PtrDeviceInit\n"));
 }
 
-/******************************************************************************/
 void PtrDeviceOn(DeviceIntPtr pDev)
 {
 	DEBUG_OUT_INPUT(("PtrDeviceOn\n"));
 }
 
-/******************************************************************************/
 void PtrDeviceOff(void)
 {
 	DEBUG_OUT_INPUT(("PtrDeviceOff\n"));
 }
 
-/******************************************************************************/
 static void rdpMouseCtrl(DeviceIntPtr pDevice, PtrCtrl *pCtrl)
 {
 	ErrorF("rdpMouseCtrl:\n");
 }
 
-/******************************************************************************/
 int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 {
 	BYTE map[6];
@@ -433,14 +423,17 @@ int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 					GetMotionHistorySize(), 2, axes_labels);
 
 			break;
+
 		case DEVICE_ON:
 			pDev->on = 1;
 			PtrDeviceOn(pDevice);
 			break;
+
 		case DEVICE_OFF:
 			pDev->on = 0;
 			PtrDeviceOff();
 			break;
+
 		case DEVICE_CLOSE:
 
 			if (pDev->on)
@@ -454,53 +447,45 @@ int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 	return Success;
 }
 
-/******************************************************************************/
 Bool rdpCursorOffScreen(ScreenPtr *ppScreen, int *x, int *y)
 {
 	DEBUG_OUT_INPUT(("rdpCursorOffScreen\n"));
 	return 0;
 }
 
-/******************************************************************************/
 void rdpCrossScreen(ScreenPtr pScreen, Bool entering)
 {
 	DEBUG_OUT_INPUT(("rdpCrossScreen\n"));
 }
 
-/******************************************************************************/
 void rdpPointerWarpCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y)
 {
 	ErrorF("rdpPointerWarpCursor:\n");
 	miPointerWarpCursor(pDev, pScr, x, y);
 }
 
-/******************************************************************************/
 void rdpPointerEnqueueEvent(DeviceIntPtr pDev, InternalEvent *event)
 {
 	ErrorF("rdpPointerEnqueueEvent:\n");
 }
 
-/******************************************************************************/
 void rdpPointerNewEventScreen(DeviceIntPtr pDev, ScreenPtr pScr, Bool fromDIX)
 {
 	ErrorF("rdpPointerNewEventScreen:\n");
 }
 
-/******************************************************************************/
 Bool rdpSpriteRealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs)
 {
 	DEBUG_OUT_INPUT(("rdpSpriteRealizeCursor\n"));
 	return 1;
 }
 
-/******************************************************************************/
 Bool rdpSpriteUnrealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs)
 {
 	DEBUG_OUT_INPUT(("hi rdpSpriteUnrealizeCursor\n"));
 	return 1;
 }
 
-/******************************************************************************/
 int get_pixel_safe(char *data, int x, int y, int width, int height, int bpp)
 {
 	int start;
@@ -535,9 +520,9 @@ int get_pixel_safe(char *data, int x, int y, int width, int height, int bpp)
 		shift = x % 8;
 		c = (unsigned char)(data[start]);
 #if (X_BYTE_ORDER == X_LITTLE_ENDIAN)
-	return (g_reverse_byte[c] & (0x80 >> shift)) != 0;
+		return (g_reverse_byte[c] & (0x80 >> shift)) != 0;
 #else
-	return (c & (0x80 >> shift)) != 0;
+		return (c & (0x80 >> shift)) != 0;
 #endif
 	}
 	else if (bpp == 32)
@@ -549,7 +534,6 @@ int get_pixel_safe(char *data, int x, int y, int width, int height, int bpp)
 	return 0;
 }
 
-/******************************************************************************/
 void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp,
 		int pixel)
 {
@@ -605,7 +589,6 @@ void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp,
 	}
 }
 
-/******************************************************************************/
 void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 		int x, int y)
 {
@@ -696,20 +679,17 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 	rdpup_end_update();
 }
 
-/******************************************************************************/
 void rdpSpriteMoveCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y)
 {
 	DEBUG_OUT_INPUT(("hi rdpSpriteMoveCursor\n"));
 }
 
-/******************************************************************************/
 Bool rdpSpriteDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScr)
 {
 	ErrorF("rdpSpriteDeviceCursorInitialize:\n");
 	return 1;
 }
 
-/******************************************************************************/
 void rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr)
 {
 	ErrorF("rdpSpriteDeviceCursorCleanup:\n");
@@ -786,7 +766,6 @@ static void rdpEnqueueKey(int type, int scancode)
 	FreeEventList(rdp_events, GetMaximumEventsNum());
 }
 
-/******************************************************************************/
 void PtrAddEvent(int buttonMask, int x, int y)
 {
 	int i;
@@ -817,7 +796,6 @@ void PtrAddEvent(int buttonMask, int x, int y)
 	g_old_button_mask = buttonMask;
 }
 
-/******************************************************************************/
 void check_keysa(void)
 {
 	if (g_ctrl_down != 0)
@@ -839,7 +817,6 @@ void check_keysa(void)
 	}
 }
 
-/******************************************************************************/
 void sendDownUpKeyEvent(int type, int x_scancode)
 {
 	/* if type is keydown, send keyup + keydown */

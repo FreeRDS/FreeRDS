@@ -65,9 +65,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xserver-properties.h"
 #include "xkbsrv.h"
 
-/* in xrdp/common */
-#include "xrdp_constants.h"
-
 #define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
 
 /* test to see if this is xorg source or xfree86 */
