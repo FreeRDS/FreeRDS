@@ -85,8 +85,7 @@ struct log_config
  * @return
  *
  */
-enum logReturns DEFAULT_CC
-internal_log_start(struct log_config* l_cfg);
+enum logReturns internal_log_start(struct log_config* l_cfg);
 
 /**
  *
@@ -94,16 +93,14 @@ internal_log_start(struct log_config* l_cfg);
  * @param l_cfg pointer to the logging subsystem to stop
  *
  */
-enum logReturns DEFAULT_CC
-internal_log_end(struct log_config* l_cfg);
+enum logReturns internal_log_end(struct log_config* l_cfg);
 
 /**
  * Converts a log level to a string
  * @param lvl, the loglevel
  * @param str pointer where the string will be stored.
  */
-void DEFAULT_CC
-internal_log_lvl2str(const enum logLevels lvl, char* str);
+void internal_log_lvl2str(const enum logLevels lvl, char* str);
 
 /**
  *
@@ -112,16 +109,14 @@ internal_log_lvl2str(const enum logLevels lvl, char* str);
  * @return The corresponding level or LOG_LEVEL_DEBUG if error
  *
  */
-enum logLevels DEFAULT_CC
-internal_log_text2level(char* s);
+enum logLevels internal_log_text2level(char* s);
 
 /**
  * A function that init our struct that holds all state and
  * also init its content.
  * @return  LOG_STARTUP_OK or LOG_ERROR_MALLOC
  */
-enum logReturns DEFAULT_CC
-internalInitAndAllocStruct(void);
+enum logReturns internalInitAndAllocStruct(void);
 
 /**
  * Read configuration from a file and store the values in lists.
@@ -132,11 +127,8 @@ internalInitAndAllocStruct(void);
  * @param applicationName, the application name used in the log events.
  * @return
  */
-enum logReturns DEFAULT_CC
-internal_config_read_logging(int file, struct log_config* lc,
-		struct list* param_n,
-		struct list* param_v,
-		const char *applicationName);
+enum logReturns internal_config_read_logging(int file, struct log_config* lc,
+		struct list* param_n, struct list* param_v, const char *applicationName);
 /*End of internal functions*/
 #endif
 /**
@@ -146,22 +138,19 @@ internal_config_read_logging(int file, struct log_config* lc,
  * @param applicationName, the name that is used in the log for the running application
  * @return LOG_STARTUP_OK on success
  */
-enum logReturns DEFAULT_CC
-log_start(const char* iniFile, const char* applicationName);
+enum logReturns log_start(const char* iniFile, const char* applicationName);
 
 /**
  * An alternative log_start where the caller gives the params directly.
  * @param iniParams
  * @return
  */
-enum logReturns DEFAULT_CC
-log_start_from_param(const struct log_config *iniParams);
+enum logReturns log_start_from_param(const struct log_config *iniParams);
 /**
  * Function that terminates all logging
  * @return
  */
-enum logReturns DEFAULT_CC
-log_end(void);
+enum logReturns log_end(void);
 
 /**
  * the log function that all files use to log an event.
@@ -170,8 +159,7 @@ log_end(void);
  * @param ...
  * @return
  */
-enum logReturns DEFAULT_CC
-log_message(const enum logLevels lvl, const char* msg, ...);
+enum logReturns log_message(const enum logLevels lvl, const char* msg, ...);
 
 /**
  *
@@ -181,7 +169,7 @@ log_message(const enum logLevels lvl, const char* msg, ...);
  * @return 0 on success, 1 on failure
  *
  */
-int APP_CC text2bool(char* s);
+int text2bool(char* s);
 
 /**
  * This function returns the configured file name for the logfile
@@ -189,5 +177,6 @@ int APP_CC text2bool(char* s);
  * @param bufsize how big is the reply buffer.
  * @return
  */
-char *getLogFile(char *replybuf, int bufsize);
+char* getLogFile(char *replybuf, int bufsize);
+
 #endif

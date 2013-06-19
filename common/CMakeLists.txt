@@ -42,7 +42,6 @@ set(${MODULE_PREFIX}_HEADERS
 	defines.h
 	log.h
 	os_calls.h
-	ssl_calls.h
 	thread_calls.h
 	trans.h
 	xrdp_constants.h)
@@ -53,7 +52,6 @@ set(${MODULE_PREFIX}_SRCS
 	list.c
 	log.c
 	os_calls.c
-	ssl_calls.c
 	thread_calls.c
 	trans.c
 	${${MODULE_PREFIX}_HEADERS})

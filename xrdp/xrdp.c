@@ -274,60 +274,18 @@ int main(int argc, char **argv)
 	int fd;
 	int pid;
 	int test;
-	int host_be;
 	int no_daemon;
 	char text[256];
 	char pid_file[256];
 	char cfg_file[256];
 	enum logReturns error;
-	xrdpStartupParams *startup_params;
+	xrdpStartupParams* startup_params;
 
 	g_init("xrdp");
-	ssl_init();
 
 	for (test = 0; test < argc; test++)
 	{
 		DEBUG(("Argument %i - %s",test,argv[test]));
-	}
-
-	/* check compiled endian with actual endian */
-	test = 1;
-	host_be = !((int) (*(unsigned char *) (&test)));
-#if defined(B_ENDIAN)
-
-	if (!host_be)
-#endif
-#if defined(L_ENDIAN)
-	if (host_be)
-#endif
-	{
-		g_writeln("endian wrong, edit arch.h");
-		return 0;
-	}
-
-	/* check long, int and void* sizes */
-	if (sizeof(int) != 4)
-	{
-		g_writeln("unusable int size, must be 4");
-		return 0;
-	}
-
-	if (sizeof(long) != sizeof(void *))
-	{
-		g_writeln("long size must match void* size");
-		return 0;
-	}
-
-	if (sizeof(long) != 4 && sizeof(long) != 8)
-	{
-		g_writeln("unusable long size, must be 4 or 8");
-		return 0;
-	}
-
-	if (sizeof(tui64) != 8)
-	{
-		g_writeln("unusable tui64 size, must be 8");
-		return 0;
 	}
 
 	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);

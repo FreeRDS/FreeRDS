@@ -154,7 +154,6 @@ int main(int argc, char **argv)
 	char pid_file[256];
 
 	g_init();
-	ssl_init();
 
 	/* check long, int and void* sizes */
 	if (sizeof(int) != 4)

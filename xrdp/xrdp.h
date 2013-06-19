@@ -35,7 +35,6 @@
 #include "xrdp_constants.h"
 #include "defines.h"
 #include "os_calls.h"
-#include "ssl_calls.h"
 #include "thread_calls.h"
 #include "file.h"
 #include "xrdp_client_info.h"

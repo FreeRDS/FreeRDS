@@ -73,7 +73,6 @@ typedef struct xrdp_rect xrdpRect;
 #include "xrdp_constants.h"
 #include "defines.h"
 #include "os_calls.h"
-#include "ssl_calls.h"
 #include "list.h"
 #include "file.h"
 
