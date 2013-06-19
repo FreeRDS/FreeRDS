@@ -45,10 +45,6 @@ struct xrdp_client_info
 	/* other */
 	int BitmapCompressionDisabled;
 	int BitmapCacheEnabled;
-	int op1; /* use smaller bitmap header, non cache */
-	int op2; /* use smaller bitmap header in bitmap cache */
-	int desktop_cache;
-	int use_compact_packets; /* rdp5 smaller packets */
 	char hostname[32];
 	int ClientBuild;
 	int KeyboardLayout;
@@ -59,35 +55,14 @@ struct xrdp_client_info
 	char directory[256];
 	int CompressionEnabled;
 	int AutoLogonEnabled;
-	int BrushSupportLevel; /* 0 = no cache 1 = 8x8 standard cache
-	 2 = arbitrary dimensions */
+	int BrushSupportLevel;
 	char client_ip[256];
-	int jpeg; /* non standard bitmap cache v2 cap */
 	int OffscreenSupportLevel;
 	int OffscreenCacheSize;
 	int OffscreenCacheEntries;
-	int rfx;
-	/* CAPSETTYPE_RAIL */
 	int rail_support_level;
-	/* CAPSETTYPE_WINDOW */
-	int wnd_support_level;
-	int wnd_num_icon_caches;
-	int wnd_num_icon_cache_entries;
-	/* codecs */
-	int rfx_codec_id;
-	int rfx_prop_len;
-	char rfx_prop[64];
-	int ns_codec_id;
-	int ns_prop_len;
-	char ns_prop[64];
-	int jpeg_codec_id;
-	int jpeg_prop_len;
-	char jpeg_prop[64];
-	int v3_codec_id;
-	int rfx_min_pixel;
 	char orders[32];
 	int order_flags_ex;
-	int use_bulk_comp;
 	int pointer_flags; /* 0 color, 1 new */
 };
 
