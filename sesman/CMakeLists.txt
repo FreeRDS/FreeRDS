@@ -63,7 +63,6 @@ set(${MODULE_PREFIX}_SRCS
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 add_subdirectory(libscp)
-add_subdirectory(tools)
 add_subdirectory(sessvc)
 add_subdirectory(chansrv)
 
