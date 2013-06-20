@@ -212,7 +212,7 @@ static int  x_server_running(int display)
 }
 
 /******************************************************************************/
-static void  session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
+static void session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
 {
 	xrdpList *sessvc_params = (xrdpList *) NULL;
 	char wmpid_str[25];
@@ -275,7 +275,7 @@ static void  session_start_sessvc(int xpid, int wmpid, long data, char *username
 /******************************************************************************/
 /* called with the main thread
  returns boolean */
-static int  session_is_display_in_chain(int display)
+static int session_is_display_in_chain(int display)
 {
 	xrdpSessionChain *chain;
 	xrdpSessionItem *item;
@@ -297,7 +297,7 @@ static int  session_is_display_in_chain(int display)
 
 /******************************************************************************/
 /* called with the main thread */
-static int  session_get_aval_display_from_chain(void)
+static int session_get_aval_display_from_chain(void)
 {
 	int display;
 
@@ -324,7 +324,7 @@ static int  session_get_aval_display_from_chain(void)
 }
 
 /******************************************************************************/
-static int  wait_for_xserver(int display)
+static int wait_for_xserver(int display)
 {
 	int i;
 
@@ -630,7 +630,7 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 
 /******************************************************************************/
 /* called with the main thread */
-static int  session_reconnect_fork(int display, char *username)
+static int session_reconnect_fork(int display, char *username)
 {
 	int pid;
 	char text[256];
@@ -693,7 +693,7 @@ int session_start(int width, int height, int bpp, char *username, char *password
 /******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
-int  session_reconnect(int display, char *username)
+int session_reconnect(int display, char *username)
 {
 	/* lock mutex */
 	lock_sync_acquire();
@@ -802,7 +802,7 @@ int session_kill(int pid)
 }
 
 /******************************************************************************/
-void  session_sigkill_all()
+void session_sigkill_all()
 {
 	xrdpSessionChain *tmp;
 
@@ -938,7 +938,6 @@ struct SCP_DISCONNECTED_SESSION * session_get_byuser(char *user, int *cnt, unsig
 
 	while (tmp != 0)
 	{
-#warning FIXME: we should get only disconnected sessions!
 		if ((NULL == user) || (!g_strncasecmp(user, tmp->item->name, 256)))
 		{
 			if ((tmp->item->status) & flags)
@@ -948,22 +947,6 @@ struct SCP_DISCONNECTED_SESSION * session_get_byuser(char *user, int *cnt, unsig
 				(sess[index]).height = tmp->item->height;
 				(sess[index]).width = tmp->item->width;
 				(sess[index]).bpp = tmp->item->bpp;
-#warning FIXME: setting idle times and such
-				/*(sess[index]).connect_time.year = tmp->item->connect_time.year;
-				 (sess[index]).connect_time.month = tmp->item->connect_time.month;
-				 (sess[index]).connect_time.day = tmp->item->connect_time.day;
-				 (sess[index]).connect_time.hour = tmp->item->connect_time.hour;
-				 (sess[index]).connect_time.minute = tmp->item->connect_time.minute;
-				 (sess[index]).disconnect_time.year = tmp->item->disconnect_time.year;
-				 (sess[index]).disconnect_time.month = tmp->item->disconnect_time.month;
-				 (sess[index]).disconnect_time.day = tmp->item->disconnect_time.day;
-				 (sess[index]).disconnect_time.hour = tmp->item->disconnect_time.hour;
-				 (sess[index]).disconnect_time.minute = tmp->item->disconnect_time.minute;
-				 (sess[index]).idle_time.year = tmp->item->idle_time.year;
-				 (sess[index]).idle_time.month = tmp->item->idle_time.month;
-				 (sess[index]).idle_time.day = tmp->item->idle_time.day;
-				 (sess[index]).idle_time.hour = tmp->item->idle_time.hour;
-				 (sess[index]).idle_time.minute = tmp->item->idle_time.minute;*/
 				(sess[index]).conn_year = tmp->item->connect_time.year;
 				(sess[index]).conn_month = tmp->item->connect_time.month;
 				(sess[index]).conn_day = tmp->item->connect_time.day;

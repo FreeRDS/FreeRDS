@@ -39,7 +39,6 @@
  * @param socket the connection socket
  *
  */
-void* DEFAULT_CC
-scp_process_start(void* sck);
+void* scp_process_start(void* sck);
 
 #endif

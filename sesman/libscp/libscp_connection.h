@@ -37,8 +37,7 @@
  * @return a struct SCP_CONNECTION* object on success, NULL otherwise
  *
  */
-struct SCP_CONNECTION*
-scp_connection_create(int sck);
+struct SCP_CONNECTION* scp_connection_create(int sck);
 
 /**
  *
@@ -46,7 +45,6 @@ scp_connection_create(int sck);
  * @param c the object to be destroyed
  *
  */
-void
-scp_connection_destroy(struct SCP_CONNECTION* c);
+void scp_connection_destroy(struct SCP_CONNECTION* c);
 
 #endif

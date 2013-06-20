@@ -31,29 +31,23 @@
 
 /* client API */
 /* 001 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_mng_connect(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
+enum SCP_CLIENT_STATES_E scp_v1c_mng_connect(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
 
 /* 004 * /
-enum SCP_CLIENT_STATES_E
-scp_v1c_resend_credentials(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
+enum SCP_CLIENT_STATES_E scp_v1c_resend_credentials(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
 
 / * 021 * /
-enum SCP_CLIENT_STATES_E
-scp_v1c_pwd_change(struct SCP_CONNECTION* c, char* newpass);
+enum SCP_CLIENT_STATES_E scp_v1c_pwd_change(struct SCP_CONNECTION* c, char* newpass);
 
 / * 022 * /
-enum SCP_CLIENT_STATES_E
-scp_v1c_pwd_change_cancel(struct SCP_CONNECTION* c);
+enum SCP_CLIENT_STATES_E scp_v1c_pwd_change_cancel(struct SCP_CONNECTION* c);
 */
 
 /* 041 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_mng_get_session_list(struct SCP_CONNECTION* c, int* scount,
+enum SCP_CLIENT_STATES_E scp_v1c_mng_get_session_list(struct SCP_CONNECTION* c, int* scount,
                          struct SCP_DISCONNECTED_SESSION** s);
 
 /* 044 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_select_session_cancel(struct SCP_CONNECTION* c);
+enum SCP_CLIENT_STATES_E scp_v1c_select_session_cancel(struct SCP_CONNECTION* c);
 
 #endif

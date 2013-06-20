@@ -191,8 +191,7 @@ enum SCP_SERVER_STATES_E scp_v1s_accept(struct SCP_CONNECTION *c, struct SCP_SES
 	return SCP_SERVER_STATE_OK;
 }
 
-enum SCP_SERVER_STATES_E
-scp_v1s_deny_connection(struct SCP_CONNECTION *c, char *reason)
+enum SCP_SERVER_STATES_E scp_v1s_deny_connection(struct SCP_CONNECTION *c, char *reason)
 {
 	int rlen;
 
@@ -224,8 +223,7 @@ scp_v1s_deny_connection(struct SCP_CONNECTION *c, char *reason)
 	return SCP_SERVER_STATE_END;
 }
 
-enum SCP_SERVER_STATES_E
-scp_v1s_request_password(struct SCP_CONNECTION *c, struct SCP_SESSION *s, char *reason)
+enum SCP_SERVER_STATES_E scp_v1s_request_password(struct SCP_CONNECTION *c, struct SCP_SESSION *s, char *reason)
 {
 	tui8 sz;
 	tui32 version;
@@ -340,22 +338,19 @@ scp_v1s_request_password(struct SCP_CONNECTION *c, struct SCP_SESSION *s, char *
 }
 
 /* 020 */
-enum SCP_SERVER_STATES_E
-scp_v1s_request_pwd_change(struct SCP_CONNECTION *c, char *reason, char *npw)
+enum SCP_SERVER_STATES_E scp_v1s_request_pwd_change(struct SCP_CONNECTION *c, char *reason, char *npw)
 {
 	return SCP_SERVER_STATE_INTERNAL_ERR;
 }
 
 /* 023 */
-enum SCP_SERVER_STATES_E
-scp_v1s_pwd_change_error(struct SCP_CONNECTION *c, char *error, int retry, char *npw)
+enum SCP_SERVER_STATES_E scp_v1s_pwd_change_error(struct SCP_CONNECTION *c, char *error, int retry, char *npw)
 {
 	return SCP_SERVER_STATE_INTERNAL_ERR;
 }
 
 /* 030 */
-enum SCP_SERVER_STATES_E
-scp_v1s_connect_new_session(struct SCP_CONNECTION *c, SCP_DISPLAY d)
+enum SCP_SERVER_STATES_E scp_v1s_connect_new_session(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 {
 	/* send password request */
 	tui32 version = 1;
@@ -381,8 +376,7 @@ scp_v1s_connect_new_session(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 }
 
 /* 032 */
-enum SCP_SERVER_STATES_E
-scp_v1s_connection_error(struct SCP_CONNECTION *c, char *error)
+enum SCP_SERVER_STATES_E scp_v1s_connection_error(struct SCP_CONNECTION *c, char *error)
 {
 	tui16 len;
 
@@ -405,8 +399,7 @@ scp_v1s_connection_error(struct SCP_CONNECTION *c, char *error)
 }
 
 /* 040 */
-enum SCP_SERVER_STATES_E
-scp_v1s_list_sessions(struct SCP_CONNECTION *c, int sescnt, struct SCP_DISCONNECTED_SESSION *ds, SCP_SID *sid)
+enum SCP_SERVER_STATES_E scp_v1s_list_sessions(struct SCP_CONNECTION *c, int sescnt, struct SCP_DISCONNECTED_SESSION *ds, SCP_SID *sid)
 {
 	tui32 version = 1;
 	tui32 size = 12;
@@ -650,8 +643,7 @@ scp_v1s_list_sessions(struct SCP_CONNECTION *c, int sescnt, struct SCP_DISCONNEC
 }
 
 /* 046 was: 031 struct SCP_DISCONNECTED_SESSION* ds, */
-enum SCP_SERVER_STATES_E
-scp_v1s_reconnect_session(struct SCP_CONNECTION *c, SCP_DISPLAY d)
+enum SCP_SERVER_STATES_E scp_v1s_reconnect_session(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 {
 	tui32 version = 1;
 	tui32 size = 14;
@@ -668,13 +660,6 @@ scp_v1s_reconnect_session(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 
 	/* session data */
 	out_uint16_be(c->out_s, d); /* session display */
-	/*out_uint8(c->out_s, ds->type);
-    out_uint16_be(c->out_s, ds->height);
-    out_uint16_be(c->out_s, ds->width);
-    out_uint8(c->out_s, ds->bpp);
-    out_uint8(c->out_s, ds->idle_days);
-    out_uint8(c->out_s, ds->idle_hours);
-    out_uint8(c->out_s, ds->idle_minutes);*/
 	/* these last three are not really needed... */
 
 	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, size))

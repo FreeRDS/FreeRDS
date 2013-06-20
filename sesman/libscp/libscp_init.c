@@ -27,7 +27,7 @@
 #include "libscp_init.h"
 
 /* server API */
-int  scp_init()
+int scp_init()
 {
 	scp_lock_init();
 

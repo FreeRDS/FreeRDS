@@ -29,12 +29,10 @@
 
 #include "libscp_v1s_mng.h"
 
-static enum SCP_SERVER_STATES_E
-_scp_v1s_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s);
+static enum SCP_SERVER_STATES_E _scp_v1s_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s);
 
 /* server API */
-enum SCP_SERVER_STATES_E
-scp_v1s_mng_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s)
+enum SCP_SERVER_STATES_E scp_v1s_mng_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s)
 {
 	struct SCP_SESSION *session;
 	tui32 ipaddr;
@@ -114,8 +112,7 @@ scp_v1s_mng_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s)
 }
 
 /* 002 */
-enum SCP_SERVER_STATES_E
-scp_v1s_mng_allow_connection(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+enum SCP_SERVER_STATES_E scp_v1s_mng_allow_connection(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	init_stream(c->out_s, c->out_s->size);
 
@@ -135,8 +132,7 @@ scp_v1s_mng_allow_connection(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 }
 
 /* 003 */
-enum SCP_SERVER_STATES_E
-scp_v1s_mng_deny_connection(struct SCP_CONNECTION *c, char *reason)
+enum SCP_SERVER_STATES_E scp_v1s_mng_deny_connection(struct SCP_CONNECTION *c, char *reason)
 {
 	int rlen;
 
@@ -168,8 +164,7 @@ scp_v1s_mng_deny_connection(struct SCP_CONNECTION *c, char *reason)
 }
 
 /* 006 */
-enum SCP_SERVER_STATES_E
-scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, struct SCP_SESSION *s,
+enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, struct SCP_SESSION *s,
 		int sescnt, struct SCP_DISCONNECTED_SESSION *ds)
 {
 	tui32 version = 1;
@@ -272,8 +267,7 @@ scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, struct SCP_SESSION *s,
 	return _scp_v1s_mng_check_response(c, s);
 }
 
-static enum SCP_SERVER_STATES_E
-_scp_v1s_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+static enum SCP_SERVER_STATES_E _scp_v1s_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	tui32 version;
 	tui32 size;

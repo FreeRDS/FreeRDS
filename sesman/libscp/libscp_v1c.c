@@ -29,13 +29,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static enum SCP_CLIENT_STATES_E
-_scp_v1c_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s);
+static enum SCP_CLIENT_STATES_E _scp_v1c_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s);
 
 /* client API */
 /* 001 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+enum SCP_CLIENT_STATES_E scp_v1c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	tui8 sz;
 	tui32 size;
@@ -101,8 +99,7 @@ scp_v1c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 }
 
 /* 004 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_resend_credentials(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+enum SCP_CLIENT_STATES_E scp_v1c_resend_credentials(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	tui8 sz;
 	tui32 size;
@@ -137,16 +134,12 @@ scp_v1c_resend_credentials(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 }
 
 /* 021 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_pwd_change(struct SCP_CONNECTION *c, char *newpass);
+enum SCP_CLIENT_STATES_E scp_v1c_pwd_change(struct SCP_CONNECTION *c, char *newpass);
 /* 022 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_pwd_change_cancel(struct SCP_CONNECTION *c);
+enum SCP_CLIENT_STATES_E scp_v1c_pwd_change_cancel(struct SCP_CONNECTION *c);
 
 /* 041 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_get_session_list(struct SCP_CONNECTION *c, int *scount,
-		struct SCP_DISCONNECTED_SESSION **s)
+enum SCP_CLIENT_STATES_E scp_v1c_get_session_list(struct SCP_CONNECTION *c, int *scount, struct SCP_DISCONNECTED_SESSION **s)
 {
 	tui32 version = 1;
 	tui32 size = 12;
@@ -280,9 +273,7 @@ scp_v1c_get_session_list(struct SCP_CONNECTION *c, int *scount,
 }
 
 /* 043 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_select_session(struct SCP_CONNECTION *c, struct SCP_SESSION *s,
-		SCP_SID sid)
+enum SCP_CLIENT_STATES_E scp_v1c_select_session(struct SCP_CONNECTION *c, struct SCP_SESSION *s, SCP_SID sid)
 {
 	tui32 version = 1;
 	tui32 size = 16;
@@ -356,8 +347,7 @@ scp_v1c_select_session(struct SCP_CONNECTION *c, struct SCP_SESSION *s,
 }
 
 /* 044 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_select_session_cancel(struct SCP_CONNECTION *c)
+enum SCP_CLIENT_STATES_E scp_v1c_select_session_cancel(struct SCP_CONNECTION *c)
 {
 	tui32 version = 1;
 	tui32 size = 12;
@@ -379,8 +369,7 @@ scp_v1c_select_session_cancel(struct SCP_CONNECTION *c)
 	return SCP_CLIENT_STATE_END;
 }
 
-static enum SCP_CLIENT_STATES_E
-_scp_v1c_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+static enum SCP_CLIENT_STATES_E _scp_v1c_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	tui32 version;
 	tui32 size;

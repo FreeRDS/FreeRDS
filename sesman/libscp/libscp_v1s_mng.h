@@ -39,8 +39,7 @@
  * this function places in *s the address of a newely allocated SCP_SESSION structure
  * that should be free()d
  */
-enum SCP_SERVER_STATES_E
-scp_v1s_mng_accept(struct SCP_CONNECTION* c, struct SCP_SESSION** s);
+enum SCP_SERVER_STATES_E scp_v1s_mng_accept(struct SCP_CONNECTION* c, struct SCP_SESSION** s);
 
 /**
  *
@@ -49,8 +48,7 @@ scp_v1s_mng_accept(struct SCP_CONNECTION* c, struct SCP_SESSION** s);
  *
  */
 /* 002 */
-enum SCP_SERVER_STATES_E
-scp_v1s_mng_allow_connection(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
+enum SCP_SERVER_STATES_E scp_v1s_mng_allow_connection(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
 
 /**
  *
@@ -60,8 +58,7 @@ scp_v1s_mng_allow_connection(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
  *
  */
 /* 003 */
-enum SCP_SERVER_STATES_E
-scp_v1s_mng_deny_connection(struct SCP_CONNECTION* c, char* reason);
+enum SCP_SERVER_STATES_E scp_v1s_mng_deny_connection(struct SCP_CONNECTION* c, char* reason);
 
 /**
  *
@@ -70,9 +67,7 @@ scp_v1s_mng_deny_connection(struct SCP_CONNECTION* c, char* reason);
  *
  */
 /* 006 */
-enum SCP_SERVER_STATES_E
-scp_v1s_mng_list_sessions(struct SCP_CONNECTION* c, struct SCP_SESSION* s,
+enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION* c, struct SCP_SESSION* s,
                           int sescnt, struct SCP_DISCONNECTED_SESSION* ds);
-//                           SCP_SID* sid);
 
 #endif

@@ -29,24 +29,21 @@
  * @brief initializes all the locks
  *
  */
-void DEFAULT_CC
-scp_lock_init(void);
+void scp_lock_init(void);
 
 /**
  *
  * @brief requires to fork a new child process
  *
  */
-void DEFAULT_CC
-scp_lock_fork_request(void);
+void scp_lock_fork_request(void);
 
 /**
  *
  * @brief releases a fork() request
  *
  */
-void DEFAULT_CC
-scp_lock_fork_release(void);
+void scp_lock_fork_release(void);
 
 /**
  *
@@ -59,15 +56,13 @@ scp_lock_fork_release(void);
  * @return
  *
  */
-int DEFAULT_CC
-scp_lock_fork_critical_section_start(void);
+int scp_lock_fork_critical_section_start(void);
 
 /**
  *
  * @brief closes the critical section
  *
  */
-void DEFAULT_CC
-scp_lock_fork_critical_section_end(int blocking);
+void scp_lock_fork_critical_section_end(int blocking);
 
 #endif
