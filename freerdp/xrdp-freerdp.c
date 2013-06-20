@@ -19,9 +19,22 @@
 
 #include "xrdp-freerdp.h"
 
-#include "xrdp-color.h"
-#include "xrdp_rail.h"
 #include "log.h"
+#include "arch.h"
+#include "parse.h"
+#include "os_calls.h"
+#include "defines.h"
+#include "xrdp_rail.h"
+
+#include <X11/Xlib.h>
+
+#include "xrdp-color.h"
+
+#include <freerdp/freerdp.h>
+#include <freerdp/settings.h>
+#include <freerdp/rail.h>
+#include <freerdp/rail/rail.h>
+#include <freerdp/codec/bitmap.h>
 
 #ifdef XRDP_DEBUG
 #define LOG_LEVEL 99

@@ -20,9 +20,15 @@
 
 #include "xup.h"
 
-#include <avro.h>
+#include "arch.h"
+#include "parse.h"
+#include "os_calls.h"
+#include "defines.h"
+#include "xrdp_rail.h"
 
+#include <avro.h>
 #include <winpr/crt.h>
+#include <freerdp/freerdp.h>
 
 /******************************************************************************/
 /* returns error */

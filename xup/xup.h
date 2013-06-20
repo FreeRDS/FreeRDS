@@ -18,15 +18,7 @@
  * libxup main header file
  */
 
-/* include other h files */
-#include "arch.h"
-#include "parse.h"
-#include "os_calls.h"
-#include "defines.h"
-#include "xrdp_rail.h"
-
 #include "xrdp.h"
 
-#include <freerdp/freerdp.h>
-
-
+xrdpModule* mod_init(void);
+int mod_exit(xrdpModule* mod);

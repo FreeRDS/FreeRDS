@@ -17,20 +17,7 @@
  * limitations under the License.
  */
 
-#include <winpr/crt.h>
-
-#include <freerdp/freerdp.h>
-#include <freerdp/settings.h>
-#include <freerdp/rail.h>
-#include <freerdp/rail/rail.h>
-#include <freerdp/codec/bitmap.h>
-
-#include "arch.h"
-#include "parse.h"
-#include "os_calls.h"
-#include "defines.h"
-#include "xrdp_rail.h"
-
 #include "xrdp.h"
 
-#include <X11/Xlib.h>
+xrdpModule* mod_init(void);
+int mod_exit(xrdpModule* mod);
