@@ -508,8 +508,6 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 
 		/* always set these */
 
-		self->mod->mod_set_param(self->mod, "client_info", (char *) (self->wm->session->client_info));
-
 		name = self->wm->session->settings->ServerHostname;
 		self->mod->mod_set_param(self->mod, "hostname", name);
 		g_snprintf(text, 255, "%d", self->wm->session->settings->KeyboardLayout);
@@ -1986,11 +1984,6 @@ int server_reset(xrdpModule *mod, int width, int height, int bpp)
 	wm = (xrdpWm *) (mod->wm);
 	settings = wm->session->settings;
 
-	if (wm->client_info == 0)
-	{
-		return 1;
-	}
-
 	/* older client can't resize */
 	if (settings->ClientBuild <= 419)
 	{
@@ -2003,14 +1996,13 @@ int server_reset(xrdpModule *mod, int width, int height, int bpp)
 		return 0;
 	}
 
-	/* reset lib, client_info gets updated in libxrdp_reset */
 	if (libxrdp_reset(wm->session, width, height, bpp) != 0)
 	{
 		return 1;
 	}
 
 	/* reset cache */
-	xrdp_cache_reset(wm->cache, wm->client_info);
+	xrdp_cache_reset(wm->cache);
 	/* resize the main window */
 	xrdp_bitmap_resize(wm->screen, settings->DesktopWidth, settings->DesktopHeight);
 	/* load some stuff */

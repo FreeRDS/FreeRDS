@@ -22,7 +22,7 @@
 #include "log.h"
 
 /*****************************************************************************/
-xrdpCache* xrdp_cache_create(xrdpWm *owner, xrdpSession *session, xrdpClientInfo *client_info)
+xrdpCache* xrdp_cache_create(xrdpWm* owner, xrdpSession* session)
 {
 	int entries;
 	xrdpCache *self;
@@ -101,7 +101,7 @@ void xrdp_cache_delete(xrdpCache *self)
 }
 
 /*****************************************************************************/
-int xrdp_cache_reset(xrdpCache *self, xrdpClientInfo *client_info)
+int xrdp_cache_reset(xrdpCache *self)
 {
 	int i, j;
 	int entries;

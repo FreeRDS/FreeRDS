@@ -22,7 +22,7 @@
 #include "log.h"
 
 /*****************************************************************************/
-xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
+xrdpWm* xrdp_wm_create(xrdpProcess* owner)
 {
 	int pid = 0;
 	char event_name[256];
@@ -37,7 +37,6 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 	self->session = xrdp_process_get_session(owner);
 	settings = self->session->settings;
 
-	self->client_info = client_info;
 	self->screen = xrdp_bitmap_create(settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth, WND_TYPE_SCREEN, self);
 	self->screen->wm = self;
 	pid = g_getpid();
@@ -45,7 +44,7 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo *client_info)
 	log_message(LOG_LEVEL_DEBUG, event_name);
 	self->login_mode_event = g_create_wait_obj(event_name);
 	self->painter = xrdp_painter_create(self, self->session);
-	self->cache = xrdp_cache_create(self, self->session, self->client_info);
+	self->cache = xrdp_cache_create(self, self->session);
 	self->log = list_create();
 	self->log->auto_free = 1;
 	self->mm = xrdp_mm_create(self);

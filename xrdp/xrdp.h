@@ -37,7 +37,6 @@
 #include "os_calls.h"
 #include "thread_calls.h"
 #include "file.h"
-#include "xrdp_client_info.h"
 
 /* xrdp.c */
 long g_xrdp_sync(long (*sync_func)(long param1, long param2), long sync_param1, long sync_param2);
@@ -48,9 +47,9 @@ tbus g_get_sync_event(void);
 void g_process_waiting_function(void);
 
 /* xrdp_cache.c */
-struct xrdp_cache* xrdp_cache_create(xrdpWm* owner, xrdpSession* session, xrdpClientInfo* client_info);
+struct xrdp_cache* xrdp_cache_create(xrdpWm* owner, xrdpSession* session);
 void xrdp_cache_delete(struct xrdp_cache* self);
-int xrdp_cache_reset(struct xrdp_cache* self, xrdpClientInfo* client_info);
+int xrdp_cache_reset(struct xrdp_cache* self);
 int xrdp_cache_add_bitmap(struct xrdp_cache* self, struct xrdp_bitmap* bitmap, int hints);
 int xrdp_cache_add_palette(struct xrdp_cache* self, int* palette);
 int xrdp_cache_add_char(struct xrdp_cache* self, struct xrdp_font_char* font_item);
@@ -62,7 +61,7 @@ int xrdp_cache_remove_os_bitmap(struct xrdp_cache* self, int rdpindex);
 struct xrdp_os_bitmap_item* xrdp_cache_get_os_bitmap(struct xrdp_cache* self, int rdpindex);
 
 /* xrdp_wm.c */
-xrdpWm* xrdp_wm_create(xrdpProcess* owner, xrdpClientInfo* client_info);
+xrdpWm* xrdp_wm_create(xrdpProcess* owner);
 void xrdp_wm_delete(xrdpWm* self);
 int xrdp_wm_send_palette(xrdpWm* self);
 int xrdp_wm_send_bell(xrdpWm* self);

@@ -28,7 +28,6 @@
  */
 
 #include "xrdp_rail.h"
-#include "xrdp_client_info.h"
 
 struct xrdp_brush
 {
@@ -85,7 +84,6 @@ struct xrdp_session
 	int (*callback)(long id, int msg, long param1, long param2, long param3, long param4);
 	void* rdp;
 	void* orders;
-	xrdpClientInfo* client_info;
 	int up_and_running;
 	int (*is_term)(void);
 

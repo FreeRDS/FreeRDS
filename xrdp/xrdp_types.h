@@ -303,8 +303,6 @@ struct xrdp_wm
 	int caps_lock;
 	int scroll_lock;
 	int num_lock;
-	/* client info */
-	xrdpClientInfo* client_info;
 	/* session log */
 	xrdpList* log;
 	xrdpBitmap* log_wnd;
