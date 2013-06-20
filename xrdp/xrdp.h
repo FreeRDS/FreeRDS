@@ -32,11 +32,46 @@
 #include "core.h"
 
 #include "xrdp_types.h"
-#include "xrdp_constants.h"
 #include "defines.h"
 #include "os_calls.h"
 #include "thread_calls.h"
 #include "file.h"
+
+/* drawable types */
+#define WND_TYPE_BITMAP  0
+#define WND_TYPE_WND     1
+#define WND_TYPE_SCREEN  2
+#define WND_TYPE_BUTTON  3
+#define WND_TYPE_IMAGE   4
+#define WND_TYPE_EDIT    5
+#define WND_TYPE_LABEL   6
+#define WND_TYPE_COMBO   7
+#define WND_TYPE_SPECIAL 8
+#define WND_TYPE_LISTBOX 9
+#define WND_TYPE_OFFSCREEN 10
+
+/* button states */
+#define BUTTON_STATE_UP   0
+#define BUTTON_STATE_DOWN 1
+
+/* messages */
+#define WM_XRDP_PAINT		3
+#define WM_XRDP_KEYDOWN		15
+#define WM_XRDP_KEYUP		16
+#define WM_XRDP_MOUSEMOVE	100
+#define WM_XRDP_LBUTTONUP	101
+#define WM_XRDP_LBUTTONDOWN	102
+#define WM_XRDP_RBUTTONUP	103
+#define WM_XRDP_RBUTTONDOWN	104
+#define WM_XRDP_BUTTON3UP	105
+#define WM_XRDP_BUTTON3DOWN	106
+#define WM_XRDP_BUTTON4UP	107
+#define WM_XRDP_BUTTON4DOWN	108
+#define WM_XRDP_BUTTON5UP	109
+#define WM_XRDP_BUTTON5DOWN	110
+#define WM_XRDP_INVALIDATE	200
+
+#define CB_ITEMCHANGE  300
 
 /* xrdp.c */
 long g_xrdp_sync(long (*sync_func)(long param1, long param2), long sync_param1, long sync_param2);

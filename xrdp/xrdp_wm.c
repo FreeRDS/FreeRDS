@@ -1302,7 +1302,7 @@ int xrdp_wm_key(xrdpWm *self, int device_flags, int scan_code)
 		return 0;
 	}
 
-	if (device_flags & KBD_FLAG_UP) /* 0x8000 */
+	if (device_flags & KBD_FLAGS_RELEASE) /* 0x8000 */
 	{
 		self->keys[scan_code] = 0;
 		msg = WM_XRDP_KEYUP;
@@ -1423,14 +1423,14 @@ int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
 {
 	DEBUG(("mouse event flags %4.4x x %d y %d", device_flags, x, y));
 
-	if (device_flags & MOUSE_FLAG_MOVE) /* 0x0800 */
+	if (device_flags & PTR_FLAGS_MOVE) /* 0x0800 */
 	{
 		xrdp_wm_mouse_move(self, x, y);
 	}
 
-	if (device_flags & MOUSE_FLAG_BUTTON1) /* 0x1000 */
+	if (device_flags & PTR_FLAGS_BUTTON1) /* 0x1000 */
 	{
-		if (device_flags & MOUSE_FLAG_DOWN) /* 0x8000 */
+		if (device_flags & PTR_FLAGS_DOWN) /* 0x8000 */
 		{
 			xrdp_wm_mouse_click(self, x, y, 1, 1);
 		}
@@ -1440,9 +1440,9 @@ int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
 		}
 	}
 
-	if (device_flags & MOUSE_FLAG_BUTTON2) /* 0x2000 */
+	if (device_flags & PTR_FLAGS_BUTTON2) /* 0x2000 */
 	{
-		if (device_flags & MOUSE_FLAG_DOWN) /* 0x8000 */
+		if (device_flags & PTR_FLAGS_DOWN) /* 0x8000 */
 		{
 			xrdp_wm_mouse_click(self, x, y, 2, 1);
 		}
@@ -1452,9 +1452,9 @@ int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
 		}
 	}
 
-	if (device_flags & MOUSE_FLAG_BUTTON3) /* 0x4000 */
+	if (device_flags & PTR_FLAGS_BUTTON3) /* 0x4000 */
 	{
-		if (device_flags & MOUSE_FLAG_DOWN) /* 0x8000 */
+		if (device_flags & PTR_FLAGS_DOWN) /* 0x8000 */
 		{
 			xrdp_wm_mouse_click(self, x, y, 3, 1);
 		}
@@ -1464,14 +1464,12 @@ int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
 		}
 	}
 
-	if (device_flags == MOUSE_FLAG_BUTTON4 || /* 0x0280 */
-			device_flags == 0x0278)
+	if (device_flags == 0x0280 || device_flags == 0x0278)
 	{
 		xrdp_wm_mouse_click(self, 0, 0, 4, 0);
 	}
 
-	if (device_flags == MOUSE_FLAG_BUTTON5 || /* 0x0380 */
-			device_flags == 0x0388)
+	if (device_flags == 0x0380 || device_flags == 0x0388)
 	{
 		xrdp_wm_mouse_click(self, 0, 0, 5, 0);
 	}

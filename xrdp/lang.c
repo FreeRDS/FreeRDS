@@ -73,9 +73,9 @@ xrdpKeyInfo* get_key_info_from_scan_code(int device_flags, int scan_code, int *k
 	int ext;
 	int index;
 
-	ext = device_flags &KBD_FLAG_EXT;  /* 0x0100 */
+	ext = device_flags &KBD_FLAGS_EXTENDED;  /* 0x0100 */
 	shift = keys[42] || keys[54];
-	altgr = keys[56] &KBD_FLAG_EXT;  /* right alt */
+	altgr = keys[56] &KBD_FLAGS_EXTENDED;  /* right alt */
 	rv = 0;
 	scan_code = scan_code & 0x7f;
 	index = ext ? g_map[scan_code].code2 : g_map[scan_code].code1;

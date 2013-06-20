@@ -43,8 +43,7 @@ set(${MODULE_PREFIX}_HEADERS
 	log.h
 	os_calls.h
 	thread_calls.h
-	trans.h
-	xrdp_constants.h)
+	trans.h)
 
 set(${MODULE_PREFIX}_SRCS
 	d3des.c
