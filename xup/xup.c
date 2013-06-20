@@ -49,7 +49,7 @@ int lib_recv(xrdpModule *mod, char *data, int len)
 		{
 			if (g_tcp_last_error_would_block(mod->sck))
 			{
-				if (mod->server_is_term(mod))
+				if (server_is_term(mod))
 				{
 					return 1;
 				}
@@ -95,7 +95,7 @@ int lib_send(xrdpModule *mod, char *data, int len)
 		{
 			if (g_tcp_last_error_would_block(mod->sck))
 			{
-				if (mod->server_is_term(mod))
+				if (server_is_term(mod))
 				{
 					return 1;
 				}
@@ -148,23 +148,23 @@ int lib_mod_connect(xrdpModule *mod)
 
 	LIB_DEBUG(mod, "in lib_mod_connect");
 	/* clear screen */
-	mod->server_begin_update(mod);
-	mod->server_set_fgcolor(mod, 0);
-	mod->server_fill_rect(mod, 0, 0, mod->width, mod->height);
-	mod->server_end_update(mod);
-	mod->server_msg(mod, "started connecting", 0);
+	server_begin_update(mod);
+	server_set_fgcolor(mod, 0);
+	server_fill_rect(mod, 0, 0, mod->width, mod->height);
+	server_end_update(mod);
+	server_msg(mod, "started connecting", 0);
 
 	/* only support 8, 15, 16, and 24 bpp connections from rdp client */
 	if (mod->bpp != 8 && mod->bpp != 15 && mod->bpp != 16 && mod->bpp != 24)
 	{
-		mod->server_msg(mod, "error - only supporting 8, 15, 16, and 24 bpp rdp connections", 0);
+		server_msg(mod, "error - only supporting 8, 15, 16, and 24 bpp rdp connections", 0);
 		LIB_DEBUG(mod, "out lib_mod_connect error");
 		return 1;
 	}
 
 	if (g_strcmp(mod->ip, "") == 0)
 	{
-		mod->server_msg(mod, "error - no ip set", 0);
+		server_msg(mod, "error - no ip set", 0);
 		LIB_DEBUG(mod, "out lib_mod_connect error");
 		return 1;
 	}
@@ -194,7 +194,7 @@ int lib_mod_connect(xrdpModule *mod)
 			g_tcp_set_no_delay(mod->sck);
 		}
 
-		mod->server_msg(mod, "connecting...", 0);
+		server_msg(mod, "connecting...", 0);
 
 		if (use_uds)
 		{
@@ -216,9 +216,9 @@ int lib_mod_connect(xrdpModule *mod)
 				{
 					index++;
 
-					if ((index >= 30) || mod->server_is_term(mod))
+					if ((index >= 30) || server_is_term(mod))
 					{
-						mod->server_msg(mod, "connect timeout", 0);
+						server_msg(mod, "connect timeout", 0);
 						error = 1;
 						break;
 					}
@@ -226,7 +226,7 @@ int lib_mod_connect(xrdpModule *mod)
 			}
 			else
 			{
-				mod->server_msg(mod, "connect error", 0);
+				server_msg(mod, "connect error", 0);
 			}
 		}
 
@@ -241,7 +241,7 @@ int lib_mod_connect(xrdpModule *mod)
 
 		if (i >= 4)
 		{
-			mod->server_msg(mod, "connection problem, giving up", 0);
+			server_msg(mod, "connection problem, giving up", 0);
 			break;
 		}
 
@@ -310,13 +310,13 @@ int lib_mod_connect(xrdpModule *mod)
 
 	if (error != 0)
 	{
-		mod->server_msg(mod, "some problem", 0);
+		server_msg(mod, "some problem", 0);
 		LIB_DEBUG(mod, "out lib_mod_connect error");
 		return 1;
 	}
 	else
 	{
-		mod->server_msg(mod, "connected ok", 0);
+		server_msg(mod, "connected ok", 0);
 		mod->sck_obj = g_create_wait_obj_from_socket(mod->sck, 0);
 	}
 
@@ -467,7 +467,7 @@ static int process_server_window_new_update(xrdpModule *mod, struct stream *s)
 	}
 
 	in_uint32_le(s, flags);
-	mod->server_window_new_update(mod, window_id, &rwso, flags);
+	server_window_new_update(mod, window_id, &rwso, flags);
 	rv = 0;
 	g_free(rwso.title_info);
 	g_free(rwso.window_rects);
@@ -483,7 +483,7 @@ static int process_server_window_delete(xrdpModule *mod, struct stream *s)
 	int rv;
 
 	in_uint32_le(s, window_id);
-	mod->server_window_delete(mod, window_id);
+	server_window_delete(mod, window_id);
 	rv = 0;
 
 	return rv;
@@ -507,7 +507,7 @@ static int process_server_set_pointer_ex(xrdpModule *mod, struct stream *s)
 	Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
 	in_uint8a(s, cur_data, 32 * (32 * Bpp));
 	in_uint8a(s, cur_mask, 32 * (32 / 8));
-	rv = mod->server_set_pointer_ex(mod, x, y, cur_data, cur_mask, bpp);
+	rv = server_set_pointer_ex(mod, x, y, cur_data, cur_mask, bpp);
 
 	return rv;
 }
@@ -545,17 +545,17 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 	switch (type)
 	{
 		case 1: /* server_begin_update */
-			rv = mod->server_begin_update(mod);
+			rv = server_begin_update(mod);
 			break;
 		case 2: /* server_end_update */
-			rv = mod->server_end_update(mod);
+			rv = server_end_update(mod);
 			break;
 		case 3: /* server_fill_rect */
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
 			in_uint16_le(s, cx);
 			in_uint16_le(s, cy);
-			rv = mod->server_fill_rect(mod, x, y, cx, cy);
+			rv = server_fill_rect(mod, x, y, cx, cy);
 			break;
 		case 4: /* server_screen_blt */
 			in_sint16_le(s, x);
@@ -564,7 +564,7 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 			in_uint16_le(s, cy);
 			in_sint16_le(s, srcx);
 			in_sint16_le(s, srcy);
-			rv = mod->server_screen_blt(mod, x, y, cx, cy, srcx, srcy);
+			rv = server_screen_blt(mod, x, y, cx, cy, srcx, srcy);
 			break;
 		case 5: /* server_paint_rect */
 			in_sint16_le(s, x);
@@ -577,58 +577,58 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 			in_uint16_le(s, height);
 			in_sint16_le(s, srcx);
 			in_sint16_le(s, srcy);
-			rv = mod->server_paint_rect(mod, x, y, cx, cy, bmpdata, width, height, srcx, srcy);
+			rv = server_paint_rect(mod, x, y, cx, cy, bmpdata, width, height, srcx, srcy);
 			break;
 		case 10: /* server_set_clip */
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
 			in_uint16_le(s, cx);
 			in_uint16_le(s, cy);
-			rv = mod->server_set_clip(mod, x, y, cx, cy);
+			rv = server_set_clip(mod, x, y, cx, cy);
 			break;
 		case 11: /* server_reset_clip */
-			rv = mod->server_reset_clip(mod);
+			rv = server_reset_clip(mod);
 			break;
 		case 12: /* server_set_fgcolor */
 			in_uint32_le(s, fgcolor);
-			rv = mod->server_set_fgcolor(mod, fgcolor);
+			rv = server_set_fgcolor(mod, fgcolor);
 			break;
 		case 14:
 			in_uint16_le(s, opcode);
-			rv = mod->server_set_opcode(mod, opcode);
+			rv = server_set_opcode(mod, opcode);
 			break;
 		case 17:
 			in_uint16_le(s, style);
 			in_uint16_le(s, width);
-			rv = mod->server_set_pen(mod, style, width);
+			rv = server_set_pen(mod, style, width);
 			break;
 		case 18:
 			in_sint16_le(s, x1);
 			in_sint16_le(s, y1);
 			in_sint16_le(s, x2);
 			in_sint16_le(s, y2);
-			rv = mod->server_draw_line(mod, x1, y1, x2, y2);
+			rv = server_draw_line(mod, x1, y1, x2, y2);
 			break;
 		case 19:
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
 			in_uint8a(s, cur_data, 32 * (32 * 3));
 			in_uint8a(s, cur_mask, 32 * (32 / 8));
-			rv = mod->server_set_pointer(mod, x, y, cur_data, cur_mask);
+			rv = server_set_pointer(mod, x, y, cur_data, cur_mask);
 			break;
 		case 20:
 			in_uint32_le(s, rdpid);
 			in_uint16_le(s, width);
 			in_uint16_le(s, height);
-			rv = mod->server_create_os_surface(mod, rdpid, width, height);
+			rv = server_create_os_surface(mod, rdpid, width, height);
 			break;
 		case 21:
 			in_uint32_le(s, rdpid);
-			rv = mod->server_switch_os_surface(mod, rdpid);
+			rv = server_switch_os_surface(mod, rdpid);
 			break;
 		case 22:
 			in_uint32_le(s, rdpid);
-			rv = mod->server_delete_os_surface(mod, rdpid);
+			rv = server_delete_os_surface(mod, rdpid);
 			break;
 		case 23: /* server_paint_rect_os */
 			in_sint16_le(s, x);
@@ -638,12 +638,12 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 			in_uint32_le(s, rdpid);
 			in_sint16_le(s, srcx);
 			in_sint16_le(s, srcy);
-			rv = mod->server_paint_rect_os(mod, x, y, cx, cy, rdpid, srcx, srcy);
+			rv = server_paint_rect_os(mod, x, y, cx, cy, rdpid, srcx, srcy);
 			break;
 		case 24: /* server_set_hints */
 			in_uint32_le(s, hints);
 			in_uint32_le(s, mask);
-			rv = mod->server_set_hints(mod, hints, mask);
+			rv = server_set_hints(mod, hints, mask);
 			break;
 		case 25: /* server_window_new_update */
 			rv = process_server_window_new_update(mod, s);

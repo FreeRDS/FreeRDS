@@ -24,7 +24,7 @@
 /* check for debug */
 #ifdef XRDP_DEBUG
 #define DEBUG(args) g_writeln args;
-#define LIB_DEBUG(_mod, _text) _mod->server_msg(_mod, _text, 1);
+#define LIB_DEBUG(_mod, _text) server_msg(_mod, _text, 1);
 #else
 #define DEBUG(args)
 #define LIB_DEBUG(_mod, _text)

@@ -157,7 +157,7 @@ static int lxrdp_connect(xrdpModule *mod)
 				}
 			}
 			log_message(LOG_LEVEL_INFO, buf);
-			mod->server_msg(mod, buf, 0);
+			server_msg(mod, buf, 0);
 		}
 
 #endif
@@ -491,7 +491,7 @@ static void lfreerdp_begin_paint(rdpContext *context)
 
 	LLOGLN(10, ("lfreerdp_begin_paint:"));
 	mod = ((struct mod_context *) context)->modi;
-	mod->server_begin_update(mod);
+	server_begin_update(mod);
 }
 
 /******************************************************************************/
@@ -501,7 +501,7 @@ static void lfreerdp_end_paint(rdpContext *context)
 
 	LLOGLN(10, ("lfreerdp_end_paint:"));
 	mod = ((struct mod_context *) context)->modi;
-	mod->server_end_update(mod);
+	server_end_update(mod);
 }
 
 /******************************************************************************/
@@ -522,11 +522,11 @@ static void lfreerdp_set_bounds(rdpContext *context, rdpBounds *bounds)
 		y = bounds->top;
 		cx = (bounds->right - bounds->left) + 1;
 		cy = (bounds->bottom - bounds->top) + 1;
-		mod->server_set_clip(mod, x, y, cx, cy);
+		server_set_clip(mod, x, y, cx, cy);
 	}
 	else
 	{
-		mod->server_reset_clip(mod);
+		server_reset_clip(mod);
 	}
 }
 
@@ -588,7 +588,7 @@ static void lfreerdp_bitmap_update(rdpContext *context, BITMAP_UPDATE *bitmap)
 		}
 
 		dst_data1 = convert_bitmap(server_bpp, client_bpp, dst_data, bd->width, bd->height, mod->colormap);
-		mod->server_paint_rect(mod, bd->destLeft, bd->destTop, cx, cy, dst_data1, bd->width, bd->height, 0, 0);
+		server_paint_rect(mod, bd->destLeft, bd->destTop, cx, cy, dst_data1, bd->width, bd->height, 0, 0);
 
 		if (dst_data1 != dst_data)
 		{
@@ -606,9 +606,9 @@ static void lfreerdp_dst_blt(rdpContext *context, DSTBLT_ORDER *dstblt)
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(10, ("lfreerdp_dst_blt:"));
-	mod->server_set_opcode(mod, dstblt->bRop);
-	mod->server_fill_rect(mod, dstblt->nLeftRect, dstblt->nTopRect, dstblt->nWidth, dstblt->nHeight);
-	mod->server_set_opcode(mod, 0xcc);
+	server_set_opcode(mod, dstblt->bRop);
+	server_fill_rect(mod, dstblt->nLeftRect, dstblt->nTopRect, dstblt->nWidth, dstblt->nHeight);
+	server_set_opcode(mod, 0xcc);
 }
 
 /******************************************************************************/
@@ -636,10 +636,10 @@ static void lfreerdp_pat_blt(rdpContext *context, PATBLT_ORDER *patblt)
 	{
 		LLOGLN(0, ("Warning same color on both bg and fg"));
 	}
-	mod->server_set_mixmode(mod, 1);
-	mod->server_set_opcode(mod, patblt->bRop);
-	mod->server_set_fgcolor(mod, fgcolor);
-	mod->server_set_bgcolor(mod, bgcolor);
+	server_set_mixmode(mod, 1);
+	server_set_opcode(mod, patblt->bRop);
+	server_set_fgcolor(mod, fgcolor);
+	server_set_bgcolor(mod, bgcolor);
 
 	if (patblt->brush.style & 0x80)
 	{
@@ -652,17 +652,17 @@ static void lfreerdp_pat_blt(rdpContext *context, PATBLT_ORDER *patblt)
 		}
 
 		bi = mod->brush_cache + idx;
-		mod->server_set_brush(mod, patblt->brush.x, patblt->brush.y, 3, bi->b8x8);
+		server_set_brush(mod, patblt->brush.x, patblt->brush.y, 3, bi->b8x8);
 	}
 	else
 	{
-		mod->server_set_brush(mod, patblt->brush.x, patblt->brush.y, patblt->brush.style,
+		server_set_brush(mod, patblt->brush.x, patblt->brush.y, patblt->brush.style,
 				(char *) (patblt->brush.p8x8));
 	}
 
-	mod->server_fill_rect(mod, patblt->nLeftRect, patblt->nTopRect, patblt->nWidth, patblt->nHeight);
-	mod->server_set_opcode(mod, 0xcc);
-	mod->server_set_mixmode(mod, 0);
+	server_fill_rect(mod, patblt->nLeftRect, patblt->nTopRect, patblt->nWidth, patblt->nHeight);
+	server_set_opcode(mod, 0xcc);
+	server_set_mixmode(mod, 0);
 
 }
 
@@ -673,10 +673,10 @@ static void lfreerdp_scr_blt(rdpContext *context, SCRBLT_ORDER *scrblt)
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(10, ("lfreerdp_scr_blt:"));
-	mod->server_set_opcode(mod, scrblt->bRop);
-	mod->server_screen_blt(mod, scrblt->nLeftRect, scrblt->nTopRect, scrblt->nWidth, scrblt->nHeight,
+	server_set_opcode(mod, scrblt->bRop);
+	server_screen_blt(mod, scrblt->nLeftRect, scrblt->nTopRect, scrblt->nWidth, scrblt->nHeight,
 			scrblt->nXSrc, scrblt->nYSrc);
-	mod->server_set_opcode(mod, 0xcc);
+	server_set_opcode(mod, 0xcc);
 }
 
 /******************************************************************************/
@@ -692,8 +692,8 @@ static void lfreerdp_opaque_rect(rdpContext *context, OPAQUE_RECT_ORDER *opaque_
 	server_bpp = mod->inst->settings->ColorDepth;
 	client_bpp = mod->bpp;
 	fgcolor = convert_color(server_bpp, client_bpp, opaque_rect->color, mod->colormap);
-	mod->server_set_fgcolor(mod, fgcolor);
-	mod->server_fill_rect(mod, opaque_rect->nLeftRect, opaque_rect->nTopRect, opaque_rect->nWidth,
+	server_set_fgcolor(mod, fgcolor);
+	server_fill_rect(mod, opaque_rect->nLeftRect, opaque_rect->nTopRect, opaque_rect->nWidth,
 			opaque_rect->nHeight);
 }
 
@@ -731,10 +731,10 @@ static void lfreerdp_mem_blt(rdpContext *context, MEMBLT_ORDER *memblt)
 
 	bi = &(mod->bitmap_cache[id][idx]);
 
-	mod->server_set_opcode(mod, memblt->bRop);
-	mod->server_paint_rect(mod, memblt->nLeftRect, memblt->nTopRect, memblt->nWidth, memblt->nHeight, bi->data,
+	server_set_opcode(mod, memblt->bRop);
+	server_paint_rect(mod, memblt->nLeftRect, memblt->nTopRect, memblt->nWidth, memblt->nHeight, bi->data,
 			bi->width, bi->height, memblt->nXSrc, memblt->nYSrc);
-	mod->server_set_opcode(mod, 0xcc);
+	server_set_opcode(mod, 0xcc);
 
 }
 
@@ -753,9 +753,9 @@ static void lfreerdp_glyph_index(rdpContext *context, GLYPH_INDEX_ORDER *glyph_i
 	client_bpp = mod->bpp;
 	fgcolor = convert_color(server_bpp, client_bpp, glyph_index->foreColor, mod->colormap);
 	bgcolor = convert_color(server_bpp, client_bpp, glyph_index->backColor, mod->colormap);
-	mod->server_set_bgcolor(mod, fgcolor);
-	mod->server_set_fgcolor(mod, bgcolor);
-	mod->server_draw_text(mod, glyph_index->cacheId, glyph_index->flAccel, glyph_index->fOpRedundant,
+	server_set_bgcolor(mod, fgcolor);
+	server_set_fgcolor(mod, bgcolor);
+	server_draw_text(mod, glyph_index->cacheId, glyph_index->flAccel, glyph_index->fOpRedundant,
 			glyph_index->bkLeft, glyph_index->bkTop, glyph_index->bkRight, glyph_index->bkBottom,
 			glyph_index->opLeft, glyph_index->opTop, glyph_index->opRight, glyph_index->opBottom,
 			glyph_index->x, glyph_index->y, (char *) (glyph_index->data), glyph_index->cbData);
@@ -772,16 +772,16 @@ static void lfreerdp_line_to(rdpContext *context, LINE_TO_ORDER *line_to)
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(10, ("lfreerdp_line_to:"));
-	mod->server_set_opcode(mod, line_to->bRop2);
+	server_set_opcode(mod, line_to->bRop2);
 	server_bpp = mod->inst->settings->ColorDepth;
 	client_bpp = mod->bpp;
 	fgcolor = convert_color(server_bpp, client_bpp, line_to->penColor, mod->colormap);
 	bgcolor = convert_color(server_bpp, client_bpp, line_to->backColor, mod->colormap);
-	mod->server_set_fgcolor(mod, fgcolor);
-	mod->server_set_bgcolor(mod, bgcolor);
-	mod->server_set_pen(mod, line_to->penStyle, line_to->penWidth);
-	mod->server_draw_line(mod, line_to->nXStart, line_to->nYStart, line_to->nXEnd, line_to->nYEnd);
-	mod->server_set_opcode(mod, 0xcc);
+	server_set_fgcolor(mod, fgcolor);
+	server_set_bgcolor(mod, bgcolor);
+	server_set_pen(mod, line_to->penStyle, line_to->penWidth);
+	server_draw_line(mod, line_to->nXStart, line_to->nYStart, line_to->nXEnd, line_to->nYEnd);
+	server_set_opcode(mod, 0xcc);
 }
 
 /******************************************************************************/
@@ -909,7 +909,7 @@ static void lfreerdp_cache_glyph(rdpContext *context, CACHE_GLYPH_ORDER *cache_g
 		gd = &cache_glyph_order->glyphData[index];
 		LLOGLN(10, ("  %d %d %d %d %d", gd->cacheIndex, gd->x, gd->y,
 						gd->cx, gd->cy));
-		mod->server_add_char(mod, cache_glyph_order->cacheId, gd->cacheIndex, gd->x, gd->y, gd->cx, gd->cy,
+		server_add_char(mod, cache_glyph_order->cacheId, gd->cacheIndex, gd->x, gd->y, gd->cx, gd->cy,
 				(char *) (gd->aj));
 		free(gd->aj);
 		gd->aj = NULL;
@@ -1125,7 +1125,7 @@ static void lfreerdp_pointer_new(rdpContext *context, POINTER_NEW_UPDATE *pointe
 		//memcpy(mod->pointer_cache[index].mask,
 		//    pointer_new->colorPtrAttr.andMaskData, 32 * 32 / 8);
 
-		mod->server_set_pointer(mod, mod->pointer_cache[index].hotx, mod->pointer_cache[index].hoty,
+		server_set_pointer(mod, mod->pointer_cache[index].hotx, mod->pointer_cache[index].hoty,
 				mod->pointer_cache[index].data, mod->pointer_cache[index].mask);
 	}
 	else
@@ -1151,7 +1151,7 @@ static void lfreerdp_pointer_cached(rdpContext *context, POINTER_CACHED_UPDATE *
 	mod = ((struct mod_context *) context)->modi;
 	index = pointer_cached->cacheIndex;
 	LLOGLN(10, ("lfreerdp_pointer_cached:%d", index));
-	mod->server_set_pointer(mod, mod->pointer_cache[index].hotx, mod->pointer_cache[index].hoty,
+	server_set_pointer(mod, mod->pointer_cache[index].hotx, mod->pointer_cache[index].hoty,
 			mod->pointer_cache[index].data, mod->pointer_cache[index].mask);
 }
 
@@ -1186,18 +1186,18 @@ static void lfreerdp_polygon_sc(rdpContext* context, POLYGON_SC_ORDER* polygon_s
 		}
 		fgcolor = convert_color(server_bpp, client_bpp, polygon_sc->brushColor, mod->colormap);
 
-		mod->server_set_opcode(mod, polygon_sc->bRop2);
-		mod->server_set_bgcolor(mod, 255);
-		mod->server_set_fgcolor(mod, fgcolor);
-		mod->server_set_pen(mod, 1, 1); // style, width
+		server_set_opcode(mod, polygon_sc->bRop2);
+		server_set_bgcolor(mod, 255);
+		server_set_fgcolor(mod, fgcolor);
+		server_set_pen(mod, 1, 1); // style, width
 		// TODO replace with correct brush; this is a workaround
 		// This workaround handles the text cursor in microsoft word.
-		mod->server_draw_line(mod, polygon_sc->xStart, polygon_sc->yStart, polygon_sc->xStart,
+		server_draw_line(mod, polygon_sc->xStart, polygon_sc->yStart, polygon_sc->xStart,
 				polygon_sc->yStart + points[2].y);
-		//	mod->server_fill_rect(mod, points[0].x, points[0].y,
+		//	server_fill_rect(mod, points[0].x, points[0].y,
 		//                         points[0].x-points[3].x, points[0].y-points[2].y);
-		//      mod->server_set_brush(mod,); // howto use this on our indata??
-		mod->server_set_opcode(mod, 0xcc);
+		//      server_set_brush(mod,); // howto use this on our indata??
+		server_set_opcode(mod, 0xcc);
 	}
 	else
 	{
@@ -1228,7 +1228,7 @@ static BOOL lfreerdp_pre_connect(freerdp *instance)
 	verifyColorMap(mod);
 	num_chans = 0;
 	index = 0;
-	error = mod->server_query_channel(mod, index, ch_name, &ch_flags);
+	error = server_query_channel(mod, index, ch_name, &ch_flags);
 
 	while (error == 0)
 	{
@@ -1240,7 +1240,7 @@ static BOOL lfreerdp_pre_connect(freerdp *instance)
 		g_snprintf(dst_ch_name, 8, "%s", ch_name);
 		instance->settings->ChannelDefArray[index].options = ch_flags;
 		index++;
-		error = mod->server_query_channel(mod, index, ch_name, &ch_flags);
+		error = server_query_channel(mod, index, ch_name, &ch_flags);
 	}
 
 	instance->settings->ChannelCount = num_chans;
@@ -1412,7 +1412,7 @@ void lrail_WindowCreate(rdpContext *context, WINDOW_ORDER_INFO *orderInfo, WINDO
 		}
 	}
 
-	mod->server_window_new_update(mod, orderInfo->windowId, &wso, orderInfo->fieldFlags);
+	server_window_new_update(mod, orderInfo->windowId, &wso, orderInfo->fieldFlags);
 
 	free(wso.title_info);
 	g_free(wso.window_rects);
@@ -1433,7 +1433,7 @@ void lrail_WindowDelete(rdpContext *context, WINDOW_ORDER_INFO *orderInfo)
 
 	LLOGLN(0, ("lrail_WindowDelete:"));
 	mod = ((struct mod_context *) context)->modi;
-	mod->server_window_delete(mod, orderInfo->windowId);
+	server_window_delete(mod, orderInfo->windowId);
 }
 
 /*****************************************************************************/
@@ -1454,7 +1454,7 @@ void lrail_WindowIcon(rdpContext *context, WINDOW_ORDER_INFO *orderInfo, WINDOW_
 	rii.mask = (char *) (window_icon->iconInfo->bitsMask);
 	rii.cmap = (char *) (window_icon->iconInfo->colorTable);
 	rii.data = (char *) (window_icon->iconInfo->bitsColor);
-	mod->server_window_icon(mod, orderInfo->windowId, window_icon->iconInfo->cacheEntry,
+	server_window_icon(mod, orderInfo->windowId, window_icon->iconInfo->cacheEntry,
 			window_icon->iconInfo->cacheId, &rii, orderInfo->fieldFlags);
 }
 
@@ -1465,7 +1465,7 @@ void lrail_WindowCachedIcon(rdpContext *context, WINDOW_ORDER_INFO *orderInfo, W
 
 	LLOGLN(0, ("lrail_WindowCachedIcon:"));
 	mod = ((struct mod_context *) context)->modi;
-	mod->server_window_cached_icon(mod, orderInfo->windowId, window_cached_icon->cachedIcon.cacheEntry,
+	server_window_cached_icon(mod, orderInfo->windowId, window_cached_icon->cachedIcon.cacheEntry,
 			window_cached_icon->cachedIcon.cacheId, orderInfo->fieldFlags);
 }
 
@@ -1514,7 +1514,7 @@ void lrail_NotifyIconCreate(rdpContext *context, WINDOW_ORDER_INFO *orderInfo, N
 	rnso.icon_info.cmap = (char *) (notify_icon_state->icon.colorTable);
 	rnso.icon_info.data = (char *) (notify_icon_state->icon.bitsColor);
 
-	mod->server_notify_new_update(mod, orderInfo->windowId, orderInfo->notifyIconId, &rnso, orderInfo->fieldFlags);
+	server_notify_new_update(mod, orderInfo->windowId, orderInfo->notifyIconId, &rnso, orderInfo->fieldFlags);
 
 	free(rnso.tool_tip);
 	free(rnso.infotip.text);
@@ -1535,7 +1535,7 @@ void lrail_NotifyIconDelete(rdpContext *context, WINDOW_ORDER_INFO *orderInfo)
 
 	LLOGLN(0, ("lrail_NotifyIconDelete:"));
 	mod = ((struct mod_context *) context)->modi;
-	mod->server_notify_delete(mod, orderInfo->windowId, orderInfo->notifyIconId);
+	server_notify_delete(mod, orderInfo->windowId, orderInfo->notifyIconId);
 }
 
 /*****************************************************************************/
@@ -1564,7 +1564,7 @@ void lrail_MonitoredDesktop(rdpContext *context, WINDOW_ORDER_INFO *orderInfo, M
 		}
 	}
 
-	mod->server_monitored_desktop(mod, &rmdo, orderInfo->fieldFlags);
+	server_monitored_desktop(mod, &rmdo, orderInfo->fieldFlags);
 	g_free(rmdo.window_ids);
 }
 
@@ -1577,7 +1577,7 @@ void lrail_NonMonitoredDesktop(rdpContext *context, WINDOW_ORDER_INFO *orderInfo
 	LLOGLN(0, ("lrail_NonMonitoredDesktop:"));
 	mod = ((struct mod_context *) context)->modi;
 	memset(&rmdo, 0, sizeof(rmdo));
-	mod->server_monitored_desktop(mod, &rmdo, orderInfo->fieldFlags);
+	server_monitored_desktop(mod, &rmdo, orderInfo->fieldFlags);
 }
 
 /******************************************************************************/
@@ -1639,7 +1639,7 @@ static int lfreerdp_receive_channel_data(freerdp *instance, int channelId, UINT8
 	if (lchid >= 0)
 	{
 		LLOGLN(10, ("lfreerdp_receive_channel_data: server to client"));
-		error = mod->server_send_to_channel(mod, lchid, (char *) data, size, total_size, flags);
+		error = server_send_to_channel(mod, lchid, (char *) data, size, total_size, flags);
 
 		if (error != 0)
 		{

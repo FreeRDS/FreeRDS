@@ -325,49 +325,6 @@ static int xrdp_mm_setup_mod1(xrdpMm *self)
 		{
 			log_message(LOG_LEVEL_ERROR, "no mod_init or mod_exit address found");
 		}
-
-		if (self->mod != 0)
-		{
-			self->mod->wm = (long) (self->wm);
-			self->mod->server_begin_update = server_begin_update;
-			self->mod->server_end_update = server_end_update;
-			self->mod->server_bell_trigger = server_bell_trigger;
-			self->mod->server_fill_rect = server_fill_rect;
-			self->mod->server_screen_blt = server_screen_blt;
-			self->mod->server_paint_rect = server_paint_rect;
-			self->mod->server_set_pointer = server_set_pointer;
-			self->mod->server_set_pointer_ex = server_set_pointer_ex;
-			self->mod->server_palette = server_palette;
-			self->mod->server_msg = server_msg;
-			self->mod->server_is_term = server_is_term;
-			self->mod->server_set_clip = server_set_clip;
-			self->mod->server_reset_clip = server_reset_clip;
-			self->mod->server_set_fgcolor = server_set_fgcolor;
-			self->mod->server_set_bgcolor = server_set_bgcolor;
-			self->mod->server_set_opcode = server_set_opcode;
-			self->mod->server_set_mixmode = server_set_mixmode;
-			self->mod->server_set_brush = server_set_brush;
-			self->mod->server_set_pen = server_set_pen;
-			self->mod->server_draw_line = server_draw_line;
-			self->mod->server_add_char = server_add_char;
-			self->mod->server_draw_text = server_draw_text;
-			self->mod->server_reset = server_reset;
-			self->mod->server_query_channel = server_query_channel;
-			self->mod->server_get_channel_id = server_get_channel_id;
-			self->mod->server_send_to_channel = server_send_to_channel;
-			self->mod->server_create_os_surface = server_create_os_surface;
-			self->mod->server_switch_os_surface = server_switch_os_surface;
-			self->mod->server_delete_os_surface = server_delete_os_surface;
-			self->mod->server_paint_rect_os = server_paint_rect_os;
-			self->mod->server_set_hints = server_set_hints;
-			self->mod->server_window_new_update = server_window_new_update;
-			self->mod->server_window_delete = server_window_delete;
-			self->mod->server_window_icon = server_window_icon;
-			self->mod->server_window_cached_icon = server_window_cached_icon;
-			self->mod->server_notify_new_update = server_notify_new_update;
-			self->mod->server_notify_delete = server_notify_delete;
-			self->mod->server_monitored_desktop = server_monitored_desktop;
-		}
 	}
 
 	/* id self->mod is null, there must be a problem */
@@ -376,6 +333,8 @@ static int xrdp_mm_setup_mod1(xrdpMm *self)
 		DEBUG(("problem loading lib in xrdp_mm_setup_mod1"));
 		return 1;
 	}
+
+	self->mod->wm = (long) (self->wm);
 
 	return 0;
 }
@@ -410,30 +369,37 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 	{
 		if (self->display > 0)
 		{
-			if (self->code == 10) /* X11rdp */
+			if (self->code == 0) /* Xvnc */
 			{
-				use_uds = 1;
-
-				if (xrdp_mm_get_value(self, "ip", text, 255) == 0)
-				{
-					if (g_strcmp(text, "127.0.0.1") != 0)
-					{
-						use_uds = 0;
-					}
-				}
-
-				if (use_uds)
-				{
-					g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
-				}
-				else
-				{
-					g_snprintf(text, 255, "%d", 6200 + self->display);
-				}
+				g_snprintf(text, 255, "%d", 5900 + self->display);
 			}
 			else
 			{
-				g_set_wait_obj(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
+				if (self->code == 10) /* X11rdp */
+				{
+					use_uds = 1;
+
+					if (xrdp_mm_get_value(self, "ip", text, 255) == 0)
+					{
+						if (g_strcmp(text, "127.0.0.1") != 0)
+						{
+							use_uds = 0;
+						}
+					}
+
+					if (use_uds)
+					{
+						g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
+					}
+					else
+					{
+						g_snprintf(text, 255, "%d", 6200 + self->display);
+					}
+				}
+				else
+				{
+					g_set_wait_obj(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
+				}
 			}
 		}
 	}
