@@ -688,28 +688,28 @@ static int lib_send_capabilities(struct mod* mod)
 	avro_value_t field;
 
 	avro_value_get_by_name(&val, "JPEG", &field, &index);
-	avro_value_set_boolean(&field, 1);
+	avro_value_set_boolean(&field, mod->settings->JpegCodec);
 
 	avro_value_get_by_name(&val, "NSCodec", &field, &index);
-	avro_value_set_boolean(&field, 0);
+	avro_value_set_boolean(&field, mod->settings->NSCodec);
 
 	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
-	avro_value_set_boolean(&field, 1);
+	avro_value_set_boolean(&field, mod->settings->RemoteFxCodec);
 
 	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
-	avro_value_set_int(&field, mod->client_info.OffscreenSupportLevel);
+	avro_value_set_int(&field, mod->settings->OffscreenSupportLevel);
 
 	avro_value_get_by_name(&val, "OffscreenCacheSize", &field, &index);
-	avro_value_set_int(&field, mod->client_info.OffscreenCacheSize);
+	avro_value_set_int(&field, mod->settings->OffscreenCacheSize);
 
 	avro_value_get_by_name(&val, "OffscreenCacheEntries", &field, &index);
-	avro_value_set_int(&field, mod->client_info.OffscreenCacheEntries);
+	avro_value_set_int(&field, mod->settings->OffscreenCacheEntries);
 
 	avro_value_get_by_name(&val, "RailSupportLevel", &field, &index);
-	avro_value_set_int(&field, mod->client_info.rail_support_level);
+	avro_value_set_int(&field, mod->settings->RemoteApplicationMode);
 
 	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
-	avro_value_set_int(&field, mod->client_info.pointer_flags);
+	avro_value_set_int(&field, mod->settings->ColorPointerFlag);
 
 	avro_value_sizeof(&val, &length);
 
@@ -870,9 +870,9 @@ int lib_mod_set_param(struct mod *mod, char *name, char *value)
 		mod->rfx = g_atoi(value);
 		g_writeln("mod->rfx = %d",mod->rfx);
 	}
-	else if (g_strcasecmp(name, "client_info") == 0)
+	else if (g_strcasecmp(name, "settings") == 0)
 	{
-		g_memcpy(&(mod->client_info), value, sizeof(mod->client_info));
+		mod->settings = (rdpSettings*) value;
 	}
 
 	return 0;

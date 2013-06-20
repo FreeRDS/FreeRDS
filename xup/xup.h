@@ -23,8 +23,9 @@
 #include "parse.h"
 #include "os_calls.h"
 #include "defines.h"
-#include "xrdp_client_info.h"
 #include "xrdp_rail.h"
+
+#include <freerdp/freerdp.h>
 
 #define CURRENT_MOD_VER 2
 
@@ -113,5 +114,5 @@ struct mod
 	char port[256];
 	tbus sck_obj;
 	int shift_state;
-	xrdpClientInfo client_info;
+	rdpSettings* settings;
 };

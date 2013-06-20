@@ -507,7 +507,7 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 		}
 
 		/* always set these */
-
+		self->mod->mod_set_param(self->mod, "settings", (char*) self->wm->session->settings);
 		name = self->wm->session->settings->ServerHostname;
 		self->mod->mod_set_param(self->mod, "hostname", name);
 		g_snprintf(text, 255, "%d", self->wm->session->settings->KeyboardLayout);
