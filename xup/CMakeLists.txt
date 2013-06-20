@@ -18,6 +18,8 @@
 set(MODULE_NAME "${XRDP_NG_MODULE}-xup")
 set(MODULE_PREFIX "FREERDP_XRDP_XUP")
 
+include_directories("../core")
+include_directories("../xrdp")
 include_directories("../common")
 include_directories("../avro/src")
 

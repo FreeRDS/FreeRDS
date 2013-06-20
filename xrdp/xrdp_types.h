@@ -48,6 +48,30 @@ typedef struct xrdp_startup_params xrdpStartupParams;
 #define MAX_NR_CHANNELS 16
 #define MAX_CHANNEL_NAME 16
 
+struct bitmap_item
+{
+	int width;
+	int height;
+	char* data;
+};
+
+struct brush_item
+{
+	int bpp;
+	int width;
+	int height;
+	char* data;
+	char b8x8[8];
+};
+
+struct pointer_item
+{
+	int hotx;
+	int hoty;
+	char data[32 * 32 * 3];
+	char mask[32 * 32 / 8];
+};
+
 /* lib */
 struct xrdp_mod
 {
@@ -124,6 +148,31 @@ struct xrdp_mod
 	long wm; /* xrdpWm* */
 	long painter;
 	int sck;
+	/* mod data */
+	int width;
+	int height;
+	int bpp;
+	int rfx;
+	int sck_closed;
+	char username[256];
+	char password[256];
+	char ip[256];
+	char port[256];
+	long sck_obj;
+	int shift_state;
+	rdpSettings* settings;
+
+	int colormap[256];
+	char* chan_buf;
+	int chan_buf_valid;
+	int chan_buf_bytes;
+	int vmaj;
+	int vmin;
+	int vrev;
+	struct rdp_freerdp* inst;
+	struct bitmap_item bitmap_cache[4][4096];
+	struct brush_item brush_cache[64];
+	struct pointer_item pointer_cache[32];
 };
 
 /* header for bmp file */

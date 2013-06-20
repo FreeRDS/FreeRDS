@@ -26,7 +26,7 @@
 
 /******************************************************************************/
 /* returns error */
-int lib_recv(struct mod *mod, char *data, int len)
+int lib_recv(xrdpModule *mod, char *data, int len)
 {
 	int rcvd;
 
@@ -72,7 +72,7 @@ int lib_recv(struct mod *mod, char *data, int len)
 
 /*****************************************************************************/
 /* returns error */
-int lib_send(struct mod *mod, char *data, int len)
+int lib_send(xrdpModule *mod, char *data, int len)
 {
 	int sent;
 
@@ -118,7 +118,7 @@ int lib_send(struct mod *mod, char *data, int len)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_start(struct mod *mod, int w, int h, int bpp)
+int lib_mod_start(xrdpModule *mod, int w, int h, int bpp)
 {
 	LIB_DEBUG(mod, "in lib_mod_start");
 	mod->width = w;
@@ -130,7 +130,7 @@ int lib_mod_start(struct mod *mod, int w, int h, int bpp)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_connect(struct mod *mod)
+int lib_mod_connect(xrdpModule *mod)
 {
 	int error;
 	int len;
@@ -320,7 +320,7 @@ int lib_mod_connect(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_event(struct mod *mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
+int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
 {
 	struct stream *s;
 	int len;
@@ -389,7 +389,7 @@ int lib_mod_event(struct mod *mod, int msg, tbus param1, tbus param2, tbus param
 
 /******************************************************************************/
 /* return error */
-static int process_server_window_new_update(struct mod *mod, struct stream *s)
+static int process_server_window_new_update(xrdpModule *mod, struct stream *s)
 {
 	int flags;
 	int window_id;
@@ -471,7 +471,7 @@ static int process_server_window_new_update(struct mod *mod, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int process_server_window_delete(struct mod *mod, struct stream *s)
+static int process_server_window_delete(xrdpModule *mod, struct stream *s)
 {
 	int window_id;
 	int rv;
@@ -485,7 +485,7 @@ static int process_server_window_delete(struct mod *mod, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int process_server_set_pointer_ex(struct mod *mod, struct stream *s)
+static int process_server_set_pointer_ex(xrdpModule *mod, struct stream *s)
 {
 	int rv;
 	int x;
@@ -501,14 +501,14 @@ static int process_server_set_pointer_ex(struct mod *mod, struct stream *s)
 	Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
 	in_uint8a(s, cur_data, 32 * (32 * Bpp));
 	in_uint8a(s, cur_mask, 32 * (32 / 8));
-	rv = mod->server_set_cursor_ex(mod, x, y, cur_data, cur_mask, bpp);
+	rv = mod->server_set_pointer_ex(mod, x, y, cur_data, cur_mask, bpp);
 
 	return rv;
 }
 
 /******************************************************************************/
 /* return error */
-static int lib_mod_process_orders(struct mod *mod, int type, struct stream *s)
+static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 {
 	int rv;
 	int x;
@@ -608,7 +608,7 @@ static int lib_mod_process_orders(struct mod *mod, int type, struct stream *s)
 			in_sint16_le(s, y);
 			in_uint8a(s, cur_data, 32 * (32 * 3));
 			in_uint8a(s, cur_mask, 32 * (32 / 8));
-			rv = mod->server_set_cursor(mod, x, y, cur_data, cur_mask);
+			rv = mod->server_set_pointer(mod, x, y, cur_data, cur_mask);
 			break;
 		case 20:
 			in_uint32_le(s, rdpid);
@@ -671,7 +671,7 @@ const char CAPABILITIES_SCHEMA[] =
 		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
 		]}";
 
-static int lib_send_capabilities(struct mod* mod)
+static int lib_send_capabilities(xrdpModule* mod)
 {
 	size_t index;
 	size_t length;
@@ -736,7 +736,7 @@ static int lib_send_capabilities(struct mod* mod)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_signal(struct mod *mod)
+int lib_mod_signal(xrdpModule *mod)
 {
 	struct stream *s;
 	int num_orders;
@@ -840,14 +840,14 @@ int lib_mod_signal(struct mod *mod)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_end(struct mod *mod)
+int lib_mod_end(xrdpModule *mod)
 {
 	return 0;
 }
 
 /******************************************************************************/
 /* return error */
-int lib_mod_set_param(struct mod *mod, char *name, char *value)
+int lib_mod_set_param(xrdpModule *mod, char *name, char *value)
 {
 	if (g_strcasecmp(name, "username") == 0)
 	{
@@ -880,7 +880,7 @@ int lib_mod_set_param(struct mod *mod, char *name, char *value)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_get_wait_objs(struct mod *mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
+int lib_mod_get_wait_objs(xrdpModule *mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
 {
 	int i;
 
@@ -900,7 +900,7 @@ int lib_mod_get_wait_objs(struct mod *mod, tbus *read_objs, int *rcount, tbus *w
 
 /******************************************************************************/
 /* return error */
-int lib_mod_check_wait_objs(struct mod *mod)
+int lib_mod_check_wait_objs(xrdpModule *mod)
 {
 	int rv;
 
@@ -921,14 +921,14 @@ int lib_mod_check_wait_objs(struct mod *mod)
 }
 
 /******************************************************************************/
-struct mod* mod_init(void)
+xrdpModule* mod_init(void)
 {
-	struct mod *mod;
+	xrdpModule *mod;
 
-	mod = (struct mod *) g_malloc(sizeof(struct mod), 1);
-	mod->size = sizeof(struct mod);
-	mod->version = CURRENT_MOD_VER;
-	mod->handle = (tbus) mod;
+	mod = (xrdpModule *) g_malloc(sizeof(xrdpModule), 1);
+	mod->size = sizeof(xrdpModule);
+	mod->version = 2;
+	mod->handle = (long) mod;
 	mod->mod_connect = lib_mod_connect;
 	mod->mod_start = lib_mod_start;
 	mod->mod_event = lib_mod_event;
@@ -942,7 +942,7 @@ struct mod* mod_init(void)
 }
 
 /******************************************************************************/
-int mod_exit(struct mod *mod)
+int mod_exit(xrdpModule *mod)
 {
 	if (mod == 0)
 	{

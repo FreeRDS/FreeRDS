@@ -271,6 +271,9 @@ int main(int argc, char** argv)
 	{
 		switch (error)
 		{
+			case LOG_STARTUP_OK:
+				break;
+
 			case LOG_ERROR_MALLOC:
 				g_writeln("error on malloc. cannot start logging. quitting.");
 				break;

@@ -18,6 +18,8 @@
 set(MODULE_NAME "${XRDP_NG_MODULE}-freerdp")
 set(MODULE_PREFIX "FREERDP_XRDP_FREERDP")
 
+include_directories("../core")
+include_directories("../xrdp")
 include_directories("../common")
 
 set(${MODULE_PREFIX}_SRCS
