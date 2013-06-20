@@ -1669,7 +1669,7 @@ static BOOL lfreerdp_verify_certificate(freerdp *instance, char *subject, char *
 }
 
 /******************************************************************************/
-xrdpModule* mod_init(void)
+xrdpModule* freerdp_client_module_init(void)
 {
 	xrdpModule *mod;
 	modContext *lcon;
@@ -1712,7 +1712,7 @@ xrdpModule* mod_init(void)
 }
 
 /******************************************************************************/
-int mod_exit(xrdpModule *mod)
+int freerdp_client_module_exit(xrdpModule *mod)
 {
 	LLOGLN(0, ("mod_exit:"));
 

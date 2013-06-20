@@ -18,6 +18,9 @@
 set(MODULE_NAME "${XRDP_NG_MODULE}")
 set(MODULE_PREFIX "FREERDP_XRDP")
 
+include_directories(".")
+include_directories("../xup")
+include_directories("../freerdp")
 include_directories("../common")
 include_directories("../../../winpr/tools/makecert")
 
@@ -53,7 +56,8 @@ set(${MODULE_PREFIX}_SHARE_DATA
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-core)
-
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-xup)
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-freerdp)
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS

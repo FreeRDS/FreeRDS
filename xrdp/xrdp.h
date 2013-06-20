@@ -22,6 +22,9 @@
 #include "config.h"
 #endif
 
+#ifndef XRDP_H
+#define XRDP_H
+
 #include <freerdp/freerdp.h>
 
 #include "arch.h"
@@ -319,3 +322,5 @@ int server_notify_new_update(struct xrdp_mod* mod,
 int server_notify_delete(struct xrdp_mod* mod, int window_id, int notify_id);
 int server_monitored_desktop(struct xrdp_mod* mod,
 		struct rail_monitored_desktop_order* mdo, int flags);
+
+#endif /* XRDP_H */

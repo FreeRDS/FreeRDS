@@ -31,6 +31,9 @@
 #endif
 #endif
 
+#include "xup.h"
+#include "xrdp-freerdp.h"
+
 /*****************************************************************************/
 xrdpMm* xrdp_mm_create(xrdpWm *owner)
 {
@@ -47,25 +50,6 @@ xrdpMm* xrdp_mm_create(xrdpWm *owner)
 }
 
 /*****************************************************************************/
-/* called from main thread */
-static long xrdp_mm_sync_unload(long param1, long param2)
-{
-	return g_free_library(param1);
-}
-
-/*****************************************************************************/
-/* called from main thread */
-static long xrdp_mm_sync_load(long param1, long param2)
-{
-	long rv;
-	char *libname;
-
-	libname = (char *) param1;
-	rv = g_load_library(libname);
-	return rv;
-}
-
-/*****************************************************************************/
 static void xrdp_mm_module_cleanup(xrdpMm *self)
 {
 	log_message(LOG_LEVEL_DEBUG, "xrdp_mm_module_cleanup");
@@ -77,12 +61,6 @@ static void xrdp_mm_module_cleanup(xrdpMm *self)
 			/* let the module cleanup */
 			self->mod_exit(self->mod);
 		}
-	}
-
-	if (self->mod_handle != 0)
-	{
-		/* Let the main thread unload the module.*/
-		g_xrdp_sync(xrdp_mm_sync_unload, self->mod_handle, 0);
 	}
 
 	trans_delete(self->chan_trans);
@@ -284,9 +262,11 @@ static int xrdp_mm_get_value(xrdpMm *self, char *aname, char *dest, int dest_len
 /*****************************************************************************/
 static int xrdp_mm_setup_mod1(xrdpMm *self)
 {
-	void *func;
 	char lib[256];
 	char text[256];
+	int client_module = 0;
+
+	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod1");
 
 	if (self == 0)
 	{
@@ -315,67 +295,35 @@ static int xrdp_mm_setup_mod1(xrdpMm *self)
 
 	if (self->mod_handle == 0)
 	{
-		g_snprintf(text, 255, "%s/%s", XRDP_LIB_PATH, lib);
-		/* Let the main thread load the lib,*/
-		self->mod_handle = g_xrdp_sync(xrdp_mm_sync_load, (tintptr) text, 0);
+		if (strcmp(lib, "libxrdp-ng-freerdp.so") == 0)
+			client_module = 1;
 
-		if (self->mod_handle != 0)
+		if (!client_module)
 		{
-			func = g_get_proc_address(self->mod_handle, "mod_init");
+			self->mod_init = xup_module_init;
+			self->mod_exit = xup_module_exit;
+			self->mod_handle = 1;
+		}
+		else
+		{
+			self->mod_init = freerdp_client_module_init;
+			self->mod_exit = freerdp_client_module_exit;
+			self->mod_handle = 1;
+		}
 
-			if (func == 0)
+		if ((self->mod_init != 0) && (self->mod_exit != 0))
+		{
+			self->mod = self->mod_init();
+
+			if (self->mod != 0)
 			{
-				func = g_get_proc_address(self->mod_handle, "_mod_init");
-			}
-
-			if (func == 0)
-			{
-				g_snprintf(text, 255, "error finding proc mod_init in %s, not a valid "
-					"xrdp backend", lib);
-				xrdp_wm_log_msg(self->wm, text);
-				log_message(LOG_LEVEL_ERROR, text);
-			}
-
-			self->mod_init = (xrdpModule * (*)(void)) func;
-			func = g_get_proc_address(self->mod_handle, "mod_exit");
-
-			if (func == 0)
-			{
-				func = g_get_proc_address(self->mod_handle, "_mod_exit");
-			}
-
-			if (func == 0)
-			{
-				g_snprintf(text, 255, "error finding proc mod_exit in %s, not a valid "
-					"xrdp backend", lib);
-				xrdp_wm_log_msg(self->wm, text);
-				log_message(LOG_LEVEL_ERROR, text);
-			}
-
-			self->mod_exit = (int(*)(xrdpModule *)) func;
-
-			if ((self->mod_init != 0) && (self->mod_exit != 0))
-			{
-				self->mod = self->mod_init();
-
-				if (self->mod != 0)
-				{
-					g_writeln("loaded module '%s' ok, interface size %d, version %d", lib,
-							self->mod->size, self->mod->version);
-				}
-			}
-			else
-			{
-				log_message(LOG_LEVEL_ERROR, "no mod_init or mod_exit address found");
+				g_writeln("loaded module '%s' ok, interface size %d, version %d", lib,
+						self->mod->size, self->mod->version);
 			}
 		}
 		else
 		{
-			g_snprintf(text, 255, "error loading %s specified in xrdp.ini, please "
-				"add a valid entry like lib=libxrdp-vnc.so or similar", lib);
-			xrdp_wm_log_msg(self->wm, text);
-			log_message(LOG_LEVEL_ERROR, text);
-			return 1;
+			log_message(LOG_LEVEL_ERROR, "no mod_init or mod_exit address found");
 		}
 
 		if (self->mod != 0)
@@ -444,6 +392,8 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 	int device_flags;
 	int use_uds;
 
+	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod2");
+
 	rv = 1; /* failure */
 	g_memset(text, 0, sizeof(text));
 
@@ -460,37 +410,30 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 	{
 		if (self->display > 0)
 		{
-			if (self->code == 0) /* Xvnc */
+			if (self->code == 10) /* X11rdp */
 			{
-				g_snprintf(text, 255, "%d", 5900 + self->display);
-			}
-			else
-			{
-				if (self->code == 10) /* X11rdp */
+				use_uds = 1;
+
+				if (xrdp_mm_get_value(self, "ip", text, 255) == 0)
 				{
-					use_uds = 1;
+					if (g_strcmp(text, "127.0.0.1") != 0)
+					{
+						use_uds = 0;
+					}
+				}
 
-					if (xrdp_mm_get_value(self, "ip", text, 255) == 0)
-					{
-						if (g_strcmp(text, "127.0.0.1") != 0)
-						{
-							use_uds = 0;
-						}
-					}
-
-					if (use_uds)
-					{
-						g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
-					}
-					else
-					{
-						g_snprintf(text, 255, "%d", 6200 + self->display);
-					}
+				if (use_uds)
+				{
+					g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
 				}
 				else
 				{
-					g_set_wait_obj(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
+					g_snprintf(text, 255, "%d", 6200 + self->display);
 				}
+			}
+			else
+			{
+				g_set_wait_obj(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
 			}
 		}
 	}

@@ -95,13 +95,8 @@ add_subdirectory(avro)
 
 add_subdirectory(common)
 add_subdirectory(core)
-add_subdirectory(xrdp)
-
-if(FREERDP_BUILD)
-	add_subdirectory(freerdp)
-endif()
-
+add_subdirectory(freerdp)
 add_subdirectory(sesman)
 add_subdirectory(xup)
+add_subdirectory(xrdp)
 add_subdirectory(instfiles)
-

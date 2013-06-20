@@ -927,7 +927,7 @@ int lib_mod_check_wait_objs(xrdpModule *mod)
 }
 
 /******************************************************************************/
-xrdpModule* mod_init(void)
+xrdpModule* xup_module_init(void)
 {
 	xrdpModule *mod;
 
@@ -948,7 +948,7 @@ xrdpModule* mod_init(void)
 }
 
 /******************************************************************************/
-int mod_exit(xrdpModule *mod)
+int xup_module_exit(xrdpModule *mod)
 {
 	if (mod == 0)
 	{

@@ -20,5 +20,5 @@
 
 #include "xrdp.h"
 
-xrdpModule* mod_init(void);
-int mod_exit(xrdpModule* mod);
+xrdpModule* xup_module_init(void);
+int xup_module_exit(xrdpModule* mod);
