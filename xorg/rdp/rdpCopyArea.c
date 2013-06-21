@@ -460,7 +460,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDst;
+		pDstPixmap = (PixmapPtr) pDst;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -469,7 +469,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 			if (g_do_dirty_os)
 			{
-				LLOGLN(10, ("rdpCopyArea: gettig dirty"));
+				LLOGLN(10, ("rdpCopyArea: getting dirty"));
 				pDstPriv->is_dirty = 1;
 				pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLL;
@@ -487,7 +487,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	{
 		if (pDst->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDst;
+			pDstWnd = (WindowPtr) pDst;
 
 			if (pDstWnd->viewable)
 			{
@@ -495,7 +495,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 				if (g_do_dirty_ons)
 				{
-					LLOGLN(0, ("rdpCopyArea: gettig dirty"));
+					LLOGLN(0, ("rdpCopyArea: getting dirty"));
 					g_screenPriv.is_dirty = 1;
 					pDirtyPriv = &g_screenPriv;
 					dirty_type = RDI_IMGLL;

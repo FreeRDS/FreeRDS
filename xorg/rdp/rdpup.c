@@ -122,6 +122,8 @@ static int g_rdp_opcodes[16] =
 		0xff  /* GXset          0xf 1 */
 };
 
+void rdpup_send_area_rfx(int x, int y, int w, int h);
+
 static int rdpup_disconnect(void)
 {
 	int index;
@@ -984,7 +986,17 @@ int rdpup_end_update(void)
 		}
 		else
 		{
+#if 1
 			rdpScheduleDeferredUpdate();
+#else
+			out_uint16_le(g_out_s, 2);
+			g_count++;
+			s_mark_end(g_out_s);
+			rdpup_send_msg(g_out_s);
+
+			g_count = 0;
+			g_begin = 0;
+#endif
 		}
 	}
 
@@ -1015,6 +1027,13 @@ int rdpup_fill_rect(short x, short y, int cx, int cy)
 	if (g_connected)
 	{
 		LLOGLN(10, ("  rdpup_fill_rect"));
+
+		if (g_rdpScreen.RemoteFX)
+		{
+			rdpup_send_area_rfx(x, y, cx, cy);
+			return 0;
+		}
+
 		rdpup_pre_check(12);
 		out_uint16_le(g_out_s, 3); /* fill rect */
 		out_uint16_le(g_out_s, 12); /* size */
@@ -1033,6 +1052,13 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 	if (g_connected)
 	{
 		LLOGLN(10, ("  rdpup_screen_blt"));
+
+		if (g_rdpScreen.RemoteFX)
+		{
+			rdpup_send_area_rfx(x, y, cx, cy);
+			return 0;
+		}
+
 		rdpup_pre_check(16);
 		out_uint16_le(g_out_s, 4); /* screen blt */
 		out_uint16_le(g_out_s, 16); /* size */
@@ -1504,6 +1530,37 @@ static int get_single_color(struct image_data *id, int x, int y, int w, int h)
 	return rv;
 }
 
+void rdpup_send_area_rfx(int x, int y, int w, int h)
+{
+	int i;
+	char* s;
+
+	if (g_connected && g_begin)
+	{
+		rdpup_pre_check(w * h * g_rdpScreen.rdp_Bpp + 42);
+		out_uint16_le(g_out_s, 5);
+		g_count++;
+
+		out_uint16_le(g_out_s, x);
+		out_uint16_le(g_out_s, y);
+		out_uint16_le(g_out_s, w);
+		out_uint16_le(g_out_s, h);
+		out_uint32_le(g_out_s, w * h * g_rdpScreen.rdp_Bpp);
+
+		for (i = 0; i < h; i++)
+		{
+			s = (g_rdpScreen.pfbMemory + ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
+			convert_pixels(s, g_out_s->p, w);
+			g_out_s->p += w * g_rdpScreen.rdp_Bpp;
+		}
+
+		out_uint16_le(g_out_s, w);
+		out_uint16_le(g_out_s, h);
+		out_uint16_le(g_out_s, 0);
+		out_uint16_le(g_out_s, 0);
+	}
+}
+
 /* split the bitmap up into 64 x 64 pixel areas */
 void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 {
@@ -1568,6 +1625,12 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 	}
 
 	LLOGLN(10, ("%d", w * h));
+
+	if (g_rdpScreen.RemoteFX)
+	{
+		rdpup_send_area_rfx(x, y, w, h);
+		return;
+	}
 
 	if (g_connected && g_begin)
 	{

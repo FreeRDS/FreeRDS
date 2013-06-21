@@ -54,7 +54,7 @@ int libxrdp_set_bounds_rect(xrdpSession* session, xrdpRect* rect)
 	return 0;
 }
 
-xrdpSession* libxrdp_session_new()
+xrdpSession* libxrdp_session_new(rdpSettings* settings)
 {
 	xrdpSession* session;
 
@@ -64,11 +64,20 @@ xrdpSession* libxrdp_session_new()
 	{
 		ZeroMemory(session, sizeof(xrdpSession));
 
+		session->settings = settings;
+
 		session->bs = Stream_New(NULL, 16384);
 		session->bts = Stream_New(NULL, 16384);
 
 		session->rfx_s = Stream_New(NULL, 16384);
 		session->rfx_context = rfx_context_new();
+
+		session->rfx_context->mode = RLGR3;
+		session->rfx_context->width = settings->DesktopWidth;
+		session->rfx_context->height = settings->DesktopHeight;
+
+		rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
+		//rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 	}
 
 	return session;
@@ -724,6 +733,9 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 	SURFACE_BITS_COMMAND cmd;
 	rdpUpdate* update = session->context->update;
 
+	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
+			bpp, x, y, width, height);
+
 	rect.x = 0;
 	rect.y = 0;
 	rect.width = height;
@@ -733,7 +745,7 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 	Stream_Clear(s);
 	Stream_SetPosition(s, 0);
 
-	rfx_compose_message(session->rfx_context, s, &rect, 1, data, width, height, 4);
+	rfx_compose_message(session->rfx_context, s, &rect, 1, data, width, height, 3);
 
 	cmd.destLeft = x;
 	cmd.destTop = y;

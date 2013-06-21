@@ -51,13 +51,17 @@ struct xrdp_process
 
 void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
 {
-	context->session = libxrdp_session_new();
+	rdpSettings* settings = client->settings;
+
+	settings->RemoteFxCodec = TRUE;
+	settings->ColorDepth = 32;
+
+	context->session = libxrdp_session_new(settings);
 
 	if (context->session)
 	{
 		context->session->context = (rdpContext*) context;
 		context->session->client = client;
-		context->session->settings = client->settings;
 	}
 
 	context->status = 1;

@@ -79,36 +79,36 @@ static int g_initOutputCalled = 0;
 /* Common pixmap formats */
 static PixmapFormatRec g_formats[MAXFORMATS] =
 {
-		{ 1, 1, BITMAP_SCANLINE_PAD },
-		{ 4, 8, BITMAP_SCANLINE_PAD },
-		{ 8, 8, BITMAP_SCANLINE_PAD },
-		{ 15, 16, BITMAP_SCANLINE_PAD },
-		{ 16, 16, BITMAP_SCANLINE_PAD },
-		{ 24, 32, BITMAP_SCANLINE_PAD },
-		{ 32, 32, BITMAP_SCANLINE_PAD },
+	{ 1, 1, BITMAP_SCANLINE_PAD },
+	{ 4, 8, BITMAP_SCANLINE_PAD },
+	{ 8, 8, BITMAP_SCANLINE_PAD },
+	{ 15, 16, BITMAP_SCANLINE_PAD },
+	{ 16, 16, BITMAP_SCANLINE_PAD },
+	{ 24, 32, BITMAP_SCANLINE_PAD },
+	{ 32, 32, BITMAP_SCANLINE_PAD },
 };
 
 static int g_numFormats = 7;
 
 static miPointerSpriteFuncRec g_rdpSpritePointerFuncs =
 {
-		/* these are in rdpinput.c */
-		rdpSpriteRealizeCursor,
-		rdpSpriteUnrealizeCursor,
-		rdpSpriteSetCursor,
-		rdpSpriteMoveCursor,
-		rdpSpriteDeviceCursorInitialize,
-		rdpSpriteDeviceCursorCleanup
+	/* these are in rdpinput.c */
+	rdpSpriteRealizeCursor,
+	rdpSpriteUnrealizeCursor,
+	rdpSpriteSetCursor,
+	rdpSpriteMoveCursor,
+	rdpSpriteDeviceCursorInitialize,
+	rdpSpriteDeviceCursorCleanup
 };
 
 static miPointerScreenFuncRec g_rdpPointerCursorFuncs =
 {
-		/* these are in rdpinput.c */
-		rdpCursorOffScreen,
-		rdpCrossScreen,
-		rdpPointerWarpCursor,
-		rdpPointerEnqueueEvent,
-		rdpPointerNewEventScreen
+	/* these are in rdpinput.c */
+	rdpCursorOffScreen,
+	rdpCrossScreen,
+	rdpPointerWarpCursor,
+	rdpPointerEnqueueEvent,
+	rdpPointerNewEventScreen
 };
 
 /******************************************************************************/

@@ -100,7 +100,7 @@ struct xrdp_session
 	RFX_CONTEXT* rfx_context;
 };
 
-FREERDP_API xrdpSession* libxrdp_session_new();
+FREERDP_API xrdpSession* libxrdp_session_new(rdpSettings* settings);
 FREERDP_API void libxrdp_session_free(xrdpSession* session);
 
 FREERDP_API int libxrdp_send_palette(xrdpSession* session, int* palette);

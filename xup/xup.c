@@ -126,11 +126,9 @@ int lib_send(xrdpModule *mod, char *data, int len)
 /* return error */
 int lib_mod_start(xrdpModule *mod, int w, int h, int bpp)
 {
-	LIB_DEBUG(mod, "in lib_mod_start");
 	mod->width = w;
 	mod->height = h;
 	mod->bpp = bpp;
-	LIB_DEBUG(mod, "out lib_mod_start");
 	return 0;
 }
 
@@ -155,9 +153,9 @@ int lib_mod_connect(xrdpModule *mod)
 	server_msg(mod, "started connecting", 0);
 
 	/* only support 8, 15, 16, and 24 bpp connections from rdp client */
-	if (mod->bpp != 8 && mod->bpp != 15 && mod->bpp != 16 && mod->bpp != 24)
+	if (mod->bpp != 8 && mod->bpp != 15 && mod->bpp != 16 && mod->bpp != 24 && mod->bpp != 32)
 	{
-		server_msg(mod, "error - only supporting 8, 15, 16, and 24 bpp rdp connections", 0);
+		server_msg(mod, "error - only supporting 8, 15, 16, 24 and 32 bpp rdp connections", 0);
 		LIB_DEBUG(mod, "out lib_mod_connect error");
 		return 1;
 	}
