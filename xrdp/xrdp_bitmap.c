@@ -95,11 +95,21 @@ xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm 
 		case 8:
 			Bpp = 1;
 			break;
+
 		case 15:
 			Bpp = 2;
 			break;
+
 		case 16:
 			Bpp = 2;
+			break;
+
+		case 24:
+			Bpp = 4;
+			break;
+
+		case 32:
+			Bpp = 4;
 			break;
 	}
 
@@ -150,10 +160,8 @@ void xrdp_bitmap_delete(xrdpBitmap *self)
 	int i = 0;
 	xrdpModuleData *mod_data = (xrdpModuleData *) NULL;
 
-	if (self == 0)
-	{
+	if (!self)
 		return;
-	}
 
 	if (self->wm != 0)
 	{
@@ -272,10 +280,8 @@ int xrdp_bitmap_set_focus(xrdpBitmap *self, int focused)
 {
 	xrdpPainter *painter = (xrdpPainter *) NULL;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
 	if (self->type != WND_TYPE_WND) /* 1 */
 	{
@@ -348,11 +354,21 @@ int xrdp_bitmap_resize(xrdpBitmap *self, int width, int height)
 		case 8:
 			Bpp = 1;
 			break;
+
 		case 15:
 			Bpp = 2;
 			break;
+
 		case 16:
 			Bpp = 2;
+			break;
+
+		case 24:
+			Bpp = 4;
+			break;
+
+		case 32:
+			Bpp = 4;
 			break;
 	}
 
@@ -632,8 +648,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 }
 
 /*****************************************************************************/
-int 
-xrdp_bitmap_get_pixel(xrdpBitmap *self, int x, int y)
+int xrdp_bitmap_get_pixel(xrdpBitmap *self, int x, int y)
 {
 	if (self == 0)
 	{
@@ -650,23 +665,26 @@ xrdp_bitmap_get_pixel(xrdpBitmap *self, int x, int y)
 		if (self->bpp == 8)
 		{
 			return GETPIXEL8(self->data, x, y, self->width);
-		} else
-			if (self->bpp == 15 || self->bpp == 16)
-			{
-				return GETPIXEL16(self->data, x, y, self->width);
-			} else
-				if (self->bpp == 24)
-				{
-					return GETPIXEL32(self->data, x, y, self->width);
-				}
+		}
+		else if (self->bpp == 15 || self->bpp == 16)
+		{
+			return GETPIXEL16(self->data, x, y, self->width);
+		}
+		else if (self->bpp == 24)
+		{
+			return GETPIXEL32(self->data, x, y, self->width);
+		}
+		else if (self->bpp == 32)
+		{
+			return GETPIXEL32(self->data, x, y, self->width);
+		}
 	}
 
 	return 0;
 }
 
 /*****************************************************************************/
-int 
-xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
+int xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
 {
 	if (self == 0)
 	{
@@ -683,15 +701,19 @@ xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
 		if (self->bpp == 8)
 		{
 			SETPIXEL8(self->data, x, y, self->width, pixel);
-		} else
-			if (self->bpp == 15 || self->bpp == 16)
-			{
-				SETPIXEL16(self->data, x, y, self->width, pixel);
-			} else
-				if (self->bpp == 24)
-				{
-					SETPIXEL32(self->data, x, y, self->width, pixel);
-				}
+		}
+		else if (self->bpp == 15 || self->bpp == 16)
+		{
+			SETPIXEL16(self->data, x, y, self->width, pixel);
+		}
+		else if (self->bpp == 24)
+		{
+			SETPIXEL32(self->data, x, y, self->width, pixel);
+		}
+		else if (self->bpp == 32)
+		{
+			SETPIXEL32(self->data, x, y, self->width, pixel);
+		}
 	}
 
 	return 0;
@@ -700,8 +722,7 @@ xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
 /*****************************************************************************/
 /* copy part of self at x, y to 0, 0 in dest */
 /* returns error */
-int 
-xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
+int xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
 {
 	int i = 0;
 	int j = 0;
@@ -747,7 +768,7 @@ xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, i
 		return 1;
 	}
 
-	if (self->bpp == 24)
+	if (self->bpp == 32)
 	{
 		for (i = 0; i < cy; i++)
 		{
@@ -757,32 +778,44 @@ xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, i
 				SETPIXEL32(dest->data, j + destx, i + desty, dest->width, pixel);
 			}
 		}
-	} else
-		if (self->bpp == 15 || self->bpp == 16)
+	}
+	else if (self->bpp == 24)
+	{
+		for (i = 0; i < cy; i++)
 		{
-			for (i = 0; i < cy; i++)
+			for (j = 0; j < cx; j++)
 			{
-				for (j = 0; j < cx; j++)
-				{
-					pixel = GETPIXEL16(self->data, j + x, i + y, self->width);
-					SETPIXEL16(dest->data, j + destx, i + desty, dest->width, pixel);
-				}
+				pixel = GETPIXEL32(self->data, j + x, i + y, self->width);
+				SETPIXEL32(dest->data, j + destx, i + desty, dest->width, pixel);
 			}
-		} else
-			if (self->bpp == 8)
+		}
+	}
+	else if (self->bpp == 15 || self->bpp == 16)
+	{
+		for (i = 0; i < cy; i++)
+		{
+			for (j = 0; j < cx; j++)
 			{
-				for (i = 0; i < cy; i++)
-				{
-					for (j = 0; j < cx; j++)
-					{
-						pixel = GETPIXEL8(self->data, j + x, i + y, self->width);
-						SETPIXEL8(dest->data, j + destx, i + desty, dest->width, pixel);
-					}
-				}
-			} else
-			{
-				return 1;
+				pixel = GETPIXEL16(self->data, j + x, i + y, self->width);
+				SETPIXEL16(dest->data, j + destx, i + desty, dest->width, pixel);
 			}
+		}
+	}
+	else if (self->bpp == 8)
+	{
+		for (i = 0; i < cy; i++)
+		{
+			for (j = 0; j < cx; j++)
+			{
+				pixel = GETPIXEL8(self->data, j + x, i + y, self->width);
+				SETPIXEL8(dest->data, j + destx, i + desty, dest->width, pixel);
+			}
+		}
+	}
+	else
+	{
+		return 1;
+	}
 
 	return 0;
 }
@@ -790,8 +823,7 @@ xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, i
 /*****************************************************************************/
 /* copy part of self at x, y to 0, 0 in dest */
 /* returns error */
-int 
-xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
+int xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
 {
 	int i = 0;
 	int j = 0;
@@ -846,7 +878,7 @@ xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, 
 
 	CRC_START(crc);
 
-	if (self->bpp == 24)
+	if (self->bpp == 32)
 	{
 		for (i = 0; i < cy; i++)
 		{
@@ -859,55 +891,70 @@ xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, 
 				SETPIXEL32(dest->data, j + destx, i + desty, dest->width, pixel);
 			}
 		}
-	} else
-		if (self->bpp == 15 || self->bpp == 16)
+	}
+	else if (self->bpp == 24)
+	{
+		for (i = 0; i < cy; i++)
 		{
-			s16 = ((unsigned short *) (self->data)) + (self->width * y + x);
-			d16 = ((unsigned short *) (dest->data)) + (dest->width * desty + destx);
-			incs = self->width - cx;
-			incd = dest->width - cx;
-
-			for (i = 0; i < cy; i++)
+			for (j = 0; j < cx; j++)
 			{
-				for (j = 0; j < cx; j++)
-				{
-					pixel = *s16;
-					CRC_PASS(pixel, crc);
-					CRC_PASS(pixel >> 8, crc);
-					*d16 = pixel;
-					s16++;
-					d16++;
-				}
-
-				s16 += incs;
-				d16 += incd;
+				pixel = GETPIXEL32(self->data, j + x, i + y, self->width);
+				CRC_PASS(pixel, crc);
+				CRC_PASS(pixel >> 8, crc);
+				CRC_PASS(pixel >> 16, crc);
+				SETPIXEL32(dest->data, j + destx, i + desty, dest->width, pixel);
 			}
-		} else
-			if (self->bpp == 8)
-			{
-				s8 = ((unsigned char *) (self->data)) + (self->width * y + x);
-				d8 = ((unsigned char *) (dest->data)) + (dest->width * desty + destx);
-				incs = self->width - cx;
-				incd = dest->width - cx;
+		}
+	}
+	else if (self->bpp == 15 || self->bpp == 16)
+	{
+		s16 = ((unsigned short *) (self->data)) + (self->width * y + x);
+		d16 = ((unsigned short *) (dest->data)) + (dest->width * desty + destx);
+		incs = self->width - cx;
+		incd = dest->width - cx;
 
-				for (i = 0; i < cy; i++)
-				{
-					for (j = 0; j < cx; j++)
-					{
-						pixel = *s8;
-						CRC_PASS(pixel, crc);
-						*d8 = pixel;
-						s8++;
-						d8++;
-					}
-
-					s8 += incs;
-					d8 += incd;
-				}
-			} else
+		for (i = 0; i < cy; i++)
+		{
+			for (j = 0; j < cx; j++)
 			{
-				return 1;
+				pixel = *s16;
+				CRC_PASS(pixel, crc);
+				CRC_PASS(pixel >> 8, crc);
+				*d16 = pixel;
+				s16++;
+				d16++;
 			}
+
+			s16 += incs;
+			d16 += incd;
+		}
+	}
+	else if (self->bpp == 8)
+	{
+		s8 = ((unsigned char *) (self->data)) + (self->width * y + x);
+		d8 = ((unsigned char *) (dest->data)) + (dest->width * desty + destx);
+		incs = self->width - cx;
+		incd = dest->width - cx;
+
+		for (i = 0; i < cy; i++)
+		{
+			for (j = 0; j < cx; j++)
+			{
+				pixel = *s8;
+				CRC_PASS(pixel, crc);
+				*d8 = pixel;
+				s8++;
+				d8++;
+			}
+
+			s8 += incs;
+			d8 += incd;
+		}
+	}
+	else
+	{
+		return 1;
+	}
 
 	CRC_END(crc);
 	dest->crc = crc;
@@ -916,8 +963,7 @@ xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, 
 
 /*****************************************************************************/
 /* returns true if they are the same, else returns false */
-int 
-xrdp_bitmap_compare(xrdpBitmap *self, xrdpBitmap *b)
+int xrdp_bitmap_compare(xrdpBitmap *self, xrdpBitmap *b)
 {
 	if (self == 0)
 	{
@@ -954,8 +1000,7 @@ xrdp_bitmap_compare(xrdpBitmap *self, xrdpBitmap *b)
 
 /*****************************************************************************/
 /* returns true if they are the same, else returns false */
-int 
-xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
+int xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
 {
 	if (self == 0)
 	{
@@ -991,8 +1036,7 @@ xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
 }
 
 /*****************************************************************************/
-static int 
-xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int cx, int cy)
+static int xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int cx, int cy)
 {
 	painter->rop = 0xf0;
 	xrdp_painter_begin_update(painter);
@@ -1027,8 +1071,7 @@ xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, int x, int y,
 
 /*****************************************************************************/
 /* x and y are in relation to self for 0, 0 is the top left of the control */
-static int 
-xrdp_bitmap_draw_button(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int w, int h, int down)
+static int xrdp_bitmap_draw_button(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int w, int h, int down)
 {
 	if (down)
 	{
@@ -1091,8 +1134,7 @@ xrdp_bitmap_draw_button(xrdpBitmap *self, xrdpPainter *painter, int x, int y, in
 /*****************************************************************************/
 /* nil for rect means the whole thing */
 /* returns error */
-int 
-xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
+int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 {
 	int i;
 	int w;
@@ -1250,11 +1292,16 @@ xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 					(self->height / 2 - h / 2) + 1, self->caption1);
 
 			if (self->parent != 0)
+			{
 				if (self->wm->focused_window == self->parent)
+				{
 					if (self->parent->focused_control == self)
+					{
 						xrdp_bitmap_draw_focus_box(self, painter, 4, 4,
-								self->width - 8, self->height
-										- 8);
+								self->width - 8, self->height - 8);
+					}
+				}
+			}
 		}
 	}
 	else if (self->type == WND_TYPE_IMAGE) /* 4 */
@@ -1416,8 +1463,7 @@ xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 
 		for (i = w; i > 0; i = i - 2)
 		{
-			xrdp_painter_fill_rect(painter, self, x, y, i,
-					1);
+			xrdp_painter_fill_rect(painter, self, x, y, i, 1);
 			y++;
 			x = x + 1;
 		}

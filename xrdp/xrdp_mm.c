@@ -971,7 +971,7 @@ static int xrdp_mm_sesman_data_in(struct trans *trans)
 #ifndef USE_NOPAM
 /*********************************************************************/
 /* return 0 on success */
-static int  access_control(char *username, char *password, char *srv)
+static int access_control(char *username, char *password, char *srv)
 {
 	int reply;
 	int rec = 32 + 1; /* 32 is reserved for PAM failures this means connect failure */
@@ -1087,7 +1087,7 @@ static int  access_control(char *username, char *password, char *srv)
 /* This routine clears all states to make sure that our next login will be
  * as expected. If the user does not press ok on the log window and try to
  * connect again we must make sure that no previous information is stored.*/
-static void  cleanup_states(xrdpMm *self)
+static void cleanup_states(xrdpMm *self)
 {
 	if (self != NULL)
 	{
@@ -1107,7 +1107,7 @@ static void  cleanup_states(xrdpMm *self)
 
 #ifdef ACCESS
 #ifndef USE_NOPAM
-static const char *  getPAMError(const int pamError, char *text, int text_bytes)
+static const char* getPAMError(const int pamError, char *text, int text_bytes)
 {
 	switch (pamError)
 	{

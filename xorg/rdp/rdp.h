@@ -150,6 +150,7 @@ struct _rdpScreenInfoRec
 	int Jpeg;
 	int NSCodec;
 	int RemoteFX;
+	int CodecMode;
 	int OffscreenSupportLevel;
 	int OffscreenCacheSize;
 	int OffscreenCacheEntries;

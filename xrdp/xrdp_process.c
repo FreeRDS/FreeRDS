@@ -53,8 +53,10 @@ void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
 {
 	rdpSettings* settings = client->settings;
 
-	settings->RemoteFxCodec = TRUE;
 	settings->ColorDepth = 32;
+	settings->RemoteFxCodec = TRUE;
+	settings->BitmapCacheV3Enabled = TRUE;
+	settings->FrameMarkerCommandEnabled = TRUE;
 
 	context->session = libxrdp_session_new(settings);
 

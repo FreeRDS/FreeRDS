@@ -76,8 +76,11 @@ xrdpSession* libxrdp_session_new(rdpSettings* settings)
 		session->rfx_context->width = settings->DesktopWidth;
 		session->rfx_context->height = settings->DesktopHeight;
 
-		rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
-		//rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+		//session->bytesPerPixel = 3;
+		//rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
+
+		session->bytesPerPixel = 4;
+		rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 	}
 
 	return session;
@@ -143,14 +146,14 @@ int libxrdp_send_pointer(xrdpSession* session, int cache_idx, char* data, char* 
 	{
 		pointer_color->lengthXorMask = 3072;
 
-		pointer->PointerColor(session->context, pointer_color);
+		IFCALL(pointer->PointerColor, session->context, pointer_color);
 	}
 	else
 	{
 		pointer_new.xorBpp = bpp;
 		pointer_color->lengthXorMask = ((bpp + 7) / 8) * 32 * 32;
 
-		pointer->PointerNew(session->context, &pointer_new);
+		IFCALL(pointer->PointerNew, session->context, &pointer_new);
 	}
 
 	return 0;
@@ -165,7 +168,7 @@ int libxrdp_set_pointer(xrdpSession* session, int cache_idx)
 
 	pointer_cached.cacheIndex = cache_idx;
 
-	pointer->PointerCached(session->context, &pointer_cached);
+	IFCALL(pointer->PointerCached, session->context, &pointer_cached);
 
 	return 0;
 }
@@ -218,7 +221,8 @@ int libxrdp_orders_rect(xrdpSession* session, int x, int y,
 	opaqueRect.color = color;
 
 	libxrdp_set_bounds_rect(session, rect);
-	primary->OpaqueRect(session->context, &opaqueRect);
+
+	IFCALL(primary->OpaqueRect, session->context, &opaqueRect);
 
 	return 0;
 }
@@ -240,7 +244,8 @@ int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
 	scrblt.nYSrc = srcy;
 
 	libxrdp_set_bounds_rect(session, rect);
-	primary->ScrBlt(session->context, &scrblt);
+
+	IFCALL(primary->ScrBlt, session->context, &scrblt);
 
 	return 0;
 }
@@ -270,7 +275,8 @@ int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 	patblt.brush.hatch = patblt.brush.data[0];
 
 	libxrdp_set_bounds_rect(session, rect);
-	primary->PatBlt(session->context, &patblt);
+
+	IFCALL(primary->PatBlt, session->context, &patblt);
 
 	return 0;
 }
@@ -290,7 +296,8 @@ int libxrdp_orders_dest_blt(xrdpSession* session,
 	dstblt.bRop = rop;
 
 	libxrdp_set_bounds_rect(session, rect);
-	primary->DstBlt(session->context, &dstblt);
+
+	IFCALL(primary->DstBlt, session->context, &dstblt);
 
 	return 0;
 }
@@ -326,7 +333,8 @@ int libxrdp_orders_line(xrdpSession* session, int mix_mode,
 	}
 
 	libxrdp_set_bounds_rect(session, rect);
-	primary->LineTo(session->context, &line_to);
+
+	IFCALL(primary->LineTo, session->context, &line_to);
 
 	return 0;
 }
@@ -353,7 +361,8 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	memblt.colorIndex = color_table;
 
 	libxrdp_set_bounds_rect(session, rect);
-	primary->MemBlt(session->context, &memblt);
+
+	IFCALL(primary->MemBlt, session->context, &memblt);
 
 	return 0;
 }
@@ -393,7 +402,8 @@ int libxrdp_orders_text(xrdpSession* session,
 	CopyMemory(glyph_index.data, data, data_len);
 
 	libxrdp_set_bounds_rect(session, rect);
-	primary->GlyphIndex(session->context, &glyph_index);
+
+	IFCALL(primary->GlyphIndex, session->context, &glyph_index);
 
 	return 0;
 }
@@ -409,7 +419,7 @@ int libxrdp_orders_send_palette(xrdpSession* session, int* palette, int cache_id
 	cache_color_table.numberColors = 256;
 	CopyMemory(&(cache_color_table.colorTable), palette, 256 * 4);
 
-	secondary->CacheColorTable(session->context, &cache_color_table);
+	IFCALL(secondary->CacheColorTable, session->context, &cache_color_table);
 
 	return 0;
 }
@@ -435,7 +445,7 @@ int libxrdp_orders_send_raw_bitmap(xrdpSession* session,
 	bytesPerPixel = (bpp + 7) / 8;
 	cache_bitmap.bitmapLength = width * height * bytesPerPixel;
 
-	secondary->CacheBitmap(session->context, &cache_bitmap);
+	IFCALL(secondary->CacheBitmap, session->context, &cache_bitmap);
 
 	return 0;
 }
@@ -464,8 +474,11 @@ int libxrdp_orders_send_bitmap(xrdpSession* session,
 	cache_bitmap.cacheIndex = cache_idx;
 	cache_bitmap.compressed = TRUE;
 
-	s = Stream_New(NULL, 16384);
-	ts = Stream_New(NULL, 16384);
+	s = session->bs;
+	ts = session->bts;
+
+	Stream_SetPosition(s, 0);
+	Stream_SetPosition(ts, 0);
 
 	lines = freerdp_bitmap_compress(data, width, height, s, bpp, 16384, height - 1, ts, e);
 	Stream_SealLength(s);
@@ -473,10 +486,7 @@ int libxrdp_orders_send_bitmap(xrdpSession* session,
 	cache_bitmap.bitmapDataStream = Stream_Buffer(s);
 	cache_bitmap.bitmapLength = Stream_Length(s);
 
-	secondary->CacheBitmap(session->context, &cache_bitmap);
-
-	Stream_Free(s, TRUE);
-	Stream_Free(ts, TRUE);
+	IFCALL(secondary->CacheBitmap, session->context, &cache_bitmap);
 
 	return 0;
 }
@@ -503,7 +513,7 @@ int libxrdp_orders_send_font(xrdpSession* session,
 		cache_glyph_v2.glyphData[0].aj = (BYTE*) font_char->data;
 		cache_glyph_v2.unicodeCharacters = NULL;
 
-		secondary->CacheGlyphV2(session->context, &cache_glyph_v2);
+		IFCALL(secondary->CacheGlyphV2, session->context, &cache_glyph_v2);
 	}
 	else
 	{
@@ -519,7 +529,7 @@ int libxrdp_orders_send_font(xrdpSession* session,
 		cache_glyph.glyphData[0].aj = (BYTE*) font_char->data;
 		cache_glyph.unicodeCharacters = NULL;
 
-		secondary->CacheGlyph(session->context, &cache_glyph);
+		IFCALL(secondary->CacheGlyph, session->context, &cache_glyph);
 	}
 
 	return 0;
@@ -553,7 +563,7 @@ int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 	cache_bitmap_v2.cbUncompressedSize = width * height * bytesPerPixel;
 	cache_bitmap_v2.bitmapLength = width * height * bytesPerPixel;
 
-	secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
+	IFCALL(secondary->CacheBitmapV2, session->context, &cache_bitmap_v2);
 
 	return 0;
 }
@@ -568,8 +578,8 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	//printf("%s id: %d index: %d width: %d height: %d\n",
-	//		__FUNCTION__, cache_id, cache_idx, width, height);
+	printf("%s id: %d index: %d width: %d height: %d\n",
+			__FUNCTION__, cache_id, cache_idx, width, height);
 
 	e = width % 4;
 
@@ -600,7 +610,7 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	bytesPerPixel = (bpp + 7) / 8;
 	cache_bitmap_v2.cbUncompressedSize = width * height * bytesPerPixel;
 
-	secondary->CacheBitmapV2(session->context, &cache_bitmap_v2);
+	IFCALL(secondary->CacheBitmapV2, session->context, &cache_bitmap_v2);
 
 	return 0;
 }
@@ -630,7 +640,7 @@ int libxrdp_orders_send_bitmap3(xrdpSession* session,
 	bitmapData->length = 0;
 	bitmapData->data = (BYTE*) data;
 
-	secondary->CacheBitmapV3(session->context, &cache_bitmap_v3);
+	IFCALL(secondary->CacheBitmapV3, session->context, &cache_bitmap_v3);
 
 	return 0;
 }
@@ -671,7 +681,7 @@ int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
 	cache_brush.length = size;
 	CopyMemory(cache_brush.data, data, cache_brush.length);
 
-	secondary->CacheBrush(session->context, &cache_brush);
+	IFCALL(secondary->CacheBrush, session->context, &cache_brush);
 
 	return 0;
 }
@@ -704,7 +714,7 @@ int libxrdp_orders_send_create_os_surface(xrdpSession* session, int id,
 		}
 	}
 
-	altsec->CreateOffscreenBitmap(session->context, &create_offscreen_bitmap);
+	IFCALL(altsec->CreateOffscreenBitmap, session->context, &create_offscreen_bitmap);
 
 	if (deleteList->indices)
 		free(deleteList->indices);
@@ -721,7 +731,7 @@ int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id)
 
 	switch_surface.bitmapId = id & 0xFFFF;
 
-	altsec->SwitchSurface(session->context, &switch_surface);
+	IFCALL(altsec->SwitchSurface, session->context, &switch_surface);
 
 	return 0;
 }
@@ -730,11 +740,22 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 {
 	wStream* s;
 	RFX_RECT rect;
+	int bytesPerPixel;
 	SURFACE_BITS_COMMAND cmd;
 	rdpUpdate* update = session->context->update;
 
 	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
 			bpp, x, y, width, height);
+
+	if ((bpp == 24) || (bpp == 32))
+	{
+		bytesPerPixel = 4;
+	}
+	else
+	{
+		printf("%s: unsupported bpp: %d\n", __FUNCTION__, bpp);
+		return -1;
+	}
 
 	rect.x = 0;
 	rect.y = 0;
@@ -745,7 +766,7 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 	Stream_Clear(s);
 	Stream_SetPosition(s, 0);
 
-	rfx_compose_message(session->rfx_context, s, &rect, 1, data, width, height, 3);
+	rfx_compose_message(session->rfx_context, s, &rect, 1, data, width, height, bytesPerPixel * width);
 
 	cmd.destLeft = x;
 	cmd.destTop = y;
@@ -759,7 +780,7 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 	cmd.bitmapDataLength = Stream_GetPosition(s);
 	cmd.bitmapData = Stream_Buffer(s);
 
-	update->SurfaceBits(update->context, &cmd);
+	IFCALL(update->SurfaceBits, update->context, &cmd);
 
 	return 0;
 }
@@ -774,7 +795,7 @@ int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32
 	surface_frame_marker.frameAction = action;
 	surface_frame_marker.frameId = id;
 
-	update->SurfaceFrameMarker(session->context, &surface_frame_marker);
+	IFCALL(update->SurfaceFrameMarker, session->context, &surface_frame_marker);
 
 	return 0;
 }

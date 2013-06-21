@@ -97,6 +97,7 @@ struct xrdp_session
 	wStream* bts;
 
 	wStream* rfx_s;
+	int bytesPerPixel;
 	RFX_CONTEXT* rfx_context;
 };
 

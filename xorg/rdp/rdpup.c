@@ -24,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <avro.h>
 
-#define LOG_LEVEL 10
+#define LOG_LEVEL 1
 #define LLOG(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; } } while (0)
 #define LLOGLN(_level, _args) \
@@ -122,7 +122,7 @@ static int g_rdp_opcodes[16] =
 		0xff  /* GXset          0xf 1 */
 };
 
-void rdpup_send_area_rfx(int x, int y, int w, int h);
+void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h);
 
 static int rdpup_disconnect(void)
 {
@@ -468,22 +468,22 @@ static int process_screen_size_msg(int width, int height, int bpp)
 	if (bpp < 15)
 	{
 		g_rdpScreen.rdp_Bpp = 1;
-		g_rdpScreen.rdp_Bpp_mask = 0xff;
+		g_rdpScreen.rdp_Bpp_mask = 0xFF;
 	}
 	else if (bpp == 15)
 	{
 		g_rdpScreen.rdp_Bpp = 2;
-		g_rdpScreen.rdp_Bpp_mask = 0x7fff;
+		g_rdpScreen.rdp_Bpp_mask = 0x7FFF;
 	}
 	else if (bpp == 16)
 	{
 		g_rdpScreen.rdp_Bpp = 2;
-		g_rdpScreen.rdp_Bpp_mask = 0xffff;
+		g_rdpScreen.rdp_Bpp_mask = 0xFFFF;
 	}
 	else if (bpp > 16)
 	{
 		g_rdpScreen.rdp_Bpp = 4;
-		g_rdpScreen.rdp_Bpp_mask = 0xffffff;
+		g_rdpScreen.rdp_Bpp_mask = 0xFFFFFF;
 	}
 
 	mmwidth = PixelToMM(width);
@@ -562,7 +562,6 @@ static int process_version_msg(int param1, int param2, int param3, int param4)
 
 	return 0;
 }
-
 
 static int rdpup_send_rail(void)
 {
@@ -650,15 +649,28 @@ static int rdpup_process_capabilities_msg(const char* buffer, int length)
 	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
 			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
 
-	if (g_rdpScreen.OffscreenSupportLevel > 0)
+	if (g_rdpScreen.RemoteFX)
 	{
-		if (g_rdpScreen.OffscreenCacheEntries > 0)
+		g_rdpScreen.CodecMode = 1;
+	}
+
+	if (!g_rdpScreen.CodecMode)
+	{
+		if (g_rdpScreen.OffscreenSupportLevel > 0)
 		{
-			g_max_os_bitmaps = g_rdpScreen.OffscreenCacheEntries;
-			g_free(g_os_bitmaps);
-			g_os_bitmaps = (struct rdpup_os_bitmap*)
-                		       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
+			if (g_rdpScreen.OffscreenCacheEntries > 0)
+			{
+				g_max_os_bitmaps = g_rdpScreen.OffscreenCacheEntries;
+				g_free(g_os_bitmaps);
+				g_os_bitmaps = (struct rdpup_os_bitmap*)
+					       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
+			}
 		}
+	}
+	else
+	{
+		g_os_bitmaps = NULL;
+		g_max_os_bitmaps = 0;
 	}
 
 	if (g_rdpScreen.RailSupportLevel > 0)
@@ -757,8 +769,8 @@ static int rdpup_process_msg(struct stream *s)
 				break;
 			case 200:
 				rdpup_begin_update();
-				rdpup_send_area(0, (param1 >> 16) & 0xffff, param1 & 0xffff,
-						(param2 >> 16) & 0xffff, param2 & 0xffff);
+				rdpup_send_area(0, (param1 >> 16) & 0xFFFF, param1 & 0xFFFF,
+						(param2 >> 16) & 0xFFFF, param2 & 0xFFFF);
 				rdpup_end_update();
 				break;
 			case 300:
@@ -834,7 +846,7 @@ int rdpup_init(void)
 	if (g_out_s == 0)
 	{
 		make_stream(g_out_s);
-		init_stream(g_out_s, 8192 * g_Bpp + 100);
+		init_stream(g_out_s, 1920 * 1088 * g_Bpp + 100);
 	}
 
 	if (g_use_uds)
@@ -986,7 +998,7 @@ int rdpup_end_update(void)
 		}
 		else
 		{
-#if 1
+#if 0
 			rdpScheduleDeferredUpdate();
 #else
 			out_uint16_le(g_out_s, 2);
@@ -1028,9 +1040,9 @@ int rdpup_fill_rect(short x, short y, int cx, int cy)
 	{
 		LLOGLN(10, ("  rdpup_fill_rect"));
 
-		if (g_rdpScreen.RemoteFX)
+		if (g_rdpScreen.CodecMode)
 		{
-			rdpup_send_area_rfx(x, y, cx, cy);
+			rdpup_send_area(NULL, x, y, cx, cy);
 			return 0;
 		}
 
@@ -1053,9 +1065,9 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 	{
 		LLOGLN(10, ("  rdpup_screen_blt"));
 
-		if (g_rdpScreen.RemoteFX)
+		if (g_rdpScreen.CodecMode)
 		{
-			rdpup_send_area_rfx(x, y, cx, cy);
+			rdpup_send_area(NULL, x, y, cx, cy);
 			return 0;
 		}
 
@@ -1132,7 +1144,13 @@ int convert_pixel(int in_pixel)
 
 	if (g_rdpScreen.depth == 24)
 	{
-		if (g_rdpScreen.rdp_bpp == 24)
+		if (g_rdpScreen.rdp_bpp == 32)
+		{
+			rv = in_pixel;
+			SPLITCOLOR32(red, green, blue, rv);
+			rv = COLOR24(red, green, blue);
+		}
+		else if (g_rdpScreen.rdp_bpp == 24)
 		{
 			rv = in_pixel;
 			SPLITCOLOR32(red, green, blue, rv);
@@ -1187,7 +1205,19 @@ int convert_pixels(void *src, void *dst, int num_pixels)
 	{
 		src32 = (unsigned int *)src;
 
-		if (g_rdpScreen.rdp_bpp == 24)
+		if (g_rdpScreen.rdp_bpp == 32)
+		{
+			dst32 = (unsigned int*) dst;
+
+			for (index = 0; index < num_pixels; index++)
+			{
+				pixel = *src32;
+				*dst32 = pixel;
+				dst32++;
+				src32++;
+			}
+		}
+		else if (g_rdpScreen.rdp_bpp == 24)
 		{
 			dst32 = (unsigned int *)dst;
 
@@ -1311,7 +1341,6 @@ int rdpup_set_pen(int style, int width)
 	return 0;
 }
 
-
 int rdpup_draw_line(short x1, short y1, short x2, short y2)
 {
 	if (g_connected)
@@ -1329,7 +1358,6 @@ int rdpup_draw_line(short x1, short y1, short x2, short y2)
 
 	return 0;
 }
-
 
 int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
 {
@@ -1530,28 +1558,33 @@ static int get_single_color(struct image_data *id, int x, int y, int w, int h)
 	return rv;
 }
 
-void rdpup_send_area_rfx(int x, int y, int w, int h)
+void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 {
 	int i;
 	char* s;
+	int size;
+
+	LLOGLN(10, ("rdpup_send_area_rfx: x %d y %d w %d h %d", x, y, w, h));
 
 	if (g_connected && g_begin)
 	{
-		rdpup_pre_check(w * h * g_rdpScreen.rdp_Bpp + 42);
+		size = w * h * id->Bpp + 24;
+		rdpup_pre_check(size);
 		out_uint16_le(g_out_s, 5);
+		out_uint16_le(g_out_s, size);
 		g_count++;
 
 		out_uint16_le(g_out_s, x);
 		out_uint16_le(g_out_s, y);
 		out_uint16_le(g_out_s, w);
 		out_uint16_le(g_out_s, h);
-		out_uint32_le(g_out_s, w * h * g_rdpScreen.rdp_Bpp);
+		out_uint32_le(g_out_s, w * h * id->Bpp);
 
 		for (i = 0; i < h; i++)
 		{
 			s = (g_rdpScreen.pfbMemory + ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
 			convert_pixels(s, g_out_s->p, w);
-			g_out_s->p += w * g_rdpScreen.rdp_Bpp;
+			g_out_s->p += w * id->Bpp;
 		}
 
 		out_uint16_le(g_out_s, w);
@@ -1626,9 +1659,9 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 
 	LLOGLN(10, ("%d", w * h));
 
-	if (g_rdpScreen.RemoteFX)
+	if (g_rdpScreen.CodecMode)
 	{
-		rdpup_send_area_rfx(x, y, w, h);
+		rdpup_send_area_rfx(id, x, y, w, h);
 		return;
 	}
 
@@ -1668,8 +1701,7 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 
 					for (i = 0; i < lh; i++)
 					{
-						s = (id->pixels +
-								((ly + i) * id->lineBytes) + (lx * g_Bpp));
+						s = (id->pixels + ((ly + i) * id->lineBytes) + (lx * g_Bpp));
 						convert_pixels(s, g_out_s->p, lw);
 						g_out_s->p += lw * id->Bpp;
 					}
