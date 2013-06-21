@@ -21,6 +21,7 @@
 
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
+#include <freerdp/codec/rfx.h>
 
 #include "bitmap.h"
 
@@ -65,6 +66,9 @@ xrdpSession* libxrdp_session_new()
 
 		session->bs = Stream_New(NULL, 16384);
 		session->bts = Stream_New(NULL, 16384);
+
+		session->rfx_s = Stream_New(NULL, 16384);
+		session->rfx_context = rfx_context_new();
 	}
 
 	return session;
@@ -76,6 +80,9 @@ void libxrdp_session_free(xrdpSession* session)
 	{
 		Stream_Free(session->bs, TRUE);
 		Stream_Free(session->bts, TRUE);
+
+		Stream_Free(session->rfx_s, TRUE);
+		rfx_context_free(session->rfx_context);
 
 		free(session);
 	}
@@ -706,6 +713,56 @@ int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id)
 	switch_surface.bitmapId = id & 0xFFFF;
 
 	altsec->SwitchSurface(session->context, &switch_surface);
+
+	return 0;
+}
+
+int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, int y, int width, int height)
+{
+	wStream* s;
+	RFX_RECT rect;
+	SURFACE_BITS_COMMAND cmd;
+	rdpUpdate* update = session->context->update;
+
+	rect.x = 0;
+	rect.y = 0;
+	rect.width = height;
+	rect.height = height;
+
+	s = session->rfx_s;
+	Stream_Clear(s);
+	Stream_SetPosition(s, 0);
+
+	rfx_compose_message(session->rfx_context, s, &rect, 1, data, width, height, 4);
+
+	cmd.destLeft = x;
+	cmd.destTop = y;
+	cmd.destRight = x + width;
+	cmd.destBottom = y + height;
+
+	cmd.bpp = 32;
+	cmd.codecID = session->settings->RemoteFxCodecId;
+	cmd.width = width;
+	cmd.height = height;
+	cmd.bitmapDataLength = Stream_GetPosition(s);
+	cmd.bitmapData = Stream_Buffer(s);
+
+	update->SurfaceBits(update->context, &cmd);
+
+	return 0;
+}
+
+int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32 id)
+{
+	SURFACE_FRAME_MARKER surface_frame_marker;
+	rdpUpdate* update = session->client->update;
+
+	printf("%s: action: %d id: %d\n", __FUNCTION__, action, id);
+
+	surface_frame_marker.frameAction = action;
+	surface_frame_marker.frameId = id;
+
+	update->SurfaceFrameMarker(session->context, &surface_frame_marker);
 
 	return 0;
 }
