@@ -300,10 +300,6 @@ int server_draw_text(struct xrdp_mod* mod, int font,
 		int x, int y, char* data, int data_len);
 int server_reset(struct xrdp_mod* mod, int width, int height, int bpp);
 int is_channel_allowed(xrdpWm* wm, int channel_id);
-int server_query_channel(struct xrdp_mod* mod, int index, char* channel_name, int* channel_flags);
-int server_get_channel_id(struct xrdp_mod* mod, char* name);
-int server_send_to_channel(struct xrdp_mod* mod, int channel_id,
-		char* data, int data_len, int total_data_len, int flags);
 int server_create_os_surface(struct xrdp_mod* mod, int id, int width, int height);
 int server_switch_os_surface(struct xrdp_mod* mod, int id);
 int server_delete_os_surface(struct xrdp_mod* mod, int id);

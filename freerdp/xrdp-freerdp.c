@@ -180,11 +180,6 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 	int x;
 	int y;
 	int flags;
-	int size;
-	int total_size;
-	int chanid;
-	int lchid;
-	char *data;
 
 	LLOGLN(12, ("lxrdp_event: msg %d", msg));
 
@@ -281,73 +276,28 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 							LLOGLN(0, ("update rectangle left: %d top: %d bottom: %d right: %d",
 											rectangle->left, rectangle->top, rectangle->bottom, rectangle->right));
 							mod->inst->update->RefreshRect(mod->inst->context, 1, rectangle);
-						} else
+						}
+						else
 						{
 							LLOGLN(0, ("Invalidate request -The context is null"));
 						}
-					} else
+					}
+					else
 					{
 						LLOGLN(0, ("Invalidate request - RefreshRect is Null"));
 					}
-				} else
+				}
+				else
 				{
 					LLOGLN(0, ("Invalidate request -the update pointer is null"));
 				}
-			} else
+			}
+			else
 			{
 				LLOGLN(0, ("Invalidate request - warning - update rectangle is disabled"));
 			}
 
 			g_free(rectangle);
-			break;
-		case 0x5555:
-			chanid = LOWORD(param1);
-			flags = HIWORD(param1);
-			size = (int) param2;
-			data = (char *) param3;
-			total_size = (int) param4;
-			LLOGLN(12, ("lxrdp_event: client to server flags %d", flags));
-
-			if ((chanid < 0) || (chanid >= mod->inst->settings->ChannelDefArraySize))
-			{
-				LLOGLN(0, ("lxrdp_event: error chanid %d", chanid));
-				break;
-			}
-
-			lchid = mod->inst->settings->ChannelDefArray[chanid].ChannelId;
-
-			switch (flags & 3)
-			{
-				case 3:
-					mod->inst->SendChannelData(mod->inst, lchid, (tui8 *) data, total_size);
-					break;
-				case 2:
-					/* end */
-					g_memcpy(mod->chan_buf + mod->chan_buf_valid, data, size);
-					mod->chan_buf_valid += size;
-					mod->inst->SendChannelData(mod->inst, lchid, (tui8 *) (mod->chan_buf),
-							total_size);
-					g_free(mod->chan_buf);
-					mod->chan_buf = 0;
-					mod->chan_buf_bytes = 0;
-					mod->chan_buf_valid = 0;
-					break;
-				case 1:
-					/* start */
-					g_free(mod->chan_buf);
-					mod->chan_buf = (char *) g_malloc(total_size, 0);
-					mod->chan_buf_bytes = total_size;
-					mod->chan_buf_valid = 0;
-					g_memcpy(mod->chan_buf + mod->chan_buf_valid, data, size);
-					mod->chan_buf_valid += size;
-					break;
-				default:
-					/* middle */
-					g_memcpy(mod->chan_buf + mod->chan_buf_valid, data, size);
-					mod->chan_buf_valid += size;
-					break;
-			}
-
 			break;
 		default:
 			LLOGLN(0, ("Unhandled message type in eventhandler %d", msg));
@@ -1215,33 +1165,15 @@ static void lfreerdp_syncronize(rdpContext* context)
 /******************************************************************************/
 static BOOL lfreerdp_pre_connect(freerdp *instance)
 {
-	xrdpModule *mod;
 	int index;
-	int error;
 	int num_chans;
-	int ch_flags;
-	char ch_name[256];
-	char *dst_ch_name;
+	xrdpModule* mod;
 
 	LLOGLN(0, ("lfreerdp_pre_connect:"));
 	mod = ((struct mod_context *) (instance->context))->modi;
 	verifyColorMap(mod);
 	num_chans = 0;
 	index = 0;
-	error = server_query_channel(mod, index, ch_name, &ch_flags);
-
-	while (error == 0)
-	{
-		num_chans++;
-		LLOGLN(10, ("lfreerdp_pre_connect: got channel [%s], flags [0x%8.8x]",
-						ch_name, ch_flags));
-		dst_ch_name = instance->settings->ChannelDefArray[index].Name;
-		g_memset(dst_ch_name, 0, 8);
-		g_snprintf(dst_ch_name, 8, "%s", ch_name);
-		instance->settings->ChannelDefArray[index].options = ch_flags;
-		index++;
-		error = server_query_channel(mod, index, ch_name, &ch_flags);
-	}
 
 	instance->settings->ChannelCount = num_chans;
 
@@ -1619,38 +1551,6 @@ static void lfreerdp_context_free(freerdp *instance, rdpContext *context)
 /******************************************************************************/
 static int lfreerdp_receive_channel_data(freerdp *instance, int channelId, UINT8 *data, int size, int flags, int total_size)
 {
-	xrdpModule *mod;
-	int lchid;
-	int index;
-	int error;
-
-	mod = ((struct mod_context *) (instance->context))->modi;
-	lchid = -1;
-
-	for (index = 0; index < instance->settings->ChannelDefArraySize; index++)
-	{
-		if (instance->settings->ChannelDefArray[index].ChannelId == channelId)
-		{
-			lchid = index;
-			break;
-		}
-	}
-
-	if (lchid >= 0)
-	{
-		LLOGLN(10, ("lfreerdp_receive_channel_data: server to client"));
-		error = server_send_to_channel(mod, lchid, (char *) data, size, total_size, flags);
-
-		if (error != 0)
-		{
-			LLOGLN(0, ("lfreerdp_receive_channel_data: error %d", error));
-		}
-	}
-	else
-	{
-		LLOGLN(0, ("lfreerdp_receive_channel_data: bad lchid"));
-	}
-
 	return 0;
 }
 

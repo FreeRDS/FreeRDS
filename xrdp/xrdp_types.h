@@ -109,13 +109,10 @@ struct xrdp_mod
 	int shift_state;
 	rdpSettings* settings;
 
-	int colormap[256];
-	char* chan_buf;
-	int chan_buf_valid;
-	int chan_buf_bytes;
 	int vmaj;
 	int vmin;
 	int vrev;
+	int colormap[256];
 	struct rdp_freerdp* inst;
 	struct bitmap_item bitmap_cache[4][4096];
 	struct brush_item brush_cache[64];
@@ -147,9 +144,6 @@ int server_draw_text(xrdpModule* v, int font, int flags, int mixmode, int clip_l
 		int clip_right, int clip_bottom, int box_left, int box_top, int box_right, int box_bottom,
 		int x, int y, char* data, int data_len);
 int server_reset(xrdpModule* v, int width, int height, int bpp);
-int server_query_channel(xrdpModule* v, int index, char* channel_name, int* channel_flags);
-int server_get_channel_id(xrdpModule* v, char* name);
-int server_send_to_channel(xrdpModule* v, int channel_id, char* data, int data_len, int total_data_len, int flags);
 int server_bell_trigger(xrdpModule* v);
 /* off screen bitmaps */
 int server_create_os_surface(xrdpModule* v, int rdpindex, int width, int height);

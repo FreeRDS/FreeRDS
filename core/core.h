@@ -175,14 +175,6 @@ FREERDP_API int libxrdp_orders_send_bitmap2(xrdpSession* session,
 FREERDP_API int libxrdp_orders_send_bitmap3(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints);
 
-FREERDP_API int libxrdp_query_channel(xrdpSession* session, int index,
-		char* channel_name, int* channel_flags);
-
-FREERDP_API int libxrdp_get_channel_id(xrdpSession* session, char* name);
-
-FREERDP_API int libxrdp_send_to_channel(xrdpSession* session, int channel_id,
-		char* data, int data_len, int total_data_len, int flags);
-
 FREERDP_API int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
 		int bpp, int type, int size, char* data, int cache_id);
 
