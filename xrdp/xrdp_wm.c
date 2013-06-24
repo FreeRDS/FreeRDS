@@ -1478,43 +1478,6 @@ int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y)
 }
 
 /******************************************************************************/
-/* param1 = MAKELONG(channel_id, flags)
-   param2 = size
-   param3 = pointer to data
-   param4 = total size */
-static int xrdp_wm_process_channel_data(xrdpWm *self,
-		tbus param1, tbus param2, tbus param3, tbus param4)
-{
-	int rv;
-	int chanid ;
-	rv = 1;
-
-	if (self->mm->mod != 0)
-	{
-		chanid = LOWORD(param1);
-
-		if (is_channel_allowed(self, chanid))
-		{
-			if (self->mm->usechansrv)
-			{
-				rv = xrdp_mm_process_channel_data(self->mm, param1, param2,
-						param3, param4);
-			}
-			else
-			{
-				if (self->mm->mod->mod_event != 0)
-				{
-					rv = self->mm->mod->mod_event(self->mm->mod, 0x5555, param1, param2,
-							param3, param4);
-				}
-			}
-		}
-	}
-
-	return rv;
-}
-
-/******************************************************************************/
 /* this is the callbacks comming from libxrdp.so */
 int callback(long id, int msg, long param1, long param2, long param3, long param4)
 {
@@ -1551,10 +1514,6 @@ int callback(long id, int msg, long param1, long param2, long param3, long param
 			/* its the rdp client asking for a screen update */
 			MAKERECT(rect, param1, param2, param3, param4);
 			rv = xrdp_bitmap_invalidate(wm->screen, &rect);
-			break;
-		case 0x5555: /* called from xrdp_channel.c, channel data has come in,
-		 pass it to module if there is one */
-			rv = xrdp_wm_process_channel_data(wm, param1, param2, param3, param4);
 			break;
 	}
 
