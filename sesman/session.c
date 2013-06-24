@@ -212,69 +212,7 @@ static int  x_server_running(int display)
 }
 
 /******************************************************************************/
-static void session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
-{
-	xrdpList *sessvc_params = (xrdpList *) NULL;
-	char wmpid_str[25];
-	char xpid_str[25];
-	char exe_path[262];
-	int i = 0;
-
-	/* initialize (zero out) local variables: */
-	g_memset(wmpid_str, 0, sizeof(char) * 25);
-	g_memset(xpid_str, 0, sizeof(char) * 25);
-	g_memset(exe_path, 0, sizeof(char) * 262);
-
-	/* new style waiting for clients */
-	g_sprintf(wmpid_str, "%d", wmpid);
-	g_sprintf(xpid_str, "%d", xpid);
-	log_message(LOG_LEVEL_INFO, "starting xrdp-ng-sessvc - xpid=%s - wmpid=%s", xpid_str, wmpid_str);
-
-	sessvc_params = list_create();
-	sessvc_params->auto_free = 1;
-
-	/* building parameters */
-	g_snprintf(exe_path, 261, "%s/xrdp-ng-sessvc", XRDP_SBIN_PATH);
-
-	list_add_item(sessvc_params, (long) g_strdup(exe_path));
-	list_add_item(sessvc_params, (long) g_strdup(xpid_str));
-	list_add_item(sessvc_params, (long) g_strdup(wmpid_str));
-	list_add_item(sessvc_params, 0); /* mandatory */
-
-	env_set_user(username, 0, display);
-
-	/* executing sessvc */
-	g_execvp(exe_path, ((char **) sessvc_params->items));
-
-	/* should not get here */
-	log_message(LOG_LEVEL_ALWAYS, "error starting xrdp-ng-sessvc - pid %d - xpid=%s - wmpid=%s", g_getpid(),
-			xpid_str, wmpid_str);
-
-	/* logging parameters */
-	/* no problem calling strerror for thread safety: other threads
-	 are blocked */
-	log_message(LOG_LEVEL_DEBUG, "errno: %d, description: %s", errno, g_get_strerror());
-	log_message(LOG_LEVEL_DEBUG, "execve parameter list:");
-
-	for (i = 0; i < (sessvc_params->count); i++)
-	{
-		log_message(LOG_LEVEL_DEBUG, "        argv[%d] = %s", i, (char *) list_get_item(sessvc_params, i));
-	}
-
-	list_delete(sessvc_params);
-
-	/* keep the old waitpid if some error occurs during execlp */
-	g_waitpid(wmpid);
-	g_sigterm(xpid);
-	g_sigterm(wmpid);
-	g_sleep(1000);
-	auth_end(data);
-	g_exit(0);
-}
-
-/******************************************************************************/
-/* called with the main thread
- returns boolean */
+/* called with the main thread returns boolean */
 static int session_is_display_in_chain(int display)
 {
 	xrdpSessionChain *chain;
@@ -592,7 +530,6 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 				g_snprintf(text, 255, ":%d.0", display);
 				g_setenv("DISPLAY", text, 1);
 				/* new style waiting for clients */
-				session_start_sessvc(xpid, wmpid, data, username, display);
 			}
 		}
 	}
