@@ -65,6 +65,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xserver-properties.h"
 #include "xkbsrv.h"
 
+#include <winpr/crt.h>
+#include <winpr/stream.h>
+
+#include <freerdp/freerdp.h>
+
 #define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
 
 /* test to see if this is xorg source or xfree86 */
@@ -423,150 +428,22 @@ void rdpScheduleDeferredUpdate(void);
 #define NEED_ALIGN
 #endif
 
-/* parser state */
-struct stream
-{
-	char* p;
-	char* end;
-	char* data;
-	int size;
-	/* offsets of various headers */
-	char* iso_hdr;
-	char* mcs_hdr;
-	char* sec_hdr;
-	char* rdp_hdr;
-	char* channel_hdr;
-	char* next_packet;
-};
-
-/******************************************************************************/
-#define s_push_layer(s, h, n) \
-		{ \
-	(s)->h = (s)->p; \
-	(s)->p += (n); \
-		}
-
-/******************************************************************************/
-#define s_pop_layer(s, h) \
-		{ \
-	(s)->p = (s)->h; \
-		}
-
-/******************************************************************************/
-#if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define out_uint16_le(s, v) \
-		{ \
-	*((s)->p) = (unsigned char)((v) >> 0); \
-	(s)->p++; \
-	*((s)->p) = (unsigned char)((v) >> 8); \
-	(s)->p++; \
-		}
-#else
-#define out_uint16_le(s, v) \
-		{ \
-	*((unsigned short*)((s)->p)) = (unsigned short)(v); \
-	(s)->p += 2; \
-		}
-#endif
-
 /******************************************************************************/
 #define init_stream(s, v) \
 		{ \
-	if ((v) > (s)->size) \
+	if ((v) > (s)->capacity) \
 	{ \
-		g_free((s)->data); \
-		(s)->data = (char*)g_malloc((v), 0); \
-		(s)->size = (v); \
+		g_free((s)->buffer); \
+		(s)->buffer = (BYTE*) g_malloc((v), 0); \
+		(s)->capacity = (v); \
 	} \
-	(s)->p = (s)->data; \
-	(s)->end = (s)->data; \
-	(s)->next_packet = 0; \
-		}
-
-/******************************************************************************/
-#define out_uint8p(s, v, n) \
-		{ \
-	g_memcpy((s)->p, (v), (n)); \
-	(s)->p += (n); \
-		}
-
-/******************************************************************************/
-#define out_uint8a(s, v, n) \
-		{ \
-	out_uint8p((s), (v), (n)); \
-		}
-
-/******************************************************************************/
-#if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define out_uint32_le(s, v) \
-		{ \
-	*((s)->p) = (unsigned char)((v) >> 0); \
-	(s)->p++; \
-	*((s)->p) = (unsigned char)((v) >> 8); \
-	(s)->p++; \
-	*((s)->p) = (unsigned char)((v) >> 16); \
-	(s)->p++; \
-	*((s)->p) = (unsigned char)((v) >> 24); \
-	(s)->p++; \
-		}
-#else
-#define out_uint32_le(s, v) \
-		{ \
-	*((unsigned int*)((s)->p)) = (v); \
-	(s)->p += 4; \
-		}
-#endif
-
-/******************************************************************************/
-#if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define in_uint32_le(s, v) \
-		{ \
-	(v) = (unsigned int) \
-	( \
-			(*((unsigned char*)((s)->p + 0)) << 0) | \
-			(*((unsigned char*)((s)->p + 1)) << 8) | \
-			(*((unsigned char*)((s)->p + 2)) << 16) | \
-			(*((unsigned char*)((s)->p + 3)) << 24) \
-	); \
-	(s)->p += 4; \
-		}
-#else
-#define in_uint32_le(s, v) \
-		{ \
-	(v) = *((unsigned int*)((s)->p)); \
-	(s)->p += 4; \
-		}
-#endif
-
-/******************************************************************************/
-#if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define in_uint16_le(s, v) \
-		{ \
-	(v) = (unsigned short) \
-	( \
-			(*((unsigned char*)((s)->p + 0)) << 0) | \
-			(*((unsigned char*)((s)->p + 1)) << 8) \
-	); \
-	(s)->p += 2; \
-		}
-#else
-#define in_uint16_le(s, v) \
-		{ \
-	(v) = *((unsigned short*)((s)->p)); \
-	(s)->p += 2; \
-		}
-#endif
-
-/******************************************************************************/
-#define s_mark_end(s) \
-		{ \
-	(s)->end = (s)->p; \
+	(s)->pointer = (s)->buffer; \
 		}
 
 /******************************************************************************/
 #define make_stream(s) \
 		{ \
-	(s) = (struct stream*)g_malloc(sizeof(struct stream), 1); \
+	(s) = (wStream*)g_malloc(sizeof(wStream), 1); \
 		}
 
 /******************************************************************************/
@@ -574,7 +451,7 @@ struct stream
 		{ \
 	if ((s) != 0) \
 	{ \
-		g_free((s)->data); \
+		g_free((s)->buffer); \
 	} \
 	g_free((s)); \
 		} while (0)

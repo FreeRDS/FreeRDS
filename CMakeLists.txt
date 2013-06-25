@@ -100,3 +100,7 @@ add_subdirectory(sesman)
 add_subdirectory(xup)
 add_subdirectory(xrdp)
 add_subdirectory(instfiles)
+
+if(WITH_X11RDP)
+	add_subdirectory(xorg/rdp)
+endif()

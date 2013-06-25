@@ -24,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <avro.h>
 
-#define LOG_LEVEL 100
+#define LOG_LEVEL 1
 #define LLOG(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; } } while (0)
 #define LLOGLN(_level, _args) \
@@ -37,8 +37,8 @@ static int g_connected = 0;
 static int g_dis_listen_sck = 0;
 
 static int g_begin = 0;
-static struct stream *g_out_s = 0;
-static struct stream *g_in_s = 0;
+static wStream* g_out_s = 0;
+static wStream* g_in_s = 0;
 static int g_button_mask = 0;
 static int g_cursor_x = 0;
 static int g_cursor_y = 0;
@@ -258,7 +258,7 @@ int rdpup_remove_os_bitmap(int rdpindex)
 }
 
 /* returns error */
-static int rdpup_send(char *data, int len)
+static int rdpup_send(BYTE* data, int len)
 {
 	int sent;
 
@@ -300,7 +300,7 @@ static int rdpup_send(char *data, int len)
 	return 0;
 }
 
-static int rdpup_send_msg(struct stream *s)
+static int rdpup_send_msg(wStream* s)
 {
 	int len;
 	int rv;
@@ -309,18 +309,18 @@ static int rdpup_send_msg(struct stream *s)
 
 	if (s != 0)
 	{
-		len = (int)(s->end - s->data);
+		len = (int) (s->pointer - s->buffer);
 
-		if (len > s->size)
+		if (len > s->capacity)
 		{
 			rdpLog("overrun error len %d count %d\n", len, g_count);
 		}
 
-		s_pop_layer(s, iso_hdr);
-		out_uint16_le(s, 3);
-		out_uint16_le(s, g_count);
-		out_uint32_le(s, len - 8);
-		rv = rdpup_send(s->data, len);
+		s->pointer = s->buffer;
+		Stream_Write_UINT16(s, 3);
+		Stream_Write_UINT16(s, g_count);
+		Stream_Write_UINT32(s, len - 8);
+		rv = rdpup_send(s->buffer, len);
 	}
 
 	if (rv != 0)
@@ -336,10 +336,9 @@ static int rdpup_send_pending(void)
 	if (g_connected && g_begin)
 	{
 		LLOGLN(10, ("end %d", g_count));
-		out_uint16_le(g_out_s, 2);
-		out_uint16_le(g_out_s, 4);
+		Stream_Write_UINT16(g_out_s, 2);
+		Stream_Write_UINT16(g_out_s, 4);
 		g_count++;
-		s_mark_end(g_out_s);
 		rdpup_send_msg(g_out_s);
 	}
 
@@ -375,7 +374,7 @@ void rdpScheduleDeferredUpdate(void)
 }
 
 /* returns error */
-static int rdpup_recv(char *data, int len)
+static int rdpup_recv(BYTE* data, int len)
 {
 	int rcvd;
 
@@ -415,7 +414,7 @@ static int rdpup_recv(char *data, int len)
 	return 0;
 }
 
-static int rdpup_recv_msg(struct stream *s)
+static int rdpup_recv_msg(wStream* s)
 {
 	int len;
 	int rv;
@@ -425,16 +424,16 @@ static int rdpup_recv_msg(struct stream *s)
 	if (s != 0)
 	{
 		init_stream(s, 4);
-		rv = rdpup_recv(s->data, 4);
+		rv = rdpup_recv(s->buffer, 4);
 
 		if (rv == 0)
 		{
-			in_uint32_le(s, len);
+			Stream_Read_UINT32(s, len);
 
 			if (len > 3)
 			{
 				init_stream(s, len);
-				rv = rdpup_recv(s->data, len - 4);
+				rv = rdpup_recv(s->buffer, len - 4);
 			}
 		}
 	}
@@ -523,23 +522,22 @@ static int rdpup_send_caps(void)
 	int rv;
 	int cap_count;
 	int cap_bytes;
-	struct stream *ls;
+	wStream* ls;
 
 	make_stream(ls);
 	init_stream(ls, 8192);
-	s_push_layer(ls, iso_hdr, 8);
+	ls->pointer += 8;
 
 	cap_count = 0;
 	cap_bytes = 0;
 
-	s_mark_end(ls);
-	len = (int)(ls->end - ls->data);
-	s_pop_layer(ls, iso_hdr);
-	out_uint16_le(ls, 2); /* caps */
-	out_uint16_le(ls, cap_count); /* num caps */
-	out_uint32_le(ls, cap_bytes); /* caps len after header */
+	len = (int) (ls->pointer - ls->buffer);
+	ls->pointer = ls->buffer;
+	Stream_Write_UINT16(ls, 2); /* caps */
+	Stream_Write_UINT16(ls, cap_count); /* num caps */
+	Stream_Write_UINT32(ls, cap_bytes); /* caps len after header */
 
-	rv = rdpup_send(ls->data, len);
+	rv = rdpup_send(ls->buffer, len);
 
 	if (rv != 0)
 	{
@@ -604,7 +602,7 @@ const char CAPABILITIES_SCHEMA[] =
 		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
 		]}";
 
-static int rdpup_process_capabilities_msg(const char* buffer, int length)
+static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 {
 	size_t index;
 
@@ -613,7 +611,7 @@ static int rdpup_process_capabilities_msg(const char* buffer, int length)
 
 	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
 
-	avro_reader_t reader = avro_reader_memory(buffer, length);
+	avro_reader_t reader = avro_reader_memory((char*) buffer, length);
 
 	avro_value_t val;
 	avro_generic_value_new(record_class, &val);
@@ -687,7 +685,7 @@ static int rdpup_process_capabilities_msg(const char* buffer, int length)
 	return 0;
 }
 
-static int rdpup_process_msg(struct stream *s)
+static int rdpup_process_msg(wStream* s)
 {
 	int msg_type;
 	int msg;
@@ -697,17 +695,18 @@ static int rdpup_process_msg(struct stream *s)
 	int param4;
 	int bytes;
 
-	in_uint16_le(s, msg_type);
+	Stream_Read_UINT16(s, msg_type);
 
 	LLOGLN(10, ("rdpup_process_msg - msg %d", msg_type));
 
 	if (msg_type == 103)
 	{
-		in_uint32_le(s, msg);
-		in_uint32_le(s, param1);
-		in_uint32_le(s, param2);
-		in_uint32_le(s, param3);
-		in_uint32_le(s, param4);
+		Stream_Read_UINT32(s, msg);
+		Stream_Read_UINT32(s, param1);
+		Stream_Read_UINT32(s, param2);
+		Stream_Read_UINT32(s, param3);
+		Stream_Read_UINT32(s, param4);
+
 		LLOGLN(10, ("rdpup_process_msg - msg %d param1 %d param2 %d param3 %d "
 				"param4 %d", msg, param1, param2, param3, param4));
 
@@ -783,8 +782,8 @@ static int rdpup_process_msg(struct stream *s)
 	}
 	else if (msg_type == 104)
 	{
-		bytes = s->size - 6;
-		rdpup_process_capabilities_msg(s->p, bytes);
+		bytes = s->capacity - 6;
+		rdpup_process_capabilities_msg(s->pointer, bytes);
 	}
 	else
 	{
@@ -975,9 +974,9 @@ int rdpup_begin_update(void)
 		}
 
 		init_stream(g_out_s, 0);
-		s_push_layer(g_out_s, iso_hdr, 8);
-		out_uint16_le(g_out_s, 1); /* begin update */
-		out_uint16_le(g_out_s, 4); /* size */
+		g_out_s->pointer += 8;
+		Stream_Write_UINT16(g_out_s, 1); /* begin update */
+		Stream_Write_UINT16(g_out_s, 4); /* size */
 		LLOGLN(10, ("begin %d", g_count));
 		g_begin = 1;
 		g_count = 1;
@@ -1001,9 +1000,8 @@ int rdpup_end_update(void)
 #if 0
 			rdpScheduleDeferredUpdate();
 #else
-			out_uint16_le(g_out_s, 2);
+			Stream_Write_UINT16(g_out_s, 2);
 			g_count++;
-			s_mark_end(g_out_s);
 			rdpup_send_msg(g_out_s);
 
 			g_count = 0;
@@ -1022,13 +1020,12 @@ int rdpup_pre_check(int in_size)
 		rdpup_begin_update();
 	}
 
-	if ((g_out_s->p - g_out_s->data) > (g_out_s->size - (in_size + 20)))
+	if ((g_out_s->pointer - g_out_s->buffer) > (g_out_s->capacity - (in_size + 20)))
 	{
-		s_mark_end(g_out_s);
 		rdpup_send_msg(g_out_s);
 		g_count = 0;
 		init_stream(g_out_s, 0);
-		s_push_layer(g_out_s, iso_hdr, 8);
+		g_out_s->pointer += 8;
 	}
 
 	return 0;
@@ -1047,13 +1044,13 @@ int rdpup_fill_rect(short x, short y, int cx, int cy)
 		}
 
 		rdpup_pre_check(12);
-		out_uint16_le(g_out_s, 3); /* fill rect */
-		out_uint16_le(g_out_s, 12); /* size */
+		Stream_Write_UINT16(g_out_s, 3); /* fill rect */
+		Stream_Write_UINT16(g_out_s, 12); /* size */
 		g_count++;
-		out_uint16_le(g_out_s, x);
-		out_uint16_le(g_out_s, y);
-		out_uint16_le(g_out_s, cx);
-		out_uint16_le(g_out_s, cy);
+		Stream_Write_UINT16(g_out_s, x);
+		Stream_Write_UINT16(g_out_s, y);
+		Stream_Write_UINT16(g_out_s, cx);
+		Stream_Write_UINT16(g_out_s, cy);
 	}
 
 	return 0;
@@ -1072,15 +1069,15 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 		}
 
 		rdpup_pre_check(16);
-		out_uint16_le(g_out_s, 4); /* screen blt */
-		out_uint16_le(g_out_s, 16); /* size */
+		Stream_Write_UINT16(g_out_s, 4); /* screen blt */
+		Stream_Write_UINT16(g_out_s, 16); /* size */
 		g_count++;
-		out_uint16_le(g_out_s, x);
-		out_uint16_le(g_out_s, y);
-		out_uint16_le(g_out_s, cx);
-		out_uint16_le(g_out_s, cy);
-		out_uint16_le(g_out_s, srcx);
-		out_uint16_le(g_out_s, srcy);
+		Stream_Write_UINT16(g_out_s, x);
+		Stream_Write_UINT16(g_out_s, y);
+		Stream_Write_UINT16(g_out_s, cx);
+		Stream_Write_UINT16(g_out_s, cy);
+		Stream_Write_UINT16(g_out_s, srcx);
+		Stream_Write_UINT16(g_out_s, srcy);
 	}
 
 	return 0;
@@ -1092,13 +1089,13 @@ int rdpup_set_clip(short x, short y, int cx, int cy)
 	{
 		LLOGLN(10, ("  rdpup_set_clip"));
 		rdpup_pre_check(12);
-		out_uint16_le(g_out_s, 10); /* set clip */
-		out_uint16_le(g_out_s, 12); /* size */
+		Stream_Write_UINT16(g_out_s, 10); /* set clip */
+		Stream_Write_UINT16(g_out_s, 12); /* size */
 		g_count++;
-		out_uint16_le(g_out_s, x);
-		out_uint16_le(g_out_s, y);
-		out_uint16_le(g_out_s, cx);
-		out_uint16_le(g_out_s, cy);
+		Stream_Write_UINT16(g_out_s, x);
+		Stream_Write_UINT16(g_out_s, y);
+		Stream_Write_UINT16(g_out_s, cx);
+		Stream_Write_UINT16(g_out_s, cy);
 	}
 
 	return 0;
@@ -1110,8 +1107,8 @@ int rdpup_reset_clip(void)
 	{
 		LLOGLN(10, ("  rdpup_reset_clip"));
 		rdpup_pre_check(4);
-		out_uint16_le(g_out_s, 11); /* reset clip */
-		out_uint16_le(g_out_s, 4); /* size */
+		Stream_Write_UINT16(g_out_s, 11); /* reset clip */
+		Stream_Write_UINT16(g_out_s, 4); /* size */
 		g_count++;
 	}
 
@@ -1282,12 +1279,12 @@ int rdpup_set_fgcolor(int fgcolor)
 	{
 		LLOGLN(10, ("  rdpup_set_fgcolor"));
 		rdpup_pre_check(8);
-		out_uint16_le(g_out_s, 12); /* set fgcolor */
-		out_uint16_le(g_out_s, 8); /* size */
+		Stream_Write_UINT16(g_out_s, 12); /* set fgcolor */
+		Stream_Write_UINT16(g_out_s, 8); /* size */
 		g_count++;
 		fgcolor = fgcolor & g_Bpp_mask;
 		fgcolor = convert_pixel(fgcolor) & g_rdpScreen.rdp_Bpp_mask;
-		out_uint32_le(g_out_s, fgcolor);
+		Stream_Write_UINT32(g_out_s, fgcolor);
 	}
 
 	return 0;
@@ -1299,12 +1296,12 @@ int rdpup_set_bgcolor(int bgcolor)
 	{
 		LLOGLN(10, ("  rdpup_set_bgcolor"));
 		rdpup_pre_check(8);
-		out_uint16_le(g_out_s, 13); /* set bg color */
-		out_uint16_le(g_out_s, 8); /* size */
+		Stream_Write_UINT16(g_out_s, 13); /* set bg color */
+		Stream_Write_UINT16(g_out_s, 8); /* size */
 		g_count++;
 		bgcolor = bgcolor & g_Bpp_mask;
 		bgcolor = convert_pixel(bgcolor) & g_rdpScreen.rdp_Bpp_mask;
-		out_uint32_le(g_out_s, bgcolor);
+		Stream_Write_UINT32(g_out_s, bgcolor);
 	}
 
 	return 0;
@@ -1316,10 +1313,10 @@ int rdpup_set_opcode(int opcode)
 	{
 		LLOGLN(10, ("  rdpup_set_opcode"));
 		rdpup_pre_check(6);
-		out_uint16_le(g_out_s, 14); /* set opcode */
-		out_uint16_le(g_out_s, 6); /* size */
+		Stream_Write_UINT16(g_out_s, 14); /* set opcode */
+		Stream_Write_UINT16(g_out_s, 6); /* size */
 		g_count++;
-		out_uint16_le(g_out_s, g_rdp_opcodes[opcode & 0xf]);
+		Stream_Write_UINT16(g_out_s, g_rdp_opcodes[opcode & 0xf]);
 	}
 
 	return 0;
@@ -1331,11 +1328,11 @@ int rdpup_set_pen(int style, int width)
 	{
 		LLOGLN(10, ("  rdpup_set_pen"));
 		rdpup_pre_check(8);
-		out_uint16_le(g_out_s, 17); /* set pen */
-		out_uint16_le(g_out_s, 8); /* size */
+		Stream_Write_UINT16(g_out_s, 17); /* set pen */
+		Stream_Write_UINT16(g_out_s, 8); /* size */
 		g_count++;
-		out_uint16_le(g_out_s, style);
-		out_uint16_le(g_out_s, width);
+		Stream_Write_UINT16(g_out_s, style);
+		Stream_Write_UINT16(g_out_s, width);
 	}
 
 	return 0;
@@ -1347,13 +1344,13 @@ int rdpup_draw_line(short x1, short y1, short x2, short y2)
 	{
 		LLOGLN(10, ("  rdpup_draw_line"));
 		rdpup_pre_check(12);
-		out_uint16_le(g_out_s, 18); /* draw line */
-		out_uint16_le(g_out_s, 12); /* size */
+		Stream_Write_UINT16(g_out_s, 18); /* draw line */
+		Stream_Write_UINT16(g_out_s, 12); /* size */
 		g_count++;
-		out_uint16_le(g_out_s, x1);
-		out_uint16_le(g_out_s, y1);
-		out_uint16_le(g_out_s, x2);
-		out_uint16_le(g_out_s, y2);
+		Stream_Write_UINT16(g_out_s, x1);
+		Stream_Write_UINT16(g_out_s, y1);
+		Stream_Write_UINT16(g_out_s, x2);
+		Stream_Write_UINT16(g_out_s, y2);
 	}
 
 	return 0;
@@ -1368,17 +1365,17 @@ int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
 		LLOGLN(10, ("  rdpup_set_cursor"));
 		size = 8 + 32 * (32 * 3) + 32 * (32 / 8);
 		rdpup_pre_check(size);
-		out_uint16_le(g_out_s, 19); /* set cursor */
-		out_uint16_le(g_out_s, size); /* size */
+		Stream_Write_UINT16(g_out_s, 19); /* set cursor */
+		Stream_Write_UINT16(g_out_s, size); /* size */
 		g_count++;
 		x = MAX(0, x);
 		x = MIN(31, x);
 		y = MAX(0, y);
 		y = MIN(31, y);
-		out_uint16_le(g_out_s, x);
-		out_uint16_le(g_out_s, y);
-		out_uint8a(g_out_s, cur_data, 32 * (32 * 3));
-		out_uint8a(g_out_s, cur_mask, 32 * (32 / 8));
+		Stream_Write_UINT16(g_out_s, x);
+		Stream_Write_UINT16(g_out_s, y);
+		Stream_Write(g_out_s, cur_data, 32 * (32 * 3));
+		Stream_Write(g_out_s, cur_mask, 32 * (32 / 8));
 	}
 
 	return 0;
@@ -1395,18 +1392,18 @@ int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bp
 		Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
 		size = 10 + 32 * (32 * Bpp) + 32 * (32 / 8);
 		rdpup_pre_check(size);
-		out_uint16_le(g_out_s, 51); /* set cursor ex */
-		out_uint16_le(g_out_s, size); /* size */
+		Stream_Write_UINT16(g_out_s, 51); /* set cursor ex */
+		Stream_Write_UINT16(g_out_s, size); /* size */
 		g_count++;
 		x = MAX(0, x);
 		x = MIN(31, x);
 		y = MAX(0, y);
 		y = MIN(31, y);
-		out_uint16_le(g_out_s, x);
-		out_uint16_le(g_out_s, y);
-		out_uint16_le(g_out_s, bpp);
-		out_uint8a(g_out_s, cur_data, 32 * (32 * Bpp));
-		out_uint8a(g_out_s, cur_mask, 32 * (32 / 8));
+		Stream_Write_UINT16(g_out_s, x);
+		Stream_Write_UINT16(g_out_s, y);
+		Stream_Write_UINT16(g_out_s, bpp);
+		Stream_Write(g_out_s, cur_data, 32 * (32 * Bpp));
+		Stream_Write(g_out_s, cur_mask, 32 * (32 / 8));
 	}
 
 	return 0;
@@ -1420,12 +1417,12 @@ int rdpup_create_os_surface(int rdpindex, int width, int height)
 	{
 		LLOGLN(10, ("  rdpup_create_os_surface width %d height %d", width, height));
 		rdpup_pre_check(12);
-		out_uint16_le(g_out_s, 20);
-		out_uint16_le(g_out_s, 12);
+		Stream_Write_UINT16(g_out_s, 20);
+		Stream_Write_UINT16(g_out_s, 12);
 		g_count++;
-		out_uint32_le(g_out_s, rdpindex);
-		out_uint16_le(g_out_s, width);
-		out_uint16_le(g_out_s, height);
+		Stream_Write_UINT32(g_out_s, rdpindex);
+		Stream_Write_UINT16(g_out_s, width);
+		Stream_Write_UINT16(g_out_s, height);
 	}
 
 	return 0;
@@ -1446,9 +1443,9 @@ int rdpup_switch_os_surface(int rdpindex)
 		LLOGLN(10, ("rdpup_switch_os_surface: rdpindex %d", rdpindex));
 		/* switch surface */
 		rdpup_pre_check(8);
-		out_uint16_le(g_out_s, 21);
-		out_uint16_le(g_out_s, 8);
-		out_uint32_le(g_out_s, rdpindex);
+		Stream_Write_UINT16(g_out_s, 21);
+		Stream_Write_UINT16(g_out_s, 8);
+		Stream_Write_UINT32(g_out_s, rdpindex);
 		g_count++;
 	}
 
@@ -1463,10 +1460,10 @@ int rdpup_delete_os_surface(int rdpindex)
 	{
 		LLOGLN(10, ("rdpup_delete_os_surface: rdpindex %d", rdpindex));
 		rdpup_pre_check(8);
-		out_uint16_le(g_out_s, 22);
-		out_uint16_le(g_out_s, 8);
+		Stream_Write_UINT16(g_out_s, 22);
+		Stream_Write_UINT16(g_out_s, 8);
 		g_count++;
-		out_uint32_le(g_out_s, rdpindex);
+		Stream_Write_UINT32(g_out_s, rdpindex);
 	}
 
 	return 0;
@@ -1570,27 +1567,27 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 	{
 		size = w * h * id->Bpp + 24;
 		rdpup_pre_check(size);
-		out_uint16_le(g_out_s, 5);
-		out_uint16_le(g_out_s, size);
+		Stream_Write_UINT16(g_out_s, 5);
+		Stream_Write_UINT16(g_out_s, size);
 		g_count++;
 
-		out_uint16_le(g_out_s, x);
-		out_uint16_le(g_out_s, y);
-		out_uint16_le(g_out_s, w);
-		out_uint16_le(g_out_s, h);
-		out_uint32_le(g_out_s, w * h * id->Bpp);
+		Stream_Write_UINT16(g_out_s, x);
+		Stream_Write_UINT16(g_out_s, y);
+		Stream_Write_UINT16(g_out_s, w);
+		Stream_Write_UINT16(g_out_s, h);
+		Stream_Write_UINT32(g_out_s, w * h * id->Bpp);
 
 		for (i = 0; i < h; i++)
 		{
 			s = (g_rdpScreen.pfbMemory + ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
-			convert_pixels(s, g_out_s->p, w);
-			g_out_s->p += w * id->Bpp;
+			convert_pixels(s, g_out_s->pointer, w);
+			g_out_s->pointer += w * id->Bpp;
 		}
 
-		out_uint16_le(g_out_s, w);
-		out_uint16_le(g_out_s, h);
-		out_uint16_le(g_out_s, 0);
-		out_uint16_le(g_out_s, 0);
+		Stream_Write_UINT16(g_out_s, w);
+		Stream_Write_UINT16(g_out_s, h);
+		Stream_Write_UINT16(g_out_s, 0);
+		Stream_Write_UINT16(g_out_s, 0);
 	}
 }
 
@@ -1607,13 +1604,13 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 	int size;
 	struct image_data lid;
 
-	LLOGLN(10, ("rdpup_send_area: id %p x %d y %d w %d h %d", id, x, y, w, h));
-
 	if (id == 0)
 	{
 		rdpup_get_screen_image_rect(&lid);
 		id = &lid;
 	}
+
+	LLOGLN(10, ("rdpup_send_area: id %p x %d y %d w %d h %d", id, x, y, w, h));
 
 	if (x >= id->width)
 	{
@@ -1690,26 +1687,26 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 				{
 					size = lw * lh * id->Bpp + 24;
 					rdpup_pre_check(size);
-					out_uint16_le(g_out_s, 5);
-					out_uint16_le(g_out_s, size);
+					Stream_Write_UINT16(g_out_s, 5);
+					Stream_Write_UINT16(g_out_s, size);
 					g_count++;
-					out_uint16_le(g_out_s, lx);
-					out_uint16_le(g_out_s, ly);
-					out_uint16_le(g_out_s, lw);
-					out_uint16_le(g_out_s, lh);
-					out_uint32_le(g_out_s, lw * lh * id->Bpp);
+					Stream_Write_UINT16(g_out_s, lx);
+					Stream_Write_UINT16(g_out_s, ly);
+					Stream_Write_UINT16(g_out_s, lw);
+					Stream_Write_UINT16(g_out_s, lh);
+					Stream_Write_UINT32(g_out_s, lw * lh * id->Bpp);
 
 					for (i = 0; i < lh; i++)
 					{
 						s = (id->pixels + ((ly + i) * id->lineBytes) + (lx * g_Bpp));
-						convert_pixels(s, g_out_s->p, lw);
-						g_out_s->p += lw * id->Bpp;
+						convert_pixels(s, g_out_s->pointer, lw);
+						g_out_s->pointer += lw * id->Bpp;
 					}
 
-					out_uint16_le(g_out_s, lw);
-					out_uint16_le(g_out_s, lh);
-					out_uint16_le(g_out_s, 0);
-					out_uint16_le(g_out_s, 0);
+					Stream_Write_UINT16(g_out_s, lw);
+					Stream_Write_UINT16(g_out_s, lh);
+					Stream_Write_UINT16(g_out_s, 0);
+					Stream_Write_UINT16(g_out_s, 0);
 				}
 
 				lx += 64;
@@ -1725,16 +1722,16 @@ void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, i
 	if (g_connected)
 	{
 		rdpup_pre_check(20);
-		out_uint16_le(g_out_s, 23);
-		out_uint16_le(g_out_s, 20);
+		Stream_Write_UINT16(g_out_s, 23);
+		Stream_Write_UINT16(g_out_s, 20);
 		g_count++;
-		out_uint16_le(g_out_s, x);
-		out_uint16_le(g_out_s, y);
-		out_uint16_le(g_out_s, cx);
-		out_uint16_le(g_out_s, cy);
-		out_uint32_le(g_out_s, rdpindex);
-		out_uint16_le(g_out_s, srcx);
-		out_uint16_le(g_out_s, srcy);
+		Stream_Write_UINT16(g_out_s, x);
+		Stream_Write_UINT16(g_out_s, y);
+		Stream_Write_UINT16(g_out_s, cx);
+		Stream_Write_UINT16(g_out_s, cy);
+		Stream_Write_UINT32(g_out_s, rdpindex);
+		Stream_Write_UINT16(g_out_s, srcx);
+		Stream_Write_UINT16(g_out_s, srcy);
 	}
 }
 
@@ -1743,11 +1740,11 @@ void rdpup_set_hints(int hints, int mask)
 	if (g_connected)
 	{
 		rdpup_pre_check(12);
-		out_uint16_le(g_out_s, 24);
-		out_uint16_le(g_out_s, 12);
+		Stream_Write_UINT16(g_out_s, 24);
+		Stream_Write_UINT16(g_out_s, 12);
 		g_count++;
-		out_uint32_le(g_out_s, hints);
-		out_uint32_le(g_out_s, mask);
+		Stream_Write_UINT32(g_out_s, hints);
+		Stream_Write_UINT32(g_out_s, mask);
 	}
 }
 
@@ -1795,65 +1792,65 @@ void rdpup_create_window(WindowPtr pWindow, rdpWindowRec *priv)
 				(2 + num_visibility_rects * 8) + 4;
 
 		rdpup_pre_check(bytes);
-		out_uint16_le(g_out_s, 25);
-		out_uint16_le(g_out_s, bytes);
+		Stream_Write_UINT16(g_out_s, 25);
+		Stream_Write_UINT16(g_out_s, bytes);
 		g_count++;
-		out_uint32_le(g_out_s, pWindow->drawable.id); /* window_id */
-		out_uint32_le(g_out_s, pWindow->parent->drawable.id); /* owner_window_id */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.id); /* window_id */
+		Stream_Write_UINT32(g_out_s, pWindow->parent->drawable.id); /* owner_window_id */
 		flags |= WINDOW_ORDER_FIELD_OWNER;
-		out_uint32_le(g_out_s, style); /* style */
-		out_uint32_le(g_out_s, ext_style); /* extended_style */
+		Stream_Write_UINT32(g_out_s, style); /* style */
+		Stream_Write_UINT32(g_out_s, ext_style); /* extended_style */
 		flags |= WINDOW_ORDER_FIELD_STYLE;
-		out_uint32_le(g_out_s, 0); /* show_state */
+		Stream_Write_UINT32(g_out_s, 0); /* show_state */
 		flags |= WINDOW_ORDER_FIELD_SHOW;
-		out_uint16_le(g_out_s, title_bytes); /* title_info */
-		out_uint8a(g_out_s, title, title_bytes);
+		Stream_Write_UINT16(g_out_s, title_bytes); /* title_info */
+		Stream_Write(g_out_s, title, title_bytes);
 		flags |= WINDOW_ORDER_FIELD_TITLE;
-		out_uint32_le(g_out_s, 0); /* client_offset_x */
-		out_uint32_le(g_out_s, 0); /* client_offset_y */
+		Stream_Write_UINT32(g_out_s, 0); /* client_offset_x */
+		Stream_Write_UINT32(g_out_s, 0); /* client_offset_y */
 		flags |= WINDOW_ORDER_FIELD_CLIENT_AREA_OFFSET;
-		out_uint32_le(g_out_s, pWindow->drawable.width); /* client_area_width */
-		out_uint32_le(g_out_s, pWindow->drawable.height); /* client_area_height */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.width); /* client_area_width */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.height); /* client_area_height */
 		flags |= WINDOW_ORDER_FIELD_CLIENT_AREA_SIZE;
-		out_uint32_le(g_out_s, 0); /* rp_content */
-		out_uint32_le(g_out_s, root_id); /* root_parent_handle */
+		Stream_Write_UINT32(g_out_s, 0); /* rp_content */
+		Stream_Write_UINT32(g_out_s, root_id); /* root_parent_handle */
 		flags |= WINDOW_ORDER_FIELD_ROOT_PARENT;
-		out_uint32_le(g_out_s, pWindow->drawable.x); /* window_offset_x */
-		out_uint32_le(g_out_s, pWindow->drawable.y); /* window_offset_y */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.x); /* window_offset_x */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.y); /* window_offset_y */
 		flags |= WINDOW_ORDER_FIELD_WND_OFFSET;
-		out_uint32_le(g_out_s, 0); /* window_client_delta_x */
-		out_uint32_le(g_out_s, 0); /* window_client_delta_y */
+		Stream_Write_UINT32(g_out_s, 0); /* window_client_delta_x */
+		Stream_Write_UINT32(g_out_s, 0); /* window_client_delta_y */
 		flags |= WINDOW_ORDER_FIELD_WND_CLIENT_DELTA;
-		out_uint32_le(g_out_s, pWindow->drawable.width); /* window_width */
-		out_uint32_le(g_out_s, pWindow->drawable.height); /* window_height */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.width); /* window_width */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.height); /* window_height */
 		flags |= WINDOW_ORDER_FIELD_WND_SIZE;
-		out_uint16_le(g_out_s, num_window_rects); /* num_window_rects */
+		Stream_Write_UINT16(g_out_s, num_window_rects); /* num_window_rects */
 
 		for (index = 0; index < num_window_rects; index++)
 		{
-			out_uint16_le(g_out_s, 0); /* left */
-			out_uint16_le(g_out_s, 0); /* top */
-			out_uint16_le(g_out_s, pWindow->drawable.width); /* right */
-			out_uint16_le(g_out_s, pWindow->drawable.height); /* bottom */
+			Stream_Write_UINT16(g_out_s, 0); /* left */
+			Stream_Write_UINT16(g_out_s, 0); /* top */
+			Stream_Write_UINT16(g_out_s, pWindow->drawable.width); /* right */
+			Stream_Write_UINT16(g_out_s, pWindow->drawable.height); /* bottom */
 		}
 
 		flags |= WINDOW_ORDER_FIELD_WND_RECTS;
-		out_uint32_le(g_out_s, pWindow->drawable.x); /* visible_offset_x */
-		out_uint32_le(g_out_s, pWindow->drawable.y); /* visible_offset_y */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.x); /* visible_offset_x */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.y); /* visible_offset_y */
 		flags |= WINDOW_ORDER_FIELD_VIS_OFFSET;
-		out_uint16_le(g_out_s, num_visibility_rects); /* num_visibility_rects */
+		Stream_Write_UINT16(g_out_s, num_visibility_rects); /* num_visibility_rects */
 
 		for (index = 0; index < num_visibility_rects; index++)
 		{
-			out_uint16_le(g_out_s, 0); /* left */
-			out_uint16_le(g_out_s, 0); /* top */
-			out_uint16_le(g_out_s, pWindow->drawable.width); /* right */
-			out_uint16_le(g_out_s, pWindow->drawable.height); /* bottom */
+			Stream_Write_UINT16(g_out_s, 0); /* left */
+			Stream_Write_UINT16(g_out_s, 0); /* top */
+			Stream_Write_UINT16(g_out_s, pWindow->drawable.width); /* right */
+			Stream_Write_UINT16(g_out_s, pWindow->drawable.height); /* bottom */
 		}
 
 		flags |= WINDOW_ORDER_FIELD_VISIBILITY;
 
-		out_uint32_le(g_out_s, flags); /* flags */
+		Stream_Write_UINT32(g_out_s, flags); /* flags */
 	}
 }
 
@@ -1866,10 +1863,10 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	if (g_connected)
 	{
 		rdpup_pre_check(8);
-		out_uint16_le(g_out_s, 26);
-		out_uint16_le(g_out_s, 8);
+		Stream_Write_UINT16(g_out_s, 26);
+		Stream_Write_UINT16(g_out_s, 8);
 		g_count++;
-		out_uint32_le(g_out_s, pWindow->drawable.id); /* window_id */
+		Stream_Write_UINT32(g_out_s, pWindow->drawable.id); /* window_id */
 	}
 }
 
