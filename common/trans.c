@@ -34,8 +34,12 @@ struct trans* trans_create(int mode, int in_size, int out_size)
 	{
 		make_stream(self->in_s);
 		init_stream(self->in_s, in_size);
+		self->in_s->length = 0;
+
 		make_stream(self->out_s);
 		init_stream(self->out_s, out_size);
+		self->out_s->length = 0;
+
 		self->mode = mode;
 	}
 
@@ -155,12 +159,12 @@ int trans_check_wait_objs(struct trans* self)
 	{
 		if (g_tcp_can_recv(self->sck, 0))
 		{
-			read_so_far = (int) (self->in_s->end - self->in_s->buffer);
+			read_so_far = (int) (self->in_s->length);
 			to_read = self->header_size - read_so_far;
 
 			if (to_read > 0)
 			{
-				read_bytes = g_tcp_recv(self->sck, self->in_s->end, to_read, 0);
+				read_bytes = g_tcp_recv(self->sck, self->in_s->buffer + self->in_s->length, to_read, 0);
 
 				if (read_bytes == -1)
 				{
@@ -183,11 +187,11 @@ int trans_check_wait_objs(struct trans* self)
 				}
 				else
 				{
-					self->in_s->end += read_bytes;
+					self->in_s->length += read_bytes;
 				}
 			}
 
-			read_so_far = (int) (self->in_s->end - self->in_s->buffer);
+			read_so_far = (int) (self->in_s->length);
 
 			if (read_so_far == self->header_size)
 			{
@@ -195,6 +199,7 @@ int trans_check_wait_objs(struct trans* self)
 				{
 					rv = self->trans_data_in(self);
 					init_stream(self->in_s, 0);
+					self->in_s->length = 0;
 				}
 			}
 		}
@@ -215,7 +220,7 @@ int trans_force_read_s(struct trans* self, struct stream* in_s, int size)
 
 	while (size > 0)
 	{
-		rcvd = g_tcp_recv(self->sck, in_s->end, size, 0);
+		rcvd = g_tcp_recv(self->sck, in_s->buffer + in_s->length, size, 0);
 
 		if (rcvd == -1)
 		{
@@ -243,7 +248,7 @@ int trans_force_read_s(struct trans* self, struct stream* in_s, int size)
 			}
 			else
 			{
-				in_s->end += rcvd;
+				in_s->length += rcvd;
 				size -= rcvd;
 			}
 		}
@@ -270,7 +275,7 @@ int trans_force_write_s(struct trans* self, struct stream *out_s)
 		return 1;
 	}
 
-	size = (int) (out_s->end - out_s->buffer);
+	size = (int) (out_s->pointer - out_s->buffer);
 	total = 0;
 
 	while (total < size)
@@ -448,6 +453,7 @@ struct stream* trans_get_out_s(struct trans *self, int size)
 	else
 	{
 		init_stream(self->out_s, size);
+		self->out_s->length = 0;
 		rv = self->out_s;
 	}
 

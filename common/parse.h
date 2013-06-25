@@ -27,16 +27,19 @@
 
 #include "arch.h"
 
+#include <winpr/crt.h>
+#include <winpr/stream.h>
+
 /* parser state */
 struct stream
 {
   char* pointer;
-  char* end;
   char* buffer;
   int capacity;
+  size_t length;
 };
 
-#define s_check_rem(s, n) ((s)->pointer + (n) <= (s)->end)
+#define s_check_rem_len(s, n) ((s)->pointer + (n) <= (s)->buffer + (s)->length)
 
 /******************************************************************************/
 #define make_stream(s) \
@@ -52,7 +55,7 @@ struct stream
     (s)->capacity = (v); \
   } \
   (s)->pointer = (s)->buffer; \
-  (s)->end = (s)->buffer; \
+  (s)->length = 0; \
 } while (0)
 
 /******************************************************************************/
@@ -64,10 +67,6 @@ struct stream
   } \
   g_free((s)); \
 } while (0)
-
-/******************************************************************************/
-#define s_mark_end(s) \
-  (s)->end = (s)->pointer
 
 #define in_sint8(s, v) do \
 { \

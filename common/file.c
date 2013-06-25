@@ -51,7 +51,7 @@ static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 
 	if (len > 0)
 	{
-		s->end = s->pointer + len;
+		s->length = (s->pointer - s->buffer) + len;
 
 		for (index = 0; index < len; index++)
 		{
@@ -95,7 +95,7 @@ static int file_read_line(struct stream *s, char *text)
 
 	skip_to_end = 0;
 
-	if (!s_check_rem(s, 1))
+	if (!s_check_rem_len(s, 1))
 	{
 		return 1;
 	}
@@ -117,7 +117,7 @@ static int file_read_line(struct stream *s, char *text)
 			i++;
 		}
 
-		if (s_check_rem(s, 1))
+		if (s_check_rem_len(s, 1))
 		{
 			in_uint8(s, c);
 		}
@@ -134,7 +134,7 @@ static int file_read_line(struct stream *s, char *text)
 
 		while (c == 10 || c == 13)
 		{
-			if (s_check_rem(s, 1))
+			if (s_check_rem_len(s, 1))
 			{
 				in_uint8(s, c);
 			}
@@ -233,11 +233,11 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 
 	if (len > 0)
 	{
-		s->end = s->pointer + len;
+		s->length = (s->pointer - s->buffer) + len;
 
 		for (index = 0; index < len; index++)
 		{
-			if (!s_check_rem(s, 1))
+			if (!s_check_rem_len(s, 1))
 			{
 				break;
 			}

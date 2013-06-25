@@ -209,7 +209,6 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	out_uint32_be(s, index); /* size */
 
 	s->pointer = s->buffer + index;
-	s->end = s->pointer;
 
 	rv = trans_force_write(self->sesman_trans);
 
@@ -656,6 +655,7 @@ static int access_control(char *username, char *password, char *srv)
 		{
 			make_stream(in_s);
 			init_stream(in_s, 500);
+			in_s->length = 0;
 
 			make_stream(out_s);
 			init_stream(out_s, 500);
@@ -687,11 +687,11 @@ static int access_control(char *username, char *password, char *srv)
 				/* We wait in 5 sec for a reply from sesman*/
 				if (g_tcp_can_recv(socket, 5000))
 				{
-					reply = g_tcp_recv(socket, in_s->end, 500, 0);
+					reply = g_tcp_recv(socket, in_s->buffer + in_s->length, 500, 0);
 
 					if (reply > 0)
 					{
-						in_s->end = in_s->end + reply;
+						in_s->length += reply;
 						in_uint32_be(in_s, version);
 						/*g_writeln("Version number in reply from sesman: %d",version) ; */
 						in_uint32_be(in_s, size);

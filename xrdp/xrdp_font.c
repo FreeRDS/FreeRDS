@@ -83,7 +83,8 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 
 		if (b > 0)
 		{
-			s->end = s->buffer + b;
+			s->length = b;
+
 			in_uint8s(s, 4);
 			in_uint8a(s, self->name, 32);
 			in_uint16_le(s, self->size);
@@ -91,7 +92,7 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 			in_uint8s(s, 8);
 			index = 32;
 
-			while (s_check_rem(s, 16))
+			while (s_check_rem_len(s, 16))
 			{
 				f = self->font_items + index;
 				in_sint16_le(s, i);
@@ -116,11 +117,12 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 					break;
 				}
 
-				if (s_check_rem(s, datasize))
+				if (s_check_rem_len(s, datasize))
 				{
 					f->data = (char *) g_malloc(datasize, 0);
 					in_uint8a(s, f->data, datasize);
-				} else
+				}
+				else
 				{
 					log_message(LOG_LEVEL_ERROR, "error in xrdp_font_create");
 				}
