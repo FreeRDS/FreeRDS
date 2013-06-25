@@ -167,6 +167,7 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_deny_connection(struct SCP_CONNECTION *c, c
 enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, struct SCP_SESSION *s,
 		int sescnt, struct SCP_DISCONNECTED_SESSION *ds)
 {
+	int length;
 	tui32 version = 1;
 	tui32 size = 12;
 	tui16 cmd = SCP_CMD_MNG_LIST;
@@ -193,7 +194,9 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, str
 		size = 4 + 4 + 2 + 2 + 4 + 1 + 1;
 
 		/* header */
-		s_push_layer(c->out_s, channel_hdr, 8);
+		c->out_s->p = c->out_s->data;
+		c->out_s->p += 8;
+
 		out_uint16_be(c->out_s, SCP_COMMAND_SET_MANAGE);
 		out_uint16_be(c->out_s, cmd);
 
@@ -253,9 +256,13 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, str
 			}
 		}
 
-		s_pop_layer(c->out_s, channel_hdr);
+		length = (int) (c->out_s->p - c->out_s->data);
+		c->out_s->p = c->out_s->data;
+
 		out_uint32_be(c->out_s, version);
 		out_uint32_be(c->out_s, size);
+
+		c->out_s->p = c->out_s->data + length;
 
 		if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, size))
 		{

@@ -35,6 +35,7 @@ extern struct log_config *s_log;
 enum SCP_CLIENT_STATES_E
 scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
+	int length;
 	tui32 version;
 	tui32 size;
 	tui16 sz;
@@ -45,7 +46,8 @@ scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	LOG_DBG("[v0:%d] starting connection", __LINE__);
 	g_tcp_set_non_blocking(c->in_sck);
 	g_tcp_set_no_delay(c->in_sck);
-	s_push_layer(c->out_s, channel_hdr, 8);
+
+	c->out_s->p += 8;
 
 	/* code */
 	if (s->type == SCP_SESSION_TYPE_XVNC)
@@ -73,13 +75,13 @@ scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	out_uint16_be(c->out_s, s->height);
 	out_uint16_be(c->out_s, s->bpp);
 
-	s_mark_end(c->out_s);
-	s_pop_layer(c->out_s, channel_hdr);
+	length = (int) (c->out_s->p - c->out_s->data);
+	c->out_s->p = c->out_s->data;
 
-	/* version */
-	out_uint32_be(c->out_s, 0);
-	/* size */
-	out_uint32_be(c->out_s, c->out_s->end - c->out_s->data);
+	out_uint32_be(c->out_s, 0); /* version */
+	out_uint32_be(c->out_s, length); /* size */
+
+	c->out_s->p = c->out_s->data + length;
 
 	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, c->out_s->end - c->out_s->data))
 	{

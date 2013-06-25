@@ -401,6 +401,7 @@ enum SCP_SERVER_STATES_E scp_v1s_connection_error(struct SCP_CONNECTION *c, char
 /* 040 */
 enum SCP_SERVER_STATES_E scp_v1s_list_sessions(struct SCP_CONNECTION *c, int sescnt, struct SCP_DISCONNECTED_SESSION *ds, SCP_SID *sid)
 {
+	int length;
 	tui32 version = 1;
 	tui32 size = 12;
 	tui16 cmd = 40;
@@ -491,7 +492,10 @@ enum SCP_SERVER_STATES_E scp_v1s_list_sessions(struct SCP_CONNECTION *c, int ses
 
 		/* header */
 		cmd = 42;
-		s_push_layer(c->out_s, channel_hdr, 8);
+
+		c->out_s->p = c->out_s->data;
+		c->out_s->p += 8;
+
 		out_uint16_be(c->out_s, SCP_COMMAND_SET_DEFAULT);
 		out_uint16_be(c->out_s, cmd);
 
@@ -551,9 +555,13 @@ enum SCP_SERVER_STATES_E scp_v1s_list_sessions(struct SCP_CONNECTION *c, int ses
 			}
 		}
 
-		s_pop_layer(c->out_s, channel_hdr);
+		length = (int) (c->out_s->p - c->out_s->data);
+		c->out_s->p = c->out_s->data;
+
 		out_uint32_be(c->out_s, version);
 		out_uint32_be(c->out_s, size);
+
+		c->out_s->p = c->out_s->data + length;
 
 		if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, size))
 		{

@@ -24,7 +24,7 @@
 #include "parse.h"
 
 /*****************************************************************************/
-struct trans * trans_create(int mode, int in_size, int out_size)
+struct trans* trans_create(int mode, int in_size, int out_size)
 {
 	struct trans* self = (struct trans *) NULL;
 
@@ -43,7 +43,7 @@ struct trans * trans_create(int mode, int in_size, int out_size)
 }
 
 /*****************************************************************************/
-void  trans_delete(struct trans* self)
+void trans_delete(struct trans* self)
 {
 	if (self == 0)
 	{
@@ -70,7 +70,7 @@ void  trans_delete(struct trans* self)
 }
 
 /*****************************************************************************/
-int  trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
+int trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
 {
 	if (self == 0)
 	{
@@ -84,11 +84,12 @@ int  trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
 
 	objs[*count] = self->sck;
 	(*count)++;
+
 	return 0;
 }
 
 /*****************************************************************************/
-int  trans_check_wait_objs(struct trans* self)
+int trans_check_wait_objs(struct trans* self)
 {
 	tbus in_sck = (tbus) 0;
 	struct trans* in_trans = (struct trans*) NULL;
@@ -120,7 +121,8 @@ int  trans_check_wait_objs(struct trans* self)
 				if (g_tcp_last_error_would_block(self->sck))
 				{
 					/* ok, but shouldn't happen */
-				} else
+				}
+				else
 				{
 					/* error */
 					self->status = TRANS_STATUS_DOWN;
@@ -141,7 +143,8 @@ int  trans_check_wait_objs(struct trans* self)
 					{
 						trans_delete(in_trans);
 					}
-				} else
+				}
+				else
 				{
 					g_tcp_close(in_sck);
 				}
@@ -164,22 +167,24 @@ int  trans_check_wait_objs(struct trans* self)
 					if (g_tcp_last_error_would_block(self->sck))
 					{
 						/* ok, but shouldn't happen */
-					} else
+					}
+					else
 					{
 						/* error */
 						self->status = TRANS_STATUS_DOWN;
 						return 1;
 					}
-				} else
-					if (read_bytes == 0)
-					{
-						/* error */
-						self->status = TRANS_STATUS_DOWN;
-						return 1;
-					} else
-					{
-						self->in_s->end += read_bytes;
-					}
+				}
+				else if (read_bytes == 0)
+				{
+					/* error */
+					self->status = TRANS_STATUS_DOWN;
+					return 1;
+				}
+				else
+				{
+					self->in_s->end += read_bytes;
+				}
 			}
 
 			read_so_far = (int) (self->in_s->end - self->in_s->data);
@@ -199,7 +204,7 @@ int  trans_check_wait_objs(struct trans* self)
 }
 
 /*****************************************************************************/
-int  trans_force_read_s(struct trans* self, struct stream* in_s, int size)
+int trans_force_read_s(struct trans* self, struct stream* in_s, int size)
 {
 	int rcvd;
 
@@ -235,7 +240,8 @@ int  trans_force_read_s(struct trans* self, struct stream* in_s, int size)
 				/* error */
 				self->status = TRANS_STATUS_DOWN;
 				return 1;
-			} else
+			}
+			else
 			{
 				in_s->end += rcvd;
 				size -= rcvd;
@@ -247,13 +253,13 @@ int  trans_force_read_s(struct trans* self, struct stream* in_s, int size)
 }
 
 /*****************************************************************************/
-int  trans_force_read(struct trans* self, int size)
+int trans_force_read(struct trans* self, int size)
 {
 	return trans_force_read_s(self, self->in_s, size);
 }
 
 /*****************************************************************************/
-int  trans_force_write_s(struct trans* self, struct stream *out_s)
+int trans_force_write_s(struct trans* self, struct stream *out_s)
 {
 	int size;
 	int total;
@@ -279,35 +285,37 @@ int  trans_force_write_s(struct trans* self, struct stream *out_s)
 				{
 					/* check for term here */
 				}
-			} else
+			}
+			else
 			{
 				/* error */
 				self->status = TRANS_STATUS_DOWN;
 				return 1;
 			}
-		} else
-			if (sent == 0)
-			{
-				/* error */
-				self->status = TRANS_STATUS_DOWN;
-				return 1;
-			} else
-			{
-				total = total + sent;
-			}
+		}
+		else if (sent == 0)
+		{
+			/* error */
+			self->status = TRANS_STATUS_DOWN;
+			return 1;
+		}
+		else
+		{
+			total = total + sent;
+		}
 	}
 
 	return 0;
 }
 
 /*****************************************************************************/
-int  trans_force_write(struct trans* self)
+int trans_force_write(struct trans* self)
 {
 	return trans_force_write_s(self, self->out_s);
 }
 
 /*****************************************************************************/
-int  trans_connect(struct trans* self, const char *server, const char *port, int timeout)
+int trans_connect(struct trans* self, const char *server, const char *port, int timeout)
 {
 	int error;
 
@@ -321,17 +329,18 @@ int  trans_connect(struct trans* self, const char *server, const char *port, int
 		self->sck = g_tcp_socket();
 		g_tcp_set_non_blocking(self->sck);
 		error = g_tcp_connect(self->sck, server, port);
-	} else
-		if (self->mode == TRANS_MODE_UNIX) /* unix socket */
-		{
-			self->sck = g_tcp_local_socket();
-			g_tcp_set_non_blocking(self->sck);
-			error = g_tcp_local_connect(self->sck, port);
-		} else
-		{
-			self->status = TRANS_STATUS_DOWN;
-			return 1;
-		}
+	}
+	else if (self->mode == TRANS_MODE_UNIX) /* unix socket */
+	{
+		self->sck = g_tcp_local_socket();
+		g_tcp_set_non_blocking(self->sck);
+		error = g_tcp_local_connect(self->sck, port);
+	}
+	else
+	{
+		self->status = TRANS_STATUS_DOWN;
+		return 1;
+	}
 
 	if (error == -1)
 	{
@@ -354,7 +363,7 @@ int  trans_connect(struct trans* self, const char *server, const char *port, int
 }
 
 /*****************************************************************************/
-int  trans_listen_address(struct trans* self, char *port, const char *address)
+int trans_listen_address(struct trans* self, char *port, const char *address)
 {
 	if (self->sck != 0)
 	{
@@ -405,20 +414,21 @@ int  trans_listen_address(struct trans* self, char *port, const char *address)
 }
 
 /*****************************************************************************/
-int  trans_listen(struct trans* self, char *port)
+int trans_listen(struct trans* self, char *port)
 {
 	return trans_listen_address(self, port, "0.0.0.0");
 }
 
 /*****************************************************************************/
-struct stream*  trans_get_in_s(struct trans* self)
+struct stream* trans_get_in_s(struct trans* self)
 {
 	struct stream *rv = (struct stream *) NULL;
 
 	if (self == NULL)
 	{
-		rv = (struct stream *) NULL;
-	} else
+		rv = (struct stream*) NULL;
+	}
+	else
 	{
 		rv = self->in_s;
 	}
@@ -427,14 +437,15 @@ struct stream*  trans_get_in_s(struct trans* self)
 }
 
 /*****************************************************************************/
-struct stream*  trans_get_out_s(struct trans *self, int size)
+struct stream* trans_get_out_s(struct trans *self, int size)
 {
 	struct stream *rv = (struct stream *) NULL;
 
 	if (self == NULL)
 	{
 		rv = (struct stream *) NULL;
-	} else
+	}
+	else
 	{
 		init_stream(self->out_s, size);
 		rv = self->out_s;

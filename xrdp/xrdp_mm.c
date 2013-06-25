@@ -150,7 +150,8 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	}
 
 	s = trans_get_out_s(self->sesman_trans, 8192);
-	s_push_layer(s, channel_hdr, 8);
+	s->p += 8;
+
 	/* this code is either 0 for Xvnc or 10 for X11rdp */
 	out_uint16_be(s, self->code);
 	index = g_strlen(username);
@@ -200,13 +201,15 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	out_uint16_be(s, index);
 	out_uint8a(s, self->wm->session->settings->ClientAddress, index);
 
-	s_mark_end(s);
+	index = (int) (s->p - s->data);
+	s->p = s->data;
 
-	s_pop_layer(s, channel_hdr);
 	/* Version 0 of the protocol to sesman is currently used by XRDP */
 	out_uint32_be(s, 0); /* version */
-	index = (int) (s->end - s->data);
 	out_uint32_be(s, index); /* size */
+
+	s->p = s->data + index;
+	s->end = s->p;
 
 	rv = trans_force_write(self->sesman_trans);
 
@@ -653,9 +656,12 @@ static int access_control(char *username, char *password, char *srv)
 		{
 			make_stream(in_s);
 			init_stream(in_s, 500);
+
 			make_stream(out_s);
 			init_stream(out_s, 500);
-			s_push_layer(out_s, channel_hdr, 8);
+
+			out_s->p += 8;
+
 			out_uint16_be(out_s, 4); /*0x04 means SCP_GW_AUTHENTICATION*/
 			index = g_strlen(username);
 			out_uint16_be(out_s, index);
@@ -664,12 +670,15 @@ static int access_control(char *username, char *password, char *srv)
 			index = g_strlen(password);
 			out_uint16_be(out_s, index);
 			out_uint8a(out_s, password, index);
-			s_mark_end(out_s);
-			s_pop_layer(out_s, channel_hdr);
+
+			index = (int) (out_s->p - out_s->data);
+			out_s->p = out_s->data;
+
 			out_uint32_be(out_s, 0); /* version */
-			index = (int) (out_s->end - out_s->data);
 			out_uint32_be(out_s, index); /* size */
-			/* g_writeln("Number of data to send : %d",index); */
+
+			out_s->p = out_s->data + index;
+
 			reply = g_tcp_send(socket, out_s->data, index, 0);
 			free_stream(out_s);
 
