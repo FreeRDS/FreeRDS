@@ -52,8 +52,8 @@ void trans_delete(struct trans* self)
 		return;
 	}
 
-	free_stream(self->in_s);
-	free_stream(self->out_s);
+	Stream_Free(self->in_s, TRUE);
+	Stream_Free(self->out_s, TRUE);
 
 	if (self->sck > 0)
 	{

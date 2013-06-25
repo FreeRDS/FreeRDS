@@ -429,8 +429,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		}
 
 		/* read file size */
-		make_stream(s);
-		init_stream(s, 8192);
+		s = Stream_New(s, 8192);
 		g_file_read(fd, s->buffer, 4);
 		Stream_Read_UINT32(s, size);
 		/* read bmp header */
@@ -453,7 +452,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		{
 			log_message(LOG_LEVEL_ERROR, "xrdp_bitmap_load: error bitmap file [%s] "
 				"bad bpp %d", filename, header.bit_count);
-			free_stream(s);
+			Stream_Free(s, TRUE);
 			g_file_close(fd);
 			return 1;
 		}
@@ -463,7 +462,8 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 			g_file_seek(fd, 14 + header.size);
 			xrdp_bitmap_resize(self, header.image_width, header.image_height);
 			size = header.image_width * header.image_height * 3;
-			init_stream(s, size);
+			Stream_EnsureCapacity(s, size);
+			Stream_SetPosition(s, 0);
 
 			/* read data */
 			for (i = header.image_height - 1; i >= 0; i--)
@@ -514,7 +514,8 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		{
 			/* read palette */
 			g_file_seek(fd, 14 + header.size);
-			init_stream(s, 8192);
+			Stream_SetPosition(s, 0);
+
 			g_file_read(fd, s->buffer, header.clr_used * sizeof(int));
 
 			for (i = 0; i < header.clr_used; i++)
@@ -524,7 +525,8 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 
 			xrdp_bitmap_resize(self, header.image_width, header.image_height);
 			size = header.image_width * header.image_height;
-			init_stream(s, size);
+			Stream_EnsureCapacity(s, size);
+			Stream_SetPosition(s, 0);
 
 			/* read data */
 			for (i = header.image_height - 1; i >= 0; i--)
@@ -571,7 +573,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		{
 			/* read palette */
 			g_file_seek(fd, 14 + header.size);
-			init_stream(s, 8192);
+			Stream_SetPosition(s, 0);
 			g_file_read(fd, s->buffer, header.clr_used * sizeof(int));
 
 			for (i = 0; i < header.clr_used; i++)
@@ -581,7 +583,8 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 
 			xrdp_bitmap_resize(self, header.image_width, header.image_height);
 			size = (header.image_width * header.image_height) / 2;
-			init_stream(s, size);
+			Stream_EnsureCapacity(s, size);
+			Stream_SetPosition(s, 0);
 
 			/* read data */
 			for (i = header.image_height - 1; i >= 0; i--)
@@ -635,7 +638,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		}
 
 		g_file_close(fd);
-		free_stream(s);
+		Stream_Free(s, TRUE);
 	}
 	else
 	{

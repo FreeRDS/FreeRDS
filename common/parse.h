@@ -32,28 +32,4 @@
 
 #define s_check_rem_len(s, n) ((s)->pointer + (n) <= (s)->buffer + (s)->length)
 
-#define make_stream(s) \
-  (s) = (wStream*) g_malloc(sizeof(wStream), 1)
-
-#define init_stream(s, v) do \
-{ \
-  if ((v) > (s)->capacity) \
-  { \
-    g_free((s)->buffer); \
-    (s)->buffer = (BYTE*) g_malloc((v), 0); \
-    (s)->capacity = (v); \
-  } \
-  (s)->pointer = (s)->buffer; \
-  (s)->length = 0; \
-} while (0)
-
-#define free_stream(s) do \
-{ \
-  if ((s) != 0) \
-  { \
-    g_free((s)->buffer); \
-  } \
-  g_free((s)); \
-} while (0)
-
 #endif

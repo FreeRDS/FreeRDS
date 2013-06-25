@@ -167,7 +167,8 @@ int lib_mod_connect(xrdpModule *mod)
 		return 1;
 	}
 
-	make_stream(s);
+	s = Stream_New(NULL, 8192);
+
 	g_sprintf(con_port, "%s", mod->port);
 	use_uds = 0;
 
@@ -249,8 +250,8 @@ int lib_mod_connect(xrdpModule *mod)
 	if (error == 0)
 	{
 		/* send version message */
-		init_stream(s, 8192);
-		s->pointer += 4;
+		Stream_SetPosition(s, 0);
+		Stream_Seek(s, 4);
 
 		Stream_Write_UINT16(s, 103);
 		Stream_Write_UINT32(s, 301);
@@ -270,8 +271,8 @@ int lib_mod_connect(xrdpModule *mod)
 	if (error == 0)
 	{
 		/* send screen size message */
-		init_stream(s, 8192);
-		s->pointer += 4;
+		Stream_SetPosition(s, 0);
+		Stream_Seek(s, 4);
 
 		Stream_Write_UINT16(s, 103);
 		Stream_Write_UINT32(s, 300);
@@ -291,8 +292,8 @@ int lib_mod_connect(xrdpModule *mod)
 	if (error == 0)
 	{
 		/* send invalidate message */
-		init_stream(s, 8192);
-		s->pointer += 4;
+		Stream_SetPosition(s, 0);
+		Stream_Seek(s, 4);
 
 		Stream_Write_UINT16(s, 103);
 		Stream_Write_UINT32(s, 200);
@@ -300,7 +301,7 @@ int lib_mod_connect(xrdpModule *mod)
 		i = 0;
 		Stream_Write_UINT32(s, i);
 		/* width and height */
-		i = ((mod->width & 0xffff) << 16) | mod->height;
+		i = ((mod->width & 0xFFFF) << 16) | mod->height;
 		Stream_Write_UINT32(s, i);
 		Stream_Write_UINT32(s, 0);
 		Stream_Write_UINT32(s, 0);
@@ -313,7 +314,7 @@ int lib_mod_connect(xrdpModule *mod)
 		lib_send(mod, s->buffer, len);
 	}
 
-	free_stream(s);
+	Stream_Free(s, TRUE);
 
 	if (error != 0)
 	{
@@ -341,7 +342,8 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 	int rv;
 
 	LIB_DEBUG(mod, "in lib_mod_event");
-	make_stream(s);
+
+	s = Stream_New(NULL, 8192);
 
 	if ((msg >= 15) && (msg <= 16)) /* key events */
 	{
@@ -359,8 +361,8 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 					 msg param1 param2 param3 param4
 					 15  0      65507  29     0
 					 16  0      65507  29     49152 */
-					init_stream(s, 8192);
-					s->pointer += 4;
+					Stream_SetPosition(s, 0);
+					Stream_Seek(s, 4);
 
 					Stream_Write_UINT16(s, 103);
 					Stream_Write_UINT32(s, 16); /* key up */
@@ -386,8 +388,8 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 		}
 	}
 
-	init_stream(s, 8192);
-	s->pointer += 4;
+	Stream_SetPosition(s, 0);
+	Stream_Seek(s, 4);
 
 	Stream_Write_UINT16(s, 103);
 	Stream_Write_UINT32(s, msg);
@@ -404,7 +406,7 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 	s->pointer = s->buffer + len;
 	rv = lib_send(mod, s->buffer, len);
 
-	free_stream(s);
+	Stream_Free(s, TRUE);
 
 	LIB_DEBUG(mod, "out lib_mod_event");
 
@@ -772,8 +774,9 @@ int lib_mod_signal(xrdpModule *mod)
 	char *phold;
 
 	LIB_DEBUG(mod, "in lib_mod_signal");
-	make_stream(s);
-	init_stream(s, 8192);
+
+	s = Stream_New(NULL, 8192);
+
 	rv = lib_recv(mod, s->buffer, 8);
 
 	if (rv == 0)
@@ -782,9 +785,14 @@ int lib_mod_signal(xrdpModule *mod)
 		Stream_Read_UINT16(s, num_orders);
 		Stream_Read_UINT32(s, len);
 
+		printf("lib_mod_signal: type: %d num_orders: %d length: %d\n", type, num_orders, len);
+
 		if (type == 1) /* original order list */
 		{
-			init_stream(s, len);
+			Stream_EnsureCapacity(s, len);
+			Stream_SetPosition(s, 0);
+			s->length = 0;
+
 			rv = lib_recv(mod, s->buffer, len);
 
 			if (rv == 0)
@@ -804,7 +812,11 @@ int lib_mod_signal(xrdpModule *mod)
 		else if (type == 2) /* caps */
 		{
 			g_writeln("lib_mod_signal: type 2 len %d", len);
-			init_stream(s, len);
+
+			Stream_EnsureCapacity(s, len);
+			Stream_SetPosition(s, 0);
+			s->length = 0;
+
 			rv = lib_recv(mod, s->buffer, len);
 
 			if (rv == 0)
@@ -831,7 +843,10 @@ int lib_mod_signal(xrdpModule *mod)
 		}
 		else if (type == 3) /* order list with len after type */
 		{
-			init_stream(s, len);
+			Stream_EnsureCapacity(s, len);
+			Stream_SetPosition(s, 0);
+			s->length = 0;
+
 			rv = lib_recv(mod, s->buffer, len);
 
 			if (rv == 0)
@@ -858,7 +873,7 @@ int lib_mod_signal(xrdpModule *mod)
 		}
 	}
 
-	free_stream(s);
+	Stream_Free(s, TRUE);
 
 	LIB_DEBUG(mod, "out lib_mod_signal");
 
