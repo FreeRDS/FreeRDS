@@ -41,17 +41,17 @@ struct SCP_CONNECTION* scp_connection_create(int sck)
 	}
 
 	conn->in_sck = sck;
-	make_stream(conn->in_s);
-	init_stream(conn->in_s, 8196);
-	make_stream(conn->out_s);
-	init_stream(conn->out_s, 8196);
+
+	conn->in_s = Stream_New(NULL, 8196);
+	conn->out_s = Stream_New(NULL, 8196);
 
 	return conn;
 }
 
 void scp_connection_destroy(struct SCP_CONNECTION *c)
 {
-	free_stream(c->in_s);
-	free_stream(c->out_s);
+	Stream_Free(c->in_s, TRUE);
+	Stream_Free(c->out_s, TRUE);
+
 	g_free(c);
 }

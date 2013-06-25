@@ -45,8 +45,9 @@ static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 	in_it = 0;
 	g_memset(text, 0, 256);
 	list_clear(names);
-	make_stream(s);
-	init_stream(s, max_file_size);
+
+	s = Stream_New(NULL, max_file_size);
+
 	len = g_file_read(fd, s->buffer, max_file_size);
 
 	if (len > 0)
@@ -80,7 +81,8 @@ static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 		rv = 1;
 	}
 
-	free_stream(s);
+	Stream_Free(s, TRUE);
+
 	return rv;
 }
 
@@ -227,8 +229,9 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 	g_memset(text, 0, 512);
 	list_clear(names);
 	list_clear(values);
-	make_stream(s);
-	init_stream(s, file_size);
+
+	s = Stream_New(NULL, file_size);
+
 	len = g_file_read(fd, s->buffer, file_size);
 
 	if (len > 0)
@@ -290,7 +293,7 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 						}
 					}
 
-					free_stream(s);
+					Stream_Free(s, TRUE);
 					return 0;
 				}
 
@@ -306,7 +309,7 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 		}
 	}
 
-	free_stream(s);
+	Stream_Free(s, TRUE);
 	return 1;
 }
 

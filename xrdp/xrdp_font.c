@@ -72,8 +72,9 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 
 	self = (xrdpFont *) g_malloc(sizeof(xrdpFont), 1);
 	self->wm = wm;
-	make_stream(s);
-	init_stream(s, file_size + 1024);
+
+	s = Stream_New(NULL, file_size + 1024);
+
 	fd = g_file_open(file_path);
 
 	if (fd != -1)
@@ -95,15 +96,15 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 			while (s_check_rem_len(s, 16))
 			{
 				f = self->font_items + index;
-				in_sint16_le(s, i);
+				Stream_Read_INT16(s, i);
 				f->width = i;
-				in_sint16_le(s, i);
+				Stream_Read_INT16(s, i);
 				f->height = i;
-				in_sint16_le(s, i);
+				Stream_Read_INT16(s, i);
 				f->baseline = i;
-				in_sint16_le(s, i);
+				Stream_Read_INT16(s, i);
 				f->offset = i;
-				in_sint16_le(s, i);
+				Stream_Read_INT16(s, i);
 				f->incby = i;
 				Stream_Seek(s, 6);
 				datasize = FONT_DATASIZE(f);
@@ -132,16 +133,10 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 		}
 	}
 
-	free_stream(s);
-	/*
-	 self->font_items[0].offset = -4;
-	 self->font_items[0].baseline = -16;
-	 self->font_items[0].width = 24;
-	 self->font_items[0].height = 16;
-	 self->font_items[0].data = g_malloc(3 * 16, 0);
-	 g_memcpy(self->font_items[0].data, w_char, 3 * 16);
-	 */
+	Stream_Free(s, TRUE);
+
 	DEBUG(("out xrdp_font_create"));
+
 	return self;
 }
 

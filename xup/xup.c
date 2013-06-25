@@ -32,7 +32,7 @@
 
 /******************************************************************************/
 /* returns error */
-int lib_recv(xrdpModule *mod, char *data, int len)
+int lib_recv(xrdpModule *mod, unsigned char *data, int len)
 {
 	int rcvd;
 
@@ -252,7 +252,7 @@ int lib_mod_connect(xrdpModule *mod)
 		init_stream(s, 8192);
 		s->pointer += 4;
 
-		out_uint16_le(s, 103);
+		Stream_Write_UINT16(s, 103);
 		Stream_Write_UINT32(s, 301);
 		Stream_Write_UINT32(s, 0);
 		Stream_Write_UINT32(s, 0);
@@ -273,7 +273,7 @@ int lib_mod_connect(xrdpModule *mod)
 		init_stream(s, 8192);
 		s->pointer += 4;
 
-		out_uint16_le(s, 103);
+		Stream_Write_UINT16(s, 103);
 		Stream_Write_UINT32(s, 300);
 		Stream_Write_UINT32(s, mod->width);
 		Stream_Write_UINT32(s, mod->height);
@@ -294,7 +294,7 @@ int lib_mod_connect(xrdpModule *mod)
 		init_stream(s, 8192);
 		s->pointer += 4;
 
-		out_uint16_le(s, 103);
+		Stream_Write_UINT16(s, 103);
 		Stream_Write_UINT32(s, 200);
 		/* x and y */
 		i = 0;
@@ -362,7 +362,7 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 					init_stream(s, 8192);
 					s->pointer += 4;
 
-					out_uint16_le(s, 103);
+					Stream_Write_UINT16(s, 103);
 					Stream_Write_UINT32(s, 16); /* key up */
 					Stream_Write_UINT32(s, 0);
 					Stream_Write_UINT32(s, 65507); /* left control */
@@ -389,7 +389,7 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 	init_stream(s, 8192);
 	s->pointer += 4;
 
-	out_uint16_le(s, 103);
+	Stream_Write_UINT16(s, 103);
 	Stream_Write_UINT32(s, msg);
 	Stream_Write_UINT32(s, param1);
 	Stream_Write_UINT32(s, param2);
@@ -519,8 +519,8 @@ static int process_server_set_pointer_ex(xrdpModule *mod, wStream* s)
 	char cur_data[32 * (32 * 4)];
 	char cur_mask[32 * (32 / 8)];
 
-	in_sint16_le(s, x);
-	in_sint16_le(s, y);
+	Stream_Read_INT16(s, x);
+	Stream_Read_INT16(s, y);
 	Stream_Read_UINT16(s, bpp);
 	Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
 	Stream_Read(s, cur_data, 32 * (32 * Bpp));
@@ -569,24 +569,24 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			rv = server_end_update(mod);
 			break;
 		case 3: /* server_fill_rect */
-			in_sint16_le(s, x);
-			in_sint16_le(s, y);
+			Stream_Read_INT16(s, x);
+			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
 			Stream_Read_UINT16(s, cy);
 			rv = server_fill_rect(mod, x, y, cx, cy);
 			break;
 		case 4: /* server_screen_blt */
-			in_sint16_le(s, x);
-			in_sint16_le(s, y);
+			Stream_Read_INT16(s, x);
+			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
 			Stream_Read_UINT16(s, cy);
-			in_sint16_le(s, srcx);
-			in_sint16_le(s, srcy);
+			Stream_Read_INT16(s, srcx);
+			Stream_Read_INT16(s, srcy);
 			rv = server_screen_blt(mod, x, y, cx, cy, srcx, srcy);
 			break;
 		case 5: /* server_paint_rect */
-			in_sint16_le(s, x);
-			in_sint16_le(s, y);
+			Stream_Read_INT16(s, x);
+			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
 			Stream_Read_UINT16(s, cy);
 			Stream_Read_UINT32(s, len_bmpdata);
@@ -594,13 +594,13 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			Stream_Seek(s, len_bmpdata);
 			Stream_Read_UINT16(s, width);
 			Stream_Read_UINT16(s, height);
-			in_sint16_le(s, srcx);
-			in_sint16_le(s, srcy);
+			Stream_Read_INT16(s, srcx);
+			Stream_Read_INT16(s, srcy);
 			rv = server_paint_rect(mod, x, y, cx, cy, bmpdata, width, height, srcx, srcy);
 			break;
 		case 10: /* server_set_clip */
-			in_sint16_le(s, x);
-			in_sint16_le(s, y);
+			Stream_Read_INT16(s, x);
+			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
 			Stream_Read_UINT16(s, cy);
 			rv = server_set_clip(mod, x, y, cx, cy);
@@ -622,15 +622,15 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			rv = server_set_pen(mod, style, width);
 			break;
 		case 18:
-			in_sint16_le(s, x1);
-			in_sint16_le(s, y1);
-			in_sint16_le(s, x2);
-			in_sint16_le(s, y2);
+			Stream_Read_INT16(s, x1);
+			Stream_Read_INT16(s, y1);
+			Stream_Read_INT16(s, x2);
+			Stream_Read_INT16(s, y2);
 			rv = server_draw_line(mod, x1, y1, x2, y2);
 			break;
 		case 19:
-			in_sint16_le(s, x);
-			in_sint16_le(s, y);
+			Stream_Read_INT16(s, x);
+			Stream_Read_INT16(s, y);
 			Stream_Read(s, cur_data, 32 * (32 * 3));
 			Stream_Read(s, cur_mask, 32 * (32 / 8));
 			rv = server_set_pointer(mod, x, y, cur_data, cur_mask);
@@ -650,13 +650,13 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			rv = server_delete_os_surface(mod, rdpid);
 			break;
 		case 23: /* server_paint_rect_os */
-			in_sint16_le(s, x);
-			in_sint16_le(s, y);
+			Stream_Read_INT16(s, x);
+			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
 			Stream_Read_UINT16(s, cy);
 			Stream_Read_UINT32(s, rdpid);
-			in_sint16_le(s, srcx);
-			in_sint16_le(s, srcy);
+			Stream_Read_INT16(s, srcx);
+			Stream_Read_INT16(s, srcy);
 			rv = server_paint_rect_os(mod, x, y, cx, cy, rdpid, srcx, srcy);
 			break;
 		case 24: /* server_set_hints */
@@ -751,7 +751,7 @@ static int lib_send_capabilities(xrdpModule* mod)
         *((UINT32*) &buffer[0]) = (UINT32) length + 6;
         *((UINT16*) &buffer[4]) = 104;
 
-	lib_send(mod, buffer, (int) length + 6);
+	lib_send(mod, (BYTE*) buffer, (int) length + 6);
 
         avro_writer_free(writer);
 	free(buffer);

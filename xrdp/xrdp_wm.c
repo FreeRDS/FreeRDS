@@ -209,8 +209,8 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 		return 1;
 	}
 
-	make_stream(fs);
-	init_stream(fs, 8192);
+	fs = Stream_New(NULL, 8192);
+
 	fd = g_file_open(file_name);
 
 	if (fd < 1)
@@ -278,7 +278,8 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 		g_memcpy(mask, fs->pointer, 128); /* mask */
 	}
 
-	free_stream(fs);
+	Stream_Free(fs, TRUE);
+
 	return 0;
 }
 

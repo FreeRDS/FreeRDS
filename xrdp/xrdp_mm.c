@@ -153,60 +153,60 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	s->pointer += 8;
 
 	/* this code is either 0 for Xvnc or 10 for X11rdp */
-	out_uint16_be(s, self->code);
+	Stream_Write_UINT16_BE(s, self->code);
 	index = g_strlen(username);
-	out_uint16_be(s, index);
+	Stream_Write_UINT16_BE(s, index);
 	Stream_Write(s, username, index);
 	index = g_strlen(password);
 
-	out_uint16_be(s, index);
+	Stream_Write_UINT16_BE(s, index);
 	Stream_Write(s, password, index);
-	out_uint16_be(s, self->wm->screen->width);
-	out_uint16_be(s, self->wm->screen->height);
+	Stream_Write_UINT16_BE(s, self->wm->screen->width);
+	Stream_Write_UINT16_BE(s, self->wm->screen->height);
 
 	if (xserverbpp > 0)
 	{
-		out_uint16_be(s, xserverbpp);
+		Stream_Write_UINT16_BE(s, xserverbpp);
 	}
 	else
 	{
-		out_uint16_be(s, self->wm->screen->bpp);
+		Stream_Write_UINT16_BE(s, self->wm->screen->bpp);
 	}
 
 	/* send domain */
 	if (self->wm->session->settings->Domain)
 	{
 		index = g_strlen(self->wm->session->settings->Domain);
-		out_uint16_be(s, index);
+		Stream_Write_UINT16_BE(s, index);
 		Stream_Write(s, self->wm->session->settings->Domain, index);
 	}
 	else
 	{
-		out_uint16_be(s, 0);
+		Stream_Write_UINT16_BE(s, 0);
 		/* Stream_Write(s, "", 0); */
 	}
 
 	/* send program / shell */
 	index = g_strlen(self->wm->session->settings->AlternateShell);
-	out_uint16_be(s, index);
+	Stream_Write_UINT16_BE(s, index);
 	Stream_Write(s, self->wm->session->settings->AlternateShell, index);
 
 	/* send directory */
 	index = g_strlen(self->wm->session->settings->ShellWorkingDirectory);
-	out_uint16_be(s, index);
+	Stream_Write_UINT16_BE(s, index);
 	Stream_Write(s, self->wm->session->settings->ShellWorkingDirectory, index);
 
 	/* send client ip */
 	index = g_strlen(self->wm->session->settings->ClientAddress);
-	out_uint16_be(s, index);
+	Stream_Write_UINT16_BE(s, index);
 	Stream_Write(s, self->wm->session->settings->ClientAddress, index);
 
 	index = (int) (s->pointer - s->buffer);
 	s->pointer = s->buffer;
 
 	/* Version 0 of the protocol to sesman is currently used by XRDP */
-	out_uint32_be(s, 0); /* version */
-	out_uint32_be(s, index); /* size */
+	Stream_Write_UINT32_BE(s, 0); /* version */
+	Stream_Write_UINT32_BE(s, index); /* size */
 
 	s->pointer = s->buffer + index;
 
@@ -490,8 +490,8 @@ static int xrdp_mm_process_login_response(xrdpMm *self, wStream* s)
 	char ip[256];
 
 	rv = 0;
-	in_uint16_be(s, ok);
-	in_uint16_be(s, display);
+	Stream_Read_UINT16_BE(s, ok);
+	Stream_Read_UINT16_BE(s, display);
 
 	if (ok)
 	{
@@ -603,13 +603,13 @@ static int xrdp_mm_sesman_data_in(struct trans *trans)
 		return 1;
 	}
 
-	in_uint32_be(s, version);
-	in_uint32_be(s, size);
+	Stream_Read_UINT32_BE(s, version);
+	Stream_Read_UINT32_BE(s, size);
 	error = trans_force_read(trans, size - 8);
 
 	if (error == 0)
 	{
-		in_uint16_be(s, code);
+		Stream_Read_UINT16_BE(s, code);
 
 		switch (code)
 		{
@@ -653,34 +653,31 @@ static int access_control(char *username, char *password, char *srv)
 
 		if (reply == 0)
 		{
-			make_stream(in_s);
-			init_stream(in_s, 500);
+			in_s = Stream_New(NULL, 500);
 			in_s->length = 0;
 
-			make_stream(out_s);
-			init_stream(out_s, 500);
+			out_s = Stream_New(NULL, 500);
+			Stream_Seek(out_s, 8);
 
-			out_s->pointer += 8;
-
-			out_uint16_be(out_s, 4); /*0x04 means SCP_GW_AUTHENTICATION*/
+			Stream_Write_UINT16_BE(out_s, 4); /*0x04 means SCP_GW_AUTHENTICATION*/
 			index = g_strlen(username);
-			out_uint16_be(out_s, index);
+			Stream_Write_UINT16_BE(out_s, index);
 			Stream_Write(out_s, username, index);
 
 			index = g_strlen(password);
-			out_uint16_be(out_s, index);
+			Stream_Write_UINT16_BE(out_s, index);
 			Stream_Write(out_s, password, index);
 
 			index = (int) (out_s->pointer - out_s->buffer);
 			out_s->pointer = out_s->buffer;
 
-			out_uint32_be(out_s, 0); /* version */
-			out_uint32_be(out_s, index); /* size */
+			Stream_Write_UINT32_BE(out_s, 0); /* version */
+			Stream_Write_UINT32_BE(out_s, index); /* size */
 
 			out_s->pointer = out_s->buffer + index;
 
-			reply = g_tcp_send(socket, out_s->buffer, index, 0);
-			free_stream(out_s);
+			reply = g_tcp_send(socket, Stream_Buffer(out_s), index, 0);
+			Stream_Free(out_s, TRUE);
 
 			if (reply > 0)
 			{
@@ -692,15 +689,15 @@ static int access_control(char *username, char *password, char *srv)
 					if (reply > 0)
 					{
 						in_s->length += reply;
-						in_uint32_be(in_s, version);
+						Stream_Read_UINT32_BE(in_s, version);
 						/*g_writeln("Version number in reply from sesman: %d",version) ; */
-						in_uint32_be(in_s, size);
+						Stream_Read_UINT32_BE(in_s, size);
 
 						if ((size == 14) && (version == 0))
 						{
-							in_uint16_be(in_s, code);
-							in_uint16_be(in_s, pAM_errorcode); /* this variable holds the PAM error code if the variable is >32 it is a "invented" code */
-							in_uint16_be(in_s, dummy);
+							Stream_Read_UINT16_BE(in_s, code);
+							Stream_Read_UINT16_BE(in_s, pAM_errorcode); /* this variable holds the PAM error code if the variable is >32 it is a "invented" code */
+							Stream_Read_UINT16_BE(in_s, dummy);
 
 							if (code != 4) /*0x04 means SCP_GW_AUTHENTICATION*/
 							{
@@ -733,7 +730,7 @@ static int access_control(char *username, char *password, char *srv)
 				log_message(LOG_LEVEL_ERROR, "No success sending to sesman");
 			}
 
-			free_stream(in_s);
+			Stream_Free(in_s, TRUE);
 			g_tcp_close(socket);
 		}
 		else

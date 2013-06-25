@@ -46,11 +46,8 @@ void* scp_process_start(void *sck)
 	/* unlocking g_thread_sck */
 	lock_socket_release();
 
-	make_stream(scon.in_s);
-	make_stream(scon.out_s);
-
-	init_stream(scon.in_s, 8192);
-	init_stream(scon.out_s, 8192);
+	scon.in_s = Stream_New(NULL, 8192);
+	scon.out_s = Stream_New(NULL, 8192);
 
 	switch (scp_vXs_accept(&scon, &(sdata)))
 	{
@@ -100,7 +97,9 @@ void* scp_process_start(void *sck)
 	}
 
 	g_tcp_close(scon.in_sck);
-	free_stream(scon.in_s);
-	free_stream(scon.out_s);
+
+	Stream_Free(scon.in_s, TRUE);
+	Stream_Free(scon.out_s, TRUE);
+
 	return 0;
 }

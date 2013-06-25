@@ -450,7 +450,7 @@ struct stream
 
 /******************************************************************************/
 #if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define out_uint16_le(s, v) \
+#define Stream_Write_UINT16(s, v) \
 		{ \
 	*((s)->p) = (unsigned char)((v) >> 0); \
 	(s)->p++; \
@@ -458,7 +458,7 @@ struct stream
 	(s)->p++; \
 		}
 #else
-#define out_uint16_le(s, v) \
+#define Stream_Write_UINT16(s, v) \
 		{ \
 	*((unsigned short*)((s)->p)) = (unsigned short)(v); \
 	(s)->p += 2; \

@@ -32,12 +32,10 @@ struct trans* trans_create(int mode, int in_size, int out_size)
 
 	if (self != NULL)
 	{
-		make_stream(self->in_s);
-		init_stream(self->in_s, in_size);
+		self->in_s = Stream_New(NULL, in_size);
 		self->in_s->length = 0;
 
-		make_stream(self->out_s);
-		init_stream(self->out_s, out_size);
+		self->out_s = Stream_New(NULL, out_size);
 		self->out_s->length = 0;
 
 		self->mode = mode;
@@ -198,7 +196,7 @@ int trans_check_wait_objs(struct trans* self)
 				if (self->trans_data_in != 0)
 				{
 					rv = self->trans_data_in(self);
-					init_stream(self->in_s, 0);
+					Stream_SetPosition(self->in_s, 0);
 					self->in_s->length = 0;
 				}
 			}
@@ -452,7 +450,8 @@ wStream* trans_get_out_s(struct trans *self, int size)
 	}
 	else
 	{
-		init_stream(self->out_s, size);
+		Stream_EnsureCapacity(self->out_s, size);
+		Stream_SetPosition(self->out_s, 0);
 		self->out_s->length = 0;
 		rv = self->out_s;
 	}
