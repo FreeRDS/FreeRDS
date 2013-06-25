@@ -480,21 +480,21 @@ struct stream
 		}
 
 /******************************************************************************/
-#define out_uint8p(s, v, n) \
+#define Stream_Write(s, v, n) \
 		{ \
 	g_memcpy((s)->p, (v), (n)); \
 	(s)->p += (n); \
 		}
 
 /******************************************************************************/
-#define out_uint8a(s, v, n) \
+#define Stream_Write(s, v, n) \
 		{ \
-	out_uint8p((s), (v), (n)); \
+	Stream_Write((s), (v), (n)); \
 		}
 
 /******************************************************************************/
 #if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define out_uint32_le(s, v) \
+#define Stream_Write_UINT32(s, v) \
 		{ \
 	*((s)->p) = (unsigned char)((v) >> 0); \
 	(s)->p++; \
@@ -506,7 +506,7 @@ struct stream
 	(s)->p++; \
 		}
 #else
-#define out_uint32_le(s, v) \
+#define Stream_Write_UINT32(s, v) \
 		{ \
 	*((unsigned int*)((s)->p)) = (v); \
 	(s)->p += 4; \

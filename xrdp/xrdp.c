@@ -345,7 +345,7 @@ int main(int argc, char **argv)
 		else
 		{
 			g_memset(text, 0, 32);
-			g_file_read(fd, text, 31);
+			g_file_read(fd, (unsigned char*) text, 31);
 			pid = g_atoi(text);
 			g_writeln("stopping process id %d", pid);
 
@@ -420,7 +420,7 @@ int main(int argc, char **argv)
 			g_exit(0);
 		}
 
-		if (g_file_write(fd, "0", 1) == -1)
+		if (g_file_write(fd, (unsigned char*) "0", 1) == -1)
 		{
 			g_writeln("running in daemon mode with no access to pid files, quitting");
 			g_deinit();
@@ -465,7 +465,7 @@ int main(int argc, char **argv)
 		else
 		{
 			g_sprintf(text, "%d", pid);
-			g_file_write(fd, text, g_strlen(text));
+			g_file_write(fd, (unsigned char*) text, g_strlen(text));
 			g_file_close(fd);
 		}
 

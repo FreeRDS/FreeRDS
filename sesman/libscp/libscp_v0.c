@@ -66,11 +66,11 @@ scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 
 	sz = g_strlen(s->username);
 	out_uint16_be(c->out_s, sz);
-	out_uint8a(c->out_s, s->username, sz);
+	Stream_Write(c->out_s, s->username, sz);
 
 	sz = g_strlen(s->password);
 	out_uint16_be(c->out_s, sz);
-	out_uint8a(c->out_s, s->password, sz);
+	Stream_Write(c->out_s, s->password, sz);
 	out_uint16_be(c->out_s, s->width);
 	out_uint16_be(c->out_s, s->height);
 	out_uint16_be(c->out_s, s->bpp);
@@ -217,7 +217,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 		/* reading username */
 		in_uint16_be(c->in_s, sz);
 		buf[sz] = '\0';
-		Stream_Read_UINT8a(c->in_s, buf, sz);
+		Stream_Read(c->in_s, buf, sz);
 
 		if (0 != scp_session_set_username(session, buf))
 		{
@@ -229,7 +229,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 		/* reading password */
 		in_uint16_be(c->in_s, sz);
 		buf[sz] = '\0';
-		Stream_Read_UINT8a(c->in_s, buf, sz);
+		Stream_Read(c->in_s, buf, sz);
 
 		if (0 != scp_session_set_password(session, buf))
 		{
@@ -255,7 +255,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 
 			if (sz > 0)
 			{
-				Stream_Read_UINT8a(c->in_s, buf, sz);
+				Stream_Read(c->in_s, buf, sz);
 				buf[sz] = '\0';
 				scp_session_set_domain(session, buf);
 			}
@@ -268,7 +268,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 
 			if (sz > 0)
 			{
-				Stream_Read_UINT8a(c->in_s, buf, sz);
+				Stream_Read(c->in_s, buf, sz);
 				buf[sz] = '\0';
 				scp_session_set_program(session, buf);
 			}
@@ -281,7 +281,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 
 			if (sz > 0)
 			{
-				Stream_Read_UINT8a(c->in_s, buf, sz);
+				Stream_Read(c->in_s, buf, sz);
 				buf[sz] = '\0';
 				scp_session_set_directory(session, buf);
 			}
@@ -294,7 +294,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 
 			if (sz > 0)
 			{
-				Stream_Read_UINT8a(c->in_s, buf, sz);
+				Stream_Read(c->in_s, buf, sz);
 				buf[sz] = '\0';
 				scp_session_set_client_ip(session, buf);
 			}
@@ -316,7 +316,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 		/* reading username */
 		in_uint16_be(c->in_s, sz);
 		buf[sz] = '\0';
-		Stream_Read_UINT8a(c->in_s, buf, sz);
+		Stream_Read(c->in_s, buf, sz);
 
 		/* g_writeln("Received user name: %s",buf); */
 		if (0 != scp_session_set_username(session, buf))
@@ -329,7 +329,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 		/* reading password */
 		in_uint16_be(c->in_s, sz);
 		buf[sz] = '\0';
-		Stream_Read_UINT8a(c->in_s, buf, sz);
+		Stream_Read(c->in_s, buf, sz);
 
 		/* g_writeln("Received password: %s",buf); */
 		if (0 != scp_session_set_password(session, buf))

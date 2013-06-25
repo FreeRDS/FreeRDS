@@ -50,7 +50,7 @@ int env_check_password_file(char *filename, char *password)
 		return 1;
 	}
 
-	g_file_write(fd, encryptedPasswd, 8);
+	g_file_write(fd, (unsigned char*) encryptedPasswd, 8);
 	g_file_close(fd);
 	return 0;
 }

@@ -65,14 +65,14 @@ scp_v1c_mng_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 
 	/* data */
 	sz = g_strlen(s->username);
-	out_uint8(c->out_s, sz);
-	out_uint8p(c->out_s, s->username, sz);
+	Stream_Write_UINT8(c->out_s, sz);
+	Stream_Write(c->out_s, s->username, sz);
 	sz = g_strlen(s->password);
-	out_uint8(c->out_s, sz);
-	out_uint8p(c->out_s, s->password, sz);
+	Stream_Write_UINT8(c->out_s, sz);
+	Stream_Write(c->out_s, s->password, sz);
 
 	/* address */
-	out_uint8(c->out_s, s->addr_type);
+	Stream_Write_UINT8(c->out_s, s->addr_type);
 
 	if (s->addr_type == SCP_ADDRESS_TYPE_IPV4)
 	{
@@ -80,13 +80,13 @@ scp_v1c_mng_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	}
 	else
 	{
-		out_uint8p(c->out_s, s->ipv6addr, 16);
+		Stream_Write(c->out_s, s->ipv6addr, 16);
 	}
 
 	/* hostname */
 	sz = g_strlen(s->hostname);
-	out_uint8(c->out_s, sz);
-	out_uint8p(c->out_s, s->hostname, sz);
+	Stream_Write_UINT8(c->out_s, sz);
+	Stream_Write(c->out_s, s->hostname, sz);
 
 	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, size))
 	{
@@ -238,7 +238,7 @@ scp_v1c_mng_get_session_list(struct SCP_CONNECTION *c, int *scount,
 
 			if ((ds[totalcnt]).addr_type == SCP_ADDRESS_TYPE_IPV6)
 			{
-				Stream_Read_UINT8a(c->in_s, (ds[totalcnt]).ipv6addr, 16);
+				Stream_Read(c->in_s, (ds[totalcnt]).ipv6addr, 16);
 			}
 
 			totalcnt++;
@@ -309,7 +309,7 @@ _scp_v1c_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	{
 		Stream_Read_UINT8(c->in_s, dim);
 		buf[dim] = '\0';
-		Stream_Read_UINT8a(c->in_s, buf, dim);
+		Stream_Read(c->in_s, buf, dim);
 		scp_session_set_errstr(s, buf);
 
 		log_message(LOG_LEVEL_INFO, "[v1c_mng:%d] connection denied: %s", __LINE__ , s->errstr);

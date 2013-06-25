@@ -62,13 +62,13 @@ enum SCP_CLIENT_STATES_E scp_v1c_connect(struct SCP_CONNECTION *c, struct SCP_SE
 	out_uint16_be(c->out_s, 1);
 
 	/* body */
-	out_uint8(c->out_s, s->type);
+	Stream_Write_UINT8(c->out_s, s->type);
 	out_uint16_be(c->out_s, s->height);
 	out_uint16_be(c->out_s, s->width);
-	out_uint8(c->out_s, s->bpp);
-	out_uint8(c->out_s, s->rsr);
-	out_uint8p(c->out_s, s->locale, 17);
-	out_uint8(c->out_s, s->addr_type);
+	Stream_Write_UINT8(c->out_s, s->bpp);
+	Stream_Write_UINT8(c->out_s, s->rsr);
+	Stream_Write(c->out_s, s->locale, 17);
+	Stream_Write_UINT8(c->out_s, s->addr_type);
 
 	if (s->addr_type == SCP_ADDRESS_TYPE_IPV4)
 	{
@@ -76,18 +76,18 @@ enum SCP_CLIENT_STATES_E scp_v1c_connect(struct SCP_CONNECTION *c, struct SCP_SE
 	}
 	else if (s->addr_type == SCP_ADDRESS_TYPE_IPV6)
 	{
-		out_uint8p(c->out_s, s->ipv6addr, 16);
+		Stream_Write(c->out_s, s->ipv6addr, 16);
 	}
 
 	sz = g_strlen(s->hostname);
-	out_uint8(c->out_s, sz);
-	out_uint8p(c->out_s, s->hostname, sz);
+	Stream_Write_UINT8(c->out_s, sz);
+	Stream_Write(c->out_s, s->hostname, sz);
 	sz = g_strlen(s->username);
-	out_uint8(c->out_s, sz);
-	out_uint8p(c->out_s, s->username, sz);
+	Stream_Write_UINT8(c->out_s, sz);
+	Stream_Write(c->out_s, s->username, sz);
 	sz = g_strlen(s->password);
-	out_uint8(c->out_s, sz);
-	out_uint8p(c->out_s, s->password, sz);
+	Stream_Write_UINT8(c->out_s, sz);
+	Stream_Write(c->out_s, s->password, sz);
 
 	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, size))
 	{
@@ -118,11 +118,11 @@ enum SCP_CLIENT_STATES_E scp_v1c_resend_credentials(struct SCP_CONNECTION *c, st
 
 	/* body */
 	sz = g_strlen(s->username);
-	out_uint8(c->out_s, sz);
-	out_uint8p(c->out_s, s->username, sz);
+	Stream_Write_UINT8(c->out_s, sz);
+	Stream_Write(c->out_s, s->username, sz);
 	sz = g_strlen(s->password);
-	out_uint8(c->out_s, sz);
-	out_uint8p(c->out_s, s->password, sz);
+	Stream_Write_UINT8(c->out_s, sz);
+	Stream_Write(c->out_s, s->password, sz);
 
 	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, size))
 	{
@@ -256,7 +256,7 @@ enum SCP_CLIENT_STATES_E scp_v1c_get_session_list(struct SCP_CONNECTION *c, int 
 			}
 			else if ((ds[totalcnt]).addr_type == SCP_ADDRESS_TYPE_IPV6)
 			{
-				Stream_Read_UINT8a(c->in_s, (ds[totalcnt]).ipv6addr, 16);
+				Stream_Read(c->in_s, (ds[totalcnt]).ipv6addr, 16);
 			}
 
 			totalcnt++;
@@ -425,7 +425,7 @@ static enum SCP_CLIENT_STATES_E _scp_v1c_check_response(struct SCP_CONNECTION *c
 			return SCP_CLIENT_STATE_INTERNAL_ERR;
 		}
 
-		Stream_Read_UINT8a(c->in_s, s->errstr, dim);
+		Stream_Read(c->in_s, s->errstr, dim);
 		(s->errstr)[dim] = '\0';
 
 		return SCP_CLIENT_STATE_CONNECTION_DENIED;
@@ -446,7 +446,7 @@ static enum SCP_CLIENT_STATES_E _scp_v1c_check_response(struct SCP_CONNECTION *c
 			return SCP_CLIENT_STATE_INTERNAL_ERR;
 		}
 
-		Stream_Read_UINT8a(c->in_s, s->errstr, dim);
+		Stream_Read(c->in_s, s->errstr, dim);
 		(s->errstr)[dim] = '\0';
 
 		return SCP_CLIENT_STATE_RESEND_CREDENTIALS;
@@ -467,7 +467,7 @@ static enum SCP_CLIENT_STATES_E _scp_v1c_check_response(struct SCP_CONNECTION *c
 			return SCP_CLIENT_STATE_INTERNAL_ERR;
 		}
 
-		Stream_Read_UINT8a(c->in_s, s->errstr, dim);
+		Stream_Read(c->in_s, s->errstr, dim);
 		(s->errstr)[dim] = '\0';
 
 		return SCP_CLIENT_STATE_PWD_CHANGE_REQ;

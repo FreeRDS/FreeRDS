@@ -85,11 +85,11 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 		{
 			s->length = b;
 
-			Stream_Read_UINT8s(s, 4);
-			Stream_Read_UINT8a(s, self->name, 32);
+			Stream_Seek(s, 4);
+			Stream_Read(s, self->name, 32);
 			Stream_Read_UINT16(s, self->size);
 			Stream_Read_UINT16(s, self->style);
-			Stream_Read_UINT8s(s, 8);
+			Stream_Seek(s, 8);
 			index = 32;
 
 			while (s_check_rem_len(s, 16))
@@ -105,7 +105,7 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 				f->offset = i;
 				in_sint16_le(s, i);
 				f->incby = i;
-				Stream_Read_UINT8s(s, 6);
+				Stream_Seek(s, 6);
 				datasize = FONT_DATASIZE(f);
 
 				if (datasize < 0 || datasize > 512)
@@ -120,7 +120,7 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 				if (s_check_rem_len(s, datasize))
 				{
 					f->data = (char *) g_malloc(datasize, 0);
-					Stream_Read_UINT8a(s, f->data, datasize);
+					Stream_Read(s, f->data, datasize);
 				}
 				else
 				{

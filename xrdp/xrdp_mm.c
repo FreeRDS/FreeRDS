@@ -156,11 +156,11 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	out_uint16_be(s, self->code);
 	index = g_strlen(username);
 	out_uint16_be(s, index);
-	out_uint8a(s, username, index);
+	Stream_Write(s, username, index);
 	index = g_strlen(password);
 
 	out_uint16_be(s, index);
-	out_uint8a(s, password, index);
+	Stream_Write(s, password, index);
 	out_uint16_be(s, self->wm->screen->width);
 	out_uint16_be(s, self->wm->screen->height);
 
@@ -178,28 +178,28 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	{
 		index = g_strlen(self->wm->session->settings->Domain);
 		out_uint16_be(s, index);
-		out_uint8a(s, self->wm->session->settings->Domain, index);
+		Stream_Write(s, self->wm->session->settings->Domain, index);
 	}
 	else
 	{
 		out_uint16_be(s, 0);
-		/* out_uint8a(s, "", 0); */
+		/* Stream_Write(s, "", 0); */
 	}
 
 	/* send program / shell */
 	index = g_strlen(self->wm->session->settings->AlternateShell);
 	out_uint16_be(s, index);
-	out_uint8a(s, self->wm->session->settings->AlternateShell, index);
+	Stream_Write(s, self->wm->session->settings->AlternateShell, index);
 
 	/* send directory */
 	index = g_strlen(self->wm->session->settings->ShellWorkingDirectory);
 	out_uint16_be(s, index);
-	out_uint8a(s, self->wm->session->settings->ShellWorkingDirectory, index);
+	Stream_Write(s, self->wm->session->settings->ShellWorkingDirectory, index);
 
 	/* send client ip */
 	index = g_strlen(self->wm->session->settings->ClientAddress);
 	out_uint16_be(s, index);
-	out_uint8a(s, self->wm->session->settings->ClientAddress, index);
+	Stream_Write(s, self->wm->session->settings->ClientAddress, index);
 
 	index = (int) (s->pointer - s->buffer);
 	s->pointer = s->buffer;
@@ -665,11 +665,11 @@ static int access_control(char *username, char *password, char *srv)
 			out_uint16_be(out_s, 4); /*0x04 means SCP_GW_AUTHENTICATION*/
 			index = g_strlen(username);
 			out_uint16_be(out_s, index);
-			out_uint8a(out_s, username, index);
+			Stream_Write(out_s, username, index);
 
 			index = g_strlen(password);
 			out_uint16_be(out_s, index);
-			out_uint8a(out_s, password, index);
+			Stream_Write(out_s, password, index);
 
 			index = (int) (out_s->pointer - out_s->buffer);
 			out_s->pointer = out_s->buffer;

@@ -32,11 +32,9 @@
 
 #define s_check_rem_len(s, n) ((s)->pointer + (n) <= (s)->buffer + (s)->length)
 
-/******************************************************************************/
 #define make_stream(s) \
   (s) = (wStream*) g_malloc(sizeof(wStream), 1)
 
-/******************************************************************************/
 #define init_stream(s, v) do \
 { \
   if ((v) > (s)->capacity) \
@@ -49,7 +47,6 @@
   (s)->length = 0; \
 } while (0)
 
-/******************************************************************************/
 #define free_stream(s) do \
 { \
   if ((s) != 0) \
@@ -65,7 +62,6 @@
   (s)->pointer++; \
 } while (0)
 
-/******************************************************************************/
 #if defined(B_ENDIAN) || defined(NEED_ALIGN)
 #define in_sint16_le(s, v) do \
 { \
@@ -84,7 +80,6 @@
 } while (0)
 #endif
 
-/******************************************************************************/
 #define in_uint16_be(s, v) do \
 { \
   (v) = *((unsigned char*)((s)->pointer)); \
@@ -94,7 +89,6 @@
   (s)->pointer++; \
 } while (0)
 
-/******************************************************************************/
 #define in_uint32_be(s, v) do \
 { \
   (v) = *((unsigned char*)((s)->pointer)); \
@@ -110,14 +104,6 @@
   (s)->pointer++; \
 } while (0)
 
-/******************************************************************************/
-#define out_uint8(s, v) do \
-{ \
-  *((s)->pointer) = (unsigned char)(v); \
-  (s)->pointer++; \
-} while (0)
-
-/******************************************************************************/
 #if defined(B_ENDIAN) || defined(NEED_ALIGN)
 #define out_uint16_le(s, v) do \
 { \
@@ -134,7 +120,6 @@
 } while (0)
 #endif
 
-/******************************************************************************/
 #define out_uint16_be(s, v) do \
 { \
   *((s)->pointer) = (unsigned char)((v) >> 8); \
@@ -143,28 +128,6 @@
   (s)->pointer++; \
 } while (0)
 
-/******************************************************************************/
-#if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define out_uint32_le(s, v) do \
-{ \
-  *((s)->pointer) = (unsigned char)((v) >> 0); \
-  (s)->pointer++; \
-  *((s)->pointer) = (unsigned char)((v) >> 8); \
-  (s)->pointer++; \
-  *((s)->pointer) = (unsigned char)((v) >> 16); \
-  (s)->pointer++; \
-  *((s)->pointer) = (unsigned char)((v) >> 24); \
-  (s)->pointer++; \
-} while (0)
-#else
-#define out_uint32_le(s, v) do \
-{ \
-  *((unsigned int*)((s)->pointer)) = (v); \
-  (s)->pointer += 4; \
-} while (0)
-#endif
-
-/******************************************************************************/
 #define out_uint32_be(s, v) do \
 { \
   *((s)->pointer) = (unsigned char)((v) >> 24); \
@@ -175,42 +138,6 @@
   s->pointer++; \
   *((s)->pointer) = (unsigned char)(v); \
   (s)->pointer++; \
-} while (0)
-
-/******************************************************************************/
-#define Stream_Read_UINT8p(s, v, n) do \
-{ \
-  (v) = (s)->pointer; \
-  (s)->pointer += (n); \
-} while (0)
-
-/******************************************************************************/
-#define Stream_Read_UINT8a(s, v, n) do \
-{ \
-  g_memcpy((v), (s)->pointer, (n)); \
-  (s)->pointer += (n); \
-} while (0)
-
-/******************************************************************************/
-#define Stream_Read_UINT8s(s, n) \
-  (s)->pointer += (n)
-
-/******************************************************************************/
-#define out_uint8p(s, v, n) do \
-{ \
-  g_memcpy((s)->pointer, (v), (n)); \
-  (s)->pointer += (n); \
-} while (0)
-
-/******************************************************************************/
-#define out_uint8a(s, v, n) \
-  out_uint8p((s), (v), (n))
-
-/******************************************************************************/
-#define out_uint8s(s, n) do \
-{ \
-  g_memset((s)->pointer, 0, (n)); \
-  (s)->pointer += (n); \
 } while (0)
 
 #endif

@@ -135,7 +135,7 @@ int xrdp_wm_set_focused(xrdpWm *self, xrdpBitmap *wnd)
 }
 
 /******************************************************************************/
-static int xrdp_wm_get_pixel(char *data, int x, int y, int width, int bpp)
+static int xrdp_wm_get_pixel(unsigned char *data, int x, int y, int width, int bpp)
 {
 	int start;
 	int shift;
@@ -222,21 +222,21 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 
 	g_file_read(fd, fs->buffer, 8192);
 	g_file_close(fd);
-	Stream_Read_UINT8s(fs, 6);
+	Stream_Seek(fs, 6);
 	Stream_Read_UINT8(fs, w);
 	Stream_Read_UINT8(fs, h);
-	Stream_Read_UINT8s(fs, 2);
+	Stream_Seek(fs, 2);
 	Stream_Read_UINT16(fs, *x);
 	Stream_Read_UINT16(fs, *y);
-	Stream_Read_UINT8s(fs, 22);
+	Stream_Seek(fs, 22);
 	Stream_Read_UINT8(fs, bpp);
-	Stream_Read_UINT8s(fs, 25);
+	Stream_Seek(fs, 25);
 
 	if (w == 32 && h == 32)
 	{
 		if (bpp == 1)
 		{
-			Stream_Read_UINT8a(fs, palette, 8);
+			Stream_Read(fs, palette, 8);
 
 			for (i = 0; i < 32; i++)
 			{
@@ -252,11 +252,11 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 				}
 			}
 
-			Stream_Read_UINT8s(fs, 128);
+			Stream_Seek(fs, 128);
 		}
 		else if (bpp == 4)
 		{
-			Stream_Read_UINT8a(fs, palette, 64);
+			Stream_Read(fs, palette, 64);
 
 			for (i = 0; i < 32; i++)
 			{
@@ -272,7 +272,7 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 				}
 			}
 
-			Stream_Read_UINT8s(fs, 512);
+			Stream_Seek(fs, 512);
 		}
 
 		g_memcpy(mask, fs->pointer, 128); /* mask */

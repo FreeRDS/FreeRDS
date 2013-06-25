@@ -412,7 +412,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 	if (fd != -1)
 	{
 		/* read file type */
-		if (g_file_read(fd, type1, 2) != 2)
+		if (g_file_read(fd, (unsigned char*) type1, 2) != 2)
 		{
 			log_message(LOG_LEVEL_ERROR, "xrdp_bitmap_load: error bitmap file [%s] "
 				"read error", filename);

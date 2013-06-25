@@ -78,7 +78,7 @@ int lib_recv(xrdpModule *mod, char *data, int len)
 
 /*****************************************************************************/
 /* returns error */
-int lib_send(xrdpModule *mod, char *data, int len)
+int lib_send(xrdpModule *mod, unsigned char *data, int len)
 {
 	int sent;
 
@@ -253,15 +253,15 @@ int lib_mod_connect(xrdpModule *mod)
 		s->pointer += 4;
 
 		out_uint16_le(s, 103);
-		out_uint32_le(s, 301);
-		out_uint32_le(s, 0);
-		out_uint32_le(s, 0);
-		out_uint32_le(s, 0);
-		out_uint32_le(s, 1);
+		Stream_Write_UINT32(s, 301);
+		Stream_Write_UINT32(s, 0);
+		Stream_Write_UINT32(s, 0);
+		Stream_Write_UINT32(s, 0);
+		Stream_Write_UINT32(s, 1);
 
 		len = (int) (s->pointer - s->buffer);
 		s->pointer = s->buffer;
-		out_uint32_le(s, len);
+		Stream_Write_UINT32(s, len);
 
 		s->pointer = s->buffer + len;
 		lib_send(mod, s->buffer, len);
@@ -274,15 +274,15 @@ int lib_mod_connect(xrdpModule *mod)
 		s->pointer += 4;
 
 		out_uint16_le(s, 103);
-		out_uint32_le(s, 300);
-		out_uint32_le(s, mod->width);
-		out_uint32_le(s, mod->height);
-		out_uint32_le(s, mod->bpp);
-		out_uint32_le(s, mod->rfx);
+		Stream_Write_UINT32(s, 300);
+		Stream_Write_UINT32(s, mod->width);
+		Stream_Write_UINT32(s, mod->height);
+		Stream_Write_UINT32(s, mod->bpp);
+		Stream_Write_UINT32(s, mod->rfx);
 
 		len = (int) (s->pointer - s->buffer);
 		s->pointer = s->buffer;
-		out_uint32_le(s, len);
+		Stream_Write_UINT32(s, len);
 
 		s->pointer = s->buffer + len;
 		lib_send(mod, s->buffer, len);
@@ -295,19 +295,19 @@ int lib_mod_connect(xrdpModule *mod)
 		s->pointer += 4;
 
 		out_uint16_le(s, 103);
-		out_uint32_le(s, 200);
+		Stream_Write_UINT32(s, 200);
 		/* x and y */
 		i = 0;
-		out_uint32_le(s, i);
+		Stream_Write_UINT32(s, i);
 		/* width and height */
 		i = ((mod->width & 0xffff) << 16) | mod->height;
-		out_uint32_le(s, i);
-		out_uint32_le(s, 0);
-		out_uint32_le(s, 0);
+		Stream_Write_UINT32(s, i);
+		Stream_Write_UINT32(s, 0);
+		Stream_Write_UINT32(s, 0);
 
 		len = (int) (s->pointer - s->buffer);
 		s->pointer = s->buffer;
-		out_uint32_le(s, len);
+		Stream_Write_UINT32(s, len);
 
 		s->pointer = s->buffer + len;
 		lib_send(mod, s->buffer, len);
@@ -363,16 +363,16 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 					s->pointer += 4;
 
 					out_uint16_le(s, 103);
-					out_uint32_le(s, 16); /* key up */
-					out_uint32_le(s, 0);
-					out_uint32_le(s, 65507); /* left control */
-					out_uint32_le(s, 29); /* RDP scan code */
-					out_uint32_le(s, 0xc000); /* flags */
+					Stream_Write_UINT32(s, 16); /* key up */
+					Stream_Write_UINT32(s, 0);
+					Stream_Write_UINT32(s, 65507); /* left control */
+					Stream_Write_UINT32(s, 29); /* RDP scan code */
+					Stream_Write_UINT32(s, 0xc000); /* flags */
 
 					len = (int) (s->pointer - s->buffer);
 					s->pointer = s->buffer;
 
-					out_uint32_le(s, len);
+					Stream_Write_UINT32(s, len);
 
 					s->pointer = s->buffer + len;
 					lib_send(mod, s->buffer, len);
@@ -390,16 +390,16 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 	s->pointer += 4;
 
 	out_uint16_le(s, 103);
-	out_uint32_le(s, msg);
-	out_uint32_le(s, param1);
-	out_uint32_le(s, param2);
-	out_uint32_le(s, param3);
-	out_uint32_le(s, param4);
+	Stream_Write_UINT32(s, msg);
+	Stream_Write_UINT32(s, param1);
+	Stream_Write_UINT32(s, param2);
+	Stream_Write_UINT32(s, param3);
+	Stream_Write_UINT32(s, param4);
 
 	len = (int) (s->pointer - s->buffer);
 	s->pointer = s->buffer;
 
-	out_uint32_le(s, len);
+	Stream_Write_UINT32(s, len);
 
 	s->pointer = s->buffer + len;
 	rv = lib_send(mod, s->buffer, len);
@@ -434,7 +434,7 @@ static int process_server_window_new_update(xrdpModule *mod, wStream* s)
 	if (title_bytes > 0)
 	{
 		rwso.title_info = g_malloc(title_bytes + 1, 0);
-		Stream_Read_UINT8a(s, rwso.title_info, title_bytes);
+		Stream_Read(s, rwso.title_info, title_bytes);
 		rwso.title_info[title_bytes] = 0;
 	}
 
@@ -523,8 +523,8 @@ static int process_server_set_pointer_ex(xrdpModule *mod, wStream* s)
 	in_sint16_le(s, y);
 	Stream_Read_UINT16(s, bpp);
 	Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
-	Stream_Read_UINT8a(s, cur_data, 32 * (32 * Bpp));
-	Stream_Read_UINT8a(s, cur_mask, 32 * (32 / 8));
+	Stream_Read(s, cur_data, 32 * (32 * Bpp));
+	Stream_Read(s, cur_mask, 32 * (32 / 8));
 	rv = server_set_pointer_ex(mod, x, y, cur_data, cur_mask, bpp);
 
 	return rv;
@@ -590,7 +590,8 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			Stream_Read_UINT16(s, cx);
 			Stream_Read_UINT16(s, cy);
 			Stream_Read_UINT32(s, len_bmpdata);
-			Stream_Read_UINT8p(s, bmpdata, len_bmpdata);
+			Stream_GetPointer(s, bmpdata);
+			Stream_Seek(s, len_bmpdata);
 			Stream_Read_UINT16(s, width);
 			Stream_Read_UINT16(s, height);
 			in_sint16_le(s, srcx);
@@ -630,8 +631,8 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 		case 19:
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
-			Stream_Read_UINT8a(s, cur_data, 32 * (32 * 3));
-			Stream_Read_UINT8a(s, cur_mask, 32 * (32 / 8));
+			Stream_Read(s, cur_data, 32 * (32 * 3));
+			Stream_Read(s, cur_mask, 32 * (32 / 8));
 			rv = server_set_pointer(mod, x, y, cur_data, cur_mask);
 			break;
 		case 20:
