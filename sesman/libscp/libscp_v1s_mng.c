@@ -114,7 +114,7 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_accept(struct SCP_CONNECTION *c, struct SCP
 /* 002 */
 enum SCP_SERVER_STATES_E scp_v1s_mng_allow_connection(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
-	init_stream(c->out_s, c->out_s->size);
+	init_stream(c->out_s, c->out_s->capacity);
 
 	out_uint32_be(c->out_s, 1);
 	/* packet size: 4 + 4 + 2 + 2 */
@@ -123,7 +123,7 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_allow_connection(struct SCP_CONNECTION *c, 
 	out_uint16_be(c->out_s, SCP_COMMAND_SET_MANAGE);
 	out_uint16_be(c->out_s, SCP_CMD_MNG_LOGIN_ALLOW);
 
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, 12))
+	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, 12))
 	{
 		return SCP_SERVER_STATE_NETWORK_ERR;
 	}
@@ -136,7 +136,7 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_deny_connection(struct SCP_CONNECTION *c, c
 {
 	int rlen;
 
-	init_stream(c->out_s, c->out_s->size);
+	init_stream(c->out_s, c->out_s->capacity);
 
 	/* forcing message not to exceed 64k */
 	rlen = g_strlen(reason);
@@ -155,7 +155,7 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_deny_connection(struct SCP_CONNECTION *c, c
 	out_uint16_be(c->out_s, rlen);
 	out_uint8p(c->out_s, reason, rlen);
 
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, rlen + 14))
+	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, rlen + 14))
 	{
 		return SCP_SERVER_STATE_NETWORK_ERR;
 	}
@@ -188,14 +188,14 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, str
 	for (idx = 0; idx < pktcnt; idx++)
 	{
 		/* ok, we send session session list */
-		init_stream(c->out_s, c->out_s->size);
+		init_stream(c->out_s, c->out_s->capacity);
 
 		/* size: ver+size+cmdset+cmd+sescnt+continue+count */
 		size = 4 + 4 + 2 + 2 + 4 + 1 + 1;
 
 		/* header */
-		c->out_s->p = c->out_s->data;
-		c->out_s->p += 8;
+		c->out_s->pointer = c->out_s->buffer;
+		c->out_s->pointer += 8;
 
 		out_uint16_be(c->out_s, SCP_COMMAND_SET_MANAGE);
 		out_uint16_be(c->out_s, cmd);
@@ -256,15 +256,15 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, str
 			}
 		}
 
-		length = (int) (c->out_s->p - c->out_s->data);
-		c->out_s->p = c->out_s->data;
+		length = (int) (c->out_s->pointer - c->out_s->buffer);
+		c->out_s->pointer = c->out_s->buffer;
 
 		out_uint32_be(c->out_s, version);
 		out_uint32_be(c->out_s, size);
 
-		c->out_s->p = c->out_s->data + length;
+		c->out_s->pointer = c->out_s->buffer + length;
 
-		if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, size))
+		if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, size))
 		{
 			log_message(LOG_LEVEL_WARNING, "[v1s_mng:%d] connection aborted: network error", __LINE__);
 			return SCP_SERVER_STATE_NETWORK_ERR;
@@ -280,9 +280,9 @@ static enum SCP_SERVER_STATES_E _scp_v1s_mng_check_response(struct SCP_CONNECTIO
 	tui32 size;
 	tui16 cmd;
 
-	init_stream(c->in_s, c->in_s->size);
+	init_stream(c->in_s, c->in_s->capacity);
 
-	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->data, 8))
+	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->buffer, 8))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v1s_mng:%d] connection aborted: network error", __LINE__);
 		return SCP_SERVER_STATE_NETWORK_ERR;
@@ -298,10 +298,10 @@ static enum SCP_SERVER_STATES_E _scp_v1s_mng_check_response(struct SCP_CONNECTIO
 
 	in_uint32_be(c->in_s, size);
 
-	init_stream(c->in_s, c->in_s->size);
+	init_stream(c->in_s, c->in_s->capacity);
 
 	/* read the rest of the packet */
-	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->data, size - 8))
+	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->buffer, size - 8))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v1s_mng:%d] connection aborted: network error", __LINE__);
 		return SCP_SERVER_STATE_NETWORK_ERR;

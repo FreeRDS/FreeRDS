@@ -431,12 +431,12 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		/* read file size */
 		make_stream(s);
 		init_stream(s, 8192);
-		g_file_read(fd, s->data, 4);
+		g_file_read(fd, s->buffer, 4);
 		in_uint32_le(s, size);
 		/* read bmp header */
 		g_file_seek(fd, 14);
 		init_stream(s, 8192);
-		g_file_read(fd, s->data, 40); /* size better be 40 */
+		g_file_read(fd, s->buffer, 40); /* size better be 40 */
 		in_uint32_le(s, header.size);
 		in_uint32_le(s, header.image_width);
 		in_uint32_le(s, header.image_height);
@@ -469,7 +469,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 			for (i = header.image_height - 1; i >= 0; i--)
 			{
 				size = header.image_width * 3;
-				k = g_file_read(fd, s->data + i * size, size);
+				k = g_file_read(fd, s->buffer + i * size, size);
 
 				if (k != size)
 				{
@@ -515,7 +515,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 			/* read palette */
 			g_file_seek(fd, 14 + header.size);
 			init_stream(s, 8192);
-			g_file_read(fd, s->data, header.clr_used * sizeof(int));
+			g_file_read(fd, s->buffer, header.clr_used * sizeof(int));
 
 			for (i = 0; i < header.clr_used; i++)
 			{
@@ -530,7 +530,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 			for (i = header.image_height - 1; i >= 0; i--)
 			{
 				size = header.image_width;
-				k = g_file_read(fd, s->data + i * size, size);
+				k = g_file_read(fd, s->buffer + i * size, size);
 
 				if (k != size)
 				{
@@ -572,7 +572,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 			/* read palette */
 			g_file_seek(fd, 14 + header.size);
 			init_stream(s, 8192);
-			g_file_read(fd, s->data, header.clr_used * sizeof(int));
+			g_file_read(fd, s->buffer, header.clr_used * sizeof(int));
 
 			for (i = 0; i < header.clr_used; i++)
 			{
@@ -587,7 +587,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 			for (i = header.image_height - 1; i >= 0; i--)
 			{
 				size = header.image_width / 2;
-				k = g_file_read(fd, s->data + i * size, size);
+				k = g_file_read(fd, s->buffer + i * size, size);
 
 				if (k != size)
 				{

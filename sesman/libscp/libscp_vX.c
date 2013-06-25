@@ -32,7 +32,7 @@ enum SCP_SERVER_STATES_E scp_vXs_accept(struct SCP_CONNECTION *c, struct SCP_SES
 	tui32 version;
 
 	/* reading version and packet size */
-	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->data, 8))
+	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->buffer, 8))
 	{
 		return SCP_SERVER_STATE_NETWORK_ERR;
 	}

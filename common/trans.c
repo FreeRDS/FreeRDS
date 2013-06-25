@@ -134,7 +134,7 @@ int trans_check_wait_objs(struct trans* self)
 			{
 				if (self->trans_conn_in != 0) /* is function assigned */
 				{
-					in_trans = trans_create(self->mode, self->in_s->size, self->out_s->size);
+					in_trans = trans_create(self->mode, self->in_s->capacity, self->out_s->capacity);
 					in_trans->sck = in_sck;
 					in_trans->type1 = TRANS_TYPE_SERVER;
 					in_trans->status = TRANS_STATUS_UP;
@@ -155,7 +155,7 @@ int trans_check_wait_objs(struct trans* self)
 	{
 		if (g_tcp_can_recv(self->sck, 0))
 		{
-			read_so_far = (int) (self->in_s->end - self->in_s->data);
+			read_so_far = (int) (self->in_s->end - self->in_s->buffer);
 			to_read = self->header_size - read_so_far;
 
 			if (to_read > 0)
@@ -187,7 +187,7 @@ int trans_check_wait_objs(struct trans* self)
 				}
 			}
 
-			read_so_far = (int) (self->in_s->end - self->in_s->data);
+			read_so_far = (int) (self->in_s->end - self->in_s->buffer);
 
 			if (read_so_far == self->header_size)
 			{
@@ -270,12 +270,12 @@ int trans_force_write_s(struct trans* self, struct stream *out_s)
 		return 1;
 	}
 
-	size = (int) (out_s->end - out_s->data);
+	size = (int) (out_s->end - out_s->buffer);
 	total = 0;
 
 	while (total < size)
 	{
-		sent = g_tcp_send(self->sck, out_s->data + total, size - total, 0);
+		sent = g_tcp_send(self->sck, out_s->buffer + total, size - total, 0);
 
 		if (sent == -1)
 		{

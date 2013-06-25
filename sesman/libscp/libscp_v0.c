@@ -40,14 +40,14 @@ scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	tui32 size;
 	tui16 sz;
 
-	init_stream(c->in_s, c->in_s->size);
-	init_stream(c->out_s, c->in_s->size);
+	init_stream(c->in_s, c->in_s->capacity);
+	init_stream(c->out_s, c->in_s->capacity);
 
 	LOG_DBG("[v0:%d] starting connection", __LINE__);
 	g_tcp_set_non_blocking(c->in_sck);
 	g_tcp_set_no_delay(c->in_sck);
 
-	c->out_s->p += 8;
+	c->out_s->pointer += 8;
 
 	/* code */
 	if (s->type == SCP_SESSION_TYPE_XVNC)
@@ -75,21 +75,21 @@ scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	out_uint16_be(c->out_s, s->height);
 	out_uint16_be(c->out_s, s->bpp);
 
-	length = (int) (c->out_s->p - c->out_s->data);
-	c->out_s->p = c->out_s->data;
+	length = (int) (c->out_s->pointer - c->out_s->buffer);
+	c->out_s->pointer = c->out_s->buffer;
 
 	out_uint32_be(c->out_s, 0); /* version */
 	out_uint32_be(c->out_s, length); /* size */
 
-	c->out_s->p = c->out_s->data + length;
+	c->out_s->pointer = c->out_s->buffer + length;
 
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, c->out_s->end - c->out_s->data))
+	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, c->out_s->end - c->out_s->buffer))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__);
 		return SCP_CLIENT_STATE_NETWORK_ERR;
 	}
 
-	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->data, 8))
+	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->buffer, 8))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__);
 		return SCP_CLIENT_STATE_NETWORK_ERR;
@@ -112,9 +112,9 @@ scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	}
 
 	/* getting payload */
-	init_stream(c->in_s, c->in_s->size);
+	init_stream(c->in_s, c->in_s->capacity);
 
-	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->data, size - 8))
+	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->buffer, size - 8))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__);
 		return SCP_CLIENT_STATE_NETWORK_ERR;
@@ -161,9 +161,9 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 	{
 		LOG_DBG("[v0:%d] starting connection", __LINE__);
 
-		if (0 == scp_tcp_force_recv(c->in_sck, c->in_s->data, 8))
+		if (0 == scp_tcp_force_recv(c->in_sck, c->in_s->buffer, 8))
 		{
-			c->in_s->end = c->in_s->data + 8;
+			c->in_s->end = c->in_s->buffer + 8;
 			in_uint32_be(c->in_s, version);
 
 			if (version != 0)
@@ -183,13 +183,13 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 
 	init_stream(c->in_s, 8196);
 
-	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->data, size - 8))
+	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->buffer, size - 8))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__);
 		return SCP_SERVER_STATE_NETWORK_ERR;
 	}
 
-	c->in_s->end = c->in_s->data + (size - 8);
+	c->in_s->end = c->in_s->buffer + (size - 8);
 
 	in_uint16_be(c->in_s, code);
 
@@ -360,7 +360,7 @@ scp_v0s_allow_connection(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 	out_uint16_be(c->out_s, d);  /* data */
 	s_mark_end(c->out_s);
 
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, c->out_s->end - c->out_s->data))
+	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, c->out_s->end - c->out_s->buffer))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__);
 		return SCP_SERVER_STATE_NETWORK_ERR;
@@ -381,7 +381,7 @@ scp_v0s_deny_connection(struct SCP_CONNECTION *c)
 	out_uint16_be(c->out_s, 0);  /* reserved for display number*/
 	s_mark_end(c->out_s);
 
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, c->out_s->end - c->out_s->data))
+	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, c->out_s->end - c->out_s->buffer))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__);
 		return SCP_SERVER_STATE_NETWORK_ERR;
@@ -403,8 +403,8 @@ scp_v0s_replyauthentication(struct SCP_CONNECTION *c, unsigned short int value)
 	out_uint16_be(c->out_s, 0);  /* dummy data */
 	s_mark_end(c->out_s);
 
-	/* g_writeln("Total number of bytes that will be sent %d",c->out_s->end - c->out_s->data);*/
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->data, c->out_s->end - c->out_s->data))
+	/* g_writeln("Total number of bytes that will be sent %d",c->out_s->end - c->out_s->buffer);*/
+	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, c->out_s->end - c->out_s->buffer))
 	{
 		/* until syslog merge log_message(s_log, LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__); */
 		return SCP_SERVER_STATE_NETWORK_ERR;

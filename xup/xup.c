@@ -250,7 +250,7 @@ int lib_mod_connect(xrdpModule *mod)
 	{
 		/* send version message */
 		init_stream(s, 8192);
-		s->p += 4;
+		s->pointer += 4;
 
 		out_uint16_le(s, 103);
 		out_uint32_le(s, 301);
@@ -259,19 +259,19 @@ int lib_mod_connect(xrdpModule *mod)
 		out_uint32_le(s, 0);
 		out_uint32_le(s, 1);
 
-		len = (int) (s->p - s->data);
-		s->p = s->data;
+		len = (int) (s->pointer - s->buffer);
+		s->pointer = s->buffer;
 		out_uint32_le(s, len);
 
-		s->p = s->data + len;
-		lib_send(mod, s->data, len);
+		s->pointer = s->buffer + len;
+		lib_send(mod, s->buffer, len);
 	}
 
 	if (error == 0)
 	{
 		/* send screen size message */
 		init_stream(s, 8192);
-		s->p += 4;
+		s->pointer += 4;
 
 		out_uint16_le(s, 103);
 		out_uint32_le(s, 300);
@@ -280,19 +280,19 @@ int lib_mod_connect(xrdpModule *mod)
 		out_uint32_le(s, mod->bpp);
 		out_uint32_le(s, mod->rfx);
 
-		len = (int) (s->p - s->data);
-		s->p = s->data;
+		len = (int) (s->pointer - s->buffer);
+		s->pointer = s->buffer;
 		out_uint32_le(s, len);
 
-		s->p = s->data + len;
-		lib_send(mod, s->data, len);
+		s->pointer = s->buffer + len;
+		lib_send(mod, s->buffer, len);
 	}
 
 	if (error == 0)
 	{
 		/* send invalidate message */
 		init_stream(s, 8192);
-		s->p += 4;
+		s->pointer += 4;
 
 		out_uint16_le(s, 103);
 		out_uint32_le(s, 200);
@@ -305,12 +305,12 @@ int lib_mod_connect(xrdpModule *mod)
 		out_uint32_le(s, 0);
 		out_uint32_le(s, 0);
 
-		len = (int) (s->p - s->data);
-		s->p = s->data;
+		len = (int) (s->pointer - s->buffer);
+		s->pointer = s->buffer;
 		out_uint32_le(s, len);
 
-		s->p = s->data + len;
-		lib_send(mod, s->data, len);
+		s->pointer = s->buffer + len;
+		lib_send(mod, s->buffer, len);
 	}
 
 	free_stream(s);
@@ -360,7 +360,7 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 					 15  0      65507  29     0
 					 16  0      65507  29     49152 */
 					init_stream(s, 8192);
-					s->p += 4;
+					s->pointer += 4;
 
 					out_uint16_le(s, 103);
 					out_uint32_le(s, 16); /* key up */
@@ -369,13 +369,13 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 					out_uint32_le(s, 29); /* RDP scan code */
 					out_uint32_le(s, 0xc000); /* flags */
 
-					len = (int) (s->p - s->data);
-					s->p = s->data;
+					len = (int) (s->pointer - s->buffer);
+					s->pointer = s->buffer;
 
 					out_uint32_le(s, len);
 
-					s->p = s->data + len;
-					lib_send(mod, s->data, len);
+					s->pointer = s->buffer + len;
+					lib_send(mod, s->buffer, len);
 				}
 			}
 
@@ -387,7 +387,7 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 	}
 
 	init_stream(s, 8192);
-	s->p += 4;
+	s->pointer += 4;
 
 	out_uint16_le(s, 103);
 	out_uint32_le(s, msg);
@@ -396,13 +396,13 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 	out_uint32_le(s, param3);
 	out_uint32_le(s, param4);
 
-	len = (int) (s->p - s->data);
-	s->p = s->data;
+	len = (int) (s->pointer - s->buffer);
+	s->pointer = s->buffer;
 
 	out_uint32_le(s, len);
 
-	s->p = s->data + len;
-	rv = lib_send(mod, s->data, len);
+	s->pointer = s->buffer + len;
+	rv = lib_send(mod, s->buffer, len);
 
 	free_stream(s);
 
@@ -773,7 +773,7 @@ int lib_mod_signal(xrdpModule *mod)
 	LIB_DEBUG(mod, "in lib_mod_signal");
 	make_stream(s);
 	init_stream(s, 8192);
-	rv = lib_recv(mod, s->data, 8);
+	rv = lib_recv(mod, s->buffer, 8);
 
 	if (rv == 0)
 	{
@@ -784,7 +784,7 @@ int lib_mod_signal(xrdpModule *mod)
 		if (type == 1) /* original order list */
 		{
 			init_stream(s, len);
-			rv = lib_recv(mod, s->data, len);
+			rv = lib_recv(mod, s->buffer, len);
 
 			if (rv == 0)
 			{
@@ -804,13 +804,13 @@ int lib_mod_signal(xrdpModule *mod)
 		{
 			g_writeln("lib_mod_signal: type 2 len %d", len);
 			init_stream(s, len);
-			rv = lib_recv(mod, s->data, len);
+			rv = lib_recv(mod, s->buffer, len);
 
 			if (rv == 0)
 			{
 				for (index = 0; index < num_orders; index++)
 				{
-					phold = s->p;
+					phold = s->pointer;
 					in_uint16_le(s, type);
 					in_uint16_le(s, len);
 
@@ -822,7 +822,7 @@ int lib_mod_signal(xrdpModule *mod)
 							break;
 					}
 
-					s->p = phold + len;
+					s->pointer = phold + len;
 				}
 
 				lib_send_capabilities(mod);
@@ -831,13 +831,13 @@ int lib_mod_signal(xrdpModule *mod)
 		else if (type == 3) /* order list with len after type */
 		{
 			init_stream(s, len);
-			rv = lib_recv(mod, s->data, len);
+			rv = lib_recv(mod, s->buffer, len);
 
 			if (rv == 0)
 			{
 				for (index = 0; index < num_orders; index++)
 				{
-					phold = s->p;
+					phold = s->pointer;
 					in_uint16_le(s, type);
 					in_uint16_le(s, len);
 					rv = lib_mod_process_orders(mod, type, s);
@@ -847,7 +847,7 @@ int lib_mod_signal(xrdpModule *mod)
 						break;
 					}
 
-					s->p = phold + len;
+					s->pointer = phold + len;
 				}
 			}
 		}

@@ -78,12 +78,12 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 
 	if (fd != -1)
 	{
-		b = g_file_read(fd, s->data, file_size + 1024);
+		b = g_file_read(fd, s->buffer, file_size + 1024);
 		g_file_close(fd);
 
 		if (b > 0)
 		{
-			s->end = s->data + b;
+			s->end = s->buffer + b;
 			in_uint8s(s, 4);
 			in_uint8a(s, self->name, 32);
 			in_uint16_le(s, self->size);

@@ -220,7 +220,7 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 		return 1;
 	}
 
-	g_file_read(fd, fs->data, 8192);
+	g_file_read(fd, fs->buffer, 8192);
 	g_file_close(fd);
 	in_uint8s(fs, 6);
 	in_uint8(fs, w);
@@ -242,7 +242,7 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 			{
 				for (j = 0; j < 32; j++)
 				{
-					pixel = palette[xrdp_wm_get_pixel(fs->p, j, i, 32, 1)];
+					pixel = palette[xrdp_wm_get_pixel(fs->pointer, j, i, 32, 1)];
 					*data = pixel;
 					data++;
 					*data = pixel >> 8;
@@ -262,7 +262,7 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 			{
 				for (j = 0; j < 32; j++)
 				{
-					pixel = palette[xrdp_wm_get_pixel(fs->p, j, i, 32, 1)];
+					pixel = palette[xrdp_wm_get_pixel(fs->pointer, j, i, 32, 1)];
 					*data = pixel;
 					data++;
 					*data = pixel >> 8;
@@ -275,7 +275,7 @@ int xrdp_wm_load_pointer(xrdpWm *self, char *file_name, char *data, char *mask, 
 			in_uint8s(fs, 512);
 		}
 
-		g_memcpy(mask, fs->p, 128); /* mask */
+		g_memcpy(mask, fs->pointer, 128); /* mask */
 	}
 
 	free_stream(fs);
