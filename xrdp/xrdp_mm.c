@@ -1691,7 +1691,8 @@ int server_set_hints(xrdpModule* mod, int hints, int mask)
 		if (hints & 1)
 		{
 			wm->hints |= 1;
-		} else
+		}
+		else
 		{
 			wm->hints &= ~1;
 		}
