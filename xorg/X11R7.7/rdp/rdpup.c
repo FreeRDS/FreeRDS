@@ -438,7 +438,7 @@ static int rdpup_recv_msg(struct stream *s)
 
 		if (rv == 0)
 		{
-			in_uint32_le(s, len);
+			Stream_Read_UINT32(s, len);
 
 			if (len > 3)
 			{
@@ -628,15 +628,15 @@ static int rdpup_process_msg(struct stream *s)
 	int bytes;
 	int i1;
 
-	in_uint16_le(s, msg_type);
+	Stream_Read_UINT16(s, msg_type);
 
 	if (msg_type == 103)
 	{
-		in_uint32_le(s, msg);
-		in_uint32_le(s, param1);
-		in_uint32_le(s, param2);
-		in_uint32_le(s, param3);
-		in_uint32_le(s, param4);
+		Stream_Read_UINT32(s, msg);
+		Stream_Read_UINT32(s, param1);
+		Stream_Read_UINT32(s, param2);
+		Stream_Read_UINT32(s, param3);
+		Stream_Read_UINT32(s, param4);
 		LLOGLN(10, ("rdpup_process_msg - msg %d param1 %d param2 %d param3 %d "
 				"param4 %d", msg, param1, param2, param3, param4));
 
@@ -712,7 +712,7 @@ static int rdpup_process_msg(struct stream *s)
 	}
 	else if (msg_type == 104)
 	{
-		in_uint32_le(s, bytes);
+		Stream_Read_UINT32(s, bytes);
 
 		if (bytes > sizeof(g_rdpScreen.client_info))
 		{

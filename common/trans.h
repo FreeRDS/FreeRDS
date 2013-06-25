@@ -49,8 +49,8 @@ struct trans
 	ttrans_conn_in trans_conn_in;
 	void* callback_data;
 	int header_size;
-	struct stream* in_s;
-	struct stream* out_s;
+	wStream* in_s;
+	wStream* out_s;
 	char* listen_filename;
 };
 
@@ -58,14 +58,14 @@ struct trans* trans_create(int mode, int in_size, int out_size);
 void trans_delete(struct trans* self);
 int trans_get_wait_objs(struct trans* self, tbus* objs, int* count);
 int trans_check_wait_objs(struct trans* self);
-int trans_force_read_s(struct trans* self, struct stream* in_s, int size);
-int trans_force_write_s(struct trans* self, struct stream* out_s);
+int trans_force_read_s(struct trans* self, wStream* in_s, int size);
+int trans_force_write_s(struct trans* self, wStream* out_s);
 int trans_force_read(struct trans* self, int size);
 int trans_force_write(struct trans* self);
 int trans_connect(struct trans* self, const char* server, const char* port, int timeout);
 int trans_listen_address(struct trans* self, char* port, const char* address);
 int trans_listen(struct trans* self, char* port);
-struct stream* trans_get_in_s(struct trans* self);
-struct stream* trans_get_out_s(struct trans* self, int size);
+wStream* trans_get_in_s(struct trans* self);
+wStream* trans_get_out_s(struct trans* self, int size);
 
 #endif

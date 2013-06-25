@@ -393,7 +393,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 	int palette1[256];
 	char type1[4];
 	xrdpBmpHeader header;
-	struct stream *s = (struct stream *) NULL;
+	wStream* s = (wStream*) NULL;
 
 	g_memset(palette1, 0, sizeof(int) * 256);
 	g_memset(type1, 0, sizeof(char) * 4);
@@ -406,7 +406,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		return 1;
 	}
 
-	s = (struct stream *) NULL;
+	s = (wStream*) NULL;
 	fd = g_file_open(filename);
 
 	if (fd != -1)
@@ -432,22 +432,22 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		make_stream(s);
 		init_stream(s, 8192);
 		g_file_read(fd, s->buffer, 4);
-		in_uint32_le(s, size);
+		Stream_Read_UINT32(s, size);
 		/* read bmp header */
 		g_file_seek(fd, 14);
 		init_stream(s, 8192);
 		g_file_read(fd, s->buffer, 40); /* size better be 40 */
-		in_uint32_le(s, header.size);
-		in_uint32_le(s, header.image_width);
-		in_uint32_le(s, header.image_height);
-		in_uint16_le(s, header.planes);
-		in_uint16_le(s, header.bit_count);
-		in_uint32_le(s, header.compression);
-		in_uint32_le(s, header.image_size);
-		in_uint32_le(s, header.x_pels_per_meter);
-		in_uint32_le(s, header.y_pels_per_meter);
-		in_uint32_le(s, header.clr_used);
-		in_uint32_le(s, header.clr_important);
+		Stream_Read_UINT32(s, header.size);
+		Stream_Read_UINT32(s, header.image_width);
+		Stream_Read_UINT32(s, header.image_height);
+		Stream_Read_UINT16(s, header.planes);
+		Stream_Read_UINT16(s, header.bit_count);
+		Stream_Read_UINT32(s, header.compression);
+		Stream_Read_UINT32(s, header.image_size);
+		Stream_Read_UINT32(s, header.x_pels_per_meter);
+		Stream_Read_UINT32(s, header.y_pels_per_meter);
+		Stream_Read_UINT32(s, header.clr_used);
+		Stream_Read_UINT32(s, header.clr_important);
 
 		if ((header.bit_count != 4) && (header.bit_count != 8) && (header.bit_count != 24))
 		{
@@ -482,11 +482,11 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 			{
 				for (j = 0; j < self->width; j++)
 				{
-					in_uint8(s, k);
+					Stream_Read_UINT8(s, k);
 					color = k;
-					in_uint8(s, k);
+					Stream_Read_UINT8(s, k);
 					color |= k << 8;
-					in_uint8(s, k);
+					Stream_Read_UINT8(s, k);
 					color |= k << 16;
 
 					if (self->bpp == 8)
@@ -519,7 +519,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 
 			for (i = 0; i < header.clr_used; i++)
 			{
-				in_uint32_le(s, palette1[i]);
+				Stream_Read_UINT32(s, palette1[i]);
 			}
 
 			xrdp_bitmap_resize(self, header.image_width, header.image_height);
@@ -543,7 +543,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 			{
 				for (j = 0; j < self->width; j++)
 				{
-					in_uint8(s, k);
+					Stream_Read_UINT8(s, k);
 					color = palette1[k];
 
 					if (self->bpp == 8)
@@ -576,7 +576,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 
 			for (i = 0; i < header.clr_used; i++)
 			{
-				in_uint32_le(s, palette1[i]);
+				Stream_Read_UINT32(s, palette1[i]);
 			}
 
 			xrdp_bitmap_resize(self, header.image_width, header.image_height);
@@ -602,7 +602,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 				{
 					if ((j & 1) == 0)
 					{
-						in_uint8(s, k);
+						Stream_Read_UINT8(s, k);
 						color = (k >> 4) & 0xf;
 					}
 					else

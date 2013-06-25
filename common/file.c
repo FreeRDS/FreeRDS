@@ -30,7 +30,7 @@
  returns 1 if problem reading file */
 static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 {
-	struct stream *s;
+	wStream* s;
 	char text[256];
 	char c;
 	int in_it;
@@ -55,7 +55,7 @@ static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 
 		for (index = 0; index < len; index++)
 		{
-			in_uint8(s, c);
+			Stream_Read_UINT8(s, c);
 
 			if (c == '[')
 			{
@@ -85,7 +85,7 @@ static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 }
 
 /*****************************************************************************/
-static int file_read_line(struct stream *s, char *text)
+static int file_read_line(wStream* s, char *text)
 {
 	int i;
 	int skip_to_end;
@@ -102,7 +102,7 @@ static int file_read_line(struct stream *s, char *text)
 
 	hold = s->pointer;
 	i = 0;
-	in_uint8(s, c);
+	Stream_Read_UINT8(s, c);
 
 	while (c != 10 && c != 13)
 	{
@@ -119,7 +119,7 @@ static int file_read_line(struct stream *s, char *text)
 
 		if (s_check_rem_len(s, 1))
 		{
-			in_uint8(s, c);
+			Stream_Read_UINT8(s, c);
 		}
 		else
 		{
@@ -136,7 +136,7 @@ static int file_read_line(struct stream *s, char *text)
 		{
 			if (s_check_rem_len(s, 1))
 			{
-				in_uint8(s, c);
+				Stream_Read_UINT8(s, c);
 			}
 			else
 			{
@@ -208,7 +208,7 @@ static int file_split_name_value(char *text, char *name, char *value)
 /* return error */
 static int l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *names, xrdpList *values)
 {
-	struct stream *s;
+	wStream* s;
 	char text[512];
 	char name[512];
 	char value[512];
@@ -242,7 +242,7 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 				break;
 			}
 
-			in_uint8(s, c);
+			Stream_Read_UINT8(s, c);
 
 			if ((c == '#') || (c == ';'))
 			{

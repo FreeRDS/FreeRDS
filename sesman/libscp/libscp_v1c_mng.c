@@ -210,26 +210,26 @@ scp_v1c_mng_get_session_list(struct SCP_CONNECTION *c, int *scount,
 			in_uint32_be(c->in_s, sestmp);
 		}
 
-		in_uint8(c->in_s, continued);
-		in_uint8(c->in_s, pktcnt);
+		Stream_Read_UINT8(c->in_s, continued);
+		Stream_Read_UINT8(c->in_s, pktcnt);
 
 		for (idx = 0; idx < pktcnt; idx++)
 		{
 			in_uint32_be(c->in_s, (ds[totalcnt]).SID); /* session id */
-			in_uint8(c->in_s, (ds[totalcnt]).type);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).type);
 			in_uint16_be(c->in_s, (ds[totalcnt]).height);
 			in_uint16_be(c->in_s, (ds[totalcnt]).width);
-			in_uint8(c->in_s, (ds[totalcnt]).bpp);
-			in_uint8(c->in_s, (ds[totalcnt]).idle_days);
-			in_uint8(c->in_s, (ds[totalcnt]).idle_hours);
-			in_uint8(c->in_s, (ds[totalcnt]).idle_minutes);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).bpp);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).idle_days);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).idle_hours);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).idle_minutes);
 
 			in_uint16_be(c->in_s, (ds[totalcnt]).conn_year);
-			in_uint8(c->in_s, (ds[totalcnt]).conn_month);
-			in_uint8(c->in_s, (ds[totalcnt]).conn_day);
-			in_uint8(c->in_s, (ds[totalcnt]).conn_hour);
-			in_uint8(c->in_s, (ds[totalcnt]).conn_minute);
-			in_uint8(c->in_s, (ds[totalcnt]).addr_type);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).conn_month);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).conn_day);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).conn_hour);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).conn_minute);
+			Stream_Read_UINT8(c->in_s, (ds[totalcnt]).addr_type);
 
 			if ((ds[totalcnt]).addr_type == SCP_ADDRESS_TYPE_IPV4)
 			{
@@ -238,7 +238,7 @@ scp_v1c_mng_get_session_list(struct SCP_CONNECTION *c, int *scount,
 
 			if ((ds[totalcnt]).addr_type == SCP_ADDRESS_TYPE_IPV6)
 			{
-				in_uint8a(c->in_s, (ds[totalcnt]).ipv6addr, 16);
+				Stream_Read_UINT8a(c->in_s, (ds[totalcnt]).ipv6addr, 16);
 			}
 
 			totalcnt++;
@@ -307,9 +307,9 @@ _scp_v1c_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 	}
 	else if (cmd == SCP_CMD_MNG_LOGIN_DENY) /* connection denied */
 	{
-		in_uint8(c->in_s, dim);
+		Stream_Read_UINT8(c->in_s, dim);
 		buf[dim] = '\0';
-		in_uint8a(c->in_s, buf, dim);
+		Stream_Read_UINT8a(c->in_s, buf, dim);
 		scp_session_set_errstr(s, buf);
 
 		log_message(LOG_LEVEL_INFO, "[v1c_mng:%d] connection denied: %s", __LINE__ , s->errstr);

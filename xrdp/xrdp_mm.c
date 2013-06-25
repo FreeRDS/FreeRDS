@@ -91,7 +91,7 @@ void xrdp_mm_delete(xrdpMm *self)
 /* Send login information to sesman */
 static int xrdp_mm_send_login(xrdpMm *self)
 {
-	struct stream *s;
+	wStream* s;
 	int rv;
 	int index;
 	int count;
@@ -481,7 +481,7 @@ static void cleanup_sesman_connection(xrdpMm *self)
 }
 
 /*****************************************************************************/
-static int xrdp_mm_process_login_response(xrdpMm *self, struct stream *s)
+static int xrdp_mm_process_login_response(xrdpMm *self, wStream* s)
 {
 	int ok;
 	int display;
@@ -584,7 +584,7 @@ static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
 static int xrdp_mm_sesman_data_in(struct trans *trans)
 {
 	xrdpMm *self;
-	struct stream *s;
+	wStream* s;
 	int version;
 	int size;
 	int error;
@@ -636,8 +636,8 @@ static int access_control(char *username, char *password, char *srv)
 {
 	int reply;
 	int rec = 32 + 1; /* 32 is reserved for PAM failures this means connect failure */
-	struct stream *in_s;
-	struct stream *out_s;
+	wStream* in_s;
+	wStream* out_s;
 	unsigned long version;
 	unsigned short int dummy;
 	unsigned short int pAM_errorcode;

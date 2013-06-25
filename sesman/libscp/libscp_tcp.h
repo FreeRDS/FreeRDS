@@ -39,7 +39,7 @@
  *
  */
 int DEFAULT_CC
-scp_tcp_force_recv(int sck, char* data, int len);
+scp_tcp_force_recv(int sck, unsigned char* data, int len);
 
 /**
  *
@@ -51,7 +51,7 @@ scp_tcp_force_recv(int sck, char* data, int len);
  *
  */
 int DEFAULT_CC
-scp_tcp_force_send(int sck, char* data, int len);
+scp_tcp_force_send(int sck, unsigned char* data, int len);
 
 /**
  *

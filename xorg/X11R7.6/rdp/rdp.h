@@ -638,7 +638,7 @@ struct stream
 
 /******************************************************************************/
 #if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define in_uint32_le(s, v) \
+#define Stream_Read_UINT32(s, v) \
 { \
   (v) = (unsigned int) \
     ( \
@@ -650,7 +650,7 @@ struct stream
   (s)->p += 4; \
 }
 #else
-#define in_uint32_le(s, v) \
+#define Stream_Read_UINT32(s, v) \
 { \
   (v) = *((unsigned int*)((s)->p)); \
   (s)->p += 4; \
@@ -659,7 +659,7 @@ struct stream
 
 /******************************************************************************/
 #if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define in_uint16_le(s, v) \
+#define Stream_Read_UINT16(s, v) \
 { \
   (v) = (unsigned short) \
     ( \
@@ -669,7 +669,7 @@ struct stream
   (s)->p += 2; \
 }
 #else
-#define in_uint16_le(s, v) \
+#define Stream_Read_UINT16(s, v) \
 { \
   (v) = *((unsigned short*)((s)->p)); \
   (s)->p += 2; \

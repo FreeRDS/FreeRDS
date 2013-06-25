@@ -255,8 +255,8 @@ int xrdp_login_wnd_create(xrdpWm* self);
 
 /* xrdp_bitmap_compress.c */
 int xrdp_bitmap_compress(char* in_data, int width, int height,
-		struct stream* s, int bpp, int byte_limit,
-		int start_line, struct stream* temp, int e);
+		wStream* s, int bpp, int byte_limit,
+		int start_line, wStream* temp, int e);
 
 /* xrdp_mm.c */
 struct xrdp_mm* xrdp_mm_create(xrdpWm* owner);

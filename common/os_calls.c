@@ -1502,7 +1502,7 @@ g_file_close(int fd)
 /*****************************************************************************/
 /* read from file, returns the number of bytes read or -1 on error */
 int 
-g_file_read(int fd, char *ptr, int len)
+g_file_read(int fd, unsigned char* ptr, int len)
 {
 #if defined(_WIN32)
 
@@ -1523,7 +1523,7 @@ g_file_read(int fd, char *ptr, int len)
 /*****************************************************************************/
 /* write to file, returns the number of bytes writen or -1 on error */
 int 
-g_file_write(int fd, char *ptr, int len)
+g_file_write(int fd, unsigned char* ptr, int len)
 {
 #if defined(_WIN32)
 

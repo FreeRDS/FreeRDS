@@ -209,7 +209,7 @@ int trans_check_wait_objs(struct trans* self)
 }
 
 /*****************************************************************************/
-int trans_force_read_s(struct trans* self, struct stream* in_s, int size)
+int trans_force_read_s(struct trans* self, wStream* in_s, int size)
 {
 	int rcvd;
 
@@ -264,7 +264,7 @@ int trans_force_read(struct trans* self, int size)
 }
 
 /*****************************************************************************/
-int trans_force_write_s(struct trans* self, struct stream *out_s)
+int trans_force_write_s(struct trans* self, wStream* out_s)
 {
 	int size;
 	int total;
@@ -425,13 +425,13 @@ int trans_listen(struct trans* self, char *port)
 }
 
 /*****************************************************************************/
-struct stream* trans_get_in_s(struct trans* self)
+wStream* trans_get_in_s(struct trans* self)
 {
-	struct stream *rv = (struct stream *) NULL;
+	wStream* rv = (wStream*) NULL;
 
 	if (self == NULL)
 	{
-		rv = (struct stream*) NULL;
+		rv = (wStream*) NULL;
 	}
 	else
 	{
@@ -442,13 +442,13 @@ struct stream* trans_get_in_s(struct trans* self)
 }
 
 /*****************************************************************************/
-struct stream* trans_get_out_s(struct trans *self, int size)
+wStream* trans_get_out_s(struct trans *self, int size)
 {
-	struct stream *rv = (struct stream *) NULL;
+	wStream* rv = (wStream*) NULL;
 
 	if (self == NULL)
 	{
-		rv = (struct stream *) NULL;
+		rv = (wStream*) NULL;
 	}
 	else
 	{

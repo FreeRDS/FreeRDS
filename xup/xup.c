@@ -141,7 +141,7 @@ int lib_mod_connect(xrdpModule *mod)
 	int i;
 	int index;
 	int use_uds;
-	struct stream *s;
+	wStream* s;
 	char con_port[256];
 
 	LIB_DEBUG(mod, "in lib_mod_connect");
@@ -335,7 +335,7 @@ int lib_mod_connect(xrdpModule *mod)
 /* return error */
 int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
 {
-	struct stream *s;
+	wStream* s;
 	int len;
 	int key;
 	int rv;
@@ -413,7 +413,7 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 
 /******************************************************************************/
 /* return error */
-static int process_server_window_new_update(xrdpModule *mod, struct stream *s)
+static int process_server_window_new_update(xrdpModule *mod, wStream* s)
 {
 	int flags;
 	int window_id;
@@ -424,33 +424,33 @@ static int process_server_window_new_update(xrdpModule *mod, struct stream *s)
 	struct rail_window_state_order rwso;
 
 	g_memset(&rwso, 0, sizeof(rwso));
-	in_uint32_le(s, window_id);
-	in_uint32_le(s, rwso.owner_window_id);
-	in_uint32_le(s, rwso.style);
-	in_uint32_le(s, rwso.extended_style);
-	in_uint32_le(s, rwso.show_state);
-	in_uint16_le(s, title_bytes);
+	Stream_Read_UINT32(s, window_id);
+	Stream_Read_UINT32(s, rwso.owner_window_id);
+	Stream_Read_UINT32(s, rwso.style);
+	Stream_Read_UINT32(s, rwso.extended_style);
+	Stream_Read_UINT32(s, rwso.show_state);
+	Stream_Read_UINT16(s, title_bytes);
 
 	if (title_bytes > 0)
 	{
 		rwso.title_info = g_malloc(title_bytes + 1, 0);
-		in_uint8a(s, rwso.title_info, title_bytes);
+		Stream_Read_UINT8a(s, rwso.title_info, title_bytes);
 		rwso.title_info[title_bytes] = 0;
 	}
 
-	in_uint32_le(s, rwso.client_offset_x);
-	in_uint32_le(s, rwso.client_offset_y);
-	in_uint32_le(s, rwso.client_area_width);
-	in_uint32_le(s, rwso.client_area_height);
-	in_uint32_le(s, rwso.rp_content);
-	in_uint32_le(s, rwso.root_parent_handle);
-	in_uint32_le(s, rwso.window_offset_x);
-	in_uint32_le(s, rwso.window_offset_y);
-	in_uint32_le(s, rwso.window_client_delta_x);
-	in_uint32_le(s, rwso.window_client_delta_y);
-	in_uint32_le(s, rwso.window_width);
-	in_uint32_le(s, rwso.window_height);
-	in_uint16_le(s, rwso.num_window_rects);
+	Stream_Read_UINT32(s, rwso.client_offset_x);
+	Stream_Read_UINT32(s, rwso.client_offset_y);
+	Stream_Read_UINT32(s, rwso.client_area_width);
+	Stream_Read_UINT32(s, rwso.client_area_height);
+	Stream_Read_UINT32(s, rwso.rp_content);
+	Stream_Read_UINT32(s, rwso.root_parent_handle);
+	Stream_Read_UINT32(s, rwso.window_offset_x);
+	Stream_Read_UINT32(s, rwso.window_offset_y);
+	Stream_Read_UINT32(s, rwso.window_client_delta_x);
+	Stream_Read_UINT32(s, rwso.window_client_delta_y);
+	Stream_Read_UINT32(s, rwso.window_width);
+	Stream_Read_UINT32(s, rwso.window_height);
+	Stream_Read_UINT16(s, rwso.num_window_rects);
 
 	if (rwso.num_window_rects > 0)
 	{
@@ -459,16 +459,16 @@ static int process_server_window_new_update(xrdpModule *mod, struct stream *s)
 
 		for (index = 0; index < rwso.num_window_rects; index++)
 		{
-			in_uint16_le(s, rwso.window_rects[index].left);
-			in_uint16_le(s, rwso.window_rects[index].top);
-			in_uint16_le(s, rwso.window_rects[index].right);
-			in_uint16_le(s, rwso.window_rects[index].bottom);
+			Stream_Read_UINT16(s, rwso.window_rects[index].left);
+			Stream_Read_UINT16(s, rwso.window_rects[index].top);
+			Stream_Read_UINT16(s, rwso.window_rects[index].right);
+			Stream_Read_UINT16(s, rwso.window_rects[index].bottom);
 		}
 	}
 
-	in_uint32_le(s, rwso.visible_offset_x);
-	in_uint32_le(s, rwso.visible_offset_y);
-	in_uint16_le(s, rwso.num_visibility_rects);
+	Stream_Read_UINT32(s, rwso.visible_offset_x);
+	Stream_Read_UINT32(s, rwso.visible_offset_y);
+	Stream_Read_UINT16(s, rwso.num_visibility_rects);
 
 	if (rwso.num_visibility_rects > 0)
 	{
@@ -477,14 +477,14 @@ static int process_server_window_new_update(xrdpModule *mod, struct stream *s)
 
 		for (index = 0; index < rwso.num_visibility_rects; index++)
 		{
-			in_uint16_le(s, rwso.visibility_rects[index].left);
-			in_uint16_le(s, rwso.visibility_rects[index].top);
-			in_uint16_le(s, rwso.visibility_rects[index].right);
-			in_uint16_le(s, rwso.visibility_rects[index].bottom);
+			Stream_Read_UINT16(s, rwso.visibility_rects[index].left);
+			Stream_Read_UINT16(s, rwso.visibility_rects[index].top);
+			Stream_Read_UINT16(s, rwso.visibility_rects[index].right);
+			Stream_Read_UINT16(s, rwso.visibility_rects[index].bottom);
 		}
 	}
 
-	in_uint32_le(s, flags);
+	Stream_Read_UINT32(s, flags);
 	server_window_new_update(mod, window_id, &rwso, flags);
 	rv = 0;
 	g_free(rwso.title_info);
@@ -495,12 +495,12 @@ static int process_server_window_new_update(xrdpModule *mod, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int process_server_window_delete(xrdpModule *mod, struct stream *s)
+static int process_server_window_delete(xrdpModule *mod, wStream* s)
 {
 	int window_id;
 	int rv;
 
-	in_uint32_le(s, window_id);
+	Stream_Read_UINT32(s, window_id);
 	server_window_delete(mod, window_id);
 	rv = 0;
 
@@ -509,7 +509,7 @@ static int process_server_window_delete(xrdpModule *mod, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int process_server_set_pointer_ex(xrdpModule *mod, struct stream *s)
+static int process_server_set_pointer_ex(xrdpModule *mod, wStream* s)
 {
 	int rv;
 	int x;
@@ -521,10 +521,10 @@ static int process_server_set_pointer_ex(xrdpModule *mod, struct stream *s)
 
 	in_sint16_le(s, x);
 	in_sint16_le(s, y);
-	in_uint16_le(s, bpp);
+	Stream_Read_UINT16(s, bpp);
 	Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
-	in_uint8a(s, cur_data, 32 * (32 * Bpp));
-	in_uint8a(s, cur_mask, 32 * (32 / 8));
+	Stream_Read_UINT8a(s, cur_data, 32 * (32 * Bpp));
+	Stream_Read_UINT8a(s, cur_mask, 32 * (32 / 8));
 	rv = server_set_pointer_ex(mod, x, y, cur_data, cur_mask, bpp);
 
 	return rv;
@@ -532,7 +532,7 @@ static int process_server_set_pointer_ex(xrdpModule *mod, struct stream *s)
 
 /******************************************************************************/
 /* return error */
-static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
+static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 {
 	int rv;
 	int x;
@@ -571,15 +571,15 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 		case 3: /* server_fill_rect */
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
-			in_uint16_le(s, cx);
-			in_uint16_le(s, cy);
+			Stream_Read_UINT16(s, cx);
+			Stream_Read_UINT16(s, cy);
 			rv = server_fill_rect(mod, x, y, cx, cy);
 			break;
 		case 4: /* server_screen_blt */
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
-			in_uint16_le(s, cx);
-			in_uint16_le(s, cy);
+			Stream_Read_UINT16(s, cx);
+			Stream_Read_UINT16(s, cy);
 			in_sint16_le(s, srcx);
 			in_sint16_le(s, srcy);
 			rv = server_screen_blt(mod, x, y, cx, cy, srcx, srcy);
@@ -587,12 +587,12 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 		case 5: /* server_paint_rect */
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
-			in_uint16_le(s, cx);
-			in_uint16_le(s, cy);
-			in_uint32_le(s, len_bmpdata);
-			in_uint8p(s, bmpdata, len_bmpdata);
-			in_uint16_le(s, width);
-			in_uint16_le(s, height);
+			Stream_Read_UINT16(s, cx);
+			Stream_Read_UINT16(s, cy);
+			Stream_Read_UINT32(s, len_bmpdata);
+			Stream_Read_UINT8p(s, bmpdata, len_bmpdata);
+			Stream_Read_UINT16(s, width);
+			Stream_Read_UINT16(s, height);
 			in_sint16_le(s, srcx);
 			in_sint16_le(s, srcy);
 			rv = server_paint_rect(mod, x, y, cx, cy, bmpdata, width, height, srcx, srcy);
@@ -600,24 +600,24 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 		case 10: /* server_set_clip */
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
-			in_uint16_le(s, cx);
-			in_uint16_le(s, cy);
+			Stream_Read_UINT16(s, cx);
+			Stream_Read_UINT16(s, cy);
 			rv = server_set_clip(mod, x, y, cx, cy);
 			break;
 		case 11: /* server_reset_clip */
 			rv = server_reset_clip(mod);
 			break;
 		case 12: /* server_set_fgcolor */
-			in_uint32_le(s, fgcolor);
+			Stream_Read_UINT32(s, fgcolor);
 			rv = server_set_fgcolor(mod, fgcolor);
 			break;
 		case 14:
-			in_uint16_le(s, opcode);
+			Stream_Read_UINT16(s, opcode);
 			rv = server_set_opcode(mod, opcode);
 			break;
 		case 17:
-			in_uint16_le(s, style);
-			in_uint16_le(s, width);
+			Stream_Read_UINT16(s, style);
+			Stream_Read_UINT16(s, width);
 			rv = server_set_pen(mod, style, width);
 			break;
 		case 18:
@@ -630,37 +630,37 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, struct stream *s)
 		case 19:
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
-			in_uint8a(s, cur_data, 32 * (32 * 3));
-			in_uint8a(s, cur_mask, 32 * (32 / 8));
+			Stream_Read_UINT8a(s, cur_data, 32 * (32 * 3));
+			Stream_Read_UINT8a(s, cur_mask, 32 * (32 / 8));
 			rv = server_set_pointer(mod, x, y, cur_data, cur_mask);
 			break;
 		case 20:
-			in_uint32_le(s, rdpid);
-			in_uint16_le(s, width);
-			in_uint16_le(s, height);
+			Stream_Read_UINT32(s, rdpid);
+			Stream_Read_UINT16(s, width);
+			Stream_Read_UINT16(s, height);
 			rv = server_create_os_surface(mod, rdpid, width, height);
 			break;
 		case 21:
-			in_uint32_le(s, rdpid);
+			Stream_Read_UINT32(s, rdpid);
 			rv = server_switch_os_surface(mod, rdpid);
 			break;
 		case 22:
-			in_uint32_le(s, rdpid);
+			Stream_Read_UINT32(s, rdpid);
 			rv = server_delete_os_surface(mod, rdpid);
 			break;
 		case 23: /* server_paint_rect_os */
 			in_sint16_le(s, x);
 			in_sint16_le(s, y);
-			in_uint16_le(s, cx);
-			in_uint16_le(s, cy);
-			in_uint32_le(s, rdpid);
+			Stream_Read_UINT16(s, cx);
+			Stream_Read_UINT16(s, cy);
+			Stream_Read_UINT32(s, rdpid);
 			in_sint16_le(s, srcx);
 			in_sint16_le(s, srcy);
 			rv = server_paint_rect_os(mod, x, y, cx, cy, rdpid, srcx, srcy);
 			break;
 		case 24: /* server_set_hints */
-			in_uint32_le(s, hints);
-			in_uint32_le(s, mask);
+			Stream_Read_UINT32(s, hints);
+			Stream_Read_UINT32(s, mask);
 			rv = server_set_hints(mod, hints, mask);
 			break;
 		case 25: /* server_window_new_update */
@@ -762,7 +762,7 @@ static int lib_send_capabilities(xrdpModule* mod)
 /* return error */
 int lib_mod_signal(xrdpModule *mod)
 {
-	struct stream *s;
+	wStream* s;
 	int num_orders;
 	int index;
 	int rv;
@@ -777,9 +777,9 @@ int lib_mod_signal(xrdpModule *mod)
 
 	if (rv == 0)
 	{
-		in_uint16_le(s, type);
-		in_uint16_le(s, num_orders);
-		in_uint32_le(s, len);
+		Stream_Read_UINT16(s, type);
+		Stream_Read_UINT16(s, num_orders);
+		Stream_Read_UINT32(s, len);
 
 		if (type == 1) /* original order list */
 		{
@@ -790,7 +790,7 @@ int lib_mod_signal(xrdpModule *mod)
 			{
 				for (index = 0; index < num_orders; index++)
 				{
-					in_uint16_le(s, type);
+					Stream_Read_UINT16(s, type);
 					rv = lib_mod_process_orders(mod, type, s);
 
 					if (rv != 0)
@@ -811,8 +811,8 @@ int lib_mod_signal(xrdpModule *mod)
 				for (index = 0; index < num_orders; index++)
 				{
 					phold = s->pointer;
-					in_uint16_le(s, type);
-					in_uint16_le(s, len);
+					Stream_Read_UINT16(s, type);
+					Stream_Read_UINT16(s, len);
 
 					switch (type)
 					{
@@ -838,8 +838,8 @@ int lib_mod_signal(xrdpModule *mod)
 				for (index = 0; index < num_orders; index++)
 				{
 					phold = s->pointer;
-					in_uint16_le(s, type);
-					in_uint16_le(s, len);
+					Stream_Read_UINT16(s, type);
+					Stream_Read_UINT16(s, len);
 					rv = lib_mod_process_orders(mod, type, s);
 
 					if (rv != 0)

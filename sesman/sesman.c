@@ -197,7 +197,7 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		error = g_file_read(fd, pid_s, 7);
+		error = g_file_read(fd, (unsigned char*) pid_s, 7);
 
 		if (-1 == error)
 		{
@@ -349,7 +349,7 @@ int main(int argc, char** argv)
 		}
 
 		g_sprintf(pid_s, "%d", g_pid);
-		g_file_write(fd, pid_s, g_strlen(pid_s));
+		g_file_write(fd, (unsigned char*) pid_s, g_strlen(pid_s));
 		g_file_close(fd);
 	}
 

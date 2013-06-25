@@ -30,20 +30,11 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-/* parser state */
-struct stream
-{
-  char* pointer;
-  char* buffer;
-  int capacity;
-  size_t length;
-};
-
 #define s_check_rem_len(s, n) ((s)->pointer + (n) <= (s)->buffer + (s)->length)
 
 /******************************************************************************/
 #define make_stream(s) \
-  (s) = (struct stream*)g_malloc(sizeof(struct stream), 1)
+  (s) = (wStream*) g_malloc(sizeof(wStream), 1)
 
 /******************************************************************************/
 #define init_stream(s, v) do \
@@ -51,7 +42,7 @@ struct stream
   if ((v) > (s)->capacity) \
   { \
     g_free((s)->buffer); \
-    (s)->buffer = (char*)g_malloc((v), 0); \
+    (s)->buffer = (BYTE*) g_malloc((v), 0); \
     (s)->capacity = (v); \
   } \
   (s)->pointer = (s)->buffer; \
@@ -75,13 +66,6 @@ struct stream
 } while (0)
 
 /******************************************************************************/
-#define in_uint8(s, v) do \
-{ \
-  (v) = *((unsigned char*)((s)->pointer)); \
-  (s)->pointer++; \
-} while (0)
-
-/******************************************************************************/
 #if defined(B_ENDIAN) || defined(NEED_ALIGN)
 #define in_sint16_le(s, v) do \
 { \
@@ -101,25 +85,6 @@ struct stream
 #endif
 
 /******************************************************************************/
-#if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define in_uint16_le(s, v) do \
-{ \
-  (v) = (unsigned short) \
-    ( \
-      (*((unsigned char*)((s)->pointer + 0)) << 0) | \
-      (*((unsigned char*)((s)->pointer + 1)) << 8) \
-    ); \
-  (s)->pointer += 2; \
-} while (0)
-#else
-#define in_uint16_le(s, v) do \
-{ \
-  (v) = *((unsigned short*)((s)->pointer)); \
-  (s)->pointer += 2; \
-} while (0)
-#endif
-
-/******************************************************************************/
 #define in_uint16_be(s, v) do \
 { \
   (v) = *((unsigned char*)((s)->pointer)); \
@@ -128,27 +93,6 @@ struct stream
   (v) |= *((unsigned char*)((s)->pointer)); \
   (s)->pointer++; \
 } while (0)
-
-/******************************************************************************/
-#if defined(B_ENDIAN) || defined(NEED_ALIGN)
-#define in_uint32_le(s, v) do \
-{ \
-  (v) = (unsigned int) \
-    ( \
-      (*((unsigned char*)((s)->pointer + 0)) << 0) | \
-      (*((unsigned char*)((s)->pointer + 1)) << 8) | \
-      (*((unsigned char*)((s)->pointer + 2)) << 16) | \
-      (*((unsigned char*)((s)->pointer + 3)) << 24) \
-    ); \
-  (s)->pointer += 4; \
-} while (0)
-#else
-#define in_uint32_le(s, v) do \
-{ \
-  (v) = *((unsigned int*)((s)->pointer)); \
-  (s)->pointer += 4; \
-} while (0)
-#endif
 
 /******************************************************************************/
 #define in_uint32_be(s, v) do \
@@ -234,21 +178,21 @@ struct stream
 } while (0)
 
 /******************************************************************************/
-#define in_uint8p(s, v, n) do \
+#define Stream_Read_UINT8p(s, v, n) do \
 { \
   (v) = (s)->pointer; \
   (s)->pointer += (n); \
 } while (0)
 
 /******************************************************************************/
-#define in_uint8a(s, v, n) do \
+#define Stream_Read_UINT8a(s, v, n) do \
 { \
   g_memcpy((v), (s)->pointer, (n)); \
   (s)->pointer += (n); \
 } while (0)
 
 /******************************************************************************/
-#define in_uint8s(s, n) \
+#define Stream_Read_UINT8s(s, n) \
   (s)->pointer += (n)
 
 /******************************************************************************/

@@ -64,8 +64,8 @@
 struct SCP_CONNECTION
 {
 	int in_sck;
-	struct stream* in_s;
-	struct stream* out_s;
+	wStream* in_s;
+	wStream* out_s;
 };
 
 struct SCP_SESSION
