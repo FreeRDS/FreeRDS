@@ -34,8 +34,7 @@ extern struct config_sesman *g_cfg; /* in sesman.c */
 extern tbus g_term_event;
 
 /******************************************************************************/
-void 
-sig_sesman_shutdown(int sig)
+void sig_sesman_shutdown(int sig)
 {
 	char pid_file[256];
 
@@ -60,8 +59,7 @@ sig_sesman_shutdown(int sig)
 }
 
 /******************************************************************************/
-void 
-sig_sesman_reload_cfg(int sig)
+void sig_sesman_reload_cfg(int sig)
 {
 	int error;
 	struct config_sesman *cfg;
@@ -120,8 +118,7 @@ sig_sesman_reload_cfg(int sig)
 }
 
 /******************************************************************************/
-void 
-sig_sesman_session_end(int sig)
+void sig_sesman_session_end(int sig)
 {
 	int pid;
 
@@ -139,8 +136,7 @@ sig_sesman_session_end(int sig)
 }
 
 /******************************************************************************/
-void *
-sig_handler_thread(void *arg)
+void* sig_handler_thread(void *arg)
 {
 	int recv_signal;
 	sigset_t sigmask;
@@ -161,10 +157,6 @@ sig_handler_thread(void *arg)
 	sigaddset(&waitmask, SIGKILL);
 	sigaddset(&waitmask, SIGINT);
 
-	//  sigaddset(&waitmask, SIGFPE);
-	//  sigaddset(&waitmask, SIGILL);
-	//  sigaddset(&waitmask, SIGSEGV);
-
 	do
 	{
 		LOG_DBG(&(g_cfg->log), "calling sigwait()", 0);
@@ -178,21 +170,25 @@ sig_handler_thread(void *arg)
 				LOG_DBG("sesman received SIGHUP", 0);
 				//return 0;
 				break;
+
 			case SIGCHLD:
 				/* a session died */
 				LOG_DBG("sesman received SIGCHLD", 0);
 				sig_sesman_session_end(SIGCHLD);
 				break;
+
 			case SIGINT:
 				/* we die */
 				LOG_DBG("sesman received SIGINT", 0);
 				sig_sesman_shutdown(recv_signal);
 				break;
+
 			case SIGKILL:
 				/* we die */
 				LOG_DBG("sesman received SIGKILL", 0);
 				sig_sesman_shutdown(recv_signal);
 				break;
+
 			case SIGTERM:
 				/* we die */
 				LOG_DBG("sesman received SIGTERM", 0);

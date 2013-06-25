@@ -34,23 +34,20 @@
  * @retval 1 on error
  *
  */
-int DEFAULT_CC
-thread_sighandler_start(void);
+int thread_sighandler_start(void);
 
 /**
  *
  * @brief Starts the session update thread
  *
  */
-int DEFAULT_CC
-thread_session_update_start(void);
+int thread_session_update_start(void);
 
 /**
  *
  * @brief Starts a thread to handle an incoming connection
  *
  */
-int DEFAULT_CC
-thread_scp_start(int skt);
+int thread_scp_start(int skt);
 
 #endif

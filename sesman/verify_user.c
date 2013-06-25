@@ -39,16 +39,13 @@
 
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
-static int 
-auth_crypt_pwd(char *pwd, char *pln, char *crp);
+static int auth_crypt_pwd(char *pwd, char *pln, char *crp);
 
-static int 
-auth_account_disabled(struct spwd *stp);
+static int auth_account_disabled(struct spwd *stp);
 
 /******************************************************************************/
 /* returns boolean */
-long 
-auth_userpass(char *user, char *pass, int *errorcode)
+long auth_userpass(char *user, char *pass, int *errorcode)
 {
 	const char *encr;
 	struct passwd *spw;
@@ -78,7 +75,8 @@ auth_userpass(char *user, char *pass, int *errorcode)
 		}
 
 		encr = stp->sp_pwdp;
-	} else
+	}
+	else
 	{
 		/* old system with only passwd */
 		encr = spw->pw_passwd;
@@ -89,29 +87,25 @@ auth_userpass(char *user, char *pass, int *errorcode)
 
 /******************************************************************************/
 /* returns error */
-int 
-auth_start_session(long in_val, int in_display)
+int auth_start_session(long in_val, int in_display)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int 
-auth_end(long in_val)
+int auth_end(long in_val)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int 
-auth_set_env(long in_val)
+int auth_set_env(long in_val)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int 
-auth_check_pwd_chg(char *user)
+int auth_check_pwd_chg(char *user)
 {
 	struct passwd *spw;
 	struct spwd *stp;
@@ -167,8 +161,7 @@ auth_check_pwd_chg(char *user)
 	return AUTH_PWD_CHG_OK;
 }
 
-int 
-auth_change_pwd(char *user, char *newpwd)
+int auth_change_pwd(char *user, char *newpwd)
 {
 	struct passwd *spw;
 	struct spwd *stp;
@@ -202,7 +195,8 @@ auth_change_pwd(char *user, char *newpwd)
 		spw->pw_passwd = g_strdup(hash);
 		fd = fopen("/etc/passwd", "rw");
 		putpwent(spw, fd);
-	} else
+	}
+	else
 	{
 		/* the system is using shadow */
 		stp = getspnam(user);
@@ -240,8 +234,7 @@ auth_change_pwd(char *user, char *newpwd)
  *
  */
 
-static int 
-auth_crypt_pwd(char *pwd, char *pln, char *crp)
+static int auth_crypt_pwd(char *pwd, char *pln, char *crp)
 {
 	char salt[13] = "$1$";
 	int saltcnt = 0;
@@ -260,7 +253,8 @@ auth_crypt_pwd(char *pwd, char *pln, char *crp)
 
 		salt[saltcnt] = '$';
 		salt[saltcnt + 1] = '\0';
-	} else
+	}
+	else
 	{
 		/* classic two char salt */
 		salt[0] = pwd[0];
@@ -279,8 +273,7 @@ auth_crypt_pwd(char *pwd, char *pln, char *crp)
  * @return 1 if the account is disabled, 0 otherwise
  *
  */
-static int 
-auth_account_disabled(struct spwd *stp)
+static int auth_account_disabled(struct spwd *stp)
 {
 	int today;
 

@@ -33,8 +33,7 @@
  * @param sig The received signal
  *
  */
-void DEFAULT_CC
-sig_sesman_shutdown(int sig);
+void sig_sesman_shutdown(int sig);
 
 /**
  *
@@ -42,8 +41,7 @@ sig_sesman_shutdown(int sig);
  * @param sig The received signal
  *
  */
-void DEFAULT_CC
-sig_sesman_reload_cfg(int sig);
+void sig_sesman_reload_cfg(int sig);
 
 /**
  *
@@ -51,15 +49,13 @@ sig_sesman_reload_cfg(int sig);
  * @param sig The received signal
  *
  */
-void DEFAULT_CC
-sig_sesman_session_end(int sig);
+void sig_sesman_session_end(int sig);
 
 /**
  *
  * @brief signal handling thread
  *
  */
-void* DEFAULT_CC
-sig_handler_thread(void* arg);
+void* sig_handler_thread(void* arg);
 
 #endif

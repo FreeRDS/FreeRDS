@@ -39,8 +39,7 @@ static pthread_t g_thread_sighandler;
 int g_thread_sck;
 
 /******************************************************************************/
-int 
-thread_sighandler_start(void)
+int thread_sighandler_start(void)
 {
 	int ret;
 	sigset_t sigmask;
@@ -94,49 +93,8 @@ thread_sighandler_start(void)
 	return 1;
 }
 
-#ifdef JUST_TO_AVOID_COMPILER_ERRORS
 /******************************************************************************/
-int 
-thread_session_update_start(void)
-{
-	int ret;
-	//starts the session update thread
-	//that checks for idle time, destroys sessions, ecc...
-
-#warning this thread should always request lock_fork before read or write
-#warning (so we can Fork() In Peace)
-	ret = pthread_create(&g_thread_updater, NULL, , "");
-	pthread_detach(g_thread_updater);
-
-	if (ret == 0)
-	{
-		log_message(&(g_cfg->log), LOG_LEVEL_INFO, "session update thread started successfully");
-		return 0;
-	}
-
-	/* if something happened while starting a new thread... */
-	switch (ret)
-	{
-		case EINVAL:
-		log_message(LOG_LEVEL_ERROR, "invalid attributes for session update thread (creation returned  EINVAL)");
-		break;
-		case EAGAIN:
-		log_message(LOG_LEVEL_ERROR, "not enough resources to start session update thread (creation returned EAGAIN)");
-		break;
-		case EPERM:
-		log_message(LOG_LEVEL_ERROR, "invalid permissions for session update thread (creation returned EPERM)");
-		break;
-		default:
-		log_message(LOG_LEVEL_ERROR, "unknown error starting session update thread");
-	}
-
-	return 1;
-}
-#endif
-
-/******************************************************************************/
-int 
-thread_scp_start(int skt)
+int thread_scp_start(int skt)
 {
 	int ret;
 	pthread_t th;
@@ -147,7 +105,6 @@ thread_scp_start(int skt)
 
 	/* start a thread that processes a connection */
 	ret = pthread_create(&th, NULL, scp_process_start, "");
-	//ret = pthread_create(&th, NULL, scp_process_start, (void*) (&g_thread_sck));
 	pthread_detach(th);
 
 	if (ret == 0)

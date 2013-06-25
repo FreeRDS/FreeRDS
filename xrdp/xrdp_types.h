@@ -272,10 +272,6 @@ struct xrdp_mm
 	int display; /* 10 for :10.0, 11 for :11.0, etc */
 	int code; /* 0 Xvnc session 10 X11rdp session */
 	int sesman_controlled; /* true if this is a sesman session */
-	struct trans* chan_trans; /* connection to chansrv */
-	int chan_trans_up; /* true once connected to chansrv */
-	int delete_chan_trans; /* boolean set when done with channel connection */
-	int usechansrv; /* true if chansrvport is set in xrdp.ini or using sesman */
 };
 
 struct xrdp_key_info

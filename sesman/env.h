@@ -35,8 +35,7 @@
  * @return 0 on success, 1 on error
  *
  */
-int DEFAULT_CC
-env_check_password_file(char* filename, char* password);
+int env_check_password_file(char* filename, char* password);
 
 /**
  *
@@ -47,7 +46,6 @@ env_check_password_file(char* filename, char* password);
  * @return 0 on success, g_getuser_info() error codes on error
  *
  */
-int DEFAULT_CC
-env_set_user(char* username, char* passwd_file, int display);
+int env_set_user(char* username, char* passwd_file, int display);
 
 #endif

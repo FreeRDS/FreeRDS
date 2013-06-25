@@ -33,8 +33,7 @@ extern unsigned char g_fixedkey[8]; /* in sesman.c */
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
 /******************************************************************************/
-int 
-env_check_password_file(char *filename, char *password)
+int env_check_password_file(char *filename, char *password)
 {
 	char encryptedPasswd[16];
 	int fd;
@@ -57,8 +56,7 @@ env_check_password_file(char *filename, char *password)
 }
 
 /******************************************************************************/
-int 
-env_set_user(char *username, char *passwd_file, int display)
+int env_set_user(char *username, char *passwd_file, int display)
 {
 	int error;
 	int pw_uid;
@@ -110,7 +108,8 @@ env_set_user(char *username, char *passwd_file, int display)
 					 $HOME/.vnc/sesman_username_passwd */
 					g_mkdir(".vnc");
 					g_sprintf(passwd_file, "%s/.vnc/sesman_%s_passwd", pw_dir, username);
-				} else
+				}
+				else
 				{
 					/* we use auth_file_path as requested */
 					g_sprintf(passwd_file, g_cfg->auth_file_path, username);
@@ -119,7 +118,8 @@ env_set_user(char *username, char *passwd_file, int display)
 				LOG_DBG("pass file: %s", passwd_file);
 			}
 		}
-	} else
+	}
+	else
 	{
 		log_message(LOG_LEVEL_ERROR, "error getting user info for user %s", username);
 	}

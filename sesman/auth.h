@@ -35,8 +35,7 @@
  * @return 0 on success, 1 on failure
  *
  */
-long DEFAULT_CC
-auth_userpass(char* user, char* pass, int *errorcode);
+long auth_userpass(char* user, char* pass, int *errorcode);
 
 /**
  *
@@ -46,8 +45,7 @@ auth_userpass(char* user, char* pass, int *errorcode);
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-auth_start_session(long in_val, int in_display);
+int auth_start_session(long in_val, int in_display);
 
 /**
  *
@@ -56,8 +54,7 @@ auth_start_session(long in_val, int in_display);
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-auth_end(long in_val);
+int auth_end(long in_val);
 
 /**
  *
@@ -66,8 +63,7 @@ auth_end(long in_val);
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-auth_set_env(long in_val);
+int auth_set_env(long in_val);
 
 #define AUTH_PWD_CHG_OK                0
 #define AUTH_PWD_CHG_CHANGE            1
@@ -82,8 +78,7 @@ auth_set_env(long in_val);
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-auth_check_pwd_chg(char* user);
+int auth_check_pwd_chg(char* user);
 
 /**
  *
@@ -92,7 +87,6 @@ auth_check_pwd_chg(char* user);
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-auth_change_pwd(char* user, char* newpwd);
+int auth_change_pwd(char* user, char* newpwd);
 
 #endif

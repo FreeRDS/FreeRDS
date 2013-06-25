@@ -106,13 +106,11 @@ session_get_bydata(char* name, int width, int height, int bpp, int type);
  * @return 0 on error, display number if success
  *
  */
-int DEFAULT_CC
-session_start(int width, int height, int bpp, char* username, char* password,
+int session_start(int width, int height, int bpp, char* username, char* password,
 		long data, tui8 type, char* domain, char* program,
 		char* directory, char* client_ip);
 
-int DEFAULT_CC
-session_reconnect(int display, char* username);
+int session_reconnect(int display, char* username);
 
 /**
  *
@@ -120,8 +118,7 @@ session_reconnect(int display, char* username);
  * @return error
  *
  */
-int APP_CC
-session_sync_start(void);
+int session_sync_start(void);
 
 /**
  *
@@ -130,8 +127,7 @@ session_sync_start(void);
  * @return
  *
  */
-int DEFAULT_CC
-session_kill(int pid);
+int session_kill(int pid);
 
 /**
  *
@@ -139,8 +135,7 @@ session_kill(int pid);
  * @return
  *
  */
-void DEFAULT_CC
-session_sigkill_all();
+void session_sigkill_all();
 
 /**
  *
@@ -149,8 +144,7 @@ session_sigkill_all();
  * @return a pointer to the session descriptor on success, NULL otherwise
  *
  */
-xrdpSessionItem* DEFAULT_CC
-session_get_bypid(int pid);
+xrdpSessionItem* session_get_bypid(int pid);
 
 /**
  *
@@ -159,7 +153,6 @@ session_get_bypid(int pid);
  * @return a pointer to the session descriptor on success, NULL otherwise
  *
  */
-struct SCP_DISCONNECTED_SESSION*
-session_get_byuser(char* user, int* cnt, unsigned char flags);
+struct SCP_DISCONNECTED_SESSION* session_get_byuser(char* user, int* cnt, unsigned char flags);
 
 #endif

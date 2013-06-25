@@ -29,8 +29,7 @@ static tbus g_sync_sem = 0;
 static tbus g_lock_socket = 0;
 
 /******************************************************************************/
-void 
-lock_init(void)
+void lock_init(void)
 {
 	g_sync_mutex = tc_mutex_create();
 	g_lock_chain = tc_mutex_create();
@@ -39,8 +38,7 @@ lock_init(void)
 }
 
 /******************************************************************************/
-void 
-lock_deinit(void)
+void lock_deinit(void)
 {
 	tc_mutex_delete(g_sync_mutex);
 	tc_mutex_delete(g_lock_chain);
@@ -49,8 +47,7 @@ lock_deinit(void)
 }
 
 /******************************************************************************/
-void 
-lock_chain_acquire(void)
+void lock_chain_acquire(void)
 {
 	/* lock the chain */
 	LOG_DBG("lock_chain_acquire()");
@@ -58,8 +55,7 @@ lock_chain_acquire(void)
 }
 
 /******************************************************************************/
-void 
-lock_chain_release(void)
+void lock_chain_release(void)
 {
 	/* unlock the chain */
 	LOG_DBG("lock_chain_release()");
@@ -67,8 +63,7 @@ lock_chain_release(void)
 }
 
 /******************************************************************************/
-void 
-lock_socket_acquire(void)
+void lock_socket_acquire(void)
 {
 	/* lock socket variable */
 	LOG_DBG("lock_socket_acquire()");
@@ -76,8 +71,7 @@ lock_socket_acquire(void)
 }
 
 /******************************************************************************/
-void 
-lock_socket_release(void)
+void lock_socket_release(void)
 {
 	/* unlock socket variable */
 	LOG_DBG("lock_socket_release()");
@@ -85,8 +79,7 @@ lock_socket_release(void)
 }
 
 /******************************************************************************/
-void 
-lock_sync_acquire(void)
+void lock_sync_acquire(void)
 {
 	/* lock sync variable */
 	LOG_DBG("lock_sync_acquire()");
@@ -94,8 +87,7 @@ lock_sync_acquire(void)
 }
 
 /******************************************************************************/
-void 
-lock_sync_release(void)
+void lock_sync_release(void)
 {
 	/* unlock socket variable */
 	LOG_DBG("lock_sync_release()");
@@ -103,8 +95,7 @@ lock_sync_release(void)
 }
 
 /******************************************************************************/
-void 
-lock_sync_sem_acquire(void)
+void lock_sync_sem_acquire(void)
 {
 	/* dec sem */
 	LOG_DBG("lock_sync_sem_acquire()");
@@ -112,8 +103,7 @@ lock_sync_sem_acquire(void)
 }
 
 /******************************************************************************/
-void 
-lock_sync_sem_release(void)
+void lock_sync_sem_release(void)
 {
 	/* inc sem */
 	LOG_DBG("lock_sync_sem_release()");

@@ -27,6 +27,7 @@
 #include "sesman.h"
 #include "libscp_types.h"
 
+#include <stdio.h>
 #include <errno.h>
 
 extern tbus g_sync_event;
@@ -194,7 +195,7 @@ static int  x_server_running_check_ports(int display)
  * @return 0 if there isn't a display running, nonzero otherwise
  *
  */
-static int  x_server_running(int display)
+static int x_server_running(int display)
 {
 	char text[256];
 	int x_running;
@@ -284,6 +285,42 @@ static int wait_for_xserver(int display)
 	}
 
 	return 0;
+}
+
+static void session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
+{
+	int ret = 0;
+	char wmpid_str[25];
+	char xpid_str[25];
+	char exe_path[262];
+
+	/* initialize (zero out) local variables: */
+	g_memset(wmpid_str, 0, sizeof(char) * 25);
+	g_memset(xpid_str, 0, sizeof(char) * 25);
+	g_memset(exe_path, 0, sizeof(char) * 262);
+
+	/* new style waiting for clients */
+	g_sprintf(wmpid_str, "%d", wmpid);
+	g_sprintf(xpid_str, "%d", xpid);
+	log_message(LOG_LEVEL_INFO, "starting xrdp-ng-sessvc - xpid=%s - wmpid=%s", xpid_str, wmpid_str);
+
+	env_set_user(username, 0, display);
+
+	ret = g_waitpid(wmpid);
+
+	while (ret == 0)
+	{
+		ret = g_waitpid(wmpid);
+		g_sleep(1);
+	}
+
+	/* keep the old waitpid if some error occurs during execlp */
+	g_waitpid(wmpid);
+	//g_sigterm(xpid);
+	//g_sigterm(wmpid);
+	g_sleep(1000 * 2000);
+	//auth_end(data);
+	//g_exit(0);
 }
 
 /******************************************************************************/
@@ -530,6 +567,7 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 				g_snprintf(text, 255, ":%d.0", display);
 				g_setenv("DISPLAY", text, 1);
 				/* new style waiting for clients */
+				session_start_sessvc(xpid, wmpid, data, username, display);
 			}
 		}
 	}
@@ -651,6 +689,8 @@ int session_reconnect(int display, char *username)
 /* called with the main thread */
 int session_sync_start(void)
 {
+	printf("session_sync_start\n");
+
 	if (g_sync_cmd == 0)
 	{
 		g_sync_result = session_start_fork(g_sync_width, g_sync_height, g_sync_bpp, g_sync_username,

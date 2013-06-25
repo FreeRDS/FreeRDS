@@ -33,8 +33,7 @@
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
 /******************************************************************************/
-int 
-config_read(struct config_sesman *cfg)
+int config_read(struct config_sesman *cfg)
 {
 	int fd;
 	xrdpList *sec;
@@ -47,16 +46,10 @@ config_read(struct config_sesman *cfg)
 
 	if (-1 == fd)
 	{
-		//if (g_cfg->log.fd >= 0)
-		//{
 		/* logging is already active */
 		log_message(LOG_LEVEL_ALWAYS, "error opening %s in \
                   config_read", cfg_file);
-		//}
-		//else
-		//{
 		g_printf("error opening %s in config_read", cfg_file);
-		//}
 		return 1;
 	}
 
@@ -72,12 +65,9 @@ config_read(struct config_sesman *cfg)
 	/* read global config */
 	config_read_globals(fd, cfg, param_n, param_v);
 
-	/* read Xvnc/X11rdp parameter list */
-	config_read_vnc_params(fd, cfg, param_n, param_v);
+	/* read X11rdp parameter list */
+	//config_read_vnc_params(fd, cfg, param_n, param_v);
 	config_read_rdp_params(fd, cfg, param_n, param_v);
-
-	/* read logging config */
-	// config_read_logging(fd, &(cfg->log), param_n, param_v);
 
 	/* read security config */
 	config_read_security(fd, &(cfg->sec), param_n, param_v);
@@ -90,12 +80,12 @@ config_read(struct config_sesman *cfg)
 	list_delete(param_v);
 	list_delete(param_n);
 	g_file_close(fd);
+
 	return 0;
 }
 
 /******************************************************************************/
-int 
-config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, xrdpList *param_v)
+int config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 	char *buf;
@@ -178,64 +168,8 @@ config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, xrdpL
 	return 0;
 }
 
-/******************************************************************************
- int 
- config_read_logging(int file, struct log_config* lc, xrdpList* param_n,
- xrdpList* param_v)
- {
- int i;
- char* buf;
-
- list_clear(param_v);
- list_clear(param_n);
-
- // setting defaults
- lc->program_name = g_strdup("sesman");
- lc->log_file = 0;
- lc->fd = 0;
- lc->log_level = LOG_LEVEL_DEBUG;
- lc->enable_syslog = 0;
- lc->syslog_level = LOG_LEVEL_DEBUG;
-
- file_read_section(file, SESMAN_CFG_LOGGING, param_n, param_v);
- for (i = 0; i < param_n->count; i++)
- {
- buf = (char*)list_get_item(param_n, i);
- if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_FILE))
- {
- lc->log_file = g_strdup((char*)list_get_item(param_v, i));
- }
- if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_LEVEL))
- {
- lc->log_level = log_text2level((char*)list_get_item(param_v, i));
- }
- if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_ENABLE_SYSLOG))
- {
- lc->enable_syslog = text2bool((char*)list_get_item(param_v, i));
- }
- if (0 == g_strcasecmp(buf, SESMAN_CFG_LOG_SYSLOG_LEVEL))
- {
- lc->syslog_level = log_text2level((char*)list_get_item(param_v, i));
- }
- }
-
- if (0 == lc->log_file)
- {
- lc->log_file=g_strdup("./sesman.log");
- }
-
- g_printf("logging configuration:\r\n");
- g_printf("\tLogFile:       %s\r\n",lc->log_file);
- g_printf("\tLogLevel:      %i\r\n", lc->log_level);
- g_printf("\tEnableSyslog:  %i\r\n", lc->enable_syslog);
- g_printf("\tSyslogLevel:   %i\r\n", lc->syslog_level);
-
- return 0;
- }
- */
 /******************************************************************************/
-int 
-config_read_security(int file, struct config_security *sc, xrdpList *param_n, xrdpList *param_v)
+int config_read_security(int file, struct config_security *sc, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 	int gid;
@@ -315,8 +249,7 @@ config_read_security(int file, struct config_security *sc, xrdpList *param_n, xr
 }
 
 /******************************************************************************/
-int 
-config_read_sessions(int file, struct config_sessions *se, xrdpList *param_n, xrdpList *param_v)
+int config_read_sessions(int file, struct config_sessions *se, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 	char *buf;
@@ -374,9 +307,7 @@ config_read_sessions(int file, struct config_sessions *se, xrdpList *param_n, xr
 	return 0;
 }
 
-/******************************************************************************/
-int 
-config_read_rdp_params(int file, struct config_sesman *cs, xrdpList *param_n, xrdpList *param_v)
+int config_read_rdp_params(int file, struct config_sesman *cs, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
 
@@ -403,31 +334,3 @@ config_read_rdp_params(int file, struct config_sesman *cs, xrdpList *param_n, xr
 	return 0;
 }
 
-/******************************************************************************/
-int 
-config_read_vnc_params(int file, struct config_sesman *cs, xrdpList *param_n, xrdpList *param_v)
-{
-	int i;
-
-	list_clear(param_v);
-	list_clear(param_n);
-
-	cs->vnc_params = list_create();
-
-	file_read_section(file, SESMAN_CFG_VNC_PARAMS, param_n, param_v);
-
-	for (i = 0; i < param_n->count; i++)
-	{
-		list_add_item(cs->vnc_params, (long) g_strdup((char *) list_get_item(param_v, i)));
-	}
-
-	/* printing security config */
-	g_printf("Xvnc parameters:\r\n");
-
-	for (i = 0; i < cs->vnc_params->count; i++)
-	{
-		g_printf("\tParameter %02d                   %s\r\n", i, (char *) list_get_item(cs->vnc_params, i));
-	}
-
-	return 0;
-}

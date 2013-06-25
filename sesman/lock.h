@@ -26,79 +26,69 @@
  * @brief initializes all the locks
  *
  */
-void APP_CC
-lock_init(void);
+void lock_init(void);
 
 /**
  *
  * @brief cleanup all the locks
  *
  */
-void APP_CC
-lock_deinit(void);
+void lock_deinit(void);
 
 /**
  *
  * @brief acquires the lock for the session chain
  *
  */
-void APP_CC
-lock_chain_acquire(void);
+void lock_chain_acquire(void);
 
 /**
  *
  * @brief releases the session chain lock
  *
  */
-void APP_CC
-lock_chain_release(void);
+void lock_chain_release(void);
 
 /**
  *
  * @brief request the socket lock
  *
  */
-void APP_CC
-lock_socket_acquire(void);
+void lock_socket_acquire(void);
 
 /**
  *
  * @brief releases the socket lock
  *
  */
-void APP_CC
-lock_socket_release(void);
+void lock_socket_release(void);
 
 /**
  *
  * @brief request the main sync lock
  *
  */
-void APP_CC
-lock_sync_acquire(void);
+void lock_sync_acquire(void);
 
 /**
  *
  * @brief releases the main sync lock
  *
  */
-void APP_CC
-lock_sync_release(void);
+void lock_sync_release(void);
 
 /**
  *
  * @brief request the sync sem lock
  *
  */
-void APP_CC
-lock_sync_sem_acquire(void);
+void lock_sync_sem_acquire(void);
 
 /**
  *
  * @brief releases the sync sem lock
  *
  */
-void APP_CC
-lock_sync_sem_release(void);
+void lock_sync_sem_release(void);
 
 #endif

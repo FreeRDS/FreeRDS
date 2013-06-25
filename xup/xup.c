@@ -837,7 +837,9 @@ int lib_mod_signal(xrdpModule *mod)
 		}
 	}
 
-	free_stream(s); LIB_DEBUG(mod, "out lib_mod_signal");
+	free_stream(s);
+
+	LIB_DEBUG(mod, "out lib_mod_signal");
 
 	return rv;
 }

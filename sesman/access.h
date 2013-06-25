@@ -34,8 +34,7 @@
  * @return 0 if access is denied, !=0 if allowed
  *
  */
-int DEFAULT_CC
-access_login_allowed(char* user);
+int access_login_allowed(char* user);
 
 /**
  *
@@ -44,7 +43,6 @@ access_login_allowed(char* user);
  * @return 0 if access is denied, !=0 if allowed
  *
  */
-int DEFAULT_CC
-access_login_mng_allowed(char* user);
+int access_login_mng_allowed(char* user);
 
 #endif

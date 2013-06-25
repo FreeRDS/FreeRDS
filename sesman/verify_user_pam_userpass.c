@@ -33,8 +33,7 @@
 
 /******************************************************************************/
 /* returns boolean */
-int 
-auth_userpass(char *user, char *pass, int *errorcode)
+int auth_userpass(char *user, char *pass, int *errorcode)
 {
 	pam_handle_t *pamh;
 	pam_userpass_t userpass;
@@ -85,22 +84,19 @@ auth_userpass(char *user, char *pass, int *errorcode)
 
 /******************************************************************************/
 /* returns error */
-int 
-auth_start_session(void)
+int auth_start_session(void)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int 
-auth_end(void)
+int auth_end(void)
 {
 	return 0;
 }
 
 /******************************************************************************/
-int 
-auth_set_env(void)
+int auth_set_env(void)
 {
 	return 0;
 }
