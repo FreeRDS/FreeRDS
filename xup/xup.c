@@ -558,7 +558,7 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 	int height;
 	int fgcolor;
 	int opcode;
-	char *bmpdata;
+	BYTE* bmpdata;
 	char cur_data[32 * (32 * 3)];
 	char cur_mask[32 * (32 / 8)];
 
@@ -600,7 +600,7 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			Stream_Read_UINT16(s, height);
 			Stream_Read_INT16(s, srcx);
 			Stream_Read_INT16(s, srcy);
-			rv = server_paint_rect(mod, x, y, cx, cy, bmpdata, width, height, srcx, srcy);
+			rv = server_paint_rect(mod, x, y, cx, cy, (char*) bmpdata, width, height, srcx, srcy);
 			break;
 		case 10: /* server_set_clip */
 			Stream_Read_INT16(s, x);
@@ -773,7 +773,7 @@ int lib_mod_signal(xrdpModule *mod)
 	int rv;
 	int len;
 	int type;
-	char *phold;
+	BYTE* phold;
 
 	LIB_DEBUG(mod, "in lib_mod_signal");
 

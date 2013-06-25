@@ -95,7 +95,7 @@ static int file_read_line(wStream* s, char *text)
 	int skip_to_end;
 	int at_end;
 	char c;
-	char *hold;
+	BYTE* hold;
 
 	skip_to_end = 0;
 

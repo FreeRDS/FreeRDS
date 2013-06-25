@@ -278,32 +278,12 @@ typedef rdpPixmapRec* rdpPixmapPtr;
 #define XRDP_IS_OS(_priv) (_priv->status != 0)
 
 /* rdpmisc.c */
+
+#include "os_calls.h"
+
 void rdpLog(char *format, ...);
 int rdpBitsPerPixel(int depth);
 void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt);
-int g_tcp_recv(int sck, void* ptr, int len, int flags);
-void g_tcp_close(int sck);
-int g_tcp_last_error_would_block(int sck);
-void g_sleep(int msecs);
-int g_tcp_send(int sck, void* ptr, int len, int flags);
-void* g_malloc(int size, int zero);
-void g_free(void* ptr);
-void g_sprintf(char* dest, char* format, ...);
-int g_tcp_socket(void);
-int g_tcp_local_socket_dgram(void);
-int g_tcp_local_socket_stream(void);
-void g_memcpy(void* d_ptr, const void* s_ptr, int size);
-int g_tcp_set_no_delay(int sck);
-int g_tcp_set_non_blocking(int sck);
-int g_tcp_accept(int sck);
-int g_tcp_select(int sck1, int sck2, int sck3);
-int g_tcp_bind(int sck, char* port);
-int g_tcp_local_bind(int sck, char* port);
-int g_tcp_listen(int sck);
-int g_create_dir(const char* dirname);
-int g_directory_exist(const char* dirname);
-int g_chmod_hex(const char* filename, int flags);
-void hexdump(unsigned char *p, unsigned int len);
 void RegionAroundSegs(RegionPtr reg, xSegment* segs, int nseg);
 
 /* rdpdraw.c */

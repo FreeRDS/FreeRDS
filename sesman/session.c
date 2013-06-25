@@ -290,19 +290,6 @@ static int wait_for_xserver(int display)
 static void session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
 {
 	int ret = 0;
-	char wmpid_str[25];
-	char xpid_str[25];
-	char exe_path[262];
-
-	/* initialize (zero out) local variables: */
-	g_memset(wmpid_str, 0, sizeof(char) * 25);
-	g_memset(xpid_str, 0, sizeof(char) * 25);
-	g_memset(exe_path, 0, sizeof(char) * 262);
-
-	/* new style waiting for clients */
-	g_sprintf(wmpid_str, "%d", wmpid);
-	g_sprintf(xpid_str, "%d", xpid);
-	log_message(LOG_LEVEL_INFO, "starting xrdp-ng-sessvc - xpid=%s - wmpid=%s", xpid_str, wmpid_str);
 
 	env_set_user(username, 0, display);
 
@@ -318,7 +305,7 @@ static void session_start_sessvc(int xpid, int wmpid, long data, char *username,
 	g_waitpid(wmpid);
 	//g_sigterm(xpid);
 	//g_sigterm(wmpid);
-	g_sleep(1000 * 2000);
+	//g_sleep(1000 * 2000);
 	//auth_end(data);
 	//g_exit(0);
 }

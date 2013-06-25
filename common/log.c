@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+#include <winpr/crt.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -612,7 +614,7 @@ log_message(const enum logLevels lvl, const char *msg, ...)
 
 		if (staticLogConfig->fd > 0)
 		{
-			writereply = g_file_write(staticLogConfig->fd, buff, g_strlen(buff));
+			writereply = g_file_write(staticLogConfig->fd, (BYTE*) buff, g_strlen(buff));
 
 			if (writereply <= 0)
 			{

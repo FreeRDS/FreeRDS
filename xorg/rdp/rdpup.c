@@ -912,7 +912,7 @@ int rdpup_check(void)
 	int new_sck;
 	char buf[8];
 
-	sel = g_tcp_select(g_listen_sck, g_sck, g_dis_listen_sck);
+	sel = g_tcp_select3(g_listen_sck, g_sck, g_dis_listen_sck);
 
 	if (sel & 1)
 	{
