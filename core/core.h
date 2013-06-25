@@ -23,6 +23,7 @@
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
 #include <freerdp/codec/rfx.h>
+#include <freerdp/codec/nsc.h>
 
 #include <winpr/crt.h>
 #include <winpr/stream.h>
@@ -78,24 +79,24 @@ typedef struct xrdp_session xrdpSession;
 struct xrdp_session
 {
 	long id;
-	struct trans* trans;
 	int (*callback)(long id, int msg, long param1, long param2, long param3, long param4);
-	void* rdp;
-	void* orders;
-	int up_and_running;
-	int (*is_term)(void);
 
 	/* FreeRDP */
 	rdpContext* context;
 	freerdp_peer* client;
 	rdpSettings* settings;
 
+	BOOL codecMode;
+	int bytesPerPixel;
+
 	wStream* bs;
 	wStream* bts;
 
 	wStream* rfx_s;
-	int bytesPerPixel;
 	RFX_CONTEXT* rfx_context;
+
+	wStream* nsc_s;
+	NSC_CONTEXT* nsc_context;
 };
 
 FREERDP_API xrdpSession* libxrdp_session_new(rdpSettings* settings);

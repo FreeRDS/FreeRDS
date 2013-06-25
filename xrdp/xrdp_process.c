@@ -74,11 +74,6 @@ void xrdp_peer_context_free(freerdp_peer* client, xrdpProcess* context)
 
 }
 
-xrdpProcess* xrdp_process_create(xrdpListener* owner, tbus done_event)
-{
-	return NULL;
-}
-
 xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* transport)
 {
 	int pid;
@@ -135,16 +130,6 @@ xrdpWm* xrdp_process_get_wm(xrdpProcess* self)
 	return self->wm;
 }
 
-void xrdp_process_set_transport(xrdpProcess* self, struct trans* transport)
-{
-
-}
-
-int xrdp_process_main_loop(xrdpProcess* self)
-{
-	return 0;
-}
-
 BOOL xrdp_peer_capabilities(freerdp_peer* client)
 {
 	return TRUE;
@@ -183,6 +168,9 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 
 	if (settings->Password)
 		settings->AutoLogonEnabled = 1;
+
+	if (settings->RemoteFxCodec || settings->NSCodec)
+		xfp->session->codecMode = TRUE;
 
 	xfp->wm = xrdp_wm_create(xfp);
 	xfp->activated = TRUE;

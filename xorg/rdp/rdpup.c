@@ -652,7 +652,7 @@ static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
 			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
 
-	if (g_rdpScreen.RemoteFX)
+	if (g_rdpScreen.RemoteFX || g_rdpScreen.NSCodec)
 	{
 		g_rdpScreen.CodecMode = 1;
 	}

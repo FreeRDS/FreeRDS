@@ -66,10 +66,8 @@ void xrdp_cache_delete(xrdpCache *self)
 	int i;
 	int j;
 
-	if (self == 0)
-	{
+	if (!self)
 		return;
-	}
 
 	/* free all the cached bitmaps */
 	for (i = 0; i < 3; i++)
@@ -322,7 +320,7 @@ int xrdp_cache_add_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int hints)
 
 	if (!self->BitmapCompressionDisabled)
 	{
-		if (self->bitmap_cache_version & 4)
+		if (self->bitmap_cache_version == 3)
 		{
 			if (libxrdp_orders_send_bitmap3(self->session, bitmap->width, bitmap->height, bitmap->bpp,
 					bitmap->data, cache_id, cache_idx, hints) == 0)
@@ -330,35 +328,28 @@ int xrdp_cache_add_bitmap(xrdpCache *self, xrdpBitmap *bitmap, int hints)
 				return MAKELONG(cache_idx, cache_id);
 			}
 		}
-
-		if (self->bitmap_cache_version & 2)
+		else if (self->bitmap_cache_version == 2)
 		{
 			libxrdp_orders_send_bitmap2(self->session, bitmap->width, bitmap->height, bitmap->bpp,
 					bitmap->data, cache_id, cache_idx, hints);
 		}
-		else
+		else if (self->bitmap_cache_version == 1)
 		{
-			if (self->bitmap_cache_version & 1)
-			{
-				libxrdp_orders_send_bitmap(self->session, bitmap->width, bitmap->height, bitmap->bpp,
-						bitmap->data, cache_id, cache_idx);
-			}
+			libxrdp_orders_send_bitmap(self->session, bitmap->width, bitmap->height, bitmap->bpp,
+					bitmap->data, cache_id, cache_idx);
 		}
 	}
 	else
 	{
-		if (self->bitmap_cache_version & 2)
+		if (self->bitmap_cache_version == 2)
 		{
 			libxrdp_orders_send_raw_bitmap2(self->session, bitmap->width, bitmap->height, bitmap->bpp,
 					bitmap->data, cache_id, cache_idx);
 		}
-		else
+		else if (self->bitmap_cache_version == 1)
 		{
-			if (self->bitmap_cache_version & 1)
-			{
-				libxrdp_orders_send_raw_bitmap(self->session, bitmap->width, bitmap->height,
-						bitmap->bpp, bitmap->data, cache_id, cache_idx);
-			}
+			libxrdp_orders_send_raw_bitmap(self->session, bitmap->width, bitmap->height,
+					bitmap->bpp, bitmap->data, cache_id, cache_idx);
 		}
 	}
 
@@ -374,15 +365,11 @@ int xrdp_cache_add_palette(xrdpCache *self, int *palette)
 	int oldest;
 	int index;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
-	if (palette == 0)
-	{
+	if (!palette)
 		return 0;
-	}
 
 	if (self->wm->screen->bpp > 8)
 	{
@@ -493,10 +480,8 @@ int xrdp_cache_add_pointer(xrdpCache *self, xrdpPointerItem *pointer_item)
 	int oldest;
 	int index;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
 	self->pointer_stamp++;
 
@@ -543,14 +528,11 @@ int xrdp_cache_add_pointer(xrdpCache *self, xrdpPointerItem *pointer_item)
 }
 
 /*****************************************************************************/
-/* this does not take owership of pointer_item, it makes a copy */
+/* this does not take ownership of pointer_item, it makes a copy */
 int xrdp_cache_add_pointer_static(xrdpCache *self, xrdpPointerItem *pointer_item, int index)
 {
-
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
 	self->pointer_items[index].x = pointer_item->x;
 	self->pointer_items[index].y = pointer_item->y;
@@ -573,10 +555,8 @@ int xrdp_cache_add_brush(xrdpCache *self, char *brush_item_data)
 	int oldest;
 	int index;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
 	self->brush_stamp++;
 

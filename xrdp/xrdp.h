@@ -134,7 +134,6 @@ int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
 
 /* xrdp_process.c */
-xrdpProcess* xrdp_process_create(xrdpListener* owner, tbus done_event);
 xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* transport);
 void xrdp_process_delete(xrdpProcess* self);
 int xrdp_process_get_status(xrdpProcess* self);
@@ -142,8 +141,6 @@ tbus xrdp_process_get_term_event(xrdpProcess* self);
 xrdpSession* xrdp_process_get_session(xrdpProcess* self);
 int xrdp_process_get_session_id(xrdpProcess* self);
 xrdpWm* xrdp_process_get_wm(xrdpProcess* self);
-void xrdp_process_set_transport(xrdpProcess* self, struct trans* transport);
-int xrdp_process_main_loop(xrdpProcess* self);
 void* xrdp_process_main_thread(void* arg);
 
 /* xrdp_listen.c */

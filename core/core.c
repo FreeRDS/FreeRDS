@@ -66,6 +66,8 @@ xrdpSession* libxrdp_session_new(rdpSettings* settings)
 
 		session->settings = settings;
 
+		session->bytesPerPixel = 4;
+
 		session->bs = Stream_New(NULL, 16384);
 		session->bts = Stream_New(NULL, 16384);
 
@@ -76,11 +78,17 @@ xrdpSession* libxrdp_session_new(rdpSettings* settings)
 		session->rfx_context->width = settings->DesktopWidth;
 		session->rfx_context->height = settings->DesktopHeight;
 
+		session->nsc_s = Stream_New(NULL, 16384);
+		session->nsc_context = nsc_context_new();
+
 		//session->bytesPerPixel = 3;
 		//rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
 
-		session->bytesPerPixel = 4;
-		rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+		if (session->bytesPerPixel == 4)
+		{
+			rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+			nsc_context_set_pixel_format(session->nsc_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+		}
 	}
 
 	return session;
@@ -95,6 +103,9 @@ void libxrdp_session_free(xrdpSession* session)
 
 		Stream_Free(session->rfx_s, TRUE);
 		rfx_context_free(session->rfx_context);
+
+		Stream_Free(session->nsc_s, TRUE);
+		nsc_context_free(session->nsc_context);
 
 		free(session);
 	}
@@ -742,11 +753,31 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 	rect.width = height;
 	rect.height = height;
 
-	s = session->rfx_s;
-	Stream_Clear(s);
-	Stream_SetPosition(s, 0);
+	if (session->settings->RemoteFxCodec)
+	{
+		s = session->rfx_s;
+		Stream_Clear(s);
+		Stream_SetPosition(s, 0);
 
-	rfx_compose_message(session->rfx_context, s, &rect, 1, data, width, height, bytesPerPixel * width);
+		rfx_compose_message(session->rfx_context, s, &rect, 1, data, width, height, bytesPerPixel * width);
+
+		cmd.codecID = session->settings->RemoteFxCodecId;
+	}
+	else if (session->settings->NSCodec)
+	{
+		s = session->nsc_s;
+		Stream_Clear(s);
+		Stream_SetPosition(s, 0);
+
+		nsc_compose_message(session->nsc_context, s, data, width, height, bytesPerPixel * width);
+
+		cmd.codecID = session->settings->NSCodecId;
+	}
+	else
+	{
+		printf("%s: no codecs available!\n", __FUNCTION__);
+		return -1;
+	}
 
 	cmd.destLeft = x;
 	cmd.destTop = y;
@@ -754,7 +785,6 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 	cmd.destBottom = y + height;
 
 	cmd.bpp = 32;
-	cmd.codecID = session->settings->RemoteFxCodecId;
 	cmd.width = width;
 	cmd.height = height;
 	cmd.bitmapDataLength = Stream_GetPosition(s);
