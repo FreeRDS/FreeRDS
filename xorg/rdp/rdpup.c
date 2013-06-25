@@ -423,7 +423,9 @@ static int rdpup_recv_msg(wStream* s)
 
 	if (s != 0)
 	{
-		init_stream(s, 4);
+		Stream_EnsureCapacity(s, 4);
+		Stream_SetPosition(s, 0);
+
 		rv = rdpup_recv(s->buffer, 4);
 
 		if (rv == 0)
@@ -432,7 +434,9 @@ static int rdpup_recv_msg(wStream* s)
 
 			if (len > 3)
 			{
-				init_stream(s, len);
+				Stream_EnsureCapacity(s, len);
+				Stream_SetPosition(s, 0);
+
 				rv = rdpup_recv(s->buffer, len - 4);
 			}
 		}
@@ -522,29 +526,30 @@ static int rdpup_send_caps(void)
 	int rv;
 	int cap_count;
 	int cap_bytes;
-	wStream* ls;
+	wStream* s;
 
-	make_stream(ls);
-	init_stream(ls, 8192);
-	ls->pointer += 8;
+	s = Stream_New(NULL, 8192);
+	Stream_Seek(s, 8);
 
 	cap_count = 0;
 	cap_bytes = 0;
 
-	len = (int) (ls->pointer - ls->buffer);
-	ls->pointer = ls->buffer;
-	Stream_Write_UINT16(ls, 2); /* caps */
-	Stream_Write_UINT16(ls, cap_count); /* num caps */
-	Stream_Write_UINT32(ls, cap_bytes); /* caps len after header */
+	len = (int) Stream_GetPosition(s);
+	Stream_SetPosition(s, 0);
 
-	rv = rdpup_send(ls->buffer, len);
+	Stream_Write_UINT16(s, 2); /* caps */
+	Stream_Write_UINT16(s, cap_count); /* num caps */
+	Stream_Write_UINT32(s, cap_bytes); /* caps len after header */
+
+	rv = rdpup_send(s->buffer, len);
 
 	if (rv != 0)
 	{
 		LLOGLN(0, ("rdpup_send_caps: rdpup_send failed"));
 	}
 
-	free_stream(ls);
+	Stream_Free(s, TRUE);
+
 	return rv;
 }
 
@@ -838,14 +843,12 @@ int rdpup_init(void)
 
 	if (g_in_s == 0)
 	{
-		make_stream(g_in_s);
-		init_stream(g_in_s, 8192);
+		g_in_s = Stream_New(NULL, 8192);
 	}
 
 	if (g_out_s == 0)
 	{
-		make_stream(g_out_s);
-		init_stream(g_out_s, 1920 * 1088 * g_Bpp + 100);
+		g_out_s = Stream_New(NULL, 1920 * 1088 * g_Bpp + 100);
 	}
 
 	if (g_use_uds)
@@ -973,10 +976,11 @@ int rdpup_begin_update(void)
 			return 0;
 		}
 
-		init_stream(g_out_s, 0);
-		g_out_s->pointer += 8;
+		Stream_SetPosition(g_out_s, 0);
+		Stream_Seek(g_out_s, 8);
 		Stream_Write_UINT16(g_out_s, 1); /* begin update */
 		Stream_Write_UINT16(g_out_s, 4); /* size */
+
 		LLOGLN(10, ("begin %d", g_count));
 		g_begin = 1;
 		g_count = 1;
@@ -1024,8 +1028,9 @@ int rdpup_pre_check(int in_size)
 	{
 		rdpup_send_msg(g_out_s);
 		g_count = 0;
-		init_stream(g_out_s, 0);
-		g_out_s->pointer += 8;
+
+		Stream_SetPosition(g_out_s, 0);
+		Stream_Seek(g_out_s, 8);
 	}
 
 	return 0;
