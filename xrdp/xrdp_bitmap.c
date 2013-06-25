@@ -429,7 +429,7 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 		}
 
 		/* read file size */
-		s = Stream_New(s, 8192);
+		s = Stream_New(NULL, 8192);
 		g_file_read(fd, s->buffer, 4);
 		Stream_Read_UINT32(s, size);
 		/* read bmp header */

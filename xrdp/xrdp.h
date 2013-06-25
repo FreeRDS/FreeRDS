@@ -25,10 +25,12 @@
 #ifndef XRDP_H
 #define XRDP_H
 
+#include <winpr/crt.h>
+#include <winpr/stream.h>
+
 #include <freerdp/freerdp.h>
 
 #include "arch.h"
-#include "parse.h"
 #include "trans.h"
 #include "list.h"
 

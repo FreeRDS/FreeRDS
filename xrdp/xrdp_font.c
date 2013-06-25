@@ -93,7 +93,7 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 			Stream_Seek(s, 8);
 			index = 32;
 
-			while (s_check_rem_len(s, 16))
+			while (Stream_GetRemainingLength(s) >= 16)
 			{
 				f = self->font_items + index;
 				Stream_Read_INT16(s, i);
@@ -118,7 +118,7 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 					break;
 				}
 
-				if (s_check_rem_len(s, datasize))
+				if (Stream_GetRemainingLength(s) >= datasize)
 				{
 					f->data = (char *) g_malloc(datasize, 0);
 					Stream_Read(s, f->data, datasize);

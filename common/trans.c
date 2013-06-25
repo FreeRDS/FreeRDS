@@ -21,7 +21,6 @@
 #include "os_calls.h"
 #include "trans.h"
 #include "arch.h"
-#include "parse.h"
 
 /*****************************************************************************/
 struct trans* trans_create(int mode, int in_size, int out_size)

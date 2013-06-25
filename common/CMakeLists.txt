@@ -38,7 +38,6 @@ set(${MODULE_PREFIX}_HEADERS
 	os_calls.h
 	list.h
 	file.h
-	parse.h
 	defines.h
 	log.h
 	os_calls.h

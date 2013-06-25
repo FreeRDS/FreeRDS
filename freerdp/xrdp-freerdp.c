@@ -21,7 +21,6 @@
 
 #include "log.h"
 #include "arch.h"
-#include "parse.h"
 #include "os_calls.h"
 #include "defines.h"
 #include "xrdp_rail.h"
@@ -29,6 +28,9 @@
 #include <X11/Xlib.h>
 
 #include "xrdp-color.h"
+
+#include <winpr/crt.h>
+#include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
 #include <freerdp/settings.h>

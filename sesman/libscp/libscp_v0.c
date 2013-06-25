@@ -253,7 +253,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 		Stream_Read_UINT16_BE(c->in_s, sz);
 		scp_session_set_bpp(session, (tui8)sz);
 
-		if (s_check_rem_len(c->in_s, 2))
+		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
 			/* reading domain */
 			Stream_Read_UINT16_BE(c->in_s, sz);
@@ -266,7 +266,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 			}
 		}
 
-		if (s_check_rem_len(c->in_s, 2))
+		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
 			/* reading program */
 			Stream_Read_UINT16_BE(c->in_s, sz);
@@ -279,7 +279,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 			}
 		}
 
-		if (s_check_rem_len(c->in_s, 2))
+		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
 			/* reading directory */
 			Stream_Read_UINT16_BE(c->in_s, sz);
@@ -292,7 +292,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 			}
 		}
 
-		if (s_check_rem_len(c->in_s, 2))
+		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
 			/* reading client IP address */
 			Stream_Read_UINT16_BE(c->in_s, sz);

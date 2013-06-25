@@ -33,7 +33,6 @@
 
 #include "d3des.h"
 #include "arch.h"
-#include "parse.h"
 #include "os_calls.h"
 #include "log.h"
 #include "env.h"
@@ -48,5 +47,8 @@
 #include "thread_calls.h"
 
 #include "libscp.h"
+
+#include <winpr/crt.h>
+#include <winpr/stream.h>
 
 #endif

@@ -28,9 +28,11 @@
 #define LIBSCP_TYPES_H
 
 #include "os_calls.h"
-#include "parse.h"
 #include "arch.h"
 #include "log.h"
+
+#include <winpr/crt.h>
+#include <winpr/stream.h>
 
 #define SCP_SID      tui32
 #define SCP_DISPLAY  tui16

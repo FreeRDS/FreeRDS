@@ -22,12 +22,10 @@
 
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
-
 #include <freerdp/codec/rfx.h>
 
-/*
- * Phase 1: Export same interface as libxrdp and adapt internally to FreeRDP
- */
+#include <winpr/crt.h>
+#include <winpr/stream.h>
 
 #include "xrdp_rail.h"
 
@@ -69,7 +67,6 @@ struct xrdp_rect
 typedef struct xrdp_rect xrdpRect;
 
 #include "arch.h"
-#include "parse.h"
 #include "trans.h"
 #include "defines.h"
 #include "os_calls.h"

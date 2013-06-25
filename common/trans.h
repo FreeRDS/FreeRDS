@@ -22,7 +22,9 @@
 #define TRANS_H
 
 #include "arch.h"
-#include "parse.h"
+
+#include <winpr/crt.h>
+#include <winpr/stream.h>
 
 #define TRANS_MODE_TCP 1
 #define TRANS_MODE_UNIX 2

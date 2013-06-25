@@ -22,7 +22,9 @@
 #include "os_calls.h"
 #include "list.h"
 #include "file.h"
-#include "parse.h"
+
+#include <winpr/crt.h>
+#include <winpr/stream.h>
 
 /*****************************************************************************/
 /* returns error
@@ -97,10 +99,8 @@ static int file_read_line(wStream* s, char *text)
 
 	skip_to_end = 0;
 
-	if (!s_check_rem_len(s, 1))
-	{
+	if (Stream_GetRemainingLength(s) < 1)
 		return 1;
-	}
 
 	hold = s->pointer;
 	i = 0;
@@ -119,7 +119,7 @@ static int file_read_line(wStream* s, char *text)
 			i++;
 		}
 
-		if (s_check_rem_len(s, 1))
+		if (Stream_GetRemainingLength(s) >= 1)
 		{
 			Stream_Read_UINT8(s, c);
 		}
@@ -136,7 +136,7 @@ static int file_read_line(wStream* s, char *text)
 
 		while (c == 10 || c == 13)
 		{
-			if (s_check_rem_len(s, 1))
+			if (Stream_GetRemainingLength(s) >= 1)
 			{
 				Stream_Read_UINT8(s, c);
 			}
@@ -240,10 +240,8 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 
 		for (index = 0; index < len; index++)
 		{
-			if (!s_check_rem_len(s, 1))
-			{
+			if (Stream_GetRemainingLength(s) < 1)
 				break;
-			}
 
 			Stream_Read_UINT8(s, c);
 
