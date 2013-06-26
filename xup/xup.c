@@ -856,8 +856,10 @@ int lib_mod_signal(xrdpModule *mod)
 				for (index = 0; index < num_orders; index++)
 				{
 					phold = s->pointer;
+
 					Stream_Read_UINT16(s, type);
-					Stream_Read_UINT16(s, len);
+					Stream_Read_UINT32(s, len);
+
 					rv = lib_mod_process_orders(mod, type, s);
 
 					if (rv != 0)
