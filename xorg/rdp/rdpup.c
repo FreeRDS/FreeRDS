@@ -348,7 +348,7 @@ static int rdpup_send_pending(void)
 	if (g_connected && g_begin)
 	{
 		LLOGLN(10, ("end %d", g_count));
-		rdpup_write_order_header(g_out_s, 2, 6);
+		rdpup_write_order_header(g_out_s, XRDP_SERVER_END_UPDATE, 6);
 		rdpup_send_msg(g_out_s);
 	}
 

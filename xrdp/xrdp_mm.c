@@ -480,7 +480,6 @@ static void cleanup_sesman_connection(xrdpMm *self)
 	}
 }
 
-/*****************************************************************************/
 static int xrdp_mm_process_login_response(xrdpMm *self, wStream* s)
 {
 	int ok;
@@ -522,7 +521,6 @@ static int xrdp_mm_process_login_response(xrdpMm *self, wStream* s)
 	return rv;
 }
 
-/*****************************************************************************/
 static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
 {
 	int fd;
@@ -579,7 +577,6 @@ static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
 	return 0;
 }
 
-/*****************************************************************************/
 /* This is the callback registered for sesman communication replies. */
 static int xrdp_mm_sesman_data_in(struct trans *trans)
 {
@@ -630,7 +627,6 @@ static int xrdp_mm_sesman_data_in(struct trans *trans)
 
 #ifdef ACCESS
 #ifndef USE_NOPAM
-/*********************************************************************/
 /* return 0 on success */
 static int access_control(char *username, char *password, char *srv)
 {
@@ -890,7 +886,7 @@ static const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm *self)
 }
 #endif
 #endif
-/*****************************************************************************/
+
 int xrdp_mm_connect(xrdpMm *self)
 {
 	xrdpList *names;
@@ -1104,7 +1100,6 @@ int xrdp_mm_connect(xrdpMm *self)
 	return rv;
 }
 
-/*****************************************************************************/
 int xrdp_mm_get_wait_objs(xrdpMm *self, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
 {
 	int rv = 0;
@@ -1132,7 +1127,6 @@ int xrdp_mm_get_wait_objs(xrdpMm *self, tbus *read_objs, int *rcount, tbus *writ
 	return rv;
 }
 
-/*****************************************************************************/
 int xrdp_mm_check_wait_objs(xrdpMm *self)
 {
 	int rv;
@@ -1171,7 +1165,6 @@ int xrdp_mm_check_wait_objs(xrdpMm *self)
 	return rv;
 }
 
-/*****************************************************************************/
 int server_begin_update(xrdpModule *mod)
 {
 	xrdpWm* wm;
@@ -1184,7 +1177,6 @@ int server_begin_update(xrdpModule *mod)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_end_update(xrdpModule *mod)
 {
 	xrdpPainter *p;
@@ -1202,7 +1194,6 @@ int server_end_update(xrdpModule *mod)
 	return 0;
 }
 
-/*****************************************************************************/
 /* got bell signal... try to send to client */
 int server_bell_trigger(xrdpModule *mod)
 {
@@ -1213,7 +1204,6 @@ int server_bell_trigger(xrdpModule *mod)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_fill_rect(xrdpModule* mod, int x, int y, int cx, int cy)
 {
 	xrdpWm* wm;
@@ -1229,7 +1219,6 @@ int server_fill_rect(xrdpModule* mod, int x, int y, int cx, int cy)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_screen_blt(xrdpModule* mod, int x, int y, int cx, int cy, int srcx, int srcy)
 {
 	xrdpWm* wm;
@@ -1246,9 +1235,7 @@ int server_screen_blt(xrdpModule* mod, int x, int y, int cx, int cy, int srcx, i
 	return 0;
 }
 
-/*****************************************************************************/
-int server_paint_rect(xrdpModule* mod, int x, int y, int cx, int cy, char *data, int width, int height, int srcx,
-		int srcy)
+int server_paint_rect(xrdpModule* mod, int x, int y, int cx, int cy, char *data, int width, int height, int srcx, int srcy)
 {
 	xrdpWm* wm;
 	xrdpBitmap *b;
@@ -1276,7 +1263,6 @@ int server_paint_rect(xrdpModule* mod, int x, int y, int cx, int cy, char *data,
 	return 0;
 }
 
-/*****************************************************************************/
 int server_set_pointer(xrdpModule* mod, int x, int y, char *data, char *mask)
 {
 	xrdpWm* wm;
@@ -1286,7 +1272,6 @@ int server_set_pointer(xrdpModule* mod, int x, int y, char *data, char *mask)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_set_pointer_ex(xrdpModule* mod, int x, int y, char *data, char *mask, int bpp)
 {
 	xrdpWm* wm;
@@ -1296,7 +1281,6 @@ int server_set_pointer_ex(xrdpModule* mod, int x, int y, char *data, char *mask,
 	return 0;
 }
 
-/*****************************************************************************/
 int server_palette(xrdpModule* mod, int *palette)
 {
 	xrdpWm* wm;
@@ -1312,7 +1296,6 @@ int server_palette(xrdpModule* mod, int *palette)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_msg(xrdpModule* mod, char *msg, int code)
 {
 	xrdpWm* wm;
@@ -1327,13 +1310,11 @@ int server_msg(xrdpModule* mod, char *msg, int code)
 	return xrdp_wm_log_msg(wm, msg);
 }
 
-/*****************************************************************************/
 int server_is_term(xrdpModule *mod)
 {
 	return g_is_term();
 }
 
-/*****************************************************************************/
 int server_set_clip(xrdpModule* mod, int x, int y, int cx, int cy)
 {
 	xrdpPainter *p;
@@ -1346,7 +1327,6 @@ int server_set_clip(xrdpModule* mod, int x, int y, int cx, int cy)
 	return xrdp_painter_set_clip(p, x, y, cx, cy);
 }
 
-/*****************************************************************************/
 int server_reset_clip(xrdpModule *mod)
 {
 	xrdpPainter *p;
@@ -1359,7 +1339,6 @@ int server_reset_clip(xrdpModule *mod)
 	return xrdp_painter_clr_clip(p);
 }
 
-/*****************************************************************************/
 int server_set_fgcolor(xrdpModule* mod, int fgcolor)
 {
 	xrdpPainter *p;
@@ -1374,7 +1353,6 @@ int server_set_fgcolor(xrdpModule* mod, int fgcolor)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_set_bgcolor(xrdpModule* mod, int bgcolor)
 {
 	xrdpPainter *p;
@@ -1388,7 +1366,6 @@ int server_set_bgcolor(xrdpModule* mod, int bgcolor)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_set_opcode(xrdpModule* mod, int opcode)
 {
 	xrdpPainter *p;
@@ -1402,7 +1379,6 @@ int server_set_opcode(xrdpModule* mod, int opcode)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_set_mixmode(xrdpModule* mod, int mixmode)
 {
 	xrdpPainter *p;
@@ -1416,7 +1392,6 @@ int server_set_mixmode(xrdpModule* mod, int mixmode)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_set_brush(xrdpModule* mod, int x_orgin, int y_orgin, int style, char *pattern)
 {
 	xrdpPainter *p;
@@ -1433,7 +1408,6 @@ int server_set_brush(xrdpModule* mod, int x_orgin, int y_orgin, int style, char 
 	return 0;
 }
 
-/*****************************************************************************/
 int server_set_pen(xrdpModule* mod, int style, int width)
 {
 	xrdpPainter *p;
@@ -1448,7 +1422,6 @@ int server_set_pen(xrdpModule* mod, int style, int width)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_draw_line(xrdpModule* mod, int x1, int y1, int x2, int y2)
 {
 	xrdpWm* wm;
@@ -1463,7 +1436,6 @@ int server_draw_line(xrdpModule* mod, int x1, int y1, int x2, int y2)
 	return xrdp_painter_line(p, wm->target_surface, x1, y1, x2, y2);
 }
 
-/*****************************************************************************/
 int server_add_char(xrdpModule* mod, int font, int charactor, int offset, int baseline, int width, int height, char *data)
 {
 	xrdpFontChar fi;
@@ -1477,7 +1449,6 @@ int server_add_char(xrdpModule* mod, int font, int charactor, int offset, int ba
 	return libxrdp_orders_send_font(((xrdpWm *) mod->wm)->session, &fi, font, charactor);
 }
 
-/*****************************************************************************/
 int server_draw_text(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top, int clip_right,
 		int clip_bottom, int box_left, int box_top, int box_right, int box_bottom, int x, int y, char *data,
 		int data_len)
@@ -1495,7 +1466,6 @@ int server_draw_text(xrdpModule* mod, int font, int flags, int mixmode, int clip
 			clip_bottom, box_left, box_top, box_right, box_bottom, x, y, data, data_len);
 }
 
-/*****************************************************************************/
 int server_reset(xrdpModule* mod, int width, int height, int bpp)
 {
 	xrdpWm* wm;
@@ -1552,7 +1522,6 @@ int find_name_in_lists(char *inName, xrdpList *names)
 	return reply;
 }
 
-/*****************************************************************************/
 int server_create_os_surface(xrdpModule* mod, int rdpindex, int width, int height)
 {
 	xrdpWm* wm;
@@ -1574,7 +1543,6 @@ int server_create_os_surface(xrdpModule* mod, int rdpindex, int width, int heigh
 	return 0;
 }
 
-/*****************************************************************************/
 int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 {
 	xrdpWm* wm;
@@ -1621,7 +1589,6 @@ int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_delete_os_surface(xrdpModule* mod, int rdpindex)
 {
 	xrdpWm* wm;
@@ -1650,7 +1617,6 @@ int server_delete_os_surface(xrdpModule* mod, int rdpindex)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
 {
 	xrdpWm* wm;
@@ -1679,7 +1645,6 @@ int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int rdpi
 	return 0;
 }
 
-/*****************************************************************************/
 int server_set_hints(xrdpModule* mod, int hints, int mask)
 {
 	xrdpWm* wm;
@@ -1701,7 +1666,6 @@ int server_set_hints(xrdpModule* mod, int hints, int mask)
 	return 0;
 }
 
-/*****************************************************************************/
 int server_window_new_update(xrdpModule* mod, int window_id, struct rail_window_state_order *window_state, int flags)
 {
 	xrdpWm* wm;
@@ -1710,7 +1674,6 @@ int server_window_new_update(xrdpModule* mod, int window_id, struct rail_window_
 	return libxrdp_window_new_update(wm->session, window_id, window_state, flags);
 }
 
-/*****************************************************************************/
 int server_window_delete(xrdpModule* mod, int window_id)
 {
 	xrdpWm* wm;
@@ -1719,7 +1682,6 @@ int server_window_delete(xrdpModule* mod, int window_id)
 	return libxrdp_window_delete(wm->session, window_id);
 }
 
-/*****************************************************************************/
 int server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id,
 		struct rail_icon_info *icon_info, int flags)
 {
@@ -1729,7 +1691,6 @@ int server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cach
 	return libxrdp_window_icon(wm->session, window_id, cache_entry, cache_id, icon_info, flags);
 }
 
-/*****************************************************************************/
 int server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags)
 {
 	xrdpWm* wm;
@@ -1738,7 +1699,6 @@ int server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, i
 	return libxrdp_window_cached_icon(wm->session, window_id, cache_entry, cache_id, flags);
 }
 
-/*****************************************************************************/
 int server_notify_new_update(xrdpModule* mod, int window_id, int notify_id,
 		struct rail_notify_state_order *notify_state, int flags)
 {
@@ -1748,7 +1708,6 @@ int server_notify_new_update(xrdpModule* mod, int window_id, int notify_id,
 	return libxrdp_notify_new_update(wm->session, window_id, notify_id, notify_state, flags);
 }
 
-/*****************************************************************************/
 int server_notify_delete(xrdpModule* mod, int window_id, int notify_id)
 {
 	xrdpWm* wm;
@@ -1757,7 +1716,6 @@ int server_notify_delete(xrdpModule* mod, int window_id, int notify_id)
 	return libxrdp_notify_delete(wm->session, window_id, notify_id);
 }
 
-/*****************************************************************************/
 int server_monitored_desktop(xrdpModule* mod, struct rail_monitored_desktop_order *mdo, int flags)
 {
 	xrdpWm* wm;
