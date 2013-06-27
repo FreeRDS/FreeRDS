@@ -100,6 +100,15 @@ typedef struct _XRDP_MSG_SCREEN_BLT XRDP_MSG_SCREEN_BLT;
 struct _XRDP_MSG_PAINT_RECT
 {
 	DEFINE_MSG_COMMON();
+
+	INT32 nLeftRect;
+	INT32 nTopRect;
+	INT32 nWidth;
+	INT32 nHeight;
+	INT32 nXSrc;
+	INT32 nYSrc;
+	BYTE* bitmapData;
+	UINT32 bitmapDataLength;
 };
 typedef struct _XRDP_MSG_PAINT_RECT XRDP_MSG_PAINT_RECT;
 
@@ -255,12 +264,39 @@ typedef struct _XRDP_MSG_SET_HINTS XRDP_MSG_SET_HINTS;
 struct _XRDP_MSG_WINDOW_NEW_UPDATE
 {
 	DEFINE_MSG_COMMON();
+
+	UINT32 windowId;
+	UINT32 ownerWindowId;
+	UINT32 style;
+	UINT32 extendedStyle;
+	UINT32 showState;
+	RAIL_UNICODE_STRING titleInfo;
+	UINT32 clientOffsetX;
+	UINT32 clientOffsetY;
+	UINT32 clientAreaWidth;
+	UINT32 clientAreaHeight;
+	UINT32 RPContent;
+	UINT32 rootParentHandle;
+	UINT32 windowOffsetX;
+	UINT32 windowOffsetY;
+	UINT32 windowClientDeltaX;
+	UINT32 windowClientDeltaY;
+	UINT32 windowWidth;
+	UINT32 windowHeight;
+	UINT32 numWindowRects;
+	RECTANGLE_16* windowRects;
+	UINT32 visibleOffsetX;
+	UINT32 visibleOffsetY;
+	UINT32 numVisibilityRects;
+	RECTANGLE_16* visibilityRects;
 };
 typedef struct _XRDP_MSG_WINDOW_NEW_UPDATE XRDP_MSG_WINDOW_NEW_UPDATE;
 
 struct _XRDP_MSG_WINDOW_DELETE
 {
 	DEFINE_MSG_COMMON();
+
+	UINT32 windowId;
 };
 typedef struct _XRDP_MSG_WINDOW_DELETE XRDP_MSG_WINDOW_DELETE;
 
@@ -285,6 +321,7 @@ FREERDP_API int xrdp_write_begin_update(wStream* s, XRDP_MSG_BEGIN_UPDATE* msg);
 FREERDP_API int xrdp_write_end_update(wStream* s, XRDP_MSG_END_UPDATE* msg);
 FREERDP_API int xrdp_write_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg);
 FREERDP_API int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg);
+FREERDP_API int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg);
 FREERDP_API int xrdp_write_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg);
 FREERDP_API int xrdp_write_reset_clip(wStream* s, XRDP_MSG_RESET_CLIP* msg);
 FREERDP_API int xrdp_write_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg);
@@ -299,6 +336,8 @@ FREERDP_API int xrdp_write_switch_os_surface(wStream* s, XRDP_MSG_SWITCH_OS_SURF
 FREERDP_API int xrdp_write_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg);
 FREERDP_API int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
 FREERDP_API int xrdp_write_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg);
+FREERDP_API int xrdp_write_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
+FREERDP_API int xrdp_write_window_delete(wStream* s, XRDP_MSG_WINDOW_DELETE* msg);
 FREERDP_API int xrdp_write_create_framebuffer(wStream* s, XRDP_MSG_CREATE_FRAMEBUFFER* msg);
 
 #ifdef __cplusplus

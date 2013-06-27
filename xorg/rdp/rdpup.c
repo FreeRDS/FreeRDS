@@ -583,21 +583,18 @@ static int rdpup_send_msg(wStream* s)
 	return status;
 }
 
-static int rdpup_write_order_header(wStream* s, int type, int length)
-{
-	Stream_Write_UINT16(s, type);
-	Stream_Write_UINT32(s, length);
-	g_count++;
-
-	return 0;
-}
-
 static int rdpup_send_pending(void)
 {
+	XRDP_MSG_END_UPDATE msg;
+
 	if (g_connected && g_begin)
 	{
 		LLOGLN(10, ("end %d", g_count));
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_END_UPDATE, 6);
+
+		ZeroMemory(&msg, sizeof(XRDP_MSG_END_UPDATE));
+		xrdp_write_end_update(g_out_s, &msg);
+		g_count++;
+
 		rdpup_send_msg(g_out_s);
 	}
 
@@ -1228,7 +1225,7 @@ int rdpup_check(void)
 
 int rdpup_begin_update(void)
 {
-	LLOGLN(10, ("rdpup_begin_update"));
+	XRDP_MSG_BEGIN_UPDATE msg;
 
 	if (g_connected)
 	{
@@ -1242,7 +1239,9 @@ int rdpup_begin_update(void)
 
 		LLOGLN(10, ("begin %d", g_count));
 
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_BEGIN_UPDATE, 6);
+		ZeroMemory(&msg, sizeof(XRDP_MSG_BEGIN_UPDATE));
+		xrdp_write_begin_update(g_out_s, &msg);
+		g_count++;
 
 		g_count = 1;
 		g_begin = 1;
@@ -1253,6 +1252,8 @@ int rdpup_begin_update(void)
 
 int rdpup_end_update(void)
 {
+	XRDP_MSG_END_UPDATE msg;
+
 	LLOGLN(10, ("rdpup_end_update"));
 
 	if (g_connected && g_begin)
@@ -1266,7 +1267,11 @@ int rdpup_end_update(void)
 #if 0
 			rdpScheduleDeferredUpdate();
 #else
-			rdpup_write_order_header(g_out_s, XRDP_SERVER_END_UPDATE, 6);
+
+			ZeroMemory(&msg, sizeof(XRDP_MSG_END_UPDATE));
+			xrdp_write_end_update(g_out_s, &msg);
+			g_count++;
+
 			rdpup_send_msg(g_out_s);
 
 			g_count = 0;
@@ -1619,6 +1624,7 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 	{
 		bitmapLength = w * h * g_Bpp;
 		size = bitmapLength + 26;
+		XRDP_MSG_PAINT_RECT msg;
 
 		for (i = 0; i < h; i++)
 		{
@@ -1627,19 +1633,18 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 			convert_pixels(s, dstp, w);
 		}
 
-		rdpup_pre_check(size);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_PAINT_RECT, size);
+		msg.nLeftRect = x;
+		msg.nTopRect = y;
+		msg.nWidth = w;
+		msg.nHeight = h;
+		msg.nXSrc = 0;
+		msg.nYSrc = 0;
+		msg.bitmapData = (BYTE*) pfbBackBufferMemory;
+		msg.bitmapDataLength = bitmapLength;
 
-		Stream_Write_UINT16(g_out_s, x);
-		Stream_Write_UINT16(g_out_s, y);
-		Stream_Write_UINT16(g_out_s, w);
-		Stream_Write_UINT16(g_out_s, h);
-		Stream_Write_UINT32(g_out_s, bitmapLength);
-		Stream_Write(g_out_s, pfbBackBufferMemory, bitmapLength);
-		Stream_Write_UINT16(g_out_s, w);
-		Stream_Write_UINT16(g_out_s, h);
-		Stream_Write_UINT16(g_out_s, 0);
-		Stream_Write_UINT16(g_out_s, 0);
+		rdpup_pre_check(size);
+		xrdp_write_paint_rect(g_out_s, &msg);
+		g_count++;
 	}
 }
 
@@ -1741,6 +1746,7 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 				{
 					bitmapLength = lw * lh * id->Bpp;
 					size = bitmapLength + 26;
+					XRDP_MSG_PAINT_RECT msg;
 
 					for (i = 0; i < lh; i++)
 					{
@@ -1749,18 +1755,18 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 						convert_pixels(s, dstp, lw);
 					}
 
+					msg.nLeftRect = lx;
+					msg.nTopRect = ly;
+					msg.nWidth = lw;
+					msg.nHeight = lh;
+					msg.nXSrc = 0;
+					msg.nYSrc = 0;
+					msg.bitmapData = (BYTE*) pfbBackBufferMemory;
+					msg.bitmapDataLength = bitmapLength;
+
 					rdpup_pre_check(size);
-					rdpup_write_order_header(g_out_s, XRDP_SERVER_PAINT_RECT, size);
-					Stream_Write_UINT16(g_out_s, lx);
-					Stream_Write_UINT16(g_out_s, ly);
-					Stream_Write_UINT16(g_out_s, lw);
-					Stream_Write_UINT16(g_out_s, lh);
-					Stream_Write_UINT32(g_out_s, bitmapLength);
-					Stream_Write(g_out_s, pfbBackBufferMemory, bitmapLength);
-					Stream_Write_UINT16(g_out_s, lw);
-					Stream_Write_UINT16(g_out_s, lh);
-					Stream_Write_UINT16(g_out_s, 0);
-					Stream_Write_UINT16(g_out_s, 0);
+					xrdp_write_paint_rect(g_out_s, &msg);
+					g_count++;
 				}
 
 				lx += 64;
@@ -1818,119 +1824,95 @@ void rdpup_create_framebuffer(XRDP_MSG_CREATE_FRAMEBUFFER* msg)
 
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec *priv)
 {
-	int bytes;
-	int index;
-	int flags;
-	int num_window_rects;
-	int num_visibility_rects;
-	int title_bytes;
-	int style;
-	int ext_style;
-	int root_id;
-	char title[256];
+	int length;
+	RECTANGLE_16 windowRects;
+	RECTANGLE_16 visibilityRects;
+	XRDP_MSG_WINDOW_NEW_UPDATE msg;
 
 	LLOGLN(10, ("rdpup_create_window: id 0x%8.8x",
 			(int)(pWindow->drawable.id)));
 
 	if (g_connected)
 	{
-		root_id = pWindow->drawable.pScreen->root->drawable.id;
+		msg.rootParentHandle = (UINT32) pWindow->drawable.pScreen->root->drawable.id;
 
 		if (pWindow->overrideRedirect)
 		{
-			style = XR_STYLE_TOOLTIP;
-			ext_style = XR_EXT_STYLE_TOOLTIP;
+			msg.style = XR_STYLE_TOOLTIP;
+			msg.extendedStyle = XR_EXT_STYLE_TOOLTIP;
 		}
 		else
 		{
-			style = XR_STYLE_NORMAL;
-			ext_style = XR_EXT_STYLE_NORMAL;
+			msg.style = XR_STYLE_NORMAL;
+			msg.extendedStyle = XR_EXT_STYLE_NORMAL;
 		}
 
-		flags = WINDOW_ORDER_TYPE_WINDOW | WINDOW_ORDER_STATE_NEW;
-		strcpy(title, "title");
-		title_bytes = strlen(title);
+		msg.titleInfo.string = (BYTE*) _strdup("title");
+		msg.titleInfo.length = strlen((char*) msg.titleInfo.string);
 
-		num_window_rects = 1;
-		num_visibility_rects = 1;
+		msg.windowId = (UINT32) pWindow->drawable.id;
+		msg.ownerWindowId = (UINT32) pWindow->parent->drawable.id;
 
-		/* calculate bytes */
-		bytes = (6) + (5 * 4) + (2 + title_bytes) + (12 * 4) +
-				(2 + num_window_rects * 8) + (4 + 4) +
-				(2 + num_visibility_rects * 8) + 4;
+		msg.showState = 0;
 
-		rdpup_pre_check(bytes);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_WINDOW_NEW_UPDATE, bytes);
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.id); /* window_id */
-		Stream_Write_UINT32(g_out_s, pWindow->parent->drawable.id); /* owner_window_id */
-		flags |= WINDOW_ORDER_FIELD_OWNER;
-		Stream_Write_UINT32(g_out_s, style); /* style */
-		Stream_Write_UINT32(g_out_s, ext_style); /* extended_style */
-		flags |= WINDOW_ORDER_FIELD_STYLE;
-		Stream_Write_UINT32(g_out_s, 0); /* show_state */
-		flags |= WINDOW_ORDER_FIELD_SHOW;
-		Stream_Write_UINT16(g_out_s, title_bytes); /* title_info */
-		Stream_Write(g_out_s, title, title_bytes);
-		flags |= WINDOW_ORDER_FIELD_TITLE;
-		Stream_Write_UINT32(g_out_s, 0); /* client_offset_x */
-		Stream_Write_UINT32(g_out_s, 0); /* client_offset_y */
-		flags |= WINDOW_ORDER_FIELD_CLIENT_AREA_OFFSET;
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.width); /* client_area_width */
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.height); /* client_area_height */
-		flags |= WINDOW_ORDER_FIELD_CLIENT_AREA_SIZE;
-		Stream_Write_UINT32(g_out_s, 0); /* rp_content */
-		Stream_Write_UINT32(g_out_s, root_id); /* root_parent_handle */
-		flags |= WINDOW_ORDER_FIELD_ROOT_PARENT;
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.x); /* window_offset_x */
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.y); /* window_offset_y */
-		flags |= WINDOW_ORDER_FIELD_WND_OFFSET;
-		Stream_Write_UINT32(g_out_s, 0); /* window_client_delta_x */
-		Stream_Write_UINT32(g_out_s, 0); /* window_client_delta_y */
-		flags |= WINDOW_ORDER_FIELD_WND_CLIENT_DELTA;
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.width); /* window_width */
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.height); /* window_height */
-		flags |= WINDOW_ORDER_FIELD_WND_SIZE;
-		Stream_Write_UINT16(g_out_s, num_window_rects); /* num_window_rects */
+		msg.clientOffsetX = 0;
+		msg.clientOffsetY = 0;
 
-		for (index = 0; index < num_window_rects; index++)
-		{
-			Stream_Write_UINT16(g_out_s, 0); /* left */
-			Stream_Write_UINT16(g_out_s, 0); /* top */
-			Stream_Write_UINT16(g_out_s, pWindow->drawable.width); /* right */
-			Stream_Write_UINT16(g_out_s, pWindow->drawable.height); /* bottom */
-		}
+		msg.clientAreaWidth = pWindow->drawable.width;
+		msg.clientAreaHeight = pWindow->drawable.height;
 
-		flags |= WINDOW_ORDER_FIELD_WND_RECTS;
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.x); /* visible_offset_x */
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.y); /* visible_offset_y */
-		flags |= WINDOW_ORDER_FIELD_VIS_OFFSET;
-		Stream_Write_UINT16(g_out_s, num_visibility_rects); /* num_visibility_rects */
+		msg.RPContent = 0;
 
-		for (index = 0; index < num_visibility_rects; index++)
-		{
-			Stream_Write_UINT16(g_out_s, 0); /* left */
-			Stream_Write_UINT16(g_out_s, 0); /* top */
-			Stream_Write_UINT16(g_out_s, pWindow->drawable.width); /* right */
-			Stream_Write_UINT16(g_out_s, pWindow->drawable.height); /* bottom */
-		}
+		msg.windowOffsetX = pWindow->drawable.x;
+		msg.windowOffsetY = pWindow->drawable.y;
 
-		flags |= WINDOW_ORDER_FIELD_VISIBILITY;
+		msg.windowClientDeltaX = 0;
+		msg.windowClientDeltaY = 0;
 
-		Stream_Write_UINT32(g_out_s, flags); /* flags */
+		msg.windowWidth = pWindow->drawable.width;
+		msg.windowHeight = pWindow->drawable.height;
+
+		msg.numWindowRects = 1;
+		msg.windowRects = (RECTANGLE_16*) &windowRects;
+		msg.windowRects[0].left = 0;
+		msg.windowRects[0].top = 0;
+		msg.windowRects[0].right = pWindow->drawable.width;
+		msg.windowRects[0].bottom = pWindow->drawable.height;
+
+		msg.numVisibilityRects = 1;
+		msg.visibilityRects = (RECTANGLE_16*) &visibilityRects;
+		msg.visibilityRects[0].left = 0;
+		msg.visibilityRects[0].top = 0;
+		msg.visibilityRects[0].right = pWindow->drawable.width;
+		msg.visibilityRects[0].bottom = pWindow->drawable.height;
+
+		msg.visibleOffsetX = pWindow->drawable.x;
+		msg.visibleOffsetY = pWindow->drawable.y;
+
+		length = xrdp_write_window_new_update(NULL, &msg);
+
+		rdpup_pre_check(length);
+		xrdp_write_window_new_update(g_out_s, &msg);
+		g_count++;
+
+		free(msg.titleInfo.string);
 	}
 }
 
-
 void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 {
+	XRDP_MSG_WINDOW_DELETE msg;
+
 	LLOGLN(10, ("rdpup_delete_window: id 0x%8.8x",
 			(int)(pWindow->drawable.id)));
 
 	if (g_connected)
 	{
+		msg.windowId = (UINT32) pWindow->drawable.id;
+
 		rdpup_pre_check(10);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_WINDOW_DELETE, 10);
-		Stream_Write_UINT32(g_out_s, pWindow->drawable.id); /* window_id */
+		xrdp_write_window_delete(g_out_s, &msg);
+		g_count++;
 	}
 }
 

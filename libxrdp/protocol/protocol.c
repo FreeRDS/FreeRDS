@@ -92,6 +92,29 @@ int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg)
 	return 0;
 }
 
+int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg)
+{
+	int length = XRDP_ORDER_HEADER_LENGTH + 20 + msg->bitmapDataLength;
+
+	if (!s)
+		return length;
+
+	xrdp_write_header(s, XRDP_SERVER_PAINT_RECT, length);
+
+	Stream_Write_UINT16(s, msg->nLeftRect);
+	Stream_Write_UINT16(s, msg->nTopRect);
+	Stream_Write_UINT16(s, msg->nWidth);
+	Stream_Write_UINT16(s, msg->nHeight);
+	Stream_Write_UINT32(s, msg->bitmapDataLength);
+	Stream_Write(s, msg->bitmapData, msg->bitmapDataLength);
+	Stream_Write_UINT16(s, msg->nWidth);
+	Stream_Write_UINT16(s, msg->nHeight);
+	Stream_Write_UINT16(s, msg->nXSrc);
+	Stream_Write_UINT16(s, msg->nYSrc);
+
+	return 0;
+}
+
 int xrdp_write_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg)
 {
 	int length = XRDP_ORDER_HEADER_LENGTH + 8;
@@ -323,6 +346,108 @@ int xrdp_write_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg)
 
 	Stream_Write_UINT32(s, msg->hints);
 	Stream_Write_UINT32(s, msg->mask);
+
+	return 0;
+}
+
+int xrdp_write_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
+{
+	int index;
+	UINT32 flags;
+	int length = XRDP_ORDER_HEADER_LENGTH +
+			(5 * 4) + (2 + msg->titleInfo.length) + (12 * 4) +
+			(2 + msg->numWindowRects * 8) + (4 + 4) +
+			(2 + msg->numVisibilityRects * 8) + 4;
+
+	if (!s)
+		return length;
+
+	xrdp_write_header(s, XRDP_SERVER_WINDOW_NEW_UPDATE, length);
+
+	flags = WINDOW_ORDER_TYPE_WINDOW | WINDOW_ORDER_STATE_NEW;
+
+	Stream_Write_UINT32(s, msg->windowId); /* windowId */
+	Stream_Write_UINT32(s, msg->ownerWindowId); /* ownerWindowId */
+	flags |= WINDOW_ORDER_FIELD_OWNER;
+
+	Stream_Write_UINT32(s, msg->style); /* style */
+	Stream_Write_UINT32(s, msg->extendedStyle); /* extendedStyle */
+	flags |= WINDOW_ORDER_FIELD_STYLE;
+
+	Stream_Write_UINT32(s, msg->showState); /* showState */
+	flags |= WINDOW_ORDER_FIELD_SHOW;
+
+	Stream_Write_UINT16(s, msg->titleInfo.length); /* titleInfo */
+	Stream_Write(s, msg->titleInfo.string, msg->titleInfo.length);
+	flags |= WINDOW_ORDER_FIELD_TITLE;
+
+	Stream_Write_UINT32(s, msg->clientOffsetX); /* clientOffsetX */
+	Stream_Write_UINT32(s, msg->clientOffsetY); /* clientOffsetY */
+	flags |= WINDOW_ORDER_FIELD_CLIENT_AREA_OFFSET;
+
+	Stream_Write_UINT32(s, msg->clientAreaWidth); /* clientAreaWidth */
+	Stream_Write_UINT32(s, msg->clientAreaHeight); /* clientAreaHeight */
+	flags |= WINDOW_ORDER_FIELD_CLIENT_AREA_SIZE;
+
+	Stream_Write_UINT32(s, msg->RPContent); /* RPContent */
+	Stream_Write_UINT32(s, msg->rootParentHandle); /* rootParentHandle */
+	flags |= WINDOW_ORDER_FIELD_ROOT_PARENT;
+
+	Stream_Write_UINT32(s, msg->windowOffsetX); /* windowOffsetX */
+	Stream_Write_UINT32(s, msg->windowOffsetY); /* windowOffsetY */
+	flags |= WINDOW_ORDER_FIELD_WND_OFFSET;
+
+	Stream_Write_UINT32(s, msg->windowClientDeltaX); /* windowClientDeltaX */
+	Stream_Write_UINT32(s, msg->windowClientDeltaY); /* windowClientDeltaY */
+	flags |= WINDOW_ORDER_FIELD_WND_CLIENT_DELTA;
+
+	Stream_Write_UINT32(s, msg->windowWidth); /* windowWidth */
+	Stream_Write_UINT32(s, msg->windowHeight); /* windowHeight */
+	flags |= WINDOW_ORDER_FIELD_WND_SIZE;
+
+	Stream_Write_UINT16(s, msg->numWindowRects); /* num_window_rects */
+
+	for (index = 0; index < msg->numWindowRects; index++)
+	{
+		Stream_Write_UINT16(s, msg->windowRects[index].left); /* left */
+		Stream_Write_UINT16(s, msg->windowRects[index].top); /* top */
+		Stream_Write_UINT16(s, msg->windowRects[index].right); /* right */
+		Stream_Write_UINT16(s, msg->windowRects[index].bottom); /* bottom */
+	}
+
+	flags |= WINDOW_ORDER_FIELD_WND_RECTS;
+
+	Stream_Write_UINT32(s, msg->visibleOffsetX); /* visibleOffsetX */
+	Stream_Write_UINT32(s, msg->visibleOffsetY); /* visibleOffsetY */
+	flags |= WINDOW_ORDER_FIELD_VIS_OFFSET;
+
+	Stream_Write_UINT16(s, msg->numVisibilityRects); /* numVisibilityRects */
+
+	for (index = 0; index < msg->numVisibilityRects; index++)
+	{
+		Stream_Write_UINT16(s, msg->visibilityRects[index].left); /* left */
+		Stream_Write_UINT16(s, msg->visibilityRects[index].top); /* top */
+		Stream_Write_UINT16(s, msg->visibilityRects[index].right); /* right */
+		Stream_Write_UINT16(s, msg->visibilityRects[index].bottom); /* bottom */
+	}
+
+	flags |= WINDOW_ORDER_FIELD_VISIBILITY;
+
+	Stream_Write_UINT32(s, flags); /* flags */
+
+	return 0;
+}
+
+int xrdp_write_window_delete(wStream* s, XRDP_MSG_WINDOW_DELETE* msg)
+{
+	int length = XRDP_ORDER_HEADER_LENGTH + 4;
+
+	if (!s)
+		return length;
+
+	xrdp_write_header(s, XRDP_SERVER_WINDOW_DELETE, length);
+
+	Stream_Write_UINT32(s, msg->windowId);
 
 	return 0;
 }
