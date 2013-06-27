@@ -70,6 +70,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <freerdp/freerdp.h>
 
+#include <xrdp-ng/xrdp.h>
+
 #define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
 
 /* test to see if this is xorg source or xfree86 */
@@ -145,6 +147,9 @@ struct _rdpScreenInfoRec
 
 	/* Backing store procedures */
 	//RestoreAreasProcPtr RestoreAreas;
+
+	int segmentId;
+	int sharedMemory;
 
 	int rdp_width;
 	int rdp_height;
@@ -388,6 +393,8 @@ void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);
 void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec* priv);
 int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec* pDirtyPriv);
 int rdpup_check_dirty_screen(rdpPixmapRec* pDirtyPriv);
+
+void rdpup_create_framebuffer(XRDP_MSG_CREATE_FRAMEBUFFER* msg);
 
 void rdpScheduleDeferredUpdate(void);
 

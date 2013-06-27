@@ -27,6 +27,10 @@ Sets up the  functions
 
 #include "glx_extinit.h"
 
+#include <stdio.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+
 #if 1
 #define DEBUG_OUT(arg)
 #else
@@ -264,17 +268,36 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 			g_rdpScreen.height, g_rdpScreen.depth, g_rdpScreen.bitsPerPixel);
 	ErrorF("dpix %d dpiy %d\n", dpix, dpiy);
 
-	if (g_rdpScreen.pfbMemory == 0)
+	g_rdpScreen.sharedMemory = 1;
+
+	if (!g_rdpScreen.pfbMemory)
 	{
 		g_rdpScreen.sizeInBytes = (g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height);
-		ErrorF("buffer size %d\n", g_rdpScreen.sizeInBytes);
-		g_rdpScreen.pfbMemory = (char*) g_malloc(2048 * 2048 * 4, 1);
-	}
 
-	if (g_rdpScreen.pfbMemory == 0)
-	{
-		rdpLog("rdpScreenInit g_malloc failed\n");
-		return 0;
+		if (g_rdpScreen.sharedMemory)
+		{
+			/* allocate shared memory segment */
+			g_rdpScreen.segmentId = shmget(IPC_PRIVATE, g_rdpScreen.sizeInBytes,
+					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+
+			/* attach the shared memory segment */
+			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);
+
+			ErrorF("sizeInBytes %d segmentId: %d pfbMemory: %p\n",
+					g_rdpScreen.sizeInBytes, g_rdpScreen.segmentId, g_rdpScreen.pfbMemory);
+		}
+		else
+		{
+			g_rdpScreen.pfbMemory = (char*) malloc(g_rdpScreen.sizeInBytes);
+		}
+
+		if (!g_rdpScreen.pfbMemory)
+		{
+			rdpLog("rdpScreenInit pfbMemory malloc failed\n");
+			return 0;
+		}
+
+		ZeroMemory(g_rdpScreen.pfbMemory, g_rdpScreen.sizeInBytes);
 	}
 
 	miClearVisualTypes();
@@ -713,7 +736,21 @@ void ddxGiveUp(enum ExitCode error)
 	char unixSocketName[128];
 
 	ErrorF("ddxGiveUp:\n");
-	g_free(g_rdpScreen.pfbMemory);
+
+	if (g_rdpScreen.sharedMemory)
+	{
+		/* detach shared memory segment */
+		shmdt(g_rdpScreen.pfbMemory);
+		g_rdpScreen.pfbMemory = NULL;
+
+		/* deallocate shared memory segment */
+		shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
+	}
+	else
+	{
+		free(g_rdpScreen.pfbMemory);
+		g_rdpScreen.pfbMemory = NULL;
+	}
 
 	if (g_initOutputCalled)
 	{
