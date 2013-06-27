@@ -11,7 +11,10 @@ set(MODULE_NAME "X11rdp")
 set(MODULE_PREFIX "X11RDP")
 
 set(XSRCBASE_RELATIVE "../xorg-server")
+set(XOBJBASE_RELATIVE "../xorg-server")
+#set(XOBJBASE_RELATIVE "../xorg-server/build-main")
 set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
+set(XOBJBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XOBJBASE_RELATIVE}")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -fno-strength-reduce")
 
@@ -156,61 +159,61 @@ set(${MODULE_PREFIX}_SRCS ${${MODULE_PREFIX}_SRCS}
 	${XSRCBASE_RELATIVE}/fb/fbcmap_mi.c)
 
 add_library("composite-static" STATIC IMPORTED)
-set_property(TARGET "composite-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/composite/.libs/libcomposite.a")
+set_property(TARGET "composite-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/composite/.libs/libcomposite.a")
 
 add_library("dbe-static" STATIC IMPORTED)
-set_property(TARGET "dbe-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/dbe/.libs/libdbe.a")
+set_property(TARGET "dbe-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/dbe/.libs/libdbe.a")
 
 add_library("dix-static" STATIC IMPORTED)
-set_property(TARGET "dix-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/dix/.libs/libdix.a")
+set_property(TARGET "dix-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/dix/.libs/libdix.a")
 
 add_library("main-static" STATIC IMPORTED)
-set_property(TARGET "main-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/dix/.libs/libmain.a")
+set_property(TARGET "main-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/dix/.libs/libmain.a")
 
 add_library("fb-static" STATIC IMPORTED)
-set_property(TARGET "fb-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/fb/.libs/libfb.a")
+set_property(TARGET "fb-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/fb/.libs/libfb.a")
 
 add_library("mi-static" STATIC IMPORTED)
-set_property(TARGET "mi-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/mi/.libs/libmi.a")
+set_property(TARGET "mi-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/mi/.libs/libmi.a")
 
 add_library("os-static" STATIC IMPORTED)
-set_property(TARGET "os-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/os/.libs/libos.a")
+set_property(TARGET "os-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/os/.libs/libos.a")
 
 add_library("randr-static" STATIC IMPORTED)
-set_property(TARGET "randr-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/randr/.libs/librandr.a")
+set_property(TARGET "randr-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/randr/.libs/librandr.a")
 
 add_library("record-static" STATIC IMPORTED)
-set_property(TARGET "record-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/record/.libs/librecord.a")
+set_property(TARGET "record-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/record/.libs/librecord.a")
 
 add_library("render-static" STATIC IMPORTED)
-set_property(TARGET "render-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/render/.libs/librender.a")
+set_property(TARGET "render-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/render/.libs/librender.a")
 
 add_library("xkb-static" STATIC IMPORTED)
-set_property(TARGET "xkb-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/xkb/.libs/libxkb.a")
+set_property(TARGET "xkb-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/xkb/.libs/libxkb.a")
 
 add_library("Xext-static" STATIC IMPORTED)
-set_property(TARGET "Xext-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/Xext/.libs/libXext.a")
+set_property(TARGET "Xext-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/Xext/.libs/libXext.a")
 
 add_library("Xi-static" STATIC IMPORTED)
-set_property(TARGET "Xi-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/Xi/.libs/libXi.a")
+set_property(TARGET "Xi-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/Xi/.libs/libXi.a")
 
 add_library("glx-static" STATIC IMPORTED)
-set_property(TARGET "glx-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/glx/.libs/libglx.a")
+set_property(TARGET "glx-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/glx/.libs/libglx.a")
 
 add_library("glxdri-static" STATIC IMPORTED)
-set_property(TARGET "glxdri-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/glx/.libs/libglxdri.a")
+set_property(TARGET "glxdri-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/glx/.libs/libglxdri.a")
 
 add_library("xfixes-static" STATIC IMPORTED)
-set_property(TARGET "xfixes-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/xfixes/.libs/libxfixes.a")
+set_property(TARGET "xfixes-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/xfixes/.libs/libxfixes.a")
 
 add_library("damageext-static" STATIC IMPORTED)
-set_property(TARGET "damageext-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/damageext/.libs/libdamageext.a")
+set_property(TARGET "damageext-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/damageext/.libs/libdamageext.a")
 
 add_library("damage-static" STATIC IMPORTED)
-set_property(TARGET "damage-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/miext/damage/.libs/libdamage.a")
+set_property(TARGET "damage-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/miext/damage/.libs/libdamage.a")
 
 add_library("sync-static" STATIC IMPORTED)
-set_property(TARGET "sync-static" PROPERTY IMPORTED_LOCATION "${XSRCBASE}/miext/sync/.libs/libsync.a")
+set_property(TARGET "sync-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/miext/sync/.libs/libsync.a")
 
 set(${MODULE_PREFIX}_INCLUDES
 	"../../common"
