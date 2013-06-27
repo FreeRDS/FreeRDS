@@ -60,6 +60,8 @@ list(REMOVE_ITEM INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}")
 set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES "${INCLUDE_DIRECTORIES}")
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 set(SBINDIR "${CMAKE_INSTALL_PREFIX}/sbin")
 set(SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc")
 set(DATADIR "${CMAKE_INSTALL_PREFIX}/share")
@@ -92,6 +94,8 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 
 add_subdirectory(avro)
+
+add_subdirectory(libxrdp)
 
 add_subdirectory(common)
 add_subdirectory(core)

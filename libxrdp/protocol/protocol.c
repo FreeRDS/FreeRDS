@@ -1,7 +1,8 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDP: A Remote Desktop Protocol Implementation
+ * xrdp-ng interprocess communication protocol
  *
- * Copyright (C) Jay Sorg 2004-2013
+ * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +15,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * libxup main header file
  */
 
-#include "xrdp.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <xrdp-ng/xrdp.h>
 
-xrdpModule* xup_module_init(void);
-int xup_module_exit(xrdpModule* mod);

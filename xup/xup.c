@@ -557,6 +557,7 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 	int width;
 	int height;
 	int fgcolor;
+	int bgcolor;
 	int opcode;
 	BYTE* bmpdata;
 	char cur_data[32 * (32 * 3)];
@@ -566,20 +567,23 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 
 	switch (type)
 	{
-		case 1: /* server_begin_update */
+		case XRDP_SERVER_BEGIN_UPDATE:
 			rv = server_begin_update(mod);
 			break;
-		case 2: /* server_end_update */
+
+		case XRDP_SERVER_END_UPDATE:
 			rv = server_end_update(mod);
 			break;
-		case 3: /* server_fill_rect */
+
+		case XRDP_SERVER_FILL_RECT:
 			Stream_Read_INT16(s, x);
 			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
 			Stream_Read_UINT16(s, cy);
 			rv = server_fill_rect(mod, x, y, cx, cy);
 			break;
-		case 4: /* server_screen_blt */
+
+		case XRDP_SERVER_SCREEN_BLT:
 			Stream_Read_INT16(s, x);
 			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
@@ -588,7 +592,8 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			Stream_Read_INT16(s, srcy);
 			rv = server_screen_blt(mod, x, y, cx, cy, srcx, srcy);
 			break;
-		case 5: /* server_paint_rect */
+
+		case XRDP_SERVER_PAINT_RECT:
 			Stream_Read_INT16(s, x);
 			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
@@ -602,58 +607,74 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			Stream_Read_INT16(s, srcy);
 			rv = server_paint_rect(mod, x, y, cx, cy, (char*) bmpdata, width, height, srcx, srcy);
 			break;
-		case 10: /* server_set_clip */
+
+		case XRDP_SERVER_SET_CLIP:
 			Stream_Read_INT16(s, x);
 			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
 			Stream_Read_UINT16(s, cy);
 			rv = server_set_clip(mod, x, y, cx, cy);
 			break;
-		case 11: /* server_reset_clip */
+
+		case XRDP_SERVER_RESET_CLIP:
 			rv = server_reset_clip(mod);
 			break;
-		case 12: /* server_set_fgcolor */
+
+		case XRDP_SERVER_SET_FORECOLOR:
 			Stream_Read_UINT32(s, fgcolor);
 			rv = server_set_fgcolor(mod, fgcolor);
 			break;
-		case 14:
+
+		case XRDP_SERVER_SET_BACKCOLOR:
+			Stream_Read_UINT32(s, bgcolor);
+			rv = server_set_bgcolor(mod, bgcolor);
+			break;
+
+		case XRDP_SERVER_SET_OPCODE:
 			Stream_Read_UINT16(s, opcode);
 			rv = server_set_opcode(mod, opcode);
 			break;
-		case 17:
+
+		case XRDP_SERVER_SET_PEN:
 			Stream_Read_UINT16(s, style);
 			Stream_Read_UINT16(s, width);
 			rv = server_set_pen(mod, style, width);
 			break;
-		case 18:
+
+		case XRDP_SERVER_DRAW_LINE:
 			Stream_Read_INT16(s, x1);
 			Stream_Read_INT16(s, y1);
 			Stream_Read_INT16(s, x2);
 			Stream_Read_INT16(s, y2);
 			rv = server_draw_line(mod, x1, y1, x2, y2);
 			break;
-		case 19:
+
+		case XRDP_SERVER_SET_POINTER:
 			Stream_Read_INT16(s, x);
 			Stream_Read_INT16(s, y);
 			Stream_Read(s, cur_data, 32 * (32 * 3));
 			Stream_Read(s, cur_mask, 32 * (32 / 8));
 			rv = server_set_pointer(mod, x, y, cur_data, cur_mask);
 			break;
-		case 20:
+
+		case XRDP_SERVER_CREATE_OS_SURFACE:
 			Stream_Read_UINT32(s, rdpid);
 			Stream_Read_UINT16(s, width);
 			Stream_Read_UINT16(s, height);
 			rv = server_create_os_surface(mod, rdpid, width, height);
 			break;
-		case 21:
+
+		case XRDP_SERVER_SWITCH_OS_SURFACE:
 			Stream_Read_UINT32(s, rdpid);
 			rv = server_switch_os_surface(mod, rdpid);
 			break;
-		case 22:
+
+		case XRDP_SERVER_DELETE_OS_SURFACE:
 			Stream_Read_UINT32(s, rdpid);
 			rv = server_delete_os_surface(mod, rdpid);
 			break;
-		case 23: /* server_paint_rect_os */
+
+		case XRDP_SERVER_PAINT_RECT_OS:
 			Stream_Read_INT16(s, x);
 			Stream_Read_INT16(s, y);
 			Stream_Read_UINT16(s, cx);
@@ -663,20 +684,25 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			Stream_Read_INT16(s, srcy);
 			rv = server_paint_rect_os(mod, x, y, cx, cy, rdpid, srcx, srcy);
 			break;
-		case 24: /* server_set_hints */
+
+		case XRDP_SERVER_SET_HINTS:
 			Stream_Read_UINT32(s, hints);
 			Stream_Read_UINT32(s, mask);
 			rv = server_set_hints(mod, hints, mask);
 			break;
-		case 25: /* server_window_new_update */
+
+		case XRDP_SERVER_WINDOW_NEW_UPDATE:
 			rv = process_server_window_new_update(mod, s);
 			break;
-		case 26: /* server_window_delete */
+
+		case XRDP_SERVER_WINDOW_DELETE:
 			rv = process_server_window_delete(mod, s);
 			break;
-		case 51: /* server_set_pointer_ex */
+
+		case XRDP_SERVER_SET_POINTER_EX:
 			rv = process_server_set_pointer_ex(mod, s);
 			break;
+
 		default:
 			g_writeln("lib_mod_process_orders: unknown order type %d", type);
 			rv = 0;
