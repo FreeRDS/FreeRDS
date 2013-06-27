@@ -13,6 +13,7 @@ set(MODULE_PREFIX "X11RDP")
 set(XSRCBASE_RELATIVE "../xorg-server")
 set(XOBJBASE_RELATIVE "../xorg-server")
 #set(XOBJBASE_RELATIVE "../xorg-server/build-main")
+
 set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
 set(XOBJBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XOBJBASE_RELATIVE}")
 
@@ -229,7 +230,8 @@ set(${MODULE_PREFIX}_INCLUDES
 	"${XSRCBASE}/render"
 	"${XSRCBASE}/randr"
 	"${XSRCBASE}/fb"
-	"${XSRCBASE}/hw/xfree86/common")
+	"${XSRCBASE}/hw/xfree86/common"
+	"${XOBJBASE}/include")
 
 include_directories(${${MODULE_PREFIX}_INCLUDES})
 
@@ -249,13 +251,13 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-common)
 list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-protocol)
 
-list(APPEND ${MODULE_PREFIX}_LIBS
-	${XFONT_LIBRARIES} ${XAU_LIBRARIES} ${XDMCP_LIBRARIES}
-	${XDAMAGE_LIBRARIES} ${PIXMAN_LIBRARIES} ${GL_LIBRARIES})
-
 set(${MODULE_PREFIX}_STATIC_LIBS
 	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
 	render-static xkb-static Xext-static Xi-static glx-static glxdri-static xfixes-static damageext-static damage-static sync-static)
+
+list(APPEND ${MODULE_PREFIX}_LIBS
+	${XFONT_LIBRARIES} ${XAU_LIBRARIES} ${XDMCP_LIBRARIES}
+	${XDAMAGE_LIBRARIES} ${PIXMAN_LIBRARIES} ${GL_LIBRARIES})
 
 list(APPEND ${MODULE_PREFIX}_STATIC_LIBS avro-static)
 
