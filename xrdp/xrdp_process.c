@@ -193,6 +193,9 @@ int xrdp_generate_certificate(rdpSettings* settings)
 	char* server_file_path;
 	MAKECERT_CONTEXT* context;
 
+	if (!PathFileExistsA(settings->ConfigPath))
+		CreateDirectoryA(settings->ConfigPath, 0);
+
 	server_file_path = GetCombinedPath(settings->ConfigPath, "server");
 
 	if (!PathFileExistsA(server_file_path))
