@@ -243,7 +243,8 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MODULE winpr
 	MODULES winpr-utils)
 
-list(APPEND ${MODULE_PREFIX}_LIBS ${XRDP_NG_MODULE}-common)
+list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-common)
+list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-protocol)
 
 list(APPEND ${MODULE_PREFIX}_LIBS
 	${XFONT_LIBRARIES} ${XAU_LIBRARIES} ${XDMCP_LIBRARIES}

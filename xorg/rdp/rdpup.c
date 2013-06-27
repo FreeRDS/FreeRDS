@@ -124,6 +124,250 @@ static int g_rdp_opcodes[16] =
 		0xff  /* GXset          0xf 1 */
 };
 
+#define COLOR8(r, g, b) \
+		((((r) >> 5) << 0)  | (((g) >> 5) << 3) | (((b) >> 6) << 6))
+#define COLOR15(r, g, b) \
+		((((r) >> 3) << 10) | (((g) >> 3) << 5) | (((b) >> 3) << 0))
+#define COLOR16(r, g, b) \
+		((((r) >> 3) << 11) | (((g) >> 2) << 5) | (((b) >> 3) << 0))
+#define COLOR24(r, g, b) \
+		((((r) >> 0) << 0)  | (((g) >> 0) << 8) | (((b) >> 0) << 16))
+#define SPLITCOLOR32(r, g, b, c) \
+		{ \
+	r = ((c) >> 16) & 0xff; \
+	g = ((c) >> 8) & 0xff; \
+	b = (c) & 0xff; \
+		}
+
+int convert_pixel(int in_pixel)
+{
+	int red;
+	int green;
+	int blue;
+	int rv;
+
+	rv = 0;
+
+	if (g_rdpScreen.depth == 24)
+	{
+		if (g_rdpScreen.rdp_bpp == 32)
+		{
+			rv = in_pixel;
+			SPLITCOLOR32(red, green, blue, rv);
+			rv = COLOR24(red, green, blue);
+		}
+		else if (g_rdpScreen.rdp_bpp == 24)
+		{
+			rv = in_pixel;
+			SPLITCOLOR32(red, green, blue, rv);
+			rv = COLOR24(red, green, blue);
+		}
+		else if (g_rdpScreen.rdp_bpp == 16)
+		{
+			rv = in_pixel;
+			SPLITCOLOR32(red, green, blue, rv);
+			rv = COLOR16(red, green, blue);
+		}
+		else if (g_rdpScreen.rdp_bpp == 15)
+		{
+			rv = in_pixel;
+			SPLITCOLOR32(red, green, blue, rv);
+			rv = COLOR15(red, green, blue);
+		}
+		else if (g_rdpScreen.rdp_bpp == 8)
+		{
+			rv = in_pixel;
+			SPLITCOLOR32(red, green, blue, rv);
+			rv = COLOR8(red, green, blue);
+		}
+	}
+	else if (g_rdpScreen.depth == g_rdpScreen.rdp_bpp)
+	{
+		return in_pixel;
+	}
+
+	return rv;
+}
+
+int convert_pixels(void *src, void *dst, int num_pixels)
+{
+	unsigned int pixel;
+	unsigned int red;
+	unsigned int green;
+	unsigned int blue;
+	unsigned int *src32;
+	unsigned int *dst32;
+	unsigned short *dst16;
+	unsigned char *dst8;
+	int index;
+
+	if (g_rdpScreen.depth == g_rdpScreen.rdp_bpp)
+	{
+		memcpy(dst, src, num_pixels * g_Bpp);
+		return 0;
+	}
+
+	if (g_rdpScreen.depth == 24)
+	{
+		src32 = (unsigned int *)src;
+
+		if (g_rdpScreen.rdp_bpp == 32)
+		{
+			dst32 = (unsigned int*) dst;
+
+			for (index = 0; index < num_pixels; index++)
+			{
+				pixel = *src32;
+				*dst32 = pixel;
+				dst32++;
+				src32++;
+			}
+		}
+		else if (g_rdpScreen.rdp_bpp == 24)
+		{
+			dst32 = (unsigned int *)dst;
+
+			for (index = 0; index < num_pixels; index++)
+			{
+				pixel = *src32;
+				*dst32 = pixel;
+				dst32++;
+				src32++;
+			}
+		}
+		else if (g_rdpScreen.rdp_bpp == 16)
+		{
+			dst16 = (unsigned short *)dst;
+
+			for (index = 0; index < num_pixels; index++)
+			{
+				pixel = *src32;
+				SPLITCOLOR32(red, green, blue, pixel);
+				pixel = COLOR16(red, green, blue);
+				*dst16 = pixel;
+				dst16++;
+				src32++;
+			}
+		}
+		else if (g_rdpScreen.rdp_bpp == 15)
+		{
+			dst16 = (unsigned short *)dst;
+
+			for (index = 0; index < num_pixels; index++)
+			{
+				pixel = *src32;
+				SPLITCOLOR32(red, green, blue, pixel);
+				pixel = COLOR15(red, green, blue);
+				*dst16 = pixel;
+				dst16++;
+				src32++;
+			}
+		}
+		else if (g_rdpScreen.rdp_bpp == 8)
+		{
+			dst8 = (unsigned char *)dst;
+
+			for (index = 0; index < num_pixels; index++)
+			{
+				pixel = *src32;
+				SPLITCOLOR32(red, green, blue, pixel);
+				pixel = COLOR8(red, green, blue);
+				*dst8 = pixel;
+				dst8++;
+				src32++;
+			}
+		}
+	}
+
+	return 0;
+}
+
+static int get_single_color(struct image_data *id, int x, int y, int w, int h)
+{
+	int rv;
+	int i;
+	int j;
+	int p;
+	unsigned char *i8;
+	unsigned short *i16;
+	unsigned int *i32;
+
+	p = 0;
+	rv = -1;
+
+	if (g_Bpp == 1)
+	{
+		for (i = 0; i < h; i++)
+		{
+			i8 = (unsigned char *)(id->pixels +
+					((y + i) * id->lineBytes) + (x * g_Bpp));
+
+			if (i == 0)
+			{
+				p = *i8;
+			}
+
+			for (j = 0; j < w; j++)
+			{
+				if (i8[j] != p)
+				{
+					return -1;
+				}
+			}
+		}
+
+		rv = p;
+	}
+	else if (g_Bpp == 2)
+	{
+		for (i = 0; i < h; i++)
+		{
+			i16 = (unsigned short *)(id->pixels +
+					((y + i) * id->lineBytes) + (x * g_Bpp));
+
+			if (i == 0)
+			{
+				p = *i16;
+			}
+
+			for (j = 0; j < w; j++)
+			{
+				if (i16[j] != p)
+				{
+					return -1;
+				}
+			}
+		}
+
+		rv = p;
+	}
+	else if (g_Bpp == 4)
+	{
+		for (i = 0; i < h; i++)
+		{
+			i32 = (unsigned int *)(id->pixels +
+					((y + i) * id->lineBytes) + (x * g_Bpp));
+
+			if (i == 0)
+			{
+				p = *i32;
+			}
+
+			for (j = 0; j < w; j++)
+			{
+				if (i32[j] != p)
+				{
+					return -1;
+				}
+			}
+		}
+
+		rv = p;
+	}
+
+	return rv;
+}
+
 void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h);
 
 static int rdpup_disconnect(void)
@@ -1059,11 +1303,8 @@ int rdpup_fill_rect(short x, short y, int cx, int cy)
 		}
 
 		rdpup_pre_check(14);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_FILL_RECT, 14);
-		Stream_Write_UINT16(g_out_s, x);
-		Stream_Write_UINT16(g_out_s, y);
-		Stream_Write_UINT16(g_out_s, cx);
-		Stream_Write_UINT16(g_out_s, cy);
+		xrdp_write_fill_rect(g_out_s, x, y, cx, cy);
+		g_count++;
 	}
 
 	return 0;
@@ -1082,13 +1323,8 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 		}
 
 		rdpup_pre_check(18);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SCREEN_BLT, 18);
-		Stream_Write_UINT16(g_out_s, x);
-		Stream_Write_UINT16(g_out_s, y);
-		Stream_Write_UINT16(g_out_s, cx);
-		Stream_Write_UINT16(g_out_s, cy);
-		Stream_Write_UINT16(g_out_s, srcx);
-		Stream_Write_UINT16(g_out_s, srcy);
+		xrdp_write_screen_blt(g_out_s, x, y, cx, cy, srcx, srcy);
+		g_count++;
 	}
 
 	return 0;
@@ -1100,11 +1336,8 @@ int rdpup_set_clip(short x, short y, int cx, int cy)
 	{
 		LLOGLN(10, ("  rdpup_set_clip"));
 		rdpup_pre_check(14);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SET_CLIP, 14);
-		Stream_Write_UINT16(g_out_s, x);
-		Stream_Write_UINT16(g_out_s, y);
-		Stream_Write_UINT16(g_out_s, cx);
-		Stream_Write_UINT16(g_out_s, cy);
+		xrdp_write_set_clip(g_out_s, x, y, cx, cy);
+		g_count++;
 	}
 
 	return 0;
@@ -1116,165 +1349,8 @@ int rdpup_reset_clip(void)
 	{
 		LLOGLN(10, ("  rdpup_reset_clip"));
 		rdpup_pre_check(6);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_RESET_CLIP, 6);
-	}
-
-	return 0;
-}
-
-#define COLOR8(r, g, b) \
-		((((r) >> 5) << 0)  | (((g) >> 5) << 3) | (((b) >> 6) << 6))
-#define COLOR15(r, g, b) \
-		((((r) >> 3) << 10) | (((g) >> 3) << 5) | (((b) >> 3) << 0))
-#define COLOR16(r, g, b) \
-		((((r) >> 3) << 11) | (((g) >> 2) << 5) | (((b) >> 3) << 0))
-#define COLOR24(r, g, b) \
-		((((r) >> 0) << 0)  | (((g) >> 0) << 8) | (((b) >> 0) << 16))
-#define SPLITCOLOR32(r, g, b, c) \
-		{ \
-	r = ((c) >> 16) & 0xff; \
-	g = ((c) >> 8) & 0xff; \
-	b = (c) & 0xff; \
-		}
-
-int convert_pixel(int in_pixel)
-{
-	int red;
-	int green;
-	int blue;
-	int rv;
-
-	rv = 0;
-
-	if (g_rdpScreen.depth == 24)
-	{
-		if (g_rdpScreen.rdp_bpp == 32)
-		{
-			rv = in_pixel;
-			SPLITCOLOR32(red, green, blue, rv);
-			rv = COLOR24(red, green, blue);
-		}
-		else if (g_rdpScreen.rdp_bpp == 24)
-		{
-			rv = in_pixel;
-			SPLITCOLOR32(red, green, blue, rv);
-			rv = COLOR24(red, green, blue);
-		}
-		else if (g_rdpScreen.rdp_bpp == 16)
-		{
-			rv = in_pixel;
-			SPLITCOLOR32(red, green, blue, rv);
-			rv = COLOR16(red, green, blue);
-		}
-		else if (g_rdpScreen.rdp_bpp == 15)
-		{
-			rv = in_pixel;
-			SPLITCOLOR32(red, green, blue, rv);
-			rv = COLOR15(red, green, blue);
-		}
-		else if (g_rdpScreen.rdp_bpp == 8)
-		{
-			rv = in_pixel;
-			SPLITCOLOR32(red, green, blue, rv);
-			rv = COLOR8(red, green, blue);
-		}
-	}
-	else if (g_rdpScreen.depth == g_rdpScreen.rdp_bpp)
-	{
-		return in_pixel;
-	}
-
-	return rv;
-}
-
-int convert_pixels(void *src, void *dst, int num_pixels)
-{
-	unsigned int pixel;
-	unsigned int red;
-	unsigned int green;
-	unsigned int blue;
-	unsigned int *src32;
-	unsigned int *dst32;
-	unsigned short *dst16;
-	unsigned char *dst8;
-	int index;
-
-	if (g_rdpScreen.depth == g_rdpScreen.rdp_bpp)
-	{
-		memcpy(dst, src, num_pixels * g_Bpp);
-		return 0;
-	}
-
-	if (g_rdpScreen.depth == 24)
-	{
-		src32 = (unsigned int *)src;
-
-		if (g_rdpScreen.rdp_bpp == 32)
-		{
-			dst32 = (unsigned int*) dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				*dst32 = pixel;
-				dst32++;
-				src32++;
-			}
-		}
-		else if (g_rdpScreen.rdp_bpp == 24)
-		{
-			dst32 = (unsigned int *)dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				*dst32 = pixel;
-				dst32++;
-				src32++;
-			}
-		}
-		else if (g_rdpScreen.rdp_bpp == 16)
-		{
-			dst16 = (unsigned short *)dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				SPLITCOLOR32(red, green, blue, pixel);
-				pixel = COLOR16(red, green, blue);
-				*dst16 = pixel;
-				dst16++;
-				src32++;
-			}
-		}
-		else if (g_rdpScreen.rdp_bpp == 15)
-		{
-			dst16 = (unsigned short *)dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				SPLITCOLOR32(red, green, blue, pixel);
-				pixel = COLOR15(red, green, blue);
-				*dst16 = pixel;
-				dst16++;
-				src32++;
-			}
-		}
-		else if (g_rdpScreen.rdp_bpp == 8)
-		{
-			dst8 = (unsigned char *)dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				SPLITCOLOR32(red, green, blue, pixel);
-				pixel = COLOR8(red, green, blue);
-				*dst8 = pixel;
-				dst8++;
-				src32++;
-			}
-		}
+		xrdp_write_reset_clip(g_out_s);
+		g_count++;
 	}
 
 	return 0;
@@ -1285,11 +1361,13 @@ int rdpup_set_fgcolor(int fgcolor)
 	if (g_connected)
 	{
 		LLOGLN(10, ("  rdpup_set_fgcolor"));
-		rdpup_pre_check(10);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SET_FORECOLOR, 10);
+
 		fgcolor = fgcolor & g_Bpp_mask;
 		fgcolor = convert_pixel(fgcolor) & g_rdpScreen.rdp_Bpp_mask;
-		Stream_Write_UINT32(g_out_s, fgcolor);
+
+		rdpup_pre_check(10);
+		xrdp_write_set_forecolor(g_out_s, fgcolor);
+		g_count++;
 	}
 
 	return 0;
@@ -1300,11 +1378,13 @@ int rdpup_set_bgcolor(int bgcolor)
 	if (g_connected)
 	{
 		LLOGLN(10, ("  rdpup_set_bgcolor"));
-		rdpup_pre_check(10);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SET_BACKCOLOR, 10);
+
 		bgcolor = bgcolor & g_Bpp_mask;
 		bgcolor = convert_pixel(bgcolor) & g_rdpScreen.rdp_Bpp_mask;
-		Stream_Write_UINT32(g_out_s, bgcolor);
+
+		rdpup_pre_check(10);
+		xrdp_write_set_backcolor(g_out_s, bgcolor);
+		g_count++;
 	}
 
 	return 0;
@@ -1316,8 +1396,8 @@ int rdpup_set_opcode(int opcode)
 	{
 		LLOGLN(10, ("  rdpup_set_opcode"));
 		rdpup_pre_check(8);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SET_OPCODE, 8);
-		Stream_Write_UINT16(g_out_s, g_rdp_opcodes[opcode & 0xF]);
+		xrdp_write_set_opcode(g_out_s, g_rdp_opcodes[opcode & 0xF]);
+		g_count++;
 	}
 
 	return 0;
@@ -1329,9 +1409,8 @@ int rdpup_set_pen(int style, int width)
 	{
 		LLOGLN(10, ("  rdpup_set_pen"));
 		rdpup_pre_check(10);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SET_PEN, 10);
-		Stream_Write_UINT16(g_out_s, style);
-		Stream_Write_UINT16(g_out_s, width);
+		xrdp_write_set_pen(g_out_s, style, width);
+		g_count++;
 	}
 
 	return 0;
@@ -1343,11 +1422,8 @@ int rdpup_draw_line(short x1, short y1, short x2, short y2)
 	{
 		LLOGLN(10, ("  rdpup_draw_line"));
 		rdpup_pre_check(14);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_DRAW_LINE, 14);
-		Stream_Write_UINT16(g_out_s, x1);
-		Stream_Write_UINT16(g_out_s, y1);
-		Stream_Write_UINT16(g_out_s, x2);
-		Stream_Write_UINT16(g_out_s, y2);
+		xrdp_write_draw_line(g_out_s, x1, y1, x2, y2);
+		g_count++;
 	}
 
 	return 0;
@@ -1360,17 +1436,12 @@ int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
 	if (g_connected)
 	{
 		LLOGLN(10, ("  rdpup_set_cursor"));
+
 		size = 8 + 32 * (32 * 3) + 32 * (32 / 8) + 2;
+
 		rdpup_pre_check(size);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SET_POINTER, size);
-		x = MAX(0, x);
-		x = MIN(31, x);
-		y = MAX(0, y);
-		y = MIN(31, y);
-		Stream_Write_UINT16(g_out_s, x);
-		Stream_Write_UINT16(g_out_s, y);
-		Stream_Write(g_out_s, cur_data, 32 * (32 * 3));
-		Stream_Write(g_out_s, cur_mask, 32 * (32 / 8));
+		xrdp_write_set_cursor(g_out_s, x, y, cur_data, cur_mask);
+		g_count++;
 	}
 
 	return 0;
@@ -1386,17 +1457,10 @@ int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bp
 		LLOGLN(10, ("  rdpup_set_cursor_ex"));
 		Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
 		size = 10 + 32 * (32 * Bpp) + 32 * (32 / 8) + 2;
+
 		rdpup_pre_check(size);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SET_POINTER_EX, size);
-		x = MAX(0, x);
-		x = MIN(31, x);
-		y = MAX(0, y);
-		y = MIN(31, y);
-		Stream_Write_UINT16(g_out_s, x);
-		Stream_Write_UINT16(g_out_s, y);
-		Stream_Write_UINT16(g_out_s, bpp);
-		Stream_Write(g_out_s, cur_data, 32 * (32 * Bpp));
-		Stream_Write(g_out_s, cur_mask, 32 * (32 / 8));
+		xrdp_write_set_cursor_ex(g_out_s, x, y, cur_data, cur_mask, bpp);
+		g_count++;
 	}
 
 	return 0;
@@ -1410,10 +1474,8 @@ int rdpup_create_os_surface(int rdpindex, int width, int height)
 	{
 		LLOGLN(10, ("  rdpup_create_os_surface width %d height %d", width, height));
 		rdpup_pre_check(14);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_CREATE_OS_SURFACE, 14);
-		Stream_Write_UINT32(g_out_s, rdpindex);
-		Stream_Write_UINT16(g_out_s, width);
-		Stream_Write_UINT16(g_out_s, height);
+		xrdp_write_create_os_surface(g_out_s, rdpindex, width, height);
+		g_count++;
 	}
 
 	return 0;
@@ -1434,8 +1496,7 @@ int rdpup_switch_os_surface(int rdpindex)
 		LLOGLN(10, ("rdpup_switch_os_surface: rdpindex %d", rdpindex));
 		/* switch surface */
 		rdpup_pre_check(10);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SWITCH_OS_SURFACE, 10);
-		Stream_Write_UINT32(g_out_s, rdpindex);
+		xrdp_write_switch_os_surface(g_out_s, rdpindex);
 		g_count++;
 	}
 
@@ -1450,97 +1511,11 @@ int rdpup_delete_os_surface(int rdpindex)
 	{
 		LLOGLN(10, ("rdpup_delete_os_surface: rdpindex %d", rdpindex));
 		rdpup_pre_check(10);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_DELETE_OS_SURFACE, 10);
-		Stream_Write_UINT32(g_out_s, rdpindex);
+		xrdp_write_delete_os_surface(g_out_s, rdpindex);
+		g_count++;
 	}
 
 	return 0;
-}
-
-static int get_single_color(struct image_data *id, int x, int y, int w, int h)
-{
-	int rv;
-	int i;
-	int j;
-	int p;
-	unsigned char *i8;
-	unsigned short *i16;
-	unsigned int *i32;
-
-	p = 0;
-	rv = -1;
-
-	if (g_Bpp == 1)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i8 = (unsigned char *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i8;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i8[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-	else if (g_Bpp == 2)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i16 = (unsigned short *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i16;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i16[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-	else if (g_Bpp == 4)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i32 = (unsigned int *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i32;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i32[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-
-	return rv;
 }
 
 void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
@@ -1709,14 +1684,8 @@ void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, i
 	if (g_connected)
 	{
 		rdpup_pre_check(22);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_PAINT_RECT_OS, 22);
-		Stream_Write_UINT16(g_out_s, x);
-		Stream_Write_UINT16(g_out_s, y);
-		Stream_Write_UINT16(g_out_s, cx);
-		Stream_Write_UINT16(g_out_s, cy);
-		Stream_Write_UINT32(g_out_s, rdpindex);
-		Stream_Write_UINT16(g_out_s, srcx);
-		Stream_Write_UINT16(g_out_s, srcy);
+		xrdp_write_paint_rect_os(g_out_s, x, y, cx, cy, rdpindex, srcx, srcy);
+		g_count++;
 	}
 }
 
@@ -1725,9 +1694,8 @@ void rdpup_set_hints(int hints, int mask)
 	if (g_connected)
 	{
 		rdpup_pre_check(14);
-		rdpup_write_order_header(g_out_s, XRDP_SERVER_SET_HINTS, 14);
-		Stream_Write_UINT32(g_out_s, hints);
-		Stream_Write_UINT32(g_out_s, mask);
+		xrdp_write_set_hints(g_out_s, hints, mask);
+		g_count++;
 	}
 }
 
