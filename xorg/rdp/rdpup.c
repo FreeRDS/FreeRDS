@@ -591,7 +591,8 @@ static int rdpup_send_pending(void)
 	{
 		LLOGLN(10, ("end %d", g_count));
 
-		ZeroMemory(&msg, sizeof(XRDP_MSG_END_UPDATE));
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_END_UPDATE);
+		//rdpup_pre_check(msg.length);
 		xrdp_write_end_update(g_out_s, &msg);
 		g_count++;
 
@@ -1239,7 +1240,8 @@ int rdpup_begin_update(void)
 
 		LLOGLN(10, ("begin %d", g_count));
 
-		ZeroMemory(&msg, sizeof(XRDP_MSG_BEGIN_UPDATE));
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_BEGIN_UPDATE);
+		//rdpup_pre_check(msg.length);
 		xrdp_write_begin_update(g_out_s, &msg);
 		g_count++;
 
@@ -1268,7 +1270,8 @@ int rdpup_end_update(void)
 			rdpScheduleDeferredUpdate();
 #else
 
-			ZeroMemory(&msg, sizeof(XRDP_MSG_END_UPDATE));
+			xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_END_UPDATE);
+			//rdpup_pre_check(msg.length);
 			xrdp_write_end_update(g_out_s, &msg);
 			g_count++;
 
@@ -1321,7 +1324,8 @@ int rdpup_fill_rect(short x, short y, int cx, int cy)
 		msg.nWidth = cx;
 		msg.nHeight = cy;
 
-		rdpup_pre_check(14);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_OPAQUE_RECT);
+		rdpup_pre_check(msg.length);
 		xrdp_write_opaque_rect(g_out_s, &msg);
 		g_count++;
 	}
@@ -1350,7 +1354,8 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 		msg.nXSrc = srcx;
 		msg.nYSrc = srcy;
 
-		rdpup_pre_check(18);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SCREEN_BLT);
+		rdpup_pre_check(msg.length);
 		xrdp_write_screen_blt(g_out_s, &msg);
 		g_count++;
 	}
@@ -1371,7 +1376,8 @@ int rdpup_set_clip(short x, short y, int cx, int cy)
 		msg.width = cx;
 		msg.height = cy;
 
-		rdpup_pre_check(14);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SET_CLIP);
+		rdpup_pre_check(msg.length);
 		xrdp_write_set_clip(g_out_s, &msg);
 		g_count++;
 	}
@@ -1387,7 +1393,8 @@ int rdpup_reset_clip(void)
 	{
 		LLOGLN(10, ("  rdpup_reset_clip"));
 
-		rdpup_pre_check(6);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_RESET_CLIP);
+		rdpup_pre_check(msg.length);
 		xrdp_write_reset_clip(g_out_s, &msg);
 		g_count++;
 	}
@@ -1407,7 +1414,8 @@ int rdpup_set_fgcolor(int fgcolor)
 		fgcolor = convert_pixel(fgcolor) & g_rdpScreen.rdp_Bpp_mask;
 		msg.ForeColor = fgcolor;
 
-		rdpup_pre_check(10);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SET_FORECOLOR);
+		rdpup_pre_check(msg.length);
 		xrdp_write_set_forecolor(g_out_s, &msg);
 		g_count++;
 	}
@@ -1428,7 +1436,8 @@ int rdpup_set_bgcolor(int bgcolor)
 
 		msg.BackColor = bgcolor;
 
-		rdpup_pre_check(10);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SET_BACKCOLOR);
+		rdpup_pre_check(msg.length);
 		xrdp_write_set_backcolor(g_out_s, &msg);
 		g_count++;
 	}
@@ -1446,7 +1455,8 @@ int rdpup_set_opcode(int opcode)
 
 		msg.bRop2 = g_rdp_opcodes[opcode & 0xF];
 
-		rdpup_pre_check(8);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SET_ROP2);
+		rdpup_pre_check(msg.length);
 		xrdp_write_set_rop2(g_out_s, &msg);
 		g_count++;
 	}
@@ -1465,7 +1475,8 @@ int rdpup_set_pen(int style, int width)
 		msg.PenStyle = style;
 		msg.PenWidth = width;
 
-		rdpup_pre_check(10);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SET_PEN);
+		rdpup_pre_check(msg.length);
 		xrdp_write_set_pen(g_out_s, &msg);
 		g_count++;
 	}
@@ -1486,7 +1497,8 @@ int rdpup_draw_line(short x1, short y1, short x2, short y2)
 		msg.nXEnd = x2;
 		msg.nYEnd = y2;
 
-		rdpup_pre_check(14);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_LINE_TO);
+		rdpup_pre_check(msg.length);
 		xrdp_write_line_to(g_out_s, &msg);
 		g_count++;
 	}
@@ -1510,7 +1522,8 @@ int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
 		msg.xorMaskData = (BYTE*) cur_data;
 		msg.andMaskData = (BYTE*) cur_mask;
 
-		rdpup_pre_check(size);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SET_POINTER);
+		rdpup_pre_check(msg.length);
 		xrdp_write_set_pointer(g_out_s, &msg);
 		g_count++;
 	}
@@ -1536,7 +1549,8 @@ int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bp
 		msg.xorMaskData = (BYTE*) cur_data;
 		msg.andMaskData = (BYTE*) cur_mask;
 
-		rdpup_pre_check(size);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SET_POINTER_EX);
+		rdpup_pre_check(msg.length);
 		xrdp_write_set_pointer_ex(g_out_s, &msg);
 		g_count++;
 	}
@@ -1556,7 +1570,8 @@ int rdpup_create_os_surface(int rdpindex, int width, int height)
 		msg.width = width;
 		msg.height = height;
 
-		rdpup_pre_check(14);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_CREATE_OS_SURFACE);
+		rdpup_pre_check(msg.length);
 		xrdp_write_create_os_surface(g_out_s, &msg);
 		g_count++;
 	}
@@ -1581,8 +1596,8 @@ int rdpup_switch_os_surface(int rdpindex)
 
 		msg.index = rdpindex;
 
-		/* switch surface */
-		rdpup_pre_check(10);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SWITCH_OS_SURFACE);
+		rdpup_pre_check(msg.length);
 		xrdp_write_switch_os_surface(g_out_s, &msg);
 		g_count++;
 	}
@@ -1600,7 +1615,8 @@ int rdpup_delete_os_surface(int rdpindex)
 
 		msg.index = rdpindex;
 
-		rdpup_pre_check(10);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_DELETE_OS_SURFACE);
+		rdpup_pre_check(msg.length);
 		xrdp_write_delete_os_surface(g_out_s, &msg);
 		g_count++;
 	}
@@ -1642,7 +1658,8 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 		msg.bitmapData = (BYTE*) pfbBackBufferMemory;
 		msg.bitmapDataLength = bitmapLength;
 
-		rdpup_pre_check(size);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_PAINT_RECT);
+		rdpup_pre_check(msg.length);
 		xrdp_write_paint_rect(g_out_s, &msg);
 		g_count++;
 	}
@@ -1764,7 +1781,8 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 					msg.bitmapData = (BYTE*) pfbBackBufferMemory;
 					msg.bitmapDataLength = bitmapLength;
 
-					rdpup_pre_check(size);
+					xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_PAINT_RECT);
+					rdpup_pre_check(msg.length);
 					xrdp_write_paint_rect(g_out_s, &msg);
 					g_count++;
 				}
@@ -1791,7 +1809,8 @@ void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, i
 		msg.nXSrc = srcx;
 		msg.nYSrc = srcy;
 
-		rdpup_pre_check(22);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_MEMBLT);
+		rdpup_pre_check(msg.length);
 		xrdp_write_memblt(g_out_s, &msg);
 		g_count++;
 	}
@@ -1806,7 +1825,8 @@ void rdpup_set_hints(int hints, int mask)
 		msg.hints = hints;
 		msg.mask = mask;
 
-		rdpup_pre_check(14);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_SET_HINTS);
+		rdpup_pre_check(msg.length);
 		xrdp_write_set_hints(g_out_s, &msg);
 		g_count++;
 	}
@@ -1816,7 +1836,8 @@ void rdpup_create_framebuffer(XRDP_MSG_CREATE_FRAMEBUFFER* msg)
 {
 	if (g_connected)
 	{
-		rdpup_pre_check(xrdp_write_create_framebuffer(NULL, msg));
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) msg, XRDP_SERVER_CREATE_FRAMEBUFFER);
+		rdpup_pre_check(msg->length);
 		xrdp_write_create_framebuffer(g_out_s, msg);
 		g_count++;
 	}
@@ -1824,7 +1845,6 @@ void rdpup_create_framebuffer(XRDP_MSG_CREATE_FRAMEBUFFER* msg)
 
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec *priv)
 {
-	int length;
 	RECTANGLE_16 windowRects;
 	RECTANGLE_16 visibilityRects;
 	XRDP_MSG_WINDOW_NEW_UPDATE msg;
@@ -1889,9 +1909,8 @@ void rdpup_create_window(WindowPtr pWindow, rdpWindowRec *priv)
 		msg.visibleOffsetX = pWindow->drawable.x;
 		msg.visibleOffsetY = pWindow->drawable.y;
 
-		length = xrdp_write_window_new_update(NULL, &msg);
-
-		rdpup_pre_check(length);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_WINDOW_NEW_UPDATE);
+		rdpup_pre_check(msg.length);
 		xrdp_write_window_new_update(g_out_s, &msg);
 		g_count++;
 
@@ -1910,7 +1929,8 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	{
 		msg.windowId = (UINT32) pWindow->drawable.id;
 
-		rdpup_pre_check(10);
+		xrdp_prepare_msg((XRDP_MSG_COMMON*) &msg, XRDP_SERVER_WINDOW_DELETE);
+		rdpup_pre_check(msg.length);
 		xrdp_write_window_delete(g_out_s, &msg);
 		g_count++;
 	}
