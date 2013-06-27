@@ -201,6 +201,9 @@ int convert_pixels(void *src, void *dst, int num_pixels)
 	unsigned char *dst8;
 	int index;
 
+	LLOGLN(0, ("convert_pixels: g_rdpScreen.depth: %d g_rdpScreen.rdp_bpp: %d num_pixels: %d",
+			g_rdpScreen.depth, g_rdpScreen.rdp_bpp, num_pixels));
+
 	if (g_rdpScreen.depth == g_rdpScreen.rdp_bpp)
 	{
 		memcpy(dst, src, num_pixels * g_Bpp);
@@ -1485,6 +1488,7 @@ int rdpup_draw_line(short x1, short y1, short x2, short y2)
 int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
 {
 	int size;
+	XRDP_MSG_SET_POINTER msg;
 
 	if (g_connected)
 	{
@@ -1492,8 +1496,13 @@ int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
 
 		size = 8 + 32 * (32 * 3) + 32 * (32 / 8) + 2;
 
+		msg.xPos = x;
+		msg.yPos = y;
+		msg.xorMaskData = (BYTE*) cur_data;
+		msg.andMaskData = (BYTE*) cur_mask;
+
 		rdpup_pre_check(size);
-		xrdp_write_set_cursor(g_out_s, x, y, cur_data, cur_mask);
+		xrdp_write_set_pointer(g_out_s, &msg);
 		g_count++;
 	}
 
@@ -1504,6 +1513,7 @@ int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bp
 {
 	int size;
 	int Bpp;
+	XRDP_MSG_SET_POINTER_EX msg;
 
 	if (g_connected)
 	{
@@ -1511,8 +1521,14 @@ int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bp
 		Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
 		size = 10 + 32 * (32 * Bpp) + 32 * (32 / 8) + 2;
 
+		msg.xPos = x;
+		msg.yPos = y;
+		msg.xorBpp = bpp;
+		msg.xorMaskData = (BYTE*) cur_data;
+		msg.andMaskData = (BYTE*) cur_mask;
+
 		rdpup_pre_check(size);
-		xrdp_write_set_cursor_ex(g_out_s, x, y, cur_data, cur_mask, bpp);
+		xrdp_write_set_pointer_ex(g_out_s, &msg);
 		g_count++;
 	}
 
@@ -1521,13 +1537,18 @@ int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bp
 
 int rdpup_create_os_surface(int rdpindex, int width, int height)
 {
-	LLOGLN(10, ("rdpup_create_os_surface:"));
+	XRDP_MSG_CREATE_OS_SURFACE msg;
 
 	if (g_connected)
 	{
 		LLOGLN(10, ("  rdpup_create_os_surface width %d height %d", width, height));
+
+		msg.index = rdpindex;
+		msg.width = width;
+		msg.height = height;
+
 		rdpup_pre_check(14);
-		xrdp_write_create_os_surface(g_out_s, rdpindex, width, height);
+		xrdp_write_create_os_surface(g_out_s, &msg);
 		g_count++;
 	}
 
@@ -1536,7 +1557,7 @@ int rdpup_create_os_surface(int rdpindex, int width, int height)
 
 int rdpup_switch_os_surface(int rdpindex)
 {
-	LLOGLN(10, ("rdpup_switch_os_surface:"));
+	XRDP_MSG_SWITCH_OS_SURFACE msg;
 
 	if (g_connected)
 	{
@@ -1546,10 +1567,14 @@ int rdpup_switch_os_surface(int rdpindex)
 		}
 
 		g_rdpindex = rdpindex;
+
 		LLOGLN(10, ("rdpup_switch_os_surface: rdpindex %d", rdpindex));
+
+		msg.index = rdpindex;
+
 		/* switch surface */
 		rdpup_pre_check(10);
-		xrdp_write_switch_os_surface(g_out_s, rdpindex);
+		xrdp_write_switch_os_surface(g_out_s, &msg);
 		g_count++;
 	}
 
@@ -1558,13 +1583,16 @@ int rdpup_switch_os_surface(int rdpindex)
 
 int rdpup_delete_os_surface(int rdpindex)
 {
-	LLOGLN(10, ("rdpup_delete_os_surface: rdpindex %d", rdpindex));
+	XRDP_MSG_DELETE_OS_SURFACE msg;
 
 	if (g_connected)
 	{
 		LLOGLN(10, ("rdpup_delete_os_surface: rdpindex %d", rdpindex));
+
+		msg.index = rdpindex;
+
 		rdpup_pre_check(10);
-		xrdp_write_delete_os_surface(g_out_s, rdpindex);
+		xrdp_write_delete_os_surface(g_out_s, &msg);
 		g_count++;
 	}
 
@@ -1578,7 +1606,9 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 	int size;
 	int bitmapLength;
 
-	LLOGLN(10, ("rdpup_send_area_rfx: x %d y %d w %d h %d", x, y, w, h));
+	LLOGLN(10, ("rdpup_send_area_rfx: x %d y %d w %d h %d g_Bpp: %d", x, y, w, h, g_Bpp));
+
+	rdpup_reset_clip();
 
 	if (g_connected && g_begin)
 	{
@@ -1629,6 +1659,12 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 
 	LLOGLN(10, ("rdpup_send_area: id %p x %d y %d w %d h %d", id, x, y, w, h));
 
+	if (g_rdpScreen.CodecMode)
+	{
+		rdpup_send_area_rfx(id, x, y, w, h);
+		return;
+	}
+
 	if (x >= id->width)
 	{
 		return;
@@ -1672,12 +1708,6 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 	}
 
 	LLOGLN(10, ("%d", w * h));
-
-	if (g_rdpScreen.CodecMode)
-	{
-		rdpup_send_area_rfx(id, x, y, w, h);
-		return;
-	}
 
 	if (g_connected && g_begin)
 	{
@@ -1734,20 +1764,35 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 
 void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
 {
+	XRDP_MSG_MEMBLT msg;
+
 	if (g_connected)
 	{
+		msg.nLeftRect = x;
+		msg.nTopRect = y;
+		msg.nWidth = cx;
+		msg.nHeight = cy;
+		msg.index = rdpindex;
+		msg.nXSrc = srcx;
+		msg.nYSrc = srcy;
+
 		rdpup_pre_check(22);
-		xrdp_write_paint_rect_os(g_out_s, x, y, cx, cy, rdpindex, srcx, srcy);
+		xrdp_write_memblt(g_out_s, &msg);
 		g_count++;
 	}
 }
 
 void rdpup_set_hints(int hints, int mask)
 {
+	XRDP_MSG_SET_HINTS msg;
+
 	if (g_connected)
 	{
+		msg.hints = hints;
+		msg.mask = mask;
+
 		rdpup_pre_check(14);
-		xrdp_write_set_hints(g_out_s, hints, mask);
+		xrdp_write_set_hints(g_out_s, &msg);
 		g_count++;
 	}
 }

@@ -206,7 +206,7 @@ struct _XRDP_MSG_CREATE_OS_SURFACE
 {
 	DEFINE_MSG_COMMON();
 
-	UINT32 id;
+	int index;
 	UINT32 width;
 	UINT32 height;
 };
@@ -216,7 +216,7 @@ struct _XRDP_MSG_SWITCH_OS_SURFACE
 {
 	DEFINE_MSG_COMMON();
 
-	UINT32 id;
+	int index;
 };
 typedef struct _XRDP_MSG_SWITCH_OS_SURFACE XRDP_MSG_SWITCH_OS_SURFACE;
 
@@ -224,19 +224,31 @@ struct _XRDP_MSG_DELETE_OS_SURFACE
 {
 	DEFINE_MSG_COMMON();
 
-	UINT32 id;
+	int index;
 };
 typedef struct _XRDP_MSG_DELETE_OS_SURFACE XRDP_MSG_DELETE_OS_SURFACE;
 
-struct _XRDP_MSG_PAINT_RECT_OS
+struct _XRDP_MSG_MEMBLT
 {
 	DEFINE_MSG_COMMON();
+
+	INT32 nLeftRect;
+	INT32 nTopRect;
+	INT32 nWidth;
+	INT32 nHeight;
+	UINT32 bRop;
+	INT32 nXSrc;
+	INT32 nYSrc;
+	int index;
 };
-typedef struct _XRDP_MSG_PAINT_RECT_OS XRDP_MSG_PAINT_RECT_OS;
+typedef struct _XRDP_MSG_MEMBLT XRDP_MSG_MEMBLT;
 
 struct _XRDP_MSG_SET_HINTS
 {
 	DEFINE_MSG_COMMON();
+
+	int hints;
+	int mask;
 };
 typedef struct _XRDP_MSG_SET_HINTS XRDP_MSG_SET_HINTS;
 
@@ -280,13 +292,13 @@ FREERDP_API int xrdp_write_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg
 FREERDP_API int xrdp_write_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
 FREERDP_API int xrdp_write_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg);
 FREERDP_API int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg);
-FREERDP_API int xrdp_write_set_cursor(wStream* s, int x, int y, char* cur_data, char* cur_mask);
-FREERDP_API int xrdp_write_set_cursor_ex(wStream* s, int x, int y, char* cur_data, char* cur_mask, int bpp);
-FREERDP_API int xrdp_write_create_os_surface(wStream* s, int index, int width, int height);
-FREERDP_API int xrdp_write_switch_os_surface(wStream* s, int index);
-FREERDP_API int xrdp_write_delete_os_surface(wStream* s, int index);
-FREERDP_API int xrdp_write_paint_rect_os(wStream* s, int x, int y, int width, int height, int index, int srcx, int srcy);
-FREERDP_API int xrdp_write_set_hints(wStream* s, int hints, int mask);
+FREERDP_API int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg);
+FREERDP_API int xrdp_write_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg);
+FREERDP_API int xrdp_write_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg);
+FREERDP_API int xrdp_write_switch_os_surface(wStream* s, XRDP_MSG_SWITCH_OS_SURFACE* msg);
+FREERDP_API int xrdp_write_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg);
+FREERDP_API int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
+FREERDP_API int xrdp_write_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg);
 FREERDP_API int xrdp_write_create_framebuffer(wStream* s, XRDP_MSG_CREATE_FRAMEBUFFER* msg);
 
 #ifdef __cplusplus
