@@ -263,6 +263,7 @@ list(APPEND ${MODULE_PREFIX}_STATIC_LIBS avro-static)
 
 merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} combined ${${MODULE_PREFIX}_STATIC_LIBS})
+target_link_libraries(${MODULE_NAME} combined ${${MODULE_PREFIX}_STATIC_LIBS} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
