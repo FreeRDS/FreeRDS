@@ -49,6 +49,8 @@ static int g_scheduled = 0;
 static int g_count = 0;
 static int g_rdpindex = -1;
 
+static BYTE* pfbBackBufferMemory = NULL;
+
 extern DevPrivateKeyRec g_rdpWindowIndex; /* from rdpmain.c */
 extern ScreenPtr g_pScreen; /* from rdpmain.c */
 extern int g_Bpp; /* from rdpmain.c */
@@ -1108,6 +1110,8 @@ int rdpup_init(void)
 		g_out_s = Stream_New(NULL, 1920 * 1088 * g_Bpp + 100);
 	}
 
+	pfbBackBufferMemory = (BYTE*) malloc(g_rdpScreen.sizeInBytes);
+
 	if (g_use_uds)
 	{
 		g_sprintf(g_uds_data, "/tmp/.xrdp/xrdp_display_%s", display);
@@ -1604,6 +1608,7 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 	int i;
 	char* s;
 	int size;
+	char* dstp;
 	int bitmapLength;
 
 	LLOGLN(10, ("rdpup_send_area_rfx: x %d y %d w %d h %d g_Bpp: %d", x, y, w, h, g_Bpp));
@@ -1613,8 +1618,15 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 	if (g_connected && g_begin)
 	{
 		bitmapLength = w * h * g_Bpp;
-
 		size = bitmapLength + 26;
+
+		for (i = 0; i < h; i++)
+		{
+			dstp = (char*) &pfbBackBufferMemory[w * g_Bpp * i];
+			s = (g_rdpScreen.pfbMemory + ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
+			convert_pixels(s, dstp, w);
+		}
+
 		rdpup_pre_check(size);
 		rdpup_write_order_header(g_out_s, XRDP_SERVER_PAINT_RECT, size);
 
@@ -1623,14 +1635,7 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 		Stream_Write_UINT16(g_out_s, w);
 		Stream_Write_UINT16(g_out_s, h);
 		Stream_Write_UINT32(g_out_s, bitmapLength);
-
-		for (i = 0; i < h; i++)
-		{
-			s = (g_rdpScreen.pfbMemory + ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
-			convert_pixels(s, g_out_s->pointer, w);
-			Stream_Seek(g_out_s, w * g_Bpp);
-		}
-
+		Stream_Write(g_out_s, pfbBackBufferMemory, bitmapLength);
 		Stream_Write_UINT16(g_out_s, w);
 		Stream_Write_UINT16(g_out_s, h);
 		Stream_Write_UINT16(g_out_s, 0);
@@ -1648,7 +1653,9 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 	int lh;
 	int lw;
 	int size;
+	char* dstp;
 	int single_color;
+	int bitmapLength;
 	struct image_data lid;
 
 	if (id == 0)
@@ -1732,22 +1739,24 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 				}
 				else
 				{
-					size = lw * lh * id->Bpp + 26;
+					bitmapLength = lw * lh * id->Bpp;
+					size = bitmapLength + 26;
+
+					for (i = 0; i < lh; i++)
+					{
+						dstp = (char*) &pfbBackBufferMemory[lw * id->Bpp * i];
+						s = (id->pixels + ((ly + i) * id->lineBytes) + (lx * g_Bpp));
+						convert_pixels(s, dstp, lw);
+					}
+
 					rdpup_pre_check(size);
 					rdpup_write_order_header(g_out_s, XRDP_SERVER_PAINT_RECT, size);
 					Stream_Write_UINT16(g_out_s, lx);
 					Stream_Write_UINT16(g_out_s, ly);
 					Stream_Write_UINT16(g_out_s, lw);
 					Stream_Write_UINT16(g_out_s, lh);
-					Stream_Write_UINT32(g_out_s, lw * lh * id->Bpp);
-
-					for (i = 0; i < lh; i++)
-					{
-						s = (id->pixels + ((ly + i) * id->lineBytes) + (lx * g_Bpp));
-						convert_pixels(s, g_out_s->pointer, lw);
-						g_out_s->pointer += lw * id->Bpp;
-					}
-
+					Stream_Write_UINT32(g_out_s, bitmapLength);
+					Stream_Write(g_out_s, pfbBackBufferMemory, bitmapLength);
 					Stream_Write_UINT16(g_out_s, lw);
 					Stream_Write_UINT16(g_out_s, lh);
 					Stream_Write_UINT16(g_out_s, 0);
