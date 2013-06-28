@@ -727,7 +727,7 @@ int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id)
 	return 0;
 }
 
-int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, int y, int width, int height)
+int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT* msg)
 {
 	wStream* s;
 	RFX_RECT rect;
@@ -736,7 +736,7 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 	rdpUpdate* update = session->context->update;
 
 	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
-			bpp, x, y, width, height);
+			bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
 	if ((bpp == 24) || (bpp == 32))
 	{
@@ -750,8 +750,8 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 
 	rect.x = 0;
 	rect.y = 0;
-	rect.width = height;
-	rect.height = height;
+	rect.width = msg->nWidth;
+	rect.height = msg->nHeight;
 
 	if (session->settings->RemoteFxCodec)
 	{
@@ -759,7 +759,8 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 		Stream_Clear(s);
 		Stream_SetPosition(s, 0);
 
-		rfx_compose_message(session->rfx_context, s, &rect, 1, data, width, height, bytesPerPixel * width);
+		rfx_compose_message(session->rfx_context, s, &rect, 1, msg->bitmapData,
+				msg->nWidth, msg->nHeight, bytesPerPixel * msg->nWidth);
 
 		cmd.codecID = session->settings->RemoteFxCodecId;
 	}
@@ -769,7 +770,8 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 		Stream_Clear(s);
 		Stream_SetPosition(s, 0);
 
-		nsc_compose_message(session->nsc_context, s, data, width, height, bytesPerPixel * width);
+		nsc_compose_message(session->nsc_context, s, msg->bitmapData,
+				msg->nWidth, msg->nHeight, bytesPerPixel * msg->nWidth);
 
 		cmd.codecID = session->settings->NSCodecId;
 	}
@@ -779,14 +781,14 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, 
 		return -1;
 	}
 
-	cmd.destLeft = x;
-	cmd.destTop = y;
-	cmd.destRight = x + width;
-	cmd.destBottom = y + height;
+	cmd.destLeft = msg->nLeftRect;
+	cmd.destTop = msg->nTopRect;
+	cmd.destRight = msg->nLeftRect + msg->nWidth;
+	cmd.destBottom = msg->nTopRect + msg->nHeight;
 
 	cmd.bpp = 32;
-	cmd.width = width;
-	cmd.height = height;
+	cmd.width = msg->nWidth;
+	cmd.height = msg->nHeight;
 	cmd.bitmapDataLength = Stream_GetPosition(s);
 	cmd.bitmapData = Stream_Buffer(s);
 

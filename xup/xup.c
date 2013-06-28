@@ -549,8 +549,7 @@ static int process_server_paint_rect(xrdpModule* mod, wStream* s)
 	Stream_Read_INT16(s, msg.nXSrc);
 	Stream_Read_INT16(s, msg.nYSrc);
 
-	status = server_paint_rect(mod, msg.nLeftRect, msg.nTopRect, msg.nWidth, msg.nHeight,
-			(char*) msg.bitmapData, msg.nWidth, msg.nHeight, msg.nXSrc, msg.nYSrc);
+	status = server_paint_rect(mod, &msg);
 
 	return status;
 }

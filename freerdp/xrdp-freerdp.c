@@ -499,6 +499,7 @@ static void lfreerdp_bitmap_update(rdpContext *context, BITMAP_UPDATE *bitmap)
 	char *dst_data1;
 	char *src;
 	char *dst;
+	XRDP_MSG_PAINT_RECT msg;
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(10, ("lfreerdp_bitmap_update: %d %d", bitmap->number, bitmap->count));
@@ -540,7 +541,17 @@ static void lfreerdp_bitmap_update(rdpContext *context, BITMAP_UPDATE *bitmap)
 		}
 
 		dst_data1 = convert_bitmap(server_bpp, client_bpp, dst_data, bd->width, bd->height, mod->colormap);
-		server_paint_rect(mod, bd->destLeft, bd->destTop, cx, cy, dst_data1, bd->width, bd->height, 0, 0);
+
+		msg.nLeftRect = bd->destLeft;
+		msg.nTopRect = bd->destTop;
+		msg.nWidth = cx;
+		msg.nHeight = cy;
+		msg.bitmapData = (BYTE*) dst_data1;
+		msg.bitmapDataLength = 0;
+		msg.nXSrc = 0;
+		msg.nYSrc = 0;
+
+		server_paint_rect(mod, &msg);
 
 		if (dst_data1 != dst_data)
 		{
@@ -656,6 +667,7 @@ static void lfreerdp_mem_blt(rdpContext *context, MEMBLT_ORDER *memblt)
 	int idx;
 	xrdpModule *mod;
 	struct bitmap_item *bi;
+	XRDP_MSG_PAINT_RECT msg;
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(10, ("lfreerdp_mem_blt: cacheId %d cacheIndex %d",
@@ -683,11 +695,17 @@ static void lfreerdp_mem_blt(rdpContext *context, MEMBLT_ORDER *memblt)
 
 	bi = &(mod->bitmap_cache[id][idx]);
 
-	server_set_opcode(mod, memblt->bRop);
-	server_paint_rect(mod, memblt->nLeftRect, memblt->nTopRect, memblt->nWidth, memblt->nHeight, bi->data,
-			bi->width, bi->height, memblt->nXSrc, memblt->nYSrc);
-	server_set_opcode(mod, 0xcc);
+	msg.nLeftRect = memblt->nLeftRect;
+	msg.nTopRect= memblt->nTopRect;
+	msg.nWidth = memblt->nWidth;
+	msg.nHeight = memblt->nHeight;
+	msg.bitmapData = (BYTE*) bi->data;
+	msg.nXSrc = memblt->nXSrc;
+	msg.nYSrc = memblt->nYSrc;
 
+	server_set_opcode(mod, memblt->bRop);
+	server_paint_rect(mod, &msg);
+	server_set_opcode(mod, 0xCC);
 }
 
 /******************************************************************************/

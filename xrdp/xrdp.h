@@ -30,6 +30,8 @@
 
 #include <freerdp/freerdp.h>
 
+#include <xrdp-ng/xrdp.h>
+
 #include "arch.h"
 #include "trans.h"
 #include "list.h"
@@ -272,8 +274,7 @@ int server_end_update(struct xrdp_mod* mod);
 int server_bell_trigger(struct xrdp_mod* mod);
 int server_fill_rect(struct xrdp_mod* mod, int x, int y, int cx, int cy);
 int server_screen_blt(struct xrdp_mod* mod, int x, int y, int cx, int cy, int srcx, int srcy);
-int server_paint_rect(struct xrdp_mod* mod, int x, int y, int cx, int cy,
-		char* data, int width, int height, int srcx, int srcy);
+int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg);
 int server_set_pointer(struct xrdp_mod* mod, int x, int y, char* data, char* mask);
 int server_set_pointer_ex(struct xrdp_mod* mod, int x, int y, char* data, char* mask, int bpp);
 int server_palette(struct xrdp_mod* mod, int* palette);

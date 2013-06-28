@@ -1235,11 +1235,11 @@ int server_screen_blt(xrdpModule* mod, int x, int y, int cx, int cy, int srcx, i
 	return 0;
 }
 
-int server_paint_rect(xrdpModule* mod, int x, int y, int cx, int cy, char *data, int width, int height, int srcx, int srcy)
+int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
 	xrdpWm* wm;
-	xrdpBitmap *b;
-	xrdpPainter *p;
+	xrdpBitmap* b;
+	xrdpPainter* p;
 
 	wm = (xrdpWm*) (mod->wm);
 	p = (xrdpPainter*) (mod->painter);
@@ -1249,14 +1249,15 @@ int server_paint_rect(xrdpModule* mod, int x, int y, int cx, int cy, char *data,
 
 	if (wm->session->codecMode)
 	{
-		log_message(LOG_LEVEL_DEBUG, "server_paint_rect: x: %d y: %d cx: %d cy: %d width: %d height: %d srcx: %d srcy: %d",
-				x, y, cx, cy, width, height, srcx, srcy);
-		libxrdp_send_surface_bits(wm->session, wm->screen->bpp, (BYTE*) data, x, y, cx, cy);
+		libxrdp_send_surface_bits(wm->session, wm->screen->bpp, msg);
 	}
 	else
 	{
-		b = xrdp_bitmap_create_with_data(width, height, wm->screen->bpp, data, wm);
-		xrdp_painter_copy(p, b, wm->target_surface, x, y, cx, cy, srcx, srcy);
+		b = xrdp_bitmap_create_with_data(msg->nWidth, msg->nHeight, wm->screen->bpp, (char*) msg->bitmapData, wm);
+
+		xrdp_painter_copy(p, b, wm->target_surface, msg->nLeftRect, msg->nTopRect,
+				msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
+
 		xrdp_bitmap_delete(b);
 	}
 

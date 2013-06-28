@@ -28,6 +28,8 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
+#include <xrdp-ng/xrdp.h>
+
 #include "xrdp_rail.h"
 
 struct xrdp_brush
@@ -181,7 +183,7 @@ FREERDP_API int libxrdp_orders_send_create_os_surface(xrdpSession* session, int 
 
 FREERDP_API int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id);
 
-FREERDP_API int libxrdp_send_surface_bits(xrdpSession* session, int bpp, BYTE* data, int x, int y, int width, int height);
+FREERDP_API int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT* msg);
 
 FREERDP_API int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32 id);
 
