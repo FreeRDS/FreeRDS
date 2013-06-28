@@ -317,7 +317,7 @@ typedef struct _XRDP_MSG_CREATE_FRAMEBUFFER XRDP_MSG_CREATE_FRAMEBUFFER;
 extern "C" {
 #endif
 
-FREERDP_API int xrdp_prepare_msg(XRDP_MSG_COMMON* msg, UINT32 type);
+FREERDP_API int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg);
 
 FREERDP_API int xrdp_write_begin_update(wStream* s, XRDP_MSG_BEGIN_UPDATE* msg);
 FREERDP_API int xrdp_write_end_update(wStream* s, XRDP_MSG_END_UPDATE* msg);

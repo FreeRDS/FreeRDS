@@ -25,7 +25,7 @@
 
 #define XRDP_ORDER_HEADER_LENGTH	6
 
-int xrdp_write_header(wStream* s, int type, int length)
+int xrdp_write_header(wStream* s, UINT32 type, UINT32 length)
 {
 	Stream_Write_UINT16(s, type);
 	Stream_Write_UINT32(s, length);
@@ -34,36 +34,36 @@ int xrdp_write_header(wStream* s, int type, int length)
 
 int xrdp_write_begin_update(wStream* s, XRDP_MSG_BEGIN_UPDATE* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH;
+	msg->length = XRDP_ORDER_HEADER_LENGTH;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_BEGIN_UPDATE, length);
+	xrdp_write_header(s, XRDP_SERVER_BEGIN_UPDATE, msg->length);
 
 	return 0;
 }
 
 int xrdp_write_end_update(wStream* s, XRDP_MSG_END_UPDATE* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH;
+	msg->length = XRDP_ORDER_HEADER_LENGTH;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_END_UPDATE, length);
+	xrdp_write_header(s, XRDP_SERVER_END_UPDATE, msg->length);
 
 	return 0;
 }
 
 int xrdp_write_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 8;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 8;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_OPAQUE_RECT, length);
+	xrdp_write_header(s, XRDP_SERVER_OPAQUE_RECT, msg->length);
 
 	Stream_Write_UINT16(s, msg->nLeftRect);
 	Stream_Write_UINT16(s, msg->nTopRect);
@@ -75,12 +75,12 @@ int xrdp_write_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg)
 
 int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 12;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 12;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_SCREEN_BLT, length);
+	xrdp_write_header(s, XRDP_SERVER_SCREEN_BLT, msg->length);
 
 	Stream_Write_UINT16(s, msg->nLeftRect);
 	Stream_Write_UINT16(s, msg->nTopRect);
@@ -94,12 +94,12 @@ int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg)
 
 int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 20 + msg->bitmapDataLength;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 20 + msg->bitmapDataLength;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_PAINT_RECT, length);
+	xrdp_write_header(s, XRDP_SERVER_PAINT_RECT, msg->length);
 
 	Stream_Write_UINT16(s, msg->nLeftRect);
 	Stream_Write_UINT16(s, msg->nTopRect);
@@ -117,12 +117,12 @@ int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg)
 
 int xrdp_write_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 8;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 8;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_SET_CLIP, length);
+	xrdp_write_header(s, XRDP_SERVER_SET_CLIP, msg->length);
 	Stream_Write_UINT16(s, msg->x);
 	Stream_Write_UINT16(s, msg->y);
 	Stream_Write_UINT16(s, msg->width);
@@ -133,24 +133,24 @@ int xrdp_write_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg)
 
 int xrdp_write_reset_clip(wStream* s, XRDP_MSG_RESET_CLIP* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH;
+	msg->length = XRDP_ORDER_HEADER_LENGTH;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_RESET_CLIP, length);
+	xrdp_write_header(s, XRDP_SERVER_RESET_CLIP, msg->length);
 
 	return 0;
 }
 
 int xrdp_write_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 4;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 4;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_SET_FORECOLOR, length);
+	xrdp_write_header(s, XRDP_SERVER_SET_FORECOLOR, msg->length);
 	Stream_Write_UINT32(s, msg->ForeColor);
 
 	return 0;
@@ -158,12 +158,12 @@ int xrdp_write_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg)
 
 int xrdp_write_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 4;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 4;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_SET_BACKCOLOR, length);
+	xrdp_write_header(s, XRDP_SERVER_SET_BACKCOLOR, msg->length);
 	Stream_Write_UINT32(s, msg->BackColor);
 
 	return 0;
@@ -171,12 +171,12 @@ int xrdp_write_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg)
 
 int xrdp_write_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 2;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 2;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_SET_ROP2, length);
+	xrdp_write_header(s, XRDP_SERVER_SET_ROP2, msg->length);
 	Stream_Write_UINT16(s, msg->bRop2);
 
 	return 0;
@@ -184,12 +184,12 @@ int xrdp_write_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg)
 
 int xrdp_write_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 4;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 4;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_SET_PEN, length);
+	xrdp_write_header(s, XRDP_SERVER_SET_PEN, msg->length);
 
 	Stream_Write_UINT16(s, msg->PenStyle);
 	Stream_Write_UINT16(s, msg->PenWidth);
@@ -199,12 +199,12 @@ int xrdp_write_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg)
 
 int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 8;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 8;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_LINE_TO, length);
+	xrdp_write_header(s, XRDP_SERVER_LINE_TO, msg->length);
 
 	Stream_Write_UINT16(s, msg->nXStart);
 	Stream_Write_UINT16(s, msg->nYStart);
@@ -217,10 +217,10 @@ int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg)
 int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 {
 	int size = 4 + 32 * (32 * 3) + 32 * (32 / 8);
-	int length = XRDP_ORDER_HEADER_LENGTH + size;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + size;
 
 	if (!s)
-		return length;
+		return msg->length;
 
 	if (msg->xPos < 0)
 		msg->xPos = 0;
@@ -234,7 +234,7 @@ int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 	if (msg->yPos > 31)
 		msg->yPos = 31;
 
-	xrdp_write_header(s, XRDP_SERVER_SET_POINTER, length);
+	xrdp_write_header(s, XRDP_SERVER_SET_POINTER, msg->length);
 	Stream_Write_UINT16(s, msg->xPos);
 	Stream_Write_UINT16(s, msg->yPos);
 	Stream_Write(s, msg->xorMaskData, 32 * (32 * 3));
@@ -247,10 +247,10 @@ int xrdp_write_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg)
 {
 	int BytesPerPixel = (msg->xorBpp == 0) ? 3 : (msg->xorBpp + 7) / 8;
 	int size = 6 + 32 * (32 * BytesPerPixel) + 32 * (32 / 8);
-	int length = XRDP_ORDER_HEADER_LENGTH + size;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + size;
 
 	if (!s)
-		return length;
+		return msg->length;
 
 	if (msg->xPos < 0)
 		msg->xPos = 0;
@@ -264,7 +264,7 @@ int xrdp_write_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg)
 	if (msg->yPos > 31)
 		msg->yPos = 31;
 
-	xrdp_write_header(s, XRDP_SERVER_SET_POINTER_EX, length);
+	xrdp_write_header(s, XRDP_SERVER_SET_POINTER_EX, msg->length);
 	Stream_Write_UINT16(s, msg->xPos);
 	Stream_Write_UINT16(s, msg->yPos);
 	Stream_Write_UINT16(s, msg->xorBpp);
@@ -276,12 +276,12 @@ int xrdp_write_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg)
 
 int xrdp_write_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 8;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 8;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_CREATE_OS_SURFACE, length);
+	xrdp_write_header(s, XRDP_SERVER_CREATE_OS_SURFACE, msg->length);
 	Stream_Write_UINT32(s, msg->index);
 	Stream_Write_UINT16(s, msg->width);
 	Stream_Write_UINT16(s, msg->height);
@@ -291,12 +291,12 @@ int xrdp_write_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg)
 
 int xrdp_write_switch_os_surface(wStream* s, XRDP_MSG_SWITCH_OS_SURFACE* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 4;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 4;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_SWITCH_OS_SURFACE, length);
+	xrdp_write_header(s, XRDP_SERVER_SWITCH_OS_SURFACE, msg->length);
 	Stream_Write_UINT32(s, msg->index);
 
 	return 0;
@@ -304,12 +304,12 @@ int xrdp_write_switch_os_surface(wStream* s, XRDP_MSG_SWITCH_OS_SURFACE* msg)
 
 int xrdp_write_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 4;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 4;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_DELETE_OS_SURFACE, length);
+	xrdp_write_header(s, XRDP_SERVER_DELETE_OS_SURFACE, msg->length);
 	Stream_Write_UINT32(s, msg->index);
 
 	return 0;
@@ -317,12 +317,12 @@ int xrdp_write_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg)
 
 int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 16;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 16;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_MEMBLT, length);
+	xrdp_write_header(s, XRDP_SERVER_MEMBLT, msg->length);
 
 	Stream_Write_UINT16(s, msg->nLeftRect);
 	Stream_Write_UINT16(s, msg->nTopRect);
@@ -337,12 +337,12 @@ int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg)
 
 int xrdp_write_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 8;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 8;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_SET_HINTS, length);
+	xrdp_write_header(s, XRDP_SERVER_SET_HINTS, msg->length);
 
 	Stream_Write_UINT32(s, msg->hints);
 	Stream_Write_UINT32(s, msg->mask);
@@ -354,15 +354,15 @@ int xrdp_write_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	int index;
 	UINT32 flags;
-	int length = XRDP_ORDER_HEADER_LENGTH +
+	msg->length = XRDP_ORDER_HEADER_LENGTH +
 			(5 * 4) + (2 + msg->titleInfo.length) + (12 * 4) +
 			(2 + msg->numWindowRects * 8) + (4 + 4) +
 			(2 + msg->numVisibilityRects * 8) + 4;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_WINDOW_NEW_UPDATE, length);
+	xrdp_write_header(s, XRDP_SERVER_WINDOW_NEW_UPDATE, msg->length);
 
 	flags = WINDOW_ORDER_TYPE_WINDOW | WINDOW_ORDER_STATE_NEW;
 
@@ -440,12 +440,12 @@ int xrdp_write_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 
 int xrdp_write_window_delete(wStream* s, XRDP_MSG_WINDOW_DELETE* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 4;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 4;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_WINDOW_DELETE, length);
+	xrdp_write_header(s, XRDP_SERVER_WINDOW_DELETE, msg->length);
 
 	Stream_Write_UINT32(s, msg->windowId);
 
@@ -454,12 +454,12 @@ int xrdp_write_window_delete(wStream* s, XRDP_MSG_WINDOW_DELETE* msg)
 
 int xrdp_write_create_framebuffer(wStream* s, XRDP_MSG_CREATE_FRAMEBUFFER* msg)
 {
-	int length = XRDP_ORDER_HEADER_LENGTH + 24;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 24;
 
 	if (!s)
-		return length;
+		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_CREATE_FRAMEBUFFER, length);
+	xrdp_write_header(s, XRDP_SERVER_CREATE_FRAMEBUFFER, msg->length);
 
 	Stream_Write_UINT32(s, msg->width);
 	Stream_Write_UINT32(s, msg->height);
@@ -471,98 +471,96 @@ int xrdp_write_create_framebuffer(wStream* s, XRDP_MSG_CREATE_FRAMEBUFFER* msg)
 	return 0;
 }
 
-int xrdp_prepare_msg(XRDP_MSG_COMMON* msg, UINT32 type)
+int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 {
-	msg->type = type;
-
 	switch (msg->type)
 	{
 		case XRDP_SERVER_BEGIN_UPDATE:
-			msg->length = xrdp_write_begin_update(NULL, (XRDP_MSG_BEGIN_UPDATE*) msg);
+			xrdp_write_begin_update(s, (XRDP_MSG_BEGIN_UPDATE*) msg);
 			break;
 
 		case XRDP_SERVER_END_UPDATE:
-			msg->length = xrdp_write_end_update(NULL, (XRDP_MSG_END_UPDATE*) msg);
+			xrdp_write_end_update(s, (XRDP_MSG_END_UPDATE*) msg);
 			break;
 
 		case XRDP_SERVER_OPAQUE_RECT:
-			msg->length = xrdp_write_opaque_rect(NULL, (XRDP_MSG_OPAQUE_RECT*) msg);
+			xrdp_write_opaque_rect(s, (XRDP_MSG_OPAQUE_RECT*) msg);
 			break;
 
 		case XRDP_SERVER_SCREEN_BLT:
-			msg->length = xrdp_write_screen_blt(NULL, (XRDP_MSG_SCREEN_BLT*) msg);
+			xrdp_write_screen_blt(s, (XRDP_MSG_SCREEN_BLT*) msg);
 			break;
 
 		case XRDP_SERVER_PAINT_RECT:
-			msg->length = xrdp_write_paint_rect(NULL, (XRDP_MSG_PAINT_RECT*) msg);
+			xrdp_write_paint_rect(s, (XRDP_MSG_PAINT_RECT*) msg);
 			break;
 
 		case XRDP_SERVER_SET_CLIP:
-			msg->length = xrdp_write_set_clip(NULL, (XRDP_MSG_SET_CLIP*) msg);
+			xrdp_write_set_clip(s, (XRDP_MSG_SET_CLIP*) msg);
 			break;
 
 		case XRDP_SERVER_RESET_CLIP:
-			msg->length = xrdp_write_reset_clip(NULL, (XRDP_MSG_RESET_CLIP*) msg);
+			xrdp_write_reset_clip(s, (XRDP_MSG_RESET_CLIP*) msg);
 			break;
 
 		case XRDP_SERVER_SET_FORECOLOR:
-			msg->length = xrdp_write_set_forecolor(NULL, (XRDP_MSG_SET_FORECOLOR*) msg);
+			xrdp_write_set_forecolor(s, (XRDP_MSG_SET_FORECOLOR*) msg);
 			break;
 
 		case XRDP_SERVER_SET_BACKCOLOR:
-			msg->length = xrdp_write_set_backcolor(NULL, (XRDP_MSG_SET_BACKCOLOR*) msg);
+			xrdp_write_set_backcolor(s, (XRDP_MSG_SET_BACKCOLOR*) msg);
 			break;
 
 		case XRDP_SERVER_SET_ROP2:
-			msg->length = xrdp_write_set_rop2(NULL, (XRDP_MSG_SET_ROP2*) msg);
+			xrdp_write_set_rop2(s, (XRDP_MSG_SET_ROP2*) msg);
 			break;
 
 		case XRDP_SERVER_SET_PEN:
-			msg->length = xrdp_write_set_pen(NULL, (XRDP_MSG_SET_PEN*) msg);
+			xrdp_write_set_pen(s, (XRDP_MSG_SET_PEN*) msg);
 			break;
 
 		case XRDP_SERVER_LINE_TO:
-			msg->length = xrdp_write_line_to(NULL, (XRDP_MSG_LINE_TO*) msg);
+			xrdp_write_line_to(s, (XRDP_MSG_LINE_TO*) msg);
 			break;
 
 		case XRDP_SERVER_SET_POINTER:
-			msg->length = xrdp_write_set_pointer(NULL, (XRDP_MSG_SET_POINTER*) msg);
+			xrdp_write_set_pointer(s, (XRDP_MSG_SET_POINTER*) msg);
 			break;
 
 		case XRDP_SERVER_SET_POINTER_EX:
-			msg->length = xrdp_write_set_pointer_ex(NULL, (XRDP_MSG_SET_POINTER_EX*) msg);
+			xrdp_write_set_pointer_ex(s, (XRDP_MSG_SET_POINTER_EX*) msg);
 			break;
 
 		case XRDP_SERVER_CREATE_OS_SURFACE:
-			msg->length = xrdp_write_create_os_surface(NULL, (XRDP_MSG_CREATE_OS_SURFACE*) msg);
+			xrdp_write_create_os_surface(s, (XRDP_MSG_CREATE_OS_SURFACE*) msg);
 			break;
 
 		case XRDP_SERVER_SWITCH_OS_SURFACE:
-			msg->length = xrdp_write_switch_os_surface(NULL, (XRDP_MSG_SWITCH_OS_SURFACE*) msg);
+			xrdp_write_switch_os_surface(s, (XRDP_MSG_SWITCH_OS_SURFACE*) msg);
 			break;
 
 		case XRDP_SERVER_DELETE_OS_SURFACE:
-			msg->length = xrdp_write_delete_os_surface(NULL, (XRDP_MSG_DELETE_OS_SURFACE*) msg);
+			xrdp_write_delete_os_surface(s, (XRDP_MSG_DELETE_OS_SURFACE*) msg);
 			break;
 
 		case XRDP_SERVER_MEMBLT:
-			msg->length = xrdp_write_memblt(NULL, (XRDP_MSG_MEMBLT*) msg);
+			xrdp_write_memblt(s, (XRDP_MSG_MEMBLT*) msg);
 			break;
 
 		case XRDP_SERVER_SET_HINTS:
-			msg->length = xrdp_write_set_hints(NULL, (XRDP_MSG_SET_HINTS*) msg);
+			xrdp_write_set_hints(s, (XRDP_MSG_SET_HINTS*) msg);
 			break;
 
 		case XRDP_SERVER_WINDOW_NEW_UPDATE:
-			msg->length = xrdp_write_window_new_update(NULL, (XRDP_MSG_WINDOW_NEW_UPDATE*) msg);
+			xrdp_write_window_new_update(s, (XRDP_MSG_WINDOW_NEW_UPDATE*) msg);
 			break;
 
 		case XRDP_SERVER_WINDOW_DELETE:
-			msg->length = xrdp_write_window_delete(NULL, (XRDP_MSG_WINDOW_DELETE*) msg);
+			xrdp_write_window_delete(s, (XRDP_MSG_WINDOW_DELETE*) msg);
 			break;
 
 		case XRDP_SERVER_CREATE_FRAMEBUFFER:
-			msg->length = xrdp_write_create_framebuffer(NULL, (XRDP_MSG_CREATE_FRAMEBUFFER*) msg);
+			xrdp_write_create_framebuffer(s, (XRDP_MSG_CREATE_FRAMEBUFFER*) msg);
 			break;
 
 		default:
