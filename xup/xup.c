@@ -25,6 +25,10 @@
 #include "defines.h"
 #include "xrdp_rail.h"
 
+#include <stdio.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+
 #include <avro.h>
 
 #include <winpr/crt.h>
@@ -32,9 +36,7 @@
 
 #include <freerdp/freerdp.h>
 
-/******************************************************************************/
-/* returns error */
-int lib_recv(xrdpModule *mod, unsigned char *data, int len)
+int lib_recv(xrdpModule* mod, unsigned char *data, int len)
 {
 	int rcvd;
 
@@ -78,9 +80,7 @@ int lib_recv(xrdpModule *mod, unsigned char *data, int len)
 	return 0;
 }
 
-/*****************************************************************************/
-/* returns error */
-int lib_send(xrdpModule *mod, unsigned char *data, int len)
+int lib_send(xrdpModule* mod, unsigned char *data, int len)
 {
 	int sent;
 
@@ -124,9 +124,7 @@ int lib_send(xrdpModule *mod, unsigned char *data, int len)
 	return 0;
 }
 
-/******************************************************************************/
-/* return error */
-int lib_mod_start(xrdpModule *mod, int w, int h, int bpp)
+int lib_mod_start(xrdpModule* mod, int w, int h, int bpp)
 {
 	mod->width = w;
 	mod->height = h;
@@ -134,9 +132,7 @@ int lib_mod_start(xrdpModule *mod, int w, int h, int bpp)
 	return 0;
 }
 
-/******************************************************************************/
-/* return error */
-int lib_mod_connect(xrdpModule *mod)
+int lib_mod_connect(xrdpModule* mod)
 {
 	int error;
 	int len;
@@ -334,9 +330,7 @@ int lib_mod_connect(xrdpModule *mod)
 	return 0;
 }
 
-/******************************************************************************/
-/* return error */
-int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
+int lib_mod_event(xrdpModule* mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
 {
 	wStream* s;
 	int len;
@@ -415,9 +409,7 @@ int lib_mod_event(xrdpModule *mod, int msg, tbus param1, tbus param2, tbus param
 	return rv;
 }
 
-/******************************************************************************/
-/* return error */
-static int process_server_window_new_update(xrdpModule *mod, wStream* s)
+static int process_server_window_new_update(xrdpModule* mod, wStream* s)
 {
 	int flags;
 	int window_id;
@@ -494,12 +486,11 @@ static int process_server_window_new_update(xrdpModule *mod, wStream* s)
 	g_free(rwso.title_info);
 	g_free(rwso.window_rects);
 	g_free(rwso.visibility_rects);
+
 	return rv;
 }
 
-/******************************************************************************/
-/* return error */
-static int process_server_window_delete(xrdpModule *mod, wStream* s)
+static int process_server_window_delete(xrdpModule* mod, wStream* s)
 {
 	int window_id;
 	int rv;
@@ -511,9 +502,7 @@ static int process_server_window_delete(xrdpModule *mod, wStream* s)
 	return rv;
 }
 
-/******************************************************************************/
-/* return error */
-static int process_server_set_pointer_ex(xrdpModule *mod, wStream* s)
+static int process_server_set_pointer_ex(xrdpModule* mod, wStream* s)
 {
 	int rv;
 	int x;
@@ -534,9 +523,72 @@ static int process_server_set_pointer_ex(xrdpModule *mod, wStream* s)
 	return rv;
 }
 
-/******************************************************************************/
-/* return error */
-static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
+static int process_server_paint_rect(xrdpModule* mod, wStream* s)
+{
+	int status;
+	XRDP_MSG_PAINT_RECT msg;
+
+	Stream_Read_INT16(s, msg.nLeftRect);
+	Stream_Read_INT16(s, msg.nTopRect);
+	Stream_Read_UINT16(s, msg.nWidth);
+	Stream_Read_UINT16(s, msg.nHeight);
+	Stream_Read_UINT32(s, msg.bitmapDataLength);
+
+	if (msg.bitmapDataLength)
+	{
+		Stream_GetPointer(s, msg.bitmapData);
+		Stream_Seek(s, msg.bitmapDataLength);
+	}
+	else
+	{
+
+	}
+
+	Stream_Read_UINT16(s, msg.nWidth);
+	Stream_Read_UINT16(s, msg.nHeight);
+	Stream_Read_INT16(s, msg.nXSrc);
+	Stream_Read_INT16(s, msg.nYSrc);
+
+	status = server_paint_rect(mod, msg.nLeftRect, msg.nTopRect, msg.nWidth, msg.nHeight,
+			(char*) msg.bitmapData, msg.nWidth, msg.nHeight, msg.nXSrc, msg.nYSrc);
+
+	return status;
+}
+
+static int process_server_shared_framebuffer(xrdpModule* mod, wStream* s)
+{
+	int status = 0;
+	XRDP_MSG_SHARED_FRAMEBUFFER msg;
+
+	xrdp_read_shared_framebuffer(s, &msg);
+
+	mod->fbWidth = msg.width;
+	mod->fbHeight = msg.height;
+	mod->fbScanline = msg.scanline;
+	mod->fbSegmentId = msg.segmentId;
+	mod->fbBitsPerPixel = msg.bitsPerPixel;
+	mod->fbBytesPerPixel = msg.bytesPerPixel;
+
+	if (!mod->fbAttached && msg.attach)
+	{
+		mod->fbSharedMemory = (BYTE*) shmat(mod->fbSegmentId, 0, 0);
+		mod->fbAttached = TRUE;
+
+		printf("attached segment %d to %p\n",
+				mod->fbSegmentId, mod->fbSharedMemory);
+	}
+
+	if (mod->fbAttached && !msg.attach)
+	{
+		shmdt(mod->fbSharedMemory);
+		mod->fbAttached = FALSE;
+		mod->fbSharedMemory = 0;
+	}
+
+	return status;
+}
+
+static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
 {
 	int rv;
 	int x;
@@ -545,7 +597,6 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 	int cy;
 	int srcx;
 	int srcy;
-	int len_bmpdata;
 	int style;
 	int x1;
 	int y1;
@@ -559,7 +610,6 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 	int fgcolor;
 	int bgcolor;
 	int opcode;
-	BYTE* bmpdata;
 	char cur_data[32 * (32 * 3)];
 	char cur_mask[32 * (32 / 8)];
 
@@ -594,18 +644,7 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 			break;
 
 		case XRDP_SERVER_PAINT_RECT:
-			Stream_Read_INT16(s, x);
-			Stream_Read_INT16(s, y);
-			Stream_Read_UINT16(s, cx);
-			Stream_Read_UINT16(s, cy);
-			Stream_Read_UINT32(s, len_bmpdata);
-			Stream_GetPointer(s, bmpdata);
-			Stream_Seek(s, len_bmpdata);
-			Stream_Read_UINT16(s, width);
-			Stream_Read_UINT16(s, height);
-			Stream_Read_INT16(s, srcx);
-			Stream_Read_INT16(s, srcy);
-			rv = server_paint_rect(mod, x, y, cx, cy, (char*) bmpdata, width, height, srcx, srcy);
+			process_server_paint_rect(mod, s);
 			break;
 
 		case XRDP_SERVER_SET_CLIP:
@@ -702,6 +741,11 @@ static int lib_mod_process_orders(xrdpModule *mod, int type, wStream* s)
 		case XRDP_SERVER_WINDOW_DELETE:
 			rv = process_server_window_delete(mod, s);
 			break;
+
+		case XRDP_SERVER_SHARED_FRAMEBUFFER:
+			rv = process_server_shared_framebuffer(mod, s);
+			break;
+
 		default:
 			g_writeln("lib_mod_process_orders: unknown order type %d", type);
 			rv = 0;
@@ -790,7 +834,7 @@ static int lib_send_capabilities(xrdpModule* mod)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_signal(xrdpModule *mod)
+int lib_mod_signal(xrdpModule* mod)
 {
 	wStream* s;
 	int num_orders;
@@ -911,14 +955,14 @@ int lib_mod_signal(xrdpModule *mod)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_end(xrdpModule *mod)
+int lib_mod_end(xrdpModule* mod)
 {
 	return 0;
 }
 
 /******************************************************************************/
 /* return error */
-int lib_mod_set_param(xrdpModule *mod, char *name, char *value)
+int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 {
 	if (g_strcasecmp(name, "username") == 0)
 	{
@@ -951,7 +995,7 @@ int lib_mod_set_param(xrdpModule *mod, char *name, char *value)
 
 /******************************************************************************/
 /* return error */
-int lib_mod_get_wait_objs(xrdpModule *mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
+int lib_mod_get_wait_objs(xrdpModule* mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
 {
 	int i;
 
@@ -971,7 +1015,7 @@ int lib_mod_get_wait_objs(xrdpModule *mod, tbus *read_objs, int *rcount, tbus *w
 
 /******************************************************************************/
 /* return error */
-int lib_mod_check_wait_objs(xrdpModule *mod)
+int lib_mod_check_wait_objs(xrdpModule* mod)
 {
 	int rv;
 
@@ -994,7 +1038,7 @@ int lib_mod_check_wait_objs(xrdpModule *mod)
 /******************************************************************************/
 xrdpModule* xup_module_init(void)
 {
-	xrdpModule *mod;
+	xrdpModule* mod;
 
 	mod = (xrdpModule *) g_malloc(sizeof(xrdpModule), 1);
 	mod->size = sizeof(xrdpModule);
@@ -1013,7 +1057,7 @@ xrdpModule* xup_module_init(void)
 }
 
 /******************************************************************************/
-int xup_module_exit(xrdpModule *mod)
+int xup_module_exit(xrdpModule* mod)
 {
 	if (mod == 0)
 	{

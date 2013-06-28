@@ -32,7 +32,7 @@ set(${MODULE_PREFIX}_SRCS
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common avro-static)
+set(${MODULE_PREFIX}_LIBS xrdp-ng-common xrdp-ng-protocol avro-static)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

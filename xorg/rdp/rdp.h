@@ -150,6 +150,7 @@ struct _rdpScreenInfoRec
 
 	int segmentId;
 	int sharedMemory;
+	int fbAttached;
 
 	int rdp_width;
 	int rdp_height;
@@ -394,7 +395,7 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec* priv);
 int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec* pDirtyPriv);
 int rdpup_check_dirty_screen(rdpPixmapRec* pDirtyPriv);
 
-void rdpup_create_framebuffer(XRDP_MSG_CREATE_FRAMEBUFFER* msg);
+void rdpup_shared_framebuffer(XRDP_MSG_SHARED_FRAMEBUFFER* msg);
 
 void rdpScheduleDeferredUpdate(void);
 

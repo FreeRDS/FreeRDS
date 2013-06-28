@@ -1553,6 +1553,24 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 	size = bitmapLength + 26;
 	XRDP_MSG_PAINT_RECT msg;
 
+	if (g_rdpScreen.sharedMemory && !g_rdpScreen.fbAttached)
+	{
+		XRDP_MSG_SHARED_FRAMEBUFFER msg;
+
+		msg.attach = 1;
+		msg.width = g_rdpScreen.width;
+		msg.height = g_rdpScreen.height;
+		msg.scanline = g_rdpScreen.paddedWidthInBytes;
+		msg.segmentId = g_rdpScreen.segmentId;
+		msg.bitsPerPixel = g_rdpScreen.depth;
+		msg.bytesPerPixel = g_Bpp;
+
+		msg.type = XRDP_SERVER_SHARED_FRAMEBUFFER;
+		rdpup_update((XRDP_MSG_COMMON*) &msg);
+
+		g_rdpScreen.fbAttached = 1;
+	}
+
 	for (i = 0; i < h; i++)
 	{
 		dstp = (char*) &pfbBackBufferMemory[w * g_Bpp * i];
@@ -1566,6 +1584,8 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 	msg.nHeight = h;
 	msg.nXSrc = 0;
 	msg.nYSrc = 0;
+
+	msg.fbSegmentId = 0;
 	msg.bitmapData = (BYTE*) pfbBackBufferMemory;
 	msg.bitmapDataLength = bitmapLength;
 
@@ -1679,6 +1699,8 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 				msg.nHeight = lh;
 				msg.nXSrc = 0;
 				msg.nYSrc = 0;
+
+				msg.fbSegmentId = 0;
 				msg.bitmapData = (BYTE*) pfbBackBufferMemory;
 				msg.bitmapDataLength = bitmapLength;
 
@@ -1720,9 +1742,9 @@ void rdpup_set_hints(int hints, int mask)
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 }
 
-void rdpup_create_framebuffer(XRDP_MSG_CREATE_FRAMEBUFFER* msg)
+void rdpup_shared_framebuffer(XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 {
-	msg->type = XRDP_SERVER_CREATE_FRAMEBUFFER;
+	msg->type = XRDP_SERVER_SHARED_FRAMEBUFFER;
 	rdpup_update((XRDP_MSG_COMMON*) msg);
 }
 

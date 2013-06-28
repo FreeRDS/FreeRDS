@@ -47,7 +47,7 @@
 #define XRDP_SERVER_WINDOW_DELETE		26
 #define XRDP_SERVER_SET_POINTER			51
 #define XRDP_SERVER_SET_POINTER_EX		52
-#define XRDP_SERVER_CREATE_FRAMEBUFFER		101
+#define XRDP_SERVER_SHARED_FRAMEBUFFER		101
 
 #define DEFINE_MSG_COMMON() \
 	UINT32 type; \
@@ -109,6 +109,7 @@ struct _XRDP_MSG_PAINT_RECT
 	INT32 nYSrc;
 	BYTE* bitmapData;
 	UINT32 bitmapDataLength;
+	UINT32 fbSegmentId;
 };
 typedef struct _XRDP_MSG_PAINT_RECT XRDP_MSG_PAINT_RECT;
 
@@ -300,18 +301,19 @@ struct _XRDP_MSG_WINDOW_DELETE
 };
 typedef struct _XRDP_MSG_WINDOW_DELETE XRDP_MSG_WINDOW_DELETE;
 
-struct _XRDP_MSG_CREATE_FRAMEBUFFER
+struct _XRDP_MSG_SHARED_FRAMEBUFFER
 {
 	DEFINE_MSG_COMMON();
 
 	int width;
 	int height;
+	int attach;
 	int scanline;
 	int segmentId;
 	int bitsPerPixel;
 	int bytesPerPixel;
 };
-typedef struct _XRDP_MSG_CREATE_FRAMEBUFFER XRDP_MSG_CREATE_FRAMEBUFFER;
+typedef struct _XRDP_MSG_SHARED_FRAMEBUFFER XRDP_MSG_SHARED_FRAMEBUFFER;
 
 #ifdef __cplusplus
 extern "C" {
@@ -341,7 +343,9 @@ FREERDP_API int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
 FREERDP_API int xrdp_write_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg);
 FREERDP_API int xrdp_write_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 FREERDP_API int xrdp_write_window_delete(wStream* s, XRDP_MSG_WINDOW_DELETE* msg);
-FREERDP_API int xrdp_write_create_framebuffer(wStream* s, XRDP_MSG_CREATE_FRAMEBUFFER* msg);
+
+FREERDP_API int xrdp_read_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg);
+FREERDP_API int xrdp_write_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg);
 
 #ifdef __cplusplus
 }

@@ -25,6 +25,13 @@
 
 #define XRDP_ORDER_HEADER_LENGTH	6
 
+int xrdp_read_header(wStream* s, UINT32* type, UINT32* length)
+{
+	Stream_Write_UINT16(s, *type);
+	Stream_Write_UINT32(s, *length);
+	return 0;
+}
+
 int xrdp_write_header(wStream* s, UINT32 type, UINT32 length)
 {
 	Stream_Write_UINT16(s, type);
@@ -105,8 +112,18 @@ int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg)
 	Stream_Write_UINT16(s, msg->nTopRect);
 	Stream_Write_UINT16(s, msg->nWidth);
 	Stream_Write_UINT16(s, msg->nHeight);
-	Stream_Write_UINT32(s, msg->bitmapDataLength);
-	Stream_Write(s, msg->bitmapData, msg->bitmapDataLength);
+
+	if (msg->fbSegmentId)
+	{
+		Stream_Write_UINT32(s, 0);
+		Stream_Write_UINT32(s, msg->fbSegmentId);
+	}
+	else
+	{
+		Stream_Write_UINT32(s, msg->bitmapDataLength);
+		Stream_Write(s, msg->bitmapData, msg->bitmapDataLength);
+	}
+
 	Stream_Write_UINT16(s, msg->nWidth);
 	Stream_Write_UINT16(s, msg->nHeight);
 	Stream_Write_UINT16(s, msg->nXSrc);
@@ -452,14 +469,26 @@ int xrdp_write_window_delete(wStream* s, XRDP_MSG_WINDOW_DELETE* msg)
 	return 0;
 }
 
-int xrdp_write_create_framebuffer(wStream* s, XRDP_MSG_CREATE_FRAMEBUFFER* msg)
+int xrdp_read_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
+{
+	Stream_Read_UINT32(s, msg->width);
+	Stream_Read_UINT32(s, msg->height);
+	Stream_Read_UINT32(s, msg->scanline);
+	Stream_Read_UINT32(s, msg->segmentId);
+	Stream_Read_UINT32(s, msg->bitsPerPixel);
+	Stream_Read_UINT32(s, msg->bytesPerPixel);
+
+	return 0;
+}
+
+int xrdp_write_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	msg->length = XRDP_ORDER_HEADER_LENGTH + 24;
 
 	if (!s)
 		return msg->length;
 
-	xrdp_write_header(s, XRDP_SERVER_CREATE_FRAMEBUFFER, msg->length);
+	xrdp_write_header(s, XRDP_SERVER_SHARED_FRAMEBUFFER, msg->length);
 
 	Stream_Write_UINT32(s, msg->width);
 	Stream_Write_UINT32(s, msg->height);
@@ -559,8 +588,8 @@ int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 			xrdp_write_window_delete(s, (XRDP_MSG_WINDOW_DELETE*) msg);
 			break;
 
-		case XRDP_SERVER_CREATE_FRAMEBUFFER:
-			xrdp_write_create_framebuffer(s, (XRDP_MSG_CREATE_FRAMEBUFFER*) msg);
+		case XRDP_SERVER_SHARED_FRAMEBUFFER:
+			xrdp_write_shared_framebuffer(s, (XRDP_MSG_SHARED_FRAMEBUFFER*) msg);
 			break;
 
 		default:
@@ -659,7 +688,7 @@ char* xrdp_get_msg_type_string(UINT32 type)
 			return "WindowDelete";
 			break;
 
-		case XRDP_SERVER_CREATE_FRAMEBUFFER:
+		case XRDP_SERVER_SHARED_FRAMEBUFFER:
 			return "CreateFrameBuffer";
 			break;
 

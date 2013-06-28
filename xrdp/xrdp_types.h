@@ -117,6 +117,15 @@ struct xrdp_mod
 	struct bitmap_item bitmap_cache[4][4096];
 	struct brush_item brush_cache[64];
 	struct pointer_item pointer_cache[32];
+
+	int fbWidth;
+	int fbHeight;
+	int fbAttached;
+	int fbScanline;
+	int fbSegmentId;
+	int fbBitsPerPixel;
+	int fbBytesPerPixel;
+	BYTE* fbSharedMemory;
 };
 
 /* header for bmp file */
