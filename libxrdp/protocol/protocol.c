@@ -570,3 +570,103 @@ int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 
 	return msg->length;
 }
+
+char* xrdp_get_msg_type_string(UINT32 type)
+{
+	switch (type)
+	{
+		case XRDP_SERVER_BEGIN_UPDATE:
+			return "BeginUpdate";
+			break;
+
+		case XRDP_SERVER_END_UPDATE:
+			return "EndUpdate";
+			break;
+
+		case XRDP_SERVER_OPAQUE_RECT:
+			return "OpaqueRect";
+			break;
+
+		case XRDP_SERVER_SCREEN_BLT:
+			return "ScreenBlt";
+			break;
+
+		case XRDP_SERVER_PAINT_RECT:
+			return "PaintRect";
+			break;
+
+		case XRDP_SERVER_SET_CLIP:
+			return "SetClip";
+			break;
+
+		case XRDP_SERVER_RESET_CLIP:
+			return "ResetClip";
+			break;
+
+		case XRDP_SERVER_SET_FORECOLOR:
+			return "SetForeColor";
+			break;
+
+		case XRDP_SERVER_SET_BACKCOLOR:
+			return "SetBackColor";
+			break;
+
+		case XRDP_SERVER_SET_ROP2:
+			return "SetRop2";
+			break;
+
+		case XRDP_SERVER_SET_PEN:
+			return "SetPen";
+			break;
+
+		case XRDP_SERVER_LINE_TO:
+			return "LineTo";
+			break;
+
+		case XRDP_SERVER_SET_POINTER:
+			return "SetPointer";
+			break;
+
+		case XRDP_SERVER_SET_POINTER_EX:
+			return "SetPointerEx";
+			break;
+
+		case XRDP_SERVER_CREATE_OS_SURFACE:
+			return "CreateOffscreenSurface";
+			break;
+
+		case XRDP_SERVER_SWITCH_OS_SURFACE:
+			return "SwitchOffscreenSurface";
+			break;
+
+		case XRDP_SERVER_DELETE_OS_SURFACE:
+			return "DeleteOffscreenSurface";
+			break;
+
+		case XRDP_SERVER_MEMBLT:
+			return "MemBlt";
+			break;
+
+		case XRDP_SERVER_SET_HINTS:
+			return "SetHints";
+			break;
+
+		case XRDP_SERVER_WINDOW_NEW_UPDATE:
+			return "WindowNewUpdate";
+			break;
+
+		case XRDP_SERVER_WINDOW_DELETE:
+			return "WindowDelete";
+			break;
+
+		case XRDP_SERVER_CREATE_FRAMEBUFFER:
+			return "CreateFrameBuffer";
+			break;
+
+		default:
+			return "Unknown";
+			break;
+	}
+
+	return "Unknown";
+}

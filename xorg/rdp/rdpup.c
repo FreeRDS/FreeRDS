@@ -203,7 +203,7 @@ int convert_pixels(void *src, void *dst, int num_pixels)
 	unsigned char *dst8;
 	int index;
 
-	LLOGLN(0, ("convert_pixels: g_rdpScreen.depth: %d g_rdpScreen.rdp_bpp: %d num_pixels: %d",
+	LLOGLN(10, ("convert_pixels: g_rdpScreen.depth: %d g_rdpScreen.rdp_bpp: %d num_pixels: %d",
 			g_rdpScreen.depth, g_rdpScreen.rdp_bpp, num_pixels));
 
 	if (g_rdpScreen.depth == g_rdpScreen.rdp_bpp)
@@ -1320,6 +1320,10 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 
 		xrdp_prepare_msg(s, msg);
 		g_count++;
+	}
+	else
+	{
+		LLOGLN(0, ("rdpup_update: discarding %s message", xrdp_get_msg_type_string(msg->type)));
 	}
 
 	return 0;
