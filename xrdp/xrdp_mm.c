@@ -1237,6 +1237,7 @@ int server_screen_blt(xrdpModule* mod, int x, int y, int cx, int cy, int srcx, i
 
 int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
+	int bpp;
 	xrdpWm* wm;
 	xrdpBitmap* b;
 	xrdpPainter* p;
@@ -1247,9 +1248,14 @@ int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	if (!p)
 		return 0;
 
+	if (msg->fbSegmentId)
+		bpp = msg->framebuffer->fbBitsPerPixel;
+	else
+		bpp = wm->screen->bpp;
+
 	if (wm->session->codecMode)
 	{
-		libxrdp_send_surface_bits(wm->session, wm->screen->bpp, msg);
+		libxrdp_send_surface_bits(wm->session, bpp, msg);
 	}
 	else
 	{

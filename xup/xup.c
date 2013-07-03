@@ -528,6 +528,9 @@ static int process_server_paint_rect(xrdpModule* mod, wStream* s)
 	int status;
 	XRDP_MSG_PAINT_RECT msg;
 
+	msg.fbSegmentId = 0;
+	msg.framebuffer = NULL;
+
 	Stream_Read_INT16(s, msg.nLeftRect);
 	Stream_Read_INT16(s, msg.nTopRect);
 	Stream_Read_UINT16(s, msg.nWidth);
@@ -541,7 +544,8 @@ static int process_server_paint_rect(xrdpModule* mod, wStream* s)
 	}
 	else
 	{
-
+		Stream_Read_UINT32(s, msg.fbSegmentId);
+		msg.framebuffer = &(mod->framebuffer);
 	}
 
 	Stream_Read_UINT16(s, msg.nWidth);
@@ -561,27 +565,27 @@ static int process_server_shared_framebuffer(xrdpModule* mod, wStream* s)
 
 	xrdp_read_shared_framebuffer(s, &msg);
 
-	mod->fbWidth = msg.width;
-	mod->fbHeight = msg.height;
-	mod->fbScanline = msg.scanline;
-	mod->fbSegmentId = msg.segmentId;
-	mod->fbBitsPerPixel = msg.bitsPerPixel;
-	mod->fbBytesPerPixel = msg.bytesPerPixel;
+	mod->framebuffer.fbWidth = msg.width;
+	mod->framebuffer.fbHeight = msg.height;
+	mod->framebuffer.fbScanline = msg.scanline;
+	mod->framebuffer.fbSegmentId = msg.segmentId;
+	mod->framebuffer.fbBitsPerPixel = msg.bitsPerPixel;
+	mod->framebuffer.fbBytesPerPixel = msg.bytesPerPixel;
 
-	if (!mod->fbAttached && msg.attach)
+	if (!mod->framebuffer.fbAttached && msg.attach)
 	{
-		mod->fbSharedMemory = (BYTE*) shmat(mod->fbSegmentId, 0, 0);
-		mod->fbAttached = TRUE;
+		mod->framebuffer.fbSharedMemory = (BYTE*) shmat(mod->framebuffer.fbSegmentId, 0, 0);
+		mod->framebuffer.fbAttached = TRUE;
 
 		printf("attached segment %d to %p\n",
-				mod->fbSegmentId, mod->fbSharedMemory);
+				mod->framebuffer.fbSegmentId, mod->framebuffer.fbSharedMemory);
 	}
 
-	if (mod->fbAttached && !msg.attach)
+	if (mod->framebuffer.fbAttached && !msg.attach)
 	{
-		shmdt(mod->fbSharedMemory);
-		mod->fbAttached = FALSE;
-		mod->fbSharedMemory = 0;
+		shmdt(mod->framebuffer.fbSharedMemory);
+		mod->framebuffer.fbAttached = FALSE;
+		mod->framebuffer.fbSharedMemory = 0;
 	}
 
 	return status;

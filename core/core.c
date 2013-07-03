@@ -81,13 +81,15 @@ xrdpSession* libxrdp_session_new(rdpSettings* settings)
 		session->nsc_s = Stream_New(NULL, 16384);
 		session->nsc_context = nsc_context_new();
 
-		//session->bytesPerPixel = 3;
-		//rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
-
 		if (session->bytesPerPixel == 4)
 		{
 			rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 			nsc_context_set_pixel_format(session->nsc_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+		}
+		else if (session->bytesPerPixel == 3)
+		{
+			rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
+			nsc_context_set_pixel_format(session->nsc_context, RDP_PIXEL_FORMAT_B8G8R8);
 		}
 	}
 
@@ -729,14 +731,13 @@ int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id)
 
 int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT* msg)
 {
+	BYTE* data;
 	wStream* s;
+	int scanline;
 	RFX_RECT rect;
 	int bytesPerPixel;
 	SURFACE_BITS_COMMAND cmd;
 	rdpUpdate* update = session->context->update;
-
-	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
-			bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
 	if ((bpp == 24) || (bpp == 32))
 	{
@@ -747,6 +748,25 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		printf("%s: unsupported bpp: %d\n", __FUNCTION__, bpp);
 		return -1;
 	}
+
+	if (msg->fbSegmentId)
+	{
+		bpp = msg->framebuffer->fbBitsPerPixel;
+
+		data = msg->framebuffer->fbSharedMemory;
+		data = &data[(msg->nTopRect * msg->framebuffer->fbScanline) +
+		             (msg->nLeftRect * msg->framebuffer->fbBytesPerPixel)];
+
+		scanline = msg->framebuffer->fbScanline;
+	}
+	else
+	{
+		data = msg->bitmapData;
+		scanline = bytesPerPixel * msg->nWidth;
+	}
+
+	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
+			bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
 	rect.x = 0;
 	rect.y = 0;
@@ -759,8 +779,8 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		Stream_Clear(s);
 		Stream_SetPosition(s, 0);
 
-		rfx_compose_message(session->rfx_context, s, &rect, 1, msg->bitmapData,
-				msg->nWidth, msg->nHeight, bytesPerPixel * msg->nWidth);
+		rfx_compose_message(session->rfx_context, s, &rect, 1, data,
+				msg->nWidth, msg->nHeight, scanline);
 
 		cmd.codecID = session->settings->RemoteFxCodecId;
 	}
@@ -770,8 +790,8 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		Stream_Clear(s);
 		Stream_SetPosition(s, 0);
 
-		nsc_compose_message(session->nsc_context, s, msg->bitmapData,
-				msg->nWidth, msg->nHeight, bytesPerPixel * msg->nWidth);
+		nsc_compose_message(session->nsc_context, s, data,
+				msg->nWidth, msg->nHeight, scanline);
 
 		cmd.codecID = session->settings->NSCodecId;
 	}

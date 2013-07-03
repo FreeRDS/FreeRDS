@@ -26,6 +26,23 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
+/* Common Data Types */
+
+struct _XRDP_FRAMEBUFFER
+{
+	int fbWidth;
+	int fbHeight;
+	int fbAttached;
+	int fbScanline;
+	int fbSegmentId;
+	int fbBitsPerPixel;
+	int fbBytesPerPixel;
+	BYTE* fbSharedMemory;
+};
+typedef struct _XRDP_FRAMEBUFFER XRDP_FRAMEBUFFER;
+
+/* Message Types */
+
 #define XRDP_SERVER_BEGIN_UPDATE		1
 #define XRDP_SERVER_END_UPDATE			2
 #define XRDP_SERVER_OPAQUE_RECT			3
@@ -110,6 +127,7 @@ struct _XRDP_MSG_PAINT_RECT
 	BYTE* bitmapData;
 	UINT32 bitmapDataLength;
 	UINT32 fbSegmentId;
+	XRDP_FRAMEBUFFER* framebuffer;
 };
 typedef struct _XRDP_MSG_PAINT_RECT XRDP_MSG_PAINT_RECT;
 

@@ -1545,13 +1545,32 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 {
 	int i;
 	char* s;
-	int size;
 	char* dstp;
 	int bitmapLength;
+	XRDP_MSG_PAINT_RECT msg;
+
+	if (x < 0)
+		x = 0;
+
+	if (x > g_rdpScreen.width - 1)
+		x = g_rdpScreen.width - 1;
+
+	if (x + w > g_rdpScreen.width)
+		w = g_rdpScreen.width - x;
+
+	if (y < 0)
+		y = 0;
+
+	if (y > g_rdpScreen.height - 1)
+		y = g_rdpScreen.height - 1;
+
+	if (h > g_rdpScreen.height)
+		h = g_rdpScreen.height;
+
+	if (y + h > g_rdpScreen.height)
+		h = g_rdpScreen.height - y;
 
 	bitmapLength = w * h * g_Bpp;
-	size = bitmapLength + 26;
-	XRDP_MSG_PAINT_RECT msg;
 
 	if (g_rdpScreen.sharedMemory && !g_rdpScreen.fbAttached)
 	{
@@ -1571,11 +1590,14 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 		g_rdpScreen.fbAttached = 1;
 	}
 
-	for (i = 0; i < h; i++)
+	if (!g_rdpScreen.sharedMemory)
 	{
-		dstp = (char*) &pfbBackBufferMemory[w * g_Bpp * i];
-		s = (g_rdpScreen.pfbMemory + ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
-		convert_pixels(s, dstp, w);
+		for (i = 0; i < h; i++)
+		{
+			dstp = (char*) &pfbBackBufferMemory[w * g_Bpp * i];
+			s = (g_rdpScreen.pfbMemory + ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
+			convert_pixels(s, dstp, w);
+		}
 	}
 
 	msg.nLeftRect = x;
@@ -1585,9 +1607,18 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 	msg.nXSrc = 0;
 	msg.nYSrc = 0;
 
-	msg.fbSegmentId = 0;
-	msg.bitmapData = (BYTE*) pfbBackBufferMemory;
-	msg.bitmapDataLength = bitmapLength;
+	if (g_rdpScreen.sharedMemory)
+	{
+		msg.fbSegmentId = g_rdpScreen.segmentId;
+		msg.bitmapData = NULL;
+		msg.bitmapDataLength = 0;
+	}
+	else
+	{
+		msg.fbSegmentId = 0;
+		msg.bitmapData = (BYTE*) pfbBackBufferMemory;
+		msg.bitmapDataLength = bitmapLength;
+	}
 
 	msg.type = XRDP_SERVER_PAINT_RECT;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);

@@ -101,7 +101,12 @@ int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg)
 
 int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg)
 {
-	msg->length = XRDP_ORDER_HEADER_LENGTH + 20 + msg->bitmapDataLength;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 20;
+
+	if (msg->fbSegmentId)
+		msg->length += 4;
+	else
+		msg->length += msg->bitmapDataLength;
 
 	if (!s)
 		return msg->length;
@@ -689,7 +694,7 @@ char* xrdp_get_msg_type_string(UINT32 type)
 			break;
 
 		case XRDP_SERVER_SHARED_FRAMEBUFFER:
-			return "CreateFrameBuffer";
+			return "SharedFrameBuffer";
 			break;
 
 		default:
