@@ -681,54 +681,54 @@ int xrdp_mm_get_wait_objs(struct xrdp_mm* self,
 		tbus* read_objs, int* rcount,
 		tbus* write_objs, int* wcount, int* timeout);
 int xrdp_mm_check_wait_objs(struct xrdp_mm* self);
-int server_begin_update(struct xrdp_mod* mod);
-int server_end_update(struct xrdp_mod* mod);
-int server_bell_trigger(struct xrdp_mod* mod);
-int server_fill_rect(struct xrdp_mod* mod, int x, int y, int cx, int cy);
-int server_screen_blt(struct xrdp_mod* mod, int x, int y, int cx, int cy, int srcx, int srcy);
+
+int server_begin_update(xrdpModule* mod);
+int server_end_update(xrdpModule* mod);
+int server_bell_trigger(xrdpModule* mod);
+int server_fill_rect(xrdpModule* mod, int x, int y, int cx, int cy);
+int server_screen_blt(xrdpModule* mod, int x, int y, int cx, int cy, int srcx, int srcy);
 int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg);
-int server_set_pointer(struct xrdp_mod* mod, int x, int y, char* data, char* mask);
-int server_set_pointer_ex(struct xrdp_mod* mod, int x, int y, char* data, char* mask, int bpp);
-int server_palette(struct xrdp_mod* mod, int* palette);
-int server_msg(struct xrdp_mod* mod, char* msg, int code);
-int server_is_term(struct xrdp_mod* mod);
+int server_set_pointer(xrdpModule* mod, int x, int y, char* data, char* mask);
+int server_set_pointer_ex(xrdpModule* mod, int x, int y, char* data, char* mask, int bpp);
+int server_palette(xrdpModule* mod, int* palette);
+int server_msg(xrdpModule* mod, char* msg, int code);
+int server_is_term(xrdpModule* mod);
 int xrdp_child_fork(void);
-int server_set_clip(struct xrdp_mod* mod, int x, int y, int cx, int cy);
-int server_reset_clip(struct xrdp_mod* mod);
-int server_set_fgcolor(struct xrdp_mod* mod, int fgcolor);
-int server_set_bgcolor(struct xrdp_mod* mod, int bgcolor);
-int server_set_opcode(struct xrdp_mod* mod, int opcode);
-int server_set_mixmode(struct xrdp_mod* mod, int mixmode);
-int server_set_brush(struct xrdp_mod* mod, int x_orgin, int y_orgin, int style, char* pattern);
-int server_set_pen(struct xrdp_mod* mod, int style, int width);
-int server_draw_line(struct xrdp_mod* mod, int x1, int y1, int x2, int y2);
-int server_add_char(struct xrdp_mod* mod, int font, int charactor,
+int server_set_clip(xrdpModule* mod, int x, int y, int cx, int cy);
+int server_reset_clip(xrdpModule* mod);
+int server_set_fgcolor(xrdpModule* mod, int fgcolor);
+int server_set_bgcolor(xrdpModule* mod, int bgcolor);
+int server_set_opcode(xrdpModule* mod, int opcode);
+int server_set_mixmode(xrdpModule* mod, int mixmode);
+int server_set_brush(xrdpModule* mod, int x_orgin, int y_orgin, int style, char* pattern);
+int server_set_pen(xrdpModule* mod, int style, int width);
+int server_draw_line(xrdpModule* mod, int x1, int y1, int x2, int y2);
+int server_add_char(xrdpModule* mod, int font, int charactor,
 		int offset, int baseline, int width, int height, char* data);
-int server_draw_text(struct xrdp_mod* mod, int font,
+int server_draw_text(xrdpModule* mod, int font,
 		int flags, int mixmode, int clip_left, int clip_top,
 		int clip_right, int clip_bottom,
 		int box_left, int box_top,
 		int box_right, int box_bottom,
 		int x, int y, char* data, int data_len);
-int server_reset(struct xrdp_mod* mod, int width, int height, int bpp);
+int server_reset(xrdpModule* mod, int width, int height, int bpp);
 int is_channel_allowed(xrdpWm* wm, int channel_id);
-int server_create_os_surface(struct xrdp_mod* mod, int id, int width, int height);
-int server_switch_os_surface(struct xrdp_mod* mod, int id);
-int server_delete_os_surface(struct xrdp_mod* mod, int id);
-int server_paint_rect_os(struct xrdp_mod* mod, int x, int y, int cx, int cy, int id, int srcx, int srcy);
-int server_set_hints(struct xrdp_mod* mod, int hints, int mask);
-int server_window_new_update(struct xrdp_mod* mod, int window_id,
-		struct rail_window_state_order* window_state, int flags);
-int server_window_delete(struct xrdp_mod* mod, int window_id);
-int server_window_icon(struct xrdp_mod* mod, int window_id, int cache_entry,
+int server_create_os_surface(xrdpModule* mod, int id, int width, int height);
+int server_switch_os_surface(xrdpModule* mod, int id);
+int server_delete_os_surface(xrdpModule* mod, int id);
+int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int id, int srcx, int srcy);
+int server_set_hints(xrdpModule* mod, int hints, int mask);
+int server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
+int server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg);
+int server_window_icon(xrdpModule* mod, int window_id, int cache_entry,
 		int cache_id, struct rail_icon_info* icon_info, int flags);
-int server_window_cached_icon(struct xrdp_mod* mod,
+int server_window_cached_icon(xrdpModule* mod,
 		int window_id, int cache_entry, int cache_id, int flags);
-int server_notify_new_update(struct xrdp_mod* mod,
+int server_notify_new_update(xrdpModule* mod,
 		int window_id, int notify_id,
 		struct rail_notify_state_order* notify_state, int flags);
-int server_notify_delete(struct xrdp_mod* mod, int window_id, int notify_id);
-int server_monitored_desktop(struct xrdp_mod* mod,
+int server_notify_delete(xrdpModule* mod, int window_id, int notify_id);
+int server_monitored_desktop(xrdpModule* mod,
 		struct rail_monitored_desktop_order* mdo, int flags);
 
 #endif /* XRDP_H */

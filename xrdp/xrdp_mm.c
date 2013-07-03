@@ -1673,20 +1673,20 @@ int server_set_hints(xrdpModule* mod, int hints, int mask)
 	return 0;
 }
 
-int server_window_new_update(xrdpModule* mod, int window_id, struct rail_window_state_order *window_state, int flags)
+int server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	xrdpWm* wm;
 
 	wm = (xrdpWm*) (mod->wm);
-	return libxrdp_window_new_update(wm->session, window_id, window_state, flags);
+	return libxrdp_window_new_update(wm->session, msg);
 }
 
-int server_window_delete(xrdpModule* mod, int window_id)
+int server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
 {
 	xrdpWm* wm;
 
 	wm = (xrdpWm*) (mod->wm);
-	return libxrdp_window_delete(wm->session, window_id);
+	return libxrdp_window_delete(wm->session, msg);
 }
 
 int server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id,

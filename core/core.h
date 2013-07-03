@@ -187,10 +187,9 @@ FREERDP_API int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MS
 
 FREERDP_API int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32 id);
 
-FREERDP_API int libxrdp_window_new_update(xrdpSession* session, int window_id,
-		struct rail_window_state_order* window_state, int flags);
+FREERDP_API int libxrdp_window_new_update(xrdpSession* session, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 
-FREERDP_API int libxrdp_window_delete(xrdpSession* session, int window_id);
+FREERDP_API int libxrdp_window_delete(xrdpSession* session, XRDP_MSG_WINDOW_DELETE* msg);
 
 FREERDP_API int libxrdp_window_icon(xrdpSession* session, int window_id,
 		int cache_entry, int cache_id, struct rail_icon_info* icon_info, int flags);

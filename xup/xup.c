@@ -409,353 +409,228 @@ int lib_mod_event(xrdpModule* mod, int msg, tbus param1, tbus param2, tbus param
 	return rv;
 }
 
-static int process_server_window_new_update(xrdpModule* mod, wStream* s)
-{
-	int flags;
-	int window_id;
-	int title_bytes;
-	int index;
-	int bytes;
-	int rv;
-	struct rail_window_state_order rwso;
-
-	g_memset(&rwso, 0, sizeof(rwso));
-	Stream_Read_UINT32(s, window_id);
-	Stream_Read_UINT32(s, rwso.owner_window_id);
-	Stream_Read_UINT32(s, rwso.style);
-	Stream_Read_UINT32(s, rwso.extended_style);
-	Stream_Read_UINT32(s, rwso.show_state);
-	Stream_Read_UINT16(s, title_bytes);
-
-	if (title_bytes > 0)
-	{
-		rwso.title_info = g_malloc(title_bytes + 1, 0);
-		Stream_Read(s, rwso.title_info, title_bytes);
-		rwso.title_info[title_bytes] = 0;
-	}
-
-	Stream_Read_UINT32(s, rwso.client_offset_x);
-	Stream_Read_UINT32(s, rwso.client_offset_y);
-	Stream_Read_UINT32(s, rwso.client_area_width);
-	Stream_Read_UINT32(s, rwso.client_area_height);
-	Stream_Read_UINT32(s, rwso.rp_content);
-	Stream_Read_UINT32(s, rwso.root_parent_handle);
-	Stream_Read_UINT32(s, rwso.window_offset_x);
-	Stream_Read_UINT32(s, rwso.window_offset_y);
-	Stream_Read_UINT32(s, rwso.window_client_delta_x);
-	Stream_Read_UINT32(s, rwso.window_client_delta_y);
-	Stream_Read_UINT32(s, rwso.window_width);
-	Stream_Read_UINT32(s, rwso.window_height);
-	Stream_Read_UINT16(s, rwso.num_window_rects);
-
-	if (rwso.num_window_rects > 0)
-	{
-		bytes = sizeof(struct rail_window_rect) * rwso.num_window_rects;
-		rwso.window_rects = (struct rail_window_rect *) g_malloc(bytes, 0);
-
-		for (index = 0; index < rwso.num_window_rects; index++)
-		{
-			Stream_Read_UINT16(s, rwso.window_rects[index].left);
-			Stream_Read_UINT16(s, rwso.window_rects[index].top);
-			Stream_Read_UINT16(s, rwso.window_rects[index].right);
-			Stream_Read_UINT16(s, rwso.window_rects[index].bottom);
-		}
-	}
-
-	Stream_Read_UINT32(s, rwso.visible_offset_x);
-	Stream_Read_UINT32(s, rwso.visible_offset_y);
-	Stream_Read_UINT16(s, rwso.num_visibility_rects);
-
-	if (rwso.num_visibility_rects > 0)
-	{
-		bytes = sizeof(struct rail_window_rect) * rwso.num_visibility_rects;
-		rwso.visibility_rects = (struct rail_window_rect *) g_malloc(bytes, 0);
-
-		for (index = 0; index < rwso.num_visibility_rects; index++)
-		{
-			Stream_Read_UINT16(s, rwso.visibility_rects[index].left);
-			Stream_Read_UINT16(s, rwso.visibility_rects[index].top);
-			Stream_Read_UINT16(s, rwso.visibility_rects[index].right);
-			Stream_Read_UINT16(s, rwso.visibility_rects[index].bottom);
-		}
-	}
-
-	Stream_Read_UINT32(s, flags);
-	server_window_new_update(mod, window_id, &rwso, flags);
-	rv = 0;
-	g_free(rwso.title_info);
-	g_free(rwso.window_rects);
-	g_free(rwso.visibility_rects);
-
-	return rv;
-}
-
-static int process_server_window_delete(xrdpModule* mod, wStream* s)
-{
-	int window_id;
-	int rv;
-
-	Stream_Read_UINT32(s, window_id);
-	server_window_delete(mod, window_id);
-	rv = 0;
-
-	return rv;
-}
-
-static int process_server_set_pointer_ex(xrdpModule* mod, wStream* s)
-{
-	int rv;
-	int x;
-	int y;
-	int bpp;
-	int Bpp;
-	char cur_data[32 * (32 * 4)];
-	char cur_mask[32 * (32 / 8)];
-
-	Stream_Read_INT16(s, x);
-	Stream_Read_INT16(s, y);
-	Stream_Read_UINT16(s, bpp);
-	Bpp = (bpp == 0) ? 3 : (bpp + 7) / 8;
-	Stream_Read(s, cur_data, 32 * (32 * Bpp));
-	Stream_Read(s, cur_mask, 32 * (32 / 8));
-	rv = server_set_pointer_ex(mod, x, y, cur_data, cur_mask, bpp);
-
-	return rv;
-}
-
-static int process_server_paint_rect(xrdpModule* mod, wStream* s)
-{
-	int status;
-	XRDP_MSG_PAINT_RECT msg;
-
-	msg.fbSegmentId = 0;
-	msg.framebuffer = NULL;
-
-	Stream_Read_INT16(s, msg.nLeftRect);
-	Stream_Read_INT16(s, msg.nTopRect);
-	Stream_Read_UINT16(s, msg.nWidth);
-	Stream_Read_UINT16(s, msg.nHeight);
-	Stream_Read_UINT32(s, msg.bitmapDataLength);
-
-	if (msg.bitmapDataLength)
-	{
-		Stream_GetPointer(s, msg.bitmapData);
-		Stream_Seek(s, msg.bitmapDataLength);
-	}
-	else
-	{
-		Stream_Read_UINT32(s, msg.fbSegmentId);
-		msg.framebuffer = &(mod->framebuffer);
-	}
-
-	Stream_Read_UINT16(s, msg.nWidth);
-	Stream_Read_UINT16(s, msg.nHeight);
-	Stream_Read_INT16(s, msg.nXSrc);
-	Stream_Read_INT16(s, msg.nYSrc);
-
-	status = server_paint_rect(mod, &msg);
-
-	return status;
-}
-
-static int process_server_shared_framebuffer(xrdpModule* mod, wStream* s)
-{
-	int status = 0;
-	XRDP_MSG_SHARED_FRAMEBUFFER msg;
-
-	xrdp_read_shared_framebuffer(s, &msg);
-
-	mod->framebuffer.fbWidth = msg.width;
-	mod->framebuffer.fbHeight = msg.height;
-	mod->framebuffer.fbScanline = msg.scanline;
-	mod->framebuffer.fbSegmentId = msg.segmentId;
-	mod->framebuffer.fbBitsPerPixel = msg.bitsPerPixel;
-	mod->framebuffer.fbBytesPerPixel = msg.bytesPerPixel;
-
-	if (!mod->framebuffer.fbAttached && msg.attach)
-	{
-		mod->framebuffer.fbSharedMemory = (BYTE*) shmat(mod->framebuffer.fbSegmentId, 0, 0);
-		mod->framebuffer.fbAttached = TRUE;
-
-		printf("attached segment %d to %p\n",
-				mod->framebuffer.fbSegmentId, mod->framebuffer.fbSharedMemory);
-	}
-
-	if (mod->framebuffer.fbAttached && !msg.attach)
-	{
-		shmdt(mod->framebuffer.fbSharedMemory);
-		mod->framebuffer.fbAttached = FALSE;
-		mod->framebuffer.fbSharedMemory = 0;
-	}
-
-	return status;
-}
-
 static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
 {
-	int rv;
-	int x;
-	int y;
-	int cx;
-	int cy;
-	int srcx;
-	int srcy;
-	int style;
-	int x1;
-	int y1;
-	int x2;
-	int y2;
-	int rdpid;
-	int hints;
-	int mask;
-	int width;
-	int height;
-	int fgcolor;
-	int bgcolor;
-	int opcode;
-	char cur_data[32 * (32 * 3)];
-	char cur_mask[32 * (32 / 8)];
-
-	rv = 0;
+	int status = 0;
 
 	switch (type)
 	{
 		case XRDP_SERVER_BEGIN_UPDATE:
-			rv = server_begin_update(mod);
+			{
+				XRDP_MSG_BEGIN_UPDATE msg;
+				xrdp_read_begin_update(s, &msg);
+				status = server_begin_update(mod);
+			}
 			break;
 
 		case XRDP_SERVER_END_UPDATE:
-			rv = server_end_update(mod);
+			{
+				XRDP_MSG_END_UPDATE msg;
+				xrdp_read_end_update(s, &msg);
+				status = server_end_update(mod);
+			}
 			break;
 
 		case XRDP_SERVER_OPAQUE_RECT:
-			Stream_Read_INT16(s, x);
-			Stream_Read_INT16(s, y);
-			Stream_Read_UINT16(s, cx);
-			Stream_Read_UINT16(s, cy);
-			rv = server_fill_rect(mod, x, y, cx, cy);
+			{
+				XRDP_MSG_OPAQUE_RECT msg;
+				xrdp_read_opaque_rect(s, &msg);
+				status = server_fill_rect(mod, msg.nLeftRect, msg.nTopRect, msg.nWidth, msg.nHeight);
+			}
 			break;
 
 		case XRDP_SERVER_SCREEN_BLT:
-			Stream_Read_INT16(s, x);
-			Stream_Read_INT16(s, y);
-			Stream_Read_UINT16(s, cx);
-			Stream_Read_UINT16(s, cy);
-			Stream_Read_INT16(s, srcx);
-			Stream_Read_INT16(s, srcy);
-			rv = server_screen_blt(mod, x, y, cx, cy, srcx, srcy);
+			{
+				XRDP_MSG_SCREEN_BLT msg;
+				xrdp_read_screen_blt(s, &msg);
+				status = server_screen_blt(mod, msg.nLeftRect, msg.nTopRect, msg.nWidth, msg.nHeight, msg.nXSrc, msg.nYSrc);
+			}
 			break;
 
 		case XRDP_SERVER_PAINT_RECT:
-			process_server_paint_rect(mod, s);
+			{
+				int status;
+				XRDP_MSG_PAINT_RECT msg;
+
+				msg.fbSegmentId = 0;
+				msg.framebuffer = NULL;
+
+				xrdp_read_paint_rect(s, &msg);
+
+				if (msg.fbSegmentId)
+					msg.framebuffer = &(mod->framebuffer);
+
+				status = server_paint_rect(mod, &msg);
+			}
 			break;
 
 		case XRDP_SERVER_SET_CLIP:
-			Stream_Read_INT16(s, x);
-			Stream_Read_INT16(s, y);
-			Stream_Read_UINT16(s, cx);
-			Stream_Read_UINT16(s, cy);
-			rv = server_set_clip(mod, x, y, cx, cy);
+			{
+				XRDP_MSG_SET_CLIP msg;
+				xrdp_read_set_clip(s, &msg);
+				status = server_set_clip(mod, msg.x, msg.y, msg.width, msg.height);
+			}
 			break;
 
 		case XRDP_SERVER_RESET_CLIP:
-			rv = server_reset_clip(mod);
+			{
+				XRDP_MSG_RESET_CLIP msg;
+				xrdp_read_reset_clip(s, &msg);
+				status = server_reset_clip(mod);
+			}
 			break;
 
 		case XRDP_SERVER_SET_FORECOLOR:
-			Stream_Read_UINT32(s, fgcolor);
-			rv = server_set_fgcolor(mod, fgcolor);
+			{
+				XRDP_MSG_SET_FORECOLOR msg;
+				xrdp_read_set_forecolor(s, &msg);
+				status = server_set_fgcolor(mod, msg.ForeColor);
+			}
 			break;
 
 		case XRDP_SERVER_SET_BACKCOLOR:
-			Stream_Read_UINT32(s, bgcolor);
-			rv = server_set_bgcolor(mod, bgcolor);
+			{
+				XRDP_MSG_SET_BACKCOLOR msg;
+				xrdp_read_set_backcolor(s, &msg);
+				status = server_set_bgcolor(mod, msg.BackColor);
+			}
 			break;
 
 		case XRDP_SERVER_SET_ROP2:
-			Stream_Read_UINT16(s, opcode);
-			rv = server_set_opcode(mod, opcode);
+			{
+				XRDP_MSG_SET_ROP2 msg;
+				xrdp_read_set_rop2(s, &msg);
+				status = server_set_opcode(mod, msg.bRop2);
+			}
 			break;
 
 		case XRDP_SERVER_SET_PEN:
-			Stream_Read_UINT16(s, style);
-			Stream_Read_UINT16(s, width);
-			rv = server_set_pen(mod, style, width);
+			{
+				XRDP_MSG_SET_PEN msg;
+				xrdp_read_set_pen(s, &msg);
+				status = server_set_pen(mod, msg.PenStyle, msg.PenWidth);
+			}
 			break;
 
 		case XRDP_SERVER_LINE_TO:
-			Stream_Read_INT16(s, x1);
-			Stream_Read_INT16(s, y1);
-			Stream_Read_INT16(s, x2);
-			Stream_Read_INT16(s, y2);
-			rv = server_draw_line(mod, x1, y1, x2, y2);
+			{
+				XRDP_MSG_LINE_TO msg;
+				xrdp_read_line_to(s, &msg);
+				status = server_draw_line(mod, msg.nXStart, msg.nYStart, msg.nXEnd, msg.nYStart);
+			}
 			break;
 
 		case XRDP_SERVER_SET_POINTER:
-			Stream_Read_INT16(s, x);
-			Stream_Read_INT16(s, y);
-			Stream_Read(s, cur_data, 32 * (32 * 3));
-			Stream_Read(s, cur_mask, 32 * (32 / 8));
-			rv = server_set_pointer(mod, x, y, cur_data, cur_mask);
+			{
+				XRDP_MSG_SET_POINTER msg;
+				xrdp_read_set_pointer(s, &msg);
+				status = server_set_pointer(mod, msg.xPos, msg.yPos, (char*) msg.xorMaskData, (char*) msg.andMaskData);
+			}
 			break;
 
 		case XRDP_SERVER_SET_POINTER_EX:
-			rv = process_server_set_pointer_ex(mod, s);
+			{
+				XRDP_MSG_SET_POINTER_EX msg;
+				xrdp_read_set_pointer_ex(s, &msg);
+				status = server_set_pointer_ex(mod, msg.xPos, msg.yPos, (char*) msg.xorMaskData, (char*) msg.andMaskData, msg.xorBpp);
+			}
 			break;
 
 		case XRDP_SERVER_CREATE_OS_SURFACE:
-			Stream_Read_UINT32(s, rdpid);
-			Stream_Read_UINT16(s, width);
-			Stream_Read_UINT16(s, height);
-			rv = server_create_os_surface(mod, rdpid, width, height);
+			{
+				XRDP_MSG_CREATE_OS_SURFACE msg;
+				xrdp_read_create_os_surface(s, &msg);
+				status = server_create_os_surface(mod, msg.index, msg.width, msg.height);
+			}
 			break;
 
 		case XRDP_SERVER_SWITCH_OS_SURFACE:
-			Stream_Read_UINT32(s, rdpid);
-			rv = server_switch_os_surface(mod, rdpid);
+			{
+				XRDP_MSG_SWITCH_OS_SURFACE msg;
+				xrdp_read_switch_os_surface(s, &msg);
+				status = server_switch_os_surface(mod, msg.index);
+			}
 			break;
 
 		case XRDP_SERVER_DELETE_OS_SURFACE:
-			Stream_Read_UINT32(s, rdpid);
-			rv = server_delete_os_surface(mod, rdpid);
+			{
+				XRDP_MSG_DELETE_OS_SURFACE msg;
+				xrdp_read_delete_os_surface(s, &msg);
+				status = server_delete_os_surface(mod, msg.index);
+			}
 			break;
 
 		case XRDP_SERVER_MEMBLT:
-			Stream_Read_INT16(s, x);
-			Stream_Read_INT16(s, y);
-			Stream_Read_UINT16(s, cx);
-			Stream_Read_UINT16(s, cy);
-			Stream_Read_UINT32(s, rdpid);
-			Stream_Read_INT16(s, srcx);
-			Stream_Read_INT16(s, srcy);
-			rv = server_paint_rect_os(mod, x, y, cx, cy, rdpid, srcx, srcy);
+			{
+				XRDP_MSG_MEMBLT msg;
+				xrdp_read_memblt(s, &msg);
+				status = server_paint_rect_os(mod, msg.nLeftRect, msg.nTopRect,
+						msg.nWidth, msg.nHeight, msg.index, msg.nXSrc, msg.nYSrc);
+			}
 			break;
 
 		case XRDP_SERVER_SET_HINTS:
-			Stream_Read_UINT32(s, hints);
-			Stream_Read_UINT32(s, mask);
-			rv = server_set_hints(mod, hints, mask);
+			{
+				XRDP_MSG_SET_HINTS msg;
+				xrdp_read_set_hints(s, &msg);
+				status = server_set_hints(mod, msg.hints, msg.mask);
+			}
 			break;
 
 		case XRDP_SERVER_WINDOW_NEW_UPDATE:
-			rv = process_server_window_new_update(mod, s);
+			{
+				XRDP_MSG_WINDOW_NEW_UPDATE msg;
+				status = xrdp_read_window_new_update(s, &msg);
+				server_window_new_update(mod, &msg);
+			}
 			break;
 
 		case XRDP_SERVER_WINDOW_DELETE:
-			rv = process_server_window_delete(mod, s);
+			{
+				XRDP_MSG_WINDOW_DELETE msg;
+				status = xrdp_read_window_delete(s, &msg);
+				server_window_delete(mod, &msg);
+			}
 			break;
 
 		case XRDP_SERVER_SHARED_FRAMEBUFFER:
-			rv = process_server_shared_framebuffer(mod, s);
+			{
+				XRDP_MSG_SHARED_FRAMEBUFFER msg;
+
+				status = xrdp_read_shared_framebuffer(s, &msg);
+
+				mod->framebuffer.fbWidth = msg.width;
+				mod->framebuffer.fbHeight = msg.height;
+				mod->framebuffer.fbScanline = msg.scanline;
+				mod->framebuffer.fbSegmentId = msg.segmentId;
+				mod->framebuffer.fbBitsPerPixel = msg.bitsPerPixel;
+				mod->framebuffer.fbBytesPerPixel = msg.bytesPerPixel;
+
+				if (!mod->framebuffer.fbAttached && msg.attach)
+				{
+					mod->framebuffer.fbSharedMemory = (BYTE*) shmat(mod->framebuffer.fbSegmentId, 0, 0);
+					mod->framebuffer.fbAttached = TRUE;
+
+					printf("attached segment %d to %p\n",
+							mod->framebuffer.fbSegmentId, mod->framebuffer.fbSharedMemory);
+				}
+
+				if (mod->framebuffer.fbAttached && !msg.attach)
+				{
+					shmdt(mod->framebuffer.fbSharedMemory);
+					mod->framebuffer.fbAttached = FALSE;
+					mod->framebuffer.fbSharedMemory = 0;
+				}
+			}
 			break;
 
 		default:
 			g_writeln("lib_mod_process_orders: unknown order type %d", type);
-			rv = 0;
+			status = 0;
 			break;
 	}
 
-	return rv;
+	return status;
 }
 
 const char CAPABILITIES_SCHEMA[] =

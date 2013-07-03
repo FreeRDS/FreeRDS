@@ -832,14 +832,13 @@ int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32
 	return 0;
 }
 
-int libxrdp_window_new_update(xrdpSession* session, int window_id,
-		struct rail_window_state_order* window_state, int flags)
+int libxrdp_window_new_update(xrdpSession* session, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_window_delete(xrdpSession* session, int window_id)
+int libxrdp_window_delete(xrdpSession* session, XRDP_MSG_WINDOW_DELETE* msg)
 {
 	printf("%s\n", __FUNCTION__);
 	return 0;
