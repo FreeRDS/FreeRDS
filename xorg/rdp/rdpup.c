@@ -373,7 +373,7 @@ static int get_single_color(struct image_data *id, int x, int y, int w, int h)
 	return rv;
 }
 
-void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h);
+void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h);
 
 static int rdpup_disconnect(void)
 {
@@ -1541,7 +1541,7 @@ int rdpup_delete_os_surface(int rdpindex)
 	return 0;
 }
 
-void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
+void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 {
 	int i;
 	char* s;
@@ -1569,6 +1569,9 @@ void rdpup_send_area_rfx(struct image_data* id, int x, int y, int w, int h)
 
 	if (y + h > g_rdpScreen.height)
 		h = g_rdpScreen.height - y;
+
+	if (w * h < 1)
+		return;
 
 	bitmapLength = w * h * g_Bpp;
 
@@ -1647,7 +1650,7 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 
 	if (g_rdpScreen.CodecMode)
 	{
-		rdpup_send_area_rfx(id, x, y, w, h);
+		rdpup_send_area_codec(id, x, y, w, h);
 		return;
 	}
 

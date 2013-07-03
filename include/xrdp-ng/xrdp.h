@@ -340,26 +340,67 @@ extern "C" {
 FREERDP_API int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg);
 FREERDP_API char* xrdp_get_msg_type_string(UINT32 type);
 
+FREERDP_API int xrdp_read_begin_update(wStream* s, XRDP_MSG_BEGIN_UPDATE* msg);
 FREERDP_API int xrdp_write_begin_update(wStream* s, XRDP_MSG_BEGIN_UPDATE* msg);
+
+FREERDP_API int xrdp_read_end_update(wStream* s, XRDP_MSG_END_UPDATE* msg);
 FREERDP_API int xrdp_write_end_update(wStream* s, XRDP_MSG_END_UPDATE* msg);
+
+FREERDP_API int xrdp_read_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg);
 FREERDP_API int xrdp_write_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg);
+
+FREERDP_API int xrdp_read_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg);
 FREERDP_API int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg);
+
+FREERDP_API int xrdp_read_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg);
 FREERDP_API int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg);
+
+FREERDP_API int xrdp_read_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg);
 FREERDP_API int xrdp_write_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg);
+
+FREERDP_API int xrdp_read_reset_clip(wStream* s, XRDP_MSG_RESET_CLIP* msg);
 FREERDP_API int xrdp_write_reset_clip(wStream* s, XRDP_MSG_RESET_CLIP* msg);
+
+FREERDP_API int xrdp_read_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg);
 FREERDP_API int xrdp_write_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg);
+
+FREERDP_API int xrdp_read_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg);
 FREERDP_API int xrdp_write_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg);
+
+FREERDP_API int xrdp_read_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
 FREERDP_API int xrdp_write_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
+
+FREERDP_API int xrdp_read_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg);
 FREERDP_API int xrdp_write_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg);
+
+FREERDP_API int xrdp_read_line_to(wStream* s, XRDP_MSG_LINE_TO* msg);
 FREERDP_API int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg);
+
+FREERDP_API int xrdp_read_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg);
 FREERDP_API int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg);
+
+FREERDP_API int xrdp_read_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg);
 FREERDP_API int xrdp_write_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg);
+
+FREERDP_API int xrdp_read_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg);
 FREERDP_API int xrdp_write_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg);
+
+FREERDP_API int xrdp_read_switch_os_surface(wStream* s, XRDP_MSG_SWITCH_OS_SURFACE* msg);
 FREERDP_API int xrdp_write_switch_os_surface(wStream* s, XRDP_MSG_SWITCH_OS_SURFACE* msg);
+
+FREERDP_API int xrdp_read_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg);
 FREERDP_API int xrdp_write_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg);
+
+FREERDP_API int xrdp_read_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
 FREERDP_API int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
+
+FREERDP_API int xrdp_read_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg);
 FREERDP_API int xrdp_write_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg);
+
+FREERDP_API int xrdp_read_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 FREERDP_API int xrdp_write_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
+
+FREERDP_API int xrdp_read_window_delete(wStream* s, XRDP_MSG_WINDOW_DELETE* msg);
 FREERDP_API int xrdp_write_window_delete(wStream* s, XRDP_MSG_WINDOW_DELETE* msg);
 
 FREERDP_API int xrdp_read_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg);
