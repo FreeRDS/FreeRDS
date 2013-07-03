@@ -141,12 +141,19 @@ int lib_mod_connect(xrdpModule* mod)
 	int use_uds;
 	wStream* s;
 	char con_port[256];
+	XRDP_MSG_OPAQUE_RECT opaqueRect;
 
 	LIB_DEBUG(mod, "in lib_mod_connect");
+
+	opaqueRect.nTopRect = 0;
+	opaqueRect.nLeftRect = 0;
+	opaqueRect.nWidth = mod->width;
+	opaqueRect.nHeight = mod->height;
+
 	/* clear screen */
 	server_begin_update(mod);
 	server_set_fgcolor(mod, 0);
-	server_fill_rect(mod, 0, 0, mod->width, mod->height);
+	server_opaque_rect(mod, &opaqueRect);
 	server_end_update(mod);
 	server_msg(mod, "started connecting", 0);
 
@@ -435,7 +442,7 @@ static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
 			{
 				XRDP_MSG_OPAQUE_RECT msg;
 				xrdp_read_opaque_rect(s, &msg);
-				status = server_fill_rect(mod, msg.nLeftRect, msg.nTopRect, msg.nWidth, msg.nHeight);
+				status = server_opaque_rect(mod, &msg);
 			}
 			break;
 
@@ -443,7 +450,7 @@ static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
 			{
 				XRDP_MSG_SCREEN_BLT msg;
 				xrdp_read_screen_blt(s, &msg);
-				status = server_screen_blt(mod, msg.nLeftRect, msg.nTopRect, msg.nWidth, msg.nHeight, msg.nXSrc, msg.nYSrc);
+				status = server_screen_blt(mod, &msg);
 			}
 			break;
 
@@ -468,7 +475,7 @@ static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
 			{
 				XRDP_MSG_SET_CLIP msg;
 				xrdp_read_set_clip(s, &msg);
-				status = server_set_clip(mod, msg.x, msg.y, msg.width, msg.height);
+				status = server_set_clip(mod, &msg);
 			}
 			break;
 
@@ -710,8 +717,6 @@ static int lib_send_capabilities(xrdpModule* mod)
 	return 0;
 }
 
-/******************************************************************************/
-/* return error */
 int lib_mod_signal(xrdpModule* mod)
 {
 	wStream* s;
@@ -831,15 +836,11 @@ int lib_mod_signal(xrdpModule* mod)
 	return rv;
 }
 
-/******************************************************************************/
-/* return error */
 int lib_mod_end(xrdpModule* mod)
 {
 	return 0;
 }
 
-/******************************************************************************/
-/* return error */
 int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 {
 	if (g_strcasecmp(name, "username") == 0)
@@ -871,8 +872,6 @@ int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 	return 0;
 }
 
-/******************************************************************************/
-/* return error */
 int lib_mod_get_wait_objs(xrdpModule* mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
 {
 	int i;
@@ -891,8 +890,6 @@ int lib_mod_get_wait_objs(xrdpModule* mod, tbus *read_objs, int *rcount, tbus *w
 	return 0;
 }
 
-/******************************************************************************/
-/* return error */
 int lib_mod_check_wait_objs(xrdpModule* mod)
 {
 	int rv;
@@ -913,7 +910,6 @@ int lib_mod_check_wait_objs(xrdpModule* mod)
 	return rv;
 }
 
-/******************************************************************************/
 xrdpModule* xup_module_init(void)
 {
 	xrdpModule* mod;
@@ -934,13 +930,10 @@ xrdpModule* xup_module_init(void)
 	return mod;
 }
 
-/******************************************************************************/
 int xup_module_exit(xrdpModule* mod)
 {
-	if (mod == 0)
-	{
+	if (!mod)
 		return 0;
-	}
 
 	g_delete_wait_obj_from_socket(mod->sck_obj);
 	g_tcp_close(mod->sck);

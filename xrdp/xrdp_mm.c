@@ -1168,7 +1168,7 @@ int xrdp_mm_check_wait_objs(xrdpMm *self)
 int server_begin_update(xrdpModule *mod)
 {
 	xrdpWm* wm;
-	xrdpPainter *p;
+	xrdpPainter* p;
 
 	wm = (xrdpWm*) (mod->wm);
 	p = xrdp_painter_create(wm, wm->session);
@@ -1179,9 +1179,9 @@ int server_begin_update(xrdpModule *mod)
 
 int server_end_update(xrdpModule *mod)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (p == 0)
 	{
@@ -1204,25 +1204,10 @@ int server_bell_trigger(xrdpModule *mod)
 	return 0;
 }
 
-int server_fill_rect(xrdpModule* mod, int x, int y, int cx, int cy)
+int server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 {
 	xrdpWm* wm;
-	xrdpPainter *p;
-
-	p = (xrdpPainter *) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-	xrdp_painter_fill_rect(p, wm->target_surface, x, y, cx, cy);
-	return 0;
-}
-
-int server_screen_blt(xrdpModule* mod, int x, int y, int cx, int cy, int srcx, int srcy)
-{
-	xrdpWm* wm;
-	xrdpPainter *p;
+	xrdpPainter* p;
 
 	p = (xrdpPainter*) (mod->painter);
 
@@ -1230,8 +1215,27 @@ int server_screen_blt(xrdpModule* mod, int x, int y, int cx, int cy, int srcx, i
 		return 0;
 
 	wm = (xrdpWm*) (mod->wm);
-	p->rop = 0xcc;
-	xrdp_painter_copy(p, wm->screen, wm->target_surface, x, y, cx, cy, srcx, srcy);
+	xrdp_painter_fill_rect(p, wm->target_surface, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+
+	return 0;
+}
+
+int server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
+{
+	xrdpWm* wm;
+	xrdpPainter* p;
+
+	p = (xrdpPainter*) (mod->painter);
+
+	if (!p)
+		return 0;
+
+	wm = (xrdpWm*) (mod->wm);
+
+	p->rop = 0xCC;
+	xrdp_painter_copy(p, wm->screen, wm->target_surface, msg->nLeftRect, msg->nTopRect,
+			msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
+
 	return 0;
 }
 
@@ -1322,23 +1326,23 @@ int server_is_term(xrdpModule *mod)
 	return g_is_term();
 }
 
-int server_set_clip(xrdpModule* mod, int x, int y, int cx, int cy)
+int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIP* msg)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
 
-	return xrdp_painter_set_clip(p, x, y, cx, cy);
+	return xrdp_painter_set_clip(p, msg->x, msg->y, msg->width, msg->height);
 }
 
-int server_reset_clip(xrdpModule *mod)
+int server_reset_clip(xrdpModule* mod)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1348,9 +1352,9 @@ int server_reset_clip(xrdpModule *mod)
 
 int server_set_fgcolor(xrdpModule* mod, int fgcolor)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1362,9 +1366,9 @@ int server_set_fgcolor(xrdpModule* mod, int fgcolor)
 
 int server_set_bgcolor(xrdpModule* mod, int bgcolor)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1375,9 +1379,9 @@ int server_set_bgcolor(xrdpModule* mod, int bgcolor)
 
 int server_set_opcode(xrdpModule* mod, int opcode)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1388,9 +1392,9 @@ int server_set_opcode(xrdpModule* mod, int opcode)
 
 int server_set_mixmode(xrdpModule* mod, int mixmode)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1401,9 +1405,9 @@ int server_set_mixmode(xrdpModule* mod, int mixmode)
 
 int server_set_brush(xrdpModule* mod, int x_orgin, int y_orgin, int style, char *pattern)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1417,9 +1421,9 @@ int server_set_brush(xrdpModule* mod, int x_orgin, int y_orgin, int style, char 
 
 int server_set_pen(xrdpModule* mod, int style, int width)
 {
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1432,9 +1436,9 @@ int server_set_pen(xrdpModule* mod, int style, int width)
 int server_draw_line(xrdpModule* mod, int x1, int y1, int x2, int y2)
 {
 	xrdpWm* wm;
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1461,9 +1465,9 @@ int server_draw_text(xrdpModule* mod, int font, int flags, int mixmode, int clip
 		int data_len)
 {
 	xrdpWm* wm;
-	xrdpPainter *p;
+	xrdpPainter* p;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
@@ -1554,7 +1558,7 @@ int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 {
 	xrdpWm* wm;
 	xrdpOffscreenBitmapItem *bi;
-	xrdpPainter *p;
+	xrdpPainter* p;
 
 	//g_writeln("server_switch_os_surface: id 0x%x", id);
 	wm = (xrdpWm*) (mod->wm);
@@ -1563,7 +1567,7 @@ int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 	{
 		//g_writeln("server_switch_os_surface: setting target_surface to screen");
 		wm->target_surface = wm->screen;
-		p = (xrdpPainter *) (mod->painter);
+		p = (xrdpPainter*) (mod->painter);
 
 		if (p != 0)
 		{
@@ -1580,7 +1584,7 @@ int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 	{
 		//g_writeln("server_switch_os_surface: setting target_surface to rdpid %d", id);
 		wm->target_surface = bi->bitmap;
-		p = (xrdpPainter *) (mod->painter);
+		p = (xrdpPainter*) (mod->painter);
 
 		if (p != 0)
 		{
@@ -1599,7 +1603,7 @@ int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 int server_delete_os_surface(xrdpModule* mod, int rdpindex)
 {
 	xrdpWm* wm;
-	xrdpPainter *p;
+	xrdpPainter* p;
 
 	//g_writeln("server_delete_os_surface: id 0x%x", id);
 	wm = (xrdpWm*) (mod->wm);
@@ -1610,7 +1614,7 @@ int server_delete_os_surface(xrdpModule* mod, int rdpindex)
 		{
 			g_writeln("server_delete_os_surface: setting target_surface to screen");
 			wm->target_surface = wm->screen;
-			p = (xrdpPainter *) (mod->painter);
+			p = (xrdpPainter*) (mod->painter);
 
 			if (p != 0)
 			{
@@ -1628,10 +1632,10 @@ int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int rdpi
 {
 	xrdpWm* wm;
 	xrdpBitmap *b;
-	xrdpPainter *p;
+	xrdpPainter* p;
 	xrdpOffscreenBitmapItem *bi;
 
-	p = (xrdpPainter *) (mod->painter);
+	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;

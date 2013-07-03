@@ -445,21 +445,19 @@ static void lfreerdp_end_paint(rdpContext* context)
 static void lfreerdp_set_bounds(rdpContext* context, rdpBounds *bounds)
 {
 	xrdpModule* mod;
-	int x;
-	int y;
-	int cx;
-	int cy;
+	XRDP_MSG_SET_CLIP msg;
 
 	LLOGLN(10, ("lfreerdp_set_bounds: %p", bounds));
 	mod = ((struct mod_context *) context)->modi;
 
 	if (bounds != 0)
 	{
-		x = bounds->left;
-		y = bounds->top;
-		cx = (bounds->right - bounds->left) + 1;
-		cy = (bounds->bottom - bounds->top) + 1;
-		server_set_clip(mod, x, y, cx, cy);
+		msg.x = bounds->left;
+		msg.y = bounds->top;
+		msg.width = (bounds->right - bounds->left) + 1;
+		msg.height = (bounds->bottom - bounds->top) + 1;
+
+		server_set_clip(mod, &msg);
 	}
 	else
 	{
@@ -546,18 +544,25 @@ static void lfreerdp_bitmap_update(rdpContext* context, BITMAP_UPDATE *bitmap)
 	}
 }
 
-static void lfreerdp_dst_blt(rdpContext* context, DSTBLT_ORDER *dstblt)
+static void lfreerdp_dst_blt(rdpContext* context, DSTBLT_ORDER* dstblt)
 {
 	xrdpModule* mod;
+	XRDP_MSG_OPAQUE_RECT msg;
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(10, ("lfreerdp_dst_blt:"));
+
+	msg.nLeftRect = dstblt->nLeftRect;
+	msg.nTopRect = dstblt->nTopRect;
+	msg.nWidth = dstblt->nWidth;
+	msg.nHeight = dstblt->nHeight;
+
 	server_set_opcode(mod, dstblt->bRop);
-	server_fill_rect(mod, dstblt->nLeftRect, dstblt->nTopRect, dstblt->nWidth, dstblt->nHeight);
+	server_opaque_rect(mod, &msg);
 	server_set_opcode(mod, 0xcc);
 }
 
-static void lfreerdp_pat_blt(rdpContext* context, PATBLT_ORDER *patblt)
+static void lfreerdp_pat_blt(rdpContext* context, PATBLT_ORDER* patblt)
 {
 	xrdpModule* mod;
 	int idx;
@@ -566,9 +571,15 @@ static void lfreerdp_pat_blt(rdpContext* context, PATBLT_ORDER *patblt)
 	int server_bpp;
 	int client_bpp;
 	struct brush_item *bi;
+	XRDP_MSG_OPAQUE_RECT msg;
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(10, ("lfreerdp_pat_blt:"));
+
+	msg.nLeftRect = patblt->nLeftRect;
+	msg.nTopRect = patblt->nTopRect;
+	msg.nWidth = patblt->nWidth;
+	msg.nHeight = patblt->nHeight;
 
 	server_bpp = mod->inst->settings->ColorDepth;
 	client_bpp = mod->bpp;
@@ -581,6 +592,7 @@ static void lfreerdp_pat_blt(rdpContext* context, PATBLT_ORDER *patblt)
 	{
 		LLOGLN(0, ("Warning same color on both bg and fg"));
 	}
+
 	server_set_mixmode(mod, 1);
 	server_set_opcode(mod, patblt->bRop);
 	server_set_fgcolor(mod, fgcolor);
@@ -605,39 +617,57 @@ static void lfreerdp_pat_blt(rdpContext* context, PATBLT_ORDER *patblt)
 				(char *) (patblt->brush.p8x8));
 	}
 
-	server_fill_rect(mod, patblt->nLeftRect, patblt->nTopRect, patblt->nWidth, patblt->nHeight);
-	server_set_opcode(mod, 0xcc);
+	server_opaque_rect(mod, &msg);
+	server_set_opcode(mod, 0xCC);
 	server_set_mixmode(mod, 0);
-
 }
 
-static void lfreerdp_scr_blt(rdpContext* context, SCRBLT_ORDER *scrblt)
+static void lfreerdp_scr_blt(rdpContext* context, SCRBLT_ORDER* scrblt)
 {
 	xrdpModule* mod;
+	XRDP_MSG_SCREEN_BLT msg;
 
 	mod = ((struct mod_context *) context)->modi;
+
 	LLOGLN(10, ("lfreerdp_scr_blt:"));
-	server_set_opcode(mod, scrblt->bRop);
-	server_screen_blt(mod, scrblt->nLeftRect, scrblt->nTopRect, scrblt->nWidth, scrblt->nHeight,
-			scrblt->nXSrc, scrblt->nYSrc);
+
+	msg.bRop = scrblt->bRop;
+	msg.nLeftRect = scrblt->nLeftRect;
+	msg.nTopRect = scrblt->nTopRect;
+	msg.nWidth = scrblt->nWidth;
+	msg.nHeight = scrblt->nHeight;
+	msg.nXSrc = scrblt->nXSrc;
+	msg.nYSrc = scrblt->nYSrc;
+
+	server_set_opcode(mod, msg.bRop);
+	server_screen_blt(mod, &msg);
+
 	server_set_opcode(mod, 0xcc);
 }
 
-static void lfreerdp_opaque_rect(rdpContext* context, OPAQUE_RECT_ORDER *opaque_rect)
+static void lfreerdp_opaque_rect(rdpContext* context, OPAQUE_RECT_ORDER* opaqueRect)
 {
 	xrdpModule* mod;
 	int server_bpp;
 	int client_bpp;
 	int fgcolor;
+	XRDP_MSG_OPAQUE_RECT msg;
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(10, ("lfreerdp_opaque_rect:"));
+
+	msg.nLeftRect = opaqueRect->nLeftRect;
+	msg.nTopRect = opaqueRect->nTopRect;
+	msg.nWidth = opaqueRect->nWidth;
+	msg.nHeight = opaqueRect->nHeight;
+
 	server_bpp = mod->inst->settings->ColorDepth;
 	client_bpp = mod->bpp;
-	fgcolor = convert_color(server_bpp, client_bpp, opaque_rect->color, mod->colormap);
+
+	fgcolor = convert_color(server_bpp, client_bpp, opaqueRect->color, mod->colormap);
+
 	server_set_fgcolor(mod, fgcolor);
-	server_fill_rect(mod, opaque_rect->nLeftRect, opaque_rect->nTopRect, opaque_rect->nWidth,
-			opaque_rect->nHeight);
+	server_opaque_rect(mod, &msg);
 }
 
 static void lfreerdp_mem_blt(rdpContext* context, MEMBLT_ORDER *memblt)
@@ -1128,9 +1158,6 @@ static void lfreerdp_polygon_sc(rdpContext* context, POLYGON_SC_ORDER* polygon_s
 		// This workaround handles the text cursor in microsoft word.
 		server_draw_line(mod, polygon_sc->xStart, polygon_sc->yStart, polygon_sc->xStart,
 				polygon_sc->yStart + points[2].y);
-		//	server_fill_rect(mod, points[0].x, points[0].y,
-		//                         points[0].x-points[3].x, points[0].y-points[2].y);
-		//      server_set_brush(mod,); // howto use this on our indata??
 		server_set_opcode(mod, 0xcc);
 	}
 	else
