@@ -613,6 +613,9 @@ static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
 				mod->framebuffer.fbBitsPerPixel = msg.bitsPerPixel;
 				mod->framebuffer.fbBytesPerPixel = msg.bytesPerPixel;
 
+				printf("received shared framebuffer message: mod->framebuffer.fbAttached: %d msg.attach: %d\n",
+						mod->framebuffer.fbAttached, msg.attach);
+
 				if (!mod->framebuffer.fbAttached && msg.attach)
 				{
 					mod->framebuffer.fbSharedMemory = (BYTE*) shmat(mod->framebuffer.fbSegmentId, 0, 0);
@@ -914,18 +917,23 @@ xrdpModule* xup_module_init(void)
 {
 	xrdpModule* mod;
 
-	mod = (xrdpModule *) g_malloc(sizeof(xrdpModule), 1);
-	mod->size = sizeof(xrdpModule);
-	mod->version = 2;
-	mod->handle = (long) mod;
-	mod->mod_connect = lib_mod_connect;
-	mod->mod_start = lib_mod_start;
-	mod->mod_event = lib_mod_event;
-	mod->mod_signal = lib_mod_signal;
-	mod->mod_end = lib_mod_end;
-	mod->mod_set_param = lib_mod_set_param;
-	mod->mod_get_wait_objs = lib_mod_get_wait_objs;
-	mod->mod_check_wait_objs = lib_mod_check_wait_objs;
+	mod = (xrdpModule*) malloc(sizeof(xrdpModule));
+
+	if (mod)
+	{
+		ZeroMemory(mod, sizeof(xrdpModule));
+		mod->size = sizeof(xrdpModule);
+		mod->version = 2;
+		mod->handle = (long) mod;
+		mod->mod_connect = lib_mod_connect;
+		mod->mod_start = lib_mod_start;
+		mod->mod_event = lib_mod_event;
+		mod->mod_signal = lib_mod_signal;
+		mod->mod_end = lib_mod_end;
+		mod->mod_set_param = lib_mod_set_param;
+		mod->mod_get_wait_objs = lib_mod_get_wait_objs;
+		mod->mod_check_wait_objs = lib_mod_check_wait_objs;
+	}
 
 	return mod;
 }

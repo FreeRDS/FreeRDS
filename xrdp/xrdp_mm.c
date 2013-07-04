@@ -1183,10 +1183,8 @@ int server_end_update(xrdpModule *mod)
 
 	p = (xrdpPainter*) (mod->painter);
 
-	if (p == 0)
-	{
+	if (!p)
 		return 0;
-	}
 
 	xrdp_painter_end_update(p);
 	xrdp_painter_delete(p);

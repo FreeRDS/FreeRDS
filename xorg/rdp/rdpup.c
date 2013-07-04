@@ -373,8 +373,6 @@ static int get_single_color(struct image_data *id, int x, int y, int w, int h)
 	return rv;
 }
 
-void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h);
-
 static int rdpup_disconnect(void)
 {
 	int index;
@@ -1555,6 +1553,11 @@ void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 	if (x > g_rdpScreen.width - 1)
 		x = g_rdpScreen.width - 1;
 
+	w += x % 16;
+	x -= x % 16;
+
+	w += w % 16;
+
 	if (x + w > g_rdpScreen.width)
 		w = g_rdpScreen.width - x;
 
@@ -1563,6 +1566,11 @@ void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 
 	if (y > g_rdpScreen.height - 1)
 		y = g_rdpScreen.height - 1;
+
+	h += y % 16;
+	y -= y % 16;
+
+	h += h % 16;
 
 	if (h > g_rdpScreen.height)
 		h = g_rdpScreen.height;

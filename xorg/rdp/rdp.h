@@ -382,12 +382,12 @@ int rdpup_paint_rect(short x, short y, int cx, int cy,
 int rdpup_set_pen(int style, int width);
 int rdpup_draw_line(short x1, short y1, short x2, short y2);
 void rdpup_send_area(struct image_data* id, int x, int y, int w, int h);
+void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h);
 int rdpup_set_cursor(short x, short y, char* cur_data, char* cur_mask);
 int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bpp);
 int rdpup_create_os_surface(int rdpindexd, int width, int height);
 int rdpup_switch_os_surface(int rdpindex);
 int rdpup_delete_os_surface(int rdpindex);
-
 void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy);
 void rdpup_set_hints(int hints, int mask);
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);

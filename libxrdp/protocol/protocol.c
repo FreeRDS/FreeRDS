@@ -791,6 +791,7 @@ int xrdp_read_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	Stream_Read_UINT32(s, msg->width);
 	Stream_Read_UINT32(s, msg->height);
+	Stream_Read_UINT32(s, msg->attach);
 	Stream_Read_UINT32(s, msg->scanline);
 	Stream_Read_UINT32(s, msg->segmentId);
 	Stream_Read_UINT32(s, msg->bitsPerPixel);
@@ -801,7 +802,7 @@ int xrdp_read_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 
 int xrdp_write_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 {
-	msg->length = XRDP_ORDER_HEADER_LENGTH + 24;
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 28;
 
 	if (!s)
 		return msg->length;
@@ -810,6 +811,7 @@ int xrdp_write_shared_framebuffer(wStream* s, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 
 	Stream_Write_UINT32(s, msg->width);
 	Stream_Write_UINT32(s, msg->height);
+	Stream_Write_UINT32(s, msg->attach);
 	Stream_Write_UINT32(s, msg->scanline);
 	Stream_Write_UINT32(s, msg->segmentId);
 	Stream_Write_UINT32(s, msg->bitsPerPixel);
