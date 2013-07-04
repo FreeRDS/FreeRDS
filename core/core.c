@@ -22,8 +22,7 @@
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
 #include <freerdp/codec/rfx.h>
-
-#include "bitmap.h"
+#include <freerdp/codec/bitmap.h>
 
 #include "core.h"
 

@@ -21,8 +21,6 @@ set(MODULE_PREFIX "FREERDP_XRDP_CORE")
 include_directories("../common")
 
 set(${MODULE_PREFIX}_SRCS
-	bitmap.c
-	bitmap.h
 	core.c
 	core.h)
 
