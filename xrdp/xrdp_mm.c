@@ -1263,7 +1263,7 @@ int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	}
 	else
 	{
-		b = xrdp_bitmap_create_with_data(msg->nWidth, msg->nHeight, wm->screen->bpp, (char*) msg->bitmapData, wm);
+		b = xrdp_bitmap_create_with_data(msg->nWidth, msg->nHeight, bpp, (char*) msg->bitmapData, wm);
 
 		xrdp_painter_copy(p, b, wm->target_surface, msg->nLeftRect, msg->nTopRect,
 				msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);

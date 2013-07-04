@@ -77,7 +77,6 @@ static int g_crc_table[256] =
     (in_crc) = g_crc_table[((in_crc) ^ (in_pixel)) & 0xff] ^ ((in_crc) >> 8)
 #define CRC_END(in_crc) (in_crc) = ((in_crc) ^ g_crc_seed)
 
-/*****************************************************************************/
 xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm *wm)
 {
 	xrdpBitmap *self = (xrdpBitmap *) NULL;
@@ -137,7 +136,6 @@ xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm 
 	return self;
 }
 
-/*****************************************************************************/
 xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char *data, xrdpWm *wm)
 {
 	xrdpBitmap *self = (xrdpBitmap *) NULL;
@@ -154,7 +152,6 @@ xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char *d
 	return self;
 }
 
-/*****************************************************************************/
 void xrdp_bitmap_delete(xrdpBitmap *self)
 {
 	int i = 0;
@@ -254,7 +251,6 @@ void xrdp_bitmap_delete(xrdpBitmap *self)
 	g_free(self);
 }
 
-/*****************************************************************************/
 xrdpBitmap* xrdp_bitmap_get_child_by_id(xrdpBitmap *self, int id)
 {
 	int i = 0;
@@ -273,7 +269,6 @@ xrdpBitmap* xrdp_bitmap_get_child_by_id(xrdpBitmap *self, int id)
 	return 0;
 }
 
-/*****************************************************************************/
 /* if focused is true focus this window else unfocus it */
 /* returns error */
 int xrdp_bitmap_set_focus(xrdpBitmap *self, int focused)
@@ -313,7 +308,6 @@ int xrdp_bitmap_set_focus(xrdpBitmap *self, int focused)
 	return 0;
 }
 
-/*****************************************************************************/
 static int xrdp_bitmap_get_index(xrdpBitmap *self, int *palette, int color)
 {
 	int r = 0;
@@ -329,8 +323,6 @@ static int xrdp_bitmap_get_index(xrdpBitmap *self, int *palette, int color)
 	return (b | g | r);
 }
 
-/*****************************************************************************/
-/* returns error */
 int xrdp_bitmap_resize(xrdpBitmap *self, int width, int height)
 {
 	int Bpp = 0;
@@ -378,7 +370,6 @@ int xrdp_bitmap_resize(xrdpBitmap *self, int width, int height)
 	return 0;
 }
 
-/*****************************************************************************/
 /* load a bmp file */
 /* return 0 ok */
 /* return 1 error */
@@ -650,7 +641,6 @@ int xrdp_bitmap_load(xrdpBitmap *self, const char *filename, int *palette)
 	return 0;
 }
 
-/*****************************************************************************/
 int xrdp_bitmap_get_pixel(xrdpBitmap *self, int x, int y)
 {
 	if (self == 0)
@@ -686,7 +676,6 @@ int xrdp_bitmap_get_pixel(xrdpBitmap *self, int x, int y)
 	return 0;
 }
 
-/*****************************************************************************/
 int xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
 {
 	if (self == 0)
@@ -722,7 +711,6 @@ int xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
 	return 0;
 }
 
-/*****************************************************************************/
 /* copy part of self at x, y to 0, 0 in dest */
 /* returns error */
 int xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
@@ -823,7 +811,6 @@ int xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int c
 	return 0;
 }
 
-/*****************************************************************************/
 /* copy part of self at x, y to 0, 0 in dest */
 /* returns error */
 int xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
@@ -964,81 +951,54 @@ int xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns true if they are the same, else returns false */
 int xrdp_bitmap_compare(xrdpBitmap *self, xrdpBitmap *b)
 {
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
-	if (b == 0)
-	{
+	if (!b)
 		return 0;
-	}
 
 	if (self->bpp != b->bpp)
-	{
 		return 0;
-	}
 
 	if (self->width != b->width)
-	{
 		return 0;
-	}
 
 	if (self->height != b->height)
-	{
 		return 0;
-	}
 
 	if (g_memcmp(self->data, b->data, b->height * b->line_size) == 0)
-	{
 		return 1;
-	}
 
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns true if they are the same, else returns false */
 int xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
 {
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
-	if (b == 0)
-	{
+	if (!b)
 		return 0;
-	}
 
 	if (self->bpp != b->bpp)
-	{
 		return 0;
-	}
 
 	if (self->width != b->width)
-	{
 		return 0;
-	}
 
 	if (self->height != b->height)
-	{
 		return 0;
-	}
 
 	if (self->crc == b->crc)
-	{
 		return 1;
-	}
 
 	return 0;
 }
 
-/*****************************************************************************/
 static int xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int cx, int cy)
 {
 	painter->rop = 0xf0;
@@ -1072,7 +1032,6 @@ static int xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, in
 	return 0;
 }
 
-/*****************************************************************************/
 /* x and y are in relation to self for 0, 0 is the top left of the control */
 static int xrdp_bitmap_draw_button(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int w, int h, int down)
 {
@@ -1134,7 +1093,6 @@ static int xrdp_bitmap_draw_button(xrdpBitmap *self, xrdpPainter *painter, int x
 	return 0;
 }
 
-/*****************************************************************************/
 /* nil for rect means the whole thing */
 /* returns error */
 int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
@@ -1152,15 +1110,11 @@ int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 	char text[256];
 	char *p;
 
-	if (self == 0) /* if no bitmap */
-	{
+	if (!self)
 		return 0;
-	}
 
-	if (self->type == WND_TYPE_BITMAP) /* if 0, bitmap, leave */
-	{
+	if (self->type == WND_TYPE_BITMAP)
 		return 0;
-	}
 
 	painter = xrdp_painter_create(self->wm, self->wm->session);
 	xrdp_painter_font_needed(painter);
@@ -1553,7 +1507,6 @@ int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns error */
 int xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 {
@@ -1568,15 +1521,11 @@ int xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 	xrdpBitmap *b;
 	xrdpBitmap *focus_out_control;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
-	if (self->wm == 0)
-	{
+	if (!self->wm)
 		return 0;
-	}
 
 	if (self->type == WND_TYPE_WND)
 	{
@@ -1857,7 +1806,6 @@ int xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 	return 0;
 }
 
-/*****************************************************************************/
 /* convert the controls coords to screen coords */
 int xrdp_bitmap_to_screenx(xrdpBitmap *self, int x)
 {
@@ -1874,7 +1822,6 @@ int xrdp_bitmap_to_screenx(xrdpBitmap *self, int x)
 	return i;
 }
 
-/*****************************************************************************/
 /* convert the controls coords to screen coords */
 int xrdp_bitmap_to_screeny(xrdpBitmap *self, int y)
 {
@@ -1891,7 +1838,6 @@ int xrdp_bitmap_to_screeny(xrdpBitmap *self, int y)
 	return i;
 }
 
-/*****************************************************************************/
 /* convert the screen coords to controls coords */
 int xrdp_bitmap_from_screenx(xrdpBitmap *self, int x)
 {
@@ -1908,7 +1854,6 @@ int xrdp_bitmap_from_screenx(xrdpBitmap *self, int x)
 	return i;
 }
 
-/*****************************************************************************/
 /* convert the screen coords to controls coords */
 int xrdp_bitmap_from_screeny(xrdpBitmap *self, int y)
 {
@@ -1925,7 +1870,6 @@ int xrdp_bitmap_from_screeny(xrdpBitmap *self, int y)
 	return i;
 }
 
-/*****************************************************************************/
 int xrdp_bitmap_get_screen_clip(xrdpBitmap *self, xrdpPainter *painter, xrdpRect *rect, int *dx, int *dy)
 {
 	int ldx;

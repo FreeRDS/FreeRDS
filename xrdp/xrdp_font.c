@@ -39,7 +39,6 @@
 #include "xrdp.h"
 #include "log.h"
 
-/*****************************************************************************/
 xrdpFont* xrdp_font_create(xrdpWm *wm)
 {
 	xrdpFont *self;
@@ -140,16 +139,13 @@ xrdpFont* xrdp_font_create(xrdpWm *wm)
 	return self;
 }
 
-/*****************************************************************************/
 /* free the font and all the items */
 void xrdp_font_delete(xrdpFont *self)
 {
 	int i;
 
-	if (self == 0)
-	{
+	if (!self)
 		return;
-	}
 
 	for (i = 0; i < NUM_FONTS; i++)
 	{
@@ -159,48 +155,33 @@ void xrdp_font_delete(xrdpFont *self)
 	g_free(self);
 }
 
-/*****************************************************************************/
 /* compare the two font items returns 1 if they match */
 int xrdp_font_item_compare(xrdpFontChar *font1, xrdpFontChar *font2)
 {
 	int datasize;
 
-	if (font1 == 0)
-	{
+	if (!font1)
 		return 0;
-	}
 
-	if (font2 == 0)
-	{
+	if (!font2)
 		return 0;
-	}
 
 	if (font1->offset != font2->offset)
-	{
 		return 0;
-	}
 
 	if (font1->baseline != font2->baseline)
-	{
 		return 0;
-	}
 
 	if (font1->width != font2->width)
-	{
 		return 0;
-	}
 
 	if (font1->height != font2->height)
-	{
 		return 0;
-	}
 
 	datasize = FONT_DATASIZE(font1);
 
 	if (g_memcmp(font1->data, font2->data, datasize) == 0)
-	{
 		return 1;
-	}
 
 	return 0;
 }

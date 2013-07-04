@@ -27,7 +27,6 @@ the rest
 
 Bool noFontCacheExtension = 1;
 
-/******************************************************************************/
 /* print a time-stamped message to the log file (stderr). */
 void rdpLog(char *format, ...)
 {
@@ -44,7 +43,6 @@ void rdpLog(char *format, ...)
 	va_end(args);
 }
 
-/******************************************************************************/
 int rdpBitsPerPixel(int depth)
 {
 	if (depth == 1)
@@ -65,73 +63,58 @@ int rdpBitsPerPixel(int depth)
 	}
 }
 
-/******************************************************************************/
 void rdpClientStateChange(CallbackListPtr *cbl, pointer myData, pointer clt)
 {
 	dispatchException &= ~DE_RESET; /* hack - force server not to reset */
 }
 
-/******************************************************************************/
-int DPMSSupported(void)
+/* DPMS */
+
+Bool DPMSSupported(void)
 {
-	return 0;
+    return FALSE;
 }
 
-/******************************************************************************/
-int DPSMGet(int *level)
+int DPMSSet(ClientPtr client, int level)
 {
-	return -1;
+    return Success;
 }
 
-/******************************************************************************/
-void DPMSSet(int level)
-{
-}
-
-/******************************************************************************/
 void AddOtherInputDevices(void)
 {
 }
 
-/******************************************************************************/
 void OpenInputDevice(DeviceIntPtr dev, ClientPtr client, int *status)
 {
 }
 
-/******************************************************************************/
 int SetDeviceValuators(register ClientPtr client, DeviceIntPtr dev,
 		int *valuators, int first_valuator, int num_valuators)
 {
 	return BadMatch;
 }
 
-/******************************************************************************/
 int SetDeviceMode(register ClientPtr client, DeviceIntPtr dev, int mode)
 {
 	return BadMatch;
 }
 
-/******************************************************************************/
 int ChangeKeyboardDevice(DeviceIntPtr old_dev, DeviceIntPtr new_dev)
 {
 	return BadMatch;
 }
 
-/******************************************************************************/
-int ChangeDeviceControl(register ClientPtr client, DeviceIntPtr dev,
-		void *control)
+int ChangeDeviceControl(register ClientPtr client, DeviceIntPtr dev, void *control)
 {
 	return BadMatch;
 }
 
-/******************************************************************************/
 int ChangePointerDevice(DeviceIntPtr old_dev, DeviceIntPtr new_dev,
 		unsigned char x, unsigned char y)
 {
 	return BadMatch;
 }
 
-/******************************************************************************/
 void CloseInputDevice(DeviceIntPtr d, ClientPtr client)
 {
 }
@@ -140,45 +123,37 @@ void CloseInputDevice(DeviceIntPtr d, ClientPtr client)
   stub for XpClient* functions.
  */
 
-/*****************************************************************************/
 Bool XpClientIsBitmapClient(ClientPtr client)
 {
 	return 1;
 }
 
-/*****************************************************************************/
 Bool XpClientIsPrintClient(ClientPtr client, FontPathElementPtr fpe)
 {
 	return 0;
 }
 
-/*****************************************************************************/
 int PrinterOptions(int argc, char **argv, int i)
 {
 	return i;
 }
 
-/*****************************************************************************/
 void PrinterInitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 {
 }
 
-/*****************************************************************************/
 void PrinterUseMsg(void)
 {
 }
 
-/*****************************************************************************/
 void PrinterInitGlobals(void)
 {
 }
 
-/*****************************************************************************/
 void FontCacheExtensionInit(INITARGS)
 {
 }
 
-/******************************************************************************/
 void RegionAroundSegs(RegionPtr reg, xSegment *segs, int nseg)
 {
 	int index;

@@ -561,7 +561,6 @@ void* xrdp_process_main_thread(void* arg);
 xrdpListener* xrdp_listen_create(void);
 void xrdp_listen_delete(xrdpListener* self);
 int xrdp_listen_main_loop(xrdpListener* self);
-int xrdp_listen_set_startup_params(xrdpListener *self, struct xrdp_startup_params* startup_params);
 
 /* xrdp_region.c */
 xrdpRegion* xrdp_region_create(xrdpWm* wm);

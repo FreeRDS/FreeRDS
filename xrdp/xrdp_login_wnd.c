@@ -22,26 +22,19 @@
 #define ACCESS
 #include "log.h"
 
-/*****************************************************************************/
 /* all login help screen events go here */
 static int xrdp_wm_login_help_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
 {
 	xrdpPainter *p;
 
-	if (wnd == 0)
-	{
+	if (!wnd)
 		return 0;
-	}
 
-	if (sender == 0)
-	{
+	if (!sender)
 		return 0;
-	}
 
-	if (wnd->owner == 0)
-	{
+	if (!wnd->owner)
 		return 0;
-	}
 
 	if (msg == 1) /* click */
 	{

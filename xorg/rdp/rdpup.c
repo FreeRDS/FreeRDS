@@ -1630,13 +1630,12 @@ void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 /* split the bitmap up into 64 x 64 pixel areas */
 void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 {
-	char *s;
+	char* s;
 	int i;
 	int lx;
 	int ly;
 	int lh;
 	int lw;
-	int size;
 	char* dstp;
 	int single_color;
 	int bitmapLength;
@@ -1716,9 +1715,9 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 			}
 			else
 			{
-				bitmapLength = lw * lh * id->Bpp;
-				size = bitmapLength + 26;
 				XRDP_MSG_PAINT_RECT msg;
+
+				bitmapLength = lw * lh * id->Bpp;
 
 				for (i = 0; i < lh; i++)
 				{

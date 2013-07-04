@@ -159,7 +159,3 @@ int xrdp_listen_main_loop(xrdpListener* self)
 	return 0;
 }
 
-int xrdp_listen_set_startup_params(xrdpListener* self, xrdpStartupParams* startup_params)
-{
-	return 0;
-}

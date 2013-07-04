@@ -37,7 +37,6 @@ static long g_sync_param1 = 0;
 static long g_sync_param2 = 0;
 static long (*g_sync_func)(long param1, long param2);
 
-/*****************************************************************************/
 /* This function is used to run a function from the main thread.
  Sync_func is the function pointer that will run from main thread
  The function can have two long in parameters and must return long */
@@ -92,7 +91,6 @@ long g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, l
 	return sync_result;
 }
 
-/*****************************************************************************/
 void xrdp_shutdown(int sig)
 {
 	tbus threadid;
@@ -107,13 +105,11 @@ void xrdp_shutdown(int sig)
 	}
 }
 
-/*****************************************************************************/
 void xrdp_child(int sig)
 {
 	g_waitchild();
 }
 
-/*****************************************************************************/
 /* called in child just after fork */
 int xrdp_child_fork(void)
 {
@@ -131,13 +127,11 @@ int xrdp_child_fork(void)
 	return 0;
 }
 
-/*****************************************************************************/
 int g_is_term(void)
 {
 	return g_is_wait_obj_set(g_term_event);
 }
 
-/*****************************************************************************/
 void g_set_term(int in_val)
 {
 	if (in_val)
@@ -150,26 +144,22 @@ void g_set_term(int in_val)
 	}
 }
 
-/*****************************************************************************/
 tbus g_get_term_event(void)
 {
 	return g_term_event;
 }
 
-/*****************************************************************************/
 tbus g_get_sync_event(void)
 {
 	return g_sync_event;
 }
 
-/*****************************************************************************/
 void pipe_sig(int sig_num)
 {
 	/* do nothing */
 	g_writeln("got XRDP SIGPIPE(%d)", sig_num);
 }
 
-/*****************************************************************************/
 /*Some function must be called from the main thread.
  if g_sync_command==THREAD_WAITING a function is waiting to be processed*/
 void g_process_waiting_function(void)
@@ -192,7 +182,6 @@ void g_process_waiting_function(void)
 	tc_mutex_unlock(g_sync_mutex);
 }
 
-/*****************************************************************************/
 int xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
 {
 	int index;
@@ -268,7 +257,6 @@ int xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params
 	return 0;
 }
 
-/*****************************************************************************/
 int main(int argc, char **argv)
 {
 	int fd;
@@ -505,7 +493,6 @@ int main(int argc, char **argv)
 		g_writeln("error creating g_sync_event");
 	}
 
-	xrdp_listen_set_startup_params(g_listen, startup_params);
 	xrdp_listen_main_loop(g_listen);
 	xrdp_listen_delete(g_listen);
 	tc_mutex_delete(g_sync_mutex);
