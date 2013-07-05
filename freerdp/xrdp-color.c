@@ -41,7 +41,7 @@ char* convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int heig
 		{
 			for (j = 0; j < width; j++)
 			{
-				pixel = *((tui8 *) src);
+				pixel = *((BYTE *) src);
 				pixel = palette[pixel];
 				SPLITCOLOR32(red, green, blue, pixel);
 				pixel = COLOR8(red, green, blue);
@@ -64,11 +64,11 @@ char* convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int heig
 		{
 			for (j = 0; j < width; j++)
 			{
-				pixel = *((tui8 *) src);
+				pixel = *((BYTE *) src);
 				pixel = palette[pixel];
 				SPLITCOLOR32(red, green, blue, pixel);
 				pixel = COLOR16(red, green, blue);
-				*((tui16 *) dst) = pixel;
+				*((UINT16 *) dst) = pixel;
 				src++;
 				dst += 2;
 			}
@@ -87,11 +87,11 @@ char* convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int heig
 		{
 			for (j = 0; j < width; j++)
 			{
-				pixel = *((tui8 *) src);
+				pixel = *((BYTE *) src);
 				pixel = palette[pixel];
 				SPLITCOLOR32(red, green, blue, pixel);
 				pixel = COLOR24RGB(red, green, blue);
-				*((tui32 *) dst) = pixel;
+				*((UINT32 *) dst) = pixel;
 				src++;
 				dst += 4;
 			}
@@ -110,10 +110,10 @@ char* convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int heig
 		{
 			for (j = 0; j < width; j++)
 			{
-				pixel = *((tui16 *) src);
+				pixel = *((UINT16 *) src);
 				SPLITCOLOR15(red, green, blue, pixel);
 				pixel = COLOR16(red, green, blue);
-				*((tui16 *) dst) = pixel;
+				*((UINT16 *) dst) = pixel;
 				src += 2;
 				dst += 2;
 			}
@@ -132,10 +132,10 @@ char* convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int heig
 		{
 			for (j = 0; j < width; j++)
 			{
-				pixel = *((tui16 *) src);
+				pixel = *((UINT16 *) src);
 				SPLITCOLOR15(red, green, blue, pixel);
 				pixel = COLOR24RGB(red, green, blue);
-				*((tui32 *) dst) = pixel;
+				*((UINT32 *) dst) = pixel;
 				src += 2;
 				dst += 4;
 			}
@@ -164,10 +164,10 @@ char* convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int heig
 		{
 			for (j = 0; j < width; j++)
 			{
-				pixel = *((tui16 *) src);
+				pixel = *((UINT16 *) src);
 				SPLITCOLOR16(red, green, blue, pixel);
 				pixel = COLOR24RGB(red, green, blue);
-				*((tui32 *) dst) = pixel;
+				*((UINT32 *) dst) = pixel;
 				src += 2;
 				dst += 4;
 			}
@@ -186,14 +186,14 @@ char* convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int heig
 		{
 			for (j = 0; j < width; j++)
 			{
-				blue = *((tui8 *) src);
+				blue = *((BYTE *) src);
 				src++;
-				green = *((tui8 *) src);
+				green = *((BYTE *) src);
 				src++;
-				red = *((tui8 *) src);
+				red = *((BYTE *) src);
 				src++;
 				pixel = COLOR24RGB(red, green, blue);
-				*((tui32 *) dst) = pixel;
+				*((UINT32 *) dst) = pixel;
 				dst += 4;
 			}
 		}

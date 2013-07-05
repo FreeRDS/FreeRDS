@@ -30,8 +30,8 @@
    code1 is regular scancode, code2 is extended scancode */
 struct codepair
 {
-	tui8 code1;
-	tui8 code2;
+	BYTE code1;
+	BYTE code2;
 };
 static struct codepair g_map[] =
 {
@@ -135,7 +135,7 @@ int get_keysym_from_scan_code(int device_flags, int scan_code, int *keys,
 }
 
 /*****************************************************************************/
-twchar get_char_from_scan_code(int device_flags, int scan_code, int *keys,
+wchar_t get_char_from_scan_code(int device_flags, int scan_code, int *keys,
 		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap *keymap)
 {
 	xrdpKeyInfo *ki;
@@ -149,7 +149,7 @@ twchar get_char_from_scan_code(int device_flags, int scan_code, int *keys,
 		return 0;
 	}
 
-	return (twchar)(ki->chr);
+	return (wchar_t)(ki->chr);
 }
 
 /*****************************************************************************/

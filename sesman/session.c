@@ -46,7 +46,7 @@ static char *g_sync_program;
 static char *g_sync_directory;
 static char *g_sync_client_ip;
 static tbus g_sync_data;
-static tui8 g_sync_type;
+static BYTE g_sync_type;
 static int g_sync_result;
 static int g_sync_cmd;
 
@@ -312,7 +312,7 @@ static void session_start_sessvc(int xpid, int wmpid, long data, char *username,
 
 /******************************************************************************/
 /* called with the main thread */
-static int session_start_fork(int width, int height, int bpp, char *username, char *password, tbus data, tui8 type, char *domain,
+static int session_start_fork(int width, int height, int bpp, char *username, char *password, tbus data, BYTE type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
 	int display = 0;
@@ -571,11 +571,11 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 
 		ltime = g_time1();
 		localtime_r(&ltime, &stime);
-		temp->item->connect_time.year = (tui16) (stime.tm_year + 1900);
-		temp->item->connect_time.month = (tui8) stime.tm_mon;
-		temp->item->connect_time.day = (tui8) stime.tm_mday;
-		temp->item->connect_time.hour = (tui8) stime.tm_hour;
-		temp->item->connect_time.minute = (tui8) stime.tm_min;
+		temp->item->connect_time.year = (UINT16) (stime.tm_year + 1900);
+		temp->item->connect_time.month = (BYTE) stime.tm_mon;
+		temp->item->connect_time.day = (BYTE) stime.tm_mday;
+		temp->item->connect_time.hour = (BYTE) stime.tm_hour;
+		temp->item->connect_time.minute = (BYTE) stime.tm_min;
 		zero_time(&(temp->item->disconnect_time));
 		zero_time(&(temp->item->idle_time));
 
@@ -621,7 +621,7 @@ static int session_reconnect_fork(int display, char *username)
 /******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
-int session_start(int width, int height, int bpp, char *username, char *password, long data, tui8 type, char *domain,
+int session_start(int width, int height, int bpp, char *username, char *password, long data, BYTE type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
 	int display;

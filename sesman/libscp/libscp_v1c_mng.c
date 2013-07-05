@@ -37,8 +37,8 @@ _scp_v1c_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s);
 enum SCP_CLIENT_STATES_E
 scp_v1c_mng_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
-	tui8 sz;
-	tui32 size;
+	BYTE sz;
+	UINT32 size;
 
 	Stream_Clear(c->in_s);
 	Stream_SetPosition(c->in_s, 0);
@@ -106,14 +106,14 @@ enum SCP_CLIENT_STATES_E
 scp_v1c_mng_get_session_list(struct SCP_CONNECTION *c, int *scount,
 		struct SCP_DISCONNECTED_SESSION **s)
 {
-	tui32 version = 1;
-	tui32 size = 12;
-	tui16 cmd = SCP_CMD_MNG_LIST_REQ;       /* request session list */
-	tui32 sescnt = 0;    /* total session number */
-	tui32 sestmp = 0;    /* additional total session number */
-	tui8 pktcnt = 0;     /* packet session count */
-	tui32 totalcnt = 0;  /* session counter */
-	tui8 continued = 0;  /* continue flag */
+	UINT32 version = 1;
+	UINT32 size = 12;
+	UINT16 cmd = SCP_CMD_MNG_LIST_REQ;       /* request session list */
+	UINT32 sescnt = 0;    /* total session number */
+	UINT32 sestmp = 0;    /* additional total session number */
+	BYTE pktcnt = 0;     /* packet session count */
+	UINT32 totalcnt = 0;  /* session counter */
+	BYTE continued = 0;  /* continue flag */
 	int firstpkt = 1;    /* "first packet" flag */
 	int idx;
 	struct SCP_DISCONNECTED_SESSION *ds = 0;
@@ -262,10 +262,10 @@ scp_v1c_mng_get_session_list(struct SCP_CONNECTION *c, int *scount,
 static enum SCP_CLIENT_STATES_E
 _scp_v1c_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
-	tui32 version;
-	tui32 size;
-	tui16 cmd;
-	tui8 dim;
+	UINT32 version;
+	UINT32 size;
+	UINT16 cmd;
+	BYTE dim;
 	char buf[257];
 
 	Stream_Clear(c->in_s);

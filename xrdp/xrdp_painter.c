@@ -133,7 +133,7 @@ int xrdp_painter_text_width(xrdpPainter *self, char *text)
 	int rv;
 	int len;
 	xrdpFontChar *font_item;
-	twchar *wstr;
+	wchar_t *wstr;
 
 	xrdp_painter_font_needed(self);
 
@@ -145,7 +145,7 @@ int xrdp_painter_text_width(xrdpPainter *self, char *text)
 
 	rv = 0;
 	len = g_mbstowcs(0, text, 0);
-	wstr = (twchar *) g_malloc((len + 2) * sizeof(twchar), 0);
+	wstr = (wchar_t *) g_malloc((len + 2) * sizeof(wchar_t), 0);
 	g_mbstowcs(wstr, text, len + 1);
 
 	for (index = 0; index < len; index++)
@@ -164,7 +164,7 @@ int xrdp_painter_text_height(xrdpPainter *self, char *text)
 	int rv;
 	int len;
 	xrdpFontChar *font_item;
-	twchar *wstr;
+	wchar_t *wstr;
 
 	xrdp_painter_font_needed(self);
 
@@ -180,7 +180,7 @@ int xrdp_painter_text_height(xrdpPainter *self, char *text)
 
 	rv = 0;
 	len = g_mbstowcs(0, text, 0);
-	wstr = (twchar *) g_malloc((len + 2) * sizeof(twchar), 0);
+	wstr = (wchar_t *) g_malloc((len + 2) * sizeof(wchar_t), 0);
 	g_mbstowcs(wstr, text, len + 1);
 
 	for (index = 0; index < len; index++)
@@ -346,7 +346,7 @@ int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, con
 	xrdpRect draw_rect;
 	xrdpFont *font;
 	xrdpFontChar *font_item;
-	twchar *wstr;
+	wchar_t *wstr;
 
 	if (!self)
 		return 0;
@@ -373,7 +373,7 @@ int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, con
 	}
 
 	/* convert to wide char */
-	wstr = (twchar *) g_malloc((len + 2) * sizeof(twchar), 0);
+	wstr = (wchar_t *) g_malloc((len + 2) * sizeof(wchar_t), 0);
 	g_mbstowcs(wstr, text, len + 1);
 	font = self->font;
 	f = 0;

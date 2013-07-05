@@ -48,11 +48,11 @@ typedef struct session_date xrdpSessionDate;
 
 struct session_date
 {
-	tui16 year;
-	tui8 month;
-	tui8 day;
-	tui8 hour;
-	tui8 minute;
+	UINT16 year;
+	BYTE month;
+	BYTE day;
+	BYTE hour;
+	BYTE minute;
 };
 
 #define zero_time(s) { (s)->year=0; (s)->month=0; (s)->day=0; (s)->hour=0; (s)->minute=0; }
@@ -94,8 +94,7 @@ struct session_chain
  * @return session data or 0
  *
  */
-xrdpSessionItem* DEFAULT_CC
-session_get_bydata(char* name, int width, int height, int bpp, int type);
+xrdpSessionItem* session_get_bydata(char* name, int width, int height, int bpp, int type);
 #ifndef session_find_item
 #define session_find_item(a, b, c, d, e) session_get_bydata(a, b, c, d, e);
 #endif
@@ -107,7 +106,7 @@ session_get_bydata(char* name, int width, int height, int bpp, int type);
  *
  */
 int session_start(int width, int height, int bpp, char* username, char* password,
-		long data, tui8 type, char* domain, char* program,
+		long data, BYTE type, char* domain, char* program,
 		char* directory, char* client_ip);
 
 int session_reconnect(int display, char* username);

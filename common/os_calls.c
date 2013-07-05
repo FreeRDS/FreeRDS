@@ -2049,7 +2049,7 @@ int g_pos(const char *str, const char *to_find)
 }
 
 /*****************************************************************************/
-int g_mbstowcs(twchar *dest, const char *src, int n)
+int g_mbstowcs(wchar_t *dest, const char *src, int n)
 {
 	wchar_t *ldest;
 	int rv;
@@ -2060,7 +2060,7 @@ int g_mbstowcs(twchar *dest, const char *src, int n)
 }
 
 /*****************************************************************************/
-int g_wcstombs(char *dest, const twchar *src, int n)
+int g_wcstombs(char *dest, const wchar_t *src, int n)
 {
 	const wchar_t *lsrc;
 	int rv;

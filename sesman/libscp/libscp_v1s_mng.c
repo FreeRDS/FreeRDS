@@ -35,9 +35,9 @@ static enum SCP_SERVER_STATES_E _scp_v1s_mng_check_response(struct SCP_CONNECTIO
 enum SCP_SERVER_STATES_E scp_v1s_mng_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s)
 {
 	struct SCP_SESSION *session;
-	tui32 ipaddr;
-	tui16 cmd;
-	tui8 sz;
+	UINT32 ipaddr;
+	UINT16 cmd;
+	BYTE sz;
 	char buf[257];
 
 	/* reading command */
@@ -170,9 +170,9 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, str
 		int sescnt, struct SCP_DISCONNECTED_SESSION *ds)
 {
 	int length;
-	tui32 version = 1;
-	tui32 size = 12;
-	tui16 cmd = SCP_CMD_MNG_LIST;
+	UINT32 version = 1;
+	UINT32 size = 12;
+	UINT16 cmd = SCP_CMD_MNG_LIST;
 	int pktcnt;
 	int idx;
 	int sidx;
@@ -279,9 +279,9 @@ enum SCP_SERVER_STATES_E scp_v1s_mng_list_sessions(struct SCP_CONNECTION *c, str
 
 static enum SCP_SERVER_STATES_E _scp_v1s_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
-	tui32 version;
-	tui32 size;
-	tui16 cmd;
+	UINT32 version;
+	UINT32 size;
+	UINT16 cmd;
 
 	Stream_Clear(c->in_s);
 	Stream_SetPosition(c->in_s, 0);

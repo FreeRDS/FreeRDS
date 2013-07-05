@@ -1106,7 +1106,7 @@ int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 	xrdpRect r1;
 	xrdpRect r2;
 	xrdpPainter *painter;
-	twchar wtext[256];
+	wchar_t wtext[256];
 	char text[256];
 	char *p;
 
@@ -1510,7 +1510,7 @@ int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 /* returns error */
 int xrdp_bitmap_def_proc(xrdpBitmap *self, int msg, int param1, int param2)
 {
-	twchar c;
+	wchar_t c;
 	int n;
 	int i;
 	int shift;

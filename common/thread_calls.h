@@ -23,7 +23,7 @@
 
 #include "arch.h"
 
-int tc_thread_create(THREAD_RV (THREAD_CC * start_routine)(void*), void* arg);
+int tc_thread_create(void* (*start_routine)(void*), void* arg);
 tbus tc_get_threadid(void);
 int tc_threadid_equal(tbus tid1, tbus tid2);
 tbus tc_mutex_create(void);

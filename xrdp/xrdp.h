@@ -396,7 +396,7 @@ struct xrdp_bitmap
 	xrdpList* child_list;
 	/* for edit */
 	int edit_pos;
-	twchar password_char;
+	wchar_t password_char;
 	/* for button or combo */
 	int state; /* for button 0 = normal 1 = down */
 	/* for combo */
@@ -645,10 +645,10 @@ int rect_intersect(xrdpRect* in1, xrdpRect* in2,
 int rect_contained_by(xrdpRect* in1, int left, int top,
 		int right, int bottom);
 int check_bounds(xrdpBitmap* b, int* x, int* y, int* cx, int* cy);
-int add_char_at(char* text, int text_size, twchar ch, int index);
+int add_char_at(char* text, int text_size, wchar_t ch, int index);
 int remove_char_at(char* text, int text_size, int index);
 int set_string(char** in_str, const char* in);
-int wchar_repeat(twchar* dest, int dest_size_in_wchars, twchar ch, int repeat);
+int wchar_repeat(wchar_t* dest, int dest_size_in_wchars, wchar_t ch, int repeat);
 
 /* in lang.c */
 struct xrdp_key_info* get_key_info_from_scan_code(int device_flags, int scan_code, int* keys,
@@ -657,7 +657,7 @@ struct xrdp_key_info* get_key_info_from_scan_code(int device_flags, int scan_cod
 int get_keysym_from_scan_code(int device_flags, int scan_code, int* keys,
 		int caps_lock, int num_lock, int scroll_lock,
 		xrdpKeymap* keymap);
-twchar get_char_from_scan_code(int device_flags, int scan_code, int* keys,
+wchar_t get_char_from_scan_code(int device_flags, int scan_code, int* keys,
 		int caps_lock, int num_lock, int scroll_lock,
 		xrdpKeymap* keymap);
 int get_keymaps(int keylayout, xrdpKeymap* keymap);

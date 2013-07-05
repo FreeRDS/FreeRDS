@@ -38,8 +38,7 @@
  * @return 0 on success, 1 on error
  *
  */
-int DEFAULT_CC
-scp_tcp_force_recv(int sck, unsigned char* data, int len);
+int scp_tcp_force_recv(int sck, unsigned char* data, int len);
 
 /**
  *
@@ -50,8 +49,7 @@ scp_tcp_force_recv(int sck, unsigned char* data, int len);
  * @return 0 on success, 1 on error
  *
  */
-int DEFAULT_CC
-scp_tcp_force_send(int sck, unsigned char* data, int len);
+int scp_tcp_force_send(int sck, unsigned char* data, int len);
 
 /**
  *
@@ -62,7 +60,6 @@ scp_tcp_force_send(int sck, unsigned char* data, int len);
  * @return 0 on success, -1 on error
  *
  */
-int DEFAULT_CC
-scp_tcp_bind(int sck, char* addr, char* port);
+int scp_tcp_bind(int sck, char* addr, char* port);
 
 #endif

@@ -501,7 +501,7 @@ static void lfreerdp_bitmap_update(rdpContext* context, BITMAP_UPDATE *bitmap)
 		if (bd->compressed)
 		{
 			LLOGLN(20,("decompress size : %d",bd->bitmapLength));
-			if (!bitmap_decompress(bd->bitmapDataStream, (tui8 *) dst_data, bd->width, bd->height,
+			if (!bitmap_decompress(bd->bitmapDataStream, (BYTE *) dst_data, bd->width, bd->height,
 					bd->bitmapLength, server_bpp, server_bpp))
 			{
 				LLOGLN(0,("Failure to decompress the bitmap"));
@@ -769,8 +769,8 @@ static void lfreerdp_cache_bitmap(rdpContext* context, CACHE_BITMAP_ORDER *cache
 /* Turn the bitmap upside down*/
 static void lfreerdp_upsidedown(UINT8 *destination, CACHE_BITMAP_V2_ORDER *cache_bitmap_v2_order, int server_Bpp)
 {
-	tui8 *src;
-	tui8 *dst;
+	BYTE *src;
+	BYTE *dst;
 	int line_bytes;
 	int j;
 
@@ -847,12 +847,12 @@ static void lfreerdp_cache_bitmapV2(rdpContext* context, CACHE_BITMAP_V2_ORDER *
 
 	if (cache_bitmap_v2_order->compressed)
 	{
-		bitmap_decompress(cache_bitmap_v2_order->bitmapDataStream, (tui8 *) dst_data, width, height,
+		bitmap_decompress(cache_bitmap_v2_order->bitmapDataStream, (BYTE *) dst_data, width, height,
 				cache_bitmap_v2_order->bitmapLength, server_bpp, server_bpp);
 	} else
 	{
 		/* Uncompressed bitmaps are upside down */
-		lfreerdp_upsidedown((tui8 *) dst_data, cache_bitmap_v2_order, server_Bpp);
+		lfreerdp_upsidedown((BYTE *) dst_data, cache_bitmap_v2_order, server_Bpp);
 		LLOGLN(10, ("lfreerdp_cache_bitmapV2:  upside down progressed"));
 	}
 
@@ -970,11 +970,11 @@ static int lfreerdp_get_pixel(void *bits, int width, int height, int bpp, int de
 	int start;
 	int shift;
 	int pixel;
-	tui8 *src8;
+	BYTE *src8;
 
 	if (bpp == 1)
 	{
-		src8 = (tui8 *) bits;
+		src8 = (BYTE *) bits;
 		start = (y * delta) + x / 8;
 		shift = x % 8;
 		pixel = (src8[start] & (0x80 >> shift)) != 0;
@@ -990,13 +990,13 @@ static int lfreerdp_get_pixel(void *bits, int width, int height, int bpp, int de
 
 static int lfreerdp_set_pixel(int pixel, void *bits, int width, int height, int bpp, int delta, int x, int y)
 {
-	tui8 *dst8;
+	BYTE *dst8;
 	int start;
 	int shift;
 
 	if (bpp == 1)
 	{
-		dst8 = (tui8 *) bits;
+		dst8 = (BYTE *) bits;
 		start = (y * delta) + x / 8;
 		shift = x % 8;
 
@@ -1011,7 +1011,7 @@ static int lfreerdp_set_pixel(int pixel, void *bits, int width, int height, int 
 	}
 	else if (bpp == 24)
 	{
-		dst8 = (tui8 *) bits;
+		dst8 = (BYTE *) bits;
 		dst8 += y * delta + x * 3;
 		dst8[0] = (pixel >> 0) & 0xff;
 		dst8[1] = (pixel >> 8) & 0xff;
@@ -1048,8 +1048,8 @@ static void lfreerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *pointe
 {
 	xrdpModule* mod;
 	int index;
-	tui8 *dst;
-	tui8 *src;
+	BYTE *dst;
+	BYTE *src;
 
 	mod = ((struct mod_context *) context)->modi;
 	LLOGLN(20, ("lfreerdp_pointer_new:"));
@@ -1077,12 +1077,12 @@ static void lfreerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *pointe
 		mod->pointer_cache[index].hotx = pointer_new->colorPtrAttr.xPos;
 		mod->pointer_cache[index].hoty = pointer_new->colorPtrAttr.yPos;
 
-		dst = (tui8 *) (mod->pointer_cache[index].data);
+		dst = (BYTE *) (mod->pointer_cache[index].data);
 		dst += 32 * 32 * 3 - 32 * 3;
 		src = pointer_new->colorPtrAttr.xorMaskData;
 		lfreerdp_convert_color_image(dst, 32, 32, 24, 32 * -3, src, 32, 32, 1, 32 / 8);
 
-		dst = (tui8 *) (mod->pointer_cache[index].mask);
+		dst = (BYTE *) (mod->pointer_cache[index].mask);
 		dst += (32 * 32 / 8) - (32 / 8);
 		src = pointer_new->colorPtrAttr.andMaskData;
 		lfreerdp_convert_color_image(dst, 32, 32, 1, 32 / -8, src, 32, 32, 1, 32 / 8);

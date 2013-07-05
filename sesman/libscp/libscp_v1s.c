@@ -33,11 +33,11 @@
 enum SCP_SERVER_STATES_E scp_v1s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 {
 	struct SCP_SESSION *session;
-	tui32 version;
-	tui32 size;
-	tui16 cmdset;
-	tui16 cmd;
-	tui8 sz;
+	UINT32 version;
+	UINT32 size;
+	UINT16 cmdset;
+	UINT16 cmd;
+	BYTE sz;
 	char buf[257];
 
 	if (!skipVchk)
@@ -227,11 +227,11 @@ enum SCP_SERVER_STATES_E scp_v1s_deny_connection(struct SCP_CONNECTION *c, char 
 
 enum SCP_SERVER_STATES_E scp_v1s_request_password(struct SCP_CONNECTION *c, struct SCP_SESSION *s, char *reason)
 {
-	tui8 sz;
-	tui32 version;
-	tui32 size;
-	tui16 cmdset;
-	tui16 cmd;
+	BYTE sz;
+	UINT32 version;
+	UINT32 size;
+	UINT16 cmdset;
+	UINT16 cmd;
 	int rlen;
 	char buf[257];
 
@@ -359,9 +359,9 @@ enum SCP_SERVER_STATES_E scp_v1s_pwd_change_error(struct SCP_CONNECTION *c, char
 enum SCP_SERVER_STATES_E scp_v1s_connect_new_session(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 {
 	/* send password request */
-	tui32 version = 1;
-	tui32 size = 14;
-	tui16 cmd = 30;
+	UINT32 version = 1;
+	UINT32 size = 14;
+	UINT16 cmd = 30;
 
 	Stream_Clear(c->out_s);
 	Stream_SetPosition(c->out_s, 0);
@@ -385,7 +385,7 @@ enum SCP_SERVER_STATES_E scp_v1s_connect_new_session(struct SCP_CONNECTION *c, S
 /* 032 */
 enum SCP_SERVER_STATES_E scp_v1s_connection_error(struct SCP_CONNECTION *c, char *error)
 {
-	tui16 len;
+	UINT16 len;
 
 	len = g_strlen(error);
 
@@ -411,9 +411,9 @@ enum SCP_SERVER_STATES_E scp_v1s_connection_error(struct SCP_CONNECTION *c, char
 enum SCP_SERVER_STATES_E scp_v1s_list_sessions(struct SCP_CONNECTION *c, int sescnt, struct SCP_DISCONNECTED_SESSION *ds, SCP_SID *sid)
 {
 	int length;
-	tui32 version = 1;
-	tui32 size = 12;
-	tui16 cmd = 40;
+	UINT32 version = 1;
+	UINT32 size = 12;
+	UINT16 cmd = 40;
 	int pktcnt;
 	int idx;
 	int sidx;
@@ -668,9 +668,9 @@ enum SCP_SERVER_STATES_E scp_v1s_list_sessions(struct SCP_CONNECTION *c, int ses
 /* 046 was: 031 struct SCP_DISCONNECTED_SESSION* ds, */
 enum SCP_SERVER_STATES_E scp_v1s_reconnect_session(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 {
-	tui32 version = 1;
-	tui32 size = 14;
-	tui16 cmd = 46;
+	UINT32 version = 1;
+	UINT32 size = 14;
+	UINT16 cmd = 46;
 
 	/* ok, we send session data and display */
 	Stream_Clear(c->out_s);

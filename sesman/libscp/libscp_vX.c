@@ -29,7 +29,7 @@
 /* server API */
 enum SCP_SERVER_STATES_E scp_vXs_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s)
 {
-	tui32 version;
+	UINT32 version;
 
 	/* reading version and packet size */
 	if (0 != scp_tcp_force_recv(c->in_sck, c->in_s->buffer, 8))

@@ -159,14 +159,14 @@ int check_bounds(xrdpBitmap *b, int *x, int *y, int *cx, int *cy)
 /*****************************************************************************/
 /* add a ch at index position in text, index starts at 0 */
 /* if index = -1 add it to the end */
-int add_char_at(char *text, int text_size, twchar ch, int index)
+int add_char_at(char *text, int text_size, wchar_t ch, int index)
 {
 	int len;
 	int i;
-	twchar *wstr;
+	wchar_t *wstr;
 
 	len = g_mbstowcs(0, text, 0);
-	wstr = (twchar *)g_malloc((len + 16) * sizeof(twchar), 0);
+	wstr = (wchar_t *)g_malloc((len + 16) * sizeof(wchar_t), 0);
 	g_mbstowcs(wstr, text, len + 1);
 
 	if ((index >= len) || (index < 0))
@@ -197,7 +197,7 @@ int remove_char_at(char *text, int text_size, int index)
 {
 	int len;
 	int i;
-	twchar *wstr;
+	wchar_t *wstr;
 
 	len = g_mbstowcs(0, text, 0);
 
@@ -206,7 +206,7 @@ int remove_char_at(char *text, int text_size, int index)
 		return 0;
 	}
 
-	wstr = (twchar *)g_malloc((len + 16) * sizeof(twchar), 0);
+	wstr = (wchar_t *)g_malloc((len + 16) * sizeof(wchar_t), 0);
 	g_mbstowcs(wstr, text, len + 1);
 
 	if ((index >= (len - 1)) || (index < 0))
@@ -242,7 +242,7 @@ int set_string(char **in_str, const char *in)
 }
 
 /*****************************************************************************/
-int wchar_repeat(twchar *dest, int dest_size_in_wchars, twchar ch, int repeat)
+int wchar_repeat(wchar_t *dest, int dest_size_in_wchars, wchar_t ch, int repeat)
 {
 	int index;
 

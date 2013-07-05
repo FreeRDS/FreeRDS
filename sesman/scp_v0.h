@@ -37,7 +37,6 @@
  * @param out_s output stream
  *
  */
-void DEFAULT_CC
-scp_v0_process(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
+void scp_v0_process(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
 
 #endif

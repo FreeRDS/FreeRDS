@@ -34,8 +34,8 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-#define SCP_SID      tui32
-#define SCP_DISPLAY  tui16
+#define SCP_SID      UINT32
+#define SCP_DISPLAY  UINT16
 
 #define SCP_RESOURCE_SHARING_REQUEST_YES 0x01
 #define SCP_RESOURCE_SHARING_REQUEST_NO  0x00
@@ -72,19 +72,19 @@ struct SCP_CONNECTION
 
 struct SCP_SESSION
 {
-	tui8  type;
-	tui32 version;
-	tui16 height;
-	tui16 width;
-	tui8  bpp;
-	tui8  rsr;
+	BYTE  type;
+	UINT32 version;
+	UINT16 height;
+	UINT16 width;
+	BYTE  bpp;
+	BYTE  rsr;
 	char  locale[18];
 	char* username;
 	char* password;
 	char* hostname;
-	tui8  addr_type;
-	tui32 ipv4addr;
-	tui8  ipv6addr[16];
+	BYTE  addr_type;
+	UINT32 ipv4addr;
+	BYTE  ipv6addr[16];
 	SCP_DISPLAY display;
 	char* errstr;
 	struct SCP_MNG_DATA* mng;
@@ -96,23 +96,23 @@ struct SCP_SESSION
 
 struct SCP_DISCONNECTED_SESSION
 {
-	tui32 SID;
-	tui8  type;
-	tui8  status;
-	tui16 height;
-	tui16 width;
-	tui8  bpp;
-	tui8  idle_days;
-	tui8  idle_hours;
-	tui8  idle_minutes;
-	tui16 conn_year;
-	tui8  conn_month;
-	tui8  conn_day;
-	tui8  conn_hour;
-	tui8  conn_minute;
-	tui8  addr_type;
-	tui32 ipv4addr;
-	tui8  ipv6addr[16];
+	UINT32 SID;
+	BYTE  type;
+	BYTE  status;
+	UINT16 height;
+	UINT16 width;
+	BYTE  bpp;
+	BYTE  idle_days;
+	BYTE  idle_hours;
+	BYTE  idle_minutes;
+	UINT16 conn_year;
+	BYTE  conn_month;
+	BYTE  conn_day;
+	BYTE  conn_hour;
+	BYTE  conn_minute;
+	BYTE  addr_type;
+	UINT32 ipv4addr;
+	BYTE  ipv6addr[16];
 };
 
 enum SCP_CLIENT_STATES_E

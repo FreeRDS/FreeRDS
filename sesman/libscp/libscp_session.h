@@ -39,12 +39,12 @@
  */
 struct SCP_SESSION* scp_session_create();
 
-int scp_session_set_type(struct SCP_SESSION* s, tui8 type);
-int scp_session_set_version(struct SCP_SESSION* s, tui32 version);
-int scp_session_set_height(struct SCP_SESSION* s, tui16 h);
-int scp_session_set_width(struct SCP_SESSION* s, tui16 w);
-int scp_session_set_bpp(struct SCP_SESSION* s, tui8 bpp);
-int scp_session_set_rsr(struct SCP_SESSION* s, tui8 rsr);
+int scp_session_set_type(struct SCP_SESSION* s, BYTE type);
+int scp_session_set_version(struct SCP_SESSION* s, UINT32 version);
+int scp_session_set_height(struct SCP_SESSION* s, UINT16 h);
+int scp_session_set_width(struct SCP_SESSION* s, UINT16 w);
+int scp_session_set_bpp(struct SCP_SESSION* s, BYTE bpp);
+int scp_session_set_rsr(struct SCP_SESSION* s, BYTE rsr);
 int scp_session_set_locale(struct SCP_SESSION* s, char* str);
 int scp_session_set_username(struct SCP_SESSION* s, char* str);
 int scp_session_set_password(struct SCP_SESSION* s, char* str);

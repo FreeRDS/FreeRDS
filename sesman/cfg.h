@@ -205,8 +205,7 @@ struct config_sesman
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-config_read(struct config_sesman* cfg);
+int config_read(struct config_sesman* cfg);
 
 /**
  *
@@ -218,8 +217,7 @@ config_read(struct config_sesman* cfg);
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-config_read_globals(int file, struct config_sesman* cf,
+int config_read_globals(int file, struct config_sesman* cf,
 		struct list* param_n, struct list* param_v);
 
 /**
@@ -232,8 +230,7 @@ config_read_globals(int file, struct config_sesman* cf,
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-config_read_logging(int file, struct log_config* lc, struct list* param_n,
+int config_read_logging(int file, struct log_config* lc, struct list* param_n,
 		struct list* param_v);
 
 /**
@@ -246,8 +243,7 @@ config_read_logging(int file, struct log_config* lc, struct list* param_n,
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-config_read_security(int file, struct config_security* sc,
+int config_read_security(int file, struct config_security* sc,
 		struct list* param_n, struct list* param_v);
 
 /**
@@ -260,8 +256,7 @@ config_read_security(int file, struct config_security* sc,
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-config_read_sessions(int file, struct config_sessions* ss,
+int config_read_sessions(int file, struct config_sessions* ss,
 		struct list* param_n, struct list* param_v);
 
 /**
@@ -274,8 +269,7 @@ config_read_sessions(int file, struct config_sessions* ss,
  * @return 0 on success, 1 on failure
  *
  */
-int DEFAULT_CC
-config_read_rdp_params(int file, struct config_sesman* cs, struct list* param_n,
+int config_read_rdp_params(int file, struct config_sesman* cs, struct list* param_n,
 		struct list* param_v);
 
 #endif

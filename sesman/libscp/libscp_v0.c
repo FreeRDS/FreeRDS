@@ -36,9 +36,9 @@ enum SCP_CLIENT_STATES_E
 scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	int length;
-	tui32 version;
-	tui32 size;
-	tui16 sz;
+	UINT32 version;
+	UINT32 size;
+	UINT16 sz;
 
 	Stream_Clear(c->in_s);
 	Stream_SetPosition(c->in_s, 0);
@@ -154,11 +154,11 @@ scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 enum SCP_SERVER_STATES_E
 scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 {
-	tui32 version = 0;
-	tui32 size;
+	UINT32 version = 0;
+	UINT32 size;
 	struct SCP_SESSION *session = 0;
-	tui16 sz;
-	tui32 code = 0;
+	UINT16 sz;
+	UINT32 code = 0;
 	char buf[257];
 
 	if (!skipVchk)
@@ -251,7 +251,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 		scp_session_set_height(session, sz);
 		/* bpp */
 		Stream_Read_UINT16_BE(c->in_s, sz);
-		scp_session_set_bpp(session, (tui8)sz);
+		scp_session_set_bpp(session, (BYTE)sz);
 
 		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
