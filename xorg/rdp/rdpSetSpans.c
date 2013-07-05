@@ -91,7 +91,7 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 
 			if (g_do_dirty_os)
 			{
-				LLOGLN(10, ("rdpSetSpans: gettig dirty"));
+				LLOGLN(10, ("rdpSetSpans: getting dirty"));
 				pDstPriv->is_dirty = 1;
 				//pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLY;

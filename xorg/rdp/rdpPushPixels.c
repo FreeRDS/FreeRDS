@@ -96,7 +96,7 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 
 			if (g_do_dirty_os)
 			{
-				LLOGLN(10, ("rdpPushPixels: gettig dirty"));
+				LLOGLN(10, ("rdpPushPixels: getting dirty"));
 				pDstPriv->is_dirty = 1;
 				pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLY;
@@ -122,7 +122,7 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 
 				if (g_do_dirty_ons)
 				{
-					LLOGLN(0, ("rdpPushPixels: gettig dirty"));
+					LLOGLN(0, ("rdpPushPixels: getting dirty"));
 					g_screenPriv.is_dirty = 1;
 					pDirtyPriv = &g_screenPriv;
 					dirty_type = RDI_IMGLL;

@@ -100,7 +100,7 @@ void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned i
 
 			if (g_do_dirty_os)
 			{
-				LLOGLN(10, ("rdpImageGlyphBlt: gettig dirty"));
+				LLOGLN(10, ("rdpImageGlyphBlt: getting dirty"));
 				pDstPriv->is_dirty = 1;
 				pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLL;
@@ -126,7 +126,7 @@ void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned i
 
 				if (g_do_dirty_ons)
 				{
-					LLOGLN(0, ("rdpImageGlyphBlt: gettig dirty"));
+					LLOGLN(0, ("rdpImageGlyphBlt: getting dirty"));
 					g_screenPriv.is_dirty = 1;
 					pDirtyPriv = &g_screenPriv;
 					dirty_type = RDI_IMGLL;

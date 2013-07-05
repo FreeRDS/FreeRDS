@@ -72,17 +72,37 @@ static int g_doing_font = 0;
 
 GCFuncs g_rdpGCFuncs =
 {
-		rdpValidateGC, rdpChangeGC, rdpCopyGC, rdpDestroyGC, rdpChangeClip,
-		rdpDestroyClip, rdpCopyClip
+	rdpValidateGC,
+	rdpChangeGC,
+	rdpCopyGC,
+	rdpDestroyGC,
+	rdpChangeClip,
+	rdpDestroyClip,
+	rdpCopyClip
 };
 
 GCOps g_rdpGCOps =
 {
-		rdpFillSpans, rdpSetSpans, rdpPutImage, rdpCopyArea, rdpCopyPlane,
-		rdpPolyPoint, rdpPolylines, rdpPolySegment, rdpPolyRectangle,
-		rdpPolyArc, rdpFillPolygon, rdpPolyFillRect, rdpPolyFillArc,
-		rdpPolyText8, rdpPolyText16, rdpImageText8, rdpImageText16,
-		rdpImageGlyphBlt, rdpPolyGlyphBlt, rdpPushPixels
+	rdpFillSpans,
+	rdpSetSpans,
+	rdpPutImage,
+	rdpCopyArea,
+	rdpCopyPlane,
+	rdpPolyPoint,
+	rdpPolylines,
+	rdpPolySegment,
+	rdpPolyRectangle,
+	rdpPolyArc,
+	rdpFillPolygon,
+	rdpPolyFillRect,
+	rdpPolyFillArc,
+	rdpPolyText8,
+	rdpPolyText16,
+	rdpImageText8,
+	rdpImageText16,
+	rdpImageGlyphBlt,
+	rdpPolyGlyphBlt,
+	rdpPushPixels
 };
 
 /* return 0, draw nothing */
@@ -678,7 +698,6 @@ Bool rdpDestroyPixmap(PixmapPtr pPixmap)
 	return rv;
 }
 
-/*****************************************************************************/
 int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
 {
 	RegionRec reg1;
@@ -953,7 +972,7 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 
 	if (g_do_dirty_ons)
 	{
-		LLOGLN(0, ("rdpCopyWindow: gettig dirty TODO"));
+		LLOGLN(0, ("rdpCopyWindow: getting dirty TODO"));
 		//draw_item_add_srcblt_region
 	}
 	else
@@ -1222,7 +1241,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 
 				if (g_do_dirty_ons)
 				{
-					LLOGLN(0, ("rdpComposite: gettig dirty"));
+					LLOGLN(0, ("rdpComposite: getting dirty"));
 					g_screenPriv.is_dirty = 1;
 					pDirtyPriv = &g_screenPriv;
 					dirty_type = RDI_IMGLL;

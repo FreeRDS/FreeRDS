@@ -112,7 +112,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 			if (g_do_dirty_os)
 			{
-				LLOGLN(10, ("rdpPolyRectangle: gettig dirty"));
+				LLOGLN(10, ("rdpPolyRectangle: getting dirty"));
 				pDstPriv->is_dirty = 1;
 				pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLL;
@@ -138,7 +138,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 				if (g_do_dirty_ons)
 				{
-					LLOGLN(0, ("rdpPolyRectangle: gettig dirty"));
+					LLOGLN(0, ("rdpPolyRectangle: getting dirty"));
 					g_screenPriv.is_dirty = 1;
 					pDirtyPriv = &g_screenPriv;
 					dirty_type = RDI_IMGLL;

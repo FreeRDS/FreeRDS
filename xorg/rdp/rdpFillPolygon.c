@@ -142,7 +142,7 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 
 			if (g_do_dirty_os)
 			{
-				LLOGLN(10, ("rdpFillPolygon: gettig dirty"));
+				LLOGLN(10, ("rdpFillPolygon: getting dirty"));
 				pDstPriv->is_dirty = 1;
 				pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLL;
@@ -168,7 +168,7 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 
 				if (g_do_dirty_ons)
 				{
-					LLOGLN(0, ("rdpFillPolygon: gettig dirty"));
+					LLOGLN(0, ("rdpFillPolygon: getting dirty"));
 					g_screenPriv.is_dirty = 1;
 					pDirtyPriv = &g_screenPriv;
 					dirty_type = RDI_IMGLL;
