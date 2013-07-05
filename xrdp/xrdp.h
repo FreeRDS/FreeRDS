@@ -107,8 +107,7 @@ struct xrdp_mod
 	int (*mod_end)(xrdpModule* v);
 	int (*mod_set_param)(xrdpModule* v, char* name, char* value);
 	int (*mod_session_change)(xrdpModule* v, int, int);
-	int (*mod_get_wait_objs)(xrdpModule* v, LONG_PTR* read_objs, int* rcount, LONG_PTR* write_objs, int* wcount,
-			int* timeout);
+	int (*mod_get_wait_objs)(xrdpModule* v, LONG_PTR* read_objs, int* rcount, LONG_PTR* write_objs, int* wcount, int* timeout);
 	int (*mod_check_wait_objs)(xrdpModule* v);
 
 	/* common */
@@ -134,7 +133,7 @@ struct xrdp_mod
 	int vmin;
 	int vrev;
 	int colormap[256];
-	struct rdp_freerdp* inst;
+	freerdp* instance;
 	struct bitmap_item bitmap_cache[4][4096];
 	struct brush_item brush_cache[64];
 	struct pointer_item pointer_cache[32];

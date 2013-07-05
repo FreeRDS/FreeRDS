@@ -46,7 +46,6 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
 static RegionPtr rdpCopyAreaOrg(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 		int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
@@ -60,10 +59,8 @@ static RegionPtr rdpCopyAreaOrg(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	return rv;
 }
 
-/******************************************************************************/
 static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr pGC,
-		int srcx, int srcy, int w, int h,
-		int dstx, int dsty)
+		int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
 	int cd;
 	int lsrcx;
@@ -82,6 +79,7 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 
 	rv = rdpCopyAreaOrg(&(pSrcWnd->drawable), &(pDstWnd->drawable),
 			pGC, srcx, srcy, w, h, dstx, dsty);
+
 	RegionInit(&clip_reg, NullBox, 0);
 	cd = rdp_get_clip(&clip_reg, &(pDstWnd->drawable), pGC);
 	lsrcx = pSrcWnd->drawable.x + srcx;
@@ -133,11 +131,9 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 	return rv;
 }
 
-/******************************************************************************/
 static RegionPtr rdpCopyAreaWndToPixmap(WindowPtr pSrcWnd,
 		PixmapPtr pDstPixmap, rdpPixmapRec *pDstPriv,
-		GCPtr pGC, int srcx, int srcy, int w, int h,
-		int dstx, int dsty)
+		GCPtr pGC, int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
 	int cd;
 	int lsrcx;
@@ -211,7 +207,6 @@ static RegionPtr rdpCopyAreaWndToPixmap(WindowPtr pSrcWnd,
 	return rv;
 }
 
-/******************************************************************************/
 /* draw from an off screen pixmap to a visible window */
 static RegionPtr rdpCopyAreaPixmapToWnd(PixmapPtr pSrcPixmap, rdpPixmapRec *pSrcPriv,
 		WindowPtr pDstWnd, GCPtr pGC, int srcx, int srcy, int w, int h, int dstx, int dsty)
@@ -271,7 +266,6 @@ static RegionPtr rdpCopyAreaPixmapToWnd(PixmapPtr pSrcPixmap, rdpPixmapRec *pSrc
 	return rv;
 }
 
-/******************************************************************************/
 /* draw from an off screen pixmap to an off screen pixmap */
 static RegionPtr rdpCopyAreaPixmapToPixmap(PixmapPtr pSrcPixmap, rdpPixmapRec *pSrcPriv,
 		PixmapPtr pDstPixmap, rdpPixmapRec *pDstPriv,
@@ -337,7 +331,6 @@ static RegionPtr rdpCopyAreaPixmapToPixmap(PixmapPtr pSrcPixmap, rdpPixmapRec *p
 	return rv;
 }
 
-/******************************************************************************/
 RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 		int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
@@ -384,8 +377,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 					if (can_do_screen_blt)
 					{
-						return rdpCopyAreaWndToWnd(pSrcWnd, pDstWnd, pGC,
-								srcx, srcy, w, h, dstx, dsty);
+						return rdpCopyAreaWndToWnd(pSrcWnd, pDstWnd, pGC, srcx, srcy, w, h, dstx, dsty);
 					}
 				}
 			}
