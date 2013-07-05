@@ -45,9 +45,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
-void rdpPushPixelsOrg(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst,
-		int w, int h, int x, int y)
+void rdpPushPixelsOrg(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h, int x, int y)
 {
 	rdpGCPtr priv;
 	GCFuncs *oldFuncs;
@@ -57,9 +55,7 @@ void rdpPushPixelsOrg(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst,
 	GC_OP_EPILOGUE(pGC);
 }
 
-/******************************************************************************/
-void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst,
-		int w, int h, int x, int y)
+void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h, int x, int y)
 {
 	RegionRec clip_reg;
 	RegionRec box_reg;

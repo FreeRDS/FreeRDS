@@ -45,9 +45,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
-static void rdpPolyFillRectOrg(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
-		xRectangle *prectInit)
+static void rdpPolyFillRectOrg(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle *prectInit)
 {
 	rdpGCPtr priv;
 	GCFuncs *oldFuncs;
@@ -57,9 +55,7 @@ static void rdpPolyFillRectOrg(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
 	GC_OP_EPILOGUE(pGC);
 }
 
-/******************************************************************************/
-void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
-		xRectangle *prectInit)
+void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle *prectInit)
 {
 	int j;
 	int cd;
@@ -163,11 +159,9 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
 							pGC->alu == GXinvert ||
 							pGC->alu == GXnoop ||
 							pGC->alu == GXand ||
-							pGC->alu == GXcopy /*||
-           pGC->alu == GXxor*/)) /* todo, why dosen't xor work? */
+							pGC->alu == GXcopy))
 			{
-				draw_item_add_fill_region(pDirtyPriv, fill_reg, pGC->fgPixel,
-						pGC->alu);
+				draw_item_add_fill_region(pDirtyPriv, fill_reg, pGC->fgPixel, pGC->alu);
 			}
 			else
 			{
@@ -184,8 +178,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
 							pGC->alu == GXinvert ||
 							pGC->alu == GXnoop ||
 							pGC->alu == GXand ||
-							pGC->alu == GXcopy /*||
-           pGC->alu == GXxor*/)) /* todo, why dosen't xor work? */
+							pGC->alu == GXcopy))
 			{
 				rdpup_set_fgcolor(pGC->fgPixel);
 				rdpup_set_opcode(pGC->alu);
@@ -226,11 +219,9 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
 								pGC->alu == GXinvert ||
 								pGC->alu == GXnoop ||
 								pGC->alu == GXand ||
-								pGC->alu == GXcopy /*||
-             pGC->alu == GXxor*/)) /* todo, why dosen't xor work? */
+								pGC->alu == GXcopy))
 				{
-					draw_item_add_fill_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
-							pGC->alu);
+					draw_item_add_fill_region(pDirtyPriv, &clip_reg, pGC->fgPixel, pGC->alu);
 				}
 				else
 				{
@@ -247,8 +238,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
 								pGC->alu == GXinvert ||
 								pGC->alu == GXnoop ||
 								pGC->alu == GXand ||
-								pGC->alu == GXcopy /*||
-             pGC->alu == GXxor*/)) /* todo, why dosen't xor work? */
+								pGC->alu == GXcopy))
 				{
 					rdpup_set_fgcolor(pGC->fgPixel);
 					rdpup_set_opcode(pGC->alu);

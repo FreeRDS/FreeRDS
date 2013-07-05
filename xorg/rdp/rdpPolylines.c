@@ -45,9 +45,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
-static void rdpPolylinesOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
-		int npt, DDXPointPtr pptInit)
+static void rdpPolylinesOrg(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointPtr pptInit)
 {
 	rdpGCPtr priv;
 	GCFuncs *oldFuncs;
@@ -57,9 +55,7 @@ static void rdpPolylinesOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
 	GC_OP_EPILOGUE(pGC);
 }
 
-/******************************************************************************/
-void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode,
-		int npt, DDXPointPtr pptInit)
+void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointPtr pptInit)
 {
 	RegionRec clip_reg;
 	int num_clips;

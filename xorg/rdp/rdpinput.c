@@ -695,7 +695,6 @@ void rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr)
 	ErrorF("rdpSpriteDeviceCursorCleanup:\n");
 }
 
-/******************************************************************************/
 static void rdpEnqueueMotion(int x, int y)
 {
 	int i;
@@ -837,7 +836,7 @@ void sendDownUpKeyEvent(int type, int x_scancode)
  * @param param2 -
  * @param param3 - scancode of pressed key
  * @param param4 -
- ******************************************************************************/
+ */
 void KbdAddEvent(int down, int param1, int param2, int param3, int param4)
 {
 	int rdp_scancode;
@@ -1028,10 +1027,6 @@ void KbdAddEvent(int down, int param1, int param2, int param3, int param4)
 	}
 }
 
-/******************************************************************************/
-/* notes -
-     scroll lock doesn't seem to be a modifier in X
- */
 void KbdSync(int param1)
 {
 	int xkb_state;

@@ -45,9 +45,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
-int rdpPolyText8Org(DrawablePtr pDrawable, GCPtr pGC,
-		int x, int y, int count, char *chars)
+int rdpPolyText8Org(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char *chars)
 {
 	int rv;
 	rdpGCPtr priv;
@@ -59,9 +57,7 @@ int rdpPolyText8Org(DrawablePtr pDrawable, GCPtr pGC,
 	return rv;
 }
 
-/******************************************************************************/
-int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC,
-		int x, int y, int count, char *chars)
+int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char *chars)
 {
 	RegionRec reg;
 	RegionRec reg1;

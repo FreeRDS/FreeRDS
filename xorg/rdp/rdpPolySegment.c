@@ -45,7 +45,6 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
 void rdpPolySegmentOrg(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 {
 	rdpGCPtr priv;
@@ -56,7 +55,6 @@ void rdpPolySegmentOrg(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSe
 	GC_OP_EPILOGUE(pGC);
 }
 
-/******************************************************************************/
 void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 {
 	RegionRec clip_reg;

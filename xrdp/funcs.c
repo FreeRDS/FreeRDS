@@ -20,7 +20,6 @@
 
 #include "xrdp.h"
 
-/*****************************************************************************/
 /* returns boolean */
 int rect_contains_pt(xrdpRect *in, int x, int y)
 {
@@ -47,7 +46,6 @@ int rect_contains_pt(xrdpRect *in, int x, int y)
 	return 1;
 }
 
-/*****************************************************************************/
 int rect_intersect(xrdpRect *in1, xrdpRect *in2,
 		xrdpRect *out)
 {
@@ -91,7 +89,6 @@ int rect_intersect(xrdpRect *in1, xrdpRect *in2,
 	return rv;
 }
 
-/*****************************************************************************/
 /* returns boolean */
 int rect_contained_by(xrdpRect *in1, int left, int top, int right, int bottom)
 {
@@ -106,7 +103,6 @@ int rect_contained_by(xrdpRect *in1, int left, int top, int right, int bottom)
 	}
 }
 
-/*****************************************************************************/
 /* adjust the bounds to fit in the bitmap */
 /* return false if there is nothing to draw else return true */
 int check_bounds(xrdpBitmap *b, int *x, int *y, int *cx, int *cy)
@@ -156,7 +152,6 @@ int check_bounds(xrdpBitmap *b, int *x, int *y, int *cx, int *cy)
 	return 1;
 }
 
-/*****************************************************************************/
 /* add a ch at index position in text, index starts at 0 */
 /* if index = -1 add it to the end */
 int add_char_at(char *text, int text_size, wchar_t ch, int index)
@@ -190,7 +185,6 @@ int add_char_at(char *text, int text_size, wchar_t ch, int index)
 	return 0;
 }
 
-/*****************************************************************************/
 /* remove a ch at index position in text, index starts at 0 */
 /* if index = -1 remove it from the end */
 int remove_char_at(char *text, int text_size, int index)
@@ -228,7 +222,6 @@ int remove_char_at(char *text, int text_size, int index)
 	return 0;
 }
 
-/*****************************************************************************/
 int set_string(char **in_str, const char *in)
 {
 	if (in_str == 0)
@@ -241,7 +234,6 @@ int set_string(char **in_str, const char *in)
 	return 0;
 }
 
-/*****************************************************************************/
 int wchar_repeat(wchar_t *dest, int dest_size_in_wchars, wchar_t ch, int repeat)
 {
 	int index;

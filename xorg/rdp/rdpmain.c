@@ -115,7 +115,6 @@ static miPointerScreenFuncRec g_rdpPointerCursorFuncs =
 	rdpPointerNewEventScreen
 };
 
-/******************************************************************************/
 /* returns error, zero is good */
 static int set_bpp(int bpp)
 {
@@ -172,7 +171,6 @@ static int set_bpp(int bpp)
 	return rv;
 }
 
-/******************************************************************************/
 static void rdpWakeupHandler(ScreenPtr pScreen, unsigned long result, pointer pReadmask)
 {
 	g_pScreen->WakeupHandler = g_rdpScreen.WakeupHandler;
@@ -180,19 +178,16 @@ static void rdpWakeupHandler(ScreenPtr pScreen, unsigned long result, pointer pR
 	g_pScreen->WakeupHandler = rdpWakeupHandler;
 }
 
-/******************************************************************************/
 static void rdpBlockHandler1(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
 {
 }
 
-/******************************************************************************/
 static void rdpWakeupHandler1(pointer blockData, int result, pointer pReadmask)
 {
 	rdpup_check();
 }
 
 #if 0
-/******************************************************************************/
 static Bool
 rdpDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScreen)
 {
@@ -200,7 +195,6 @@ rdpDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScreen)
 	return 1;
 }
 
-/******************************************************************************/
 static void
 rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
 {
@@ -209,7 +203,6 @@ rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
 #endif
 
 #if 0
-/******************************************************************************/
 Bool
 rdpCreateColormap(ColormapPtr pCmap)
 {
@@ -217,7 +210,6 @@ rdpCreateColormap(ColormapPtr pCmap)
 	return 1;
 }
 
-/******************************************************************************/
 static void
 rdpDestroyColormap(ColormapPtr pColormap)
 {
@@ -225,7 +217,6 @@ rdpDestroyColormap(ColormapPtr pColormap)
 }
 #endif
 
-/******************************************************************************/
 /* returns boolean, true if everything is ok */
 static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 {
@@ -560,7 +551,6 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	return ret;
 }
 
-/******************************************************************************/
 /* this is the first function called, it can be called many times
    returns the number or parameters processed
    if it dosen't apply to the rdp part, return 0 */
@@ -622,32 +612,27 @@ int ddxProcessArgument(int argc, char **argv, int i)
 	return 0;
 }
 
-/******************************************************************************/
 void OsVendorInit(void)
 {
 }
 
-/******************************************************************************/
 /* ddxInitGlobals - called by |InitGlobals| from os/util.c */
 void ddxInitGlobals(void)
 {
 }
 
-/******************************************************************************/
 int XkbDDXSwitchScreen(DeviceIntPtr dev, KeyCode key, XkbAction *act)
 {
 	ErrorF("XkbDDXSwitchScreen:\n");
 	return 1;
 }
 
-/******************************************************************************/
 int XkbDDXPrivate(DeviceIntPtr dev, KeyCode key, XkbAction *act)
 {
 	ErrorF("XkbDDXPrivate:\n");
 	return 0;
 }
 
-/******************************************************************************/
 int XkbDDXTerminateServer(DeviceIntPtr dev, KeyCode key, XkbAction *act)
 {
 	ErrorF("XkbDDXTerminateServer:\n");
@@ -672,7 +657,6 @@ static void rdpExtensionInit(void)
 	}
 }
 
-/******************************************************************************/
 /* InitOutput is called every time the server resets.  It should call
    AddScreen for each screen (but we only ever have one), and in turn this
    will call rdpScreenInit. */
@@ -712,7 +696,6 @@ void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
 	ErrorF("InitOutput: out\n");
 }
 
-/******************************************************************************/
 void InitInput(int argc, char **argv)
 {
 	int rc;
@@ -730,7 +713,6 @@ void InitInput(int argc, char **argv)
 
 }
 
-/******************************************************************************/
 void ddxGiveUp(enum ExitCode error)
 {
 	char unixSocketName[128];
@@ -766,37 +748,31 @@ void ddxGiveUp(enum ExitCode error)
 	}
 }
 
-/******************************************************************************/
 Bool LegalModifier(unsigned int key, DeviceIntPtr pDev)
 {
 	return 1; /* true */
 }
 
-/******************************************************************************/
 void ProcessInputEvents(void)
 {
 	mieqProcessInputEvents();
 }
 
-/******************************************************************************/
 /* needed for some reason? todo
    needs to be rfb */
 void rfbRootPropertyChange(PropertyPtr pProp)
 {
 }
 
-/******************************************************************************/
 void AbortDDX(enum ExitCode error)
 {
 	ddxGiveUp(error);
 }
 
-/******************************************************************************/
 void OsVendorFatalError(const char *f, va_list args)
 {
 }
 
-/******************************************************************************/
 /* print the command list parameters and exit the program */
 void ddxUseMsg(void)
 {
@@ -809,24 +785,20 @@ void ddxUseMsg(void)
 	exit(1);
 }
 
-/******************************************************************************/
 void OsVendorPreInit(void)
 {
 }
 
-/******************************************************************************/
 void CloseInput(void)
 {
 	ErrorF("CloseInput\n");
 }
 
-/******************************************************************************/
 void DDXRingBell(int volume, int pitch, int duration)
 {
 	ErrorF("DDXRingBell\n");
 }
 
-/******************************************************************************/
 void DeleteInputDeviceRequest(DeviceIntPtr dev)
 {
 	ErrorF("DeleteInputDeviceRequest\n");

@@ -45,7 +45,6 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
 void rdpPolyArcOrg(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
 	rdpGCPtr priv;
@@ -56,7 +55,6 @@ void rdpPolyArcOrg(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	GC_OP_EPILOGUE(pGC);
 }
 
-/******************************************************************************/
 void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
 	RegionRec clip_reg;

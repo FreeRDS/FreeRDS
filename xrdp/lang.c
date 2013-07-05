@@ -63,7 +63,6 @@ static struct codepair g_map[] =
 	{ 133, 0 }, { 134, 0 }, { 135, 0 } /* 125 - 127 */
 };
 
-/*****************************************************************************/
 xrdpKeyInfo* get_key_info_from_scan_code(int device_flags, int scan_code, int *keys,
 		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap *keymap)
 {
@@ -116,7 +115,6 @@ xrdpKeyInfo* get_key_info_from_scan_code(int device_flags, int scan_code, int *k
 	return rv;
 }
 
-/*****************************************************************************/
 int get_keysym_from_scan_code(int device_flags, int scan_code, int *keys,
 		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap *keymap)
 {
@@ -134,7 +132,6 @@ int get_keysym_from_scan_code(int device_flags, int scan_code, int *keys,
 	return ki->sym;
 }
 
-/*****************************************************************************/
 wchar_t get_char_from_scan_code(int device_flags, int scan_code, int *keys,
 		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap *keymap)
 {
@@ -152,7 +149,6 @@ wchar_t get_char_from_scan_code(int device_flags, int scan_code, int *keys,
 	return (wchar_t)(ki->chr);
 }
 
-/*****************************************************************************/
 static int km_read_section(int fd, const char *section_name, xrdpKeyInfo *keymap)
 {
 	xrdpList *names;
@@ -206,7 +202,6 @@ static int km_read_section(int fd, const char *section_name, xrdpKeyInfo *keymap
 	return 0;
 }
 
-/*****************************************************************************/
 int get_keymaps(int keylayout, xrdpKeymap* keymap)
 {
 	int fd;

@@ -43,7 +43,6 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
 void rdpSetSpansOrg(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 		DDXPointPtr ppt, int *pwidth, int nspans, int fSorted)
 {
@@ -55,7 +54,6 @@ void rdpSetSpansOrg(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	GC_OP_EPILOGUE(pGC);
 }
 
-/******************************************************************************/
 void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 		DDXPointPtr ppt, int *pwidth, int nspans, int fSorted)
 {

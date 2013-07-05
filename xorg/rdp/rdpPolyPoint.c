@@ -45,9 +45,7 @@ extern GCOps g_rdpGCOps; /* from rdpdraw.c */
 
 extern int g_con_number; /* in rdpup.c */
 
-/******************************************************************************/
-void rdpPolyPointOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
-		int npt, DDXPointPtr in_pts)
+void rdpPolyPointOrg(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointPtr in_pts)
 {
 	rdpGCPtr priv;
 	GCFuncs *oldFuncs;
@@ -57,9 +55,7 @@ void rdpPolyPointOrg(DrawablePtr pDrawable, GCPtr pGC, int mode,
 	GC_OP_EPILOGUE(pGC);
 }
 
-/******************************************************************************/
-void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
-		int npt, DDXPointPtr in_pts)
+void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointPtr in_pts)
 {
 	RegionRec clip_reg;
 	RegionRec reg1;
@@ -154,7 +150,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
 
 			if (g_do_dirty_os)
 			{
-				LLOGLN(10, ("rdpPolyPoint: gettig dirty"));
+				LLOGLN(10, ("rdpPolyPoint: getting dirty"));
 				pDstPriv->is_dirty = 1;
 				pDirtyPriv = pDstPriv;
 				dirty_type = RDI_IMGLL;
@@ -180,7 +176,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
 
 				if (g_do_dirty_ons)
 				{
-					LLOGLN(0, ("rdpPolyPoint: gettig dirty"));
+					LLOGLN(0, ("rdpPolyPoint: getting dirty"));
 					g_screenPriv.is_dirty = 1;
 					pDirtyPriv = &g_screenPriv;
 					dirty_type = RDI_IMGLL;
@@ -221,8 +217,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
 					RegionUninit(&reg2);
 				}
 
-				draw_item_add_fill_region(pDirtyPriv, &reg1, pGC->fgPixel,
-						pGC->alu);
+				draw_item_add_fill_region(pDirtyPriv, &reg1, pGC->fgPixel, pGC->alu);
 				RegionUninit(&reg1);
 			}
 			else if (got_id)
@@ -263,8 +258,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
 				}
 
 				RegionIntersect(&reg1, &reg1, &clip_reg);
-				draw_item_add_fill_region(pDirtyPriv, &reg1, pGC->fgPixel,
-						pGC->alu);
+				draw_item_add_fill_region(pDirtyPriv, &reg1, pGC->fgPixel, pGC->alu);
 				RegionUninit(&reg1);
 			}
 			else if (got_id)

@@ -1862,8 +1862,7 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 				for (index = 0; index < count; index++)
 				{
 					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_FILL %d %d %d %d", box.x1, box.y1,
-							box.x2, box.y2));
+					LLOGLN(10, ("  RDI_FILL %d %d %d %d", box.x1, box.y1, box.x2, box.y2));
 					rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 
@@ -1989,8 +1988,7 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 				for (index = 0; index < count; index++)
 				{
 					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_FILL %d %d %d %d", box.x1, box.y1,
-							box.x2, box.y2));
+					LLOGLN(10, ("  RDI_FILL %d %d %d %d", box.x1, box.y1, box.x2, box.y2));
 					rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 
@@ -2005,10 +2003,8 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 				for (index = 0; index < count; index++)
 				{
 					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_IMGLL %d %d %d %d", box.x1, box.y1,
-							box.x2, box.y2));
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-							box.y2 - box.y1);
+					LLOGLN(10, ("  RDI_IMGLL %d %d %d %d", box.x1, box.y1, box.x2, box.y2));
+					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 
 				rdpup_set_opcode(GXcopy);

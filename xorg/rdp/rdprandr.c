@@ -38,7 +38,6 @@ extern WindowPtr g_invalidate_window; /* in rdpmain.c */
 
 static XID g_wid = 0;
 
-/******************************************************************************/
 Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 {
 	int mmwidth;
@@ -54,7 +53,6 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
 		RRScreenSizePtr pSize)
 {
@@ -62,7 +60,6 @@ Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation *pRotations)
 {
 	int width;
@@ -77,7 +74,6 @@ Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation *pRotations)
 	return TRUE;
 }
 
-/******************************************************************************/
 /* for lack of a better way, a window is created that covers the area and
    when its deleted, it's invalidated */
 static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
@@ -117,7 +113,6 @@ static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
 	return 0;
 }
 
-/******************************************************************************/
 Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 		CARD32 mmWidth, CARD32 mmHeight)
 {
@@ -178,7 +173,6 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		int x, int y, Rotation rotation, int numOutputs,
 		RROutputPtr *outputs)
@@ -187,21 +181,18 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
 	ErrorF("rdpRRCrtcSetGamma:\n");
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
 	ErrorF("rdpRRCrtcGetGamma:\n");
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property,
 		RRPropertyValuePtr value)
 {
@@ -209,7 +200,6 @@ Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output,
 		RRModePtr mode)
 {
@@ -217,20 +207,17 @@ Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output,
 	return TRUE;
 }
 
-/******************************************************************************/
 void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode)
 {
 	ErrorF("rdpRRModeDestroy:\n");
 }
 
-/******************************************************************************/
 Bool rdpRROutputGetProperty(ScreenPtr   pScreen, RROutputPtr output, Atom property)
 {
 	ErrorF("rdpRROutputGetProperty:\n");
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 		BoxPtr trackingArea, INT16 *border)
 {
@@ -263,7 +250,6 @@ Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 	return TRUE;
 }
 
-/******************************************************************************/
 Bool rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 		BoxPtr trackingArea, INT16 *border)
 {
