@@ -38,9 +38,9 @@ int lib_send(xrdpModule* mod, unsigned char *data, int len);
 
 static int lib_send_capabilities(xrdpModule* mod)
 {
+	wStream* s;
 	size_t index;
 	size_t length;
-	char* buffer;
 
 	avro_schema_t record_schema;
 	avro_schema_from_json_literal(XRDP_CAPABILITIES_SCHEMA, &record_schema);
@@ -87,9 +87,10 @@ static int lib_send_capabilities(xrdpModule* mod)
 
 	avro_value_sizeof(&val, &length);
 
-	buffer = (char*) malloc(length + 6);
+	s = Stream_New(NULL, length + 6);
+	Stream_Seek(s, 6);
 
-	avro_writer_t writer = avro_writer_memory(&buffer[6], (int64_t) length);
+	avro_writer_t writer = avro_writer_memory((char*) Stream_Pointer(s), (int64_t) length);
 	avro_value_write(writer, &val);
 
 	avro_value_iface_decref(record_class);
@@ -97,13 +98,19 @@ static int lib_send_capabilities(xrdpModule* mod)
 
         avro_writer_flush(writer);
 
-        *((UINT32*) &buffer[0]) = (UINT32) length + 6;
-        *((UINT16*) &buffer[4]) = 104;
+        Stream_SetPosition(s, 0);
+        Stream_Write_UINT16(s, XRDP_CLIENT_CAPABILITIES);
+        Stream_Write_UINT32(s, length + 6);
 
-	lib_send(mod, (BYTE*) buffer, (int) length + 6);
+        Stream_SetPosition(s, length + 6);
+        Stream_SealLength(s);
+        Stream_SetPosition(s, 0);
+
+	lib_send(mod, Stream_Buffer(s), Stream_Length(s));
 
         avro_writer_free(writer);
-	free(buffer);
+
+        Stream_Free(s, TRUE);
 
 	return 0;
 }
@@ -206,10 +213,10 @@ int lib_mod_start(xrdpModule* mod, int w, int h, int bpp)
 
 int lib_mod_connect(xrdpModule* mod)
 {
-	int error;
-	int len;
 	int i;
 	int index;
+	int status;
+	int length;
 	int use_uds;
 	wStream* s;
 	char con_port[256];
@@ -227,6 +234,7 @@ int lib_mod_connect(xrdpModule* mod)
 	server_set_fgcolor(mod, 0);
 	server_opaque_rect(mod, &opaqueRect);
 	server_end_update(mod);
+
 	server_msg(mod, "started connecting", 0);
 
 	/* only support 8, 15, 16, and 24 bpp connections from rdp client */
@@ -274,18 +282,18 @@ int lib_mod_connect(xrdpModule* mod)
 
 		if (use_uds)
 		{
-			error = g_tcp_local_connect(mod->sck, con_port);
+			status = g_tcp_local_connect(mod->sck, con_port);
 		}
 		else
 		{
-			error = g_tcp_connect(mod->sck, mod->ip, con_port);
+			status = g_tcp_connect(mod->sck, mod->ip, con_port);
 		}
 
-		if (error == -1)
+		if (status == -1)
 		{
 			if (g_tcp_last_error_would_block(mod->sck))
 			{
-				error = 0;
+				status = 0;
 				index = 0;
 
 				while (!g_tcp_can_send(mod->sck, 100))
@@ -295,7 +303,7 @@ int lib_mod_connect(xrdpModule* mod)
 					if ((index >= 30) || server_is_term(mod))
 					{
 						server_msg(mod, "connect timeout", 0);
-						error = 1;
+						status = 1;
 						break;
 					}
 				}
@@ -306,7 +314,7 @@ int lib_mod_connect(xrdpModule* mod)
 			}
 		}
 
-		if (error == 0)
+		if (status == 0)
 		{
 			break;
 		}
@@ -326,34 +334,30 @@ int lib_mod_connect(xrdpModule* mod)
 
 	lib_send_capabilities(mod);
 
-	if (error == 0)
+	if (status == 0)
 	{
-		/* send invalidate message */
-		Stream_SetPosition(s, 0);
-		Stream_Seek(s, 4);
+		RECTANGLE_16 rect;
+		XRDP_MSG_REFRESH_RECT msg;
 
-		Stream_Write_UINT16(s, 103);
-		Stream_Write_UINT32(s, 200);
-		/* x and y */
-		i = 0;
-		Stream_Write_UINT32(s, i);
-		/* width and height */
-		i = ((mod->width & 0xFFFF) << 16) | mod->height;
-		Stream_Write_UINT32(s, i);
-		Stream_Write_UINT32(s, 0);
-		Stream_Write_UINT32(s, 0);
+		msg.numberOfAreas = 1;
+		msg.areasToRefresh = &rect;
 
-		len = (int) Stream_GetPosition(s);
-		Stream_SetPosition(s, 0);
-		Stream_Write_UINT32(s, len);
+		rect.left = 0;
+		rect.top = 0;
+		rect.right = mod->settings->DesktopWidth - 1;
+		rect.bottom = mod->settings->DesktopHeight - 1;
 
-		Stream_SetPosition(s, len);
-		lib_send(mod, s->buffer, len);
+		length = xrdp_write_refresh_rect(NULL, &msg);
+
+		s = Stream_New(NULL, length);
+		xrdp_write_refresh_rect(s, &msg);
+
+		lib_send(mod, Stream_Buffer(s), length);
 	}
 
 	Stream_Free(s, TRUE);
 
-	if (error != 0)
+	if (status != 0)
 	{
 		server_msg(mod, "some problem", 0);
 		LIB_DEBUG(mod, "out lib_mod_connect error");
@@ -369,18 +373,19 @@ int lib_mod_connect(xrdpModule* mod)
 	return 0;
 }
 
-int lib_mod_event(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4)
+int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long param3, long param4)
 {
 	wStream* s;
-	int len;
+	int length;
 	int key;
-	int rv;
+	int status;
+	XRDP_MSG_EVENT msg;
 
 	LIB_DEBUG(mod, "in lib_mod_event");
 
 	s = Stream_New(NULL, 8192);
 
-	if ((msg >= 15) && (msg <= 16)) /* key events */
+	if ((subtype >= 15) && (subtype <= 16)) /* key events */
 	{
 		key = param2;
 
@@ -396,56 +401,47 @@ int lib_mod_event(xrdpModule* mod, int msg, long param1, long param2, long param
 					 msg param1 param2 param3 param4
 					 15  0      65507  29     0
 					 16  0      65507  29     49152 */
+
+					msg.subType = 16; /* key up */
+					msg.param1 = 0;
+					msg.param2 = 65507; /* left control */
+					msg.param3 = 29; /* RDP scan code */
+					msg.param4 = 0xc000; /* flags */
+
 					Stream_SetPosition(s, 0);
-					Stream_Seek(s, 4);
 
-					Stream_Write_UINT16(s, 103);
-					Stream_Write_UINT32(s, 16); /* key up */
-					Stream_Write_UINT32(s, 0);
-					Stream_Write_UINT32(s, 65507); /* left control */
-					Stream_Write_UINT32(s, 29); /* RDP scan code */
-					Stream_Write_UINT32(s, 0xc000); /* flags */
+					length = xrdp_write_event(NULL, &msg);
+					xrdp_write_event(s, &msg);
 
-					len = (int) (s->pointer - s->buffer);
-					s->pointer = s->buffer;
-
-					Stream_Write_UINT32(s, len);
-
-					s->pointer = s->buffer + len;
-					lib_send(mod, s->buffer, len);
+					status = lib_send(mod, Stream_Buffer(s), length);
 				}
 			}
 
 			if (key == 65507) /* left control */
 			{
-				mod->shift_state = msg == 15;
+				mod->shift_state = subtype == 15;
 			}
 		}
 	}
 
-	Stream_SetPosition(s, 0);
-	Stream_Seek(s, 4);
+	msg.subType = subtype;
+	msg.param1 = param1;
+	msg.param2 = param2;
+	msg.param3 = param3;
+	msg.param4 = param4;
 
-	Stream_Write_UINT16(s, 103);
-	Stream_Write_UINT32(s, msg);
-	Stream_Write_UINT32(s, param1);
-	Stream_Write_UINT32(s, param2);
-	Stream_Write_UINT32(s, param3);
-	Stream_Write_UINT32(s, param4);
-
-	len = (int) Stream_GetPosition(s);
 	Stream_SetPosition(s, 0);
 
-	Stream_Write_UINT32(s, len);
+	length = xrdp_write_event(NULL, &msg);
+	xrdp_write_event(s, &msg);
 
-	Stream_SetPosition(s, len);
-	rv = lib_send(mod, s->buffer, len);
+	status = lib_send(mod, Stream_Buffer(s), length);
 
 	Stream_Free(s, TRUE);
 
 	LIB_DEBUG(mod, "out lib_mod_event");
 
-	return rv;
+	return status;
 }
 
 static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)

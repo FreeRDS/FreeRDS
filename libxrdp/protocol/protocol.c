@@ -39,6 +39,82 @@ int xrdp_write_header(wStream* s, UINT32 type, UINT32 length)
 	return 0;
 }
 
+/* Client Messages */
+
+int xrdp_read_event(wStream* s, XRDP_MSG_EVENT* msg)
+{
+	Stream_Read_UINT32(s, msg->subType);
+	Stream_Read_UINT32(s, msg->param1);
+	Stream_Read_UINT32(s, msg->param2);
+	Stream_Read_UINT32(s, msg->param3);
+	Stream_Read_UINT32(s, msg->param4);
+
+	return 0;
+}
+
+int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg)
+{
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 20;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_header(s, XRDP_CLIENT_EVENT, msg->length);
+
+	Stream_Write_UINT32(s, msg->subType);
+	Stream_Write_UINT32(s, msg->param1);
+	Stream_Write_UINT32(s, msg->param2);
+	Stream_Write_UINT32(s, msg->param3);
+	Stream_Write_UINT32(s, msg->param4);
+
+	return 0;
+}
+
+int xrdp_read_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg)
+{
+	int index;
+
+	Stream_Read_UINT16(s, msg->numberOfAreas);
+
+	msg->areasToRefresh = (RECTANGLE_16*) Stream_Pointer(s);
+
+	for (index = 0; index < msg->numberOfAreas; index++)
+	{
+		Stream_Read_UINT16(s, msg->areasToRefresh[index].left);
+		Stream_Read_UINT16(s, msg->areasToRefresh[index].top);
+		Stream_Read_UINT16(s, msg->areasToRefresh[index].right);
+		Stream_Read_UINT16(s, msg->areasToRefresh[index].bottom);
+	}
+
+	return 0;
+}
+
+int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg)
+{
+	int index;
+
+	msg->length = XRDP_ORDER_HEADER_LENGTH + 2 + (msg->numberOfAreas * 8);
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_header(s, XRDP_CLIENT_REFRESH_RECT, msg->length);
+
+	Stream_Write_UINT16(s, msg->numberOfAreas);
+
+	for (index = 0; index < msg->numberOfAreas; index++)
+	{
+		Stream_Write_UINT16(s, msg->areasToRefresh[index].left);
+		Stream_Write_UINT16(s, msg->areasToRefresh[index].top);
+		Stream_Write_UINT16(s, msg->areasToRefresh[index].right);
+		Stream_Write_UINT16(s, msg->areasToRefresh[index].bottom);
+	}
+
+	return 0;
+}
+
+/* Server Messages */
+
 int xrdp_read_begin_update(wStream* s, XRDP_MSG_BEGIN_UPDATE* msg)
 {
 	return 0;

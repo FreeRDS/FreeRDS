@@ -28,6 +28,16 @@
 
 /* Common Data Types */
 
+#define DEFINE_MSG_COMMON() \
+	UINT32 type; \
+	UINT32 length
+
+struct _XRDP_MSG_COMMON
+{
+	DEFINE_MSG_COMMON();
+};
+typedef struct _XRDP_MSG_COMMON XRDP_MSG_COMMON;
+
 struct _XRDP_FRAMEBUFFER
 {
 	int fbWidth;
@@ -58,7 +68,40 @@ typedef struct _XRDP_FRAMEBUFFER XRDP_FRAMEBUFFER;
 		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
 		]}"
 
-/* Message Types */
+/* Client Message Types */
+
+#define XRDP_CLIENT_EVENT			101
+#define XRDP_CLIENT_CAPABILITIES		102
+#define XRDP_CLIENT_REFRESH_RECT		103
+
+struct _XRDP_MSG_EVENT
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 subType;
+	UINT32 param1;
+	UINT32 param2;
+	UINT32 param3;
+	UINT32 param4;
+};
+typedef struct _XRDP_MSG_EVENT XRDP_MSG_EVENT;
+
+struct _XRDP_MSG_REFRESH_RECT
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 numberOfAreas;
+	RECTANGLE_16* areasToRefresh;
+};
+typedef struct _XRDP_MSG_REFRESH_RECT XRDP_MSG_REFRESH_RECT;
+
+int xrdp_read_event(wStream* s, XRDP_MSG_EVENT* msg);
+int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg);
+
+int xrdp_read_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
+int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
+
+/* Server Message Types */
 
 #define XRDP_SERVER_BEGIN_UPDATE		1
 #define XRDP_SERVER_END_UPDATE			2
@@ -82,16 +125,6 @@ typedef struct _XRDP_FRAMEBUFFER XRDP_FRAMEBUFFER;
 #define XRDP_SERVER_SET_POINTER			51
 #define XRDP_SERVER_SET_POINTER_EX		52
 #define XRDP_SERVER_SHARED_FRAMEBUFFER		101
-
-#define DEFINE_MSG_COMMON() \
-	UINT32 type; \
-	UINT32 length
-
-struct _XRDP_MSG_COMMON
-{
-	DEFINE_MSG_COMMON();
-};
-typedef struct _XRDP_MSG_COMMON XRDP_MSG_COMMON;
 
 struct _XRDP_MSG_BEGIN_UPDATE
 {

@@ -664,40 +664,44 @@ static int rdpup_recv(BYTE* data, int len)
 	return 0;
 }
 
-static int rdpup_recv_msg(wStream* s)
+static int rdpup_recv_msg(wStream* s, int* type)
 {
-	int len;
-	int rv;
+	int status;
+	int length;
 
-	rv = 1;
+	status = 1;
+	length = 0;
 
 	if (s != 0)
 	{
-		Stream_EnsureCapacity(s, 4);
+		Stream_EnsureCapacity(s, 6);
 		Stream_SetPosition(s, 0);
 
-		rv = rdpup_recv(s->buffer, 4);
+		status = rdpup_recv(s->buffer, 6);
 
-		if (rv == 0)
+		if (status == 0)
 		{
-			Stream_Read_UINT32(s, len);
+			Stream_Read_UINT16(s, *type);
+			Stream_Read_UINT32(s, length);
 
-			if (len > 3)
+			if (length >= 6)
 			{
-				Stream_EnsureCapacity(s, len);
-				Stream_SetPosition(s, 0);
-
-				rv = rdpup_recv(s->buffer, len - 4);
+				Stream_EnsureCapacity(s, length);
+				status = rdpup_recv(Stream_Pointer(s), length - 6);
 			}
 		}
 	}
 
-	if (rv != 0)
+	if (status != 0)
 	{
 		rdpLog("error in rdpup_recv_msg\n");
 	}
 
-	return rv;
+	Stream_SetPosition(s, length);
+	Stream_SealLength(s);
+	Stream_SetPosition(s, 6);
+
+	return status;
 }
 
 static int l_bound_by(int val, int low, int high)
@@ -790,7 +794,7 @@ static int process_screen_parameters(int DesktopWidth, int DesktopHeight, int Co
 	return 0;
 }
 
-static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
+static int rdpup_process_capabilities_msg(wStream* s)
 {
 	size_t index;
 	int ColorDepth;
@@ -802,7 +806,7 @@ static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 
 	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
 
-	avro_reader_t reader = avro_reader_memory((char*) buffer, length);
+	avro_reader_t reader = avro_reader_memory((char*) Stream_Pointer(s), Stream_GetRemainingLength(s));
 
 	avro_value_t val;
 	avro_generic_value_new(record_class, &val);
@@ -887,45 +891,52 @@ static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 	return 0;
 }
 
-static int rdpup_process_msg(wStream* s)
+int rdpup_process_refresh_rect_msg(wStream* s, XRDP_MSG_REFRESH_RECT* msg)
 {
-	int msg_type;
-	int msg;
-	int param1;
-	int param2;
-	int param3;
-	int param4;
-	int bytes;
+	int index;
 
-	Stream_Read_UINT16(s, msg_type);
+	Stream_Read_UINT16(s, msg->numberOfAreas);
 
-	LLOGLN(10, ("rdpup_process_msg - msg %d", msg_type));
+	msg->areasToRefresh = (RECTANGLE_16*) Stream_Pointer(s);
 
-	if (msg_type == 103)
+	for (index = 0; index < msg->numberOfAreas; index++)
 	{
-		Stream_Read_UINT32(s, msg);
-		Stream_Read_UINT32(s, param1);
-		Stream_Read_UINT32(s, param2);
-		Stream_Read_UINT32(s, param3);
-		Stream_Read_UINT32(s, param4);
+		Stream_Read_UINT16(s, msg->areasToRefresh[index].left);
+		Stream_Read_UINT16(s, msg->areasToRefresh[index].top);
+		Stream_Read_UINT16(s, msg->areasToRefresh[index].right);
+		Stream_Read_UINT16(s, msg->areasToRefresh[index].bottom);
+	}
 
-		LLOGLN(10, ("rdpup_process_msg - msg %d param1 %d param2 %d param3 %d "
-				"param4 %d", msg, param1, param2, param3, param4));
+	return 0;
+}
 
-		switch (msg)
+static int rdpup_process_msg(wStream* s, int type)
+{
+	LLOGLN(10, ("rdpup_process_msg - msg %d", type));
+
+	if (type == XRDP_CLIENT_EVENT)
+	{
+		XRDP_MSG_EVENT msg;
+
+		xrdp_read_event(s, &msg);
+
+		LLOGLN(10, ("rdpup_process_msg - subtype %d param1 %d param2 %d param3 %d "
+				"param4 %d", msg.subType, msg.param1, msg.param2, msg.param3, msg.param4));
+
+		switch (msg.subType)
 		{
 			case 15: /* key down */
 			case 16: /* key up */
-				KbdAddEvent(msg == 15, param1, param2, param3, param4);
+				KbdAddEvent(msg.subType == 15, msg.param1, msg.param2, msg.param3, msg.param4);
 				break;
 			case 17: /* from RDP_INPUT_SYNCHRONIZE */
-				KbdSync(param1);
+				KbdSync(msg.param1);
 				break;
 			case 100:
 				/* without the minus 2, strange things happen when dragging
                    	   	   past the width or height */
-				g_cursor_x = l_bound_by(param1, 0, g_rdpScreen.width - 2);
-				g_cursor_y = l_bound_by(param2, 0, g_rdpScreen.height - 2);
+				g_cursor_x = l_bound_by(msg.param1, 0, g_rdpScreen.width - 2);
+				g_cursor_y = l_bound_by(msg.param2, 0, g_rdpScreen.height - 2);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 			case 101:
@@ -968,22 +979,33 @@ static int rdpup_process_msg(wStream* s)
 				g_button_mask = g_button_mask | 16;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
-			case 200:
-				rdpup_begin_update();
-				rdpup_send_area(0, (param1 >> 16) & 0xFFFF, param1 & 0xFFFF,
-						(param2 >> 16) & 0xFFFF, param2 & 0xFFFF);
-				rdpup_end_update();
-				break;
 		}
 	}
-	else if (msg_type == 104)
+	else if (type == XRDP_CLIENT_CAPABILITIES)
 	{
-		bytes = s->capacity - 6;
-		rdpup_process_capabilities_msg(s->pointer, bytes);
+		rdpup_process_capabilities_msg(s);
+	}
+	else if (type == XRDP_CLIENT_REFRESH_RECT)
+	{
+		int index;
+		XRDP_MSG_REFRESH_RECT msg;
+
+		xrdp_read_refresh_rect(s, &msg);
+
+		rdpup_begin_update();
+
+		for (index = 0; index < msg.numberOfAreas; index++)
+		{
+			rdpup_send_area(NULL, msg.areasToRefresh[index].left, msg.areasToRefresh[index].top,
+					msg.areasToRefresh[index].right - msg.areasToRefresh[index].left + 1,
+					msg.areasToRefresh[index].bottom - msg.areasToRefresh[index].top + 1);
+		}
+
+		rdpup_end_update();
 	}
 	else
 	{
-		rdpLog("unknown message type in rdpup_process_msg %d\n", msg_type);
+		rdpLog("unknown message type in rdpup_process_msg %d\n", type);
 	}
 
 	return 0;
@@ -1138,9 +1160,11 @@ int rdpup_check(void)
 
 	if (sel & 2)
 	{
-		if (rdpup_recv_msg(g_in_s) == 0)
+		int type = 0;
+
+		if (rdpup_recv_msg(g_in_s, &type) == 0)
 		{
-			rdpup_process_msg(g_in_s);
+			rdpup_process_msg(g_in_s, type);
 		}
 	}
 
