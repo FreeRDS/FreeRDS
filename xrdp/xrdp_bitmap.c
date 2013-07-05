@@ -244,11 +244,11 @@ void xrdp_bitmap_delete(xrdpBitmap *self)
 
 	if (!self->do_not_free_data)
 	{
-		g_free(self->data);
+		free(self->data);
 	}
 
-	g_free(self->caption1);
-	g_free(self);
+	free(self->caption1);
+	free(self);
 }
 
 xrdpBitmap* xrdp_bitmap_get_child_by_id(xrdpBitmap *self, int id)
@@ -364,7 +364,7 @@ int xrdp_bitmap_resize(xrdpBitmap *self, int width, int height)
 			break;
 	}
 
-	g_free(self->data);
+	free(self->data);
 	self->data = (char *) g_malloc(width * height * Bpp, 0);
 	self->line_size = width * Bpp;
 	return 0;

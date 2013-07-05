@@ -187,15 +187,6 @@ void* g_malloc(int size, int zero)
 	return rv;
 }
 
-/* free the memory pointed to by ptr, ptr can be zero */
-void g_free(void *ptr)
-{
-	if (ptr != 0)
-	{
-		free(ptr);
-	}
-}
-
 /* output text to stdout, try to use g_write / g_writeln instead to avoid
  linux / windows EOL problems */
 void g_printf(const char *format, ...)
@@ -1666,7 +1657,7 @@ int g_create_path(const char *path)
 		sp = strchr(pp, '/');
 	}
 
-	g_free(copypath);
+	free(copypath);
 	return status;
 }
 

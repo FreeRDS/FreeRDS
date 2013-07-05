@@ -84,7 +84,7 @@ void xrdp_mm_delete(xrdpMm *self)
 	self->sesman_trans_up = 0;
 	list_delete(self->login_names);
 	list_delete(self->login_values);
-	g_free(self);
+	free(self);
 }
 
 /*****************************************************************************/

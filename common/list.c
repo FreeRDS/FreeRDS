@@ -47,13 +47,13 @@ void list_delete(xrdpList *self)
 	{
 		for (i = 0; i < self->count; i++)
 		{
-			g_free((void *) self->items[i]);
+			free((void *) self->items[i]);
 			self->items[i] = 0;
 		}
 	}
 
-	g_free(self->items);
-	g_free(self);
+	free(self->items);
+	free(self);
 }
 
 /*****************************************************************************/
@@ -68,7 +68,7 @@ void list_add_item(xrdpList *self, LONG_PTR item)
 		self->alloc_size += self->grow_by;
 		p = (LONG_PTR *) g_malloc(sizeof(LONG_PTR) * self->alloc_size, 1);
 		g_memcpy(p, self->items, sizeof(LONG_PTR) * i);
-		g_free(self->items);
+		free(self->items);
 		self->items = p;
 	}
 
@@ -96,12 +96,12 @@ void list_clear(xrdpList *self)
 	{
 		for (i = 0; i < self->count; i++)
 		{
-			g_free((void *) self->items[i]);
+			free((void *) self->items[i]);
 			self->items[i] = 0;
 		}
 	}
 
-	g_free(self->items);
+	free(self->items);
 	self->count = 0;
 	self->grow_by = 10;
 	self->alloc_size = 10;
@@ -133,7 +133,7 @@ void list_remove_item(xrdpList *self, int index)
 	{
 		if (self->auto_free)
 		{
-			g_free((void *) self->items[index]);
+			free((void *) self->items[index]);
 			self->items[index] = 0;
 		}
 
@@ -168,7 +168,7 @@ void list_insert_item(xrdpList *self, int index, LONG_PTR item)
 			self->alloc_size += self->grow_by;
 			p = (LONG_PTR *) g_malloc(sizeof(LONG_PTR) * self->alloc_size, 1);
 			g_memcpy(p, self->items, sizeof(LONG_PTR) * i);
-			g_free(self->items);
+			free(self->items);
 			self->items = p;
 		}
 

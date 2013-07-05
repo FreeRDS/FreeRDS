@@ -353,7 +353,7 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 
 	if (temp->item == 0)
 	{
-		g_free(temp);
+		free(temp);
 		log_message(LOG_LEVEL_ERROR, "cannot create new session "
 			"item - user %s", username);
 		return 0;
@@ -363,8 +363,8 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 
 	if (display == 0)
 	{
-		g_free(temp->item);
-		g_free(temp);
+		free(temp->item);
+		free(temp);
 		return 0;
 	}
 
@@ -719,7 +719,7 @@ int session_kill(int pid)
 			log_message(LOG_LEVEL_INFO,
 					"++ terminated session:  username %s, display :%d.0, session_pid %d, ip %s",
 					tmp->item->name, tmp->item->display, tmp->item->pid, tmp->item->client_ip);
-			g_free(tmp->item);
+			free(tmp->item);
 
 			if (prev == 0)
 			{
@@ -732,7 +732,7 @@ int session_kill(int pid)
 				prev->next = tmp->next;
 			}
 
-			g_free(tmp);
+			free(tmp);
 			g_session_count--;
 			/*THREAD-FIX release chain lock */
 			lock_chain_release();

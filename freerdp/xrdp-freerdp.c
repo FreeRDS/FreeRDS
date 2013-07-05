@@ -294,7 +294,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 				LLOGLN(0, ("Invalidate request - warning - update rectangle is disabled"));
 			}
 
-			g_free(rectangle);
+			free(rectangle);
 			break;
 		default:
 			LLOGLN(0, ("Unhandled message type in eventhandler %d", msg));
@@ -319,7 +319,7 @@ static int lxrdp_end(xrdpModule *mod)
 	{
 		for (i = 0; i < 4096; i++)
 		{
-			g_free(mod->bitmap_cache[j][i].data);
+			free(mod->bitmap_cache[j][i].data);
 		}
 	}
 
@@ -327,7 +327,7 @@ static int lxrdp_end(xrdpModule *mod)
 	{
 		if (mod->brush_cache[i].data != mod->brush_cache[i].b8x8)
 		{
-			g_free(mod->brush_cache[i].data);
+			free(mod->brush_cache[i].data);
 		}
 	}
 
@@ -535,10 +535,10 @@ static void xrdp_freerdp_bitmap_update(rdpContext* context, BITMAP_UPDATE *bitma
 
 		if (dst_data1 != dst_data)
 		{
-			g_free(dst_data1);
+			free(dst_data1);
 		}
 
-		g_free(dst_data);
+		free(dst_data);
 	}
 }
 
@@ -855,14 +855,14 @@ static void xrdp_freerdp_cache_bitmapV2(rdpContext* context, CACHE_BITMAP_V2_ORD
 	}
 
 	dst_data1 = convert_bitmap(server_bpp, client_bpp, dst_data, width, height, mod->colormap);
-	g_free(mod->bitmap_cache[id][idx].data);
+	free(mod->bitmap_cache[id][idx].data);
 	mod->bitmap_cache[id][idx].width = width;
 	mod->bitmap_cache[id][idx].height = height;
 	mod->bitmap_cache[id][idx].data = dst_data1;
 
 	if (dst_data != dst_data1)
 	{
-		g_free(dst_data);
+		free(dst_data);
 	}
 }
 
@@ -1470,7 +1470,7 @@ void lrail_MonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, M
 	}
 
 	server_monitored_desktop(mod, &rmdo, orderInfo->fieldFlags);
-	g_free(rmdo.window_ids);
+	free(rmdo.window_ids);
 }
 
 void lrail_NonMonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo)
@@ -1588,7 +1588,7 @@ int freerdp_client_module_exit(xrdpModule *mod)
 	if (!mod->instance)
 	{
 		LLOGLN(0, ("mod_exit - null pointer for inst:"));
-		g_free(mod);
+		free(mod);
 		return 0;
 	}
 
@@ -1604,7 +1604,7 @@ int freerdp_client_module_exit(xrdpModule *mod)
 	}
 
 	freerdp_free(mod->instance);
-	g_free(mod);
+	free(mod);
 
 	return 0;
 }

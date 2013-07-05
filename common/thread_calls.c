@@ -114,7 +114,7 @@ tc_mutex_delete(LONG_PTR mutex)
 
 	lmutex = (pthread_mutex_t *) mutex;
 	pthread_mutex_destroy(lmutex);
-	g_free(lmutex);
+	free(lmutex);
 #endif
 }
 
@@ -178,7 +178,7 @@ tc_sem_delete(LONG_PTR sem)
 
 	lsem = (sem_t *) sem;
 	sem_destroy(lsem);
-	g_free(lsem);
+	free(lsem);
 #endif
 }
 

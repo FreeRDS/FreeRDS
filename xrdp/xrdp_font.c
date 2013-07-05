@@ -149,10 +149,10 @@ void xrdp_font_delete(xrdpFont *self)
 
 	for (i = 0; i < NUM_FONTS; i++)
 	{
-		g_free(self->font_items[i].data);
+		free(self->font_items[i].data);
 	}
 
-	g_free(self);
+	free(self);
 }
 
 /* compare the two font items returns 1 if they match */

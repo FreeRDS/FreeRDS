@@ -872,7 +872,7 @@ int xup_module_exit(xrdpModule* mod)
 
 	g_delete_wait_obj_from_socket(mod->sck_obj);
 	g_tcp_close(mod->sck);
-	g_free(mod);
+	free(mod);
 
 	return 0;
 }

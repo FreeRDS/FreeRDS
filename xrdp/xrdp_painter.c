@@ -37,7 +37,7 @@ void xrdp_painter_delete(xrdpPainter *self)
 	if (!self)
 		return;
 
-	g_free(self);
+	free(self);
 }
 
 int wm_painter_set_target(xrdpPainter *self)
@@ -154,7 +154,7 @@ int xrdp_painter_text_width(xrdpPainter *self, char *text)
 		rv = rv + font_item->incby;
 	}
 
-	g_free(wstr);
+	free(wstr);
 	return rv;
 }
 
@@ -189,7 +189,7 @@ int xrdp_painter_text_height(xrdpPainter *self, char *text)
 		rv = MAX(rv, font_item->height);
 	}
 
-	g_free(wstr);
+	free(wstr);
 	return rv;
 }
 
@@ -426,8 +426,8 @@ int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, con
 	}
 
 	xrdp_region_delete(region);
-	g_free(data);
-	g_free(wstr);
+	free(data);
+	free(wstr);
 	return 0;
 }
 

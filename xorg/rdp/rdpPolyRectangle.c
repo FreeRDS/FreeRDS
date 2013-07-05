@@ -154,7 +154,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 	if (!post_process)
 	{
-		g_free(rect1);
+		free(rect1);
 		return;
 	}
 
@@ -307,8 +307,8 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	}
 
 	RegionUninit(&clip_reg);
-	g_free(regRects);
-	g_free(rect1);
+	free(regRects);
+	free(rect1);
 
 	if (reset_surface)
 	{

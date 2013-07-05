@@ -163,7 +163,7 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 	if (!post_process)
 	{
-		g_free(rects);
+		free(rects);
 		return;
 	}
 
@@ -235,7 +235,7 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	}
 
 	RegionUninit(&clip_reg);
-	g_free(rects);
+	free(rects);
 
 	if (reset_surface)
 	{

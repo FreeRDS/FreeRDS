@@ -447,12 +447,12 @@ int draw_item_remove(rdpPixmapRec *priv, struct rdp_draw_item *di)
 	{
 		if (di->u.line.segs != 0)
 		{
-			g_free(di->u.line.segs);
+			free(di->u.line.segs);
 		}
 	}
 
 	RegionDestroy(di->reg);
-	g_free(di);
+	free(di);
 	return 0;
 }
 

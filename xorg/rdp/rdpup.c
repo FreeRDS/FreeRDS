@@ -400,7 +400,7 @@ static int rdpup_disconnect(void)
 	}
 
 	g_max_os_bitmaps = 0;
-	g_free(g_os_bitmaps);
+	free(g_os_bitmaps);
 	g_os_bitmaps = 0;
 	g_use_rail = 0;
 	return 0;
@@ -868,7 +868,7 @@ static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 			if (g_rdpScreen.OffscreenCacheEntries > 0)
 			{
 				g_max_os_bitmaps = g_rdpScreen.OffscreenCacheEntries;
-				g_free(g_os_bitmaps);
+				free(g_os_bitmaps);
 				g_os_bitmaps = (struct rdpup_os_bitmap*)
 					       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
 			}

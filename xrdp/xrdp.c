@@ -507,7 +507,7 @@ int main(int argc, char **argv)
 		g_file_delete(pid_file);
 	}
 
-	g_free(startup_params);
+	free(startup_params);
 	g_deinit();
 	return 0;
 }

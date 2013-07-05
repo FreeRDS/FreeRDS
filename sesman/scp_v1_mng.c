@@ -87,7 +87,7 @@ void scp_v1_mng_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 				} else
 				{
 					e = scp_v1s_mng_list_sessions(c, s, scount, slist);
-					g_free(slist);
+					free(slist);
 				}
 
 				break;

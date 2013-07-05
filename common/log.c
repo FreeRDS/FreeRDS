@@ -199,13 +199,13 @@ enum logReturns internal_log_end(struct log_config *l_cfg)
 	/* freeing allocated memory */
 	if (0 != l_cfg->log_file)
 	{
-		g_free(l_cfg->log_file);
+		free(l_cfg->log_file);
 		l_cfg->log_file = 0;
 	}
 
 	if (0 != l_cfg->program_name)
 	{
-		g_free(l_cfg->program_name);
+		free(l_cfg->program_name);
 		l_cfg->program_name = 0;
 	}
 
@@ -335,7 +335,7 @@ enum logReturns internal_config_read_logging(int file, struct log_config *lc, xr
 				{
 					temp_buf = (char *) g_malloc(512, 0);
 					g_snprintf(temp_buf, 511, "%s/%s", XRDP_LOG_PATH, lc->log_file);
-					g_free(lc->log_file);
+					free(lc->log_file);
 					lc->log_file = temp_buf;
 				}
 			}
@@ -455,7 +455,7 @@ enum logReturns log_start_from_param(const struct log_config *iniParams)
 
 			if (staticLogConfig != NULL)
 			{
-				g_free(staticLogConfig);
+				free(staticLogConfig);
 				staticLogConfig = NULL;
 			}
 		}
@@ -493,7 +493,7 @@ enum logReturns log_start(const char *iniFile, const char *applicationName)
 
 			if (staticLogConfig != NULL)
 			{
-				g_free(staticLogConfig);
+				free(staticLogConfig);
 				staticLogConfig = NULL;
 			}
 		}
@@ -516,7 +516,7 @@ enum logReturns log_end(void)
 
 	if (staticLogConfig != NULL)
 	{
-		g_free(staticLogConfig);
+		free(staticLogConfig);
 		staticLogConfig = NULL;
 	}
 

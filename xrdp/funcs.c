@@ -169,7 +169,7 @@ int add_char_at(char *text, int text_size, wchar_t ch, int index)
 		wstr[len] = ch;
 		wstr[len + 1] = 0;
 		g_wcstombs(text, wstr, text_size);
-		g_free(wstr);
+		free(wstr);
 		return 0;
 	}
 
@@ -181,7 +181,7 @@ int add_char_at(char *text, int text_size, wchar_t ch, int index)
 	wstr[i + 1] = ch;
 	wstr[len + 1] = 0;
 	g_wcstombs(text, wstr, text_size);
-	g_free(wstr);
+	free(wstr);
 	return 0;
 }
 
@@ -207,7 +207,7 @@ int remove_char_at(char *text, int text_size, int index)
 	{
 		wstr[len - 1] = 0;
 		g_wcstombs(text, wstr, text_size);
-		g_free(wstr);
+		free(wstr);
 		return 0;
 	}
 
@@ -218,7 +218,7 @@ int remove_char_at(char *text, int text_size, int index)
 
 	wstr[len - 1] = 0;
 	g_wcstombs(text, wstr, text_size);
-	g_free(wstr);
+	free(wstr);
 	return 0;
 }
 
@@ -229,7 +229,7 @@ int set_string(char **in_str, const char *in)
 		return 0;
 	}
 
-	g_free(*in_str);
+	free(*in_str);
 	*in_str = g_strdup(in);
 	return 0;
 }

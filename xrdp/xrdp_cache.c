@@ -81,7 +81,7 @@ void xrdp_cache_delete(xrdpCache *self)
 	{
 		for (j = 0; j < 256; j++)
 		{
-			g_free(self->char_items[i][j].font_item.data);
+			free(self->char_items[i][j].font_item.data);
 		}
 	}
 
@@ -93,7 +93,7 @@ void xrdp_cache_delete(xrdpCache *self)
 
 	list_delete(self->xrdp_os_del_list);
 
-	g_free(self);
+	free(self);
 }
 
 int xrdp_cache_reset(xrdpCache *self)
@@ -121,7 +121,7 @@ int xrdp_cache_reset(xrdpCache *self)
 	{
 		for (j = 0; j < 256; j++)
 		{
-			g_free(self->char_items[i][j].font_item.data);
+			free(self->char_items[i][j].font_item.data);
 		}
 	}
 
@@ -450,7 +450,7 @@ int xrdp_cache_add_char(xrdpCache *self, xrdpFontChar *font_item)
 	DEBUG(("adding char at %d %d", f, c));
 	/* set, send char and return */
 	fi = &self->char_items[f][c].font_item;
-	g_free(fi->data);
+	free(fi->data);
 	datasize = FONT_DATASIZE(font_item);
 	fi->data = (char *) g_malloc(datasize, 1);
 	g_memcpy(fi->data, font_item->data, datasize);

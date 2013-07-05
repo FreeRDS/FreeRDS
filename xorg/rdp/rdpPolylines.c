@@ -202,7 +202,7 @@ for (i = 0; i < nseg; i++)
 
 	if (!post_process)
 	{
-		g_free(segs);
+		free(segs);
 		return;
 	}
 
@@ -274,7 +274,7 @@ for (i = 0; i < nseg; i++)
 		}
 	}
 
-	g_free(segs);
+	free(segs);
 	RegionUninit(&clip_reg);
 
 	if (reset_surface)

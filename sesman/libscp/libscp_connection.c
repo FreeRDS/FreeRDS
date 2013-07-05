@@ -53,5 +53,5 @@ void scp_connection_destroy(struct SCP_CONNECTION *c)
 	Stream_Free(c->in_s, TRUE);
 	Stream_Free(c->out_s, TRUE);
 
-	g_free(c);
+	free(c);
 }

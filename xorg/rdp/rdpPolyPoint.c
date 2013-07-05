@@ -289,7 +289,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 	if (pts != stack_pts)
 	{
-		g_free(pts);
+		free(pts);
 	}
 
 	if (reset_surface)

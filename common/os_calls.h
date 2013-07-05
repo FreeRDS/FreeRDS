@@ -32,7 +32,6 @@ int g_mk_temp_dir(const char* app_name);
 void g_init(const char* app_name);
 void g_deinit(void);
 void* g_malloc(int size, int zero);
-void g_free(void* ptr);
 void g_printf(const char *format, ...);
 void g_sprintf(char* dest, const char* format, ...);
 void g_snprintf(char* dest, int len, const char* format, ...);

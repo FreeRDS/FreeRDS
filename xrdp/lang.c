@@ -242,7 +242,7 @@ int get_keymaps(int keylayout, xrdpKeymap* keymap)
 						"built in keymap, using local keymap file", keylayout);
 			}
 
-			g_free(lkeymap);
+			free(lkeymap);
 			g_file_close(fd);
 		}
 	}
@@ -251,6 +251,6 @@ int get_keymaps(int keylayout, xrdpKeymap* keymap)
 		log_message(LOG_LEVEL_WARNING, "File does not exist: %s", filename);
 	}
 
-	g_free(filename);
+	free(filename);
 	return 0;
 }

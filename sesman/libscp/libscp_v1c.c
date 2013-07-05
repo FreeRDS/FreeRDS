@@ -430,7 +430,7 @@ static enum SCP_CLIENT_STATES_E _scp_v1c_check_response(struct SCP_CONNECTION *c
 
 		if (s->errstr != 0)
 		{
-			g_free(s->errstr);
+			free(s->errstr);
 		}
 
 		s->errstr = g_malloc(dim + 1, 0);
@@ -451,7 +451,7 @@ static enum SCP_CLIENT_STATES_E _scp_v1c_check_response(struct SCP_CONNECTION *c
 
 		if (s->errstr != 0)
 		{
-			g_free(s->errstr);
+			free(s->errstr);
 		}
 
 		s->errstr = g_malloc(dim + 1, 0);
@@ -472,7 +472,7 @@ static enum SCP_CLIENT_STATES_E _scp_v1c_check_response(struct SCP_CONNECTION *c
 
 		if (s->errstr != 0)
 		{
-			g_free(s->errstr);
+			free(s->errstr);
 		}
 
 		s->errstr = g_malloc(dim + 1, 0);

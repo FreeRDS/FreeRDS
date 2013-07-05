@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <security/pam_appl.h>
 
+#include <winpr/crt.h>
+
 struct t_user_pass
 {
 	char user[256];
@@ -44,7 +46,6 @@ struct t_auth_info
 	pam_handle_t *ph;
 };
 
-/******************************************************************************/
 static int verify_pam_conv(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr)
 {
 	int i;
@@ -69,7 +70,7 @@ static int verify_pam_conv(int num_msg, const struct pam_message **msg, struct p
 				break;
 			default:
 				g_printf("unknown in verify_pam_conv\r\n");
-				g_free(reply);
+				free(reply);
 				return PAM_CONV_ERR;
 		}
 	}
@@ -78,7 +79,6 @@ static int verify_pam_conv(int num_msg, const struct pam_message **msg, struct p
 	return PAM_SUCCESS;
 }
 
-/******************************************************************************/
 static void get_service_name(char *service_name)
 {
 	service_name[0] = 0;
@@ -93,7 +93,6 @@ static void get_service_name(char *service_name)
 	}
 }
 
-/******************************************************************************/
 /* returns long, zero is no go 
  Stores the detailed error code in the errorcode variable*/
 
@@ -118,7 +117,7 @@ long auth_userpass(char *user, char *pass, int *errorcode)
 			*errorcode = error;
 		}
 		g_printf("pam_start failed: %s\r\n", pam_strerror(auth_info->ph, error));
-		g_free(auth_info);
+		free(auth_info);
 		return 0;
 	}
 
@@ -131,7 +130,7 @@ long auth_userpass(char *user, char *pass, int *errorcode)
 			*errorcode = error;
 		}
 		g_printf("pam_authenticate failed: %s\r\n", pam_strerror(auth_info->ph, error));
-		g_free(auth_info);
+		free(auth_info);
 		return 0;
 	}
 	/* From man page:
@@ -149,14 +148,13 @@ long auth_userpass(char *user, char *pass, int *errorcode)
 			*errorcode = error;
 		}
 		g_printf("pam_acct_mgmt failed: %s\r\n", pam_strerror(auth_info->ph, error));
-		g_free(auth_info);
+		free(auth_info);
 		return 0;
 	}
 
 	return (long) auth_info;
 }
 
-/******************************************************************************/
 /* returns error */
 int auth_start_session(long in_val, int in_display)
 {
@@ -195,7 +193,6 @@ int auth_start_session(long in_val, int in_display)
 	return 0;
 }
 
-/******************************************************************************/
 /* returns error */
 /* cleanup */
 int auth_end(long in_val)
@@ -223,11 +220,10 @@ int auth_end(long in_val)
 		}
 	}
 
-	g_free(auth_info);
+	free(auth_info);
 	return 0;
 }
 
-/******************************************************************************/
 /* returns error */
 /* set any pam env vars */
 int auth_set_env(long in_val)
@@ -259,10 +255,10 @@ int auth_set_env(long in_val)
 					g_setenv(item, value, 1);
 				}
 
-				g_free(*pam_env);
+				free(*pam_env);
 			}
 
-			g_free(pam_envlist);
+			free(pam_envlist);
 		}
 	}
 

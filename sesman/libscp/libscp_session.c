@@ -176,7 +176,7 @@ int scp_session_set_username(struct SCP_SESSION *s, char *str)
 
 	if (0 != s->username)
 	{
-		g_free(s->username);
+		free(s->username);
 	}
 
 	s->username = g_strdup(str);
@@ -201,7 +201,7 @@ int scp_session_set_password(struct SCP_SESSION *s, char *str)
 
 	if (0 != s->password)
 	{
-		g_free(s->password);
+		free(s->password);
 	}
 
 	s->password = g_strdup(str);
@@ -226,7 +226,7 @@ int scp_session_set_domain(struct SCP_SESSION *s, char *str)
 
 	if (0 != s->domain)
 	{
-		g_free(s->domain);
+		free(s->domain);
 	}
 
 	s->domain = g_strdup(str);
@@ -251,7 +251,7 @@ int scp_session_set_program(struct SCP_SESSION *s, char *str)
 
 	if (0 != s->program)
 	{
-		g_free(s->program);
+		free(s->program);
 	}
 
 	s->program = g_strdup(str);
@@ -276,7 +276,7 @@ int scp_session_set_directory(struct SCP_SESSION *s, char *str)
 
 	if (0 != s->directory)
 	{
-		g_free(s->directory);
+		free(s->directory);
 	}
 
 	s->directory = g_strdup(str);
@@ -301,7 +301,7 @@ int scp_session_set_client_ip(struct SCP_SESSION *s, char *str)
 
 	if (0 != s->client_ip)
 	{
-		g_free(s->client_ip);
+		free(s->client_ip);
 	}
 
 	s->client_ip = g_strdup(str);
@@ -326,7 +326,7 @@ int scp_session_set_hostname(struct SCP_SESSION *s, char *str)
 
 	if (0 != s->hostname)
 	{
-		g_free(s->hostname);
+		free(s->hostname);
 	}
 
 	s->hostname = g_strdup(str);
@@ -351,7 +351,7 @@ int scp_session_set_errstr(struct SCP_SESSION *s, char *str)
 
 	if (0 != s->errstr)
 	{
-		g_free(s->errstr);
+		free(s->errstr);
 	}
 
 	s->errstr = g_strdup(str);
@@ -429,14 +429,14 @@ int scp_session_set_addr(struct SCP_SESSION *s, int type, void *addr)
 /*******************************************************************/
 void scp_session_destroy(struct SCP_SESSION *s)
 {
-	g_free(s->username);
-	g_free(s->password);
-	g_free(s->hostname);
-	g_free(s->domain);
-	g_free(s->program);
-	g_free(s->directory);
-	g_free(s->client_ip);
-	g_free(s->errstr);
-	g_free(s->mng);
-	g_free(s);
+	free(s->username);
+	free(s->password);
+	free(s->hostname);
+	free(s->domain);
+	free(s->program);
+	free(s->directory);
+	free(s->client_ip);
+	free(s->errstr);
+	free(s->mng);
+	free(s);
 }

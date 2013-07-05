@@ -181,7 +181,7 @@ void scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 								s->username, display, sitem->pid);
 					}
 
-					g_free(sitem);
+					free(sitem);
 				}
 
 				break;
@@ -191,7 +191,7 @@ void scp_v1_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 				break;
 		}
 
-		g_free(slist);
+		free(slist);
 	}
 
 	/* resource management */

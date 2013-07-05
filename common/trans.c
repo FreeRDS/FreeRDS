@@ -59,10 +59,10 @@ void trans_delete(struct trans* self)
 	if (self->listen_filename != 0)
 	{
 		g_file_delete(self->listen_filename);
-		g_free(self->listen_filename);
+		free(self->listen_filename);
 	}
 
-	g_free(self);
+	free(self);
 }
 
 int trans_get_wait_objs(struct trans* self, LONG_PTR *objs, int *count)
@@ -374,7 +374,7 @@ int trans_listen_address(struct trans* self, char *port, const char *address)
 	{
 		if (self->mode == TRANS_MODE_UNIX) /* unix socket */
 		{
-			g_free(self->listen_filename);
+			free(self->listen_filename);
 			self->listen_filename = 0;
 			g_file_delete(port);
 			self->sck = g_tcp_local_socket();

@@ -153,7 +153,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 
 	if (!post_process)
 	{
-		g_free(segs);
+		free(segs);
 		return;
 	}
 
@@ -226,7 +226,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 		}
 	}
 
-	g_free(segs);
+	free(segs);
 	RegionUninit(&clip_reg);
 
 	if (reset_surface)

@@ -37,7 +37,7 @@ void xrdp_region_delete(xrdpRegion *self)
 		return;
 
 	list_delete(self->rects);
-	g_free(self);
+	free(self);
 }
 
 int xrdp_region_add_rect(xrdpRegion *self, xrdpRect *rect)

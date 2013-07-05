@@ -72,7 +72,7 @@ void xrdp_wm_delete(xrdpWm *self)
 	xrdp_font_delete(self->default_font);
 	g_delete_wait_obj(self->login_mode_event);
 	/* free self */
-	g_free(self);
+	free(self);
 }
 
 int xrdp_wm_send_palette(xrdpWm *self)
