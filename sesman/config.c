@@ -31,7 +31,6 @@
 
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
-/******************************************************************************/
 int config_read(struct config_sesman *cfg)
 {
 	int fd;
@@ -83,7 +82,6 @@ int config_read(struct config_sesman *cfg)
 	return 0;
 }
 
-/******************************************************************************/
 int config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
@@ -167,7 +165,6 @@ int config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, x
 	return 0;
 }
 
-/******************************************************************************/
 int config_read_security(int file, struct config_security *sc, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;
@@ -247,7 +244,6 @@ int config_read_security(int file, struct config_security *sc, xrdpList *param_n
 	return 0;
 }
 
-/******************************************************************************/
 int config_read_sessions(int file, struct config_sessions *se, xrdpList *param_n, xrdpList *param_v)
 {
 	int i;

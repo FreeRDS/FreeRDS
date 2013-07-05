@@ -83,7 +83,6 @@ extern char **environ;
 static char g_temp_base[128] = "";
 static char g_temp_base_org[128] = "";
 
-/*****************************************************************************/
 int g_rm_temp_dir(void)
 {
 	if (g_temp_base[0] != 0)
@@ -99,7 +98,6 @@ int g_rm_temp_dir(void)
 	return 0;
 }
 
-/*****************************************************************************/
 int g_mk_temp_dir(const char *app_name)
 {
 	if (app_name != 0)
@@ -151,7 +149,6 @@ int g_mk_temp_dir(const char *app_name)
 	return 0;
 }
 
-/*****************************************************************************/
 void g_init(const char *app_name)
 {
 #if defined(_WIN32)
@@ -163,7 +160,6 @@ void g_init(const char *app_name)
 	g_mk_temp_dir(app_name);
 }
 
-/*****************************************************************************/
 void g_deinit(void)
 {
 #if defined(_WIN32)
@@ -172,7 +168,6 @@ void g_deinit(void)
 	g_rm_temp_dir();
 }
 
-/*****************************************************************************/
 /* allocate memory, returns a pointer to it, size bytes are allocated,
  if zero is non zero, each byte will be set to zero */
 void* g_malloc(int size, int zero)
@@ -192,7 +187,6 @@ void* g_malloc(int size, int zero)
 	return rv;
 }
 
-/*****************************************************************************/
 /* free the memory pointed to by ptr, ptr can be zero */
 void g_free(void *ptr)
 {
@@ -202,7 +196,6 @@ void g_free(void *ptr)
 	}
 }
 
-/*****************************************************************************/
 /* output text to stdout, try to use g_write / g_writeln instead to avoid
  linux / windows EOL problems */
 void g_printf(const char *format, ...)
@@ -214,7 +207,6 @@ void g_printf(const char *format, ...)
 	va_end(ap);
 }
 
-/*****************************************************************************/
 void g_sprintf(char *dest, const char *format, ...)
 {
 	va_list ap;
@@ -224,7 +216,6 @@ void g_sprintf(char *dest, const char *format, ...)
 	va_end(ap);
 }
 
-/*****************************************************************************/
 void g_snprintf(char *dest, int len, const char *format, ...)
 {
 	va_list ap;
@@ -234,7 +225,6 @@ void g_snprintf(char *dest, int len, const char *format, ...)
 	va_end(ap);
 }
 
-/*****************************************************************************/
 void g_writeln(const char *format, ...)
 {
 	va_list ap;
@@ -249,7 +239,6 @@ void g_writeln(const char *format, ...)
 #endif
 }
 
-/*****************************************************************************/
 void g_write(const char *format, ...)
 {
 	va_list ap;
@@ -259,7 +248,6 @@ void g_write(const char *format, ...)
 	va_end(ap);
 }
 
-/*****************************************************************************/
 /* produce a hex dump */
 void g_hexdump(char *p, int len)
 {
@@ -302,25 +290,21 @@ void g_hexdump(char *p, int len)
 	}
 }
 
-/*****************************************************************************/
 void g_memset(void *ptr, int val, int size)
 {
 	memset(ptr, val, size);
 }
 
-/*****************************************************************************/
 void g_memcpy(void *d_ptr, const void *s_ptr, int size)
 {
 	memcpy(d_ptr, s_ptr, size);
 }
 
-/*****************************************************************************/
 int g_getchar(void)
 {
 	return getchar();
 }
 
-/*****************************************************************************/
 /*Returns 0 on success*/
 int g_tcp_set_no_delay(int sck)
 {
@@ -361,7 +345,6 @@ int g_tcp_set_no_delay(int sck)
 	return ret;
 }
 
-/*****************************************************************************/
 /*Returns 0 on success*/
 int g_tcp_set_keepalive(int sck)
 {
@@ -402,7 +385,6 @@ int g_tcp_set_keepalive(int sck)
 	return ret;
 }
 
-/*****************************************************************************/
 /* returns a newly created socket or -1 on error */
 /* in win32 a socket is an unsigned int, in linux, its an int */
 int g_tcp_socket(void)
@@ -462,7 +444,6 @@ int g_tcp_socket(void)
 	return rv;
 }
 
-/*****************************************************************************/
 int g_tcp_local_socket(void)
 {
 #if defined(_WIN32)
@@ -472,7 +453,6 @@ int g_tcp_local_socket(void)
 #endif
 }
 
-/*****************************************************************************/
 void g_tcp_close(int sck)
 {
 	char ip[256];
@@ -491,7 +471,6 @@ void g_tcp_close(int sck)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error, zero is good */
 int g_tcp_connect(int sck, const char *address, const char *port)
 {
@@ -544,7 +523,6 @@ int g_tcp_connect(int sck, const char *address, const char *port)
 	return res;
 }
 
-/*****************************************************************************/
 /* returns error, zero is good */
 int g_tcp_local_connect(int sck, const char *port)
 {
@@ -560,7 +538,6 @@ int g_tcp_local_connect(int sck, const char *port)
 #endif
 }
 
-/*****************************************************************************/
 int g_tcp_set_non_blocking(int sck)
 {
 	unsigned long i;
@@ -576,7 +553,6 @@ int g_tcp_set_non_blocking(int sck)
 	return 0;
 }
 
-/*****************************************************************************/
 /* return boolean */
 static int address_match(const char *address, struct addrinfo *j)
 {
@@ -637,7 +613,6 @@ static int address_match(const char *address, struct addrinfo *j)
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns error, zero is good */
 static int  g_tcp_bind_flags(int sck, const char* port, const char* address, int flags)
 {
@@ -671,7 +646,6 @@ static int  g_tcp_bind_flags(int sck, const char* port, const char* address, int
 	return status;
 }
 
-/*****************************************************************************/
 /* returns error, zero is good */
 int g_tcp_bind(int sck, const char *port)
 {
@@ -681,7 +655,6 @@ int g_tcp_bind(int sck, const char *port)
 	return g_tcp_bind_flags(sck, port, 0, flags);
 }
 
-/*****************************************************************************/
 int g_tcp_local_bind(int sck, const char *port)
 {
 #if defined(_WIN32)
@@ -696,7 +669,6 @@ int g_tcp_local_bind(int sck, const char *port)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error, zero is good */
 int g_tcp_bind_address(int sck, const char *port, const char *address)
 {
@@ -706,14 +678,12 @@ int g_tcp_bind_address(int sck, const char *port, const char *address)
 	return g_tcp_bind_flags(sck, port, address, flags);
 }
 
-/*****************************************************************************/
 /* returns error, zero is good */
 int g_tcp_listen(int sck)
 {
 	return listen(sck, 2);
 }
 
-/*****************************************************************************/
 int g_tcp_accept(int sck)
 {
 	int ret;
@@ -737,7 +707,6 @@ int g_tcp_accept(int sck)
 	return ret;
 }
 
-/*****************************************************************************/
 void g_write_ip_address(int rcv_sck, char *ip_address, int bytes)
 {
 	struct sockaddr_in s;
@@ -773,7 +742,6 @@ void g_write_ip_address(int rcv_sck, char *ip_address, int bytes)
 	}
 }
 
-/*****************************************************************************/
 void g_sleep(int msecs)
 {
 #if defined(_WIN32)
@@ -783,7 +751,6 @@ void g_sleep(int msecs)
 #endif
 }
 
-/*****************************************************************************/
 int g_tcp_last_error_would_block(int sck)
 {
 #if defined(_WIN32)
@@ -793,7 +760,6 @@ int g_tcp_last_error_would_block(int sck)
 #endif
 }
 
-/*****************************************************************************/
 int g_tcp_recv(int sck, void *ptr, int len, int flags)
 {
 #if defined(_WIN32)
@@ -803,7 +769,6 @@ int g_tcp_recv(int sck, void *ptr, int len, int flags)
 #endif
 }
 
-/*****************************************************************************/
 int g_tcp_send(int sck, const void *ptr, int len, int flags)
 {
 #if defined(_WIN32)
@@ -813,7 +778,6 @@ int g_tcp_send(int sck, const void *ptr, int len, int flags)
 #endif
 }
 
-/*****************************************************************************/
 /* returns boolean */
 int g_tcp_socket_ok(int sck)
 {
@@ -838,7 +802,6 @@ int g_tcp_socket_ok(int sck)
 	return 0;
 }
 
-/*****************************************************************************/
 /* wait 'millis' milliseconds for the socket to be able to write */
 /* returns boolean */
 int g_tcp_can_send(int sck, int millis)
@@ -865,7 +828,6 @@ int g_tcp_can_send(int sck, int millis)
 	return 0;
 }
 
-/*****************************************************************************/
 /* wait 'millis' milliseconds for the socket to be able to receive */
 /* returns boolean */
 int g_tcp_can_recv(int sck, int millis)
@@ -892,7 +854,6 @@ int g_tcp_can_recv(int sck, int millis)
 	return 0;
 }
 
-/*****************************************************************************/
 int g_tcp_select(int sck1, int sck2)
 {
 	fd_set rfds;
@@ -947,7 +908,6 @@ int g_tcp_select(int sck1, int sck2)
 	return rv;
 }
 
-/*****************************************************************************/
 /* returns 0 on error */
 LONG_PTR g_create_wait_obj(char *name)
 {
@@ -1028,7 +988,6 @@ LONG_PTR g_create_wait_obj(char *name)
 #endif
 }
 
-/*****************************************************************************/
 /* returns 0 on error */
 LONG_PTR g_create_wait_obj_from_socket(LONG_PTR socket, int write)
 {
@@ -1056,7 +1015,6 @@ LONG_PTR g_create_wait_obj_from_socket(LONG_PTR socket, int write)
 #endif
 }
 
-/*****************************************************************************/
 void g_delete_wait_obj_from_socket(LONG_PTR wait_obj)
 {
 #ifdef _WIN32
@@ -1071,7 +1029,6 @@ void g_delete_wait_obj_from_socket(LONG_PTR wait_obj)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error */
 int g_set_wait_obj(LONG_PTR obj)
 {
@@ -1120,7 +1077,6 @@ int g_set_wait_obj(LONG_PTR obj)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error */
 int g_reset_wait_obj(LONG_PTR obj)
 {
@@ -1150,7 +1106,6 @@ int g_reset_wait_obj(LONG_PTR obj)
 #endif
 }
 
-/*****************************************************************************/
 /* returns boolean */
 int g_is_wait_obj_set(LONG_PTR obj)
 {
@@ -1178,7 +1133,6 @@ int g_is_wait_obj_set(LONG_PTR obj)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error */
 int g_delete_wait_obj(LONG_PTR obj)
 {
@@ -1214,7 +1168,6 @@ int g_delete_wait_obj(LONG_PTR obj)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error */
 /* close but do not delete the wait obj, used after fork */
 int g_close_wait_obj(LONG_PTR obj)
@@ -1226,7 +1179,6 @@ int g_close_wait_obj(LONG_PTR obj)
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns error */
 int g_obj_wait(LONG_PTR *read_objs, int rcount, LONG_PTR *write_objs, int wcount, int mstimeout)
 {
@@ -1356,7 +1308,6 @@ int g_obj_wait(LONG_PTR *read_objs, int rcount, LONG_PTR *write_objs, int wcount
 #endif
 }
 
-/*****************************************************************************/
 void g_random(char *data, int len)
 {
 #if defined(_WIN32)
@@ -1393,19 +1344,16 @@ void g_random(char *data, int len)
 #endif
 }
 
-/*****************************************************************************/
 int g_abs(int i)
 {
 	return abs(i);
 }
 
-/*****************************************************************************/
 int g_memcmp(const void *s1, const void *s2, int len)
 {
 	return memcmp(s1, s2, len);
 }
 
-/*****************************************************************************/
 /* returns -1 on error, else return handle or file descriptor */
 int g_file_open(const char *file_name)
 {
@@ -1428,7 +1376,6 @@ int g_file_open(const char *file_name)
 #endif
 }
 
-/*****************************************************************************/
 /* returns -1 on error, else return handle or file descriptor */
 int g_file_open_ex(const char *file_name, int aread, int awrite, int acreate, int atrunc)
 {
@@ -1468,7 +1415,6 @@ int g_file_open_ex(const char *file_name, int aread, int awrite, int acreate, in
 #endif
 }
 
-/*****************************************************************************/
 /* returns error, always 0 */
 int g_file_close(int fd)
 {
@@ -1480,7 +1426,6 @@ int g_file_close(int fd)
 	return 0;
 }
 
-/*****************************************************************************/
 /* read from file, returns the number of bytes read or -1 on error */
 int g_file_read(int fd, unsigned char* ptr, int len)
 {
@@ -1500,7 +1445,6 @@ int g_file_read(int fd, unsigned char* ptr, int len)
 #endif
 }
 
-/*****************************************************************************/
 /* write to file, returns the number of bytes writen or -1 on error */
 int g_file_write(int fd, unsigned char* ptr, int len)
 {
@@ -1520,7 +1464,6 @@ int g_file_write(int fd, unsigned char* ptr, int len)
 #endif
 }
 
-/*****************************************************************************/
 /* move file pointer, returns offset on success, -1 on failure */
 int g_file_seek(int fd, int offset)
 {
@@ -1543,7 +1486,6 @@ int g_file_seek(int fd, int offset)
 #endif
 }
 
-/*****************************************************************************/
 /* do a write lock on a file */
 /* return boolean */
 int g_file_lock(int fd, int start, int len)
@@ -1567,7 +1509,6 @@ int g_file_lock(int fd, int start, int len)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error */
 int g_chmod_hex(const char *filename, int flags)
 {
@@ -1593,14 +1534,12 @@ int g_chmod_hex(const char *filename, int flags)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error, zero is ok */
 int g_chown(const char *name, int uid, int gid)
 {
 	return chown(name, uid, gid);
 }
 
-/*****************************************************************************/
 /* returns error, always zero */
 int g_mkdir(const char *dirname)
 {
@@ -1612,7 +1551,6 @@ int g_mkdir(const char *dirname)
 #endif
 }
 
-/*****************************************************************************/
 /* gets the current working directory and puts up to maxlen chars in
  dirname
  always returns 0 */
@@ -1631,7 +1569,6 @@ char* g_get_current_dir(char *dirname, int maxlen)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error, zero on success and -1 on failure */
 int g_set_current_dir(char *dirname)
 {
@@ -1651,7 +1588,6 @@ int g_set_current_dir(char *dirname)
 #endif
 }
 
-/*****************************************************************************/
 /* returns boolean, non zero if the file exists */
 int g_file_exist(const char *filename)
 {
@@ -1662,7 +1598,6 @@ int g_file_exist(const char *filename)
 #endif
 }
 
-/*****************************************************************************/
 /* returns boolean, non zero if the directory exists */
 int g_directory_exist(const char *dirname)
 {
@@ -1684,7 +1619,6 @@ int g_directory_exist(const char *dirname)
 #endif
 }
 
-/*****************************************************************************/
 /* returns boolean */
 int g_create_dir(const char *dirname)
 {
@@ -1695,7 +1629,6 @@ int g_create_dir(const char *dirname)
 #endif
 }
 
-/*****************************************************************************/
 /* will try to create directories up to last / in name
  example /tmp/a/b/c/readme.txt will try to create /tmp/a/b/c
  returns boolean */
@@ -1737,7 +1670,6 @@ int g_create_path(const char *path)
 	return status;
 }
 
-/*****************************************************************************/
 /* returns boolean */
 int g_remove_dir(const char *dirname)
 {
@@ -1748,7 +1680,6 @@ int g_remove_dir(const char *dirname)
 #endif
 }
 
-/*****************************************************************************/
 /* returns non zero if the file was deleted */
 int g_file_delete(const char *filename)
 {
@@ -1759,7 +1690,6 @@ int g_file_delete(const char *filename)
 #endif
 }
 
-/*****************************************************************************/
 /* returns file size, -1 on error */
 int g_file_get_size(const char *filename)
 {
@@ -1780,7 +1710,6 @@ int g_file_get_size(const char *filename)
 #endif
 }
 
-/*****************************************************************************/
 /* returns length of text */
 int g_strlen(const char *text)
 {
@@ -1792,7 +1721,6 @@ int g_strlen(const char *text)
 	return strlen(text);
 }
 
-/*****************************************************************************/
 /* locates char in text */
 char* g_strchr(const char* text, int c)
 {
@@ -1804,7 +1732,6 @@ char* g_strchr(const char* text, int c)
 	return strchr(text, c);
 }
 
-/*****************************************************************************/
 /* returns dest */
 char* g_strcpy(char *dest, const char *src)
 {
@@ -1822,7 +1749,6 @@ char* g_strcpy(char *dest, const char *src)
 	return strcpy(dest, src);
 }
 
-/*****************************************************************************/
 /* returns dest */
 char* g_strncpy(char *dest, const char *src, int len)
 {
@@ -1844,7 +1770,6 @@ char* g_strncpy(char *dest, const char *src, int len)
 	return rv;
 }
 
-/*****************************************************************************/
 /* returns dest */
 char* g_strcat(char *dest, const char *src)
 {
@@ -1856,7 +1781,6 @@ char* g_strcat(char *dest, const char *src)
 	return strcat(dest, src);
 }
 
-/*****************************************************************************/
 /* if in = 0, return 0 else return newly alloced copy of in */
 char* g_strdup(const char *in)
 {
@@ -1878,7 +1802,6 @@ char* g_strdup(const char *in)
 
 	return p;
 }
-/*****************************************************************************/
 /* if in = 0, return 0 else return newly alloced copy of input string
  * if the input string is larger than maxlen the returned string will be
  * truncated. All strings returned will include null termination*/
@@ -1908,19 +1831,16 @@ char* g_strndup(const char *in, const unsigned int maxlen)
 
 	return p;
 }
-/*****************************************************************************/
 int g_strcmp(const char *c1, const char *c2)
 {
 	return strcmp(c1, c2);
 }
 
-/*****************************************************************************/
 int g_strncmp(const char *c1, const char *c2, int len)
 {
 	return strncmp(c1, c2, len);
 }
 
-/*****************************************************************************/
 int g_strcasecmp(const char *c1, const char *c2)
 {
 #if defined(_WIN32)
@@ -1930,7 +1850,6 @@ int g_strcasecmp(const char *c1, const char *c2)
 #endif
 }
 
-/*****************************************************************************/
 int g_strncasecmp(const char *c1, const char *c2, int len)
 {
 #if defined(_WIN32)
@@ -1940,7 +1859,6 @@ int g_strncasecmp(const char *c1, const char *c2, int len)
 #endif
 }
 
-/*****************************************************************************/
 int g_atoi(const char *str)
 {
 	if (str == 0)
@@ -1951,7 +1869,6 @@ int g_atoi(const char *str)
 	return atoi(str);
 }
 
-/*****************************************************************************/
 int g_htoi(char *str)
 {
 	int len;
@@ -2032,7 +1949,6 @@ int g_htoi(char *str)
 	return rv;
 }
 
-/*****************************************************************************/
 int g_pos(const char *str, const char *to_find)
 {
 	char *pp;
@@ -2047,7 +1963,6 @@ int g_pos(const char *str, const char *to_find)
 	return (pp - str);
 }
 
-/*****************************************************************************/
 int g_mbstowcs(wchar_t *dest, const char *src, int n)
 {
 	wchar_t *ldest;
@@ -2058,7 +1973,6 @@ int g_mbstowcs(wchar_t *dest, const char *src, int n)
 	return rv;
 }
 
-/*****************************************************************************/
 int g_wcstombs(char *dest, const wchar_t *src, int n)
 {
 	const wchar_t *lsrc;
@@ -2069,7 +1983,6 @@ int g_wcstombs(char *dest, const wchar_t *src, int n)
 	return rv;
 }
 
-/*****************************************************************************/
 /* returns error */
 /* trim spaces and tabs, anything <= space */
 /* trim_flags 1 trim left, 2 trim right, 3 trim both, 4 trim through */
@@ -2201,59 +2114,6 @@ int g_strtrim(char *str, int trim_flags)
 	return 0;
 }
 
-/*****************************************************************************/
-long g_load_library(char *in)
-{
-#if defined(_WIN32)
-	return (long)LoadLibraryA(in);
-#else
-	return (long) dlopen(in, RTLD_LOCAL | RTLD_LAZY);
-#endif
-}
-
-/*****************************************************************************/
-int g_free_library(long lib)
-{
-	if (lib == 0)
-	{
-		return 0;
-	}
-
-#if defined(_WIN32)
-	return FreeLibrary((HMODULE)lib);
-#else
-	return dlclose((void *) lib);
-#endif
-}
-
-/*****************************************************************************/
-/* returns NULL if not found */
-void* g_get_proc_address(long lib, const char *name)
-{
-	if (lib == 0)
-	{
-		return 0;
-	}
-
-#if defined(_WIN32)
-	return GetProcAddress((HMODULE)lib, name);
-#else
-	return dlsym((void *) lib, name);
-#endif
-}
-
-/*****************************************************************************/
-/* does not work in win32 */
-int g_system(char *aexec)
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	return system(aexec);
-#endif
-}
-
-/*****************************************************************************/
 /* does not work in win32 */
 char* g_get_strerror(void)
 {
@@ -2264,7 +2124,6 @@ char* g_get_strerror(void)
 #endif
 }
 
-/*****************************************************************************/
 int 
 g_get_errno(void)
 {
@@ -2275,7 +2134,6 @@ g_get_errno(void)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 int g_execvp(const char *p1, char *args[])
 {
@@ -2291,7 +2149,6 @@ int g_execvp(const char *p1, char *args[])
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 int g_execlp3(const char *a1, const char *a2, const char *a3)
 {
@@ -2307,7 +2164,6 @@ int g_execlp3(const char *a1, const char *a2, const char *a3)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 void g_signal_child_stop(void(*func)(int))
 {
@@ -2317,7 +2173,6 @@ void g_signal_child_stop(void(*func)(int))
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 void 
 g_signal_hang_up(void(*func)(int))
@@ -2328,7 +2183,6 @@ g_signal_hang_up(void(*func)(int))
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 void g_signal_user_interrupt(void(*func)(int))
 {
@@ -2338,7 +2192,6 @@ void g_signal_user_interrupt(void(*func)(int))
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 void g_signal_kill(void(*func)(int))
 {
@@ -2348,7 +2201,6 @@ void g_signal_kill(void(*func)(int))
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 void g_signal_terminate(void(*func)(int))
 {
@@ -2358,7 +2210,6 @@ void g_signal_terminate(void(*func)(int))
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 void g_signal_pipe(void(*func)(int))
 {
@@ -2368,7 +2219,6 @@ void g_signal_pipe(void(*func)(int))
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 void g_signal_usr1(void(*func)(int))
 {
@@ -2378,7 +2228,6 @@ void g_signal_usr1(void(*func)(int))
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 int g_fork(void)
 {
@@ -2398,7 +2247,6 @@ int g_fork(void)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 int g_setgid(int pid)
 {
@@ -2409,7 +2257,6 @@ int g_setgid(int pid)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error, zero is success, non zero is error */
 /* does not work in win32 */
 int g_initgroups(const char *user, int gid)
@@ -2421,7 +2268,6 @@ int g_initgroups(const char *user, int gid)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 /* returns user id */
 int g_getuid(void)
@@ -2433,7 +2279,6 @@ int g_getuid(void)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 /* returns user id */
 int g_getgid(void)
@@ -2445,7 +2290,6 @@ int g_getgid(void)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 /* On success, zero is returned. On error, -1 is returned */
 int g_setuid(int pid)
@@ -2457,7 +2301,6 @@ int g_setuid(int pid)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32
  returns pid of process that exits or zero if signal occurred */
 int g_waitchild(void)
@@ -2482,7 +2325,6 @@ int g_waitchild(void)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32
  returns pid of process that exits or zero if signal occurred */
 int g_waitpid(int pid)
@@ -2513,7 +2355,6 @@ int g_waitpid(int pid)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 void g_clearenv(void)
 {
@@ -2523,7 +2364,6 @@ void g_clearenv(void)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 int g_setenv(const char *name, const char *value, int rewrite)
 {
@@ -2534,7 +2374,6 @@ int g_setenv(const char *name, const char *value, int rewrite)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 char* g_getenv(const char *name)
 {
@@ -2545,14 +2384,12 @@ char* g_getenv(const char *name)
 #endif
 }
 
-/*****************************************************************************/
 int g_exit(int exit_code)
 {
 	_exit(exit_code);
 	return 0;
 }
 
-/*****************************************************************************/
 int g_getpid(void)
 {
 #if defined(_WIN32)
@@ -2562,7 +2399,6 @@ int g_getpid(void)
 #endif
 }
 
-/*****************************************************************************/
 /* does not work in win32 */
 int g_sigterm(int pid)
 {
@@ -2573,7 +2409,6 @@ int g_sigterm(int pid)
 #endif
 }
 
-/*****************************************************************************/
 /* returns 0 if ok */
 /* does not work in win32 */
 int g_getuser_info(const char *username, int *gid, int *uid, char *shell, char *dir, char *gecos)
@@ -2619,7 +2454,6 @@ int g_getuser_info(const char *username, int *gid, int *uid, char *shell, char *
 #endif
 }
 
-/*****************************************************************************/
 /* returns 0 if ok */
 /* does not work in win32 */
 int g_getgroup_info(const char *groupname, int *gid)
@@ -2645,7 +2479,6 @@ int g_getgroup_info(const char *groupname, int *gid)
 #endif
 }
 
-/*****************************************************************************/
 /* returns error */
 /* if zero is returned, then ok is set */
 /* does not work in win32 */
@@ -2682,7 +2515,6 @@ int g_check_user_in_group(const char *username, int gid, int *ok)
 #endif
 }
 
-/*****************************************************************************/
 /* returns the time since the Epoch (00:00:00 UTC, January 1, 1970),
  measured in seconds.
  for windows, returns the number of seconds since the machine was
@@ -2696,7 +2528,6 @@ int g_time1(void)
 #endif
 }
 
-/*****************************************************************************/
 /* returns the number of milliseconds since the machine was
  started. */
 int g_time2(void)
@@ -2712,7 +2543,6 @@ int g_time2(void)
 #endif
 }
 
-/*****************************************************************************/
 /* returns time in milliseconds, uses gettimeofday
  does not work in win32 */
 int g_time3(void)

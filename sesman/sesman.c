@@ -37,7 +37,6 @@ LONG_PTR g_sync_event = 0;
 
 extern int g_thread_sck; /* in thread.c */
 
-/******************************************************************************/
 /**
  *
  * @brief Starts sesman main loop
@@ -135,7 +134,6 @@ static void sesman_main_loop(void)
 	g_tcp_close(g_sck);
 }
 
-/******************************************************************************/
 int main(int argc, char** argv)
 {
 	int fd;

@@ -32,7 +32,6 @@
 extern int g_thread_sck; /* in thread.c */
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
-/******************************************************************************/
 void* scp_process_start(void *sck)
 {
 	struct SCP_CONNECTION scon;

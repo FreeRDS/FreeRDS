@@ -28,9 +28,7 @@
 
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
-/******************************************************************************/
-int 
-access_login_allowed(char *user)
+int access_login_allowed(char *user)
 {
 	int gid;
 	int ok;
@@ -43,8 +41,7 @@ access_login_allowed(char *user)
 
 	if ((0 == g_cfg->sec.ts_users_enable) && (0 == g_cfg->sec.ts_always_group_check))
 	{
-		LOG_DBG("Terminal Server Users group is disabled, allowing authentication",
-				1);
+		LOG_DBG("Terminal Server Users group is disabled, allowing authentication", 1);
 		return 1;
 	}
 
@@ -76,9 +73,7 @@ access_login_allowed(char *user)
 	return 0;
 }
 
-/******************************************************************************/
-int 
-access_login_mng_allowed(char *user)
+int access_login_mng_allowed(char *user)
 {
 	int gid;
 	int ok;

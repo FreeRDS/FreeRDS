@@ -32,7 +32,6 @@
 extern unsigned char g_fixedkey[8]; /* in sesman.c */
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
-/******************************************************************************/
 int env_check_password_file(char *filename, char *password)
 {
 	char encryptedPasswd[16];
@@ -55,7 +54,6 @@ int env_check_password_file(char *filename, char *password)
 	return 0;
 }
 
-/******************************************************************************/
 int env_set_user(char *username, char *passwd_file, int display)
 {
 	int error;

@@ -28,7 +28,6 @@ static LONG_PTR g_lock_chain = 0;
 static LONG_PTR g_sync_sem = 0;
 static LONG_PTR g_lock_socket = 0;
 
-/******************************************************************************/
 void lock_init(void)
 {
 	g_sync_mutex = tc_mutex_create();
@@ -37,7 +36,6 @@ void lock_init(void)
 	g_lock_socket = tc_sem_create(1);
 }
 
-/******************************************************************************/
 void lock_deinit(void)
 {
 	tc_mutex_delete(g_sync_mutex);
@@ -46,7 +44,6 @@ void lock_deinit(void)
 	tc_sem_delete(g_lock_socket);
 }
 
-/******************************************************************************/
 void lock_chain_acquire(void)
 {
 	/* lock the chain */
@@ -54,7 +51,6 @@ void lock_chain_acquire(void)
 	tc_mutex_lock(g_lock_chain);
 }
 
-/******************************************************************************/
 void lock_chain_release(void)
 {
 	/* unlock the chain */
@@ -62,7 +58,6 @@ void lock_chain_release(void)
 	tc_mutex_unlock(g_lock_chain);
 }
 
-/******************************************************************************/
 void lock_socket_acquire(void)
 {
 	/* lock socket variable */
@@ -70,7 +65,6 @@ void lock_socket_acquire(void)
 	tc_sem_dec(g_lock_socket);
 }
 
-/******************************************************************************/
 void lock_socket_release(void)
 {
 	/* unlock socket variable */
@@ -78,7 +72,6 @@ void lock_socket_release(void)
 	tc_sem_inc(g_lock_socket);
 }
 
-/******************************************************************************/
 void lock_sync_acquire(void)
 {
 	/* lock sync variable */
@@ -86,7 +79,6 @@ void lock_sync_acquire(void)
 	tc_mutex_lock(g_sync_mutex);
 }
 
-/******************************************************************************/
 void lock_sync_release(void)
 {
 	/* unlock socket variable */
@@ -94,7 +86,6 @@ void lock_sync_release(void)
 	tc_mutex_unlock(g_sync_mutex);
 }
 
-/******************************************************************************/
 void lock_sync_sem_acquire(void)
 {
 	/* dec sem */
@@ -102,7 +93,6 @@ void lock_sync_sem_acquire(void)
 	tc_sem_dec(g_sync_sem);
 }
 
-/******************************************************************************/
 void lock_sync_sem_release(void)
 {
 	/* inc sem */

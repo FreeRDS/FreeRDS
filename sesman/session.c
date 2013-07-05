@@ -57,8 +57,7 @@ static int g_sync_cmd;
  * @param len the allocated len for outstr
  * @return
  */
-char *
-dumpItemsToString(xrdpList *self, char *outstr, int len)
+char* dumpItemsToString(xrdpList *self, char *outstr, int len)
 {
 	int index;
 	int totalLen = 0;
@@ -84,9 +83,7 @@ dumpItemsToString(xrdpList *self, char *outstr, int len)
 	return outstr;
 }
 
-/******************************************************************************/
-xrdpSessionItem *
-session_get_bydata(char *name, int width, int height, int bpp, int type)
+xrdpSessionItem* session_get_bydata(char *name, int width, int height, int bpp, int type)
 {
 	xrdpSessionChain *tmp;
 
@@ -137,7 +134,6 @@ session_get_bydata(char *name, int width, int height, int bpp, int type)
 	return 0;
 }
 
-/******************************************************************************/
 /**
  *
  * @brief checks if there's a server running on a display
@@ -145,7 +141,7 @@ session_get_bydata(char *name, int width, int height, int bpp, int type)
  * @return 0 if there isn't a display running, nonzero otherwise
  *
  */
-static int  x_server_running_check_ports(int display)
+static int x_server_running_check_ports(int display)
 {
 	char text[256];
 	int x_running;
@@ -187,7 +183,6 @@ static int  x_server_running_check_ports(int display)
 	return x_running;
 }
 
-/******************************************************************************/
 /**
  *
  * @brief checks if there's a server running on a display
@@ -212,7 +207,6 @@ static int x_server_running(int display)
 	return x_running;
 }
 
-/******************************************************************************/
 /* called with the main thread returns boolean */
 static int session_is_display_in_chain(int display)
 {
@@ -234,7 +228,6 @@ static int session_is_display_in_chain(int display)
 	return 0;
 }
 
-/******************************************************************************/
 /* called with the main thread */
 static int session_get_aval_display_from_chain(void)
 {
@@ -262,7 +255,6 @@ static int session_get_aval_display_from_chain(void)
 	return 0;
 }
 
-/******************************************************************************/
 static int wait_for_xserver(int display)
 {
 	int i;
@@ -310,7 +302,6 @@ static void session_start_sessvc(int xpid, int wmpid, long data, char *username,
 	//g_exit(0);
 }
 
-/******************************************************************************/
 /* called with the main thread */
 static int session_start_fork(int width, int height, int bpp, char *username, char *password, LONG_PTR data, BYTE type, char *domain,
 		char *program, char *directory, char *client_ip)
@@ -590,7 +581,6 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 	return display;
 }
 
-/******************************************************************************/
 /* called with the main thread */
 static int session_reconnect_fork(int display, char *username)
 {
@@ -618,7 +608,6 @@ static int session_reconnect_fork(int display, char *username)
 	return display;
 }
 
-/******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
 int session_start(int width, int height, int bpp, char *username, char *password, long data, BYTE type, char *domain,
@@ -652,7 +641,6 @@ int session_start(int width, int height, int bpp, char *username, char *password
 	return display;
 }
 
-/******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
  and wait till done */
 int session_reconnect(int display, char *username)
@@ -672,12 +660,9 @@ int session_reconnect(int display, char *username)
 	return 0;
 }
 
-/******************************************************************************/
 /* called with the main thread */
 int session_sync_start(void)
 {
-	printf("session_sync_start\n");
-
 	if (g_sync_cmd == 0)
 	{
 		g_sync_result = session_start_fork(g_sync_width, g_sync_height, g_sync_bpp, g_sync_username,
@@ -694,7 +679,6 @@ int session_sync_start(void)
 	return 0;
 }
 
-/******************************************************************************/
 int session_kill(int pid)
 {
 	xrdpSessionChain *tmp;
@@ -765,7 +749,6 @@ int session_kill(int pid)
 	return SESMAN_SESSION_KILL_NOTFOUND;
 }
 
-/******************************************************************************/
 void session_sigkill_all()
 {
 	xrdpSessionChain *tmp;
@@ -795,7 +778,6 @@ void session_sigkill_all()
 	lock_chain_release();
 }
 
-/******************************************************************************/
 xrdpSessionItem * session_get_bypid(int pid)
 {
 	xrdpSessionChain *tmp;
@@ -843,7 +825,6 @@ xrdpSessionItem * session_get_bypid(int pid)
 	return 0;
 }
 
-/******************************************************************************/
 struct SCP_DISCONNECTED_SESSION * session_get_byuser(char *user, int *cnt, unsigned char flags)
 {
 	xrdpSessionChain *tmp;
