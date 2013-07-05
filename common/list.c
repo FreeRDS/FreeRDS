@@ -18,7 +18,6 @@
  * simple list
  */
 
-#include "arch.h"
 #include "os_calls.h"
 #include "list.h"
 
@@ -30,7 +29,7 @@ xrdpList* list_create(void)
 	self = (xrdpList *) g_malloc(sizeof(xrdpList), 1);
 	self->grow_by = 10;
 	self->alloc_size = 10;
-	self->items = (tbus *) g_malloc(sizeof(tbus) * 10, 1);
+	self->items = (LONG_PTR *) g_malloc(sizeof(LONG_PTR) * 10, 1);
 	return self;
 }
 
@@ -58,17 +57,17 @@ void list_delete(xrdpList *self)
 }
 
 /*****************************************************************************/
-void list_add_item(xrdpList *self, tbus item)
+void list_add_item(xrdpList *self, LONG_PTR item)
 {
-	tbus *p;
+	LONG_PTR *p;
 	int i;
 
 	if (self->count >= self->alloc_size)
 	{
 		i = self->alloc_size;
 		self->alloc_size += self->grow_by;
-		p = (tbus *) g_malloc(sizeof(tbus) * self->alloc_size, 1);
-		g_memcpy(p, self->items, sizeof(tbus) * i);
+		p = (LONG_PTR *) g_malloc(sizeof(LONG_PTR) * self->alloc_size, 1);
+		g_memcpy(p, self->items, sizeof(LONG_PTR) * i);
 		g_free(self->items);
 		self->items = p;
 	}
@@ -78,7 +77,7 @@ void list_add_item(xrdpList *self, tbus item)
 }
 
 /*****************************************************************************/
-tbus list_get_item(xrdpList *self, int index)
+LONG_PTR list_get_item(xrdpList *self, int index)
 {
 	if (index < 0 || index >= self->count)
 	{
@@ -106,11 +105,11 @@ void list_clear(xrdpList *self)
 	self->count = 0;
 	self->grow_by = 10;
 	self->alloc_size = 10;
-	self->items = (tbus *) g_malloc(sizeof(tbus) * 10, 1);
+	self->items = (LONG_PTR *) g_malloc(sizeof(LONG_PTR) * 10, 1);
 }
 
 /*****************************************************************************/
-int list_index_of(xrdpList *self, tbus item)
+int list_index_of(xrdpList *self, LONG_PTR item)
 {
 	int i;
 
@@ -148,9 +147,9 @@ void list_remove_item(xrdpList *self, int index)
 }
 
 /*****************************************************************************/
-void list_insert_item(xrdpList *self, int index, tbus item)
+void list_insert_item(xrdpList *self, int index, LONG_PTR item)
 {
-	tbus *p;
+	LONG_PTR *p;
 	int i;
 
 	if (index == self->count)
@@ -167,8 +166,8 @@ void list_insert_item(xrdpList *self, int index, tbus item)
 		{
 			i = self->alloc_size;
 			self->alloc_size += self->grow_by;
-			p = (tbus *) g_malloc(sizeof(tbus) * self->alloc_size, 1);
-			g_memcpy(p, self->items, sizeof(tbus) * i);
+			p = (LONG_PTR *) g_malloc(sizeof(LONG_PTR) * self->alloc_size, 1);
+			g_memcpy(p, self->items, sizeof(LONG_PTR) * i);
 			g_free(self->items);
 			self->items = p;
 		}
@@ -188,14 +187,14 @@ void list_insert_item(xrdpList *self, int index, tbus item)
 void list_append_list_strdup(xrdpList *self, xrdpList *dest, int start_index)
 {
 	int index;
-	tbus item;
+	LONG_PTR item;
 	char *dup;
 
 	for (index = start_index; index < self->count; index++)
 	{
 		item = list_get_item(self, index);
 		dup = g_strdup((char *) item);
-		list_add_item(dest, (tbus) dup);
+		list_add_item(dest, (LONG_PTR) dup);
 	}
 }
 

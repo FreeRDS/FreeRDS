@@ -1628,8 +1628,8 @@ int xrdp_wm_log_msg(xrdpWm *self, char *msg)
 	return 0;
 }
 
-int xrdp_wm_get_wait_objs(xrdpWm *self, tbus *robjs, int *rc,
-		tbus *wobjs, int *wc, int *timeout)
+int xrdp_wm_get_wait_objs(xrdpWm *self, LONG_PTR *robjs, int *rc,
+		LONG_PTR *wobjs, int *wc, int *timeout)
 {
 	int i;
 

@@ -24,7 +24,6 @@
  *
  */
 
-#include "arch.h"
 #include "os_calls.h"
 
 #include <krb5.h>

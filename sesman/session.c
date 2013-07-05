@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-extern tbus g_sync_event;
+extern LONG_PTR g_sync_event;
 extern unsigned char g_fixedkey[8];
 extern struct config_sesman *g_cfg; /* in sesman.c */
 xrdpSessionChain *g_sessions;
@@ -45,7 +45,7 @@ static char *g_sync_domain;
 static char *g_sync_program;
 static char *g_sync_directory;
 static char *g_sync_client_ip;
-static tbus g_sync_data;
+static LONG_PTR g_sync_data;
 static BYTE g_sync_type;
 static int g_sync_result;
 static int g_sync_cmd;
@@ -312,7 +312,7 @@ static void session_start_sessvc(int xpid, int wmpid, long data, char *username,
 
 /******************************************************************************/
 /* called with the main thread */
-static int session_start_fork(int width, int height, int bpp, char *username, char *password, tbus data, BYTE type, char *domain,
+static int session_start_fork(int width, int height, int bpp, char *username, char *password, LONG_PTR data, BYTE type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
 	int display = 0;

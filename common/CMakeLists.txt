@@ -34,7 +34,6 @@ include_directories(${ZLIB_INCLUDE_DIRS})
 
 set(${MODULE_PREFIX}_HEADERS
 	d3des.h
-	arch.h
 	os_calls.h
 	list.h
 	file.h

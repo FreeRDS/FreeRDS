@@ -24,7 +24,6 @@
  *
  */
 
-#include "arch.h"
 #include "list.h"
 #include "file.h"
 #include "sesman.h"

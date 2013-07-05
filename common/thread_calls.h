@@ -21,18 +21,18 @@
 #if !defined(THREAD_CALLS_H)
 #define THREAD_CALLS_H
 
-#include "arch.h"
+#include <winpr/wtypes.h>
 
 int tc_thread_create(void* (*start_routine)(void*), void* arg);
-tbus tc_get_threadid(void);
-int tc_threadid_equal(tbus tid1, tbus tid2);
-tbus tc_mutex_create(void);
-void tc_mutex_delete(tbus mutex);
-int tc_mutex_lock(tbus mutex);
-int tc_mutex_unlock(tbus mutex);
-tbus tc_sem_create(int init_count);
-void tc_sem_delete(tbus sem);
-int tc_sem_dec(tbus sem);
-int tc_sem_inc(tbus sem);
+LONG_PTR tc_get_threadid(void);
+int tc_threadid_equal(LONG_PTR tid1, LONG_PTR tid2);
+LONG_PTR tc_mutex_create(void);
+void tc_mutex_delete(LONG_PTR mutex);
+int tc_mutex_lock(LONG_PTR mutex);
+int tc_mutex_unlock(LONG_PTR mutex);
+LONG_PTR tc_sem_create(int init_count);
+void tc_sem_delete(LONG_PTR sem);
+int tc_sem_dec(LONG_PTR sem);
+int tc_sem_inc(LONG_PTR sem);
 
 #endif

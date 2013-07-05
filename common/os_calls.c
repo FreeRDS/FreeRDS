@@ -60,7 +60,6 @@
 #include <locale.h>
 
 #include "os_calls.h"
-#include "arch.h"
 #include "log.h"
 
 /* for clearenv() */
@@ -950,18 +949,18 @@ int g_tcp_select(int sck1, int sck2)
 
 /*****************************************************************************/
 /* returns 0 on error */
-tbus g_create_wait_obj(char *name)
+LONG_PTR g_create_wait_obj(char *name)
 {
 #ifdef _WIN32
-	tbus obj;
+	LONG_PTR obj;
 
-	obj = (tbus)CreateEvent(0, 1, 0, name);
+	obj = (LONG_PTR)CreateEvent(0, 1, 0, name);
 	return obj;
 #else
-	tbus obj;
+	LONG_PTR obj;
 	struct sockaddr_un sa;
 	size_t len;
-	tbus sck;
+	LONG_PTR sck;
 	int i;
 	int safety;
 	int unnamed;
@@ -1024,14 +1023,14 @@ tbus g_create_wait_obj(char *name)
 		} while (bind(sck, (struct sockaddr *) &sa, len) < 0);
 	}
 
-	obj = (tbus) sck;
+	obj = (LONG_PTR) sck;
 	return obj;
 #endif
 }
 
 /*****************************************************************************/
 /* returns 0 on error */
-tbus g_create_wait_obj_from_socket(tbus socket, int write)
+LONG_PTR g_create_wait_obj_from_socket(LONG_PTR socket, int write)
 {
 #ifdef _WIN32
 	/* Create and return corresponding event handle for WaitForMultipleObjets */
@@ -1045,7 +1044,7 @@ tbus g_create_wait_obj_from_socket(tbus socket, int write)
 
 	if (WSAEventSelect(socket, event, lnetevent) == 0)
 	{
-		return (tbus)event;
+		return (LONG_PTR)event;
 	}
 	else
 	{
@@ -1058,7 +1057,7 @@ tbus g_create_wait_obj_from_socket(tbus socket, int write)
 }
 
 /*****************************************************************************/
-void g_delete_wait_obj_from_socket(tbus wait_obj)
+void g_delete_wait_obj_from_socket(LONG_PTR wait_obj)
 {
 #ifdef _WIN32
 
@@ -1074,7 +1073,7 @@ void g_delete_wait_obj_from_socket(tbus wait_obj)
 
 /*****************************************************************************/
 /* returns error */
-int g_set_wait_obj(tbus obj)
+int g_set_wait_obj(LONG_PTR obj)
 {
 #ifdef _WIN32
 
@@ -1123,7 +1122,7 @@ int g_set_wait_obj(tbus obj)
 
 /*****************************************************************************/
 /* returns error */
-int g_reset_wait_obj(tbus obj)
+int g_reset_wait_obj(LONG_PTR obj)
 {
 #ifdef _WIN32
 
@@ -1153,7 +1152,7 @@ int g_reset_wait_obj(tbus obj)
 
 /*****************************************************************************/
 /* returns boolean */
-int g_is_wait_obj_set(tbus obj)
+int g_is_wait_obj_set(LONG_PTR obj)
 {
 #ifdef _WIN32
 
@@ -1181,7 +1180,7 @@ int g_is_wait_obj_set(tbus obj)
 
 /*****************************************************************************/
 /* returns error */
-int g_delete_wait_obj(tbus obj)
+int g_delete_wait_obj(LONG_PTR obj)
 {
 #ifdef _WIN32
 
@@ -1218,7 +1217,7 @@ int g_delete_wait_obj(tbus obj)
 /*****************************************************************************/
 /* returns error */
 /* close but do not delete the wait obj, used after fork */
-int g_close_wait_obj(tbus obj)
+int g_close_wait_obj(LONG_PTR obj)
 {
 #ifdef _WIN32
 #else
@@ -1229,7 +1228,7 @@ int g_close_wait_obj(tbus obj)
 
 /*****************************************************************************/
 /* returns error */
-int g_obj_wait(tbus *read_objs, int rcount, tbus *write_objs, int wcount, int mstimeout)
+int g_obj_wait(LONG_PTR *read_objs, int rcount, LONG_PTR *write_objs, int wcount, int mstimeout)
 {
 #ifdef _WIN32
 	HANDLE handles[256];

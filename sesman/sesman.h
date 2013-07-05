@@ -32,7 +32,6 @@
 #endif
 
 #include "d3des.h"
-#include "arch.h"
 #include "os_calls.h"
 #include "log.h"
 #include "env.h"

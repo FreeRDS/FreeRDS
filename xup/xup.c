@@ -20,7 +20,6 @@
 
 #include "xup.h"
 
-#include "arch.h"
 #include "os_calls.h"
 #include "defines.h"
 #include "xrdp_rail.h"
@@ -337,7 +336,7 @@ int lib_mod_connect(xrdpModule* mod)
 	return 0;
 }
 
-int lib_mod_event(xrdpModule* mod, int msg, tbus param1, tbus param2, tbus param3, tbus param4)
+int lib_mod_event(xrdpModule* mod, int msg, LONG_PTR param1, LONG_PTR param2, LONG_PTR param3, LONG_PTR param4)
 {
 	wStream* s;
 	int len;
@@ -875,7 +874,7 @@ int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 	return 0;
 }
 
-int lib_mod_get_wait_objs(xrdpModule* mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
+int lib_mod_get_wait_objs(xrdpModule* mod, LONG_PTR *read_objs, int *rcount, LONG_PTR *write_objs, int *wcount, int *timeout)
 {
 	int i;
 

@@ -27,7 +27,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "arch.h"
 #include "list.h"
 #include "log.h"
 

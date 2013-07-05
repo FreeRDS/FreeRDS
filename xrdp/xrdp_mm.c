@@ -1100,7 +1100,7 @@ int xrdp_mm_connect(xrdpMm *self)
 	return rv;
 }
 
-int xrdp_mm_get_wait_objs(xrdpMm *self, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
+int xrdp_mm_get_wait_objs(xrdpMm *self, LONG_PTR *read_objs, int *rcount, LONG_PTR *write_objs, int *wcount, int *timeout)
 {
 	int rv = 0;
 

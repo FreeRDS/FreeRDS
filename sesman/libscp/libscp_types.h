@@ -28,7 +28,6 @@
 #define LIBSCP_TYPES_H
 
 #include "os_calls.h"
-#include "arch.h"
 #include "log.h"
 
 #include <winpr/crt.h>

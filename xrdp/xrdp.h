@@ -32,7 +32,6 @@
 
 #include <xrdp-ng/xrdp.h>
 
-#include "arch.h"
 #include "trans.h"
 #include "list.h"
 
@@ -110,7 +109,7 @@ struct xrdp_mod
 	int (*mod_end)(xrdpModule* v);
 	int (*mod_set_param)(xrdpModule* v, char* name, char* value);
 	int (*mod_session_change)(xrdpModule* v, int, int);
-	int (*mod_get_wait_objs)(xrdpModule* v, tbus* read_objs, int* rcount, tbus* write_objs, int* wcount,
+	int (*mod_get_wait_objs)(xrdpModule* v, LONG_PTR* read_objs, int* rcount, LONG_PTR* write_objs, int* wcount,
 			int* timeout);
 	int (*mod_check_wait_objs)(xrdpModule* v);
 
@@ -322,7 +321,7 @@ struct xrdp_wm
 	xrdpList* log;
 	xrdpBitmap* log_wnd;
 	int login_mode;
-	tbus login_mode_event;
+	LONG_PTR login_mode_event;
 	xrdpMm* mm;
 	xrdpFont* default_font;
 	xrdpKeymap keymap;
@@ -496,8 +495,8 @@ struct xrdp_startup_params
 long g_xrdp_sync(long (*sync_func)(long param1, long param2), long sync_param1, long sync_param2);
 int g_is_term(void);
 void g_set_term(int in_val);
-tbus g_get_term_event(void);
-tbus g_get_sync_event(void);
+LONG_PTR g_get_term_event(void);
+LONG_PTR g_get_sync_event(void);
 void g_process_waiting_function(void);
 
 /* xrdp_cache.c */
@@ -542,16 +541,16 @@ int xrdp_wm_pointer(xrdpWm* self, char* data, char* mask, int x, int y,
 int callback(long id, int msg, long param1, long param2, long param3, long param4);
 int xrdp_wm_delete_all_childs(xrdpWm* self);
 int xrdp_wm_log_msg(xrdpWm* self, char* msg);
-int xrdp_wm_get_wait_objs(xrdpWm* self, tbus* robjs, int* rc,
-		tbus* wobjs, int* wc, int* timeout);
+int xrdp_wm_get_wait_objs(xrdpWm* self, LONG_PTR* robjs, int* rc,
+		LONG_PTR* wobjs, int* wc, int* timeout);
 int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
 
 /* xrdp_process.c */
-xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* transport);
+xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, LONG_PTR done_event, void* transport);
 void xrdp_process_delete(xrdpProcess* self);
 int xrdp_process_get_status(xrdpProcess* self);
-tbus xrdp_process_get_term_event(xrdpProcess* self);
+LONG_PTR xrdp_process_get_term_event(xrdpProcess* self);
 xrdpSession* xrdp_process_get_session(xrdpProcess* self);
 int xrdp_process_get_session_id(xrdpProcess* self);
 xrdpWm* xrdp_process_get_wm(xrdpProcess* self);
@@ -674,11 +673,11 @@ int xrdp_bitmap_compress(char* in_data, int width, int height,
 xrdpMm* xrdp_mm_create(xrdpWm* owner);
 void xrdp_mm_delete(xrdpMm* self);
 int xrdp_mm_connect(xrdpMm* self);
-int xrdp_mm_process_channel_data(xrdpMm* self, tbus param1, tbus param2,
-		tbus param3, tbus param4);
+int xrdp_mm_process_channel_data(xrdpMm* self, LONG_PTR param1, LONG_PTR param2,
+		LONG_PTR param3, LONG_PTR param4);
 int xrdp_mm_get_wait_objs(xrdpMm* self,
-		tbus* read_objs, int* rcount,
-		tbus* write_objs, int* wcount, int* timeout);
+		LONG_PTR* read_objs, int* rcount,
+		LONG_PTR* write_objs, int* wcount, int* timeout);
 int xrdp_mm_check_wait_objs(xrdpMm* self);
 int server_msg(xrdpModule* mod, char* msg, int code);
 int server_is_term(xrdpModule* mod);

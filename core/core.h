@@ -69,7 +69,6 @@ struct xrdp_rect
 };
 typedef struct xrdp_rect xrdpRect;
 
-#include "arch.h"
 #include "trans.h"
 #include "defines.h"
 #include "os_calls.h"

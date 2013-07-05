@@ -43,8 +43,8 @@ struct xrdp_process
 	int status;
 	int session_id;
 	BOOL activated;
-	tbus done_event;
-	tbus term_event;
+	LONG_PTR done_event;
+	LONG_PTR term_event;
 	xrdpWm* wm;
 	xrdpSession* session;
 };
@@ -74,7 +74,7 @@ void xrdp_peer_context_free(freerdp_peer* client, xrdpProcess* context)
 
 }
 
-xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, tbus done_event, void* transport)
+xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, LONG_PTR done_event, void* transport)
 {
 	int pid;
 	xrdpProcess* xfp;
@@ -110,7 +110,7 @@ int xrdp_process_get_status(xrdpProcess* self)
 	return self->status;
 }
 
-tbus xrdp_process_get_term_event(xrdpProcess* self)
+LONG_PTR xrdp_process_get_term_event(xrdpProcess* self)
 {
 	return self->term_event;
 }

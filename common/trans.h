@@ -21,8 +21,6 @@
 #if !defined(TRANS_H)
 #define TRANS_H
 
-#include "arch.h"
-
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
@@ -43,7 +41,7 @@ typedef int (*ttrans_conn_in)(struct trans* self, struct trans* new_self);
 
 struct trans
 {
-	tbus sck; /* socket handle */
+	LONG_PTR sck; /* socket handle */
 	int mode; /* 1 tcp, 2 unix socket */
 	int status;
 	int type1; /* 1 listener 2 server 3 client */
@@ -58,7 +56,7 @@ struct trans
 
 struct trans* trans_create(int mode, int in_size, int out_size);
 void trans_delete(struct trans* self);
-int trans_get_wait_objs(struct trans* self, tbus* objs, int* count);
+int trans_get_wait_objs(struct trans* self, LONG_PTR* objs, int* count);
 int trans_check_wait_objs(struct trans* self);
 int trans_force_read_s(struct trans* self, wStream* in_s, int size);
 int trans_force_write_s(struct trans* self, wStream* out_s);

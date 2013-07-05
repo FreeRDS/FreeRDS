@@ -25,7 +25,7 @@
 #define NULL 0
 #endif
 
-#include "arch.h"
+#include <winpr/wtypes.h>
 
 int g_rm_temp_dir(void);
 int g_mk_temp_dir(const char* app_name);
@@ -66,15 +66,15 @@ int g_tcp_can_recv(int sck, int millis);
 int g_tcp_select(int sck1, int sck2);
 void g_write_ip_address(int rcv_sck, char* ip_address, int bytes);
 void g_sleep(int msecs);
-tbus g_create_wait_obj(char* name);
-tbus g_create_wait_obj_from_socket(tbus socket, int write);
-void g_delete_wait_obj_from_socket(tbus wait_obj);
-int g_set_wait_obj(tbus obj);
-int g_reset_wait_obj(tbus obj);
-int g_is_wait_obj_set(tbus obj);
-int g_delete_wait_obj(tbus obj);
-int g_close_wait_obj(tbus obj);
-int g_obj_wait(tbus* read_objs, int rcount, tbus* write_objs, int wcount, int mstimeout);
+LONG_PTR g_create_wait_obj(char* name);
+LONG_PTR g_create_wait_obj_from_socket(LONG_PTR socket, int write);
+void g_delete_wait_obj_from_socket(LONG_PTR wait_obj);
+int g_set_wait_obj(LONG_PTR obj);
+int g_reset_wait_obj(LONG_PTR obj);
+int g_is_wait_obj_set(LONG_PTR obj);
+int g_delete_wait_obj(LONG_PTR obj);
+int g_close_wait_obj(LONG_PTR obj);
+int g_obj_wait(LONG_PTR* read_objs, int rcount, LONG_PTR* write_objs, int wcount, int mstimeout);
 void g_random(char* data, int len);
 int g_abs(int i);
 int g_memcmp(const void* s1, const void* s2, int len);

@@ -31,7 +31,7 @@
 extern int g_sck;
 extern int g_pid;
 extern struct config_sesman *g_cfg; /* in sesman.c */
-extern tbus g_term_event;
+extern LONG_PTR g_term_event;
 
 /******************************************************************************/
 void sig_sesman_shutdown(int sig)

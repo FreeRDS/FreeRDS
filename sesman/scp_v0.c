@@ -33,7 +33,7 @@ void
 scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	int display = 0;
-	tbus data;
+	LONG_PTR data;
 	xrdpSessionItem *s_item;
 	int errorcode = 0;
 

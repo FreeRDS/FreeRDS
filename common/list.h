@@ -21,12 +21,12 @@
 #if !defined(LIST_H)
 #define LIST_H
 
-#include "arch.h"
+#include <winpr/wtypes.h>
 
 /* list */
 struct list
 {
-	tbus* items;
+	LONG_PTR* items;
 	int count;
 	int alloc_size;
 	int grow_by;
@@ -36,12 +36,12 @@ typedef struct list xrdpList;
 
 xrdpList* list_create(void);
 void list_delete(xrdpList* self);
-void list_add_item(xrdpList* self, tbus item);
-tbus list_get_item(xrdpList* self, int index);
+void list_add_item(xrdpList* self, LONG_PTR item);
+LONG_PTR list_get_item(xrdpList* self, int index);
 void list_clear(xrdpList* self);
-int list_index_of(xrdpList* self, tbus item);
+int list_index_of(xrdpList* self, LONG_PTR item);
 void list_remove_item(xrdpList* self, int index);
-void list_insert_item(xrdpList* self, int index, tbus item);
+void list_insert_item(xrdpList* self, int index, LONG_PTR item);
 void list_append_list_strdup(xrdpList* self, xrdpList* dest, int start_index);
 void list_dump_items(xrdpList* self);
 

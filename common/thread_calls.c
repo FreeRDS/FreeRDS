@@ -24,7 +24,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #endif
-#include "arch.h"
+
 #include "thread_calls.h"
 #include "os_calls.h"
 
@@ -66,20 +66,20 @@ tc_thread_create(void * (* start_routine)(void *), void *arg)
 #endif
 
 /*****************************************************************************/
-tbus 
+LONG_PTR 
 tc_get_threadid(void)
 {
 #if defined(_WIN32)
-	return (tbus)GetCurrentThreadId();
+	return (LONG_PTR)GetCurrentThreadId();
 #else
-	return (tbus) pthread_self();
+	return (LONG_PTR) pthread_self();
 #endif
 }
 
 /*****************************************************************************/
 /* returns boolean */
 int 
-tc_threadid_equal(tbus tid1, tbus tid2)
+tc_threadid_equal(LONG_PTR tid1, LONG_PTR tid2)
 {
 #if defined(_WIN32)
 	return tid1 == tid2;
@@ -89,23 +89,23 @@ tc_threadid_equal(tbus tid1, tbus tid2)
 }
 
 /*****************************************************************************/
-tbus 
+LONG_PTR 
 tc_mutex_create(void)
 {
 #if defined(_WIN32)
-	return (tbus)CreateMutex(0, 0, 0);
+	return (LONG_PTR)CreateMutex(0, 0, 0);
 #else
 	pthread_mutex_t *lmutex;
 
 	lmutex = (pthread_mutex_t *) g_malloc(sizeof(pthread_mutex_t), 0);
 	pthread_mutex_init(lmutex, 0);
-	return (tbus) lmutex;
+	return (LONG_PTR) lmutex;
 #endif
 }
 
 /*****************************************************************************/
 void 
-tc_mutex_delete(tbus mutex)
+tc_mutex_delete(LONG_PTR mutex)
 {
 #if defined(_WIN32)
 	CloseHandle((HANDLE)mutex);
@@ -120,7 +120,7 @@ tc_mutex_delete(tbus mutex)
 
 /*****************************************************************************/
 int 
-tc_mutex_lock(tbus mutex)
+tc_mutex_lock(LONG_PTR mutex)
 {
 #if defined(_WIN32)
 	WaitForSingleObject((HANDLE)mutex, INFINITE);
@@ -133,7 +133,7 @@ tc_mutex_lock(tbus mutex)
 
 /*****************************************************************************/
 int 
-tc_mutex_unlock(tbus mutex)
+tc_mutex_unlock(LONG_PTR mutex)
 {
 	int rv = 0;
 #if defined(_WIN32)
@@ -150,26 +150,26 @@ tc_mutex_unlock(tbus mutex)
 }
 
 /*****************************************************************************/
-tbus 
+LONG_PTR 
 tc_sem_create(int init_count)
 {
 #if defined(_WIN32)
 	HANDLE sem;
 
 	sem = CreateSemaphore(0, init_count, init_count + 10, 0);
-	return (tbus)sem;
+	return (LONG_PTR)sem;
 #else
 	sem_t *sem = (sem_t *) NULL;
 
 	sem = (sem_t *) g_malloc(sizeof(sem_t), 0);
 	sem_init(sem, 0, init_count);
-	return (tbus) sem;
+	return (LONG_PTR) sem;
 #endif
 }
 
 /*****************************************************************************/
 void 
-tc_sem_delete(tbus sem)
+tc_sem_delete(LONG_PTR sem)
 {
 #if defined(_WIN32)
 	CloseHandle((HANDLE)sem);
@@ -184,7 +184,7 @@ tc_sem_delete(tbus sem)
 
 /*****************************************************************************/
 int 
-tc_sem_dec(tbus sem)
+tc_sem_dec(LONG_PTR sem)
 {
 #if defined(_WIN32)
 	WaitForSingleObject((HANDLE)sem, INFINITE);
@@ -197,7 +197,7 @@ tc_sem_dec(tbus sem)
 
 /*****************************************************************************/
 int 
-tc_sem_inc(tbus sem)
+tc_sem_inc(LONG_PTR sem)
 {
 #if defined(_WIN32)
 	ReleaseSemaphore((HANDLE)sem, 1, 0);

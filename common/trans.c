@@ -20,7 +20,6 @@
 
 #include "os_calls.h"
 #include "trans.h"
-#include "arch.h"
 
 /*****************************************************************************/
 struct trans* trans_create(int mode, int in_size, int out_size)
@@ -71,7 +70,7 @@ void trans_delete(struct trans* self)
 }
 
 /*****************************************************************************/
-int trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
+int trans_get_wait_objs(struct trans* self, LONG_PTR *objs, int *count)
 {
 	if (self == 0)
 	{
@@ -92,7 +91,7 @@ int trans_get_wait_objs(struct trans* self, tbus *objs, int *count)
 /*****************************************************************************/
 int trans_check_wait_objs(struct trans* self)
 {
-	tbus in_sck = (tbus) 0;
+	LONG_PTR in_sck = (LONG_PTR) 0;
 	struct trans* in_trans = (struct trans*) NULL;
 	int read_bytes = 0;
 	int to_read = 0;

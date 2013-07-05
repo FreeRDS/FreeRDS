@@ -18,7 +18,6 @@
  * read a config file
  */
 
-#include "arch.h"
 #include "os_calls.h"
 #include "list.h"
 #include "file.h"
@@ -66,7 +65,7 @@ static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 			}
 			else if (c == ']')
 			{
-					list_add_item(names, (tbus) g_strdup(text));
+					list_add_item(names, (LONG_PTR) g_strdup(text));
 					in_it = 0;
 					in_it_index = 0;
 					g_memset(text, 0, 256);
@@ -269,7 +268,7 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 						if (g_strlen(text) > 0)
 						{
 							file_split_name_value(text, name, value);
-							list_add_item(names, (tbus) g_strdup(name));
+							list_add_item(names, (LONG_PTR) g_strdup(name));
 
 							if (value[0] == '$')
 							{
@@ -277,16 +276,16 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 
 								if (lvalue != 0)
 								{
-									list_add_item(values, (tbus) g_strdup(lvalue));
+									list_add_item(values, (LONG_PTR) g_strdup(lvalue));
 								}
 								else
 								{
-									list_add_item(values, (tbus) g_strdup(""));
+									list_add_item(values, (LONG_PTR) g_strdup(""));
 								}
 							}
 							else
 							{
-								list_add_item(values, (tbus) g_strdup(value));
+								list_add_item(values, (LONG_PTR) g_strdup(value));
 							}
 						}
 					}

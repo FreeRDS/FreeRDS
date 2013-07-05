@@ -20,7 +20,6 @@
 #include "xrdp-freerdp.h"
 
 #include "log.h"
-#include "arch.h"
 #include "os_calls.h"
 #include "defines.h"
 #include "xrdp_rail.h"
@@ -388,7 +387,7 @@ static int lxrdp_session_change(xrdpModule *mod, int a, int b)
 	return 0;
 }
 
-static int lxrdp_get_wait_objs(xrdpModule *mod, tbus *read_objs, int *rcount, tbus *write_objs, int *wcount, int *timeout)
+static int lxrdp_get_wait_objs(xrdpModule *mod, LONG_PTR *read_objs, int *rcount, LONG_PTR *write_objs, int *wcount, int *timeout)
 {
 	void **rfds;
 	void **wfds;

@@ -32,8 +32,8 @@ unsigned char g_fixedkey[8] =
 { 23, 82, 107, 6, 35, 78, 88, 7 };
 struct config_sesman *g_cfg; /* defined in config.h */
 
-tbus g_term_event = 0;
-tbus g_sync_event = 0;
+LONG_PTR g_term_event = 0;
+LONG_PTR g_sync_event = 0;
 
 extern int g_thread_sck; /* in thread.c */
 
@@ -49,8 +49,8 @@ static void sesman_main_loop(void)
 	int error;
 	int robjs_count;
 	int cont;
-	tbus sck_obj;
-	tbus robjs[8];
+	LONG_PTR sck_obj;
+	LONG_PTR robjs[8];
 
 	log_message(LOG_LEVEL_INFO, "listening...");
 	g_sck = g_tcp_socket();

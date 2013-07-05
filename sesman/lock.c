@@ -23,10 +23,10 @@
 
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
-static tbus g_sync_mutex = 0;
-static tbus g_lock_chain = 0;
-static tbus g_sync_sem = 0;
-static tbus g_lock_socket = 0;
+static LONG_PTR g_sync_mutex = 0;
+static LONG_PTR g_lock_chain = 0;
+static LONG_PTR g_sync_sem = 0;
+static LONG_PTR g_lock_socket = 0;
 
 /******************************************************************************/
 void lock_init(void)
