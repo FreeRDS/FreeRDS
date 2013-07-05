@@ -41,6 +41,23 @@ struct _XRDP_FRAMEBUFFER
 };
 typedef struct _XRDP_FRAMEBUFFER XRDP_FRAMEBUFFER;
 
+#define XRDP_CAPABILITIES_SCHEMA \
+"{\"type\":\"record\",\
+	\"name\":\"Capabilities\",\
+	\"fields\":[\
+		{\"name\": \"DesktopWidth\", \"type\": \"int\"},\
+		{\"name\": \"DesktopHeight\", \"type\": \"int\"},\
+		{\"name\": \"ColorDepth\", \"type\": \"int\"},\
+		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
+		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
+		{\"name\": \"RemoteFX\", \"type\": \"boolean\"},\
+		{\"name\": \"OffscreenSupportLevel\", \"type\": \"int\"},\
+		{\"name\": \"OffscreenCacheSize\", \"type\": \"int\"},\
+		{\"name\": \"OffscreenCacheEntries\", \"type\": \"int\"},\
+		{\"name\": \"RailSupportLevel\", \"type\": \"int\"},\
+		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
+		]}"
+
 /* Message Types */
 
 #define XRDP_SERVER_BEGIN_UPDATE		1

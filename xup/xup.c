@@ -36,20 +36,6 @@
 
 int lib_send(xrdpModule* mod, unsigned char *data, int len);
 
-const char CAPABILITIES_SCHEMA[] =
-"{\"type\":\"record\",\
-	\"name\":\"Capabilities\",\
-	\"fields\":[\
-		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
-		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
-		{\"name\": \"RemoteFX\", \"type\": \"boolean\"},\
-		{\"name\": \"OffscreenSupportLevel\", \"type\": \"int\"},\
-		{\"name\": \"OffscreenCacheSize\", \"type\": \"int\"},\
-		{\"name\": \"OffscreenCacheEntries\", \"type\": \"int\"},\
-		{\"name\": \"RailSupportLevel\", \"type\": \"int\"},\
-		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
-		]}";
-
 static int lib_send_capabilities(xrdpModule* mod)
 {
 	size_t index;
@@ -57,7 +43,7 @@ static int lib_send_capabilities(xrdpModule* mod)
 	char* buffer;
 
 	avro_schema_t record_schema;
-	avro_schema_from_json_literal(CAPABILITIES_SCHEMA, &record_schema);
+	avro_schema_from_json_literal(XRDP_CAPABILITIES_SCHEMA, &record_schema);
 
 	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
 
@@ -65,6 +51,15 @@ static int lib_send_capabilities(xrdpModule* mod)
 	avro_generic_value_new(record_class, &val);
 
 	avro_value_t field;
+
+	avro_value_get_by_name(&val, "ColorDepth", &field, &index);
+	avro_value_set_int(&field, mod->settings->ColorDepth);
+
+	avro_value_get_by_name(&val, "DesktopWidth", &field, &index);
+	avro_value_set_int(&field, mod->settings->DesktopWidth);
+
+	avro_value_get_by_name(&val, "DesktopHeight", &field, &index);
+	avro_value_set_int(&field, mod->settings->DesktopHeight);
 
 	avro_value_get_by_name(&val, "JPEG", &field, &index);
 	avro_value_set_boolean(&field, mod->settings->JpegCodec);
@@ -330,27 +325,6 @@ int lib_mod_connect(xrdpModule* mod)
 	}
 
 	lib_send_capabilities(mod);
-
-	if (error == 0)
-	{
-		/* send screen size message */
-		Stream_SetPosition(s, 0);
-		Stream_Seek(s, 4);
-
-		Stream_Write_UINT16(s, 103);
-		Stream_Write_UINT32(s, 300);
-		Stream_Write_UINT32(s, mod->width);
-		Stream_Write_UINT32(s, mod->height);
-		Stream_Write_UINT32(s, mod->bpp);
-		Stream_Write_UINT32(s, mod->rfx);
-
-		len = (int) Stream_GetPosition(s);
-		Stream_SetPosition(s, 0);
-		Stream_Write_UINT32(s, len);
-
-		Stream_SetPosition(s, len);
-		lib_send(mod, s->buffer, len);
-	}
 
 	if (error == 0)
 	{

@@ -700,61 +700,6 @@ static int rdpup_recv_msg(wStream* s)
 	return rv;
 }
 
-/*
-    this from miScreenInit
-    pScreen->mmWidth = (xsize * 254 + dpix * 5) / (dpix * 10);
-    pScreen->mmHeight = (ysize * 254 + dpiy * 5) / (dpiy * 10);
- */
-static int process_screen_size_msg(int width, int height, int bpp)
-{
-	RRScreenSizePtr pSize;
-	int mmwidth;
-	int mmheight;
-	Bool ok;
-
-	LLOGLN(0, ("process_screen_size_msg: set width %d height %d bpp %d",
-			width, height, bpp));
-	g_rdpScreen.rdp_width = width;
-	g_rdpScreen.rdp_height = height;
-	g_rdpScreen.rdp_bpp = bpp;
-
-	if (bpp < 15)
-	{
-		g_rdpScreen.rdp_Bpp = 1;
-		g_rdpScreen.rdp_Bpp_mask = 0xFF;
-	}
-	else if (bpp == 15)
-	{
-		g_rdpScreen.rdp_Bpp = 2;
-		g_rdpScreen.rdp_Bpp_mask = 0x7FFF;
-	}
-	else if (bpp == 16)
-	{
-		g_rdpScreen.rdp_Bpp = 2;
-		g_rdpScreen.rdp_Bpp_mask = 0xFFFF;
-	}
-	else if (bpp > 16)
-	{
-		g_rdpScreen.rdp_Bpp = 4;
-		g_rdpScreen.rdp_Bpp_mask = 0xFFFFFF;
-	}
-
-	mmwidth = PixelToMM(width);
-	mmheight = PixelToMM(height);
-
-	pSize = RRRegisterSize(g_pScreen, width, height, mmwidth, mmheight);
-	RRSetCurrentConfig(g_pScreen, RR_Rotate_0, 0, pSize);
-
-	if ((g_rdpScreen.width != width) || (g_rdpScreen.height != height))
-	{
-		LLOGLN(0, ("  calling RRScreenSizeSet"));
-		ok = RRScreenSizeSet(g_pScreen, width, height, mmwidth, mmheight);
-		LLOGLN(0, ("  RRScreenSizeSet ok=[%d]", ok));
-	}
-
-	return 0;
-}
-
 static int l_bound_by(int val, int low, int high)
 {
 	if (val > high)
@@ -797,26 +742,63 @@ static int rdpup_send_rail(void)
 	return 0;
 }
 
-const char CAPABILITIES_SCHEMA[] =
-"{\"type\":\"record\",\
-	\"name\":\"Capabilities\",\
-	\"fields\":[\
-		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
-		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
-		{\"name\": \"RemoteFX\", \"type\": \"boolean\"},\
-		{\"name\": \"OffscreenSupportLevel\", \"type\": \"int\"},\
-		{\"name\": \"OffscreenCacheSize\", \"type\": \"int\"},\
-		{\"name\": \"OffscreenCacheEntries\", \"type\": \"int\"},\
-		{\"name\": \"RailSupportLevel\", \"type\": \"int\"},\
-		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
-		]}";
+static int process_screen_parameters(int DesktopWidth, int DesktopHeight, int ColorDepth)
+{
+	Bool ok;
+	int mmwidth;
+	int mmheight;
+	RRScreenSizePtr pSize;
+
+	g_rdpScreen.rdp_width = DesktopWidth;
+	g_rdpScreen.rdp_height = DesktopHeight;
+	g_rdpScreen.rdp_bpp = ColorDepth;
+
+	if (ColorDepth < 15)
+	{
+		g_rdpScreen.rdp_Bpp = 1;
+		g_rdpScreen.rdp_Bpp_mask = 0xFF;
+	}
+	else if (ColorDepth == 15)
+	{
+		g_rdpScreen.rdp_Bpp = 2;
+		g_rdpScreen.rdp_Bpp_mask = 0x7FFF;
+	}
+	else if (ColorDepth == 16)
+	{
+		g_rdpScreen.rdp_Bpp = 2;
+		g_rdpScreen.rdp_Bpp_mask = 0xFFFF;
+	}
+	else if (ColorDepth > 16)
+	{
+		g_rdpScreen.rdp_Bpp = 4;
+		g_rdpScreen.rdp_Bpp_mask = 0xFFFFFF;
+	}
+
+	mmwidth = PixelToMM(DesktopWidth);
+	mmheight = PixelToMM(DesktopHeight);
+
+	pSize = RRRegisterSize(g_pScreen, DesktopWidth, DesktopHeight, mmwidth, mmheight);
+	RRSetCurrentConfig(g_pScreen, RR_Rotate_0, 0, pSize);
+
+	if ((g_rdpScreen.width != DesktopWidth) || (g_rdpScreen.height != DesktopHeight))
+	{
+		LLOGLN(0, ("  calling RRScreenSizeSet"));
+		ok = RRScreenSizeSet(g_pScreen, DesktopWidth, DesktopHeight, mmwidth, mmheight);
+		LLOGLN(0, ("  RRScreenSizeSet ok=[%d]", ok));
+	}
+
+	return 0;
+}
 
 static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 {
 	size_t index;
+	int ColorDepth;
+	int DesktopWidth;
+	int DesktopHeight;
 
 	avro_schema_t record_schema;
-	avro_schema_from_json_literal(CAPABILITIES_SCHEMA, &record_schema);
+	avro_schema_from_json_literal(XRDP_CAPABILITIES_SCHEMA, &record_schema);
 
 	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
 
@@ -828,6 +810,15 @@ static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 	avro_value_read(reader, &val);
 
 	avro_value_t field;
+
+	avro_value_get_by_name(&val, "ColorDepth", &field, &index);
+	avro_value_get_int(&field, &ColorDepth);
+
+	avro_value_get_by_name(&val, "DesktopWidth", &field, &index);
+	avro_value_get_int(&field, &DesktopWidth);
+
+	avro_value_get_by_name(&val, "DesktopHeight", &field, &index);
+	avro_value_get_int(&field, &DesktopHeight);
 
 	avro_value_get_by_name(&val, "JPEG", &field, &index);
 	avro_value_get_boolean(&field, &g_rdpScreen.Jpeg);
@@ -890,6 +881,8 @@ static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 
 	if (g_rdpScreen.OffscreenCacheEntries == 2000)
 		g_can_do_pix_to_pix = 1;
+
+	process_screen_parameters(DesktopWidth, DesktopHeight, ColorDepth);
 
 	return 0;
 }
@@ -980,9 +973,6 @@ static int rdpup_process_msg(wStream* s)
 				rdpup_send_area(0, (param1 >> 16) & 0xFFFF, param1 & 0xFFFF,
 						(param2 >> 16) & 0xFFFF, param2 & 0xFFFF);
 				rdpup_end_update();
-				break;
-			case 300:
-				process_screen_size_msg(param1, param2, param3);
 				break;
 		}
 	}
