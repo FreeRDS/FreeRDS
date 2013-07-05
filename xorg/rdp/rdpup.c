@@ -770,52 +770,6 @@ static int l_bound_by(int val, int low, int high)
 	return val;
 }
 
-static int rdpup_send_caps(void)
-{
-	int len;
-	int rv;
-	int cap_count;
-	int cap_bytes;
-	wStream* s;
-
-	s = Stream_New(NULL, 8192);
-	Stream_Seek(s, 8);
-
-	cap_count = 0;
-	cap_bytes = 0;
-
-	len = (int) Stream_GetPosition(s);
-	Stream_SetPosition(s, 0);
-
-	Stream_Write_UINT16(s, 2); /* caps */
-	Stream_Write_UINT16(s, cap_count); /* num caps */
-	Stream_Write_UINT32(s, cap_bytes); /* caps len after header */
-
-	rv = rdpup_send(s->buffer, len);
-
-	if (rv != 0)
-	{
-		LLOGLN(0, ("rdpup_send_caps: rdpup_send failed"));
-	}
-
-	Stream_Free(s, TRUE);
-
-	return rv;
-}
-
-static int process_version_msg(int param1, int param2, int param3, int param4)
-{
-	LLOGLN(0, ("process_version_msg: version %d %d %d %d", param1, param2,
-			param3, param4));
-
-	if ((param1 > 0) || (param2 > 0) || (param3 > 0) || (param4 > 0))
-	{
-		rdpup_send_caps();
-	}
-
-	return 0;
-}
-
 static int rdpup_send_rail(void)
 {
 	WindowPtr wnd;
@@ -1029,9 +983,6 @@ static int rdpup_process_msg(wStream* s)
 				break;
 			case 300:
 				process_screen_size_msg(param1, param2, param3);
-				break;
-			case 301:
-				process_version_msg(param1, param2, param3, param4);
 				break;
 		}
 	}

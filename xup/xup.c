@@ -34,6 +34,85 @@
 
 #include <freerdp/freerdp.h>
 
+int lib_send(xrdpModule* mod, unsigned char *data, int len);
+
+const char CAPABILITIES_SCHEMA[] =
+"{\"type\":\"record\",\
+	\"name\":\"Capabilities\",\
+	\"fields\":[\
+		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
+		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
+		{\"name\": \"RemoteFX\", \"type\": \"boolean\"},\
+		{\"name\": \"OffscreenSupportLevel\", \"type\": \"int\"},\
+		{\"name\": \"OffscreenCacheSize\", \"type\": \"int\"},\
+		{\"name\": \"OffscreenCacheEntries\", \"type\": \"int\"},\
+		{\"name\": \"RailSupportLevel\", \"type\": \"int\"},\
+		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
+		]}";
+
+static int lib_send_capabilities(xrdpModule* mod)
+{
+	size_t index;
+	size_t length;
+	char* buffer;
+
+	avro_schema_t record_schema;
+	avro_schema_from_json_literal(CAPABILITIES_SCHEMA, &record_schema);
+
+	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
+
+	avro_value_t val;
+	avro_generic_value_new(record_class, &val);
+
+	avro_value_t field;
+
+	avro_value_get_by_name(&val, "JPEG", &field, &index);
+	avro_value_set_boolean(&field, mod->settings->JpegCodec);
+
+	avro_value_get_by_name(&val, "NSCodec", &field, &index);
+	avro_value_set_boolean(&field, mod->settings->NSCodec);
+
+	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
+	avro_value_set_boolean(&field, mod->settings->RemoteFxCodec);
+
+	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
+	avro_value_set_int(&field, mod->settings->OffscreenSupportLevel);
+
+	avro_value_get_by_name(&val, "OffscreenCacheSize", &field, &index);
+	avro_value_set_int(&field, mod->settings->OffscreenCacheSize);
+
+	avro_value_get_by_name(&val, "OffscreenCacheEntries", &field, &index);
+	avro_value_set_int(&field, mod->settings->OffscreenCacheEntries);
+
+	avro_value_get_by_name(&val, "RailSupportLevel", &field, &index);
+	avro_value_set_int(&field, mod->settings->RemoteApplicationMode);
+
+	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
+	avro_value_set_int(&field, mod->settings->ColorPointerFlag);
+
+	avro_value_sizeof(&val, &length);
+
+	buffer = (char*) malloc(length + 6);
+
+	avro_writer_t writer = avro_writer_memory(&buffer[6], (int64_t) length);
+	avro_value_write(writer, &val);
+
+	avro_value_iface_decref(record_class);
+	avro_schema_decref(record_schema);
+
+        avro_writer_flush(writer);
+
+        *((UINT32*) &buffer[0]) = (UINT32) length + 6;
+        *((UINT16*) &buffer[4]) = 104;
+
+	lib_send(mod, (BYTE*) buffer, (int) length + 6);
+
+        avro_writer_free(writer);
+	free(buffer);
+
+	return 0;
+}
+
 int lib_recv(xrdpModule* mod, unsigned char *data, int len)
 {
 	int rcvd;
@@ -250,26 +329,7 @@ int lib_mod_connect(xrdpModule* mod)
 		g_sleep(250);
 	}
 
-	if (error == 0)
-	{
-		/* send version message */
-		Stream_SetPosition(s, 0);
-		Stream_Seek(s, 4);
-
-		Stream_Write_UINT16(s, 103);
-		Stream_Write_UINT32(s, 301);
-		Stream_Write_UINT32(s, 0);
-		Stream_Write_UINT32(s, 0);
-		Stream_Write_UINT32(s, 0);
-		Stream_Write_UINT32(s, 1);
-
-		len = (int) (s->pointer - s->buffer);
-		s->pointer = s->buffer;
-		Stream_Write_UINT32(s, len);
-
-		s->pointer = s->buffer + len;
-		lib_send(mod, s->buffer, len);
-	}
+	lib_send_capabilities(mod);
 
 	if (error == 0)
 	{
@@ -284,11 +344,11 @@ int lib_mod_connect(xrdpModule* mod)
 		Stream_Write_UINT32(s, mod->bpp);
 		Stream_Write_UINT32(s, mod->rfx);
 
-		len = (int) (s->pointer - s->buffer);
-		s->pointer = s->buffer;
+		len = (int) Stream_GetPosition(s);
+		Stream_SetPosition(s, 0);
 		Stream_Write_UINT32(s, len);
 
-		s->pointer = s->buffer + len;
+		Stream_SetPosition(s, len);
 		lib_send(mod, s->buffer, len);
 	}
 
@@ -309,11 +369,11 @@ int lib_mod_connect(xrdpModule* mod)
 		Stream_Write_UINT32(s, 0);
 		Stream_Write_UINT32(s, 0);
 
-		len = (int) (s->pointer - s->buffer);
-		s->pointer = s->buffer;
+		len = (int) Stream_GetPosition(s);
+		Stream_SetPosition(s, 0);
 		Stream_Write_UINT32(s, len);
 
-		s->pointer = s->buffer + len;
+		Stream_SetPosition(s, len);
 		lib_send(mod, s->buffer, len);
 	}
 
@@ -399,12 +459,12 @@ int lib_mod_event(xrdpModule* mod, int msg, long param1, long param2, long param
 	Stream_Write_UINT32(s, param3);
 	Stream_Write_UINT32(s, param4);
 
-	len = (int) (s->pointer - s->buffer);
-	s->pointer = s->buffer;
+	len = (int) Stream_GetPosition(s);
+	Stream_SetPosition(s, 0);
 
 	Stream_Write_UINT32(s, len);
 
-	s->pointer = s->buffer + len;
+	Stream_SetPosition(s, len);
 	rv = lib_send(mod, s->buffer, len);
 
 	Stream_Free(s, TRUE);
@@ -641,83 +701,6 @@ static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
 	return status;
 }
 
-const char CAPABILITIES_SCHEMA[] =
-"{\"type\":\"record\",\
-	\"name\":\"Capabilities\",\
-	\"fields\":[\
-		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
-		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
-		{\"name\": \"RemoteFX\", \"type\": \"boolean\"},\
-		{\"name\": \"OffscreenSupportLevel\", \"type\": \"int\"},\
-		{\"name\": \"OffscreenCacheSize\", \"type\": \"int\"},\
-		{\"name\": \"OffscreenCacheEntries\", \"type\": \"int\"},\
-		{\"name\": \"RailSupportLevel\", \"type\": \"int\"},\
-		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
-		]}";
-
-static int lib_send_capabilities(xrdpModule* mod)
-{
-	size_t index;
-	size_t length;
-	char* buffer;
-
-	avro_schema_t record_schema;
-	avro_schema_from_json_literal(CAPABILITIES_SCHEMA, &record_schema);
-
-	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
-
-	avro_value_t val;
-	avro_generic_value_new(record_class, &val);
-
-	avro_value_t field;
-
-	avro_value_get_by_name(&val, "JPEG", &field, &index);
-	avro_value_set_boolean(&field, mod->settings->JpegCodec);
-
-	avro_value_get_by_name(&val, "NSCodec", &field, &index);
-	avro_value_set_boolean(&field, mod->settings->NSCodec);
-
-	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
-	avro_value_set_boolean(&field, mod->settings->RemoteFxCodec);
-
-	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
-	avro_value_set_int(&field, mod->settings->OffscreenSupportLevel);
-
-	avro_value_get_by_name(&val, "OffscreenCacheSize", &field, &index);
-	avro_value_set_int(&field, mod->settings->OffscreenCacheSize);
-
-	avro_value_get_by_name(&val, "OffscreenCacheEntries", &field, &index);
-	avro_value_set_int(&field, mod->settings->OffscreenCacheEntries);
-
-	avro_value_get_by_name(&val, "RailSupportLevel", &field, &index);
-	avro_value_set_int(&field, mod->settings->RemoteApplicationMode);
-
-	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
-	avro_value_set_int(&field, mod->settings->ColorPointerFlag);
-
-	avro_value_sizeof(&val, &length);
-
-	buffer = (char*) malloc(length + 6);
-
-	avro_writer_t writer = avro_writer_memory(&buffer[6], (int64_t) length);
-	avro_value_write(writer, &val);
-
-	avro_value_iface_decref(record_class);
-	avro_schema_decref(record_schema);
-
-        avro_writer_flush(writer);
-
-        *((UINT32*) &buffer[0]) = (UINT32) length + 6;
-        *((UINT16*) &buffer[4]) = 104;
-
-	lib_send(mod, (BYTE*) buffer, (int) length + 6);
-
-        avro_writer_free(writer);
-	free(buffer);
-
-	return 0;
-}
-
 int lib_mod_signal(xrdpModule* mod)
 {
 	wStream* s;
@@ -742,61 +725,7 @@ int lib_mod_signal(xrdpModule* mod)
 
 		printf("lib_mod_signal: type: %d num_orders: %d length: %d\n", type, num_orders, len);
 
-		if (type == 1) /* original order list */
-		{
-			Stream_EnsureCapacity(s, len);
-			Stream_SetPosition(s, 0);
-			s->length = 0;
-
-			rv = lib_recv(mod, s->buffer, len);
-
-			if (rv == 0)
-			{
-				for (index = 0; index < num_orders; index++)
-				{
-					Stream_Read_UINT16(s, type);
-					rv = lib_mod_process_orders(mod, type, s);
-
-					if (rv != 0)
-					{
-						break;
-					}
-				}
-			}
-		}
-		else if (type == 2) /* caps */
-		{
-			g_writeln("lib_mod_signal: type 2 len %d", len);
-
-			Stream_EnsureCapacity(s, len);
-			Stream_SetPosition(s, 0);
-			s->length = 0;
-
-			rv = lib_recv(mod, s->buffer, len);
-
-			if (rv == 0)
-			{
-				for (index = 0; index < num_orders; index++)
-				{
-					phold = s->pointer;
-					Stream_Read_UINT16(s, type);
-					Stream_Read_UINT16(s, len);
-
-					switch (type)
-					{
-						default:
-							g_writeln("lib_mod_signal: unknown cap type %d len %d",
-									type, len);
-							break;
-					}
-
-					s->pointer = phold + len;
-				}
-
-				lib_send_capabilities(mod);
-			}
-		}
-		else if (type == 3) /* order list with len after type */
+		if (type == 3)
 		{
 			Stream_EnsureCapacity(s, len);
 			Stream_SetPosition(s, 0);
