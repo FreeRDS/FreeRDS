@@ -66,8 +66,6 @@ typedef struct xrdp_startup_params xrdpStartupParams;
 #define DEFAULT_STRING_LEN 255
 #define LOG_WINDOW_CHAR_PER_LINE 60
 
-#include "xrdp_rail.h"
-
 #define MAX_NR_CHANNELS 16
 #define MAX_CHANNEL_NAME 16
 

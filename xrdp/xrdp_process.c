@@ -273,9 +273,9 @@ void* xrdp_process_main_thread(void* arg)
 	int wcount;
 	int robjc;
 	int wobjc;
-	long term_obj;
-	long robjs[32];
-	long wobjs[32];
+	LONG_PTR term_obj;
+	LONG_PTR robjs[32];
+	LONG_PTR wobjs[32];
 	int itimeout;
 	void* rfds[32];
 	void* wfds[32];

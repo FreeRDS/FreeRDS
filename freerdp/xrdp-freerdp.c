@@ -22,7 +22,6 @@
 #include "log.h"
 #include "os_calls.h"
 #include "defines.h"
-#include "xrdp_rail.h"
 
 #include <X11/Xlib.h>
 

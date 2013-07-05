@@ -30,7 +30,44 @@
 
 #include <xrdp-ng/xrdp.h>
 
-#include "xrdp_rail.h"
+struct rail_icon_info
+{
+	int bpp;
+	int width;
+	int height;
+	int cmap_bytes;
+	int mask_bytes;
+	int data_bytes;
+	char* mask;
+	char* cmap;
+	char* data;
+};
+
+struct rail_notify_icon_infotip
+{
+	int timeout;
+	int flags;
+	char* text;
+	char* title;
+};
+
+struct rail_notify_state_order
+{
+	int version;
+	char* tool_tip;
+	struct rail_notify_icon_infotip infotip;
+	int state;
+	int icon_cache_entry;
+	int icon_cache_id;
+	struct rail_icon_info icon_info;
+};
+
+struct rail_monitored_desktop_order
+{
+	int active_window_id;
+	int num_window_ids;
+	int* window_ids;
+};
 
 struct xrdp_brush
 {

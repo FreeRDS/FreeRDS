@@ -22,7 +22,6 @@
 
 #include "os_calls.h"
 #include "defines.h"
-#include "xrdp_rail.h"
 
 #include <stdio.h>
 #include <sys/shm.h>
@@ -336,7 +335,7 @@ int lib_mod_connect(xrdpModule* mod)
 	return 0;
 }
 
-int lib_mod_event(xrdpModule* mod, int msg, LONG_PTR param1, LONG_PTR param2, LONG_PTR param3, LONG_PTR param4)
+int lib_mod_event(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4)
 {
 	wStream* s;
 	int len;

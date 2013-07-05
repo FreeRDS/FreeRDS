@@ -21,7 +21,6 @@
 #include "os_calls.h"
 #include "trans.h"
 
-/*****************************************************************************/
 struct trans* trans_create(int mode, int in_size, int out_size)
 {
 	struct trans* self = (struct trans *) NULL;
@@ -42,13 +41,10 @@ struct trans* trans_create(int mode, int in_size, int out_size)
 	return self;
 }
 
-/*****************************************************************************/
 void trans_delete(struct trans* self)
 {
-	if (self == 0)
-	{
+	if (!self)
 		return;
-	}
 
 	Stream_Free(self->in_s, TRUE);
 	Stream_Free(self->out_s, TRUE);
@@ -69,13 +65,10 @@ void trans_delete(struct trans* self)
 	g_free(self);
 }
 
-/*****************************************************************************/
 int trans_get_wait_objs(struct trans* self, LONG_PTR *objs, int *count)
 {
-	if (self == 0)
-	{
+	if (!self)
 		return 1;
-	}
 
 	if (self->status != TRANS_STATUS_UP)
 	{
@@ -88,7 +81,6 @@ int trans_get_wait_objs(struct trans* self, LONG_PTR *objs, int *count)
 	return 0;
 }
 
-/*****************************************************************************/
 int trans_check_wait_objs(struct trans* self)
 {
 	LONG_PTR in_sck = (LONG_PTR) 0;
@@ -98,10 +90,8 @@ int trans_check_wait_objs(struct trans* self)
 	int read_so_far = 0;
 	int rv = 0;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 1;
-	}
 
 	if (self->status != TRANS_STATUS_UP)
 	{
@@ -204,7 +194,6 @@ int trans_check_wait_objs(struct trans* self)
 	return rv;
 }
 
-/*****************************************************************************/
 int trans_force_read_s(struct trans* self, wStream* in_s, int size)
 {
 	int rcvd;
@@ -253,13 +242,11 @@ int trans_force_read_s(struct trans* self, wStream* in_s, int size)
 	return 0;
 }
 
-/*****************************************************************************/
 int trans_force_read(struct trans* self, int size)
 {
 	return trans_force_read_s(self, self->in_s, size);
 }
 
-/*****************************************************************************/
 int trans_force_write_s(struct trans* self, wStream* out_s)
 {
 	int size;
@@ -309,13 +296,11 @@ int trans_force_write_s(struct trans* self, wStream* out_s)
 	return 0;
 }
 
-/*****************************************************************************/
 int trans_force_write(struct trans* self)
 {
 	return trans_force_write_s(self, self->out_s);
 }
 
-/*****************************************************************************/
 int trans_connect(struct trans* self, const char *server, const char *port, int timeout)
 {
 	int error;
@@ -363,7 +348,6 @@ int trans_connect(struct trans* self, const char *server, const char *port, int 
 	return 0;
 }
 
-/*****************************************************************************/
 int trans_listen_address(struct trans* self, char *port, const char *address)
 {
 	if (self->sck != 0)
@@ -414,13 +398,11 @@ int trans_listen_address(struct trans* self, char *port, const char *address)
 	return 1;
 }
 
-/*****************************************************************************/
 int trans_listen(struct trans* self, char *port)
 {
 	return trans_listen_address(self, port, "0.0.0.0");
 }
 
-/*****************************************************************************/
 wStream* trans_get_in_s(struct trans* self)
 {
 	wStream* rv = (wStream*) NULL;
@@ -437,7 +419,6 @@ wStream* trans_get_in_s(struct trans* self)
 	return rv;
 }
 
-/*****************************************************************************/
 wStream* trans_get_out_s(struct trans *self, int size)
 {
 	wStream* rv = (wStream*) NULL;
