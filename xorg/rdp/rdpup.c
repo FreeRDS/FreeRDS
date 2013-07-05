@@ -857,9 +857,9 @@ static int rdpup_process_capabilities_msg(BYTE* buffer, int length)
 			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
 
 	if (g_rdpScreen.RemoteFX || g_rdpScreen.NSCodec)
-	{
 		g_rdpScreen.CodecMode = 1;
-	}
+	else
+		g_rdpScreen.CodecMode = 0;
 
 	if (!g_rdpScreen.CodecMode)
 	{
@@ -1141,6 +1141,7 @@ int rdpup_check(void)
 			g_sck_closed = 0;
 			g_begin = 0;
 			g_con_number++;
+			g_rdpScreen.fbAttached = 0;
 			AddEnabledDevice(g_sck);
 		}
 	}
