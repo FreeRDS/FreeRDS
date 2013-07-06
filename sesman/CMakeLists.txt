@@ -38,8 +38,6 @@ set(${MODULE_PREFIX}_HEADERS
 	lock.h
 	scp.h
 	scp_v0.h
-	scp_v1.h
-	scp_v1_mng.h
 	session.h
 	sig.h
 	thread.h)
@@ -47,8 +45,6 @@ set(${MODULE_PREFIX}_HEADERS
 set(${MODULE_PREFIX}_SRCS
 	scp.c
 	scp_v0.c
-	scp_v1.c
-	scp_v1_mng.c
 	sesman.c
 	session.c
 	sig.c

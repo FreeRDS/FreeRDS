@@ -183,7 +183,7 @@ struct config_sesman
 	 * @var log
 	 * @brief Log configuration struct
 	 */
-	//struct log_config log;
+	struct log_config log;
 	/**
 	 * @var sec
 	 * @brief Security configuration options struct

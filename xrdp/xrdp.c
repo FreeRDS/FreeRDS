@@ -261,7 +261,6 @@ int main(int argc, char **argv)
 {
 	int fd;
 	int pid;
-	int test;
 	int no_daemon;
 	char text[256];
 	char pid_file[256];
@@ -270,11 +269,6 @@ int main(int argc, char **argv)
 	xrdpStartupParams* startup_params;
 
 	g_init("xrdp");
-
-	for (test = 0; test < argc; test++)
-	{
-		DEBUG(("Argument %i - %s",test,argv[test]));
-	}
 
 	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
 

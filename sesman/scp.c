@@ -51,25 +51,7 @@ void* scp_process_start(void *sck)
 	switch (scp_vXs_accept(&scon, &(sdata)))
 	{
 		case SCP_SERVER_STATE_OK:
-
-			if (sdata->version == 0)
-			{
-				/* starts processing an scp v0 connection */
-				LOG_DBG("accept ok, go on with scp v0\n", 0);
-				scp_v0_process(&scon, sdata);
-			}
-			else
-			{
-				LOG_DBG("accept ok, go on with scp v1\n", 0);
-				/*LOG_DBG("user: %s\npass: %s",sdata->username, sdata->password);*/
-				scp_v1_process(&scon, sdata);
-			}
-			break;
-
-		case SCP_SERVER_STATE_START_MANAGE:
-			/* starting a management session */
-			log_message(LOG_LEVEL_WARNING, "starting a sesman management session...");
-			scp_v1_mng_process(&scon, sdata);
+			scp_v0_process(&scon, sdata);
 			break;
 
 		case SCP_SERVER_STATE_VERSION_ERR:

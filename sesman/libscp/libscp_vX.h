@@ -30,7 +30,6 @@
 #include "libscp_types.h"
 
 #include "libscp_v0.h"
-#include "libscp_v1s.h"
 
 /* server API */
 /**

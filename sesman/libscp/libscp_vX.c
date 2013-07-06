@@ -39,14 +39,7 @@ enum SCP_SERVER_STATES_E scp_vXs_accept(struct SCP_CONNECTION *c, struct SCP_SES
 
 	Stream_Read_UINT32_BE(c->in_s, version);
 
-	if (version == 0)
-	{
-		return scp_v0s_accept(c, s, 1);
-	}
-	else if (version == 1)
-	{
-		return scp_v1s_accept(c, s, 1);
-	}
+	return scp_v0s_accept(c, s, 1);
 
 	return SCP_SERVER_STATE_VERSION_ERR;
 }

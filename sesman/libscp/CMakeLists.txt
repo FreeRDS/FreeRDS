@@ -29,17 +29,13 @@ set(${MODULE_PREFIX}_HEADERS
 	libscp.h
 	libscp_session.h
 	libscp_types_mng.h
-	libscp_v1c_mng.h
 	libscp_vX.h
 	libscp_commands_mng.h
 	libscp_init.h
 	libscp_tcp.h
 	libscp_v0.h
-	libscp_v1s.h
 	libscp_lock.h
-	libscp_types.h
-	libscp_v1c.h
-	libscp_v1s_mng.h)
+	libscp_types.h)
 
 set(${MODULE_PREFIX}_SRCS
 	libscp_connection.c
@@ -48,10 +44,6 @@ set(${MODULE_PREFIX}_SRCS
 	libscp_session.c
 	libscp_tcp.c
 	libscp_v0.c
-	libscp_v1c.c
-	libscp_v1s.c
-	libscp_v1c_mng.c
-	libscp_v1s_mng.c
 	libscp_vX.c
 	${${MODULE_PREFIX}_HEADERS})
 
