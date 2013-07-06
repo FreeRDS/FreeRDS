@@ -33,7 +33,6 @@ extern int g_pid;
 extern struct config_sesman *g_cfg; /* in sesman.c */
 extern LONG_PTR g_term_event;
 
-/******************************************************************************/
 void sig_sesman_shutdown(int sig)
 {
 	char pid_file[256];
@@ -58,7 +57,6 @@ void sig_sesman_shutdown(int sig)
 	g_file_delete(pid_file);
 }
 
-/******************************************************************************/
 void sig_sesman_reload_cfg(int sig)
 {
 	int error;
@@ -117,7 +115,6 @@ void sig_sesman_reload_cfg(int sig)
 	log_message(LOG_LEVEL_INFO, "configuration reloaded, log subsystem restarted");
 }
 
-/******************************************************************************/
 void sig_sesman_session_end(int sig)
 {
 	int pid;
@@ -135,7 +132,6 @@ void sig_sesman_session_end(int sig)
 	}
 }
 
-/******************************************************************************/
 void* sig_handler_thread(void *arg)
 {
 	int recv_signal;

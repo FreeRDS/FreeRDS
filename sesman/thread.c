@@ -38,7 +38,6 @@ static pthread_t g_thread_sighandler;
 /* a variable to pass the socket of s connection to a thread */
 int g_thread_sck;
 
-/******************************************************************************/
 int thread_sighandler_start(void)
 {
 	int ret;
@@ -93,7 +92,6 @@ int thread_sighandler_start(void)
 	return 1;
 }
 
-/******************************************************************************/
 int thread_scp_start(int skt)
 {
 	int ret;
@@ -121,10 +119,8 @@ int thread_scp_start(int skt)
 					"invalid attributes for scp thread on sck %d (creation returned  EINVAL)", skt);
 			break;
 		case EAGAIN:
-			log_message(
-					LOG_LEVEL_ERROR,
-					"not enough resources to start scp thread on sck %d (creation returned EAGAIN)",
-					skt);
+			log_message(LOG_LEVEL_ERROR,
+					"not enough resources to start scp thread on sck %d (creation returned EAGAIN)", skt);
 			break;
 		case EPERM:
 			log_message(LOG_LEVEL_ERROR,

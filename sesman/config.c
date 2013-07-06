@@ -64,7 +64,6 @@ int config_read(struct config_sesman *cfg)
 	config_read_globals(fd, cfg, param_n, param_v);
 
 	/* read X11rdp parameter list */
-	//config_read_vnc_params(fd, cfg, param_n, param_v);
 	config_read_rdp_params(fd, cfg, param_n, param_v);
 
 	/* read security config */
@@ -102,34 +101,32 @@ int config_read_globals(int file, struct config_sesman *cf, xrdpList *param_n, x
 
 	for (i = 0; i < param_n->count; i++)
 	{
-		buf = (char *) list_get_item(param_n, i);
+		buf = (char*) list_get_item(param_n, i);
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_DEFWM))
 		{
-			g_strncpy(cf->default_wm, (char *) list_get_item(param_v, i), 31);
-		} else
-			if (0 == g_strcasecmp(buf, SESMAN_CFG_USERWM))
-			{
-				g_strncpy(cf->user_wm, (char *) list_get_item(param_v, i), 31);
-			} else
-				if (0 == g_strcasecmp(buf, SESMAN_CFG_ENABLE_USERWM))
-				{
-					cf->enable_user_wm = text2bool((char *) list_get_item(param_v, i));
-				} else
-					if (0 == g_strcasecmp(buf, SESMAN_CFG_PORT))
-					{
-						g_strncpy(cf->listen_port, (char *) list_get_item(param_v, i), 15);
-					} else
-						if (0 == g_strcasecmp(buf, SESMAN_CFG_ADDRESS))
-						{
-							g_strncpy(cf->listen_address,
-									(char *) list_get_item(param_v, i), 31);
-						} else
-							if (0 == g_strcasecmp(buf, SESMAN_CFG_AUTH_FILE_PATH))
-							{
-								cf->auth_file_path = g_strdup((char *) list_get_item(
-										param_v, i));
-							}
+			g_strncpy(cf->default_wm, (char*) list_get_item(param_v, i), 31);
+		}
+		else if (0 == g_strcasecmp(buf, SESMAN_CFG_USERWM))
+		{
+			g_strncpy(cf->user_wm, (char*) list_get_item(param_v, i), 31);
+		}
+		else if (0 == g_strcasecmp(buf, SESMAN_CFG_ENABLE_USERWM))
+		{
+			cf->enable_user_wm = text2bool((char*) list_get_item(param_v, i));
+		}
+		else if (0 == g_strcasecmp(buf, SESMAN_CFG_PORT))
+		{
+			g_strncpy(cf->listen_port, (char*) list_get_item(param_v, i), 15);
+		}
+		else if (0 == g_strcasecmp(buf, SESMAN_CFG_ADDRESS))
+		{
+			g_strncpy(cf->listen_address, (char*) list_get_item(param_v, i), 31);
+		}
+		else if (0 == g_strcasecmp(buf, SESMAN_CFG_AUTH_FILE_PATH))
+		{
+			cf->auth_file_path = g_strdup((char*) list_get_item(param_v, i));
+		}
 	}
 
 	/* checking for missing required parameters */
@@ -184,21 +181,21 @@ int config_read_security(int file, struct config_security *sc, xrdpList *param_n
 
 	for (i = 0; i < param_n->count; i++)
 	{
-		buf = (char *) list_get_item(param_n, i);
+		buf = (char*) list_get_item(param_n, i);
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SEC_ALLOW_ROOT))
 		{
-			sc->allow_root = text2bool((char *) list_get_item(param_v, i));
+			sc->allow_root = text2bool((char*) list_get_item(param_v, i));
 		}
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SEC_LOGIN_RETRY))
 		{
-			sc->login_retry = g_atoi((char *) list_get_item(param_v, i));
+			sc->login_retry = g_atoi((char*) list_get_item(param_v, i));
 		}
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SEC_USR_GROUP))
 		{
-			if (g_getgroup_info((char *) list_get_item(param_v, i), &gid) == 0)
+			if (g_getgroup_info((char*) list_get_item(param_v, i), &gid) == 0)
 			{
 				sc->ts_users_enable = 1;
 				sc->ts_users = gid;
@@ -207,15 +204,16 @@ int config_read_security(int file, struct config_security *sc, xrdpList *param_n
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SEC_ADM_GROUP))
 		{
-			if (g_getgroup_info((char *) list_get_item(param_v, i), &gid) == 0)
+			if (g_getgroup_info((char*) list_get_item(param_v, i), &gid) == 0)
 			{
 				sc->ts_admins_enable = 1;
 				sc->ts_admins = gid;
 			}
 		}
+
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SEC_ALWAYSGROUPCHECK))
 		{
-			sc->ts_always_group_check = text2bool((char *) list_get_item(param_v, i));
+			sc->ts_always_group_check = text2bool((char*) list_get_item(param_v, i));
 		}
 	}
 
@@ -228,7 +226,8 @@ int config_read_security(int file, struct config_security *sc, xrdpList *param_n
 	if (sc->ts_users_enable)
 	{
 		g_printf("\tTSUsersGroup:         %i\r\n", sc->ts_users);
-	} else
+	}
+	else
 	{
 		g_printf("\tNo TSUsersGroup defined\r\n");
 	}
@@ -236,7 +235,8 @@ int config_read_security(int file, struct config_security *sc, xrdpList *param_n
 	if (sc->ts_admins_enable)
 	{
 		g_printf("\tTSAdminsGroup:        %i\r\n", sc->ts_admins);
-	} else
+	}
+	else
 	{
 		g_printf("\tNo TSAdminsGroup defined\r\n");
 	}
@@ -263,31 +263,31 @@ int config_read_sessions(int file, struct config_sessions *se, xrdpList *param_n
 
 	for (i = 0; i < param_n->count; i++)
 	{
-		buf = (char *) list_get_item(param_n, i);
+		buf = (char*) list_get_item(param_n, i);
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_X11DISPLAYOFFSET))
 		{
-			se->x11_display_offset = g_atoi((char *) list_get_item(param_v, i));
+			se->x11_display_offset = g_atoi((char*) list_get_item(param_v, i));
 		}
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SESS_MAX))
 		{
-			se->max_sessions = g_atoi((char *) list_get_item(param_v, i));
+			se->max_sessions = g_atoi((char*) list_get_item(param_v, i));
 		}
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SESS_KILL_DISC))
 		{
-			se->kill_disconnected = text2bool((char *) list_get_item(param_v, i));
+			se->kill_disconnected = text2bool((char*) list_get_item(param_v, i));
 		}
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SESS_IDLE_LIMIT))
 		{
-			se->max_idle_time = g_atoi((char *) list_get_item(param_v, i));
+			se->max_idle_time = g_atoi((char*) list_get_item(param_v, i));
 		}
 
 		if (0 == g_strcasecmp(buf, SESMAN_CFG_SESS_DISC_LIMIT))
 		{
-			se->max_disc_time = g_atoi((char *) list_get_item(param_v, i));
+			se->max_disc_time = g_atoi((char*) list_get_item(param_v, i));
 		}
 	}
 
@@ -315,7 +315,7 @@ int config_read_rdp_params(int file, struct config_sesman *cs, xrdpList *param_n
 
 	for (i = 0; i < param_n->count; i++)
 	{
-		list_add_item(cs->rdp_params, (long) g_strdup((char *) list_get_item(param_v, i)));
+		list_add_item(cs->rdp_params, (long) g_strdup((char*) list_get_item(param_v, i)));
 	}
 
 	/* printing security config */
@@ -323,7 +323,7 @@ int config_read_rdp_params(int file, struct config_sesman *cs, xrdpList *param_n
 
 	for (i = 0; i < cs->rdp_params->count; i++)
 	{
-		g_printf("\tParameter %02d                   %s\r\n", i, (char *) list_get_item(cs->rdp_params, i));
+		g_printf("\tParameter %02d                   %s\r\n", i, (char*) list_get_item(cs->rdp_params, i));
 	}
 
 	return 0;

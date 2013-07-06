@@ -605,7 +605,6 @@ int xrdp_wm_init(xrdpWm *self)
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns the number for rects visible for an area relative to a drawable */
 /* putting the rects in region */
 int xrdp_wm_get_vis_region(xrdpWm *self, xrdpBitmap *bitmap,

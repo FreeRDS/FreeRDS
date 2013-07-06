@@ -41,7 +41,6 @@
 #define SESMAN_CFG_AUTH_FILE_PATH    "AuthFilePath"
 
 #define SESMAN_CFG_RDP_PARAMS        "X11rdp"
-#define SESMAN_CFG_VNC_PARAMS        "Xvnc"
 
 #define SESMAN_CFG_SECURITY          "Security"
 #define SESMAN_CFG_SEC_LOGIN_RETRY   "MaxLoginRetry"

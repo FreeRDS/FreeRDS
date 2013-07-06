@@ -215,7 +215,6 @@ char* convert_bitmap(int in_bpp, int out_bpp, char *bmpdata, int width, int heig
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns color or 0 */
 int convert_color(int in_bpp, int out_bpp, int in_color, int *palette)
 {

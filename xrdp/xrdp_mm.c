@@ -34,7 +34,6 @@
 #include "xup.h"
 #include "xrdp-freerdp.h"
 
-/*****************************************************************************/
 xrdpMm* xrdp_mm_create(xrdpWm *owner)
 {
 	xrdpMm* self;
@@ -49,7 +48,6 @@ xrdpMm* xrdp_mm_create(xrdpWm *owner)
 	return self;
 }
 
-/*****************************************************************************/
 static void xrdp_mm_module_cleanup(xrdpMm *self)
 {
 	log_message(LOG_LEVEL_DEBUG, "xrdp_mm_module_cleanup");
@@ -69,7 +67,6 @@ static void xrdp_mm_module_cleanup(xrdpMm *self)
 	self->mod_handle = 0;
 }
 
-/*****************************************************************************/
 void xrdp_mm_delete(xrdpMm *self)
 {
 	if (self == 0)
@@ -87,7 +84,6 @@ void xrdp_mm_delete(xrdpMm *self)
 	free(self);
 }
 
-/*****************************************************************************/
 /* Send login information to sesman */
 static int xrdp_mm_send_login(xrdpMm *self)
 {
@@ -220,7 +216,6 @@ static int xrdp_mm_send_login(xrdpMm *self)
 	return rv;
 }
 
-/*****************************************************************************/
 /* returns error */
 /* this goes through the login_names looking for one called 'aname'
  then it copies the corresponding login_values item into 'dest'
@@ -258,7 +253,6 @@ static int xrdp_mm_get_value(xrdpMm *self, char *aname, char *dest, int dest_len
 	return rv;
 }
 
-/*****************************************************************************/
 static int xrdp_mm_setup_mod1(xrdpMm *self)
 {
 	char lib[256];
@@ -338,7 +332,6 @@ static int xrdp_mm_setup_mod1(xrdpMm *self)
 	return 0;
 }
 
-/*****************************************************************************/
 static int xrdp_mm_setup_mod2(xrdpMm *self)
 {
 	char text[256];
@@ -744,7 +737,6 @@ static int access_control(char *username, char *password, char *srv)
 #endif
 #endif
 
-/*****************************************************************************/
 /* This routine clears all states to make sure that our next login will be
  * as expected. If the user does not press ok on the log window and try to
  * connect again we must make sure that no previous information is stored.*/

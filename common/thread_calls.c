@@ -28,11 +28,9 @@
 #include "thread_calls.h"
 #include "os_calls.h"
 
-/*****************************************************************************/
 /* returns error */
 #if defined(_WIN32)
-int 
-tc_thread_create(unsigned long (__stdcall *start_routine)(void *), void *arg)
+int tc_thread_create(unsigned long (__stdcall *start_routine)(void *), void *arg)
 {
 	int rv = 0;
 	DWORD thread_id = 0;
@@ -45,8 +43,7 @@ tc_thread_create(unsigned long (__stdcall *start_routine)(void *), void *arg)
 	return rv;
 }
 #else
-int 
-tc_thread_create(void * (* start_routine)(void *), void *arg)
+int tc_thread_create(void * (* start_routine)(void *), void *arg)
 {
 	int rv = 0;
 	pthread_t thread = (pthread_t) 0;
@@ -65,9 +62,7 @@ tc_thread_create(void * (* start_routine)(void *), void *arg)
 }
 #endif
 
-/*****************************************************************************/
-LONG_PTR 
-tc_get_threadid(void)
+LONG_PTR tc_get_threadid(void)
 {
 #if defined(_WIN32)
 	return (LONG_PTR)GetCurrentThreadId();
@@ -76,10 +71,8 @@ tc_get_threadid(void)
 #endif
 }
 
-/*****************************************************************************/
 /* returns boolean */
-int 
-tc_threadid_equal(LONG_PTR tid1, LONG_PTR tid2)
+int tc_threadid_equal(LONG_PTR tid1, LONG_PTR tid2)
 {
 #if defined(_WIN32)
 	return tid1 == tid2;
@@ -88,9 +81,7 @@ tc_threadid_equal(LONG_PTR tid1, LONG_PTR tid2)
 #endif
 }
 
-/*****************************************************************************/
-LONG_PTR 
-tc_mutex_create(void)
+LONG_PTR tc_mutex_create(void)
 {
 #if defined(_WIN32)
 	return (LONG_PTR)CreateMutex(0, 0, 0);
@@ -103,9 +94,7 @@ tc_mutex_create(void)
 #endif
 }
 
-/*****************************************************************************/
-void 
-tc_mutex_delete(LONG_PTR mutex)
+void tc_mutex_delete(LONG_PTR mutex)
 {
 #if defined(_WIN32)
 	CloseHandle((HANDLE)mutex);
@@ -118,9 +107,7 @@ tc_mutex_delete(LONG_PTR mutex)
 #endif
 }
 
-/*****************************************************************************/
-int 
-tc_mutex_lock(LONG_PTR mutex)
+int tc_mutex_lock(LONG_PTR mutex)
 {
 #if defined(_WIN32)
 	WaitForSingleObject((HANDLE)mutex, INFINITE);
@@ -131,9 +118,7 @@ tc_mutex_lock(LONG_PTR mutex)
 #endif
 }
 
-/*****************************************************************************/
-int 
-tc_mutex_unlock(LONG_PTR mutex)
+int tc_mutex_unlock(LONG_PTR mutex)
 {
 	int rv = 0;
 #if defined(_WIN32)
@@ -149,9 +134,7 @@ tc_mutex_unlock(LONG_PTR mutex)
 	return rv;
 }
 
-/*****************************************************************************/
-LONG_PTR 
-tc_sem_create(int init_count)
+LONG_PTR tc_sem_create(int init_count)
 {
 #if defined(_WIN32)
 	HANDLE sem;
@@ -167,9 +150,7 @@ tc_sem_create(int init_count)
 #endif
 }
 
-/*****************************************************************************/
-void 
-tc_sem_delete(LONG_PTR sem)
+void tc_sem_delete(LONG_PTR sem)
 {
 #if defined(_WIN32)
 	CloseHandle((HANDLE)sem);
@@ -182,9 +163,7 @@ tc_sem_delete(LONG_PTR sem)
 #endif
 }
 
-/*****************************************************************************/
-int 
-tc_sem_dec(LONG_PTR sem)
+int tc_sem_dec(LONG_PTR sem)
 {
 #if defined(_WIN32)
 	WaitForSingleObject((HANDLE)sem, INFINITE);
@@ -195,9 +174,7 @@ tc_sem_dec(LONG_PTR sem)
 #endif
 }
 
-/*****************************************************************************/
-int 
-tc_sem_inc(LONG_PTR sem)
+int tc_sem_inc(LONG_PTR sem)
 {
 #if defined(_WIN32)
 	ReleaseSemaphore((HANDLE)sem, 1, 0);

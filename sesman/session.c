@@ -279,33 +279,11 @@ static int wait_for_xserver(int display)
 	return 0;
 }
 
-static void session_start_sessvc(int xpid, int wmpid, long data, char *username, int display)
-{
-	int ret = 0;
-
-	env_set_user(username, 0, display);
-
-	ret = g_waitpid(wmpid);
-
-	while (ret == 0)
-	{
-		ret = g_waitpid(wmpid);
-		g_sleep(1);
-	}
-
-	/* keep the old waitpid if some error occurs during execlp */
-	g_waitpid(wmpid);
-	//g_sigterm(xpid);
-	//g_sigterm(wmpid);
-	//g_sleep(1000 * 2000);
-	//auth_end(data);
-	//g_exit(0);
-}
-
 /* called with the main thread */
 static int session_start_fork(int width, int height, int bpp, char *username, char *password, LONG_PTR data, BYTE type, char *domain,
 		char *program, char *directory, char *client_ip)
 {
+	int status;
 	int display = 0;
 	int pid = 0;
 	int wmpid = 0;
@@ -544,8 +522,18 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 				g_setenv("XRDP_SESSVC_DISPLAY", text, 1);
 				g_snprintf(text, 255, ":%d.0", display);
 				g_setenv("DISPLAY", text, 1);
-				/* new style waiting for clients */
-				session_start_sessvc(xpid, wmpid, data, username, display);
+
+				env_set_user(username, 0, display);
+
+				status = g_waitpid(wmpid);
+
+				while (status == 0)
+				{
+					status = g_waitpid(wmpid);
+					g_sleep(1);
+				}
+
+				g_waitpid(wmpid);
 			}
 		}
 	}

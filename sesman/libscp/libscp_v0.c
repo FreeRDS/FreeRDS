@@ -31,9 +31,8 @@
 extern struct log_config *s_log;
 
 /* client API */
-/******************************************************************************/
-enum SCP_CLIENT_STATES_E
-scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+
+enum SCP_CLIENT_STATES_E scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	int length;
 	UINT32 version;
@@ -150,9 +149,8 @@ scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 }
 
 /* server API */
-/******************************************************************************/
-enum SCP_SERVER_STATES_E
-scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
+
+enum SCP_SERVER_STATES_E scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 {
 	UINT32 version = 0;
 	UINT32 size;
@@ -354,9 +352,7 @@ scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 	return SCP_SERVER_STATE_OK;
 }
 
-/******************************************************************************/
-enum SCP_SERVER_STATES_E
-scp_v0s_allow_connection(struct SCP_CONNECTION *c, SCP_DISPLAY d)
+enum SCP_SERVER_STATES_E scp_v0s_allow_connection(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 {
 	int length;
 
@@ -378,9 +374,7 @@ scp_v0s_allow_connection(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 	return SCP_SERVER_STATE_OK;
 }
 
-/******************************************************************************/
-enum SCP_SERVER_STATES_E
-scp_v0s_deny_connection(struct SCP_CONNECTION *c)
+enum SCP_SERVER_STATES_E scp_v0s_deny_connection(struct SCP_CONNECTION *c)
 {
 	int length;
 
@@ -402,9 +396,7 @@ scp_v0s_deny_connection(struct SCP_CONNECTION *c)
 	return SCP_SERVER_STATE_OK;
 }
 
-/******************************************************************************/
-enum SCP_SERVER_STATES_E
-scp_v0s_replyauthentication(struct SCP_CONNECTION *c, unsigned short int value)
+enum SCP_SERVER_STATES_E scp_v0s_replyauthentication(struct SCP_CONNECTION *c, unsigned short int value)
 {
 	int length;
 

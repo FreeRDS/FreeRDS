@@ -43,7 +43,6 @@ static int auth_crypt_pwd(char *pwd, char *pln, char *crp);
 
 static int auth_account_disabled(struct spwd *stp);
 
-/******************************************************************************/
 /* returns boolean */
 long auth_userpass(char *user, char *pass, int *errorcode)
 {
@@ -85,26 +84,22 @@ long auth_userpass(char *user, char *pass, int *errorcode)
 	return (strcmp(encr, crypt(pass, encr)) == 0);
 }
 
-/******************************************************************************/
 /* returns error */
 int auth_start_session(long in_val, int in_display)
 {
 	return 0;
 }
 
-/******************************************************************************/
 int auth_end(long in_val)
 {
 	return 0;
 }
 
-/******************************************************************************/
 int auth_set_env(long in_val)
 {
 	return 0;
 }
 
-/******************************************************************************/
 int auth_check_pwd_chg(char *user)
 {
 	struct passwd *spw;

@@ -30,7 +30,6 @@
 
 #define SERVICE "xrdp"
 
-/******************************************************************************/
 /* returns boolean */
 int auth_userpass(char *user, char *pass, int *errorcode)
 {
@@ -81,20 +80,17 @@ int auth_userpass(char *user, char *pass, int *errorcode)
 	return 1;
 }
 
-/******************************************************************************/
 /* returns error */
 int auth_start_session(void)
 {
 	return 0;
 }
 
-/******************************************************************************/
 int auth_end(void)
 {
 	return 0;
 }
 
-/******************************************************************************/
 int auth_set_env(void)
 {
 	return 0;

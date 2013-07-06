@@ -465,8 +465,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	pScreen->DestroyColormap = rdpDestroyColormap;
 #endif
 
-	miPointerInitialize(pScreen, &g_rdpSpritePointerFuncs,
-			&g_rdpPointerCursorFuncs, 1);
+	miPointerInitialize(pScreen, &g_rdpSpritePointerFuncs, &g_rdpPointerCursorFuncs, 1);
 
 #if 0
 	pScreen->DeviceCursorInitialize = rdpDeviceCursorInitialize;

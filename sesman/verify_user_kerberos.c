@@ -73,10 +73,8 @@ struct user_info
 	char *pass;
 };
 
-/******************************************************************************/
 /* returns boolean */
-static int 
-k5_begin(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
+static int k5_begin(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
 {
 	krb5_error_code code = 0;
 
@@ -97,7 +95,8 @@ k5_begin(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
 			g_printf("krb5_cc_resolve failed in k5_begin\n");
 			return 0;
 		}
-	} else
+	}
+	else
 	{
 		code = krb5_cc_default(k5->ctx, &k5->cc);
 
@@ -118,7 +117,8 @@ k5_begin(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
 			g_printf("krb5_parse_name failed in k5_begin\n");
 			return 0;
 		}
-	} else
+	}
+	else
 	{
 		/* No principal name specified */
 		if (opts->action == INIT_KT)
@@ -131,7 +131,8 @@ k5_begin(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
 				g_printf("krb5_sname_to_principal failed in k5_begin\n");
 				return 0;
 			}
-		} else
+		}
+		else
 		{
 			/* Get default principal from cache if one exists */
 			code = krb5_cc_get_principal(k5->ctx, k5->cc, &k5->me);
@@ -161,9 +162,7 @@ k5_begin(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
 	return 1;
 }
 
-/******************************************************************************/
-static void 
-k5_end(struct k5_data *k5)
+static void k5_end(struct k5_data *k5)
 {
 	if (k5->name)
 	{
@@ -188,10 +187,8 @@ k5_end(struct k5_data *k5)
 	g_memset(k5, 0, sizeof(struct k5_data));
 }
 
-/******************************************************************************/
-static krb5_error_code KRB5_CALLCONV
-kinit_prompter(krb5_context ctx, void *data, const char *name, const char *banner, int num_prompts,
-		krb5_prompt prompts[])
+static krb5_error_code KRB5_CALLCONV kinit_prompter(krb5_context ctx, void *data, const char *name,
+		const char *banner, int num_prompts, krb5_prompt prompts[])
 {
 	int i;
 	krb5_prompt_type *types;
@@ -213,7 +210,6 @@ kinit_prompter(krb5_context ctx, void *data, const char *name, const char *banne
 	return rc;
 }
 
-/******************************************************************************/
 /* returns boolean */
 static int k5_kinit(struct k_opts *opts, struct k5_data *k5, struct user_info *u_info)
 {
@@ -380,10 +376,8 @@ static int k5_kinit(struct k_opts *opts, struct k5_data *k5, struct user_info *u
 	return notix ? 0 : 1;
 }
 
-/******************************************************************************/
 /* returns boolean */
-int 
-auth_userpass(char *user, char *pass, int *errorcode)
+int auth_userpass(char *user, char *pass, int *errorcode)
 {
 	struct k_opts opts;
 	struct k5_data k5;
@@ -409,24 +403,18 @@ auth_userpass(char *user, char *pass, int *errorcode)
 	return authed_k5;
 }
 
-/******************************************************************************/
 /* returns error */
-int 
-auth_start_session(void)
+int auth_start_session(void)
 {
 	return 0;
 }
 
-/******************************************************************************/
-int 
-auth_end(void)
+int auth_end(void)
 {
 	return 0;
 }
 
-/******************************************************************************/
-int 
-auth_set_env(void)
+int auth_set_env(void)
 {
 	return 0;
 }

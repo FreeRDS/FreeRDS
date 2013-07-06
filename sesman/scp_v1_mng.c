@@ -81,10 +81,10 @@ void scp_v1_mng_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 
 				if (0 == slist)
 				{
-					//          e=scp_v1s_connection_error(c, "Internal error");
 					log_message(LOG_LEVEL_INFO, "No sessions on Terminal Server");
 					end = 0;
-				} else
+				}
+				else
 				{
 					e = scp_v1s_mng_list_sessions(c, s, scount, slist);
 					free(slist);
@@ -109,7 +109,7 @@ static void parseCommonStates(enum SCP_SERVER_STATES_E e, char *f)
 	switch (e)
 	{
 		case SCP_SERVER_STATE_VERSION_ERR:
-		LOG_DBG("version error")
+			LOG_DBG("version error")
 		case SCP_SERVER_STATE_SIZE_ERR:
 			/* an unknown scp version was requested, so we shut down the */
 			/* connection (and log the fact)                             */

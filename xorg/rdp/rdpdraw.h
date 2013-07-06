@@ -22,7 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef __RDPDRAW_H
 #define __RDPDRAW_H
 
-/******************************************************************************/
 #define GC_OP_PROLOGUE(_pGC) \
 		{ \
 	priv = (rdpGCPtr)dixGetPrivateAddr(&(pGC->devPrivates), &g_rdpGCIndex); \
@@ -31,7 +30,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	(_pGC)->ops = priv->ops; \
 		}
 
-/******************************************************************************/
 #define GC_OP_EPILOGUE(_pGC) \
 		{ \
 	priv->ops = (_pGC)->ops; \
@@ -40,7 +38,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		}
 
 int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC);
-void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y,
-		int n, BoxPtr pbox);
+void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n, BoxPtr pbox);
 
 #endif

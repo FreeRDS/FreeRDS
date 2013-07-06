@@ -75,7 +75,6 @@ logging on.");
 	return 0;
 }
 
-/*****************************************************************************/
 int xrdp_wm_delete_all_childs(xrdpWm *self)
 {
 	int index;
@@ -93,7 +92,6 @@ int xrdp_wm_delete_all_childs(xrdpWm *self)
 	return 0;
 }
 
-/*****************************************************************************/
 static int set_mod_data_item(xrdpModuleData *mod, char *name, char *value)
 {
 	int index;
@@ -110,7 +108,6 @@ static int set_mod_data_item(xrdpModuleData *mod, char *name, char *value)
 	return 0;
 }
 
-/*****************************************************************************/
 static int xrdp_wm_help_clicked(xrdpBitmap *wnd)
 {
 	xrdpBitmap *help;
@@ -146,7 +143,6 @@ static int xrdp_wm_help_clicked(xrdpBitmap *wnd)
 	return 0;
 }
 
-/*****************************************************************************/
 static int xrdp_wm_cancel_clicked(xrdpBitmap *wnd)
 {
 	if (wnd != 0)
@@ -163,7 +159,6 @@ static int xrdp_wm_cancel_clicked(xrdpBitmap *wnd)
 	return 0;
 }
 
-/*****************************************************************************/
 static int xrdp_wm_ok_clicked(xrdpBitmap *wnd)
 {
 	xrdpBitmap *combo;
@@ -215,7 +210,6 @@ static int xrdp_wm_ok_clicked(xrdpBitmap *wnd)
 	return 0;
 }
 
-/******************************************************************************/
 static int xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 {
 	int count;
@@ -320,7 +314,6 @@ static int xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 	return 0;
 }
 
-/*****************************************************************************/
 /* all login screen events go here */
 static int xrdp_wm_login_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
 {
@@ -375,7 +368,6 @@ static int xrdp_wm_login_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, lo
 	return 0;
 }
 
-/******************************************************************************/
 static int xrdp_wm_login_fill_in_combo(xrdpWm *self, xrdpBitmap *b)
 {
 	xrdpList *sections;
@@ -452,7 +444,6 @@ static int xrdp_wm_login_fill_in_combo(xrdpWm *self, xrdpBitmap *b)
 	return 0;
 }
 
-/******************************************************************************/
 int xrdp_login_wnd_create(xrdpWm *self)
 {
 	xrdpBitmap *but;

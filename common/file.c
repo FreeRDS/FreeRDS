@@ -25,7 +25,6 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-/*****************************************************************************/
 /* returns error
  returns 0 if everything is ok
  returns 1 if problem reading file */
@@ -87,7 +86,6 @@ static int l_file_read_sections(int fd, int max_file_size, xrdpList *names)
 	return rv;
 }
 
-/*****************************************************************************/
 static int file_read_line(wStream* s, char *text)
 {
 	int i;
@@ -163,7 +161,6 @@ static int file_read_line(wStream* s, char *text)
 	return 0;
 }
 
-/*****************************************************************************/
 /* returns error */
 static int file_split_name_value(char *text, char *name, char *value)
 {
@@ -205,7 +202,6 @@ static int file_split_name_value(char *text, char *name, char *value)
 	return 0;
 }
 
-/*****************************************************************************/
 /* return error */
 static int l_file_read_section(int fd, int max_file_size, const char *section, xrdpList *names, xrdpList *values)
 {
@@ -310,7 +306,6 @@ static int l_file_read_section(int fd, int max_file_size, const char *section, x
 	return 1;
 }
 
-/*****************************************************************************/
 /* returns error
  returns 0 if everything is ok
  returns 1 if problem reading file */
@@ -320,7 +315,6 @@ int file_read_sections(int fd, xrdpList *names)
 	return l_file_read_sections(fd, 32 * 1024, names);
 }
 
-/*****************************************************************************/
 /* return error */
 /* this function should be prefered over file_read_sections because it can
  read any file size */
@@ -349,7 +343,6 @@ int file_by_name_read_sections(const char *file_name, xrdpList *names)
 	return rv;
 }
 
-/*****************************************************************************/
 /* return error */
 /* 32 K file size limit */
 int file_read_section(int fd, const char *section, xrdpList *names, xrdpList *values)
@@ -357,7 +350,6 @@ int file_read_section(int fd, const char *section, xrdpList *names, xrdpList *va
 	return l_file_read_section(fd, 32 * 1024, section, names, values);
 }
 
-/*****************************************************************************/
 /* return error */
 /* this function should be prefered over file_read_section because it can
  read any file size */

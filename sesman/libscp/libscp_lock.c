@@ -47,7 +47,6 @@ void scp_lock_init(void)
 	lock_fork_forkers_count = 0;
 }
 
-/******************************************************************************/
 void scp_lock_fork_request(void)
 {
 	/* lock mutex */
@@ -66,7 +65,6 @@ void scp_lock_fork_request(void)
 	sem_wait(&lock_fork_req);
 }
 
-/******************************************************************************/
 void scp_lock_fork_release(void)
 {
 	pthread_mutex_lock(&lock_fork);
@@ -87,7 +85,6 @@ void scp_lock_fork_release(void)
 	pthread_mutex_unlock(&lock_fork);
 }
 
-/******************************************************************************/
 void scp_lock_fork_critical_section_end(int blocking)
 {
 	//LOG_DBG("lock_fork_critical_secection_end()",0);
@@ -109,7 +106,6 @@ void scp_lock_fork_critical_section_end(int blocking)
 	pthread_mutex_unlock(&lock_fork);
 }
 
-/******************************************************************************/
 int scp_lock_fork_critical_section_start(void)
 {
 	//LOG_DBG("lock_fork_critical_secection_start()",0);

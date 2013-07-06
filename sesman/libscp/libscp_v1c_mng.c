@@ -29,13 +29,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static enum SCP_CLIENT_STATES_E
-_scp_v1c_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s);
+static enum SCP_CLIENT_STATES_E _scp_v1c_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s);
 
 /* client API */
 /* 001 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_mng_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+enum SCP_CLIENT_STATES_E scp_v1c_mng_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	BYTE sz;
 	UINT32 size;
@@ -102,8 +100,7 @@ scp_v1c_mng_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 }
 
 /* 004 */
-enum SCP_CLIENT_STATES_E
-scp_v1c_mng_get_session_list(struct SCP_CONNECTION *c, int *scount,
+enum SCP_CLIENT_STATES_E scp_v1c_mng_get_session_list(struct SCP_CONNECTION *c, int *scount,
 		struct SCP_DISCONNECTED_SESSION **s)
 {
 	UINT32 version = 1;
@@ -259,8 +256,7 @@ scp_v1c_mng_get_session_list(struct SCP_CONNECTION *c, int *scount,
 	return SCP_CLIENT_STATE_LIST_OK;
 }
 
-static enum SCP_CLIENT_STATES_E
-_scp_v1c_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+static enum SCP_CLIENT_STATES_E _scp_v1c_mng_check_response(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	UINT32 version;
 	UINT32 size;

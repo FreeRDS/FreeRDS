@@ -21,7 +21,6 @@
 #include "os_calls.h"
 #include "list.h"
 
-/*****************************************************************************/
 xrdpList* list_create(void)
 {
 	xrdpList *self;
@@ -33,7 +32,6 @@ xrdpList* list_create(void)
 	return self;
 }
 
-/*****************************************************************************/
 void list_delete(xrdpList *self)
 {
 	int i;
@@ -56,7 +54,6 @@ void list_delete(xrdpList *self)
 	free(self);
 }
 
-/*****************************************************************************/
 void list_add_item(xrdpList *self, LONG_PTR item)
 {
 	LONG_PTR *p;
@@ -76,7 +73,6 @@ void list_add_item(xrdpList *self, LONG_PTR item)
 	self->count++;
 }
 
-/*****************************************************************************/
 LONG_PTR list_get_item(xrdpList *self, int index)
 {
 	if (index < 0 || index >= self->count)
@@ -87,7 +83,6 @@ LONG_PTR list_get_item(xrdpList *self, int index)
 	return self->items[index];
 }
 
-/*****************************************************************************/
 void list_clear(xrdpList *self)
 {
 	int i;
@@ -108,7 +103,6 @@ void list_clear(xrdpList *self)
 	self->items = (LONG_PTR *) g_malloc(sizeof(LONG_PTR) * 10, 1);
 }
 
-/*****************************************************************************/
 int list_index_of(xrdpList *self, LONG_PTR item)
 {
 	int i;
@@ -124,7 +118,6 @@ int list_index_of(xrdpList *self, LONG_PTR item)
 	return -1;
 }
 
-/*****************************************************************************/
 void list_remove_item(xrdpList *self, int index)
 {
 	int i;
@@ -146,7 +139,6 @@ void list_remove_item(xrdpList *self, int index)
 	}
 }
 
-/*****************************************************************************/
 void list_insert_item(xrdpList *self, int index, LONG_PTR item)
 {
 	LONG_PTR *p;
@@ -181,7 +173,6 @@ void list_insert_item(xrdpList *self, int index, LONG_PTR item)
 	}
 }
 
-/*****************************************************************************/
 /* append one list to another using strdup for each item in the list */
 /* begins copy at start_index, a zero based index on the soure list */
 void list_append_list_strdup(xrdpList *self, xrdpList *dest, int start_index)
@@ -198,7 +189,6 @@ void list_append_list_strdup(xrdpList *self, xrdpList *dest, int start_index)
 	}
 }
 
-/*****************************************************************************/
 void list_dump_items(xrdpList *self)
 {
 	int index;
