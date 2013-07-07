@@ -151,6 +151,6 @@ xrdpSessionItem* session_get_bypid(int pid);
  * @return a pointer to the session descriptor on success, NULL otherwise
  *
  */
-struct SCP_DISCONNECTED_SESSION* session_get_byuser(char* user, int* cnt, unsigned char flags);
+SCP_DISCONNECTED_SESSION* session_get_byuser(char* user, int* cnt, unsigned char flags);
 
 #endif

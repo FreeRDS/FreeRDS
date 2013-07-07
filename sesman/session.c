@@ -813,10 +813,10 @@ xrdpSessionItem * session_get_bypid(int pid)
 	return 0;
 }
 
-struct SCP_DISCONNECTED_SESSION * session_get_byuser(char *user, int *cnt, unsigned char flags)
+SCP_DISCONNECTED_SESSION * session_get_byuser(char *user, int *cnt, unsigned char flags)
 {
 	xrdpSessionChain *tmp;
-	struct SCP_DISCONNECTED_SESSION *sess;
+	SCP_DISCONNECTED_SESSION *sess;
 	int count;
 	int index;
 
@@ -856,7 +856,7 @@ struct SCP_DISCONNECTED_SESSION * session_get_byuser(char *user, int *cnt, unsig
 	}
 
 	/* malloc() an array of disconnected sessions */
-	sess = g_malloc(count * sizeof(struct SCP_DISCONNECTED_SESSION), 1);
+	sess = g_malloc(count * sizeof(SCP_DISCONNECTED_SESSION), 1);
 
 	if (sess == 0)
 	{

@@ -34,17 +34,17 @@
  * @brief creates a new connection
  * @param sck the connection socket
  *
- * @return a struct SCP_CONNECTION* object on success, NULL otherwise
+ * @return a SCP_CONNECTION* object on success, NULL otherwise
  *
  */
-struct SCP_CONNECTION* scp_connection_create(int sck);
+SCP_CONNECTION* scp_connection_create(int sck);
 
 /**
  *
- * @brief destroys a struct SCP_CONNECTION* object
+ * @brief destroys a SCP_CONNECTION* object
  * @param c the object to be destroyed
  *
  */
-void scp_connection_destroy(struct SCP_CONNECTION* c);
+void scp_connection_destroy(SCP_CONNECTION* c);
 
 #endif

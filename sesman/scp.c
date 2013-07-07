@@ -32,7 +32,7 @@
 extern int g_thread_sck; /* in thread.c */
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
-void scp_server_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+void scp_server_process(SCP_CONNECTION *c, SCP_SESSION *s)
 {
 	int display = 0;
 	LONG_PTR data;
@@ -144,8 +144,8 @@ void scp_server_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 
 void* scp_process_start(void *sck)
 {
-	struct SCP_CONNECTION scon;
-	struct SCP_SESSION *sdata;
+	SCP_CONNECTION scon;
+	SCP_SESSION *sdata;
 
 	/* making a local copy of the socket (it's on the stack) */
 	/* probably this is just paranoia                        */

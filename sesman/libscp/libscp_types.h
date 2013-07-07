@@ -36,51 +36,48 @@
 #define SCP_SID      UINT32
 #define SCP_DISPLAY  UINT16
 
-#define SCP_RESOURCE_SHARING_REQUEST_YES 0x01
-#define SCP_RESOURCE_SHARING_REQUEST_NO  0x00
+#define SCP_RESOURCE_SHARING_REQUEST_YES	0x01
+#define SCP_RESOURCE_SHARING_REQUEST_NO		0x00
 
-#define SCP_SESSION_TYPE_XRDP    0x01
-#define SCP_SESSION_TYPE_MANAGE  0x02
-/* SCP_GW_AUTHENTICATION can be used when XRDP + sesman act as a gateway
- * XRDP sends this command to let sesman verify if the user is allowed
- * to use the gateway */
-#define SCP_GW_AUTHENTICATION    0x04
+#define SCP_SESSION_TYPE_XRDP			0x01
+#define SCP_SESSION_TYPE_MANAGE			0x02
+#define SCP_GW_AUTHENTICATION			0x04
 
-#define SCP_ADDRESS_TYPE_IPV4 0x00
-#define SCP_ADDRESS_TYPE_IPV6 0x01
+#define SCP_ADDRESS_TYPE_IPV4			0x00
+#define SCP_ADDRESS_TYPE_IPV6			0x01
 
-/* used in scp_session_set_addr() */
-#define SCP_ADDRESS_TYPE_IPV4_BIN 0x80
-#define SCP_ADDRESS_TYPE_IPV6_BIN 0x81
+#define SCP_ADDRESS_TYPE_IPV4_BIN		0x80
+#define SCP_ADDRESS_TYPE_IPV6_BIN		0x81
 
-#define SCP_COMMAND_SET_DEFAULT 0x0000
-#define SCP_COMMAND_SET_MANAGE  0x0001
-#define SCP_COMMAND_SET_RSR     0x0002
+#define SCP_COMMAND_SET_DEFAULT			0x0000
+#define SCP_COMMAND_SET_MANAGE			0x0001
+#define SCP_COMMAND_SET_RSR			0x0002
 
-#define SCP_SERVER_MAX_LIST_SIZE 100
+#define SCP_SERVER_MAX_LIST_SIZE		100
 
-struct SCP_CONNECTION
+struct _SCP_CONNECTION
 {
 	int in_sck;
 	wStream* in_s;
 	wStream* out_s;
 };
+typedef struct _SCP_CONNECTION SCP_CONNECTION;
 
-struct SCP_SESSION
+struct _SCP_SESSION
 {
-	BYTE  type;
+	BYTE type;
 	UINT32 version;
 	UINT16 height;
 	UINT16 width;
-	BYTE  bpp;
-	BYTE  rsr;
-	char  locale[18];
+	BYTE bpp;
+	BYTE rsr;
+	char locale[18];
 	char* username;
 	char* password;
 	char* hostname;
-	BYTE  addr_type;
+	BYTE addr_type;
 	UINT32 ipv4addr;
-	BYTE  ipv6addr[16];
+	BYTE ipv6addr[16];
 	SCP_DISPLAY display;
 	char* errstr;
 	char* domain;
@@ -88,27 +85,29 @@ struct SCP_SESSION
 	char* directory;
 	char* client_ip;
 };
+typedef struct _SCP_SESSION SCP_SESSION;
 
-struct SCP_DISCONNECTED_SESSION
+struct _SCP_DISCONNECTED_SESSION
 {
 	UINT32 SID;
-	BYTE  type;
-	BYTE  status;
+	BYTE type;
+	BYTE status;
 	UINT16 height;
 	UINT16 width;
-	BYTE  bpp;
-	BYTE  idle_days;
-	BYTE  idle_hours;
-	BYTE  idle_minutes;
+	BYTE bpp;
+	BYTE idle_days;
+	BYTE idle_hours;
+	BYTE idle_minutes;
 	UINT16 conn_year;
-	BYTE  conn_month;
-	BYTE  conn_day;
-	BYTE  conn_hour;
-	BYTE  conn_minute;
-	BYTE  addr_type;
+	BYTE conn_month;
+	BYTE conn_day;
+	BYTE conn_hour;
+	BYTE conn_minute;
+	BYTE addr_type;
 	UINT32 ipv4addr;
-	BYTE  ipv6addr[16];
+	BYTE ipv6addr[16];
 };
+typedef struct _SCP_DISCONNECTED_SESSION SCP_DISCONNECTED_SESSION;
 
 enum SCP_CLIENT_STATES_E
 {

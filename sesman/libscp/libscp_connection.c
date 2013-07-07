@@ -28,11 +28,11 @@
 
 //extern struct log_config* s_log;
 
-struct SCP_CONNECTION* scp_connection_create(int sck)
+SCP_CONNECTION* scp_connection_create(int sck)
 {
-	struct SCP_CONNECTION *conn;
+	SCP_CONNECTION *conn;
 
-	conn = g_malloc(sizeof(struct SCP_CONNECTION), 0);
+	conn = g_malloc(sizeof(SCP_CONNECTION), 0);
 
 	if (0 == conn)
 	{
@@ -48,7 +48,7 @@ struct SCP_CONNECTION* scp_connection_create(int sck)
 	return conn;
 }
 
-void scp_connection_destroy(struct SCP_CONNECTION *c)
+void scp_connection_destroy(SCP_CONNECTION *c)
 {
 	Stream_Free(c->in_s, TRUE);
 	Stream_Free(c->out_s, TRUE);

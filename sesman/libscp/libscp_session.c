@@ -30,11 +30,11 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-struct SCP_SESSION* scp_session_create()
+SCP_SESSION* scp_session_create()
 {
-	struct SCP_SESSION *s;
+	SCP_SESSION *s;
 
-	s = (struct SCP_SESSION *)g_malloc(sizeof(struct SCP_SESSION), 1);
+	s = (SCP_SESSION *)g_malloc(sizeof(SCP_SESSION), 1);
 
 	if (0 == s)
 	{
@@ -45,7 +45,7 @@ struct SCP_SESSION* scp_session_create()
 	return s;
 }
 
-int scp_session_set_type(struct SCP_SESSION *s, BYTE type)
+int scp_session_set_type(SCP_SESSION *s, BYTE type)
 {
 	switch (type)
 	{
@@ -65,7 +65,7 @@ int scp_session_set_type(struct SCP_SESSION *s, BYTE type)
 	return 0;
 }
 
-int scp_session_set_version(struct SCP_SESSION *s, UINT32 version)
+int scp_session_set_version(SCP_SESSION *s, UINT32 version)
 {
 	switch (version)
 	{
@@ -85,19 +85,19 @@ int scp_session_set_version(struct SCP_SESSION *s, UINT32 version)
 	return 0;
 }
 
-int scp_session_set_height(struct SCP_SESSION *s, UINT16 h)
+int scp_session_set_height(SCP_SESSION *s, UINT16 h)
 {
 	s->height = h;
 	return 0;
 }
 
-int scp_session_set_width(struct SCP_SESSION *s, UINT16 w)
+int scp_session_set_width(SCP_SESSION *s, UINT16 w)
 {
 	s->width = w;
 	return 0;
 }
 
-int scp_session_set_bpp(struct SCP_SESSION *s, BYTE bpp)
+int scp_session_set_bpp(SCP_SESSION *s, BYTE bpp)
 {
 	switch (bpp)
 	{
@@ -113,7 +113,7 @@ int scp_session_set_bpp(struct SCP_SESSION *s, BYTE bpp)
 	return 0;
 }
 
-int scp_session_set_rsr(struct SCP_SESSION *s, BYTE rsr)
+int scp_session_set_rsr(SCP_SESSION *s, BYTE rsr)
 {
 	if (s->rsr)
 	{
@@ -127,7 +127,7 @@ int scp_session_set_rsr(struct SCP_SESSION *s, BYTE rsr)
 	return 0;
 }
 
-int scp_session_set_locale(struct SCP_SESSION *s, char *str)
+int scp_session_set_locale(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -141,7 +141,7 @@ int scp_session_set_locale(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_username(struct SCP_SESSION *s, char *str)
+int scp_session_set_username(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -165,7 +165,7 @@ int scp_session_set_username(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_password(struct SCP_SESSION *s, char *str)
+int scp_session_set_password(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -189,7 +189,7 @@ int scp_session_set_password(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_domain(struct SCP_SESSION *s, char *str)
+int scp_session_set_domain(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -213,7 +213,7 @@ int scp_session_set_domain(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_program(struct SCP_SESSION *s, char *str)
+int scp_session_set_program(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -237,7 +237,7 @@ int scp_session_set_program(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_directory(struct SCP_SESSION *s, char *str)
+int scp_session_set_directory(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -261,7 +261,7 @@ int scp_session_set_directory(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_client_ip(struct SCP_SESSION *s, char *str)
+int scp_session_set_client_ip(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -285,7 +285,7 @@ int scp_session_set_client_ip(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_hostname(struct SCP_SESSION *s, char *str)
+int scp_session_set_hostname(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -309,7 +309,7 @@ int scp_session_set_hostname(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_errstr(struct SCP_SESSION *s, char *str)
+int scp_session_set_errstr(SCP_SESSION *s, char *str)
 {
 	if (0 == str)
 	{
@@ -333,13 +333,13 @@ int scp_session_set_errstr(struct SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_display(struct SCP_SESSION *s, SCP_DISPLAY display)
+int scp_session_set_display(SCP_SESSION *s, SCP_DISPLAY display)
 {
 	s->display = display;
 	return 0;
 }
 
-int scp_session_set_addr(struct SCP_SESSION *s, int type, void *addr)
+int scp_session_set_addr(SCP_SESSION *s, int type, void *addr)
 {
 	struct in_addr ip4;
 #ifdef IN6ADDR_ANY_INIT
@@ -392,7 +392,7 @@ int scp_session_set_addr(struct SCP_SESSION *s, int type, void *addr)
 	return 0;
 }
 
-void scp_session_destroy(struct SCP_SESSION *s)
+void scp_session_destroy(SCP_SESSION *s)
 {
 	free(s->username);
 	free(s->password);

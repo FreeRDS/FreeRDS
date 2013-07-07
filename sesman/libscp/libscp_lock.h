@@ -33,20 +33,6 @@ void scp_lock_init(void);
 
 /**
  *
- * @brief requires to fork a new child process
- *
- */
-void scp_lock_fork_request(void);
-
-/**
- *
- * @brief releases a fork() request
- *
- */
-void scp_lock_fork_release(void);
-
-/**
- *
  * @brief starts a section that is critical for forking
  *
  * starts a section that is critical for forking, that is noone can fork()

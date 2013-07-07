@@ -47,44 +47,6 @@ void scp_lock_init(void)
 	lock_fork_forkers_count = 0;
 }
 
-void scp_lock_fork_request(void)
-{
-	/* lock mutex */
-	pthread_mutex_lock(&lock_fork);
-
-	if (lock_fork_blockers_count == 0)
-	{
-		/* if noone is blocking fork(), then we're allowed to fork */
-		sem_post(&lock_fork_req);
-	}
-
-	lock_fork_forkers_count++;
-	pthread_mutex_unlock(&lock_fork);
-
-	/* we wait to be allowed to fork() */
-	sem_wait(&lock_fork_req);
-}
-
-void scp_lock_fork_release(void)
-{
-	pthread_mutex_lock(&lock_fork);
-	lock_fork_forkers_count--;
-
-	/* if there's someone else that want to fork, we let him fork() */
-	if (lock_fork_forkers_count > 0)
-	{
-		sem_post(&lock_fork_req);
-	}
-
-	for (; lock_fork_waiting_count > 0; lock_fork_waiting_count--)
-	{
-		/* waking up the other processes */
-		sem_post(&lock_fork_wait);
-	}
-
-	pthread_mutex_unlock(&lock_fork);
-}
-
 void scp_lock_fork_critical_section_end(int blocking)
 {
 	//LOG_DBG("lock_fork_critical_secection_end()",0);
