@@ -27,7 +27,7 @@
 #ifndef SCP_H
 #define SCP_H
 
-#include "scp_v0.h"
+#include "libscp.h"
 
 /**
  *

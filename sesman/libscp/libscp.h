@@ -32,7 +32,6 @@
 #endif
 
 #include "libscp_types.h"
-#include "libscp_commands.h"
 
 #include "libscp_connection.h"
 #include "libscp_session.h"
@@ -40,6 +39,51 @@
 #include "libscp_tcp.h"
 #include "libscp_lock.h"
 
-#include "libscp_v0.h"
+/* client API */
+/**
+ *
+ * @brief connects to sesman using scp v0
+ * @param c connection descriptor
+ * @param s session descriptor
+ * @param d display
+ *
+ */
+enum SCP_CLIENT_STATES_E scp_v0c_connect(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
+
+/* server API */
+/**
+ *
+ * @brief processes the stream using scp version 0
+ * @param c connection descriptor
+ * @param s session descriptor
+ * @param skipVchk if set to !0 skips the version control (to be used after
+ *                 scp_vXs_accept() )
+ *
+ */
+enum SCP_SERVER_STATES_E scp_v0s_accept(struct SCP_CONNECTION* c, struct SCP_SESSION** s, int skipVchk);
+
+/**
+ *
+ * @brief allows the connection to TS, returning the display port
+ * @param c connection descriptor
+ *
+ */
+enum SCP_SERVER_STATES_E scp_v0s_allow_connection(struct SCP_CONNECTION* c, SCP_DISPLAY d);
+
+/**
+ *
+ * @brief denies the connection to TS
+ * @param c connection descriptor
+ *
+ */
+enum SCP_SERVER_STATES_E scp_v0s_deny_connection(struct SCP_CONNECTION* c);
+
+/**
+ * @brief send reply to an authentication request
+ * @param c connection descriptor
+ * @param value the reply code 0 means ok
+ * @return
+ */
+enum SCP_SERVER_STATES_E scp_v0s_replyauthentication(struct SCP_CONNECTION* c, unsigned short int value);
 
 #endif

@@ -24,7 +24,7 @@
  *
  */
 
-#include "libscp_v0.h"
+#include "libscp.h"
 
 #include "os_calls.h"
 
@@ -52,11 +52,7 @@ enum SCP_CLIENT_STATES_E scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SE
 	c->out_s->pointer += 8;
 
 	/* code */
-	if (s->type == SCP_SESSION_TYPE_XVNC)
-	{
-		Stream_Write_UINT16_BE(c->out_s, 0);
-	}
-	else if (s->type == SCP_SESSION_TYPE_XRDP)
+	if (s->type == SCP_SESSION_TYPE_XRDP)
 	{
 		Stream_Write_UINT16_BE(c->out_s, 10);
 	}
@@ -208,14 +204,7 @@ enum SCP_SERVER_STATES_E scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SES
 
 		scp_session_set_version(session, version);
 
-		if (code == 0)
-		{
-			scp_session_set_type(session, SCP_SESSION_TYPE_XVNC);
-		}
-		else
-		{
-			scp_session_set_type(session, SCP_SESSION_TYPE_XRDP);
-		}
+		scp_session_set_type(session, SCP_SESSION_TYPE_XRDP);
 
 		/* reading username */
 		Stream_Read_UINT16_BE(c->in_s, sz);

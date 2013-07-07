@@ -25,14 +25,12 @@ include_directories(${ZLIB_INCLUDE_DIRS})
 
 set(${MODULE_PREFIX}_HEADERS
 	libscp_connection.h
-	libscp_commands.h
-	libscp.h
 	libscp_session.h
 	libscp_init.h
 	libscp_tcp.h
-	libscp_v0.h
 	libscp_lock.h
-	libscp_types.h)
+	libscp_types.h
+	libscp.h)
 
 set(${MODULE_PREFIX}_SRCS
 	libscp_connection.c
@@ -40,7 +38,7 @@ set(${MODULE_PREFIX}_SRCS
 	libscp_lock.c
 	libscp_session.c
 	libscp_tcp.c
-	libscp_v0.c
+	libscp.c
 	${${MODULE_PREFIX}_HEADERS})
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})

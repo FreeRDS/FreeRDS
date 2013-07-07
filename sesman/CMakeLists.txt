@@ -37,14 +37,12 @@ set(${MODULE_PREFIX}_HEADERS
 	env.h
 	lock.h
 	scp.h
-	scp_v0.h
 	session.h
 	sig.h
 	thread.h)
 
 set(${MODULE_PREFIX}_SRCS
 	scp.c
-	scp_v0.c
 	sesman.c
 	session.c
 	sig.c

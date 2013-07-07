@@ -49,10 +49,6 @@ int scp_session_set_type(struct SCP_SESSION *s, BYTE type)
 {
 	switch (type)
 	{
-		case SCP_SESSION_TYPE_XVNC:
-			s->type = SCP_SESSION_TYPE_XVNC;
-			break;
-
 		case SCP_SESSION_TYPE_XRDP:
 			s->type = SCP_SESSION_TYPE_XRDP;
 			break;
