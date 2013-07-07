@@ -32,7 +32,7 @@ extern struct log_config *s_log;
 
 /* client API */
 
-enum SCP_CLIENT_STATES_E scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+enum SCP_CLIENT_STATES_E scp_client_connect(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	int length;
 	UINT32 version;
@@ -146,7 +146,7 @@ enum SCP_CLIENT_STATES_E scp_v0c_connect(struct SCP_CONNECTION *c, struct SCP_SE
 
 /* server API */
 
-enum SCP_SERVER_STATES_E scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
+enum SCP_SERVER_STATES_E scp_server_accept(struct SCP_CONNECTION *c, struct SCP_SESSION **s, int skipVchk)
 {
 	UINT32 version = 0;
 	UINT32 size;
@@ -341,7 +341,7 @@ enum SCP_SERVER_STATES_E scp_v0s_accept(struct SCP_CONNECTION *c, struct SCP_SES
 	return SCP_SERVER_STATE_OK;
 }
 
-enum SCP_SERVER_STATES_E scp_v0s_allow_connection(struct SCP_CONNECTION *c, SCP_DISPLAY d)
+enum SCP_SERVER_STATES_E scp_server_allow_connection(struct SCP_CONNECTION *c, SCP_DISPLAY d)
 {
 	int length;
 
@@ -363,7 +363,7 @@ enum SCP_SERVER_STATES_E scp_v0s_allow_connection(struct SCP_CONNECTION *c, SCP_
 	return SCP_SERVER_STATE_OK;
 }
 
-enum SCP_SERVER_STATES_E scp_v0s_deny_connection(struct SCP_CONNECTION *c)
+enum SCP_SERVER_STATES_E scp_server_deny_connection(struct SCP_CONNECTION *c)
 {
 	int length;
 
@@ -385,7 +385,7 @@ enum SCP_SERVER_STATES_E scp_v0s_deny_connection(struct SCP_CONNECTION *c)
 	return SCP_SERVER_STATE_OK;
 }
 
-enum SCP_SERVER_STATES_E scp_v0s_replyauthentication(struct SCP_CONNECTION *c, unsigned short int value)
+enum SCP_SERVER_STATES_E scp_server_replyauthentication(struct SCP_CONNECTION *c, unsigned short int value)
 {
 	int length;
 
@@ -404,6 +404,6 @@ enum SCP_SERVER_STATES_E scp_v0s_replyauthentication(struct SCP_CONNECTION *c, u
 		return SCP_SERVER_STATE_NETWORK_ERR;
 	}
 
-	/* until syslog merge LOG_DBG(s_log, "[v0:%d] connection terminated (scp_v0s_deny_authentication)", __LINE__);*/
+	/* until syslog merge LOG_DBG(s_log, "[v0:%d] connection terminated (scp_server_deny_authentication)", __LINE__);*/
 	return SCP_SERVER_STATE_OK;
 }

@@ -32,7 +32,7 @@
 extern int g_thread_sck; /* in thread.c */
 extern struct config_sesman *g_cfg; /* in sesman.c */
 
-void scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
+void scp_server_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 {
 	int display = 0;
 	LONG_PTR data;
@@ -50,13 +50,13 @@ void scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 			if (1 == access_login_allowed(s->username))
 			{
 				/* the user is member of the correct groups. */
-				scp_v0s_replyauthentication(c, errorcode);
+				scp_server_replyauthentication(c, errorcode);
 				log_message(LOG_LEVEL_INFO, "Access permitted for user: %s", s->username);
 				/* g_writeln("Connection allowed"); */
 			}
 			else
 			{
-				scp_v0s_replyauthentication(c, 32 + 3); /* all first 32 are reserved for PAM errors */
+				scp_server_replyauthentication(c, 32 + 3); /* all first 32 are reserved for PAM errors */
 				log_message(LOG_LEVEL_INFO, "Username okey but group problem for "
 					"user: %s", s->username);
 				/* g_writeln("user password ok, but group problem"); */
@@ -66,7 +66,7 @@ void scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 		{
 			/* g_writeln("username or password error"); */
 			log_message(LOG_LEVEL_INFO, "Username or password error for user: %s", s->username);
-			scp_v0s_replyauthentication(c, errorcode);
+			scp_server_replyauthentication(c, errorcode);
 		}
 
 		auth_end(data);
@@ -129,16 +129,16 @@ void scp_v0_process(struct SCP_CONNECTION *c, struct SCP_SESSION *s)
 		if (display == 0)
 		{
 			auth_end(data);
-			scp_v0s_deny_connection(c);
+			scp_server_deny_connection(c);
 		}
 		else
 		{
-			scp_v0s_allow_connection(c, display);
+			scp_server_allow_connection(c, display);
 		}
 	}
 	else
 	{
-		scp_v0s_deny_connection(c);
+		scp_server_deny_connection(c);
 	}
 }
 
@@ -158,10 +158,10 @@ void* scp_process_start(void *sck)
 	scon.in_s = Stream_New(NULL, 8192);
 	scon.out_s = Stream_New(NULL, 8192);
 
-	switch (scp_v0s_accept(&scon, &(sdata), 0))
+	switch (scp_server_accept(&scon, &(sdata), 0))
 	{
 		case SCP_SERVER_STATE_OK:
-			scp_v0_process(&scon, sdata);
+			scp_server_process(&scon, sdata);
 			break;
 
 		case SCP_SERVER_STATE_VERSION_ERR:

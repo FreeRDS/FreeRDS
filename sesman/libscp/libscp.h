@@ -48,7 +48,7 @@
  * @param d display
  *
  */
-enum SCP_CLIENT_STATES_E scp_v0c_connect(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
+enum SCP_CLIENT_STATES_E scp_client_connect(struct SCP_CONNECTION* c, struct SCP_SESSION* s);
 
 /* server API */
 /**
@@ -60,7 +60,7 @@ enum SCP_CLIENT_STATES_E scp_v0c_connect(struct SCP_CONNECTION* c, struct SCP_SE
  *                 scp_vXs_accept() )
  *
  */
-enum SCP_SERVER_STATES_E scp_v0s_accept(struct SCP_CONNECTION* c, struct SCP_SESSION** s, int skipVchk);
+enum SCP_SERVER_STATES_E scp_server_accept(struct SCP_CONNECTION* c, struct SCP_SESSION** s, int skipVchk);
 
 /**
  *
@@ -68,7 +68,7 @@ enum SCP_SERVER_STATES_E scp_v0s_accept(struct SCP_CONNECTION* c, struct SCP_SES
  * @param c connection descriptor
  *
  */
-enum SCP_SERVER_STATES_E scp_v0s_allow_connection(struct SCP_CONNECTION* c, SCP_DISPLAY d);
+enum SCP_SERVER_STATES_E scp_server_allow_connection(struct SCP_CONNECTION* c, SCP_DISPLAY d);
 
 /**
  *
@@ -76,7 +76,7 @@ enum SCP_SERVER_STATES_E scp_v0s_allow_connection(struct SCP_CONNECTION* c, SCP_
  * @param c connection descriptor
  *
  */
-enum SCP_SERVER_STATES_E scp_v0s_deny_connection(struct SCP_CONNECTION* c);
+enum SCP_SERVER_STATES_E scp_server_deny_connection(struct SCP_CONNECTION* c);
 
 /**
  * @brief send reply to an authentication request
@@ -84,6 +84,6 @@ enum SCP_SERVER_STATES_E scp_v0s_deny_connection(struct SCP_CONNECTION* c);
  * @param value the reply code 0 means ok
  * @return
  */
-enum SCP_SERVER_STATES_E scp_v0s_replyauthentication(struct SCP_CONNECTION* c, unsigned short int value);
+enum SCP_SERVER_STATES_E scp_server_replyauthentication(struct SCP_CONNECTION* c, unsigned short int value);
 
 #endif
