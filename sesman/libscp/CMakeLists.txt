@@ -24,19 +24,14 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 set(${MODULE_PREFIX}_HEADERS
-	libscp_connection.h
 	libscp_session.h
-	libscp_init.h
-	libscp_tcp.h
 	libscp_lock.h
-	libscp_types.h
+	libscp_tcp.h
 	libscp.h)
 
 set(${MODULE_PREFIX}_SRCS
-	libscp_connection.c
-	libscp_init.c
-	libscp_lock.c
 	libscp_session.c
+	libscp_lock.c
 	libscp_tcp.c
 	libscp.c
 	${${MODULE_PREFIX}_HEADERS})

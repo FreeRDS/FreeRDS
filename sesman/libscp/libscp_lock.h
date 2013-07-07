@@ -19,7 +19,7 @@
 #ifndef LIBSCP_LOCK_H
 #define LIBSCP_LOCK_H
 
-#include "libscp_types.h"
+#include "libscp.h"
 
 #define LIBSCP_LOCK_FORK_BLOCKER   1
 #define LIBSCP_LOCK_FORK_WAITING   0

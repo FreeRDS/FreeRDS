@@ -27,7 +27,7 @@
 #ifndef SESSION_H
 #define SESSION_H
 
-#include "libscp_types.h"
+#include "libscp.h"
 
 #define SESMAN_SESSION_TYPE_XRDP  1
 

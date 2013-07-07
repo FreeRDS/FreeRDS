@@ -25,7 +25,7 @@
  */
 
 #include "sesman.h"
-#include "libscp_types.h"
+#include "libscp.h"
 
 #include <stdio.h>
 #include <errno.h>

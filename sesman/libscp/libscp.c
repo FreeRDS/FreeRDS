@@ -26,6 +26,7 @@
 
 #include "libscp.h"
 
+#include "log.h"
 #include "os_calls.h"
 
 extern struct log_config *s_log;
@@ -145,6 +146,15 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 }
 
 /* server API */
+
+int scp_init()
+{
+	scp_lock_init();
+
+	log_message(LOG_LEVEL_WARNING, "[init:%d] libscp initialized", __LINE__);
+
+	return 0;
+}
 
 enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, int skipVchk)
 {
