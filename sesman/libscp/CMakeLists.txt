@@ -28,9 +28,6 @@ set(${MODULE_PREFIX}_HEADERS
 	libscp_commands.h
 	libscp.h
 	libscp_session.h
-	libscp_types_mng.h
-	libscp_vX.h
-	libscp_commands_mng.h
 	libscp_init.h
 	libscp_tcp.h
 	libscp_v0.h
@@ -44,7 +41,6 @@ set(${MODULE_PREFIX}_SRCS
 	libscp_session.c
 	libscp_tcp.c
 	libscp_v0.c
-	libscp_vX.c
 	${${MODULE_PREFIX}_HEADERS})
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})

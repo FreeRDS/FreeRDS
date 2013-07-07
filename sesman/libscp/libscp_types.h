@@ -60,8 +60,6 @@
 
 #define SCP_SERVER_MAX_LIST_SIZE 100
 
-#include "libscp_types_mng.h"
-
 struct SCP_CONNECTION
 {
 	int in_sck;
@@ -86,7 +84,6 @@ struct SCP_SESSION
 	BYTE  ipv6addr[16];
 	SCP_DISPLAY display;
 	char* errstr;
-	struct SCP_MNG_DATA* mng;
 	char* domain;
 	char* program;
 	char* directory;

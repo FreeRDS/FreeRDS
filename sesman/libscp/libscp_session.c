@@ -61,18 +61,6 @@ int scp_session_set_type(struct SCP_SESSION *s, BYTE type)
 			s->type = SCP_GW_AUTHENTICATION;
 			break;
 
-		case SCP_SESSION_TYPE_MANAGE:
-			s->type = SCP_SESSION_TYPE_MANAGE;
-			s->mng = (struct SCP_MNG_DATA *)g_malloc(sizeof(struct SCP_MNG_DATA), 1);
-
-			if (NULL == s->mng)
-			{
-				log_message(LOG_LEVEL_ERROR, "[session:%d] set_type: internal error", __LINE__);
-				return 1;
-			}
-
-			break;
-
 		default:
 			log_message(LOG_LEVEL_WARNING, "[session:%d] set_type: unknown type", __LINE__);
 			return 1;
@@ -418,6 +406,5 @@ void scp_session_destroy(struct SCP_SESSION *s)
 	free(s->directory);
 	free(s->client_ip);
 	free(s->errstr);
-	free(s->mng);
 	free(s);
 }

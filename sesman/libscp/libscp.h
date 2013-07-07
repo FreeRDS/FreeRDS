@@ -40,7 +40,6 @@
 #include "libscp_tcp.h"
 #include "libscp_lock.h"
 
-#include "libscp_vX.h"
 #include "libscp_v0.h"
 
 #endif

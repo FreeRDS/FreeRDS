@@ -27,8 +27,6 @@
 #ifndef LIBSCP_COMMANDS_H
 #define LIBSCP_COMMANDS_H
 
-#include "libscp_commands_mng.h"
-
 #define SCP_CMD_LOGIN        0x0001
 #define SCP_CMD_CONN_ERROR   0xFFFF
 

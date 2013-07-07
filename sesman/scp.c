@@ -48,7 +48,7 @@ void* scp_process_start(void *sck)
 	scon.in_s = Stream_New(NULL, 8192);
 	scon.out_s = Stream_New(NULL, 8192);
 
-	switch (scp_vXs_accept(&scon, &(sdata)))
+	switch (scp_v0s_accept(&scon, &(sdata), 0))
 	{
 		case SCP_SERVER_STATE_OK:
 			scp_v0_process(&scon, sdata);
