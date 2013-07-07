@@ -32,7 +32,7 @@ extern struct log_config *s_log;
 
 /* client API */
 
-enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION *c, SCP_SESSION *s)
+enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 {
 	int length;
 	UINT32 version;
@@ -49,7 +49,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION *c, SCP_SESSION *s)
 	g_tcp_set_non_blocking(c->in_sck);
 	g_tcp_set_no_delay(c->in_sck);
 
-	c->out_s->pointer += 8;
+	Stream_Seek(c->out_s, 8);
 
 	/* code */
 	if (s->type == SCP_SESSION_TYPE_XRDP)
@@ -62,26 +62,26 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION *c, SCP_SESSION *s)
 		return SCP_CLIENT_STATE_INTERNAL_ERR;
 	}
 
-	sz = g_strlen(s->username);
+	sz = strlen(s->username);
 	Stream_Write_UINT16_BE(c->out_s, sz);
 	Stream_Write(c->out_s, s->username, sz);
 
-	sz = g_strlen(s->password);
+	sz = strlen(s->password);
 	Stream_Write_UINT16_BE(c->out_s, sz);
 	Stream_Write(c->out_s, s->password, sz);
 	Stream_Write_UINT16_BE(c->out_s, s->width);
 	Stream_Write_UINT16_BE(c->out_s, s->height);
 	Stream_Write_UINT16_BE(c->out_s, s->bpp);
 
-	length = (int) (c->out_s->pointer - c->out_s->buffer);
-	c->out_s->pointer = c->out_s->buffer;
+	length = (int) Stream_GetPosition(c->out_s);
+	Stream_SetPosition(c->out_s, 0);
 
 	Stream_Write_UINT32_BE(c->out_s, 0); /* version */
 	Stream_Write_UINT32_BE(c->out_s, length); /* size */
 
-	c->out_s->pointer = c->out_s->buffer + length;
+	Stream_SetPosition(c->out_s, length);
 
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, c->out_s->pointer - c->out_s->buffer))
+	if (0 != scp_tcp_force_send(c->in_sck, Stream_Buffer(c->out_s), Stream_GetPosition(c->out_s)))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__);
 		return SCP_CLIENT_STATE_NETWORK_ERR;
@@ -95,7 +95,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION *c, SCP_SESSION *s)
 
 	Stream_Read_UINT32_BE(c->in_s, version);
 
-	if (0 != version)
+	if (version != 0)
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: version error", __LINE__);
 		return SCP_CLIENT_STATE_VERSION_ERR;
@@ -146,7 +146,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION *c, SCP_SESSION *s)
 
 /* server API */
 
-enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION *c, SCP_SESSION **s, int skipVchk)
+enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, int skipVchk)
 {
 	UINT32 version = 0;
 	UINT32 size;
@@ -188,7 +188,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION *c, SCP_SESSION **s, i
 		return SCP_SERVER_STATE_NETWORK_ERR;
 	}
 
-	c->in_s->length = size - 8;
+	Stream_Length(c->in_s) = size - 8;
 
 	Stream_Read_UINT16_BE(c->in_s, code);
 
@@ -341,7 +341,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION *c, SCP_SESSION **s, i
 	return SCP_SERVER_STATE_OK;
 }
 
-enum SCP_SERVER_STATES_E scp_server_allow_connection(SCP_CONNECTION *c, SCP_DISPLAY d)
+enum SCP_SERVER_STATES_E scp_server_allow_connection(SCP_CONNECTION* c, SCP_DISPLAY d)
 {
 	int length;
 
@@ -363,7 +363,7 @@ enum SCP_SERVER_STATES_E scp_server_allow_connection(SCP_CONNECTION *c, SCP_DISP
 	return SCP_SERVER_STATE_OK;
 }
 
-enum SCP_SERVER_STATES_E scp_server_deny_connection(SCP_CONNECTION *c)
+enum SCP_SERVER_STATES_E scp_server_deny_connection(SCP_CONNECTION* c)
 {
 	int length;
 
@@ -373,9 +373,9 @@ enum SCP_SERVER_STATES_E scp_server_deny_connection(SCP_CONNECTION *c)
 	Stream_Write_UINT16_BE(c->out_s, 0);  /* data = 0 - means NOT ok*/
 	Stream_Write_UINT16_BE(c->out_s, 0);  /* reserved for display number*/
 
-	length = (int) (c->out_s->pointer - c->out_s->buffer);
+	length = (int) Stream_GetPosition(c->out_s);
 
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, length))
+	if (0 != scp_tcp_force_send(c->in_sck, Stream_Buffer(c->out_s), length))
 	{
 		log_message(LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__);
 		return SCP_SERVER_STATE_NETWORK_ERR;
@@ -385,7 +385,7 @@ enum SCP_SERVER_STATES_E scp_server_deny_connection(SCP_CONNECTION *c)
 	return SCP_SERVER_STATE_OK;
 }
 
-enum SCP_SERVER_STATES_E scp_server_replyauthentication(SCP_CONNECTION *c, unsigned short int value)
+enum SCP_SERVER_STATES_E scp_server_replyauthentication(SCP_CONNECTION* c, unsigned short int value)
 {
 	int length;
 
@@ -396,9 +396,9 @@ enum SCP_SERVER_STATES_E scp_server_replyauthentication(SCP_CONNECTION *c, unsig
 	Stream_Write_UINT16_BE(c->out_s, value);  /* reply code  */
 	Stream_Write_UINT16_BE(c->out_s, 0);  /* dummy data */
 
-	length = (int) (c->out_s->pointer - c->out_s->buffer);
+	length = (int) Stream_GetPosition(c->out_s);
 
-	if (0 != scp_tcp_force_send(c->in_sck, c->out_s->buffer, length))
+	if (0 != scp_tcp_force_send(c->in_sck, Stream_Buffer(c->out_s), length))
 	{
 		/* until syslog merge log_message(s_log, LOG_LEVEL_WARNING, "[v0:%d] connection aborted: network error", __LINE__); */
 		return SCP_SERVER_STATE_NETWORK_ERR;

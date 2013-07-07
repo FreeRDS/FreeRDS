@@ -26,32 +26,32 @@
 
 #include "libscp_connection.h"
 
-//extern struct log_config* s_log;
+#include <winpr/crt.h>
 
 SCP_CONNECTION* scp_connection_create(int sck)
 {
-	SCP_CONNECTION *conn;
+	SCP_CONNECTION* connection;
 
-	conn = g_malloc(sizeof(SCP_CONNECTION), 0);
+	connection = malloc(sizeof(SCP_CONNECTION));
 
-	if (0 == conn)
+	if (connection)
 	{
-		log_message(LOG_LEVEL_WARNING, "[connection:%d] connection create: malloc error", __LINE__);
-		return 0;
+		ZeroMemory(connection, sizeof(SCP_CONNECTION));
+
+		connection->in_sck = sck;
+		connection->in_s = Stream_New(NULL, 8196);
+		connection->out_s = Stream_New(NULL, 8196);
 	}
 
-	conn->in_sck = sck;
-
-	conn->in_s = Stream_New(NULL, 8196);
-	conn->out_s = Stream_New(NULL, 8196);
-
-	return conn;
+	return connection;
 }
 
-void scp_connection_destroy(SCP_CONNECTION *c)
+void scp_connection_destroy(SCP_CONNECTION* c)
 {
-	Stream_Free(c->in_s, TRUE);
-	Stream_Free(c->out_s, TRUE);
-
-	free(c);
+	if (c)
+	{
+		Stream_Free(c->in_s, TRUE);
+		Stream_Free(c->out_s, TRUE);
+		free(c);
+	}
 }

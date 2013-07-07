@@ -30,22 +30,23 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include <winpr/crt.h>
+
 SCP_SESSION* scp_session_create()
 {
-	SCP_SESSION *s;
+	SCP_SESSION* s;
 
-	s = (SCP_SESSION *)g_malloc(sizeof(SCP_SESSION), 1);
+	s = (SCP_SESSION*) malloc(sizeof(SCP_SESSION));
 
-	if (0 == s)
+	if (s)
 	{
-		log_message(LOG_LEVEL_WARNING, "[session:%d] session create: malloc error", __LINE__);
-		return 0;
+		ZeroMemory(s, sizeof(SCP_SESSION));
 	}
 
 	return s;
 }
 
-int scp_session_set_type(SCP_SESSION *s, BYTE type)
+int scp_session_set_type(SCP_SESSION* s, BYTE type)
 {
 	switch (type)
 	{
@@ -58,14 +59,13 @@ int scp_session_set_type(SCP_SESSION *s, BYTE type)
 			break;
 
 		default:
-			log_message(LOG_LEVEL_WARNING, "[session:%d] set_type: unknown type", __LINE__);
 			return 1;
 	}
 
 	return 0;
 }
 
-int scp_session_set_version(SCP_SESSION *s, UINT32 version)
+int scp_session_set_version(SCP_SESSION* s, UINT32 version)
 {
 	switch (version)
 	{
@@ -73,31 +73,26 @@ int scp_session_set_version(SCP_SESSION *s, UINT32 version)
 			s->version = 0;
 			break;
 
-		case 1:
-			s->version = 1;
-			break;
-
 		default:
-			log_message(LOG_LEVEL_WARNING, "[session:%d] set_version: unknown version", __LINE__);
 			return 1;
 	}
 
 	return 0;
 }
 
-int scp_session_set_height(SCP_SESSION *s, UINT16 h)
+int scp_session_set_height(SCP_SESSION* s, UINT16 h)
 {
 	s->height = h;
 	return 0;
 }
 
-int scp_session_set_width(SCP_SESSION *s, UINT16 w)
+int scp_session_set_width(SCP_SESSION* s, UINT16 w)
 {
 	s->width = w;
 	return 0;
 }
 
-int scp_session_set_bpp(SCP_SESSION *s, BYTE bpp)
+int scp_session_set_bpp(SCP_SESSION* s, BYTE bpp)
 {
 	switch (bpp)
 	{
@@ -113,7 +108,7 @@ int scp_session_set_bpp(SCP_SESSION *s, BYTE bpp)
 	return 0;
 }
 
-int scp_session_set_rsr(SCP_SESSION *s, BYTE rsr)
+int scp_session_set_rsr(SCP_SESSION* s, BYTE rsr)
 {
 	if (s->rsr)
 	{
@@ -127,9 +122,9 @@ int scp_session_set_rsr(SCP_SESSION *s, BYTE rsr)
 	return 0;
 }
 
-int scp_session_set_locale(SCP_SESSION *s, char *str)
+int scp_session_set_locale(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_locale: null locale", __LINE__);
 		s->locale[0] = '\0';
@@ -141,22 +136,22 @@ int scp_session_set_locale(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_username(SCP_SESSION *s, char *str)
+int scp_session_set_username(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_username: null username", __LINE__);
 		return 1;
 	}
 
-	if (0 != s->username)
+	if (s->username)
 	{
 		free(s->username);
 	}
 
 	s->username = g_strdup(str);
 
-	if (0 == s->username)
+	if (!s->username)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_username: strdup error", __LINE__);
 		return 1;
@@ -165,22 +160,22 @@ int scp_session_set_username(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_password(SCP_SESSION *s, char *str)
+int scp_session_set_password(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_password: null password", __LINE__);
 		return 1;
 	}
 
-	if (0 != s->password)
+	if (s->password)
 	{
 		free(s->password);
 	}
 
 	s->password = g_strdup(str);
 
-	if (0 == s->password)
+	if (!s->password)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_password: strdup error", __LINE__);
 		return 1;
@@ -189,22 +184,22 @@ int scp_session_set_password(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_domain(SCP_SESSION *s, char *str)
+int scp_session_set_domain(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_domain: null domain", __LINE__);
 		return 1;
 	}
 
-	if (0 != s->domain)
+	if (s->domain)
 	{
 		free(s->domain);
 	}
 
 	s->domain = g_strdup(str);
 
-	if (0 == s->domain)
+	if (!s->domain)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_domain: strdup error", __LINE__);
 		return 1;
@@ -213,22 +208,22 @@ int scp_session_set_domain(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_program(SCP_SESSION *s, char *str)
+int scp_session_set_program(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_program: null program", __LINE__);
 		return 1;
 	}
 
-	if (0 != s->program)
+	if (s->program)
 	{
 		free(s->program);
 	}
 
 	s->program = g_strdup(str);
 
-	if (0 == s->program)
+	if (!s->program)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_program: strdup error", __LINE__);
 		return 1;
@@ -237,22 +232,22 @@ int scp_session_set_program(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_directory(SCP_SESSION *s, char *str)
+int scp_session_set_directory(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_directory: null directory", __LINE__);
 		return 1;
 	}
 
-	if (0 != s->directory)
+	if (s->directory)
 	{
 		free(s->directory);
 	}
 
 	s->directory = g_strdup(str);
 
-	if (0 == s->directory)
+	if (!s->directory)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_directory: strdup error", __LINE__);
 		return 1;
@@ -261,22 +256,22 @@ int scp_session_set_directory(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_client_ip(SCP_SESSION *s, char *str)
+int scp_session_set_client_ip(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_client_ip: null ip", __LINE__);
 		return 1;
 	}
 
-	if (0 != s->client_ip)
+	if (s->client_ip)
 	{
 		free(s->client_ip);
 	}
 
 	s->client_ip = g_strdup(str);
 
-	if (0 == s->client_ip)
+	if (!s->client_ip)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_client_ip: strdup error", __LINE__);
 		return 1;
@@ -285,22 +280,22 @@ int scp_session_set_client_ip(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_hostname(SCP_SESSION *s, char *str)
+int scp_session_set_hostname(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_hostname: null hostname", __LINE__);
 		return 1;
 	}
 
-	if (0 != s->hostname)
+	if (s->hostname)
 	{
 		free(s->hostname);
 	}
 
 	s->hostname = g_strdup(str);
 
-	if (0 == s->hostname)
+	if (!s->hostname)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_hostname: strdup error", __LINE__);
 		return 1;
@@ -309,22 +304,22 @@ int scp_session_set_hostname(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_errstr(SCP_SESSION *s, char *str)
+int scp_session_set_errstr(SCP_SESSION* s, char *str)
 {
-	if (0 == str)
+	if (!str)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_errstr: null string", __LINE__);
 		return 1;
 	}
 
-	if (0 != s->errstr)
+	if (s->errstr)
 	{
 		free(s->errstr);
 	}
 
 	s->errstr = g_strdup(str);
 
-	if (0 == s->errstr)
+	if (!s->errstr)
 	{
 		log_message(LOG_LEVEL_WARNING, "[session:%d] set_errstr: strdup error", __LINE__);
 		return 1;
@@ -333,13 +328,13 @@ int scp_session_set_errstr(SCP_SESSION *s, char *str)
 	return 0;
 }
 
-int scp_session_set_display(SCP_SESSION *s, SCP_DISPLAY display)
+int scp_session_set_display(SCP_SESSION* s, SCP_DISPLAY display)
 {
 	s->display = display;
 	return 0;
 }
 
-int scp_session_set_addr(SCP_SESSION *s, int type, void *addr)
+int scp_session_set_addr(SCP_SESSION* s, int type, void *addr)
 {
 	struct in_addr ip4;
 #ifdef IN6ADDR_ANY_INIT
@@ -353,7 +348,7 @@ int scp_session_set_addr(SCP_SESSION *s, int type, void *addr)
 			/* convert from char to 32bit*/
 			ret = inet_pton(AF_INET, addr, &ip4);
 
-			if (ret == 0)
+			if (!ret)
 			{
 				log_message(LOG_LEVEL_WARNING, "[session:%d] set_addr: invalid address", __LINE__);
 				inet_pton(AF_INET, "127.0.0.1", &ip4);
@@ -371,7 +366,7 @@ int scp_session_set_addr(SCP_SESSION *s, int type, void *addr)
 			/* convert from char to 128bit*/
 			ret = inet_pton(AF_INET6, addr, &ip6);
 
-			if (ret == 0)
+			if (!ret)
 			{
 				log_message(LOG_LEVEL_WARNING, "[session:%d] set_addr: invalid address", __LINE__);
 				inet_pton(AF_INET, "::1", &ip6);
@@ -392,15 +387,18 @@ int scp_session_set_addr(SCP_SESSION *s, int type, void *addr)
 	return 0;
 }
 
-void scp_session_destroy(SCP_SESSION *s)
+void scp_session_destroy(SCP_SESSION* s)
 {
-	free(s->username);
-	free(s->password);
-	free(s->hostname);
-	free(s->domain);
-	free(s->program);
-	free(s->directory);
-	free(s->client_ip);
-	free(s->errstr);
-	free(s);
+	if (s)
+	{
+		free(s->username);
+		free(s->password);
+		free(s->hostname);
+		free(s->domain);
+		free(s->program);
+		free(s->directory);
+		free(s->client_ip);
+		free(s->errstr);
+		free(s);
+	}
 }
