@@ -25,6 +25,8 @@
 #include <semaphore.h>
 #endif
 
+#include <winpr/crt.h>
+
 #include "thread_calls.h"
 #include "os_calls.h"
 

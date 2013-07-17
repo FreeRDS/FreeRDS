@@ -828,10 +828,8 @@ static int xrdp_wm_undraw_dragging_box(xrdpWm *self, int do_begin_end)
 	int boxx;
 	int boxy;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
 	if (self->dragging)
 	{
@@ -862,10 +860,8 @@ static int xrdp_wm_draw_dragging_box(xrdpWm *self, int do_begin_end)
 	int boxx;
 	int boxy;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
 	if (self->dragging)
 	{
@@ -926,7 +922,7 @@ int xrdp_wm_mouse_move(xrdpWm *self, int x, int y)
 
 	b = xrdp_wm_at_pos(self->screen, x, y, 0);
 
-	if (b == 0) /* if b is null, the movment must be over the screen */
+	if (b == 0) /* if b is null, the movement must be over the screen */
 	{
 		if (self->screen->pointer != self->current_pointer)
 		{
@@ -934,7 +930,7 @@ int xrdp_wm_mouse_move(xrdpWm *self, int x, int y)
 			self->current_pointer = self->screen->pointer;
 		}
 
-		if (self->mm->mod != 0) /* if screen is mod controled */
+		if (self->mm->mod != 0) /* if screen is mod controlled */
 		{
 			if (self->mm->mod->mod_event != 0)
 			{
@@ -1529,7 +1525,7 @@ static int xrdp_wm_log_wnd_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, 
 	}
 	else if (msg == WM_XRDP_PAINT) /* 3 */
 	{
-		painter = (xrdpPainter *)param1;
+		painter = (xrdpPainter*) param1;
 
 		if (painter != 0)
 		{
@@ -1627,12 +1623,11 @@ int xrdp_wm_log_msg(xrdpWm *self, char *msg)
 	return 0;
 }
 
-int xrdp_wm_get_wait_objs(xrdpWm *self, LONG_PTR *robjs, int *rc,
-		LONG_PTR *wobjs, int *wc, int *timeout)
+int xrdp_wm_get_wait_objs(xrdpWm *self, LONG_PTR *robjs, int *rc, LONG_PTR *wobjs, int *wc, int *timeout)
 {
 	int i;
 
-	if (self == 0)
+	if (!self)
 		return 0;
 
 	i = *rc;
@@ -1644,14 +1639,12 @@ int xrdp_wm_get_wait_objs(xrdpWm *self, LONG_PTR *robjs, int *rc,
 
 int xrdp_wm_check_wait_objs(xrdpWm *self)
 {
-	int rv;
+	int status;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
-	rv = 0;
+	status = 0;
 
 	if (g_is_wait_obj_set(self->login_mode_event))
 	{
@@ -1659,12 +1652,12 @@ int xrdp_wm_check_wait_objs(xrdpWm *self)
 		xrdp_wm_login_mode_changed(self);
 	}
 
-	if (rv == 0)
+	if (status == 0)
 	{
-		rv = xrdp_mm_check_wait_objs(self->mm);
+		status = xrdp_mm_check_wait_objs(self->mm);
 	}
 
-	return rv;
+	return status;
 }
 
 int xrdp_wm_set_login_mode(xrdpWm *self, int login_mode)

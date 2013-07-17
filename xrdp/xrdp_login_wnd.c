@@ -254,7 +254,7 @@ static int xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 				b->left = self->login_window->width >= DEFAULT_WND_LOGIN_W ? 155 : 5;
 				b->top = DEFAULT_ELEMENT_TOP + DEFAULT_COMBO_H + 5 + (DEFAULT_EDIT_H + 5) * count;
 				b->id = 100 + 2 * count;
-				name = (char *) list_get_item(mod->names, index);
+				name = (char*) list_get_item(mod->names, index);
 				set_string(&b->caption1, name);
 				/* edit */
 				b = xrdp_bitmap_create(DEFAULT_EDIT_W, DEFAULT_EDIT_H, self->screen->bpp,
@@ -277,6 +277,9 @@ static int xrdp_wm_show_edits(xrdpWm *self, xrdpBitmap *combo)
 				{
 					self->login_window->focused_control = b;
 				}
+
+				if (!self->session->settings->Username)
+					self->session->settings->Username = _strdup("Administrator");
 
 				if (g_strncmp(name, "username", 255) == 0)
 				{
