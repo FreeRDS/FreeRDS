@@ -189,7 +189,7 @@ int libxrdp_orders_init(xrdpSession* session)
 {
 	rdpUpdate* update = session->context->update;
 
-	//printf("%s\n", __FUNCTION__);
+	printf("%s\n", __FUNCTION__);
 
 	update->BeginPaint(session->context);
 
@@ -200,7 +200,7 @@ int libxrdp_orders_send(xrdpSession* session)
 {
 	rdpUpdate* update = session->context->update;
 
-	//printf("%s\n", __FUNCTION__);
+	printf("%s\n", __FUNCTION__);
 
 	update->EndPaint(session->context);
 
@@ -211,7 +211,7 @@ int libxrdp_orders_force_send(xrdpSession* session)
 {
 	rdpUpdate* update = session->context->update;
 
-	//printf("%s\n", __FUNCTION__);
+	printf("%s\n", __FUNCTION__);
 
 	update->EndPaint(session->context);
 
@@ -224,7 +224,7 @@ int libxrdp_orders_rect(xrdpSession* session, int x, int y,
 	OPAQUE_RECT_ORDER opaqueRect;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	//printf("%s\n", __FUNCTION__);
+	printf("%s\n", __FUNCTION__);
 
 	opaqueRect.nLeftRect = x;
 	opaqueRect.nTopRect = y;
@@ -358,8 +358,8 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	MEMBLT_ORDER memblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	//printf("%s id: %d index: %d width: %d height: %d\n",
-	//		__FUNCTION__, cache_id, cache_idx, cx, cy);
+	printf("%s id: %d index: %d width: %d height: %d\n",
+			__FUNCTION__, cache_id, cache_idx, cx, cy);
 
 	memblt.nLeftRect = x;
 	memblt.nTopRect = y;
@@ -508,7 +508,7 @@ int libxrdp_orders_send_font(xrdpSession* session,
 {
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	//printf("%s\n", __FUNCTION__);
+	printf("%s\n", __FUNCTION__);
 
 	if (secondary->glyph_v2)
 	{
@@ -735,8 +735,47 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	int scanline;
 	RFX_RECT rect;
 	int bytesPerPixel;
+	int MaxRegionWidth;
+	int MaxRegionHeight;
 	SURFACE_BITS_COMMAND cmd;
 	rdpUpdate* update = session->context->update;
+
+	MaxRegionWidth = 64 * 8;
+	MaxRegionHeight = 64 * 8;
+
+	if ((msg->nWidth * msg->nHeight) > (MaxRegionWidth * MaxRegionHeight))
+	{
+		int i, j;
+		int rows, cols;
+		XRDP_MSG_PAINT_RECT subMsg;
+
+		rows = (msg->nWidth + (MaxRegionWidth - (msg->nWidth % MaxRegionWidth))) / MaxRegionWidth;
+		cols = (msg->nHeight + (MaxRegionHeight - (msg->nHeight % MaxRegionHeight))) / MaxRegionHeight;
+
+		//printf("Partitioning x: %d y: %d width: %d height: %d in %d partitions (%d rows, %d cols)\n",
+		//		msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight, rows * cols, rows, cols);
+
+		for (i = 0; i < rows; i++)
+		{
+			for (j = 0; j < cols; j++)
+			{
+				CopyMemory(&subMsg, msg, sizeof(XRDP_MSG_PAINT_RECT));
+
+				subMsg.nLeftRect = msg->nLeftRect + (i * MaxRegionWidth);
+				subMsg.nTopRect = msg->nTopRect + (j * MaxRegionHeight);
+
+				subMsg.nWidth = (i < (rows - 1)) ? MaxRegionWidth : msg->nWidth - (i * MaxRegionWidth);
+				subMsg.nHeight = (j < (cols - 1)) ? MaxRegionHeight : msg->nHeight - (j * MaxRegionHeight);
+
+				//printf("\t[%d, %d]: x: %d y: %d width: %d height; %d\n",
+				//		i, j, subMsg.nLeftRect, subMsg.nTopRect, subMsg.nWidth, subMsg.nHeight);
+
+				libxrdp_send_surface_bits(session, bpp, &subMsg);
+			}
+		}
+
+		return 0;
+	}
 
 	if ((bpp == 24) || (bpp == 32))
 	{
