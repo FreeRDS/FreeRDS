@@ -42,7 +42,6 @@ struct xrdp_process
 
 	int status;
 	int session_id;
-	BOOL activated;
 	LONG_PTR done_event;
 	LONG_PTR term_event;
 	xrdpWm* wm;
@@ -141,7 +140,8 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 
 	xfp = (xrdpProcess*) client->context;
 
-	fprintf(stderr, "Client %s is activated", client->hostname);
+	fprintf(stderr, "Client %s is connected", client->hostname);
+
 	if (client->settings->AutoLogonEnabled)
 	{
 		fprintf(stderr, " and wants to login automatically as %s\\%s",
@@ -153,7 +153,7 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
 		client->settings->DesktopWidth, client->settings->DesktopHeight, client->settings->ColorDepth);
 
-	client->update->DesktopResize(client->update->context);
+	/* do not reactivate, just accept client desktop size and color depth */
 
 	return TRUE;
 }
@@ -172,8 +172,10 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (settings->RemoteFxCodec || settings->NSCodec)
 		xfp->session->codecMode = TRUE;
 
-	xfp->wm = xrdp_wm_create(xfp);
-	xfp->activated = TRUE;
+	if (!xfp->wm)
+		xfp->wm = xrdp_wm_create(xfp);
+
+	printf("Client Activated\n");
 
 	return TRUE;
 }
@@ -235,7 +237,9 @@ void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	xrdpProcess* xfp = (xrdpProcess*) input->context;
-	xrdp_wm_key(xfp->wm, flags, code);
+
+	if (xfp->wm)
+		xrdp_wm_key(xfp->wm, flags, code);
 }
 
 void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
@@ -246,13 +250,17 @@ void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 cod
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	xrdpProcess* xfp = (xrdpProcess*) input->context;
-	xrdp_wm_process_input_mouse(xfp->wm, flags, x, y);
+
+	if (xfp->wm)
+		xrdp_wm_process_input_mouse(xfp->wm, flags, x, y);
 }
 
 void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	xrdpProcess* xfp = (xrdpProcess*) input->context;
-	xrdp_wm_process_input_mouse(xfp->wm, flags, x, y);
+
+	if (xfp->wm)
+		xrdp_wm_process_input_mouse(xfp->wm, flags, x, y);
 }
 
 void xrdp_input_register_callbacks(rdpInput* input)
@@ -326,7 +334,7 @@ void* xrdp_process_main_thread(void* arg)
 			break;
 		}
 
-		if (xfp->activated)
+		if (client->activated)
 		{
 			xrdp_wm_get_wait_objs(xfp->wm, robjs, &robjc, wobjs, &wobjc, &itimeout);
 		}
@@ -360,10 +368,7 @@ void* xrdp_process_main_thread(void* arg)
 		if (max_fds == 0)
 			break;
 
-		timeout.tv_sec = 0;
-		timeout.tv_usec = 100;
-
-		if (select(max_fds + 1, &rfds_set, NULL, NULL, &timeout) == -1)
+		if (select(max_fds + 1, &rfds_set, NULL, NULL, NULL) == -1)
 		{
 			/* these are not really errors */
 			if (!((errno == EAGAIN) ||
@@ -382,7 +387,7 @@ void* xrdp_process_main_thread(void* arg)
 			break;
 		}
 
-		if (xfp->activated)
+		if (client->activated)
 		{
 			if (xrdp_wm_check_wait_objs(xfp->wm) != 0)
 			{

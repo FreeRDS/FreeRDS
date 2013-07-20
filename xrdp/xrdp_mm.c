@@ -1121,14 +1121,12 @@ int xrdp_mm_get_wait_objs(xrdpMm *self, LONG_PTR *read_objs, int *rcount, LONG_P
 
 int xrdp_mm_check_wait_objs(xrdpMm *self)
 {
-	int rv;
+	int status;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
 
-	rv = 0;
+	status = 0;
 
 	if ((self->sesman_trans != 0) && self->sesman_trans_up)
 	{
@@ -1142,7 +1140,7 @@ int xrdp_mm_check_wait_objs(xrdpMm *self)
 	{
 		if (self->mod->mod_check_wait_objs != 0)
 		{
-			rv = self->mod->mod_check_wait_objs(self->mod);
+			status = self->mod->mod_check_wait_objs(self->mod);
 		}
 	}
 
@@ -1154,7 +1152,7 @@ int xrdp_mm_check_wait_objs(xrdpMm *self)
 		self->delete_sesman_trans = 0;
 	}
 
-	return rv;
+	return status;
 }
 
 int server_begin_update(xrdpModule *mod)
@@ -1482,7 +1480,7 @@ int server_reset(xrdpModule* mod, int width, int height, int bpp)
 	}
 
 	/* if same, don't need to do anything */
-	if (settings->DesktopWidth == width && settings->DesktopHeight == height && settings->ColorDepth == bpp)
+	if ((settings->DesktopWidth == width) && (settings->DesktopHeight == height) && (settings->ColorDepth == bpp))
 	{
 		return 0;
 	}
@@ -1595,7 +1593,6 @@ int server_delete_os_surface(xrdpModule* mod, int rdpindex)
 	xrdpWm* wm;
 	xrdpPainter* p;
 
-	//g_writeln("server_delete_os_surface: id 0x%x", id);
 	wm = (xrdpWm*) (mod->wm);
 
 	if (wm->target_surface->type == WND_TYPE_OFFSCREEN)
@@ -1608,7 +1605,6 @@ int server_delete_os_surface(xrdpModule* mod, int rdpindex)
 
 			if (p != 0)
 			{
-				//g_writeln("setting target");
 				wm_painter_set_target(p);
 			}
 		}
