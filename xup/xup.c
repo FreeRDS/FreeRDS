@@ -444,7 +444,7 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 	return status;
 }
 
-static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
+int lib_mod_process_order(xrdpModule* mod, int type, wStream* s)
 {
 	int status = 0;
 
@@ -674,52 +674,54 @@ static int lib_mod_process_orders(xrdpModule* mod, int type, wStream* s)
 int lib_mod_signal(xrdpModule* mod)
 {
 	wStream* s;
+	int position;
 	int num_orders;
 	int index;
-	int rv;
-	int len;
+	int status;
+	int length;
 	int type;
-	BYTE* phold;
+	int flags;
 
 	LIB_DEBUG(mod, "in lib_mod_signal");
 
 	s = Stream_New(NULL, 8192);
 
-	rv = lib_recv(mod, s->buffer, 8);
+	status = lib_recv(mod, s->buffer, 8);
 
-	if (rv == 0)
+	if (status == 0)
 	{
 		Stream_Read_UINT16(s, type);
 		Stream_Read_UINT16(s, num_orders);
-		Stream_Read_UINT32(s, len);
+		Stream_Read_UINT32(s, length);
 
-		printf("lib_mod_signal: type: %d num_orders: %d length: %d\n", type, num_orders, len);
+		printf("lib_mod_signal: type: %d num_orders: %d length: %d\n", type, num_orders, length);
 
 		if (type == 3)
 		{
-			Stream_EnsureCapacity(s, len);
+			Stream_EnsureCapacity(s, length);
 			Stream_SetPosition(s, 0);
 			s->length = 0;
 
-			rv = lib_recv(mod, s->buffer, len);
+			status = lib_recv(mod, s->buffer, length);
 
-			if (rv == 0)
+			if (status == 0)
 			{
 				for (index = 0; index < num_orders; index++)
 				{
-					phold = s->pointer;
+					position = Stream_GetPosition(s);
 
 					Stream_Read_UINT16(s, type);
-					Stream_Read_UINT32(s, len);
+					Stream_Read_UINT32(s, length);
+					Stream_Read_UINT32(s, flags);
 
-					rv = lib_mod_process_orders(mod, type, s);
+					status = lib_mod_process_order(mod, type, s);
 
-					if (rv != 0)
+					if (status != 0)
 					{
 						break;
 					}
 
-					s->pointer = phold + len;
+					Stream_SetPosition(s, position + length);
 				}
 			}
 		}
@@ -733,7 +735,7 @@ int lib_mod_signal(xrdpModule* mod)
 
 	LIB_DEBUG(mod, "out lib_mod_signal");
 
-	return rv;
+	return status;
 }
 
 int lib_mod_end(xrdpModule* mod)

@@ -1340,10 +1340,10 @@ int rdpup_set_clip(short x, short y, int cx, int cy)
 {
 	XRDP_MSG_SET_CLIP msg;
 
-	msg.x = x;
-	msg.y = y;
-	msg.width = cx;
-	msg.height = cy;
+	msg.nLeftRect = x;
+	msg.nTopRect = y;
+	msg.nWidth = cx;
+	msg.nHeight = cy;
 
 	msg.type = XRDP_SERVER_SET_CLIP;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);

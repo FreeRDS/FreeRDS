@@ -1323,7 +1323,7 @@ int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIP* msg)
 	if (!p)
 		return 0;
 
-	return xrdp_painter_set_clip(p, msg->x, msg->y, msg->width, msg->height);
+	return xrdp_painter_set_clip(p, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 }
 
 int server_reset_clip(xrdpModule* mod)

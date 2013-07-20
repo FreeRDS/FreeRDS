@@ -770,7 +770,8 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 				//printf("\t[%d, %d]: x: %d y: %d width: %d height; %d\n",
 				//		i, j, subMsg.nLeftRect, subMsg.nTopRect, subMsg.nWidth, subMsg.nHeight);
 
-				libxrdp_send_surface_bits(session, bpp, &subMsg);
+				if ((subMsg.nWidth * subMsg.nHeight) > 0)
+					libxrdp_send_surface_bits(session, bpp, &subMsg);
 			}
 		}
 

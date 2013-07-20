@@ -450,10 +450,10 @@ static void xrdp_freerdp_set_bounds(rdpContext* context, rdpBounds *bounds)
 
 	if (bounds != 0)
 	{
-		msg.x = bounds->left;
-		msg.y = bounds->top;
-		msg.width = (bounds->right - bounds->left) + 1;
-		msg.height = (bounds->bottom - bounds->top) + 1;
+		msg.nLeftRect = bounds->left;
+		msg.nTopRect = bounds->top;
+		msg.nWidth = (bounds->right - bounds->left) + 1;
+		msg.nHeight = (bounds->bottom - bounds->top) + 1;
 
 		server_set_clip(mod, &msg);
 	}

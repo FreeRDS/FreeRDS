@@ -28,9 +28,22 @@
 
 /* Common Data Types */
 
+#define XRDP_MSG_FLAG_RECT		0x00000001
+
+struct _XRDP_RECT
+{
+	UINT32 left;
+	UINT32 top;
+	UINT32 right;
+	UINT32 bottom;
+};
+typedef struct _XRDP_RECT XRDP_RECT;
+
 #define DEFINE_MSG_COMMON() \
 	UINT32 type; \
-	UINT32 length
+	UINT32 length; \
+	UINT32 flags; \
+	XRDP_RECT rect
 
 struct _XRDP_MSG_COMMON
 {
@@ -185,10 +198,10 @@ struct _XRDP_MSG_SET_CLIP
 {
 	DEFINE_MSG_COMMON();
 
-	int x;
-	int y;
-	int width;
-	int height;
+	int nLeftRect;
+	int nTopRect;
+	int nWidth;
+	int nHeight;
 };
 typedef struct _XRDP_MSG_SET_CLIP XRDP_MSG_SET_CLIP;
 
