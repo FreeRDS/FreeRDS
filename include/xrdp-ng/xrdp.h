@@ -81,6 +81,9 @@ typedef struct _XRDP_FRAMEBUFFER XRDP_FRAMEBUFFER;
 		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
 		]}"
 
+int xrdp_read_common_header(wStream* s, XRDP_MSG_COMMON* msg);
+int xrdp_write_common_header(wStream* s, XRDP_MSG_COMMON* msg);
+
 /* Client Message Types */
 
 #define XRDP_CLIENT_EVENT			101

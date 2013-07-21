@@ -130,6 +130,8 @@ struct xrdp_mod
 	int shift_state;
 	rdpSettings* settings;
 
+	UINT32 TotalLength;
+	UINT32 TotalCount;
 	HANDLE SocketEvent;
 	wStream* SendStream;
 	wStream* ReceiveStream;
