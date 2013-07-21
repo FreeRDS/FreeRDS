@@ -496,8 +496,8 @@ struct xrdp_startup_params
 long g_xrdp_sync(long (*sync_func)(long param1, long param2), long sync_param1, long sync_param2);
 int g_is_term(void);
 void g_set_term(int in_val);
-LONG_PTR g_get_term_event(void);
-LONG_PTR g_get_sync_event(void);
+HANDLE g_get_term_event(void);
+HANDLE g_get_sync_event(void);
 void g_process_waiting_function(void);
 
 /* xrdp_cache.c */

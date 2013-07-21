@@ -32,8 +32,8 @@ unsigned char g_fixedkey[8] =
 { 23, 82, 107, 6, 35, 78, 88, 7 };
 struct config_sesman *g_cfg; /* defined in config.h */
 
-LONG_PTR g_term_event = 0;
-LONG_PTR g_sync_event = 0;
+HANDLE g_TermEvent = NULL;
+HANDLE g_SyncEvent = NULL;
 
 extern int g_thread_sck; /* in thread.c */
 
@@ -49,8 +49,6 @@ static void sesman_main_loop(void)
 	DWORD status;
 	DWORD nCount;
 	HANDLE events[32];
-	HANDLE TermEvent;
-	HANDLE SyncEvent;
 	HANDLE SocketEvent;
 
 	log_message(LOG_LEVEL_INFO, "listening...");
@@ -76,26 +74,24 @@ static void sesman_main_loop(void)
 	}
 
 	SocketEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, g_sck);
-	TermEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, g_term_event);
-	SyncEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, g_sync_event);
 
 	while (1)
 	{
 		nCount = 0;
 		events[nCount++] = SocketEvent;
-		events[nCount++] = TermEvent;
-		events[nCount++] = SyncEvent;
+		events[nCount++] = g_TermEvent;
+		events[nCount++] = g_SyncEvent;
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-		if (WaitForSingleObject(TermEvent, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(g_TermEvent, 0) == WAIT_OBJECT_0)
 		{
 			break;
 		}
 
-		if (WaitForSingleObject(SyncEvent, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(g_SyncEvent, 0) == WAIT_OBJECT_0)
 		{
-			g_reset_wait_obj(g_sync_event);
+			ResetEvent(g_SyncEvent);
 			session_sync_start();
 		}
 
@@ -127,8 +123,6 @@ static void sesman_main_loop(void)
 	}
 
 	CloseHandle(SocketEvent);
-	CloseHandle(TermEvent);
-	CloseHandle(SyncEvent);
 
 	g_tcp_close(g_sck);
 }
@@ -360,10 +354,8 @@ int main(int argc, char** argv)
 		g_chmod_hex("/tmp/.X11-unix", 0x1777);
 	}
 
-	g_snprintf(text, 255, "xrdp_sesman_%8.8x_main_term", g_pid);
-	g_term_event = g_create_wait_obj(text);
-	g_snprintf(text, 255, "xrdp_sesman_%8.8x_main_sync", g_pid);
-	g_sync_event = g_create_wait_obj(text);
+	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	g_SyncEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	sesman_main_loop();
 
@@ -373,8 +365,8 @@ int main(int argc, char** argv)
 		g_file_delete(pid_file);
 	}
 
-	g_delete_wait_obj(g_term_event);
-	g_delete_wait_obj(g_sync_event);
+	CloseHandle(g_TermEvent);
+	CloseHandle(g_SyncEvent);
 
 	if (!daemon)
 	{

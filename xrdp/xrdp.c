@@ -28,8 +28,8 @@ static long g_threadid = 0; /* main threadid */
 
 static long g_sync_mutex = 0;
 static long g_sync1_mutex = 0;
-static LONG_PTR g_term_event = 0;
-static LONG_PTR g_sync_event = 0;
+static HANDLE g_TermEvent = NULL;
+static HANDLE g_SyncEvent = NULL;
 /* synchronize stuff */
 static int g_sync_command = 0;
 static long g_sync_result = 0;
@@ -70,7 +70,7 @@ long g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, l
 		tc_mutex_unlock(g_sync_mutex);
 		/* set this event so that the main thread know if
 		 * g_process_waiting_function() must be called */
-		g_set_wait_obj(g_sync_event);
+		SetEvent(g_SyncEvent);
 
 		do
 		{
@@ -99,10 +99,8 @@ void xrdp_shutdown(int sig)
 	g_writeln("shutting down");
 	g_writeln("signal %d threadid %p", sig, threadid);
 
-	if (!g_is_wait_obj_set(g_term_event))
-	{
-		g_set_wait_obj(g_term_event);
-	}
+	if (WaitForSingleObject(g_TermEvent, 0) != WAIT_OBJECT_0)
+		SetEvent(g_TermEvent);
 }
 
 void xrdp_child(int sig)
@@ -113,45 +111,37 @@ void xrdp_child(int sig)
 /* called in child just after fork */
 int xrdp_child_fork(void)
 {
-	int pid;
-	char text[256];
-
 	/* close, don't delete these */
-	g_close_wait_obj(g_term_event);
-	g_close_wait_obj(g_sync_event);
-	pid = g_getpid();
-	g_snprintf(text, 255, "xrdp_%8.8x_main_term", pid);
-	g_term_event = g_create_wait_obj(text);
-	g_snprintf(text, 255, "xrdp_%8.8x_main_sync", pid);
-	g_sync_event = g_create_wait_obj(text);
+	//CloseHandle(g_TermEvent);
+	//CloseHandle(g_SyncEvent);
+
+	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	g_SyncEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
 	return 0;
 }
 
 int g_is_term(void)
 {
-	return g_is_wait_obj_set(g_term_event);
+	return (WaitForSingleObject(g_TermEvent, 0) == WAIT_OBJECT_0) ? 1 : 0;
 }
 
 void g_set_term(int in_val)
 {
 	if (in_val)
-	{
-		g_set_wait_obj(g_term_event);
-	}
+		SetEvent(g_TermEvent);
 	else
-	{
-		g_reset_wait_obj(g_term_event);
-	}
+		ResetEvent(g_TermEvent);
 }
 
-LONG_PTR g_get_term_event(void)
+HANDLE g_get_term_event(void)
 {
-	return g_term_event;
+	return g_TermEvent;
 }
 
-LONG_PTR g_get_sync_event(void)
+HANDLE g_get_sync_event(void)
 {
-	return g_sync_event;
+	return g_SyncEvent;
 }
 
 void pipe_sig(int sig_num)
@@ -471,28 +461,18 @@ int main(int argc, char **argv)
 	g_sync_mutex = tc_mutex_create();
 	g_sync1_mutex = tc_mutex_create();
 	pid = g_getpid();
-	g_snprintf(text, 255, "xrdp_%8.8x_main_term", pid);
-	g_term_event = g_create_wait_obj(text);
 
-	if (g_term_event == 0)
-	{
-		g_writeln("error creating g_term_event");
-	}
-
-	g_snprintf(text, 255, "xrdp_%8.8x_main_sync", pid);
-	g_sync_event = g_create_wait_obj(text);
-
-	if (g_sync_event == 0)
-	{
-		g_writeln("error creating g_sync_event");
-	}
+	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	g_SyncEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	xrdp_listen_main_loop(g_listen);
 	xrdp_listen_delete(g_listen);
+
 	tc_mutex_delete(g_sync_mutex);
 	tc_mutex_delete(g_sync1_mutex);
-	g_delete_wait_obj(g_term_event);
-	g_delete_wait_obj(g_sync_event);
+
+	CloseHandle(g_TermEvent);
+	CloseHandle(g_SyncEvent);
 
 	/* only main process should delete pid file */
 	if ((!no_daemon) && (pid == g_getpid()))
@@ -503,5 +483,6 @@ int main(int argc, char **argv)
 
 	free(startup_params);
 	g_deinit();
+
 	return 0;
 }

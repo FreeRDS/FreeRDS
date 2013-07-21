@@ -90,8 +90,10 @@ xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, LONG_PTR done_event, vo
 	xfp = (xrdpProcess*) client->context;
 
 	xfp->done_event = done_event;
+
 	g_session_id++;
 	xfp->session_id = g_session_id;
+
 	pid = g_getpid();
 	g_snprintf(event_name, 255, "xrdp_%8.8x_process_self_term_event_%8.8x", pid, xfp->session_id);
 	xfp->term_event = g_create_wait_obj(event_name);
@@ -305,7 +307,7 @@ void* xrdp_process_main_thread(void* arg)
 	xrdp_input_register_callbacks(client->input);
 
 	ClientEvent = client->GetEventHandle(client);
-	GlobalTermEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, g_get_term_event());
+	GlobalTermEvent = g_get_term_event();
 	LocalTermEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, xfp->term_event);
 
 	while (1)

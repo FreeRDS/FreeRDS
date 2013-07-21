@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-extern LONG_PTR g_sync_event;
+extern HANDLE g_SyncEvent;
 extern unsigned char g_fixedkey[8];
 extern struct config_sesman *g_cfg; /* in sesman.c */
 xrdpSessionChain *g_sessions;
@@ -619,7 +619,7 @@ int session_start(int width, int height, int bpp, char *username, char *password
 	g_sync_data = data;
 	g_sync_type = type;
 	/* set event for main thread to see */
-	g_set_wait_obj(g_sync_event);
+	SetEvent(g_SyncEvent);
 	/* wait for main thread to get done */
 	lock_sync_sem_acquire();
 	/* read result(display) from shared var */
@@ -640,7 +640,7 @@ int session_reconnect(int display, char *username)
 	g_sync_width = display;
 	g_sync_username = username;
 	/* set event for main thread to see */
-	g_set_wait_obj(g_sync_event);
+	SetEvent(g_SyncEvent);
 	/* wait for main thread to get done */
 	lock_sync_sem_acquire();
 	/* unlock mutex */

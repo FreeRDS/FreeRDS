@@ -21,6 +21,8 @@
 #include "os_calls.h"
 #include "list.h"
 
+#include <winpr/crt.h>
+
 xrdpList* list_create(void)
 {
 	xrdpList *self;

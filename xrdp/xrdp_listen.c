@@ -58,99 +58,49 @@ void xrdp_listen_delete(xrdpListener* self)
 
 int xrdp_listen_main_loop(xrdpListener* self)
 {
-	int i;
-	int fds;
-	int max_fds;
-	int robjc;
-	int wobjc;
-	long sync_obj;
-	long term_obj;
-	long robjs[32];
-	int itimeout;
-	int rcount;
-	void* rfds[32];
-	fd_set rfds_set;
+	DWORD status;
+	DWORD nCount;
+	HANDLE events[32];
+	HANDLE TermEvent;
+	HANDLE SyncEvent;
 	freerdp_listener* listener;
 
-	ZeroMemory(rfds, sizeof(rfds));
 	listener = (freerdp_listener*) self;
 
 	listener->Open(listener, NULL, 3389);
 
-	term_obj = g_get_term_event();
-	sync_obj = g_get_sync_event();
+	TermEvent = g_get_term_event();
+	SyncEvent = g_get_sync_event();
 
 	while (1)
 	{
-		rcount = 0;
+		nCount = 0;
+		events[nCount++] = TermEvent;
+		events[nCount++] = SyncEvent;
 
-		robjc = 0;
-		wobjc = 0;
-		itimeout = -1;
-
-		robjs[robjc++] = term_obj;
-		robjs[robjc++] = sync_obj;
-
-		if (listener->GetFileDescriptor(listener, rfds, &rcount) != TRUE)
+		if (listener->GetEventHandles(listener, events, &nCount) < 0)
 		{
 			fprintf(stderr, "Failed to get FreeRDP file descriptor\n");
 			break;
 		}
 
-		max_fds = 0;
-		FD_ZERO(&rfds_set);
+		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-		for (i = 0; i < rcount; i++)
+		if (WaitForSingleObject(TermEvent, 0) == WAIT_OBJECT_0)
 		{
-			fds = (int)(long)(rfds[i]);
-
-			if (fds > max_fds)
-				max_fds = fds;
-
-			FD_SET(fds, &rfds_set);
-		}
-
-		for (i = 0; i < robjc; i++)
-		{
-			fds = robjs[i];
-
-			if (fds > max_fds)
-				max_fds = fds;
-
-			FD_SET(fds, &rfds_set);
-		}
-
-		if (max_fds == 0)
 			break;
+		}
 
-		if (select(max_fds + 1, &rfds_set, NULL, NULL, NULL) == -1)
+		if (WaitForSingleObject(SyncEvent, 0) == WAIT_OBJECT_0)
 		{
-			/* these are not really errors */
-			if (!((errno == EAGAIN) ||
-				(errno == EWOULDBLOCK) ||
-				(errno == EINPROGRESS) ||
-				(errno == EINTR))) /* signal occurred */
-			{
-				fprintf(stderr, "select failed\n");
-				break;
-			}
+			ResetEvent(SyncEvent);
+			g_process_waiting_function();
 		}
 
 		if (listener->CheckFileDescriptor(listener) != TRUE)
 		{
 			fprintf(stderr, "Failed to check FreeRDP file descriptor\n");
 			break;
-		}
-
-		if (g_is_wait_obj_set(term_obj))
-		{
-			break;
-		}
-
-		if (g_is_wait_obj_set(sync_obj))
-		{
-			g_reset_wait_obj(sync_obj);
-			g_process_waiting_function();
 		}
 	}
 
