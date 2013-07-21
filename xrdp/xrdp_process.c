@@ -274,28 +274,15 @@ void xrdp_input_register_callbacks(rdpInput* input)
 
 void* xrdp_process_main_thread(void* arg)
 {
-	int i;
-	int fds;
-	int max_fds;
-	int rcount;
-	int wcount;
-	int robjc;
-	int wobjc;
-	LONG_PTR term_obj;
-	LONG_PTR robjs[32];
-	LONG_PTR wobjs[32];
-	int itimeout;
-	void* rfds[32];
-	void* wfds[32];
-	fd_set rfds_set;
+	DWORD status;
+	DWORD nCount;
+	HANDLE events[32];
 	xrdpProcess* xfp;
+	HANDLE ClientEvent;
+	HANDLE LocalTermEvent;
+	HANDLE GlobalTermEvent;
 	rdpSettings* settings;
-	struct timeval timeout;
 	freerdp_peer* client = (freerdp_peer*) arg;
-
-	ZeroMemory(rfds, sizeof(rfds));
-	ZeroMemory(wfds, sizeof(wfds));
-	ZeroMemory(&timeout, sizeof(struct timeval));
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
 
@@ -317,74 +304,41 @@ void* xrdp_process_main_thread(void* arg)
 	xfp->session->callback = callback;
 	xrdp_input_register_callbacks(client->input);
 
-	term_obj = g_get_term_event();
+	ClientEvent = client->GetEventHandle(client);
+	GlobalTermEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, g_get_term_event());
+	LocalTermEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, xfp->term_event);
 
 	while (1)
 	{
-		rcount = 0;
-		wcount = 0;
-
-		robjc = 0;
-		wobjc = 0;
-		itimeout = 0;
-
-		if (client->GetFileDescriptor(client, rfds, &rcount) != TRUE)
-		{
-			fprintf(stderr, "Failed to get FreeRDP file descriptor\n");
-			break;
-		}
+		nCount = 0;
+		events[nCount++] = ClientEvent;
+		events[nCount++] = GlobalTermEvent;
+		events[nCount++] = LocalTermEvent;
 
 		if (client->activated)
 		{
-			xrdp_wm_get_wait_objs(xfp->wm, robjs, &robjc, wobjs, &wobjc, &itimeout);
+			xrdp_wm_get_event_handles(xfp->wm, events, &nCount);
 		}
 
-		robjs[robjc++] = term_obj;
-		robjs[robjc++] = xfp->term_event;
+		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-		max_fds = 0;
-		FD_ZERO(&rfds_set);
-
-		for (i = 0; i < rcount; i++)
+		if (WaitForSingleObject(GlobalTermEvent, 0) == WAIT_OBJECT_0)
 		{
-			fds = (int)(long)(rfds[i]);
-
-			if (fds > max_fds)
-				max_fds = fds;
-
-			FD_SET(fds, &rfds_set);
-		}
-
-		for (i = 0; i < robjc; i++)
-		{
-			fds = robjs[i];
-
-			if (fds > max_fds)
-				max_fds = fds;
-
-			FD_SET(fds, &rfds_set);
-		}
-
-		if (max_fds == 0)
 			break;
+		}
 
-		if (select(max_fds + 1, &rfds_set, NULL, NULL, NULL) == -1)
+		if (WaitForSingleObject(LocalTermEvent, 0) == WAIT_OBJECT_0)
 		{
-			/* these are not really errors */
-			if (!((errno == EAGAIN) ||
-				(errno == EWOULDBLOCK) ||
-				(errno == EINPROGRESS) ||
-				(errno == EINTR))) /* signal occurred */
+			break;
+		}
+
+		if (WaitForSingleObject(ClientEvent, 0) == WAIT_OBJECT_0)
+		{
+			if (client->CheckFileDescriptor(client) != TRUE)
 			{
-				fprintf(stderr, "select failed\n");
+				fprintf(stderr, "Failed to check freerdp file descriptor\n");
 				break;
 			}
-		}
-
-		if (client->CheckFileDescriptor(client) != TRUE)
-		{
-			fprintf(stderr, "Failed to check freerdp file descriptor\n");
-			break;
 		}
 
 		if (client->activated)
@@ -393,16 +347,6 @@ void* xrdp_process_main_thread(void* arg)
 			{
 				break;
 			}
-		}
-
-		if (g_is_wait_obj_set(term_obj))
-		{
-			break;
-		}
-
-		if (g_is_wait_obj_set(xfp->term_event))
-		{
-			break;
 		}
 	}
 
