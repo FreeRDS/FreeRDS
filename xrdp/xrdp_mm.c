@@ -348,16 +348,16 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 	rv = 1; /* failure */
 	g_memset(text, 0, sizeof(text));
 
-	if (!g_is_wait_obj_set(xrdp_process_get_term_event(self->wm->pro_layer)))
+	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
 	{
 		if (self->mod->mod_start(self->mod, self->wm->screen->width, self->wm->screen->height,
 				self->wm->screen->bpp) != 0)
 		{
-			g_set_wait_obj(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
+			SetEvent(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
 		}
 	}
 
-	if (!g_is_wait_obj_set(xrdp_process_get_term_event(self->wm->pro_layer)))
+	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
 	{
 		if (self->display > 0)
 		{
@@ -390,17 +390,16 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 				}
 				else
 				{
-					g_set_wait_obj(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
+					SetEvent(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
 				}
 			}
 		}
 	}
 
-	if (!g_is_wait_obj_set(xrdp_process_get_term_event(self->wm->pro_layer)))
+	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
 	{
 		/* this adds the port to the end of the list, it will already be in
-		 the list as -1
-		 the module should use the last one */
+		 the list as -1 the module should use the last one */
 		if (g_strlen(text) > 0)
 		{
 			list_add_item(self->login_names, (long) g_strdup("port"));

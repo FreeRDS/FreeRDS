@@ -546,10 +546,10 @@ int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
 
 /* xrdp_process.c */
-xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, LONG_PTR done_event, void* transport);
+xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, HANDLE DoneEvent, void* transport);
 void xrdp_process_delete(xrdpProcess* self);
 int xrdp_process_get_status(xrdpProcess* self);
-LONG_PTR xrdp_process_get_term_event(xrdpProcess* self);
+HANDLE xrdp_process_get_term_event(xrdpProcess* self);
 xrdpSession* xrdp_process_get_session(xrdpProcess* self);
 int xrdp_process_get_session_id(xrdpProcess* self);
 xrdpWm* xrdp_process_get_wm(xrdpProcess* self);

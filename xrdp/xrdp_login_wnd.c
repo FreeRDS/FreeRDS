@@ -145,13 +145,13 @@ static int xrdp_wm_help_clicked(xrdpBitmap *wnd)
 
 static int xrdp_wm_cancel_clicked(xrdpBitmap *wnd)
 {
-	if (wnd != 0)
+	if (wnd)
 	{
-		if (wnd->wm != 0)
+		if (wnd->wm)
 		{
-			if (wnd->wm->pro_layer != 0)
+			if (wnd->wm->pro_layer)
 			{
-				g_set_wait_obj(xrdp_process_get_term_event(wnd->wm->pro_layer));
+				SetEvent(xrdp_process_get_term_event(wnd->wm->pro_layer));
 			}
 		}
 	}

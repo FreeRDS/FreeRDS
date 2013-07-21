@@ -25,6 +25,7 @@ static int g_session_id = 0;
 #include <winpr/crt.h>
 #include <winpr/file.h>
 #include <winpr/path.h>
+#include <winpr/synch.h>
 #include <winpr/thread.h>
 
 #include <freerdp/freerdp.h>
@@ -42,8 +43,9 @@ struct xrdp_process
 
 	int status;
 	int session_id;
-	LONG_PTR done_event;
-	LONG_PTR term_event;
+	HANDLE DoneEvent;
+	HANDLE TermEvent;
+
 	xrdpWm* wm;
 	xrdpSession* session;
 };
@@ -73,12 +75,10 @@ void xrdp_peer_context_free(freerdp_peer* client, xrdpProcess* context)
 
 }
 
-xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, LONG_PTR done_event, void* transport)
+xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, HANDLE DoneEvent, void* transport)
 {
-	int pid;
 	xrdpProcess* xfp;
 	freerdp_peer* client;
-	char event_name[256];
 
 	client = (freerdp_peer*) transport;
 
@@ -89,14 +89,12 @@ xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, LONG_PTR done_event, vo
 
 	xfp = (xrdpProcess*) client->context;
 
-	xfp->done_event = done_event;
+	xfp->DoneEvent = DoneEvent;
 
 	g_session_id++;
 	xfp->session_id = g_session_id;
 
-	pid = g_getpid();
-	g_snprintf(event_name, 255, "xrdp_%8.8x_process_self_term_event_%8.8x", pid, xfp->session_id);
-	xfp->term_event = g_create_wait_obj(event_name);
+	xfp->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	return xfp;
 }
@@ -111,9 +109,9 @@ int xrdp_process_get_status(xrdpProcess* self)
 	return self->status;
 }
 
-LONG_PTR xrdp_process_get_term_event(xrdpProcess* self)
+HANDLE xrdp_process_get_term_event(xrdpProcess* self)
 {
-	return self->term_event;
+	return self->TermEvent;
 }
 
 xrdpSession* xrdp_process_get_session(xrdpProcess* self)
@@ -308,7 +306,7 @@ void* xrdp_process_main_thread(void* arg)
 
 	ClientEvent = client->GetEventHandle(client);
 	GlobalTermEvent = g_get_term_event();
-	LocalTermEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, xfp->term_event);
+	LocalTermEvent = xfp->TermEvent;
 
 	while (1)
 	{

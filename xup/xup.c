@@ -367,8 +367,6 @@ int lib_mod_connect(xrdpModule* mod)
 	else
 	{
 		server_msg(mod, "connected ok", 0);
-		mod->sck_obj = g_create_wait_obj_from_socket(mod->sck, 0);
-
 		mod->SocketEvent = CreateFileDescriptorEvent(NULL, TRUE, FALSE, mod->sck);
 	}
 
@@ -777,24 +775,6 @@ int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 	return 0;
 }
 
-int lib_mod_get_wait_objs(xrdpModule* mod, LONG_PTR *read_objs, int *rcount, LONG_PTR *write_objs, int *wcount, int *timeout)
-{
-	int i;
-
-	i = *rcount;
-
-	if (mod != 0)
-	{
-		if (mod->sck_obj != 0)
-		{
-			read_objs[i++] = mod->sck_obj;
-		}
-	}
-
-	*rcount = i;
-	return 0;
-}
-
 int lib_mod_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
 	if (mod)
@@ -811,22 +791,18 @@ int lib_mod_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 
 int lib_mod_check_wait_objs(xrdpModule* mod)
 {
-	int rv;
+	int status = 0;
 
-	rv = 0;
-
-	if (mod != 0)
+	if (mod)
 	{
-		if (mod->sck_obj != 0)
+		if (mod->SocketEvent)
 		{
-			if (g_is_wait_obj_set(mod->sck_obj))
-			{
-				rv = lib_mod_signal(mod);
-			}
+			if (WaitForSingleObject(mod->SocketEvent, 0) == WAIT_OBJECT_0)
+				status = lib_mod_signal(mod);
 		}
 	}
 
-	return rv;
+	return status;
 }
 
 xrdpModule* xup_module_init(void)
@@ -848,7 +824,6 @@ xrdpModule* xup_module_init(void)
 		mod->mod_signal = lib_mod_signal;
 		mod->mod_end = lib_mod_end;
 		mod->mod_set_param = lib_mod_set_param;
-		mod->mod_get_wait_objs = lib_mod_get_wait_objs;
 		mod->mod_get_event_handles = lib_mod_get_event_handles;
 		mod->mod_check_wait_objs = lib_mod_check_wait_objs;
 	}
@@ -860,7 +835,6 @@ int xup_module_exit(xrdpModule* mod)
 {
 	if (mod)
 	{
-		g_delete_wait_obj_from_socket(mod->sck_obj);
 		g_tcp_close(mod->sck);
 		free(mod);
 	}
