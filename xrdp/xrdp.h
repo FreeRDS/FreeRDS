@@ -104,7 +104,6 @@ struct xrdp_mod
 	int (*mod_start)(xrdpModule* v, int w, int h, int bpp);
 	int (*mod_connect)(xrdpModule* v);
 	int (*mod_event)(xrdpModule* v, int msg, long param1, long param2, long param3, long param4);
-	int (*mod_signal)(xrdpModule* v);
 	int (*mod_end)(xrdpModule* v);
 	int (*mod_set_param)(xrdpModule* v, char* name, char* value);
 	int (*mod_session_change)(xrdpModule* v, int, int);
@@ -132,6 +131,8 @@ struct xrdp_mod
 	rdpSettings* settings;
 
 	HANDLE SocketEvent;
+	wStream* SendStream;
+	wStream* ReceiveStream;
 
 	int vmaj;
 	int vmin;

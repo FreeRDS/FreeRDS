@@ -384,7 +384,8 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 
 	LIB_DEBUG(mod, "in lib_mod_event");
 
-	s = Stream_New(NULL, 8192);
+	s = mod->SendStream;
+	Stream_SetPosition(s, 0);
 
 	if ((subtype >= 15) && (subtype <= 16)) /* key events */
 	{
@@ -437,10 +438,6 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 	xrdp_write_event(s, &msg);
 
 	status = lib_send(mod, Stream_Buffer(s), length);
-
-	Stream_Free(s, TRUE);
-
-	LIB_DEBUG(mod, "out lib_mod_event");
 
 	return status;
 }
@@ -672,73 +669,6 @@ int lib_mod_process_order(xrdpModule* mod, int type, wStream* s)
 	return status;
 }
 
-int lib_mod_signal(xrdpModule* mod)
-{
-	wStream* s;
-	int position;
-	int num_orders;
-	int index;
-	int status;
-	int length;
-	int type;
-	int flags;
-
-	LIB_DEBUG(mod, "in lib_mod_signal");
-
-	s = Stream_New(NULL, 8192);
-
-	status = lib_recv(mod, s->buffer, 8);
-
-	if (status == 0)
-	{
-		Stream_Read_UINT16(s, type);
-		Stream_Read_UINT16(s, num_orders);
-		Stream_Read_UINT32(s, length);
-
-		printf("lib_mod_signal: type: %d num_orders: %d length: %d\n", type, num_orders, length);
-
-		if (type == 3)
-		{
-			Stream_EnsureCapacity(s, length);
-			Stream_SetPosition(s, 0);
-			s->length = 0;
-
-			status = lib_recv(mod, s->buffer, length);
-
-			if (status == 0)
-			{
-				for (index = 0; index < num_orders; index++)
-				{
-					position = Stream_GetPosition(s);
-
-					Stream_Read_UINT16(s, type);
-					Stream_Read_UINT32(s, length);
-					Stream_Read_UINT32(s, flags);
-
-					status = lib_mod_process_order(mod, type, s);
-
-					if (status != 0)
-					{
-						break;
-					}
-
-					Stream_SetPosition(s, position + length);
-				}
-			}
-		}
-		else
-		{
-			g_writeln("unknown type %d", type);
-		}
-	}
-
-	Stream_Free(s, TRUE);
-
-	LIB_DEBUG(mod, "out lib_mod_signal");
-
-	return status;
-}
-
 int lib_mod_end(xrdpModule* mod)
 {
 	return 0;
@@ -775,6 +705,56 @@ int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 	return 0;
 }
 
+int lib_mod_signal(xrdpModule* mod)
+{
+	int type;
+	int length;
+	int flags;
+	int index;
+	int status;
+	wStream* s;
+	int position;
+	int totalCount;
+	int totalLength;
+
+	s = mod->ReceiveStream;
+	Stream_SetPosition(s, 0);
+
+	status = lib_recv(mod, Stream_Pointer(s), 8);
+
+	if (status == 0)
+	{
+		Stream_Read_UINT32(s, totalLength);
+		Stream_Read_UINT32(s, totalCount);
+
+		Stream_EnsureCapacity(s, totalLength);
+		status = lib_recv(mod, Stream_Pointer(s), totalLength - 8);
+
+		if (status == 0)
+		{
+			for (index = 0; index < totalCount; index++)
+			{
+				position = Stream_GetPosition(s);
+
+				Stream_Read_UINT16(s, type);
+				Stream_Read_UINT32(s, length);
+				Stream_Read_UINT32(s, flags);
+
+				status = lib_mod_process_order(mod, type, s);
+
+				if (status != 0)
+				{
+					break;
+				}
+
+				Stream_SetPosition(s, position + length);
+			}
+		}
+	}
+
+	return status;
+}
+
 int lib_mod_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
 	if (mod)
@@ -793,14 +773,14 @@ int lib_mod_check_wait_objs(xrdpModule* mod)
 {
 	int status = 0;
 
-	if (mod)
-	{
-		if (mod->SocketEvent)
-		{
-			if (WaitForSingleObject(mod->SocketEvent, 0) == WAIT_OBJECT_0)
-				status = lib_mod_signal(mod);
-		}
-	}
+	if (!mod)
+		return 0;
+
+	if (!mod->SocketEvent)
+		return 0;
+
+	if (WaitForSingleObject(mod->SocketEvent, 0) == WAIT_OBJECT_0)
+		status = lib_mod_signal(mod);
 
 	return status;
 }
@@ -821,11 +801,13 @@ xrdpModule* xup_module_init(void)
 		mod->mod_connect = lib_mod_connect;
 		mod->mod_start = lib_mod_start;
 		mod->mod_event = lib_mod_event;
-		mod->mod_signal = lib_mod_signal;
 		mod->mod_end = lib_mod_end;
 		mod->mod_set_param = lib_mod_set_param;
 		mod->mod_get_event_handles = lib_mod_get_event_handles;
 		mod->mod_check_wait_objs = lib_mod_check_wait_objs;
+
+		mod->SendStream = Stream_New(NULL, 8192);
+		mod->ReceiveStream = Stream_New(NULL, 8192);
 	}
 
 	return mod;
@@ -835,6 +817,9 @@ int xup_module_exit(xrdpModule* mod)
 {
 	if (mod)
 	{
+		Stream_Free(mod->SendStream, TRUE);
+		Stream_Free(mod->ReceiveStream, TRUE);
+
 		g_tcp_close(mod->sck);
 		free(mod);
 	}

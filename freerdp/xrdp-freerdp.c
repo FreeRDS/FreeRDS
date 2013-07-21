@@ -304,12 +304,6 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 	return 0;
 }
 
-static int lxrdp_signal(xrdpModule *mod)
-{
-	LLOGLN(10, ("lxrdp_signal:"));
-	return 0;
-}
-
 static int lxrdp_end(xrdpModule *mod)
 {
 	int i;
@@ -1543,7 +1537,6 @@ xrdpModule* freerdp_client_module_init(void)
 	mod->mod_connect = lxrdp_connect;
 	mod->mod_start = lxrdp_start;
 	mod->mod_event = lxrdp_event;
-	mod->mod_signal = lxrdp_signal;
 	mod->mod_end = lxrdp_end;
 	mod->mod_set_param = lxrdp_set_param;
 	mod->mod_session_change = lxrdp_session_change;

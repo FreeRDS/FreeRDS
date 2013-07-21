@@ -565,11 +565,10 @@ static int rdpup_send_msg(wStream* s)
 		}
 
 		Stream_SetPosition(s, 0);
-		Stream_Write_UINT16(s, 3);
-		Stream_Write_UINT16(s, g_count);
-		Stream_Write_UINT32(s, length - 8);
+		Stream_Write_UINT32(s, length);
+		Stream_Write_UINT32(s, g_count);
 
-		status = rdpup_send(s->buffer, length);
+		status = rdpup_send(Stream_Buffer(s), length);
 	}
 
 	if (status != 0)

@@ -1562,18 +1562,15 @@ int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 	xrdpOffscreenBitmapItem *bi;
 	xrdpPainter* p;
 
-	//g_writeln("server_switch_os_surface: id 0x%x", id);
 	wm = (xrdpWm*) (mod->wm);
 
 	if (rdpindex == -1)
 	{
-		//g_writeln("server_switch_os_surface: setting target_surface to screen");
 		wm->target_surface = wm->screen;
 		p = (xrdpPainter*) (mod->painter);
 
 		if (p != 0)
 		{
-			//g_writeln("setting target");
 			wm_painter_set_target(p);
 		}
 
@@ -1584,13 +1581,11 @@ int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 
 	if (bi != 0)
 	{
-		//g_writeln("server_switch_os_surface: setting target_surface to rdpid %d", id);
 		wm->target_surface = bi->bitmap;
 		p = (xrdpPainter*) (mod->painter);
 
 		if (p != 0)
 		{
-			//g_writeln("setting target");
 			wm_painter_set_target(p);
 		}
 	}
