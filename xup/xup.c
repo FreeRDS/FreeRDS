@@ -817,7 +817,6 @@ int lib_mod_check_wait_objs(xrdpModule* mod)
 	if (WaitForSingleObject(mod->SocketEvent, 0) == WAIT_OBJECT_0)
 	{
 		status = xup_recv(mod);
-		//status = lib_mod_signal(mod);
 	}
 
 	return status;

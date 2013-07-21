@@ -1619,20 +1619,6 @@ int xrdp_wm_log_msg(xrdpWm *self, char *msg)
 	return 0;
 }
 
-int xrdp_wm_get_wait_objs(xrdpWm *self, LONG_PTR *robjs, int *rc, LONG_PTR *wobjs, int *wc, int *timeout)
-{
-	int i;
-
-	if (!self)
-		return 0;
-
-	i = *rc;
-	robjs[i++] = GetEventFileDescriptor(self->LoginModeEvent);
-	*rc = i;
-
-	return xrdp_mm_get_wait_objs(self->mm, robjs, rc, wobjs, wc, timeout);
-}
-
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount)
 {
 	if (!self)

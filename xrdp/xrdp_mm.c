@@ -1091,29 +1091,6 @@ int xrdp_mm_connect(xrdpMm *self)
 	return rv;
 }
 
-int xrdp_mm_get_wait_objs(xrdpMm *self, LONG_PTR *read_objs, int *rcount, LONG_PTR *write_objs, int *wcount, int *timeout)
-{
-	int status = 0;
-
-	if (!self)
-		return 0;
-
-	if ((self->sesman_trans != 0) && self->sesman_trans_up)
-	{
-		trans_get_wait_objs(self->sesman_trans, read_objs, rcount);
-	}
-
-	if (self->mod != 0)
-	{
-		if (self->mod->mod_get_wait_objs != 0)
-		{
-			status = self->mod->mod_get_wait_objs(self->mod, read_objs, rcount, write_objs, wcount, timeout);
-		}
-	}
-
-	return status;
-}
-
 int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount)
 {
 	if (!self)

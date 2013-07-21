@@ -58,7 +58,7 @@ struct trans
 
 struct trans* trans_create(int mode, int in_size, int out_size);
 void trans_delete(struct trans* self);
-int trans_get_wait_objs(struct trans* self, LONG_PTR* objs, int* count);
+
 int trans_get_event_handles(struct trans* self, HANDLE* events, DWORD* nCount);
 int trans_check_wait_objs(struct trans* self);
 int trans_force_read_s(struct trans* self, wStream* in_s, int size);

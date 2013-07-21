@@ -54,7 +54,7 @@ struct mod_context
 };
 typedef struct mod_context modContext;
 
-void verifyColorMap(xrdpModule *mod)
+void verifyColorMap(xrdpModule* mod)
 {
 	int i;
 	for (i = 0; i < 255; i++)
@@ -67,26 +67,28 @@ void verifyColorMap(xrdpModule *mod)
 	LLOGLN(0, ("The colormap is all NULL\n"));
 }
 
-static int lxrdp_start(xrdpModule *mod, int w, int h, int bpp)
+static int lxrdp_start(xrdpModule* mod, int w, int h, int bpp)
 {
-	rdpSettings *settings;
+	rdpSettings* settings;
 
 	LLOGLN(10, ("lxrdp_start: w %d h %d bpp %d", w, h, bpp));
+
 	settings = mod->instance->settings;
 	settings->DesktopWidth = w;
 	settings->DesktopHeight = h;
 	settings->ColorDepth = bpp;
 	mod->bpp = bpp;
-	// TODO what does this really become
-	settings->DisableEncryption = 1;
-	settings->TlsSecurity = 1;
-	settings->NlaSecurity = 0;
-	settings->RdpSecurity = 1;
+
+	settings->TlsSecurity = TRUE;
+	settings->NlaSecurity = FALSE;
+	settings->RdpSecurity = TRUE;
+
+	settings->AsyncTransport = TRUE;
 
 	return 0;
 }
 
-static int lxrdp_connect(xrdpModule *mod)
+static int lxrdp_connect(xrdpModule* mod)
 {
 	BOOL ok;
 
@@ -172,7 +174,7 @@ static int lxrdp_connect(xrdpModule *mod)
 	return 0;
 }
 
-static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long param3, long param4)
+static int lxrdp_event(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4)
 {
 	int x;
 	int y;
@@ -185,13 +187,16 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 		case 15: /* key down */
 			mod->instance->input->KeyboardEvent(mod->instance->input, param4, param3);
 			break;
+
 		case 16: /* key up */
 			mod->instance->input->KeyboardEvent(mod->instance->input, param4, param3);
 			break;
+
 		case 17: /*Synchronize*/
 			LLOGLN(11, ("Synchronized event handled"));
 			mod->instance->input->SynchronizeEvent(mod->instance->input, 0);
 			break;
+
 		case 100: /* mouse move */
 			LLOGLN(12, ("mouse move %d %d", param1, param2));
 			x = param1;
@@ -199,6 +204,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 			flags = PTR_FLAGS_MOVE;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, x, y);
 			break;
+
 		case 101: /* left button up */
 			LLOGLN(12, ("left button up %d %d", param1, param2));
 			x = param1;
@@ -206,6 +212,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 			flags = PTR_FLAGS_BUTTON1;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, x, y);
 			break;
+
 		case 102: /* left button down */
 			LLOGLN(12, ("left button down %d %d", param1, param2));
 			x = param1;
@@ -213,6 +220,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 			flags = PTR_FLAGS_BUTTON1 | PTR_FLAGS_DOWN;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, x, y);
 			break;
+
 		case 103: /* right button up */
 			LLOGLN(12, ("right button up %d %d", param1, param2));
 			x = param1;
@@ -220,6 +228,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 			flags = PTR_FLAGS_BUTTON2;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, x, y);
 			break;
+
 		case 104: /* right button down */
 			LLOGLN(12, ("right button down %d %d", param1, param2));
 			x = param1;
@@ -227,6 +236,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 			flags = PTR_FLAGS_BUTTON2 | PTR_FLAGS_DOWN;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, x, y);
 			break;
+
 		case 105: /* middle button up */
 			LLOGLN(12, ("middle button up %d %d", param1, param2));
 			x = param1;
@@ -234,6 +244,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 			flags = PTR_FLAGS_BUTTON3;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, x, y);
 			break;
+
 		case 106: /* middle button down */
 			LLOGLN(12, ("middle button down %d %d", param1, param2));
 			x = param1;
@@ -241,16 +252,19 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 			flags = PTR_FLAGS_BUTTON3 | PTR_FLAGS_DOWN;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, x, y);
 			break;
+
 		case 107: /* wheel up */
 			flags = PTR_FLAGS_WHEEL | 0x0078;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, 0, 0);
 		case 108:
 			break;
+
 		case 109: /* wheel down */
 			flags = PTR_FLAGS_WHEEL | PTR_FLAGS_WHEEL_NEGATIVE | 0x0088;
 			mod->instance->input->MouseEvent(mod->instance->input, flags, 0, 0);
 		case 110:
 			break;
+
 		case 200:
 			LLOGLN(12, ("Invalidate request sent from client"));
 			RECTANGLE_16 *rectangle = (RECTANGLE_16 *) g_malloc(sizeof(RECTANGLE_16), 0);
@@ -296,6 +310,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 
 			free(rectangle);
 			break;
+
 		default:
 			LLOGLN(0, ("Unhandled message type in eventhandler %d", msg));
 			break;
@@ -304,7 +319,7 @@ static int lxrdp_event(xrdpModule *mod, int msg, long param1, long param2, long 
 	return 0;
 }
 
-static int lxrdp_end(xrdpModule *mod)
+static int lxrdp_end(xrdpModule* mod)
 {
 	int i;
 	int j;
@@ -329,9 +344,9 @@ static int lxrdp_end(xrdpModule *mod)
 	return 0;
 }
 
-static int lxrdp_set_param(xrdpModule *mod, char *name, char *value)
+static int lxrdp_set_param(xrdpModule* mod, char *name, char *value)
 {
-	rdpSettings *settings;
+	rdpSettings* settings;
 
 	LLOGLN(10, ("lxrdp_set_param: name [%s] value [%s]", name, value));
 	settings = mod->instance->settings;
@@ -366,6 +381,10 @@ static int lxrdp_set_param(xrdpModule *mod, char *name, char *value)
 	{
 		g_strncpy(mod->password, value, 255);
 	}
+	else if (g_strcasecmp(name, "settings") == 0)
+	{
+		mod->settings = (rdpSettings*) value;
+	}
 	else
 	{
 		LLOGLN(0, ("lxrdp_set_param: unknown name [%s] value [%s]", name, value));
@@ -374,30 +393,18 @@ static int lxrdp_set_param(xrdpModule *mod, char *name, char *value)
 	return 0;
 }
 
-static int lxrdp_session_change(xrdpModule *mod, int a, int b)
+static int lxrdp_session_change(xrdpModule* mod, int a, int b)
 {
 	LLOGLN(0, ("lxrdp_session_change: - no code here"));
 	return 0;
 }
 
-static int lxrdp_get_wait_objs(xrdpModule *mod, LONG_PTR *read_objs, int *rcount, LONG_PTR *write_objs, int *wcount, int *timeout)
+int lxrdp_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
-	BOOL status;
-	void** rfds;
-	void** wfds;
-
-	rfds = (void**) read_objs;
-	wfds = (void**) write_objs;
-
-	status = freerdp_get_fds(mod->instance, rfds, rcount, wfds, wcount);
-
-	if (!status)
-		return 1;
-
 	return 0;
 }
 
-static int lxrdp_check_wait_objs(xrdpModule *mod)
+static int lxrdp_check_wait_objs(xrdpModule* mod)
 {
 	BOOL status;
 
@@ -1087,9 +1094,9 @@ static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *po
 
 	free(pointer_new->colorPtrAttr.xorMaskData);
 	pointer_new->colorPtrAttr.xorMaskData = 0;
+
 	free(pointer_new->colorPtrAttr.andMaskData);
 	pointer_new->colorPtrAttr.andMaskData = 0;
-
 }
 
 static void xrdp_freerdp_pointer_cached(rdpContext* context, POINTER_CACHED_UPDATE *pointer_cached)
@@ -1151,121 +1158,92 @@ static void xrdp_freerdp_polygon_sc(rdpContext* context, POLYGON_SC_ORDER* polyg
 	}
 }
 
-static void xrdp_freerdp_syncronize(rdpContext* context)
+static void xrdp_freerdp_synchronize(rdpContext* context)
 {
 	xrdpModule* mod;
 	mod = ((modContext*) context)->modi;
 	LLOGLN(0, ("xrdp_freerdp_synchronize received - not handled"));
 }
 
-static BOOL xrdp_freerdp_pre_connect(freerdp *instance)
+static BOOL xrdp_freerdp_pre_connect(freerdp* instance)
 {
-	int index;
-	int num_chans;
 	xrdpModule* mod;
+	rdpUpdate* update;
+	rdpSettings* settings;
 
 	LLOGLN(0, ("xrdp_freerdp_pre_connect:"));
+
 	mod = ((modContext*) (instance->context))->modi;
 	verifyColorMap(mod);
-	num_chans = 0;
-	index = 0;
 
-	instance->settings->ChannelCount = num_chans;
+	settings = instance->settings;
+	update = instance->update;
 
-	// TODO
-	// instance->settings->offscreen_bitmap_cache = false;
-	instance->settings->OffscreenSupportLevel = 0;
-	instance->settings->DrawNineGridEnabled = 0;
+	if (strlen(mod->username) > 0)
+		settings->Username = _strdup(mod->username);
 
-	// TODO
-	//instance->settings->glyph_cache = true;
-	instance->settings->GlyphSupportLevel = GLYPH_SUPPORT_FULL;
-	instance->settings->OrderSupport[NEG_GLYPH_INDEX_INDEX] = TRUE;
-	instance->settings->OrderSupport[NEG_FAST_GLYPH_INDEX] = FALSE;
-	instance->settings->OrderSupport[NEG_FAST_INDEX_INDEX] = FALSE;
-	instance->settings->OrderSupport[NEG_SCRBLT_INDEX] = TRUE;
-	instance->settings->OrderSupport[NEG_SAVEBITMAP_INDEX] = FALSE;
+	if (strlen(mod->password) > 0)
+		settings->Password = _strdup(mod->password);
 
-	instance->settings->BitmapCacheEnabled = TRUE;
-	instance->settings->OrderSupport[NEG_MEMBLT_INDEX] = TRUE;
-	instance->settings->OrderSupport[NEG_MEMBLT_V2_INDEX] = TRUE;
-	instance->settings->OrderSupport[NEG_MEM3BLT_INDEX] = FALSE;
-	instance->settings->OrderSupport[NEG_MEM3BLT_V2_INDEX] = FALSE;
-	instance->settings->BitmapCacheV2NumCells = 3; // 5;
-	instance->settings->BitmapCacheV2CellInfo[0].numEntries = 0x78; // 600;
-	instance->settings->BitmapCacheV2CellInfo[0].persistent = FALSE;
-	instance->settings->BitmapCacheV2CellInfo[1].numEntries = 0x78; // 600;
-	instance->settings->BitmapCacheV2CellInfo[1].persistent = FALSE;
-	instance->settings->BitmapCacheV2CellInfo[2].numEntries = 0x150; // 2048;
-	instance->settings->BitmapCacheV2CellInfo[2].persistent = FALSE;
-	instance->settings->BitmapCacheV2CellInfo[3].numEntries = 0; // 4096;
-	instance->settings->BitmapCacheV2CellInfo[3].persistent = FALSE;
-	instance->settings->BitmapCacheV2CellInfo[4].numEntries = 0; // 2048;
-	instance->settings->BitmapCacheV2CellInfo[4].persistent = FALSE;
+	settings->OffscreenSupportLevel = FALSE;
+	settings->DrawNineGridEnabled = FALSE;
+	settings->BitmapCacheEnabled = FALSE;
+	settings->GlyphSupportLevel = GLYPH_SUPPORT_FULL;
 
-	// instance->settings->BitmapCacheV3Enabled = FALSE;
-	instance->settings->OrderSupport[NEG_MULTIDSTBLT_INDEX] = FALSE;
-	instance->settings->OrderSupport[NEG_MULTIPATBLT_INDEX] = FALSE;
-	instance->settings->OrderSupport[NEG_MULTISCRBLT_INDEX] = FALSE;
-	instance->settings->OrderSupport[NEG_MULTIOPAQUERECT_INDEX] = FALSE;
-	instance->settings->OrderSupport[NEG_POLYLINE_INDEX] = FALSE;
+	CopyMemory(settings->OrderSupport, mod->settings->OrderSupport, 32);
 
-	instance->settings->Username = g_strdup(mod->username);
-	instance->settings->Password = g_strdup(mod->password);
+	settings->BitmapCacheV2NumCells = mod->settings->BitmapCacheV2NumCells;
 
-	//instance->settings->RemoteApplicationMode = 1;
+	CopyMemory(settings->BitmapCacheV2CellInfo, mod->settings->BitmapCacheV2CellInfo,
+			sizeof(BITMAP_CACHE_V2_CELL_INFO) * settings->BitmapCacheV2NumCells);
 
-	if (instance->settings->RemoteApplicationMode)
+	settings->CompressionEnabled = FALSE;
+	settings->IgnoreCertificate = TRUE;
+
+	//settings->RemoteApplicationMode = 1;
+
+	if (settings->RemoteApplicationMode)
 	{
-		LLOGLN(0, ("Railsupport !!!!!!!!!!!!!!!!!!"));
-		instance->settings->RemoteApplicationMode = TRUE;
-		instance->settings->RemoteAppLanguageBarSupported = TRUE;
-		instance->settings->Workarea = TRUE;
-		instance->settings->PerformanceFlags = PERF_DISABLE_WALLPAPER | PERF_DISABLE_FULLWINDOWDRAG;
+		settings->RemoteApplicationMode = TRUE;
+		settings->RemoteAppLanguageBarSupported = TRUE;
+		settings->Workarea = TRUE;
+		settings->PerformanceFlags = PERF_DISABLE_WALLPAPER | PERF_DISABLE_FULLWINDOWDRAG;
 	}
 	else
 	{
-		LLOGLN(10, ("Special PerformanceFlags changed"));
-		instance->settings->PerformanceFlags = PERF_DISABLE_WALLPAPER | PERF_DISABLE_FULLWINDOWDRAG
-				| PERF_DISABLE_MENUANIMATIONS | PERF_DISABLE_THEMING; // | PERF_DISABLE_CURSOR_SHADOW | PERF_DISABLE_CURSORSETTINGS ;
+		settings->PerformanceFlags = PERF_DISABLE_WALLPAPER | PERF_DISABLE_FULLWINDOWDRAG
+				| PERF_DISABLE_MENUANIMATIONS | PERF_DISABLE_THEMING;
 	}
-	instance->settings->CompressionEnabled = FALSE;
-	instance->settings->IgnoreCertificate = TRUE;
 
-	instance->update->BeginPaint = xrdp_freerdp_begin_paint;
-	instance->update->EndPaint = xrdp_freerdp_end_paint;
-	instance->update->SetBounds = xrdp_freerdp_set_bounds;
-	instance->update->BitmapUpdate = xrdp_freerdp_bitmap_update;
-	instance->update->Synchronize = xrdp_freerdp_syncronize;
-	instance->update->primary->DstBlt = xrdp_freerdp_dst_blt;
-	instance->update->primary->PatBlt = xrdp_freerdp_pat_blt;
-	instance->update->primary->ScrBlt = xrdp_freerdp_scr_blt;
-	instance->update->primary->OpaqueRect = xrdp_freerdp_opaque_rect;
-	instance->update->primary->MemBlt = xrdp_freerdp_mem_blt;
-	instance->update->primary->GlyphIndex = xrdp_freerdp_glyph_index;
-	instance->update->primary->LineTo = xrdp_freerdp_line_to;
-	instance->update->primary->PolygonSC = xrdp_freerdp_polygon_sc;
-	instance->update->primary->PolygonCB = xrdp_freerdp_polygon_cb;
-	instance->update->secondary->CacheBitmap = xrdp_freerdp_cache_bitmap;
-	instance->update->secondary->CacheBitmapV2 = xrdp_freerdp_cache_bitmapV2;
-	instance->update->secondary->CacheGlyph = xrdp_freerdp_cache_glyph;
-	instance->update->secondary->CacheBrush = xrdp_freerdp_cache_brush;
+	update->BeginPaint = xrdp_freerdp_begin_paint;
+	update->EndPaint = xrdp_freerdp_end_paint;
+	update->SetBounds = xrdp_freerdp_set_bounds;
+	update->BitmapUpdate = xrdp_freerdp_bitmap_update;
+	update->Synchronize = xrdp_freerdp_synchronize;
+	update->primary->DstBlt = xrdp_freerdp_dst_blt;
+	update->primary->PatBlt = xrdp_freerdp_pat_blt;
+	update->primary->ScrBlt = xrdp_freerdp_scr_blt;
+	update->primary->OpaqueRect = xrdp_freerdp_opaque_rect;
+	update->primary->MemBlt = xrdp_freerdp_mem_blt;
+	update->primary->GlyphIndex = xrdp_freerdp_glyph_index;
+	update->primary->LineTo = xrdp_freerdp_line_to;
+	update->primary->PolygonSC = xrdp_freerdp_polygon_sc;
+	update->primary->PolygonCB = xrdp_freerdp_polygon_cb;
+	update->secondary->CacheBitmap = xrdp_freerdp_cache_bitmap;
+	update->secondary->CacheBitmapV2 = xrdp_freerdp_cache_bitmapV2;
+	update->secondary->CacheGlyph = xrdp_freerdp_cache_glyph;
+	update->secondary->CacheBrush = xrdp_freerdp_cache_brush;
 
-	instance->update->pointer->PointerPosition = xrdp_freerdp_pointer_position;
-	instance->update->pointer->PointerSystem = xrdp_freerdp_pointer_system;
-	instance->update->pointer->PointerColor = xrdp_freerdp_pointer_color;
-	instance->update->pointer->PointerNew = xrdp_freerdp_pointer_new;
-	instance->update->pointer->PointerCached = xrdp_freerdp_pointer_cached;
+	update->pointer->PointerPosition = xrdp_freerdp_pointer_position;
+	update->pointer->PointerSystem = xrdp_freerdp_pointer_system;
+	update->pointer->PointerColor = xrdp_freerdp_pointer_color;
+	update->pointer->PointerNew = xrdp_freerdp_pointer_new;
+	update->pointer->PointerCached = xrdp_freerdp_pointer_cached;
 
-	if ((mod->username[0] != 0) && (mod->password[0] != 0))
-	{
-		/* since we have username and password, we can try nla */
-		instance->settings->NlaSecurity = 1;
-	}
+	if (settings->Username && settings->Password)
+		settings->NlaSecurity = TRUE;
 	else
-	{
-		instance->settings->NlaSecurity = 0;
-	}
+		settings->NlaSecurity = FALSE;
 
 	return TRUE;
 }
@@ -1405,9 +1383,9 @@ void lrail_NotifyIconCreate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, N
 	rnso.icon_info.cmap_bytes = notify_icon_state->icon.cbColorTable;
 	rnso.icon_info.mask_bytes = notify_icon_state->icon.cbBitsMask;
 	rnso.icon_info.data_bytes = notify_icon_state->icon.cbBitsColor;
-	rnso.icon_info.mask = (char *) (notify_icon_state->icon.bitsMask);
-	rnso.icon_info.cmap = (char *) (notify_icon_state->icon.colorTable);
-	rnso.icon_info.data = (char *) (notify_icon_state->icon.bitsColor);
+	rnso.icon_info.mask = (char*) (notify_icon_state->icon.bitsMask);
+	rnso.icon_info.cmap = (char*) (notify_icon_state->icon.colorTable);
+	rnso.icon_info.data = (char*) (notify_icon_state->icon.bitsColor);
 
 	server_notify_new_update(mod, orderInfo->windowId, orderInfo->notifyIconId, &rnso, orderInfo->fieldFlags);
 
@@ -1471,7 +1449,7 @@ void lrail_NonMonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo
 	server_monitored_desktop(mod, &rmdo, orderInfo->fieldFlags);
 }
 
-static BOOL xrdp_freerdp_post_connect(freerdp *instance)
+static BOOL xrdp_freerdp_post_connect(freerdp* instance)
 {
 	xrdpModule* mod;
 
@@ -1493,29 +1471,29 @@ static BOOL xrdp_freerdp_post_connect(freerdp *instance)
 	return TRUE;
 }
 
-static int xrdp_freerdp_context_new(freerdp *instance, rdpContext* context)
+static int xrdp_freerdp_context_new(freerdp* instance, rdpContext* context)
 {
 	LLOGLN(0, ("xrdp_freerdp_context_new: %p", context));
 	return 0;
 }
 
-static void xrdp_freerdp_context_free(freerdp *instance, rdpContext* context)
+static void xrdp_freerdp_context_free(freerdp* instance, rdpContext* context)
 {
 	LLOGLN(0, ("xrdp_freerdp_context_free: - no code here"));
 }
 
-static int xrdp_freerdp_receive_channel_data(freerdp *instance, int channelId, UINT8 *data, int size, int flags, int total_size)
+static int xrdp_freerdp_receive_channel_data(freerdp* instance, int channelId, UINT8 *data, int size, int flags, int total_size)
 {
 	return 0;
 }
 
-static BOOL xrdp_freerdp_authenticate(freerdp *instance, char **username, char **password, char **domain)
+static BOOL xrdp_freerdp_authenticate(freerdp* instance, char **username, char **password, char **domain)
 {
 	LLOGLN(0, ("xrdp_freerdp_authenticate: - no code here"));
 	return TRUE;
 }
 
-static BOOL xrdp_freerdp_verify_certificate(freerdp *instance, char *subject, char *issuer, char *fingerprint)
+static BOOL xrdp_freerdp_verify_certificate(freerdp* instance, char *subject, char *issuer, char *fingerprint)
 {
 	LLOGLN(0, ("xrdp_freerdp_verify_certificate: - no code here"));
 	return TRUE;
@@ -1525,12 +1503,11 @@ xrdpModule* freerdp_client_module_init(void)
 {
 	xrdpModule* mod;
 	modContext *lcon;
+	freerdp* instance;
 
 	LLOGLN(0, ("mod_init:"));
-	mod = (xrdpModule *) g_malloc(sizeof(xrdpModule), 1);
-	freerdp_get_version(&(mod->vmaj), &(mod->vmin), &(mod->vrev));
-	LLOGLN(0, ("  FreeRDP version major %d minor %d revision %d",
-					mod->vmaj, mod->vmin, mod->vrev));
+	mod = (xrdpModule*) g_malloc(sizeof(xrdpModule), 1);
+
 	mod->size = sizeof(xrdpModule);
 	mod->version = 2;
 	mod->handle = (long) mod;
@@ -1540,54 +1517,46 @@ xrdpModule* freerdp_client_module_init(void)
 	mod->mod_end = lxrdp_end;
 	mod->mod_set_param = lxrdp_set_param;
 	mod->mod_session_change = lxrdp_session_change;
-	mod->mod_get_wait_objs = lxrdp_get_wait_objs;
+	mod->mod_get_event_handles = lxrdp_get_event_handles;
 	mod->mod_check_wait_objs = lxrdp_check_wait_objs;
 
-	mod->instance = freerdp_new();
-	mod->instance->PreConnect = xrdp_freerdp_pre_connect;
-	mod->instance->PostConnect = xrdp_freerdp_post_connect;
-	mod->instance->ContextSize = sizeof(modContext);
-	mod->instance->ContextNew = xrdp_freerdp_context_new;
-	mod->instance->ContextFree = xrdp_freerdp_context_free;
-	mod->instance->ReceiveChannelData = xrdp_freerdp_receive_channel_data;
-	mod->instance->Authenticate = xrdp_freerdp_authenticate;
-	mod->instance->VerifyCertificate = xrdp_freerdp_verify_certificate;
+	instance = freerdp_new();
+	mod->instance = instance;
 
-	freerdp_context_new(mod->instance);
+	instance->PreConnect = xrdp_freerdp_pre_connect;
+	instance->PostConnect = xrdp_freerdp_post_connect;
+	instance->ReceiveChannelData = xrdp_freerdp_receive_channel_data;
+	instance->Authenticate = xrdp_freerdp_authenticate;
+	instance->VerifyCertificate = xrdp_freerdp_verify_certificate;
 
-	lcon = (modContext *) (mod->instance->context);
+	instance->ContextSize = sizeof(modContext);
+	instance->ContextNew = xrdp_freerdp_context_new;
+	instance->ContextFree = xrdp_freerdp_context_free;
+
+	freerdp_context_new(instance);
+
+	lcon = (modContext*) (instance->context);
 	lcon->modi = mod;
-	LLOGLN(10, ("mod_init: mod %p", mod));
 
 	return mod;
 }
 
-int freerdp_client_module_exit(xrdpModule *mod)
+int freerdp_client_module_exit(xrdpModule* mod)
 {
 	LLOGLN(0, ("mod_exit:"));
 
 	if (!mod)
-	{
 		return 0;
-	}
 
 	if (!mod->instance)
 	{
-		LLOGLN(0, ("mod_exit - null pointer for inst:"));
 		free(mod);
 		return 0;
 	}
 
 	freerdp_disconnect(mod->instance);
 
-	if ((mod->vmaj == 1) && (mod->vmin == 0) && (mod->vrev == 1))
-	{
-		/* this version has a bug with double free in freerdp_free */
-	}
-	else
-	{
-		freerdp_context_free(mod->instance);
-	}
+	freerdp_context_free(mod->instance);
 
 	freerdp_free(mod->instance);
 	free(mod);

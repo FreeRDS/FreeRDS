@@ -67,22 +67,6 @@ void trans_delete(struct trans* self)
 	free(self);
 }
 
-int trans_get_wait_objs(struct trans* self, LONG_PTR *objs, int *count)
-{
-	if (!self)
-		return 1;
-
-	if (self->status != TRANS_STATUS_UP)
-	{
-		return 1;
-	}
-
-	objs[*count] = self->sck;
-	(*count)++;
-
-	return 0;
-}
-
 int trans_get_event_handles(struct trans* self, HANDLE* events, DWORD* nCount)
 {
 	if (!self)
