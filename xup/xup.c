@@ -30,6 +30,7 @@
 #include <avro.h>
 
 #include <winpr/crt.h>
+#include <winpr/synch.h>
 #include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
@@ -367,6 +368,8 @@ int lib_mod_connect(xrdpModule* mod)
 	{
 		server_msg(mod, "connected ok", 0);
 		mod->sck_obj = g_create_wait_obj_from_socket(mod->sck, 0);
+
+		mod->SocketEvent = CreateFileDescriptorEvent(NULL, TRUE, FALSE, mod->sck);
 	}
 
 	LIB_DEBUG(mod, "out lib_mod_connect");
@@ -792,6 +795,20 @@ int lib_mod_get_wait_objs(xrdpModule* mod, LONG_PTR *read_objs, int *rcount, LON
 	return 0;
 }
 
+int lib_mod_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
+{
+	if (mod)
+	{
+		if (mod->SocketEvent)
+		{
+			events[*nCount] = mod->SocketEvent;
+			(*nCount)++;
+		}
+	}
+
+	return 0;
+}
+
 int lib_mod_check_wait_objs(xrdpModule* mod)
 {
 	int rv;
@@ -821,6 +838,7 @@ xrdpModule* xup_module_init(void)
 	if (mod)
 	{
 		ZeroMemory(mod, sizeof(xrdpModule));
+
 		mod->size = sizeof(xrdpModule);
 		mod->version = 2;
 		mod->handle = (long) mod;
@@ -831,6 +849,7 @@ xrdpModule* xup_module_init(void)
 		mod->mod_end = lib_mod_end;
 		mod->mod_set_param = lib_mod_set_param;
 		mod->mod_get_wait_objs = lib_mod_get_wait_objs;
+		mod->mod_get_event_handles = lib_mod_get_event_handles;
 		mod->mod_check_wait_objs = lib_mod_check_wait_objs;
 	}
 
@@ -839,12 +858,12 @@ xrdpModule* xup_module_init(void)
 
 int xup_module_exit(xrdpModule* mod)
 {
-	if (!mod)
-		return 0;
-
-	g_delete_wait_obj_from_socket(mod->sck_obj);
-	g_tcp_close(mod->sck);
-	free(mod);
+	if (mod)
+	{
+		g_delete_wait_obj_from_socket(mod->sck_obj);
+		g_tcp_close(mod->sck);
+		free(mod);
+	}
 
 	return 0;
 }

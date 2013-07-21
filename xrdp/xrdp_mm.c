@@ -1094,14 +1094,10 @@ int xrdp_mm_connect(xrdpMm *self)
 
 int xrdp_mm_get_wait_objs(xrdpMm *self, LONG_PTR *read_objs, int *rcount, LONG_PTR *write_objs, int *wcount, int *timeout)
 {
-	int rv = 0;
+	int status = 0;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 0;
-	}
-
-	rv = 0;
 
 	if ((self->sesman_trans != 0) && self->sesman_trans_up)
 	{
@@ -1112,11 +1108,30 @@ int xrdp_mm_get_wait_objs(xrdpMm *self, LONG_PTR *read_objs, int *rcount, LONG_P
 	{
 		if (self->mod->mod_get_wait_objs != 0)
 		{
-			rv = self->mod->mod_get_wait_objs(self->mod, read_objs, rcount, write_objs, wcount, timeout);
+			status = self->mod->mod_get_wait_objs(self->mod, read_objs, rcount, write_objs, wcount, timeout);
 		}
 	}
 
-	return rv;
+	return status;
+}
+
+int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount)
+{
+	if (!self)
+		return 0;
+
+	if (self->sesman_trans && self->sesman_trans_up)
+	{
+		trans_get_event_handles(self->sesman_trans, events, nCount);
+	}
+
+	if (self->mod)
+	{
+		if (self->mod->mod_get_event_handles)
+			self->mod->mod_get_event_handles(self->mod, events, nCount);
+	}
+
+	return 0;
 }
 
 int xrdp_mm_check_wait_objs(xrdpMm *self)

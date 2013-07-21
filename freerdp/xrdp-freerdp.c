@@ -388,36 +388,29 @@ static int lxrdp_session_change(xrdpModule *mod, int a, int b)
 
 static int lxrdp_get_wait_objs(xrdpModule *mod, LONG_PTR *read_objs, int *rcount, LONG_PTR *write_objs, int *wcount, int *timeout)
 {
-	void **rfds;
-	void **wfds;
-	BOOL ok;
+	BOOL status;
+	void** rfds;
+	void** wfds;
 
-	LLOGLN(12, ("lxrdp_get_wait_objs:"));
-	rfds = (void **) read_objs;
-	wfds = (void **) write_objs;
-	ok = freerdp_get_fds(mod->instance, rfds, rcount, wfds, wcount);
+	rfds = (void**) read_objs;
+	wfds = (void**) write_objs;
 
-	if (!ok)
-	{
-		LLOGLN(0, ("lxrdp_get_wait_objs: freerdp_get_fds failed"));
+	status = freerdp_get_fds(mod->instance, rfds, rcount, wfds, wcount);
+
+	if (!status)
 		return 1;
-	}
 
 	return 0;
 }
 
 static int lxrdp_check_wait_objs(xrdpModule *mod)
 {
-	BOOL ok;
+	BOOL status;
 
-	LLOGLN(12, ("lxrdp_check_wait_objs:"));
-	ok = freerdp_check_fds(mod->instance);
+	status = freerdp_check_fds(mod->instance);
 
-	if (!ok)
-	{
-		LLOGLN(0, ("lxrdp_check_wait_objs: freerdp_check_fds failed"));
+	if (!status)
 		return 1;
-	}
 
 	return 0;
 }

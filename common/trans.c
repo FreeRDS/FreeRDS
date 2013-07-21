@@ -27,8 +27,10 @@ struct trans* trans_create(int mode, int in_size, int out_size)
 
 	self = (struct trans*) g_malloc(sizeof(struct trans), 1);
 
-	if (self != NULL)
+	if (self)
 	{
+		ZeroMemory(self, sizeof(struct trans));
+
 		self->in_s = Stream_New(NULL, in_size);
 		self->in_s->length = 0;
 
@@ -77,6 +79,23 @@ int trans_get_wait_objs(struct trans* self, LONG_PTR *objs, int *count)
 
 	objs[*count] = self->sck;
 	(*count)++;
+
+	return 0;
+}
+
+int trans_get_event_handles(struct trans* self, HANDLE* events, DWORD* nCount)
+{
+	if (!self)
+		return 0;
+
+	if (self->status != TRANS_STATUS_UP)
+		return 0;
+
+	if (self->SocketEvent)
+	{
+		events[*nCount] = self->SocketEvent;
+		(*nCount)++;
+	}
 
 	return 0;
 }
@@ -345,6 +364,9 @@ int trans_connect(struct trans* self, const char *server, const char *port, int 
 
 	self->status = TRANS_STATUS_UP; /* ok */
 	self->type1 = TRANS_TYPE_CLIENT; /* client */
+
+	self->SocketEvent = CreateFileDescriptorEvent(NULL, TRUE, FALSE, self->sck);
+
 	return 0;
 }
 

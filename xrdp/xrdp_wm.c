@@ -24,12 +24,8 @@
 xrdpWm* xrdp_wm_create(xrdpProcess* owner)
 {
 	int pid = 0;
-	char event_name[256];
 	rdpSettings* settings;
 	xrdpWm* self = (xrdpWm*) NULL;
-
-	/* initialize (zero out) local variables: */
-	g_memset(event_name, 0, sizeof(char) * 256);
 
 	self = (xrdpWm*) g_malloc(sizeof(xrdpWm), 1);
 	self->pro_layer = owner;
@@ -39,9 +35,9 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner)
 	self->screen = xrdp_bitmap_create(settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth, WND_TYPE_SCREEN, self);
 	self->screen->wm = self;
 	pid = g_getpid();
-	g_snprintf(event_name, 255, "xrdp_%8.8x_wm_login_mode_event_%8.8x", pid, xrdp_process_get_session_id(owner));
-	log_message(LOG_LEVEL_DEBUG, event_name);
-	self->login_mode_event = g_create_wait_obj(event_name);
+
+	self->LoginModeEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
 	self->painter = xrdp_painter_create(self, self->session);
 	self->cache = xrdp_cache_create(self, self->session);
 	self->log = list_create();
@@ -70,7 +66,7 @@ void xrdp_wm_delete(xrdpWm *self)
 	list_delete(self->log);
 	/* free default font */
 	xrdp_font_delete(self->default_font);
-	g_delete_wait_obj(self->login_mode_event);
+	CloseHandle(self->LoginModeEvent);
 	/* free self */
 	free(self);
 }
@@ -1631,10 +1627,21 @@ int xrdp_wm_get_wait_objs(xrdpWm *self, LONG_PTR *robjs, int *rc, LONG_PTR *wobj
 		return 0;
 
 	i = *rc;
-	robjs[i++] = self->login_mode_event;
+	robjs[i++] = GetEventFileDescriptor(self->LoginModeEvent);
 	*rc = i;
 
 	return xrdp_mm_get_wait_objs(self->mm, robjs, rc, wobjs, wc, timeout);
+}
+
+int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount)
+{
+	if (!self)
+		return 0;
+
+	events[*nCount] = self->LoginModeEvent;
+	(*nCount)++;
+
+	return xrdp_mm_get_event_handles(self->mm, events, nCount);
 }
 
 int xrdp_wm_check_wait_objs(xrdpWm *self)
@@ -1646,9 +1653,9 @@ int xrdp_wm_check_wait_objs(xrdpWm *self)
 
 	status = 0;
 
-	if (g_is_wait_obj_set(self->login_mode_event))
+	if (WaitForSingleObject(self->LoginModeEvent, 0) == WAIT_OBJECT_0)
 	{
-		g_reset_wait_obj(self->login_mode_event);
+		ResetEvent(self->LoginModeEvent);
 		xrdp_wm_login_mode_changed(self);
 	}
 
@@ -1663,6 +1670,6 @@ int xrdp_wm_check_wait_objs(xrdpWm *self)
 int xrdp_wm_set_login_mode(xrdpWm *self, int login_mode)
 {
 	self->login_mode = login_mode;
-	g_set_wait_obj(self->login_mode_event);
+	SetEvent(self->LoginModeEvent);
 	return 0;
 }

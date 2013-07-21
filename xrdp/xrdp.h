@@ -26,6 +26,7 @@
 #define XRDP_H
 
 #include <winpr/crt.h>
+#include <winpr/synch.h>
 #include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
@@ -108,6 +109,7 @@ struct xrdp_mod
 	int (*mod_set_param)(xrdpModule* v, char* name, char* value);
 	int (*mod_session_change)(xrdpModule* v, int, int);
 	int (*mod_get_wait_objs)(xrdpModule* v, LONG_PTR* read_objs, int* rcount, LONG_PTR* write_objs, int* wcount, int* timeout);
+	int (*mod_get_event_handles)(xrdpModule* v, HANDLE* events, DWORD* nCount);
 	int (*mod_check_wait_objs)(xrdpModule* v);
 
 	/* common */
@@ -128,6 +130,8 @@ struct xrdp_mod
 	long sck_obj;
 	int shift_state;
 	rdpSettings* settings;
+
+	HANDLE SocketEvent;
 
 	int vmaj;
 	int vmin;
@@ -318,7 +322,7 @@ struct xrdp_wm
 	xrdpList* log;
 	xrdpBitmap* log_wnd;
 	int login_mode;
-	LONG_PTR login_mode_event;
+	HANDLE LoginModeEvent;
 	xrdpMm* mm;
 	xrdpFont* default_font;
 	xrdpKeymap keymap;
@@ -531,15 +535,13 @@ int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y);
 int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code);
 int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
 int xrdp_wm_pu(xrdpWm* self, xrdpBitmap* control);
-int xrdp_wm_send_pointer(xrdpWm* self, int cache_idx,
-		char* data, char* mask, int x, int y, int bpp);
-int xrdp_wm_pointer(xrdpWm* self, char* data, char* mask, int x, int y,
-		int bpp);
+int xrdp_wm_send_pointer(xrdpWm* self, int cache_idx, char* data, char* mask, int x, int y, int bpp);
+int xrdp_wm_pointer(xrdpWm* self, char* data, char* mask, int x, int y, int bpp);
 int callback(long id, int msg, long param1, long param2, long param3, long param4);
 int xrdp_wm_delete_all_childs(xrdpWm* self);
 int xrdp_wm_log_msg(xrdpWm* self, char* msg);
-int xrdp_wm_get_wait_objs(xrdpWm* self, LONG_PTR* robjs, int* rc,
-		LONG_PTR* wobjs, int* wc, int* timeout);
+int xrdp_wm_get_wait_objs(xrdpWm* self, LONG_PTR* robjs, int* rc, LONG_PTR* wobjs, int* wc, int* timeout);
+int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount);
 int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
 
@@ -670,11 +672,9 @@ int xrdp_bitmap_compress(char* in_data, int width, int height,
 xrdpMm* xrdp_mm_create(xrdpWm* owner);
 void xrdp_mm_delete(xrdpMm* self);
 int xrdp_mm_connect(xrdpMm* self);
-int xrdp_mm_process_channel_data(xrdpMm* self, LONG_PTR param1, LONG_PTR param2,
-		LONG_PTR param3, LONG_PTR param4);
-int xrdp_mm_get_wait_objs(xrdpMm* self,
-		LONG_PTR* read_objs, int* rcount,
-		LONG_PTR* write_objs, int* wcount, int* timeout);
+int xrdp_mm_process_channel_data(xrdpMm* self, LONG_PTR param1, LONG_PTR param2, LONG_PTR param3, LONG_PTR param4);
+int xrdp_mm_get_wait_objs(xrdpMm* self, LONG_PTR* read_objs, int* rcount, LONG_PTR* write_objs, int* wcount, int* timeout);
+int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount);
 int xrdp_mm_check_wait_objs(xrdpMm* self);
 int server_msg(xrdpModule* mod, char* msg, int code);
 int server_is_term(xrdpModule* mod);
