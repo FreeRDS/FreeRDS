@@ -48,6 +48,7 @@
 #include "libscp.h"
 
 #include <winpr/crt.h>
+#include <winpr/synch.h>
 #include <winpr/stream.h>
 
 #endif

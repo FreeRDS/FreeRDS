@@ -44,92 +44,91 @@ extern int g_thread_sck; /* in thread.c */
  */
 static void sesman_main_loop(void)
 {
-	int in_sck;
 	int error;
-	int robjs_count;
-	int cont;
-	LONG_PTR sck_obj;
-	LONG_PTR robjs[8];
+	int in_sck;
+	DWORD status;
+	DWORD nCount;
+	HANDLE events[32];
+	HANDLE TermEvent;
+	HANDLE SyncEvent;
+	HANDLE SocketEvent;
 
 	log_message(LOG_LEVEL_INFO, "listening...");
+
 	g_sck = g_tcp_socket();
 	g_tcp_set_non_blocking(g_sck);
+
 	error = scp_tcp_bind(g_sck, g_cfg->listen_address, g_cfg->listen_port);
 
-	if (error == 0)
-	{
-		error = g_tcp_listen(g_sck);
-
-		if (error == 0)
-		{
-			sck_obj = g_create_wait_obj_from_socket(g_sck, 0);
-			cont = 1;
-
-			while (cont)
-			{
-				/* build the wait obj list */
-				robjs_count = 0;
-				robjs[robjs_count++] = sck_obj;
-				robjs[robjs_count++] = g_term_event;
-				robjs[robjs_count++] = g_sync_event;
-
-				/* wait */
-				if (g_obj_wait(robjs, robjs_count, 0, 0, -1) != 0)
-				{
-					/* error, should not get here */
-					g_sleep(100);
-				}
-
-				if (g_is_wait_obj_set(g_term_event)) /* term */
-				{
-					break;
-				}
-
-				if (g_is_wait_obj_set(g_sync_event)) /* sync */
-				{
-					g_reset_wait_obj(g_sync_event);
-					session_sync_start();
-				}
-
-				if (g_is_wait_obj_set(sck_obj)) /* incoming connection */
-				{
-					in_sck = g_tcp_accept(g_sck);
-
-					if ((in_sck == -1) && g_tcp_last_error_would_block(g_sck))
-					{
-						/* should not get here */
-						g_sleep(100);
-					}
-					else
-					{
-						if (in_sck == -1)
-						{
-							/* error, should not get here */
-							break;
-						}
-						else
-						{
-							/* we've got a connection, so we pass it to scp code */
-							LOG_DBG("new connection");
-							thread_scp_start(in_sck);
-							/* todo, do we have to wait here ? */
-						}
-					}
-				}
-			}
-
-			g_delete_wait_obj_from_socket(sck_obj);
-		}
-		else
-		{
-			log_message(LOG_LEVEL_ERROR, "listen error %d (%s)", g_get_errno(), g_get_strerror());
-		}
-	}
-	else
+	if (error != 0)
 	{
 		log_message(LOG_LEVEL_ERROR, "bind error on "
 			"port '%s': %d (%s)", g_cfg->listen_port, g_get_errno(), g_get_strerror());
+		return;
 	}
+
+	error = g_tcp_listen(g_sck);
+
+	if (error != 0)
+	{
+		log_message(LOG_LEVEL_ERROR, "listen error %d (%s)", g_get_errno(), g_get_strerror());
+		return;
+	}
+
+	SocketEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, g_sck);
+	TermEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, g_term_event);
+	SyncEvent = CreateFileDescriptorEvent(NULL, FALSE, FALSE, g_sync_event);
+
+	while (1)
+	{
+		nCount = 0;
+		events[nCount++] = SocketEvent;
+		events[nCount++] = TermEvent;
+		events[nCount++] = SyncEvent;
+
+		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
+
+		if (WaitForSingleObject(TermEvent, 0) == WAIT_OBJECT_0)
+		{
+			break;
+		}
+
+		if (WaitForSingleObject(SyncEvent, 0) == WAIT_OBJECT_0)
+		{
+			g_reset_wait_obj(g_sync_event);
+			session_sync_start();
+		}
+
+		if (WaitForSingleObject(SocketEvent, 0) == WAIT_OBJECT_0)
+		{
+			in_sck = g_tcp_accept(g_sck);
+
+			if ((in_sck == -1) && g_tcp_last_error_would_block(g_sck))
+			{
+				/* should not get here */
+				g_sleep(100);
+			}
+			else
+			{
+				if (in_sck == -1)
+				{
+					/* error, should not get here */
+					break;
+				}
+				else
+				{
+					/* we've got a connection, so we pass it to scp code */
+					LOG_DBG("new connection");
+					thread_scp_start(in_sck);
+					/* todo, do we have to wait here ? */
+				}
+			}
+		}
+	}
+
+	CloseHandle(SocketEvent);
+	CloseHandle(TermEvent);
+	CloseHandle(SyncEvent);
 
 	g_tcp_close(g_sck);
 }

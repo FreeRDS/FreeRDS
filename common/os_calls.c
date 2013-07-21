@@ -974,6 +974,8 @@ LONG_PTR g_create_wait_obj(char *name)
 		} while (bind(sck, (struct sockaddr *) &sa, len) < 0);
 	}
 
+	printf("g_create_wait_obj: %s\n", sa.sun_path);
+
 	obj = (LONG_PTR) sck;
 	return obj;
 #endif
