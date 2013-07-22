@@ -47,79 +47,44 @@ int lib_send_all(xrdpModule* mod, unsigned char *data, int len);
 static int lib_send_capabilities(xrdpModule* mod)
 {
 	wStream* s;
-	size_t index;
-	size_t length;
+	int length;
+	rdpSettings* settings;
+	XRDP_MSG_CAPABILITIES msg;
 
-	avro_schema_t record_schema;
-	avro_schema_from_json_literal(XRDP_CAPABILITIES_SCHEMA, &record_schema);
+	s = mod->SendStream;
+	Stream_SetPosition(s, 0);
 
-	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
+	msg.flags = 0;
+	msg.type = XRDP_CLIENT_CAPABILITIES;
 
-	avro_value_t val;
-	avro_generic_value_new(record_class, &val);
+	settings = mod->settings;
 
-	avro_value_t field;
+	msg.DesktopWidth = settings->DesktopWidth;
+	msg.DesktopHeight= settings->DesktopHeight;
+	msg.ColorDepth = settings->ColorDepth;
 
-	avro_value_get_by_name(&val, "ColorDepth", &field, &index);
-	avro_value_set_int(&field, mod->settings->ColorDepth);
+	msg.SupportedCodecs = 0;
 
-	avro_value_get_by_name(&val, "DesktopWidth", &field, &index);
-	avro_value_set_int(&field, mod->settings->DesktopWidth);
+	if (settings->JpegCodec)
+		msg.SupportedCodecs |= XRDP_CODEC_JPEG;
 
-	avro_value_get_by_name(&val, "DesktopHeight", &field, &index);
-	avro_value_set_int(&field, mod->settings->DesktopHeight);
+	if (settings->NSCodec)
+		msg.SupportedCodecs |= XRDP_CODEC_NSCODEC;
 
-	avro_value_get_by_name(&val, "JPEG", &field, &index);
-	avro_value_set_boolean(&field, mod->settings->JpegCodec);
+	if (settings->RemoteFxCodec)
+		msg.SupportedCodecs |= XRDP_CODEC_REMOTEFX;
 
-	avro_value_get_by_name(&val, "NSCodec", &field, &index);
-	avro_value_set_boolean(&field, mod->settings->NSCodec);
+	msg.OffscreenSupportLevel = settings->OffscreenSupportLevel;
+	msg.OffscreenCacheSize = settings->OffscreenCacheSize;
+	msg.OffscreenCacheEntries = settings->OffscreenCacheEntries;
+	msg.RailSupportLevel = settings->RemoteApplicationMode;
+	msg.PointerFlags = settings->ColorPointerFlag;
 
-	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
-	avro_value_set_boolean(&field, mod->settings->RemoteFxCodec);
+	length = xrdp_write_capabilities(NULL, &msg);
 
-	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
-	avro_value_set_int(&field, mod->settings->OffscreenSupportLevel);
+	xrdp_write_capabilities(s, &msg);
 
-	avro_value_get_by_name(&val, "OffscreenCacheSize", &field, &index);
-	avro_value_set_int(&field, mod->settings->OffscreenCacheSize);
-
-	avro_value_get_by_name(&val, "OffscreenCacheEntries", &field, &index);
-	avro_value_set_int(&field, mod->settings->OffscreenCacheEntries);
-
-	avro_value_get_by_name(&val, "RailSupportLevel", &field, &index);
-	avro_value_set_int(&field, mod->settings->RemoteApplicationMode);
-
-	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
-	avro_value_set_int(&field, mod->settings->ColorPointerFlag);
-
-	avro_value_sizeof(&val, &length);
-
-	s = Stream_New(NULL, length + 10);
-	Stream_Seek(s, 10);
-
-	avro_writer_t writer = avro_writer_memory((char*) Stream_Pointer(s), (int64_t) length);
-	avro_value_write(writer, &val);
-
-	avro_value_iface_decref(record_class);
-	avro_schema_decref(record_schema);
-
-        avro_writer_flush(writer);
-
-        Stream_SetPosition(s, 0);
-        Stream_Write_UINT16(s, XRDP_CLIENT_CAPABILITIES);
-        Stream_Write_UINT32(s, length + 10);
-        Stream_Write_UINT32(s, 0);
-
-        Stream_SetPosition(s, length + 10);
-        Stream_SealLength(s);
-        Stream_SetPosition(s, 0);
-
-	lib_send_all(mod, Stream_Buffer(s), Stream_Length(s));
-
-        avro_writer_free(writer);
-
-        Stream_Free(s, TRUE);
+	lib_send_all(mod, Stream_Buffer(s), length);
 
 	return 0;
 }
@@ -402,6 +367,8 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 					 16  0      65507  29     49152 */
 
 					msg.flags = 0;
+					msg.type = XRDP_CLIENT_EVENT;
+
 					msg.subType = 16; /* key up */
 					msg.param1 = 0;
 					msg.param2 = 65507; /* left control */
@@ -425,6 +392,8 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 	}
 
 	msg.flags = 0;
+	msg.type = XRDP_CLIENT_EVENT;
+
 	msg.subType = subtype;
 	msg.param1 = param1;
 	msg.param2 = param2;

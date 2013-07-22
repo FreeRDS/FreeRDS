@@ -64,22 +64,9 @@ struct _XRDP_FRAMEBUFFER
 };
 typedef struct _XRDP_FRAMEBUFFER XRDP_FRAMEBUFFER;
 
-#define XRDP_CAPABILITIES_SCHEMA \
-"{\"type\":\"record\",\
-	\"name\":\"Capabilities\",\
-	\"fields\":[\
-		{\"name\": \"DesktopWidth\", \"type\": \"int\"},\
-		{\"name\": \"DesktopHeight\", \"type\": \"int\"},\
-		{\"name\": \"ColorDepth\", \"type\": \"int\"},\
-		{\"name\": \"JPEG\", \"type\": \"boolean\"},\
-		{\"name\": \"NSCodec\", \"type\": \"boolean\"},\
-		{\"name\": \"RemoteFX\", \"type\": \"boolean\"},\
-		{\"name\": \"OffscreenSupportLevel\", \"type\": \"int\"},\
-		{\"name\": \"OffscreenCacheSize\", \"type\": \"int\"},\
-		{\"name\": \"OffscreenCacheEntries\", \"type\": \"int\"},\
-		{\"name\": \"RailSupportLevel\", \"type\": \"int\"},\
-		{\"name\": \"PointerFlags\", \"type\": \"int\"}\
-		]}"
+#define XRDP_CODEC_JPEG			0x00000001
+#define XRDP_CODEC_NSCODEC		0x00000002
+#define XRDP_CODEC_REMOTEFX		0x00000004
 
 int xrdp_read_common_header(wStream* s, XRDP_MSG_COMMON* msg);
 int xrdp_write_common_header(wStream* s, XRDP_MSG_COMMON* msg);
@@ -102,6 +89,22 @@ struct _XRDP_MSG_EVENT
 };
 typedef struct _XRDP_MSG_EVENT XRDP_MSG_EVENT;
 
+struct _XRDP_MSG_CAPABILITIES
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 DesktopWidth;
+	UINT32 DesktopHeight;
+	UINT32 ColorDepth;
+	UINT32 SupportedCodecs;
+	UINT32 OffscreenSupportLevel;
+	UINT32 OffscreenCacheSize;
+	UINT32 OffscreenCacheEntries;
+	UINT32 RailSupportLevel;
+	UINT32 PointerFlags;
+};
+typedef struct _XRDP_MSG_CAPABILITIES XRDP_MSG_CAPABILITIES;
+
 struct _XRDP_MSG_REFRESH_RECT
 {
 	DEFINE_MSG_COMMON();
@@ -113,6 +116,9 @@ typedef struct _XRDP_MSG_REFRESH_RECT XRDP_MSG_REFRESH_RECT;
 
 int xrdp_read_event(wStream* s, XRDP_MSG_EVENT* msg);
 int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg);
+
+int xrdp_read_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg);
+int xrdp_write_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg);
 
 int xrdp_read_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
 int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);

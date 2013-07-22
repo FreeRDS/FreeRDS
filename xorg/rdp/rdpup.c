@@ -793,65 +793,24 @@ static int process_screen_parameters(int DesktopWidth, int DesktopHeight, int Co
 
 static int rdpup_process_capabilities_msg(wStream* s)
 {
-	size_t index;
-	int ColorDepth;
-	int DesktopWidth;
-	int DesktopHeight;
+	XRDP_MSG_CAPABILITIES msg;
 
-	avro_schema_t record_schema;
-	avro_schema_from_json_literal(XRDP_CAPABILITIES_SCHEMA, &record_schema);
+	xrdp_read_capabilities(s, &msg);
 
-	avro_value_iface_t* record_class = avro_generic_class_from_schema(record_schema);
+	g_rdpScreen.Jpeg = (msg.SupportedCodecs & XRDP_CODEC_JPEG) ? TRUE : FALSE;
+	g_rdpScreen.NSCodec = (msg.SupportedCodecs & XRDP_CODEC_NSCODEC) ? TRUE : FALSE;
+	g_rdpScreen.RemoteFX = (msg.SupportedCodecs & XRDP_CODEC_REMOTEFX) ? TRUE : FALSE;
+	g_rdpScreen.CodecMode = msg.SupportedCodecs ? TRUE : FALSE;
 
-	avro_reader_t reader = avro_reader_memory((char*) Stream_Pointer(s), Stream_GetRemainingLength(s));
+	g_rdpScreen.OffscreenSupportLevel = msg.OffscreenSupportLevel;
+	g_rdpScreen.OffscreenCacheSize = msg.OffscreenCacheSize;
+	g_rdpScreen.OffscreenCacheEntries = msg.OffscreenCacheEntries;
 
-	avro_value_t val;
-	avro_generic_value_new(record_class, &val);
-
-	avro_value_read(reader, &val);
-
-	avro_value_t field;
-
-	avro_value_get_by_name(&val, "ColorDepth", &field, &index);
-	avro_value_get_int(&field, &ColorDepth);
-
-	avro_value_get_by_name(&val, "DesktopWidth", &field, &index);
-	avro_value_get_int(&field, &DesktopWidth);
-
-	avro_value_get_by_name(&val, "DesktopHeight", &field, &index);
-	avro_value_get_int(&field, &DesktopHeight);
-
-	avro_value_get_by_name(&val, "JPEG", &field, &index);
-	avro_value_get_boolean(&field, &g_rdpScreen.Jpeg);
-
-	avro_value_get_by_name(&val, "NSCodec", &field, &index);
-	avro_value_get_boolean(&field, &g_rdpScreen.NSCodec);
-
-	avro_value_get_by_name(&val, "RemoteFX", &field, &index);
-	avro_value_get_boolean(&field, &g_rdpScreen.RemoteFX);
-
-	avro_value_get_by_name(&val, "OffscreenSupportLevel", &field, &index);
-	avro_value_get_int(&field, &g_rdpScreen.OffscreenSupportLevel);
-
-	avro_value_get_by_name(&val, "OffscreenCacheSize", &field, &index);
-	avro_value_get_int(&field, &g_rdpScreen.OffscreenCacheSize);
-
-	avro_value_get_by_name(&val, "OffscreenCacheEntries", &field, &index);
-	avro_value_get_int(&field, &g_rdpScreen.OffscreenCacheEntries);
-
-	avro_value_get_by_name(&val, "RailSupportLevel", &field, &index);
-	avro_value_get_int(&field, &g_rdpScreen.RailSupportLevel);
-
-	avro_value_get_by_name(&val, "PointerFlags", &field, &index);
-	avro_value_get_int(&field, &g_rdpScreen.PointerFlags);
+	g_rdpScreen.RailSupportLevel = msg.RailSupportLevel;
+	g_rdpScreen.PointerFlags = msg.PointerFlags;
 
 	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
 			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
-
-	if (g_rdpScreen.RemoteFX || g_rdpScreen.NSCodec)
-		g_rdpScreen.CodecMode = 1;
-	else
-		g_rdpScreen.CodecMode = 0;
 
 	if (!g_rdpScreen.CodecMode)
 	{
@@ -883,7 +842,7 @@ static int rdpup_process_capabilities_msg(wStream* s)
 	if (g_rdpScreen.OffscreenCacheEntries == 2000)
 		g_can_do_pix_to_pix = 1;
 
-	process_screen_parameters(DesktopWidth, DesktopHeight, ColorDepth);
+	process_screen_parameters(msg.DesktopWidth, msg.DesktopHeight, msg.ColorDepth);
 
 	return 0;
 }

@@ -97,6 +97,44 @@ int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg)
 	return 0;
 }
 
+int xrdp_read_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg)
+{
+	Stream_Read_UINT32(s, msg->DesktopWidth);
+	Stream_Read_UINT32(s, msg->DesktopHeight);
+	Stream_Read_UINT32(s, msg->ColorDepth);
+	Stream_Read_UINT32(s, msg->SupportedCodecs);
+	Stream_Read_UINT32(s, msg->OffscreenSupportLevel);
+	Stream_Read_UINT32(s, msg->OffscreenCacheSize);
+	Stream_Read_UINT32(s, msg->OffscreenCacheEntries);
+	Stream_Read_UINT32(s, msg->RailSupportLevel);
+	Stream_Read_UINT32(s, msg->PointerFlags);
+
+	return 0;
+}
+
+int xrdp_write_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg)
+{
+	msg->flags = 0;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 36;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->DesktopWidth);
+	Stream_Write_UINT32(s, msg->DesktopHeight);
+	Stream_Write_UINT32(s, msg->ColorDepth);
+	Stream_Write_UINT32(s, msg->SupportedCodecs);
+	Stream_Write_UINT32(s, msg->OffscreenSupportLevel);
+	Stream_Write_UINT32(s, msg->OffscreenCacheSize);
+	Stream_Write_UINT32(s, msg->OffscreenCacheEntries);
+	Stream_Write_UINT32(s, msg->RailSupportLevel);
+	Stream_Write_UINT32(s, msg->PointerFlags);
+
+	return 0;
+}
+
 int xrdp_read_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg)
 {
 	int index;
