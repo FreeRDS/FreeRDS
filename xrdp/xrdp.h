@@ -712,14 +712,12 @@ int server_set_hints(xrdpModule* mod, int hints, int mask);
 int server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 int server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg);
 int server_window_icon(xrdpModule* mod, int window_id, int cache_entry,
-		int cache_id, struct rail_icon_info* icon_info, int flags);
+		int cache_id, xrdpRailIconInfo* icon_info, int flags);
 int server_window_cached_icon(xrdpModule* mod,
 		int window_id, int cache_entry, int cache_id, int flags);
 int server_notify_new_update(xrdpModule* mod,
-		int window_id, int notify_id,
-		struct rail_notify_state_order* notify_state, int flags);
+		int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
 int server_notify_delete(xrdpModule* mod, int window_id, int notify_id);
-int server_monitored_desktop(xrdpModule* mod,
-		struct rail_monitored_desktop_order* mdo, int flags);
+int server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags);
 
 #endif /* XRDP_H */

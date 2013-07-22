@@ -1315,7 +1315,7 @@ void lrail_WindowDelete(rdpContext* context, WINDOW_ORDER_INFO* orderInfo)
 void lrail_WindowIcon(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, WINDOW_ICON_ORDER *window_icon)
 {
 	xrdpModule* mod;
-	struct rail_icon_info rii;
+	xrdpRailIconInfo rii;
 
 	LLOGLN(0, ("lrail_WindowIcon:"));
 	mod = ((modContext*) context)->modi;
@@ -1346,7 +1346,7 @@ void lrail_WindowCachedIcon(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, W
 void lrail_NotifyIconCreate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, NOTIFY_ICON_STATE_ORDER *notify_icon_state)
 {
 	xrdpModule* mod;
-	struct rail_notify_state_order rnso;
+	xrdpRailNotifyStateOrder rnso;
 
 	LLOGLN(0, ("lrail_NotifyIconCreate:"));
 
@@ -1413,7 +1413,7 @@ void lrail_MonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, M
 {
 	int index;
 	xrdpModule* mod;
-	struct rail_monitored_desktop_order rmdo;
+	xrdpRailMonitoredDesktopOrder rmdo;
 
 	LLOGLN(0, ("lrail_MonitoredDesktop:"));
 	mod = ((modContext*) context)->modi;
@@ -1441,7 +1441,7 @@ void lrail_MonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, M
 void lrail_NonMonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo)
 {
 	xrdpModule* mod;
-	struct rail_monitored_desktop_order rmdo;
+	xrdpRailMonitoredDesktopOrder rmdo;
 
 	LLOGLN(0, ("lrail_NonMonitoredDesktop:"));
 	mod = ((modContext*) context)->modi;

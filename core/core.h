@@ -42,25 +42,28 @@ struct rail_icon_info
 	char* cmap;
 	char* data;
 };
+typedef struct rail_icon_info xrdpRailIconInfo;
 
-struct rail_notify_icon_infotip
+struct rail_notify_icon_info_tip
 {
 	int timeout;
 	int flags;
 	char* text;
 	char* title;
 };
+typedef struct rail_notify_icon_info_tip xrdpRailNotifyIconInfoTip;
 
 struct rail_notify_state_order
 {
 	int version;
 	char* tool_tip;
-	struct rail_notify_icon_infotip infotip;
+	xrdpRailNotifyIconInfoTip infotip;
 	int state;
 	int icon_cache_entry;
 	int icon_cache_id;
-	struct rail_icon_info icon_info;
+	xrdpRailIconInfo icon_info;
 };
+typedef struct rail_notify_state_order xrdpRailNotifyStateOrder;
 
 struct rail_monitored_desktop_order
 {
@@ -68,6 +71,7 @@ struct rail_monitored_desktop_order
 	int num_window_ids;
 	int* window_ids;
 };
+typedef struct rail_monitored_desktop_order xrdpRailMonitoredDesktopOrder;
 
 struct xrdp_brush
 {
@@ -228,19 +232,18 @@ FREERDP_API int libxrdp_window_new_update(xrdpSession* session, XRDP_MSG_WINDOW_
 FREERDP_API int libxrdp_window_delete(xrdpSession* session, XRDP_MSG_WINDOW_DELETE* msg);
 
 FREERDP_API int libxrdp_window_icon(xrdpSession* session, int window_id,
-		int cache_entry, int cache_id, struct rail_icon_info* icon_info, int flags);
+		int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags);
 
 FREERDP_API int libxrdp_window_cached_icon(xrdpSession* session, int window_id,
 		int cache_entry, int cache_id, int flags);
 
 FREERDP_API int libxrdp_notify_new_update(xrdpSession* session,
-		int window_id, int notify_id, struct rail_notify_state_order* notify_state, int flags);
+		int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
 
 FREERDP_API int libxrdp_notify_delete(xrdpSession* session,
 		int window_id, int notify_id);
 
-FREERDP_API int libxrdp_monitored_desktop(xrdpSession* session,
-		struct rail_monitored_desktop_order* mdo, int flags);
+FREERDP_API int libxrdp_monitored_desktop(xrdpSession* session, xrdpRailMonitoredDesktopOrder* mdo, int flags);
 
 
 #endif /* FREERDP_XRDP_NG_CORE_H */

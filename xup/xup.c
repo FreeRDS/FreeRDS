@@ -214,8 +214,6 @@ int lib_mod_connect(xrdpModule* mod)
 		return 1;
 	}
 
-	s = Stream_New(NULL, 8192);
-
 	g_sprintf(con_port, "%s", mod->port);
 	use_uds = 0;
 
@@ -310,15 +308,15 @@ int lib_mod_connect(xrdpModule* mod)
 		rect.right = mod->settings->DesktopWidth - 1;
 		rect.bottom = mod->settings->DesktopHeight - 1;
 
+		s = mod->SendStream;
+		Stream_SetPosition(s, 0);
+
 		length = xrdp_write_refresh_rect(NULL, &msg);
 
-		s = Stream_New(NULL, length);
 		xrdp_write_refresh_rect(s, &msg);
 
 		lib_send_all(mod, Stream_Buffer(s), length);
 	}
-
-	Stream_Free(s, TRUE);
 
 	if (status != 0)
 	{
