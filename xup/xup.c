@@ -95,8 +95,8 @@ static int lib_send_capabilities(xrdpModule* mod)
 
 	avro_value_sizeof(&val, &length);
 
-	s = Stream_New(NULL, length + 6);
-	Stream_Seek(s, 6);
+	s = Stream_New(NULL, length + 10);
+	Stream_Seek(s, 10);
 
 	avro_writer_t writer = avro_writer_memory((char*) Stream_Pointer(s), (int64_t) length);
 	avro_value_write(writer, &val);
@@ -108,9 +108,10 @@ static int lib_send_capabilities(xrdpModule* mod)
 
         Stream_SetPosition(s, 0);
         Stream_Write_UINT16(s, XRDP_CLIENT_CAPABILITIES);
-        Stream_Write_UINT32(s, length + 6);
+        Stream_Write_UINT32(s, length + 10);
+        Stream_Write_UINT32(s, 0);
 
-        Stream_SetPosition(s, length + 6);
+        Stream_SetPosition(s, length + 10);
         Stream_SealLength(s);
         Stream_SetPosition(s, 0);
 
@@ -335,6 +336,7 @@ int lib_mod_connect(xrdpModule* mod)
 		RECTANGLE_16 rect;
 		XRDP_MSG_REFRESH_RECT msg;
 
+		msg.flags = 0;
 		msg.numberOfAreas = 1;
 		msg.areasToRefresh = &rect;
 
@@ -399,6 +401,7 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 					 15  0      65507  29     0
 					 16  0      65507  29     49152 */
 
+					msg.flags = 0;
 					msg.subType = 16; /* key up */
 					msg.param1 = 0;
 					msg.param2 = 65507; /* left control */
@@ -421,6 +424,7 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 		}
 	}
 
+	msg.flags = 0;
 	msg.subType = subtype;
 	msg.param1 = param1;
 	msg.param2 = param2;

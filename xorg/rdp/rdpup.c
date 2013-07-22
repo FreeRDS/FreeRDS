@@ -665,28 +665,24 @@ static int rdpup_recv(BYTE* data, int len)
 
 static int rdpup_recv_msg(wStream* s, int* type)
 {
-	int status;
-	int length;
-
-	status = 1;
-	length = 0;
+	int status = 1;
+	XRDP_MSG_COMMON common;
 
 	if (s != 0)
 	{
-		Stream_EnsureCapacity(s, 6);
+		Stream_EnsureCapacity(s, 10);
 		Stream_SetPosition(s, 0);
 
-		status = rdpup_recv(s->buffer, 6);
+		status = rdpup_recv(Stream_Pointer(s), 10);
 
 		if (status == 0)
 		{
-			Stream_Read_UINT16(s, *type);
-			Stream_Read_UINT32(s, length);
+			xrdp_read_common_header(s, &common);
 
-			if (length >= 6)
+			if (common.length >= 10)
 			{
-				Stream_EnsureCapacity(s, length);
-				status = rdpup_recv(Stream_Pointer(s), length - 6);
+				Stream_EnsureCapacity(s, common.length);
+				status = rdpup_recv(Stream_Pointer(s), common.length - 10);
 			}
 		}
 	}
@@ -696,9 +692,11 @@ static int rdpup_recv_msg(wStream* s, int* type)
 		rdpLog("error in rdpup_recv_msg\n");
 	}
 
-	Stream_SetPosition(s, length);
+	Stream_SetPosition(s, common.length);
 	Stream_SealLength(s);
-	Stream_SetPosition(s, 6);
+	Stream_SetPosition(s, 10);
+
+	*type = common.type;
 
 	return status;
 }
@@ -928,9 +926,11 @@ static int rdpup_process_msg(wStream* s, int type)
 			case 16: /* key up */
 				KbdAddEvent(msg.subType == 15, msg.param1, msg.param2, msg.param3, msg.param4);
 				break;
+
 			case 17: /* from RDP_INPUT_SYNCHRONIZE */
 				KbdSync(msg.param1);
 				break;
+
 			case 100:
 				/* without the minus 2, strange things happen when dragging
                    	   	   past the width or height */
@@ -938,42 +938,52 @@ static int rdpup_process_msg(wStream* s, int type)
 				g_cursor_y = l_bound_by(msg.param2, 0, g_rdpScreen.height - 2);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 101:
 				g_button_mask = g_button_mask & (~1);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 102:
 				g_button_mask = g_button_mask | 1;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 103:
 				g_button_mask = g_button_mask & (~4);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 104:
 				g_button_mask = g_button_mask | 4;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 105:
 				g_button_mask = g_button_mask & (~2);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 106:
 				g_button_mask = g_button_mask | 2;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 107:
 				g_button_mask = g_button_mask & (~8);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 108:
 				g_button_mask = g_button_mask | 8;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 109:
 				g_button_mask = g_button_mask & (~16);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
+
 			case 110:
 				g_button_mask = g_button_mask | 16;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
