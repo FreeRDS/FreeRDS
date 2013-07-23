@@ -354,61 +354,6 @@ int trans_connect(struct trans* self, const char *server, const char *port, int 
 	return 0;
 }
 
-int trans_listen_address(struct trans* self, char *port, const char *address)
-{
-	if (self->sck != 0)
-	{
-		g_tcp_close(self->sck);
-	}
-
-	if (self->mode == TRANS_MODE_TCP) /* tcp */
-	{
-		self->sck = g_tcp_socket();
-		g_tcp_set_non_blocking(self->sck);
-
-		if (g_tcp_bind_address(self->sck, port, address) == 0)
-		{
-			if (g_tcp_listen(self->sck) == 0)
-			{
-				self->status = TRANS_STATUS_UP; /* ok */
-				self->type1 = TRANS_TYPE_LISTENER; /* listener */
-				return 0;
-			}
-		}
-	}
-	else
-	{
-		if (self->mode == TRANS_MODE_UNIX) /* unix socket */
-		{
-			free(self->listen_filename);
-			self->listen_filename = 0;
-			g_file_delete(port);
-			self->sck = g_tcp_local_socket();
-			g_tcp_set_non_blocking(self->sck);
-
-			if (g_tcp_local_bind(self->sck, port) == 0)
-			{
-				self->listen_filename = g_strdup(port);
-
-				if (g_tcp_listen(self->sck) == 0)
-				{
-					g_chmod_hex(port, 0xffff);
-					self->status = TRANS_STATUS_UP; /* ok */
-					self->type1 = TRANS_TYPE_LISTENER; /* listener */
-					return 0;
-				}
-			}
-		}
-	}
-
-	return 1;
-}
-
-int trans_listen(struct trans* self, char *port)
-{
-	return trans_listen_address(self, port, "0.0.0.0");
-}
-
 wStream* trans_get_in_s(struct trans* self)
 {
 	wStream* rv = (wStream*) NULL;

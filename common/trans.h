@@ -66,8 +66,6 @@ int trans_force_write_s(struct trans* self, wStream* out_s);
 int trans_force_read(struct trans* self, int size);
 int trans_force_write(struct trans* self);
 int trans_connect(struct trans* self, const char* server, const char* port, int timeout);
-int trans_listen_address(struct trans* self, char* port, const char* address);
-int trans_listen(struct trans* self, char* port);
 wStream* trans_get_in_s(struct trans* self);
 wStream* trans_get_out_s(struct trans* self, int size);
 
