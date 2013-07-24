@@ -1398,32 +1398,9 @@ int rdpup_draw_line(short x1, short y1, short x2, short y2)
 	return 0;
 }
 
-int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
+int rdpup_set_pointer(XRDP_MSG_SET_POINTER* msg)
 {
-	XRDP_MSG_SET_POINTER msg;
-
-	msg.xPos = x;
-	msg.yPos = y;
-	msg.xorMaskData = (BYTE*) cur_data;
-	msg.andMaskData = (BYTE*) cur_mask;
-
-	msg.type = XRDP_SERVER_SET_POINTER;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bpp)
-{
-	XRDP_MSG_SET_POINTER_EX msg;
-
-	msg.xPos = x;
-	msg.yPos = y;
-	msg.xorBpp = bpp;
-	msg.xorMaskData = (BYTE*) cur_data;
-	msg.andMaskData = (BYTE*) cur_mask;
-
-	msg.type = XRDP_SERVER_SET_POINTER_EX;
+	msg->type = XRDP_SERVER_SET_POINTER;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 
 	return 0;

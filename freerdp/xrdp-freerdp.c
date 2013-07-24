@@ -1036,12 +1036,13 @@ static int xrdp_freerdp_convert_color_image(void *dst, int dst_width, int dst_he
 	return 0;
 }
 
-static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *pointer_new)
+static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE* pointer_new)
 {
 	xrdpModule* mod;
 	int index;
 	BYTE *dst;
 	BYTE *src;
+	XRDP_MSG_SET_POINTER msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(20, ("xrdp_freerdp_pointer_new:"));
@@ -1079,11 +1080,13 @@ static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *po
 		src = pointer_new->colorPtrAttr.andMaskData;
 		xrdp_freerdp_convert_color_image(dst, 32, 32, 1, 32 / -8, src, 32, 32, 1, 32 / 8);
 
-		//memcpy(mod->pointer_cache[index].mask,
-		//    pointer_new->colorPtrAttr.andMaskData, 32 * 32 / 8);
+		msg.xorBpp = 0;
+		msg.xPos = mod->pointer_cache[index].hotx;
+		msg.yPos = mod->pointer_cache[index].hoty;
+		msg.xorMaskData = (BYTE*) mod->pointer_cache[index].data;
+		msg.andMaskData = (BYTE*) mod->pointer_cache[index].mask;
 
-		server_set_pointer(mod, mod->pointer_cache[index].hotx, mod->pointer_cache[index].hoty,
-				mod->pointer_cache[index].data, mod->pointer_cache[index].mask);
+		server_set_pointer(mod, &msg);
 	}
 	else
 	{
@@ -1101,14 +1104,21 @@ static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *po
 
 static void xrdp_freerdp_pointer_cached(rdpContext* context, POINTER_CACHED_UPDATE *pointer_cached)
 {
-	xrdpModule* mod;
 	int index;
+	xrdpModule* mod;
+	XRDP_MSG_SET_POINTER msg;
 
 	mod = ((modContext*) context)->modi;
 	index = pointer_cached->cacheIndex;
+
 	LLOGLN(10, ("xrdp_freerdp_pointer_cached:%d", index));
-	server_set_pointer(mod, mod->pointer_cache[index].hotx, mod->pointer_cache[index].hoty,
-			mod->pointer_cache[index].data, mod->pointer_cache[index].mask);
+
+	msg.xPos = mod->pointer_cache[index].hotx;
+	msg.yPos = mod->pointer_cache[index].hoty;
+	msg.xorMaskData = (BYTE*) mod->pointer_cache[index].data;
+	msg.andMaskData = (BYTE*) mod->pointer_cache[index].mask;
+
+	server_set_pointer(mod, &msg);
 }
 
 static void xrdp_freerdp_polygon_cb(rdpContext* context, POLYGON_CB_ORDER* polygon_cb)

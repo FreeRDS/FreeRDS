@@ -523,54 +523,6 @@ int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg)
 
 int xrdp_read_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 {
-	Stream_Read_UINT16(s, msg->xPos);
-	Stream_Read_UINT16(s, msg->yPos);
-
-	msg->lengthXorMask = 32 * (32 * 3);
-	Stream_GetPointer(s, msg->xorMaskData);
-	Stream_Seek(s, msg->lengthXorMask);
-
-	msg->lengthXorMask = 32 * (32 / 8);
-	Stream_GetPointer(s, msg->andMaskData);
-	Stream_Seek(s, msg->lengthAndMask);
-
-	return 0;
-}
-
-int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
-{
-	int size = 4 + 32 * (32 * 3) + 32 * (32 / 8);
-
-	msg->flags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + size;
-
-	if (!s)
-		return msg->length;
-
-	if (msg->xPos < 0)
-		msg->xPos = 0;
-
-	if (msg->xPos > 31)
-		msg->xPos = 31;
-
-	if (msg->yPos < 0)
-		msg->yPos = 0;
-
-	if (msg->yPos > 31)
-		msg->yPos = 31;
-
-	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
-
-	Stream_Write_UINT16(s, msg->xPos);
-	Stream_Write_UINT16(s, msg->yPos);
-	Stream_Write(s, msg->xorMaskData, 32 * (32 * 3));
-	Stream_Write(s, msg->andMaskData, 32 * (32 / 8));
-
-	return 0;
-}
-
-int xrdp_read_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg)
-{
 	int BytesPerPixel;
 
 	Stream_Read_UINT16(s, msg->xPos);
@@ -590,7 +542,7 @@ int xrdp_read_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg)
 	return 0;
 }
 
-int xrdp_write_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg)
+int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 {
 	int BytesPerPixel = (msg->xorBpp == 0) ? 3 : (msg->xorBpp + 7) / 8;
 	int size = 6 + 32 * (32 * BytesPerPixel) + 32 * (32 / 8);
@@ -1067,10 +1019,6 @@ int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 			xrdp_write_set_pointer(s, (XRDP_MSG_SET_POINTER*) msg);
 			break;
 
-		case XRDP_SERVER_SET_POINTER_EX:
-			xrdp_write_set_pointer_ex(s, (XRDP_MSG_SET_POINTER_EX*) msg);
-			break;
-
 		case XRDP_SERVER_CREATE_OS_SURFACE:
 			xrdp_write_create_os_surface(s, (XRDP_MSG_CREATE_OS_SURFACE*) msg);
 			break;
@@ -1165,10 +1113,6 @@ char* xrdp_get_msg_type_string(UINT32 type)
 
 		case XRDP_SERVER_SET_POINTER:
 			return "SetPointer";
-			break;
-
-		case XRDP_SERVER_SET_POINTER_EX:
-			return "SetPointerEx";
 			break;
 
 		case XRDP_SERVER_CREATE_OS_SURFACE:

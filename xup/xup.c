@@ -536,16 +536,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_SET_POINTER msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_set_pointer(s, &msg);
-				status = server_set_pointer(mod, msg.xPos, msg.yPos, (char*) msg.xorMaskData, (char*) msg.andMaskData);
-			}
-			break;
-
-		case XRDP_SERVER_SET_POINTER_EX:
-			{
-				XRDP_MSG_SET_POINTER_EX msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_pointer_ex(s, &msg);
-				status = server_set_pointer_ex(mod, msg.xPos, msg.yPos, (char*) msg.xorMaskData, (char*) msg.andMaskData, msg.xorBpp);
+				status = server_set_pointer(mod, &msg);
 			}
 			break;
 

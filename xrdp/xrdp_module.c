@@ -135,22 +135,14 @@ int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	return 0;
 }
 
-int server_set_pointer(xrdpModule* mod, int x, int y, char *data, char *mask)
+int server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
-	xrdpWm* wm;
+	xrdpWm* wm = (xrdpWm*) (mod->wm);
 
-	wm = (xrdpWm*) (mod->wm);
-	xrdp_wm_pointer(wm, data, mask, x, y, 0);
+	if (msg->xorBpp == 1)
+		msg->xorBpp = 0;
 
-	return 0;
-}
-
-int server_set_pointer_ex(xrdpModule* mod, int x, int y, char *data, char *mask, int bpp)
-{
-	xrdpWm* wm;
-
-	wm = (xrdpWm*) (mod->wm);
-	xrdp_wm_pointer(wm, data, mask, x, y, bpp);
+	xrdp_wm_pointer(wm, (char*) msg->xorMaskData, (char*) msg->andMaskData, msg->xPos, msg->yPos, msg->xorBpp);
 
 	return 0;
 }

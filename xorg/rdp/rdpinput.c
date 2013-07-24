@@ -594,29 +594,24 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 {
 	char cur_data[32 * (32 * 4)];
 	char cur_mask[32 * (32 / 8)];
-	char *mask;
-	char *data;
+	char* mask;
+	char* data;
 	int i;
 	int j;
 	int w;
 	int h;
 	int p;
-	int xhot;
-	int yhot;
 	int paddedRowBytes;
 	int fgcolor;
 	int bgcolor;
 	int bpp;
+	XRDP_MSG_SET_POINTER msg;
 
-	if (pCurs == 0)
-	{
+	if (!pCurs)
 		return;
-	}
 
-	if (pCurs->bits == 0)
-	{
+	if (!pCurs->bits)
 		return;
-	}
 
 	w = pCurs->bits->width;
 	h = pCurs->bits->height;
@@ -625,11 +620,11 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 	{
 		bpp = 32;
 		paddedRowBytes = PixmapBytePad(w, 32);
-		xhot = pCurs->bits->xhot;
-		yhot = pCurs->bits->yhot;
-		data = (char *)(pCurs->bits->argb);
-		memset(cur_data, 0, sizeof(cur_data));
-		memset(cur_mask, 0, sizeof(cur_mask));
+		msg.xPos = pCurs->bits->xhot;
+		msg.yPos = pCurs->bits->yhot;
+		data = (char*)(pCurs->bits->argb);
+		ZeroMemory(cur_data, sizeof(cur_data));
+		ZeroMemory(cur_mask, sizeof(cur_mask));
 
 		for (j = 0; j < 32; j++)
 		{
@@ -644,18 +639,18 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 	{
 		bpp = 0;
 		paddedRowBytes = PixmapBytePad(w, 1);
-		xhot = pCurs->bits->xhot;
-		yhot = pCurs->bits->yhot;
-		data = (char *)(pCurs->bits->source);
-		mask = (char *)(pCurs->bits->mask);
+		msg.xPos = pCurs->bits->xhot;
+		msg.yPos = pCurs->bits->yhot;
+		data = (char*)(pCurs->bits->source);
+		mask = (char*)(pCurs->bits->mask);
 		fgcolor = (((pCurs->foreRed >> 8) & 0xff) << 16) |
 				(((pCurs->foreGreen >> 8) & 0xff) << 8) |
 				((pCurs->foreBlue >> 8) & 0xff);
 		bgcolor = (((pCurs->backRed >> 8) & 0xff) << 16) |
 				(((pCurs->backGreen >> 8) & 0xff) << 8) |
 				((pCurs->backBlue >> 8) & 0xff);
-		memset(cur_data, 0, sizeof(cur_data));
-		memset(cur_mask, 0, sizeof(cur_mask));
+		ZeroMemory(cur_data, sizeof(cur_data));
+		ZeroMemory(cur_mask, sizeof(cur_mask));
 
 		for (j = 0; j < 32; j++)
 		{
@@ -675,7 +670,13 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 	}
 
 	rdpup_begin_update();
-	rdpup_set_cursor_ex(xhot, yhot, cur_data, cur_mask, bpp);
+
+	msg.xorBpp = bpp;
+	msg.xorMaskData = (BYTE*) cur_data;
+	msg.andMaskData = (BYTE*) cur_mask;
+
+	rdpup_set_pointer(&msg);
+
 	rdpup_end_update();
 }
 

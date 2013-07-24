@@ -275,21 +275,6 @@ struct _XRDP_MSG_SET_POINTER
 {
 	DEFINE_MSG_COMMON();
 
-	UINT32 xPos;
-	UINT32 yPos;
-	UINT32 width;
-	UINT32 height;
-	UINT32 lengthAndMask;
-	UINT32 lengthXorMask;
-	BYTE* xorMaskData;
-	BYTE* andMaskData;
-};
-typedef struct _XRDP_MSG_SET_POINTER XRDP_MSG_SET_POINTER;
-
-struct _XRDP_MSG_SET_POINTER_EX
-{
-	DEFINE_MSG_COMMON();
-
 	UINT32 xorBpp;
 	UINT32 xPos;
 	UINT32 yPos;
@@ -300,7 +285,7 @@ struct _XRDP_MSG_SET_POINTER_EX
 	BYTE* xorMaskData;
 	BYTE* andMaskData;
 };
-typedef struct _XRDP_MSG_SET_POINTER_EX XRDP_MSG_SET_POINTER_EX;
+typedef struct _XRDP_MSG_SET_POINTER XRDP_MSG_SET_POINTER;
 
 struct _XRDP_MSG_CREATE_OS_SURFACE
 {
@@ -450,9 +435,6 @@ FREERDP_API int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg);
 
 FREERDP_API int xrdp_read_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg);
 FREERDP_API int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg);
-
-FREERDP_API int xrdp_read_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg);
-FREERDP_API int xrdp_write_set_pointer_ex(wStream* s, XRDP_MSG_SET_POINTER_EX* msg);
 
 FREERDP_API int xrdp_read_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg);
 FREERDP_API int xrdp_write_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg);
