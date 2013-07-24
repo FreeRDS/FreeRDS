@@ -437,7 +437,7 @@ static void xrdp_freerdp_end_paint(rdpContext* context)
 static void xrdp_freerdp_set_bounds(rdpContext* context, rdpBounds *bounds)
 {
 	xrdpModule* mod;
-	XRDP_MSG_SET_CLIP msg;
+	XRDP_MSG_SET_CLIPPING_REGION msg;
 
 	LLOGLN(10, ("xrdp_freerdp_set_bounds: %p", bounds));
 	mod = ((modContext*) context)->modi;

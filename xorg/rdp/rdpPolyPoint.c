@@ -62,8 +62,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	RegionRec reg2;
 	int num_clips;
 	int cd;
-	int x;
-	int y;
 	int i;
 	int j;
 	int got_id;

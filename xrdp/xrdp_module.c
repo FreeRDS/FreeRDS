@@ -182,7 +182,7 @@ int server_is_term(xrdpModule* mod)
 	return g_is_term();
 }
 
-int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIP* msg)
+int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
 	xrdpPainter* p;
 

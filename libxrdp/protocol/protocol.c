@@ -357,8 +357,9 @@ int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg)
 	return 0;
 }
 
-int xrdp_read_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg)
+int xrdp_read_set_clipping_region(wStream* s, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
+	Stream_Read_UINT16(s, msg->bNullRegion);
 	Stream_Read_UINT16(s, msg->nLeftRect);
 	Stream_Read_UINT16(s, msg->nTopRect);
 	Stream_Read_UINT16(s, msg->nWidth);
@@ -367,38 +368,21 @@ int xrdp_read_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg)
 	return 0;
 }
 
-int xrdp_write_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg)
+int xrdp_write_set_clipping_region(wStream* s, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
 	msg->flags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 8;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 10;
 
 	if (!s)
 		return msg->length;
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
+	Stream_Write_UINT16(s, msg->bNullRegion);
 	Stream_Write_UINT16(s, msg->nLeftRect);
 	Stream_Write_UINT16(s, msg->nTopRect);
 	Stream_Write_UINT16(s, msg->nWidth);
 	Stream_Write_UINT16(s, msg->nHeight);
-
-	return 0;
-}
-
-int xrdp_read_reset_clip(wStream* s, XRDP_MSG_RESET_CLIP* msg)
-{
-	return 0;
-}
-
-int xrdp_write_reset_clip(wStream* s, XRDP_MSG_RESET_CLIP* msg)
-{
-	msg->flags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg);
-
-	if (!s)
-		return msg->length;
-
-	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
 	return 0;
 }
@@ -421,28 +405,6 @@ int xrdp_write_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg)
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
 	Stream_Write_UINT32(s, msg->ForeColor);
-
-	return 0;
-}
-
-int xrdp_read_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg)
-{
-	Stream_Read_UINT32(s, msg->BackColor);
-
-	return 0;
-}
-
-int xrdp_write_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg)
-{
-	msg->flags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 4;
-
-	if (!s)
-		return msg->length;
-
-	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
-
-	Stream_Write_UINT32(s, msg->BackColor);
 
 	return 0;
 }
@@ -676,30 +638,6 @@ int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg)
 	Stream_Write_UINT32(s, msg->index);
 	Stream_Write_UINT16(s, msg->nXSrc);
 	Stream_Write_UINT16(s, msg->nYSrc);
-
-	return 0;
-}
-
-int xrdp_read_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg)
-{
-	Stream_Read_UINT32(s, msg->hints);
-	Stream_Read_UINT32(s, msg->mask);
-
-	return 0;
-}
-
-int xrdp_write_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg)
-{
-	msg->flags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 8;
-
-	if (!s)
-		return msg->length;
-
-	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
-
-	Stream_Write_UINT32(s, msg->hints);
-	Stream_Write_UINT32(s, msg->mask);
 
 	return 0;
 }
@@ -987,20 +925,12 @@ int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 			xrdp_write_paint_rect(s, (XRDP_MSG_PAINT_RECT*) msg);
 			break;
 
-		case XRDP_SERVER_SET_CLIP:
-			xrdp_write_set_clip(s, (XRDP_MSG_SET_CLIP*) msg);
-			break;
-
-		case XRDP_SERVER_RESET_CLIP:
-			xrdp_write_reset_clip(s, (XRDP_MSG_RESET_CLIP*) msg);
+		case XRDP_SERVER_SET_CLIPPING_REGION:
+			xrdp_write_set_clipping_region(s, (XRDP_MSG_SET_CLIPPING_REGION*) msg);
 			break;
 
 		case XRDP_SERVER_SET_FORECOLOR:
 			xrdp_write_set_forecolor(s, (XRDP_MSG_SET_FORECOLOR*) msg);
-			break;
-
-		case XRDP_SERVER_SET_BACKCOLOR:
-			xrdp_write_set_backcolor(s, (XRDP_MSG_SET_BACKCOLOR*) msg);
 			break;
 
 		case XRDP_SERVER_SET_ROP2:
@@ -1033,10 +963,6 @@ int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 
 		case XRDP_SERVER_MEMBLT:
 			xrdp_write_memblt(s, (XRDP_MSG_MEMBLT*) msg);
-			break;
-
-		case XRDP_SERVER_SET_HINTS:
-			xrdp_write_set_hints(s, (XRDP_MSG_SET_HINTS*) msg);
 			break;
 
 		case XRDP_SERVER_WINDOW_NEW_UPDATE:
@@ -1083,20 +1009,12 @@ char* xrdp_get_msg_type_string(UINT32 type)
 			return "PaintRect";
 			break;
 
-		case XRDP_SERVER_SET_CLIP:
-			return "SetClip";
-			break;
-
-		case XRDP_SERVER_RESET_CLIP:
-			return "ResetClip";
+		case XRDP_SERVER_SET_CLIPPING_REGION:
+			return "SetClippingRegion";
 			break;
 
 		case XRDP_SERVER_SET_FORECOLOR:
 			return "SetForeColor";
-			break;
-
-		case XRDP_SERVER_SET_BACKCOLOR:
-			return "SetBackColor";
 			break;
 
 		case XRDP_SERVER_SET_ROP2:
@@ -1129,10 +1047,6 @@ char* xrdp_get_msg_type_string(UINT32 type)
 
 		case XRDP_SERVER_MEMBLT:
 			return "MemBlt";
-			break;
-
-		case XRDP_SERVER_SET_HINTS:
-			return "SetHints";
 			break;
 
 		case XRDP_SERVER_WINDOW_NEW_UPDATE:

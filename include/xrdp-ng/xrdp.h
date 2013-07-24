@@ -130,8 +130,7 @@ int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
 #define XRDP_SERVER_OPAQUE_RECT			3
 #define XRDP_SERVER_SCREEN_BLT			4
 #define XRDP_SERVER_PAINT_RECT			5
-#define XRDP_SERVER_SET_CLIP			10
-#define XRDP_SERVER_RESET_CLIP			11
+#define XRDP_SERVER_SET_CLIPPING_REGION		10
 #define XRDP_SERVER_SET_FORECOLOR		12
 #define XRDP_SERVER_SET_BACKCOLOR		13
 #define XRDP_SERVER_SET_ROP2			14
@@ -141,7 +140,6 @@ int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
 #define XRDP_SERVER_SWITCH_OS_SURFACE		21
 #define XRDP_SERVER_DELETE_OS_SURFACE		22
 #define XRDP_SERVER_MEMBLT			23
-#define XRDP_SERVER_SET_HINTS			24
 #define XRDP_SERVER_WINDOW_NEW_UPDATE		25
 #define XRDP_SERVER_WINDOW_DELETE		26
 #define XRDP_SERVER_SET_POINTER			51
@@ -203,22 +201,17 @@ struct _XRDP_MSG_PAINT_RECT
 };
 typedef struct _XRDP_MSG_PAINT_RECT XRDP_MSG_PAINT_RECT;
 
-struct _XRDP_MSG_SET_CLIP
+struct _XRDP_MSG_SET_CLIPPING_REGION
 {
 	DEFINE_MSG_COMMON();
 
-	int nLeftRect;
-	int nTopRect;
-	int nWidth;
-	int nHeight;
+	BOOL bNullRegion;
+	INT32 nLeftRect;
+	INT32 nTopRect;
+	INT32 nWidth;
+	INT32 nHeight;
 };
-typedef struct _XRDP_MSG_SET_CLIP XRDP_MSG_SET_CLIP;
-
-struct _XRDP_MSG_RESET_CLIP
-{
-	DEFINE_MSG_COMMON();
-};
-typedef struct _XRDP_MSG_RESET_CLIP XRDP_MSG_RESET_CLIP;
+typedef struct _XRDP_MSG_SET_CLIPPING_REGION XRDP_MSG_SET_CLIPPING_REGION;
 
 struct _XRDP_MSG_SET_FORECOLOR
 {
@@ -227,14 +220,6 @@ struct _XRDP_MSG_SET_FORECOLOR
 	UINT32 ForeColor;
 };
 typedef struct _XRDP_MSG_SET_FORECOLOR XRDP_MSG_SET_FORECOLOR;
-
-struct _XRDP_MSG_SET_BACKCOLOR
-{
-	DEFINE_MSG_COMMON();
-
-	UINT32 BackColor;
-};
-typedef struct _XRDP_MSG_SET_BACKCOLOR XRDP_MSG_SET_BACKCOLOR;
 
 struct _XRDP_MSG_SET_ROP2
 {
@@ -328,15 +313,6 @@ struct _XRDP_MSG_MEMBLT
 };
 typedef struct _XRDP_MSG_MEMBLT XRDP_MSG_MEMBLT;
 
-struct _XRDP_MSG_SET_HINTS
-{
-	DEFINE_MSG_COMMON();
-
-	int hints;
-	int mask;
-};
-typedef struct _XRDP_MSG_SET_HINTS XRDP_MSG_SET_HINTS;
-
 struct _XRDP_MSG_WINDOW_NEW_UPDATE
 {
 	DEFINE_MSG_COMMON();
@@ -412,17 +388,11 @@ FREERDP_API int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg);
 FREERDP_API int xrdp_read_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg);
 FREERDP_API int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg);
 
-FREERDP_API int xrdp_read_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg);
-FREERDP_API int xrdp_write_set_clip(wStream* s, XRDP_MSG_SET_CLIP* msg);
-
-FREERDP_API int xrdp_read_reset_clip(wStream* s, XRDP_MSG_RESET_CLIP* msg);
-FREERDP_API int xrdp_write_reset_clip(wStream* s, XRDP_MSG_RESET_CLIP* msg);
+FREERDP_API int xrdp_read_set_clipping_region(wStream* s, XRDP_MSG_SET_CLIPPING_REGION* msg);
+FREERDP_API int xrdp_write_set_clipping_region(wStream* s, XRDP_MSG_SET_CLIPPING_REGION* msg);
 
 FREERDP_API int xrdp_read_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg);
 FREERDP_API int xrdp_write_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg);
-
-FREERDP_API int xrdp_read_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg);
-FREERDP_API int xrdp_write_set_backcolor(wStream* s, XRDP_MSG_SET_BACKCOLOR* msg);
 
 FREERDP_API int xrdp_read_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
 FREERDP_API int xrdp_write_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
@@ -447,9 +417,6 @@ FREERDP_API int xrdp_write_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURF
 
 FREERDP_API int xrdp_read_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
 FREERDP_API int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
-
-FREERDP_API int xrdp_read_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg);
-FREERDP_API int xrdp_write_set_hints(wStream* s, XRDP_MSG_SET_HINTS* msg);
 
 FREERDP_API int xrdp_read_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 FREERDP_API int xrdp_write_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg);

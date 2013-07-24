@@ -468,21 +468,16 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			}
 			break;
 
-		case XRDP_SERVER_SET_CLIP:
+		case XRDP_SERVER_SET_CLIPPING_REGION:
 			{
-				XRDP_MSG_SET_CLIP msg;
+				XRDP_MSG_SET_CLIPPING_REGION msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_clip(s, &msg);
-				status = server_set_clip(mod, &msg);
-			}
-			break;
+				xrdp_read_set_clipping_region(s, &msg);
 
-		case XRDP_SERVER_RESET_CLIP:
-			{
-				XRDP_MSG_RESET_CLIP msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_reset_clip(s, &msg);
-				status = server_reset_clip(mod);
+				if (msg.bNullRegion)
+					status = server_reset_clip(mod);
+				else
+					status = server_set_clip(mod, &msg);
 			}
 			break;
 
@@ -492,15 +487,6 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_set_forecolor(s, &msg);
 				status = server_set_fgcolor(mod, msg.ForeColor);
-			}
-			break;
-
-		case XRDP_SERVER_SET_BACKCOLOR:
-			{
-				XRDP_MSG_SET_BACKCOLOR msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_backcolor(s, &msg);
-				status = server_set_bgcolor(mod, msg.BackColor);
 			}
 			break;
 
@@ -574,15 +560,6 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				xrdp_read_memblt(s, &msg);
 				status = server_paint_rect_os(mod, msg.nLeftRect, msg.nTopRect,
 						msg.nWidth, msg.nHeight, msg.index, msg.nXSrc, msg.nYSrc);
-			}
-			break;
-
-		case XRDP_SERVER_SET_HINTS:
-			{
-				XRDP_MSG_SET_HINTS msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_hints(s, &msg);
-				status = server_set_hints(mod, msg.hints, msg.mask);
 			}
 			break;
 

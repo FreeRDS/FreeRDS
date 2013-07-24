@@ -1403,7 +1403,7 @@ void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFor
 
 	LLOGLN(10, ("rdpGlyphs:"));
 	LLOGLN(10, ("rdpGlyphs: nlists %d len %d", nlists, lists->len));
-	rdpup_set_hints(1, 1);
+
 	g_doing_font = 1;
 
 	for (index = 0; index < lists->len; index++)
@@ -1417,7 +1417,7 @@ void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFor
 	ps->Glyphs = g_rdpScreen.Glyphs;
 	ps->Glyphs(op, pSrc, pDst, maskFormat, xSrc, ySrc, nlists, lists, glyphs);
 	ps->Glyphs = rdpGlyphs;
-	rdpup_set_hints(0, 1);
+
 	g_doing_font = 0;
 
 	GlyphExtents(nlists, lists, glyphs, &box);

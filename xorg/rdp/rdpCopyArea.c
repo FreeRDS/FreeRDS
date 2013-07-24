@@ -100,6 +100,7 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 		if (num_clips > 0)
 		{
 			rdpup_begin_update();
+
 			dx = dstx - srcx;
 			dy = dsty - srcy;
 
