@@ -625,6 +625,8 @@ int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount);
 int xrdp_mm_check_wait_objs(xrdpMm* self);
 int xrdp_child_fork(void);
 
+int xrdp_server_module_init(xrdpModule* mod);
+
 /**
  * Module Interface
  */
@@ -637,6 +639,19 @@ typedef int (*pXrdpClientSetParam)(xrdpModule* mod, char* name, char* value);
 typedef int (*pXrdpClientSessionChange)(xrdpModule* mod, int width, int height);
 typedef int (*pXrdpClientGetEventHandles)(xrdpModule* mod, HANDLE* events, DWORD* nCount);
 typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod);
+
+struct xrdp_client_module
+{
+	pXrdpClientStart Start;
+	pXrdpClientConnect Connect;
+	pXrdpClientEvent Event;
+	pXrdpClientEnd End;
+	pXrdpClientSetParam SetParam;
+	pXrdpClientSessionChange SessionChange;
+	pXrdpClientGetEventHandles GetEventHandles;
+	pXrdpClientCheckEventHandles CheckEventHandles;
+};
+typedef struct xrdp_client_module xrdpClientModule;
 
 typedef int (*pXrdpServerBeginUpdate)(xrdpModule* mod);
 typedef int (*pXrdpServerEndUpdate)(xrdpModule* mod);
@@ -674,56 +689,6 @@ typedef int (*pXrdpServerWindowCachedIcon)(xrdpModule* mod, int window_id, int c
 typedef int (*pXrdpServerNotifyNewUpdate)(xrdpModule* mod, int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
 typedef int (*pXrdpServerNotifyDelete)(xrdpModule* mod, int window_id, int notify_id);
 typedef int (*pXrdpServerMonitoredDesktop)(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags);
-
-int server_begin_update(xrdpModule* mod);
-int server_end_update(xrdpModule* mod);
-int server_bell_trigger(xrdpModule* mod);
-int server_msg(xrdpModule* mod, char* msg, int code);
-int server_is_term(xrdpModule* mod);
-int server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg);
-int server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg);
-int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg);
-int server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg);
-int server_palette(xrdpModule* mod, int* palette);
-int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg);
-int server_reset_clip(xrdpModule* mod);
-int server_set_fgcolor(xrdpModule* mod, int fgcolor);
-int server_set_bgcolor(xrdpModule* mod, int bgcolor);
-int server_set_opcode(xrdpModule* mod, int opcode);
-int server_set_mixmode(xrdpModule* mod, int mixmode);
-int server_set_brush(xrdpModule* mod, int x_orgin, int y_orgin, int style, char* pattern);
-int server_set_pen(xrdpModule* mod, int style, int width);
-int server_draw_line(xrdpModule* mod, int x1, int y1, int x2, int y2);
-int server_add_char(xrdpModule* mod, int font, int charactor,
-		int offset, int baseline, int width, int height, char* data);
-int server_draw_text(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top,
-		int clip_right, int clip_bottom, int box_left, int box_top, int box_right, int box_bottom,
-		int x, int y, char* data, int data_len);
-int server_reset(xrdpModule* mod, int width, int height, int bpp);
-int server_create_os_surface(xrdpModule* mod, int id, int width, int height);
-int server_switch_os_surface(xrdpModule* mod, int id);
-int server_delete_os_surface(xrdpModule* mod, int id);
-int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int id, int srcx, int srcy);
-int server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
-int server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg);
-int server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags);
-int server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags);
-int server_notify_new_update(xrdpModule* mod, int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
-int server_notify_delete(xrdpModule* mod, int window_id, int notify_id);
-int server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags);
-
-struct xrdp_client_module
-{
-	pXrdpClientStart Start;
-	pXrdpClientConnect Connect;
-	pXrdpClientEvent Event;
-	pXrdpClientEnd End;
-	pXrdpClientSetParam SetParam;
-	pXrdpClientSessionChange SessionChange;
-	pXrdpClientGetEventHandles GetEventHandles;
-	pXrdpClientCheckEventHandles CheckEventHandles;
-};
-typedef struct xrdp_client_module xrdpClientModule;
 
 struct xrdp_server_module
 {

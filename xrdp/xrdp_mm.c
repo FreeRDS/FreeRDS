@@ -69,10 +69,8 @@ static void xrdp_mm_module_cleanup(xrdpMm* self)
 
 void xrdp_mm_delete(xrdpMm* self)
 {
-	if (self == 0)
-	{
+	if (!self)
 		return;
-	}
 
 	/* free any module stuff */
 	xrdp_mm_module_cleanup(self);
@@ -146,7 +144,7 @@ static int xrdp_mm_send_login(xrdpMm* self)
 	}
 
 	s = trans_get_out_s(self->sesman_trans, 8192);
-	s->pointer += 8;
+	Stream_Seek(s, 8);
 
 	/* this code is either 0 for Xvnc or 10 for X11rdp */
 	Stream_Write_UINT16_BE(s, self->code);
@@ -198,7 +196,7 @@ static int xrdp_mm_send_login(xrdpMm* self)
 	Stream_Write(s, self->wm->session->settings->ClientAddress, index);
 
 	index = (int) (s->pointer - s->buffer);
-	s->pointer = s->buffer;
+	Stream_SetPosition(s, 0);
 
 	/* Version 0 of the protocol to sesman is currently used by XRDP */
 	Stream_Write_UINT32_BE(s, 0); /* version */
@@ -319,46 +317,7 @@ static int xrdp_mm_setup_mod1(xrdpMm* self)
 				mod->version = 2;
 				mod->handle = (long) mod;
 
-				mod->server = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
-
-				if (mod->server)
-				{
-					ZeroMemory(mod->server, sizeof(xrdpServerModule));
-
-					mod->server->BeginUpdate = server_begin_update;
-					mod->server->EndUpdate = server_end_update;
-					mod->server->Beep = server_bell_trigger;
-					mod->server->Message = server_msg;
-					mod->server->IsTerminated = server_is_term;
-					mod->server->OpaqueRect = server_opaque_rect;
-					mod->server->ScreenBlt = server_screen_blt;
-					mod->server->PaintRect = server_paint_rect;
-					mod->server->SetPointer = server_set_pointer;
-					mod->server->SetPalette = server_palette;
-					mod->server->SetClippingRegion = server_set_clip;
-					mod->server->SetNullClippingRegion = server_reset_clip;
-					mod->server->SetForeColor = server_set_fgcolor;
-					mod->server->SetBackColor = server_set_bgcolor;
-					mod->server->SetRop2 = server_set_opcode;
-					mod->server->SetMixMode = server_set_mixmode;
-					mod->server->SetBrush = server_set_brush;
-					mod->server->SetPen = server_set_pen;
-					mod->server->LineTo = server_draw_line;
-					mod->server->AddChar = server_add_char;
-					mod->server->Text = server_draw_text;
-					mod->server->Reset = server_reset;
-					mod->server->CreateOffscreenSurface = server_create_os_surface;
-					mod->server->SwitchOffscreenSurface = server_switch_os_surface;
-					mod->server->DeleteOffscreenSurface = server_delete_os_surface;
-					mod->server->PaintOffscreenRect = server_paint_rect_os;
-					mod->server->WindowNewUpdate = server_window_new_update;
-					mod->server->WindowDelete = server_window_delete;
-					mod->server->WindowIcon = server_window_icon;
-					mod->server->WindowCachedIcon = server_window_cached_icon;
-					mod->server->NotifyNewUpdate = server_notify_new_update;
-					mod->server->NotifyDelete = server_notify_delete;
-					mod->server->MonitoredDesktop = server_monitored_desktop;
-				}
+				xrdp_server_module_init(mod);
 
 				self->ModuleInit(mod);
 			}
@@ -634,21 +593,18 @@ static int xrdp_mm_sesman_data_in(struct trans *trans)
 	int error;
 	int code;
 
-	if (trans == 0)
-	{
+	if (!trans)
 		return 1;
-	}
 
-	self = (xrdpMm *) (trans->callback_data);
+	self = (xrdpMm*) (trans->callback_data);
 	s = trans_get_in_s(trans);
 
-	if (s == 0)
-	{
+	if (!s)
 		return 1;
-	}
 
 	Stream_Read_UINT32_BE(s, version);
 	Stream_Read_UINT32_BE(s, size);
+
 	error = trans_force_read(trans, size - 8);
 
 	if (error == 0)
@@ -972,8 +928,8 @@ int xrdp_mm_connect(xrdpMm* self)
 
 	for (index = 0; index < count; index++)
 	{
-		name = (char *) list_get_item(names, index);
-		value = (char *) list_get_item(values, index);
+		name = (char*) list_get_item(names, index);
+		value = (char*) list_get_item(values, index);
 
 		if (g_strcasecmp(name, "ip") == 0)
 		{
