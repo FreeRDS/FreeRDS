@@ -222,6 +222,8 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 			}
 			else if (got_id)
 			{
+				XRDP_MSG_OPAQUE_RECT msg;
+
 				rdpup_begin_update();
 
 				if (pGC->lineStyle == LineSolid)
@@ -232,7 +234,14 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 					for (i = 0; i < nrects * 4; i++)
 					{
 						r = regRects + i;
-						rdpup_fill_rect(r->x, r->y, r->width, r->height);
+
+						msg.nLeftRect = r->x;
+						msg.nTopRect = r->y;
+						msg.nWidth = r->width;
+						msg.nHeight = r->height;
+						msg.color = rdpup_convert_color(pGC->fgPixel);
+
+						rdpup_opaque_rect(&msg);
 					}
 
 					rdpup_set_opcode(GXcopy);
@@ -278,13 +287,22 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 					if (pGC->lineStyle == LineSolid)
 					{
+						XRDP_MSG_OPAQUE_RECT msg;
+
 						rdpup_set_fgcolor(pGC->fgPixel);
 						rdpup_set_opcode(pGC->alu);
 
 						for (j = num_clips - 1; j >= 0; j--)
 						{
 							box = REGION_RECTS(&clip_reg)[j];
-							rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+							msg.nLeftRect = box.x1;
+							msg.nTopRect = box.y1;
+							msg.nWidth = box.x2 - box.x1;
+							msg.nHeight = box.y2 - box.y1;
+							msg.color = rdpup_convert_color(pGC->fgPixel);
+
+							rdpup_opaque_rect(&msg);
 						}
 
 						rdpup_set_opcode(GXcopy);

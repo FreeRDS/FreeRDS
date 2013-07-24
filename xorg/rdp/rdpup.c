@@ -999,6 +999,13 @@ void rdpup_get_pixmap_image_rect(PixmapPtr pPixmap, struct image_data *id)
 	id->pixels = (char *)(pPixmap->devPrivate.ptr);
 }
 
+UINT32 rdpup_convert_color(UINT32 color)
+{
+	color = color & g_Bpp_mask;
+	color = convert_pixel(color) & g_rdpScreen.rdp_Bpp_mask;
+	return color;
+}
+
 int rdpup_init(void)
 {
 	int i;
@@ -1254,29 +1261,22 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 	}
 	else
 	{
-		LLOGLN(0, ("rdpup_update: discarding %s message", xrdp_get_msg_type_string(msg->type)));
+		LLOGLN(0, ("rdpup_update: discarding %s message (%d)", xrdp_get_msg_type_string(msg->type), msg->type));
 	}
 
 	return 0;
 }
 
-int rdpup_fill_rect(short x, short y, int cx, int cy)
+int rdpup_opaque_rect(XRDP_MSG_OPAQUE_RECT* msg)
 {
-	XRDP_MSG_OPAQUE_RECT msg;
-
 	if (g_rdpScreen.CodecMode)
 	{
-		rdpup_send_area(NULL, x, y, cx, cy);
+		rdpup_send_area(NULL, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 		return 0;
 	}
 
-	msg.nLeftRect = x;
-	msg.nTopRect = y;
-	msg.nWidth = cx;
-	msg.nHeight = cy;
-
-	msg.type = XRDP_SERVER_OPAQUE_RECT;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+	msg->type = XRDP_SERVER_OPAQUE_RECT;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
 
 	return 0;
 }
@@ -1401,7 +1401,7 @@ int rdpup_draw_line(short x1, short y1, short x2, short y2)
 int rdpup_set_pointer(XRDP_MSG_SET_POINTER* msg)
 {
 	msg->type = XRDP_SERVER_SET_POINTER;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+	rdpup_update((XRDP_MSG_COMMON*) msg);
 
 	return 0;
 }
@@ -1627,9 +1627,18 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 
 			if (single_color != -1)
 			{
+				XRDP_MSG_OPAQUE_RECT msg;
+
 				LLOGLN(10, ("%d sending single color", g_count));
+
+				msg.nLeftRect = lx;
+				msg.nTopRect = ly;
+				msg.nWidth = lw;
+				msg.nHeight = lh;
+				msg.color = rdpup_convert_color(single_color);
+
 				rdpup_set_fgcolor(single_color);
-				rdpup_fill_rect(lx, ly, lw, lh);
+				rdpup_opaque_rect(&msg);
 			}
 			else
 			{
@@ -1821,9 +1830,18 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 
 				for (index = 0; index < count; index++)
 				{
+					XRDP_MSG_OPAQUE_RECT msg;
+
 					box = REGION_RECTS(di->reg)[index];
 					LLOGLN(10, ("  RDI_FILL %d %d %d %d", box.x1, box.y1, box.x2, box.y2));
-					rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+					msg.nLeftRect = box.x1;
+					msg.nTopRect = box.y1;
+					msg.nWidth = box.x2 - box.x1;
+					msg.nHeight = box.y2 - box.y1;
+					msg.color = rdpup_convert_color(di->u.fill.fg_color);
+
+					rdpup_opaque_rect(&msg);
 				}
 
 				rdpup_set_opcode(GXcopy);
@@ -1947,9 +1965,18 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 
 				for (index = 0; index < count; index++)
 				{
+					XRDP_MSG_OPAQUE_RECT msg;
+
 					box = REGION_RECTS(di->reg)[index];
 					LLOGLN(10, ("  RDI_FILL %d %d %d %d", box.x1, box.y1, box.x2, box.y2));
-					rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+					msg.nLeftRect = box.x1;
+					msg.nTopRect = box.y1;
+					msg.nWidth = box.x2 - box.x1;
+					msg.nHeight = box.y2 - box.y1;
+					msg.color = rdpup_convert_color(di->u.fill.fg_color);
+
+					rdpup_opaque_rect(&msg);
 				}
 
 				rdpup_set_opcode(GXcopy);

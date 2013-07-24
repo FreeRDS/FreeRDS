@@ -180,13 +180,22 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 							pGC->alu == GXand ||
 							pGC->alu == GXcopy))
 			{
+				XRDP_MSG_OPAQUE_RECT msg;
+
 				rdpup_set_fgcolor(pGC->fgPixel);
 				rdpup_set_opcode(pGC->alu);
 
 				for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
 				{
 					box = REGION_RECTS(fill_reg)[j];
-					rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+					msg.nLeftRect = box.x1;
+					msg.nTopRect = box.y1;
+					msg.nWidth = box.x2 - box.x1;
+					msg.nHeight = box.y2 - box.y1;
+					msg.color = rdpup_convert_color(pGC->fgPixel);
+
+					rdpup_opaque_rect(&msg);
 				}
 
 				rdpup_set_opcode(GXcopy);
@@ -240,13 +249,22 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 								pGC->alu == GXand ||
 								pGC->alu == GXcopy))
 				{
+					XRDP_MSG_OPAQUE_RECT msg;
+
 					rdpup_set_fgcolor(pGC->fgPixel);
 					rdpup_set_opcode(pGC->alu);
 
 					for (j = num_clips - 1; j >= 0; j--)
 					{
 						box = REGION_RECTS(&clip_reg)[j];
-						rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+						msg.nLeftRect = box.x1;
+						msg.nTopRect = box.y1;
+						msg.nWidth = box.x2 - box.x1;
+						msg.nHeight = box.y2 - box.y1;
+						msg.color = rdpup_convert_color(pGC->fgPixel);
+
+						rdpup_opaque_rect(&msg);
 					}
 
 					rdpup_set_opcode(GXcopy);

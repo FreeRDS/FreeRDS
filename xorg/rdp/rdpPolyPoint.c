@@ -222,14 +222,20 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 			}
 			else if (got_id)
 			{
+				XRDP_MSG_OPAQUE_RECT msg;
+
 				rdpup_begin_update();
 				rdpup_set_fgcolor(pGC->fgPixel);
 
 				for (i = 0; i < npt; i++)
 				{
-					x = pts[i].x;
-					y = pts[i].y;
-					rdpup_fill_rect(x, y, 1, 1);
+					msg.nLeftRect = pts[i].x;
+					msg.nTopRect = pts[i].y;
+					msg.nWidth = 1;
+					msg.nHeight = 1;
+					msg.color = rdpup_convert_color(pGC->fgPixel);
+
+					rdpup_opaque_rect(&msg);
 				}
 
 				rdpup_end_update();
@@ -263,6 +269,8 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 			}
 			else if (got_id)
 			{
+				XRDP_MSG_OPAQUE_RECT msg;
+
 				rdpup_begin_update();
 				rdpup_set_fgcolor(pGC->fgPixel);
 
@@ -273,9 +281,13 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 					for (i = 0; i < npt; i++)
 					{
-						x = pts[i].x;
-						y = pts[i].y;
-						rdpup_fill_rect(x, y, 1, 1);
+						msg.nLeftRect = pts[i].x;
+						msg.nTopRect = pts[i].y;
+						msg.nWidth = 1;
+						msg.nHeight = 1;
+						msg.color = rdpup_convert_color(pGC->fgPixel);
+
+						rdpup_opaque_rect(&msg);
 					}
 				}
 
