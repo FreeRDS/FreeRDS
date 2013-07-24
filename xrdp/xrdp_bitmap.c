@@ -1183,7 +1183,7 @@ int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 	{
 		if (self->wm->mm->mod != 0)
 		{
-			if (self->wm->mm->mod->mod_event != 0)
+			if (self->wm->mm->mod->ClientEvent != 0)
 			{
 				if (rect != 0)
 				{
@@ -1194,7 +1194,7 @@ int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 
 					if (check_bounds(self->wm->screen, &x, &y, &w, &h))
 					{
-						self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_XRDP_INVALIDATE,
+						self->wm->mm->mod->ClientEvent(self->wm->mm->mod, WM_XRDP_INVALIDATE,
 								MAKELONG(y, x), MAKELONG(h, w), 0, 0);
 					}
 				}
@@ -1204,7 +1204,7 @@ int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 					y = 0;
 					w = self->wm->screen->width;
 					h = self->wm->screen->height;
-					self->wm->mm->mod->mod_event(self->wm->mm->mod, WM_XRDP_INVALIDATE,
+					self->wm->mm->mod->ClientEvent(self->wm->mm->mod, WM_XRDP_INVALIDATE,
 							MAKELONG(y, x), MAKELONG(h, w), 0, 0);
 				}
 			}

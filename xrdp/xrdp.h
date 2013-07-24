@@ -637,8 +637,8 @@ typedef int (*pXrdpClientEvent)(xrdpModule* mod, int msg, long param1, long para
 typedef int (*pXrdpClientEnd)(xrdpModule* mod);
 typedef int (*pXrdpClientSetParam)(xrdpModule* mod, char* name, char* value);
 typedef int (*pXrdpClientSessionChange)(xrdpModule* mod, int width, int height);
-typedef int (*pXrdpClientGetEventHandles)(xrdpModule* mod);
-typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod, HANDLE* events, DWORD* nCount);
+typedef int (*pXrdpClientGetEventHandles)(xrdpModule* mod, HANDLE* events, DWORD* nCount);
+typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod);
 
 typedef int (*pXrdpServerBeginUpdate)(xrdpModule* mod);
 typedef int (*pXrdpServerEndUpdate)(xrdpModule* mod);
@@ -727,15 +727,6 @@ struct xrdp_mod
 	pXrdpClientSessionChange ClientSessionChange;
 	pXrdpClientGetEventHandles ClientGetEventHandles;
 	pXrdpClientCheckEventHandles ClientCheckEventHandles;
-
-	int (*mod_start)(xrdpModule* v, int w, int h, int bpp);
-	int (*mod_connect)(xrdpModule* v);
-	int (*mod_event)(xrdpModule* v, int msg, long param1, long param2, long param3, long param4);
-	int (*mod_end)(xrdpModule* v);
-	int (*mod_set_param)(xrdpModule* v, char* name, char* value);
-	int (*mod_session_change)(xrdpModule* v, int, int);
-	int (*mod_get_event_handles)(xrdpModule* v, HANDLE* events, DWORD* nCount);
-	int (*mod_check_wait_objs)(xrdpModule* v);
 
 	/* Server */
 

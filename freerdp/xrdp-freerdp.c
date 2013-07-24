@@ -67,11 +67,11 @@ void verifyColorMap(xrdpModule* mod)
 	LLOGLN(0, ("The colormap is all NULL\n"));
 }
 
-static int lxrdp_start(xrdpModule* mod, int w, int h, int bpp)
+static int freerdp_xrdp_client_start(xrdpModule* mod, int w, int h, int bpp)
 {
 	rdpSettings* settings;
 
-	LLOGLN(10, ("lxrdp_start: w %d h %d bpp %d", w, h, bpp));
+	LLOGLN(10, ("freerdp_xrdp_client_start: w %d h %d bpp %d", w, h, bpp));
 
 	settings = mod->instance->settings;
 	settings->DesktopWidth = w;
@@ -88,14 +88,14 @@ static int lxrdp_start(xrdpModule* mod, int w, int h, int bpp)
 	return 0;
 }
 
-static int lxrdp_connect(xrdpModule* mod)
+static int freerdp_xrdp_client_connect(xrdpModule* mod)
 {
 	BOOL ok;
 
-	LLOGLN(10, ("lxrdp_connect:"));
+	LLOGLN(10, ("freerdp_xrdp_client_connect:"));
 
 	ok = freerdp_connect(mod->instance);
-	LLOGLN(0, ("lxrdp_connect: freerdp_connect returned %d", ok));
+	LLOGLN(0, ("freerdp_xrdp_client_connect: freerdp_connect returned %d", ok));
 
 	if (!ok)
 	{
@@ -174,13 +174,13 @@ static int lxrdp_connect(xrdpModule* mod)
 	return 0;
 }
 
-static int lxrdp_event(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4)
+static int freerdp_xrdp_client_event(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4)
 {
 	int x;
 	int y;
 	int flags;
 
-	LLOGLN(12, ("lxrdp_event: msg %d", msg));
+	LLOGLN(12, ("freerdp_xrdp_client_event: msg %d", msg));
 
 	switch (msg)
 	{
@@ -319,7 +319,7 @@ static int lxrdp_event(xrdpModule* mod, int msg, long param1, long param2, long 
 	return 0;
 }
 
-static int lxrdp_end(xrdpModule* mod)
+static int freerdp_xrdp_client_end(xrdpModule* mod)
 {
 	int i;
 	int j;
@@ -340,15 +340,15 @@ static int lxrdp_end(xrdpModule* mod)
 		}
 	}
 
-	LLOGLN(10, ("lxrdp_end:"));
+	LLOGLN(10, ("freerdp_xrdp_client_end:"));
 	return 0;
 }
 
-static int lxrdp_set_param(xrdpModule* mod, char *name, char *value)
+static int freerdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
 {
 	rdpSettings* settings;
 
-	LLOGLN(10, ("lxrdp_set_param: name [%s] value [%s]", name, value));
+	LLOGLN(10, ("freerdp_xrdp_client_set_param: name [%s] value [%s]", name, value));
 	settings = mod->instance->settings;
 
 	LLOGLN(10, ("%p %d", settings->ServerHostname, settings->DisableEncryption));
@@ -387,24 +387,24 @@ static int lxrdp_set_param(xrdpModule* mod, char *name, char *value)
 	}
 	else
 	{
-		LLOGLN(0, ("lxrdp_set_param: unknown name [%s] value [%s]", name, value));
+		LLOGLN(0, ("freerdp_xrdp_client_set_param: unknown name [%s] value [%s]", name, value));
 	}
 
 	return 0;
 }
 
-static int lxrdp_session_change(xrdpModule* mod, int a, int b)
+static int freerdp_xrdp_client_session_change(xrdpModule* mod, int a, int b)
 {
-	LLOGLN(0, ("lxrdp_session_change: - no code here"));
+	LLOGLN(0, ("freerdp_xrdp_client_session_change: - no code here"));
 	return 0;
 }
 
-int lxrdp_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
+int freerdp_xrdp_client_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
 	return 0;
 }
 
-static int lxrdp_check_wait_objs(xrdpModule* mod)
+int freerdp_xrdp_client_check_event_handles(xrdpModule* mod)
 {
 	BOOL status;
 
@@ -1521,14 +1521,15 @@ xrdpModule* freerdp_client_module_init(void)
 	mod->size = sizeof(xrdpModule);
 	mod->version = 2;
 	mod->handle = (long) mod;
-	mod->mod_connect = lxrdp_connect;
-	mod->mod_start = lxrdp_start;
-	mod->mod_event = lxrdp_event;
-	mod->mod_end = lxrdp_end;
-	mod->mod_set_param = lxrdp_set_param;
-	mod->mod_session_change = lxrdp_session_change;
-	mod->mod_get_event_handles = lxrdp_get_event_handles;
-	mod->mod_check_wait_objs = lxrdp_check_wait_objs;
+
+	mod->ClientConnect = freerdp_xrdp_client_connect;
+	mod->ClientStart = freerdp_xrdp_client_start;
+	mod->ClientEvent = freerdp_xrdp_client_event;
+	mod->ClientEnd = freerdp_xrdp_client_end;
+	mod->ClientSetParam = freerdp_xrdp_client_set_param;
+	mod->ClientSessionChange = freerdp_xrdp_client_session_change;
+	mod->ClientGetEventHandles = freerdp_xrdp_client_get_event_handles;
+	mod->ClientCheckEventHandles = freerdp_xrdp_client_check_event_handles;
 
 	instance = freerdp_new();
 	mod->instance = instance;

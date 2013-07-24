@@ -165,7 +165,7 @@ int lib_send_all(xrdpModule* mod, unsigned char *data, int len)
 	return 0;
 }
 
-int lib_mod_start(xrdpModule* mod, int w, int h, int bpp)
+int x11rdp_xrdp_client_start(xrdpModule* mod, int w, int h, int bpp)
 {
 	mod->width = w;
 	mod->height = h;
@@ -173,7 +173,7 @@ int lib_mod_start(xrdpModule* mod, int w, int h, int bpp)
 	return 0;
 }
 
-int lib_mod_connect(xrdpModule* mod)
+int x11rdp_xrdp_client_connect(xrdpModule* mod)
 {
 	int i;
 	int index;
@@ -183,8 +183,6 @@ int lib_mod_connect(xrdpModule* mod)
 	wStream* s;
 	char con_port[256];
 	XRDP_MSG_OPAQUE_RECT opaqueRect;
-
-	LIB_DEBUG(mod, "in lib_mod_connect");
 
 	opaqueRect.nTopRect = 0;
 	opaqueRect.nLeftRect = 0;
@@ -203,14 +201,14 @@ int lib_mod_connect(xrdpModule* mod)
 	if (mod->bpp != 8 && mod->bpp != 15 && mod->bpp != 16 && mod->bpp != 24 && mod->bpp != 32)
 	{
 		server_msg(mod, "error - only supporting 8, 15, 16, 24 and 32 bpp rdp connections", 0);
-		LIB_DEBUG(mod, "out lib_mod_connect error");
+		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 
 	if (g_strcmp(mod->ip, "") == 0)
 	{
 		server_msg(mod, "error - no ip set", 0);
-		LIB_DEBUG(mod, "out lib_mod_connect error");
+		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 
@@ -321,7 +319,7 @@ int lib_mod_connect(xrdpModule* mod)
 	if (status != 0)
 	{
 		server_msg(mod, "some problem", 0);
-		LIB_DEBUG(mod, "out lib_mod_connect error");
+		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 	else
@@ -330,11 +328,10 @@ int lib_mod_connect(xrdpModule* mod)
 		mod->SocketEvent = CreateFileDescriptorEvent(NULL, TRUE, FALSE, mod->sck);
 	}
 
-	LIB_DEBUG(mod, "out lib_mod_connect");
 	return 0;
 }
 
-int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long param3, long param4)
+int x11rdp_xrdp_client_event(xrdpModule* mod, int subtype, long param1, long param2, long param3, long param4)
 {
 	wStream* s;
 	int length;
@@ -693,12 +690,12 @@ int xup_recv(xrdpModule* mod)
 	return 0;
 }
 
-int lib_mod_end(xrdpModule* mod)
+int x11rdp_xrdp_client_end(xrdpModule* mod)
 {
 	return 0;
 }
 
-int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
+int x11rdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
 {
 	if (g_strcasecmp(name, "username") == 0)
 	{
@@ -729,7 +726,7 @@ int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 	return 0;
 }
 
-int lib_mod_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
+int x11rdp_xrdp_client_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
 	if (mod)
 	{
@@ -743,7 +740,7 @@ int lib_mod_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 	return 0;
 }
 
-int lib_mod_check_wait_objs(xrdpModule* mod)
+int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 {
 	int status = 0;
 
@@ -774,13 +771,14 @@ xrdpModule* xup_module_init(void)
 		mod->size = sizeof(xrdpModule);
 		mod->version = 2;
 		mod->handle = (long) mod;
-		mod->mod_connect = lib_mod_connect;
-		mod->mod_start = lib_mod_start;
-		mod->mod_event = lib_mod_event;
-		mod->mod_end = lib_mod_end;
-		mod->mod_set_param = lib_mod_set_param;
-		mod->mod_get_event_handles = lib_mod_get_event_handles;
-		mod->mod_check_wait_objs = lib_mod_check_wait_objs;
+
+		mod->ClientConnect = x11rdp_xrdp_client_connect;
+		mod->ClientStart = x11rdp_xrdp_client_start;
+		mod->ClientEvent = x11rdp_xrdp_client_event;
+		mod->ClientEnd = x11rdp_xrdp_client_end;
+		mod->ClientSetParam = x11rdp_xrdp_client_set_param;
+		mod->ClientGetEventHandles = x11rdp_xrdp_client_get_event_handles;
+		mod->ClientCheckEventHandles = x11rdp_xrdp_client_check_event_handles;
 
 		mod->SendStream = Stream_New(NULL, 8192);
 		mod->ReceiveStream = Stream_New(NULL, 8192);

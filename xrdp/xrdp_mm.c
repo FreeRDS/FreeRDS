@@ -350,8 +350,8 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 
 	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
 	{
-		if (self->mod->mod_start(self->mod, self->wm->screen->width, self->wm->screen->height,
-				self->wm->screen->bpp) != 0)
+		if (self->mod->ClientStart(self->mod, self->wm->screen->width,
+				self->wm->screen->height, self->wm->screen->bpp) != 0)
 		{
 			SetEvent(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
 		}
@@ -407,21 +407,21 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 		}
 
 		/* always set these */
-		self->mod->mod_set_param(self->mod, "settings", (char*) self->wm->session->settings);
+		self->mod->ClientSetParam(self->mod, "settings", (char*) self->wm->session->settings);
 		name = self->wm->session->settings->ServerHostname;
-		self->mod->mod_set_param(self->mod, "hostname", name);
+		self->mod->ClientSetParam(self->mod, "hostname", name);
 		g_snprintf(text, 255, "%d", self->wm->session->settings->KeyboardLayout);
-		self->mod->mod_set_param(self->mod, "keylayout", text);
+		self->mod->ClientSetParam(self->mod, "keylayout", text);
 
 		for (i = 0; i < self->login_names->count; i++)
 		{
 			name = (char*) list_get_item(self->login_names, i);
 			value = (char*) list_get_item(self->login_values, i);
-			self->mod->mod_set_param(self->mod, name, value);
+			self->mod->ClientSetParam(self->mod, name, value);
 		}
 
 		/* connect */
-		if (self->mod->mod_connect(self->mod) == 0)
+		if (self->mod->ClientConnect(self->mod) == 0)
 		{
 			rv = 0; /* connect success */
 		}
@@ -450,9 +450,9 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 
 		if (self->mod != 0)
 		{
-			if (self->mod->mod_event != 0)
+			if (self->mod->ClientEvent)
 			{
-				self->mod->mod_event(self->mod, 17, key_flags, device_flags, key_flags, device_flags);
+				self->mod->ClientEvent(self->mod, 17, key_flags, device_flags, key_flags, device_flags);
 			}
 		}
 	}
@@ -1103,8 +1103,8 @@ int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount)
 
 	if (self->mod)
 	{
-		if (self->mod->mod_get_event_handles)
-			self->mod->mod_get_event_handles(self->mod, events, nCount);
+		if (self->mod->ClientGetEventHandles)
+			self->mod->ClientGetEventHandles(self->mod, events, nCount);
 	}
 
 	return 0;
@@ -1129,9 +1129,9 @@ int xrdp_mm_check_wait_objs(xrdpMm *self)
 
 	if (self->mod != 0)
 	{
-		if (self->mod->mod_check_wait_objs != 0)
+		if (self->mod->ClientCheckEventHandles != 0)
 		{
-			status = self->mod->mod_check_wait_objs(self->mod);
+			status = self->mod->ClientCheckEventHandles(self->mod);
 		}
 	}
 
