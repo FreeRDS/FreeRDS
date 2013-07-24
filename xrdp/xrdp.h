@@ -94,56 +94,6 @@ struct pointer_item
 	char mask[32 * 32 / 8];
 };
 
-/* lib */
-struct xrdp_mod
-{
-	int size; /* size of this struct */
-	int version; /* internal version */
-
-	/* client functions */
-	int (*mod_start)(xrdpModule* v, int w, int h, int bpp);
-	int (*mod_connect)(xrdpModule* v);
-	int (*mod_event)(xrdpModule* v, int msg, long param1, long param2, long param3, long param4);
-	int (*mod_end)(xrdpModule* v);
-	int (*mod_set_param)(xrdpModule* v, char* name, char* value);
-	int (*mod_session_change)(xrdpModule* v, int, int);
-	int (*mod_get_event_handles)(xrdpModule* v, HANDLE* events, DWORD* nCount);
-	int (*mod_check_wait_objs)(xrdpModule* v);
-
-	/* common */
-	long handle; /* pointer to self as int */
-	long wm; /* xrdpWm* */
-	long painter;
-	int sck;
-	/* mod data */
-	int width;
-	int height;
-	int bpp;
-	int rfx;
-	int sck_closed;
-	char username[256];
-	char password[256];
-	char ip[256];
-	char port[256];
-	long sck_obj;
-	int shift_state;
-	rdpSettings* settings;
-
-	UINT32 TotalLength;
-	UINT32 TotalCount;
-	HANDLE SocketEvent;
-	wStream* SendStream;
-	wStream* ReceiveStream;
-
-	int colormap[256];
-	freerdp* instance;
-	struct bitmap_item bitmap_cache[4][4096];
-	struct brush_item brush_cache[64];
-	struct pointer_item pointer_cache[32];
-
-	XRDP_FRAMEBUFFER framebuffer;
-};
-
 /* header for bmp file */
 struct xrdp_bmp_header
 {
@@ -677,6 +627,54 @@ int server_msg(xrdpModule* mod, char* msg, int code);
 int server_is_term(xrdpModule* mod);
 int xrdp_child_fork(void);
 
+/**
+ * Module Interface
+ */
+
+typedef int (*pXrdpClientStart)(xrdpModule* mod, int width, int height, int bpp);
+typedef int (*pXrdpClientConnect)(xrdpModule* mod);
+typedef int (*pXrdpClientEvent)(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4);
+typedef int (*pXrdpClientEnd)(xrdpModule* mod);
+typedef int (*pXrdpClientSetParam)(xrdpModule* mod, char* name, char* value);
+typedef int (*pXrdpClientSessionChange)(xrdpModule* mod, int width, int height);
+typedef int (*pXrdpClientGetEventHandles)(xrdpModule* mod);
+typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod, HANDLE* events, DWORD* nCount);
+
+typedef int (*pXrdpServerBeginUpdate)(xrdpModule* mod);
+typedef int (*pXrdpServerEndUpdate)(xrdpModule* mod);
+typedef int (*pXrdpServerBeep)(xrdpModule* mod);
+typedef int (*pXrdpServerOpaqueRect)(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg);
+typedef int (*pXrdpServerScreenBlt)(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg);
+typedef int (*pXrdpServerPaintRect)(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg);
+typedef int (*pXrdpServerSetPointer)(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg);
+typedef int (*pXrdpServerSetPalette)(xrdpModule* mod, int* palette);
+typedef int (*pXrdpServerSetClippingRegion)(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg);
+typedef int (*pXrdpServerSetNullClippingRegion)(xrdpModule* mod);
+typedef int (*pXrdpServerSetForeColor)(xrdpModule* mod, int fgcolor);
+typedef int (*pXrdpServerSetBackColor)(xrdpModule* mod, int bgcolor);
+typedef int (*pXrdpServerSetRop2)(xrdpModule* mod, int opcode);
+typedef int (*pXrdpServerSetMixMode)(xrdpModule* mod, int mixmode);
+typedef int (*pXrdpServerSetBrush)(xrdpModule* mod, int x_orgin, int y_orgin, int style, char* pattern);
+typedef int (*pXrdpServerSetPen)(xrdpModule* mod, int style, int width);
+typedef int (*pXrdpServerLineTo)(xrdpModule* mod, int x1, int y1, int x2, int y2);
+typedef int (*pXrdpServerAddChar)(xrdpModule* mod, int font, int character,
+		int offset, int baseline, int width, int height, char* data);
+typedef int (*pXrdpServerText)(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top,
+		int clip_right, int clip_bottom, int box_left, int box_top, int box_right, int box_bottom,
+		int x, int y, char* data, int data_len);
+typedef int (*pXrdpServerReset)(xrdpModule* mod, int width, int height, int bpp);
+typedef int (*pXrdpServerCreateOffscreenSurface)(xrdpModule* mod, int id, int width, int height);
+typedef int (*pXrdpServerSwitchOffscreenSurface)(xrdpModule* mod, int id);
+typedef int (*pXrdpServerDeleteOffscreenSurface)(xrdpModule* mod, int id);
+typedef int (*pXrdpServerPaintOffscreenRect)(xrdpModule* mod, int x, int y, int cx, int cy, int id, int srcx, int srcy);
+typedef int (*pXrdpServerWindowNewUpdate)(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
+typedef int (*pXrdpServerWindowDelete)(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg);
+typedef int (*pXrdpServerWindowIcon)(xrdpModule* mod, int window_id, int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags);
+typedef int (*pXrdpServerWindowCachedIcon)(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags);
+typedef int (*pXrdpServerNotifyNewUpdate)(xrdpModule* mod, int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
+typedef int (*pXrdpServerNotifyDelete)(xrdpModule* mod, int window_id, int notify_id);
+typedef int (*pXrdpServerMonitoredDesktop)(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags);
+
 int server_begin_update(xrdpModule* mod);
 int server_end_update(xrdpModule* mod);
 int server_bell_trigger(xrdpModule* mod);
@@ -696,27 +694,115 @@ int server_set_pen(xrdpModule* mod, int style, int width);
 int server_draw_line(xrdpModule* mod, int x1, int y1, int x2, int y2);
 int server_add_char(xrdpModule* mod, int font, int charactor,
 		int offset, int baseline, int width, int height, char* data);
-int server_draw_text(xrdpModule* mod, int font,
-		int flags, int mixmode, int clip_left, int clip_top,
-		int clip_right, int clip_bottom,
-		int box_left, int box_top,
-		int box_right, int box_bottom,
+int server_draw_text(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top,
+		int clip_right, int clip_bottom, int box_left, int box_top, int box_right, int box_bottom,
 		int x, int y, char* data, int data_len);
 int server_reset(xrdpModule* mod, int width, int height, int bpp);
 int server_create_os_surface(xrdpModule* mod, int id, int width, int height);
 int server_switch_os_surface(xrdpModule* mod, int id);
 int server_delete_os_surface(xrdpModule* mod, int id);
 int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int id, int srcx, int srcy);
-int server_set_hints(xrdpModule* mod, int hints, int mask);
 int server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 int server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg);
-int server_window_icon(xrdpModule* mod, int window_id, int cache_entry,
-		int cache_id, xrdpRailIconInfo* icon_info, int flags);
-int server_window_cached_icon(xrdpModule* mod,
-		int window_id, int cache_entry, int cache_id, int flags);
-int server_notify_new_update(xrdpModule* mod,
-		int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
+int server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags);
+int server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags);
+int server_notify_new_update(xrdpModule* mod, int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
 int server_notify_delete(xrdpModule* mod, int window_id, int notify_id);
 int server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags);
+
+struct xrdp_mod
+{
+	int size; /* size of this struct */
+	int version; /* internal version */
+
+	/**
+	 * Client
+	 */
+
+	pXrdpClientStart ClientStart;
+	pXrdpClientConnect ClientConnect;
+	pXrdpClientEvent ClientEvent;
+	pXrdpClientEnd ClientEnd;
+	pXrdpClientSetParam ClientSetParam;
+	pXrdpClientSessionChange ClientSessionChange;
+	pXrdpClientGetEventHandles ClientGetEventHandles;
+	pXrdpClientCheckEventHandles ClientCheckEventHandles;
+
+	int (*mod_start)(xrdpModule* v, int w, int h, int bpp);
+	int (*mod_connect)(xrdpModule* v);
+	int (*mod_event)(xrdpModule* v, int msg, long param1, long param2, long param3, long param4);
+	int (*mod_end)(xrdpModule* v);
+	int (*mod_set_param)(xrdpModule* v, char* name, char* value);
+	int (*mod_session_change)(xrdpModule* v, int, int);
+	int (*mod_get_event_handles)(xrdpModule* v, HANDLE* events, DWORD* nCount);
+	int (*mod_check_wait_objs)(xrdpModule* v);
+
+	/* Server */
+
+	pXrdpServerBeginUpdate ServerBeginUpdate;
+	pXrdpServerEndUpdate ServerEndUpdate;
+	pXrdpServerBeep ServerBeep;
+	pXrdpServerOpaqueRect ServerOpaqueRect;
+	pXrdpServerScreenBlt ServerScreenBlt;
+	pXrdpServerPaintRect ServerPaintRect;
+	pXrdpServerSetPointer ServerSetPointer;
+	pXrdpServerSetPalette ServerSetPalette;
+	pXrdpServerSetClippingRegion ServerSetClippingRegion;
+	pXrdpServerSetNullClippingRegion ServerSetNullClippingRegion;
+	pXrdpServerSetForeColor ServerSetForeColor;
+	pXrdpServerSetBackColor ServerSetBackColor;
+	pXrdpServerSetRop2 ServerSetRop2;
+	pXrdpServerSetMixMode ServerSetMixMode;
+	pXrdpServerSetBrush ServerSetBrush;
+	pXrdpServerSetPen ServerSetPen;
+	pXrdpServerLineTo ServerLineTo;
+	pXrdpServerAddChar ServerAddChar;
+	pXrdpServerText ServerText;
+	pXrdpServerReset ServerReset;
+	pXrdpServerCreateOffscreenSurface ServerCreateOffscreenSurface;
+	pXrdpServerSwitchOffscreenSurface ServerSwitchOffscreenSurface;
+	pXrdpServerDeleteOffscreenSurface ServerDeleteOffscreenSurface;
+	pXrdpServerPaintOffscreenRect ServerPaintOffscreenRect;
+	pXrdpServerWindowNewUpdate ServerWindowNewUpdate;
+	pXrdpServerWindowDelete ServerWindowDelete;
+	pXrdpServerWindowIcon ServerWindowIcon;
+	pXrdpServerWindowCachedIcon ServerWindowCachedIcon;
+	pXrdpServerNotifyNewUpdate ServerNotifyNewUpdate;
+	pXrdpServerNotifyDelete ServerNotifyDelete;
+	pXrdpServerMonitoredDesktop ServerMonitoredDesktop;
+
+	/* common */
+	long handle; /* pointer to self as int */
+	long wm; /* xrdpWm* */
+	long painter;
+	int sck;
+	/* mod data */
+	int width;
+	int height;
+	int bpp;
+	int rfx;
+	int sck_closed;
+	char username[256];
+	char password[256];
+	char ip[256];
+	char port[256];
+	long sck_obj;
+	int shift_state;
+	rdpSettings* settings;
+
+	UINT32 TotalLength;
+	UINT32 TotalCount;
+	HANDLE SocketEvent;
+	wStream* SendStream;
+	wStream* ReceiveStream;
+
+	int colormap[256];
+	freerdp* instance;
+	struct bitmap_item bitmap_cache[4][4096];
+	struct brush_item brush_cache[64];
+	struct pointer_item pointer_cache[32];
+
+	XRDP_FRAMEBUFFER framebuffer;
+};
 
 #endif /* XRDP_H */

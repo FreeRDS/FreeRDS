@@ -496,27 +496,6 @@ int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int rdpi
 	return 0;
 }
 
-int server_set_hints(xrdpModule* mod, int hints, int mask)
-{
-	xrdpWm* wm;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	if (mask & 1)
-	{
-		if (hints & 1)
-		{
-			wm->hints |= 1;
-		}
-		else
-		{
-			wm->hints &= ~1;
-		}
-	}
-
-	return 0;
-}
-
 int server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	xrdpWm* wm = (xrdpWm*) (mod->wm);
