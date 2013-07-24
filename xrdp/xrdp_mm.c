@@ -319,37 +319,44 @@ static int xrdp_mm_setup_mod1(xrdpMm* self)
 				mod->version = 2;
 				mod->handle = (long) mod;
 
-				mod->ServerBeginUpdate = server_begin_update;
-				mod->ServerEndUpdate = server_end_update;
-				mod->ServerBeep = server_bell_trigger;
-				mod->ServerOpaqueRect = server_opaque_rect;
-				mod->ServerScreenBlt = server_screen_blt;
-				mod->ServerPaintRect = server_paint_rect;
-				mod->ServerSetPointer = server_set_pointer;
-				mod->ServerSetPalette = server_palette;
-				mod->ServerSetClippingRegion = server_set_clip;
-				mod->ServerSetNullClippingRegion = server_reset_clip;
-				mod->ServerSetForeColor = server_set_fgcolor;
-				mod->ServerSetBackColor = server_set_bgcolor;
-				mod->ServerSetRop2 = server_set_opcode;
-				mod->ServerSetMixMode = server_set_mixmode;
-				mod->ServerSetBrush = server_set_brush;
-				mod->ServerSetPen = server_set_pen;
-				mod->ServerLineTo = server_draw_line;
-				mod->ServerAddChar = server_add_char;
-				mod->ServerText = server_draw_text;
-				mod->ServerReset = server_reset;
-				mod->ServerCreateOffscreenSurface = server_create_os_surface;
-				mod->ServerSwitchOffscreenSurface = server_switch_os_surface;
-				mod->ServerDeleteOffscreenSurface = server_delete_os_surface;
-				mod->ServerPaintOffscreenRect = server_paint_rect_os;
-				mod->ServerWindowNewUpdate = server_window_new_update;
-				mod->ServerWindowDelete = server_window_delete;
-				mod->ServerWindowIcon = server_window_icon;
-				mod->ServerWindowCachedIcon = server_window_cached_icon;
-				mod->ServerNotifyNewUpdate = server_notify_new_update;
-				mod->ServerNotifyDelete = server_notify_delete;
-				mod->ServerMonitoredDesktop = server_monitored_desktop;
+				mod->server = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
+
+				if (mod->server)
+				{
+					ZeroMemory(mod->server, sizeof(xrdpServerModule));
+
+					mod->server->BeginUpdate = server_begin_update;
+					mod->server->EndUpdate = server_end_update;
+					mod->server->Beep = server_bell_trigger;
+					mod->server->OpaqueRect = server_opaque_rect;
+					mod->server->ScreenBlt = server_screen_blt;
+					mod->server->PaintRect = server_paint_rect;
+					mod->server->SetPointer = server_set_pointer;
+					mod->server->SetPalette = server_palette;
+					mod->server->SetClippingRegion = server_set_clip;
+					mod->server->SetNullClippingRegion = server_reset_clip;
+					mod->server->SetForeColor = server_set_fgcolor;
+					mod->server->SetBackColor = server_set_bgcolor;
+					mod->server->SetRop2 = server_set_opcode;
+					mod->server->SetMixMode = server_set_mixmode;
+					mod->server->SetBrush = server_set_brush;
+					mod->server->SetPen = server_set_pen;
+					mod->server->LineTo = server_draw_line;
+					mod->server->AddChar = server_add_char;
+					mod->server->Text = server_draw_text;
+					mod->server->Reset = server_reset;
+					mod->server->CreateOffscreenSurface = server_create_os_surface;
+					mod->server->SwitchOffscreenSurface = server_switch_os_surface;
+					mod->server->DeleteOffscreenSurface = server_delete_os_surface;
+					mod->server->PaintOffscreenRect = server_paint_rect_os;
+					mod->server->WindowNewUpdate = server_window_new_update;
+					mod->server->WindowDelete = server_window_delete;
+					mod->server->WindowIcon = server_window_icon;
+					mod->server->WindowCachedIcon = server_window_cached_icon;
+					mod->server->NotifyNewUpdate = server_notify_new_update;
+					mod->server->NotifyDelete = server_notify_delete;
+					mod->server->MonitoredDesktop = server_monitored_desktop;
+				}
 
 				self->ModuleInit(mod);
 			}
@@ -396,7 +403,7 @@ static int xrdp_mm_setup_mod2(xrdpMm* self)
 
 	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
 	{
-		if (self->mod->ClientStart(self->mod, self->wm->screen->width,
+		if (self->mod->client->Start(self->mod, self->wm->screen->width,
 				self->wm->screen->height, self->wm->screen->bpp) != 0)
 		{
 			SetEvent(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
@@ -453,21 +460,21 @@ static int xrdp_mm_setup_mod2(xrdpMm* self)
 		}
 
 		/* always set these */
-		self->mod->ClientSetParam(self->mod, "settings", (char*) self->wm->session->settings);
+		self->mod->client->SetParam(self->mod, "settings", (char*) self->wm->session->settings);
 		name = self->wm->session->settings->ServerHostname;
-		self->mod->ClientSetParam(self->mod, "hostname", name);
+		self->mod->client->SetParam(self->mod, "hostname", name);
 		g_snprintf(text, 255, "%d", self->wm->session->settings->KeyboardLayout);
-		self->mod->ClientSetParam(self->mod, "keylayout", text);
+		self->mod->client->SetParam(self->mod, "keylayout", text);
 
 		for (i = 0; i < self->login_names->count; i++)
 		{
 			name = (char*) list_get_item(self->login_names, i);
 			value = (char*) list_get_item(self->login_values, i);
-			self->mod->ClientSetParam(self->mod, name, value);
+			self->mod->client->SetParam(self->mod, name, value);
 		}
 
 		/* connect */
-		if (self->mod->ClientConnect(self->mod) == 0)
+		if (self->mod->client->Connect(self->mod) == 0)
 		{
 			rv = 0; /* connect success */
 		}
@@ -496,9 +503,9 @@ static int xrdp_mm_setup_mod2(xrdpMm* self)
 
 		if (self->mod != 0)
 		{
-			if (self->mod->ClientEvent)
+			if (self->mod->client->Event)
 			{
-				self->mod->ClientEvent(self->mod, 17, key_flags, device_flags, key_flags, device_flags);
+				self->mod->client->Event(self->mod, 17, key_flags, device_flags, key_flags, device_flags);
 			}
 		}
 	}
@@ -1149,8 +1156,8 @@ int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount)
 
 	if (self->mod)
 	{
-		if (self->mod->ClientGetEventHandles)
-			self->mod->ClientGetEventHandles(self->mod, events, nCount);
+		if (self->mod->client->GetEventHandles)
+			self->mod->client->GetEventHandles(self->mod, events, nCount);
 	}
 
 	return 0;
@@ -1175,9 +1182,9 @@ int xrdp_mm_check_wait_objs(xrdpMm* self)
 
 	if (self->mod != 0)
 	{
-		if (self->mod->ClientCheckEventHandles != 0)
+		if (self->mod->client->CheckEventHandles != 0)
 		{
-			status = self->mod->ClientCheckEventHandles(self->mod);
+			status = self->mod->client->CheckEventHandles(self->mod);
 		}
 	}
 

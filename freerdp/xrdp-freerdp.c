@@ -393,12 +393,6 @@ static int freerdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *valu
 	return 0;
 }
 
-static int freerdp_xrdp_client_session_change(xrdpModule* mod, int a, int b)
-{
-	LLOGLN(0, ("freerdp_xrdp_client_session_change: - no code here"));
-	return 0;
-}
-
 int freerdp_xrdp_client_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
 	return 0;
@@ -1513,15 +1507,23 @@ int freerdp_client_module_init(xrdpModule* mod)
 {
 	modContext* lcon;
 	freerdp* instance;
+	xrdpClientModule* client;
 
-	mod->ClientConnect = freerdp_xrdp_client_connect;
-	mod->ClientStart = freerdp_xrdp_client_start;
-	mod->ClientEvent = freerdp_xrdp_client_event;
-	mod->ClientEnd = freerdp_xrdp_client_end;
-	mod->ClientSetParam = freerdp_xrdp_client_set_param;
-	mod->ClientSessionChange = freerdp_xrdp_client_session_change;
-	mod->ClientGetEventHandles = freerdp_xrdp_client_get_event_handles;
-	mod->ClientCheckEventHandles = freerdp_xrdp_client_check_event_handles;
+	client = (xrdpClientModule*) malloc(sizeof(xrdpClientModule));
+	mod->client = client;
+
+	if (client)
+	{
+		ZeroMemory(client, sizeof(xrdpClientModule));
+
+		client->Connect = freerdp_xrdp_client_connect;
+		client->Start = freerdp_xrdp_client_start;
+		client->Event = freerdp_xrdp_client_event;
+		client->End = freerdp_xrdp_client_end;
+		client->SetParam = freerdp_xrdp_client_set_param;
+		client->GetEventHandles = freerdp_xrdp_client_get_event_handles;
+		client->CheckEventHandles = freerdp_xrdp_client_check_event_handles;
+	}
 
 	instance = freerdp_new();
 	mod->instance = instance;
@@ -1546,8 +1548,6 @@ int freerdp_client_module_init(xrdpModule* mod)
 
 int freerdp_client_module_exit(xrdpModule* mod)
 {
-	LLOGLN(0, ("mod_exit:"));
-
 	if (!mod)
 		return 0;
 

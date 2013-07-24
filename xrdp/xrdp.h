@@ -710,57 +710,62 @@ int server_notify_new_update(xrdpModule* mod, int window_id, int notify_id, xrdp
 int server_notify_delete(xrdpModule* mod, int window_id, int notify_id);
 int server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags);
 
+struct xrdp_client_module
+{
+	pXrdpClientStart Start;
+	pXrdpClientConnect Connect;
+	pXrdpClientEvent Event;
+	pXrdpClientEnd End;
+	pXrdpClientSetParam SetParam;
+	pXrdpClientSessionChange SessionChange;
+	pXrdpClientGetEventHandles GetEventHandles;
+	pXrdpClientCheckEventHandles CheckEventHandles;
+};
+typedef struct xrdp_client_module xrdpClientModule;
+
+struct xrdp_server_module
+{
+	pXrdpServerBeginUpdate BeginUpdate;
+	pXrdpServerEndUpdate EndUpdate;
+	pXrdpServerBeep Beep;
+	pXrdpServerOpaqueRect OpaqueRect;
+	pXrdpServerScreenBlt ScreenBlt;
+	pXrdpServerPaintRect PaintRect;
+	pXrdpServerSetPointer SetPointer;
+	pXrdpServerSetPalette SetPalette;
+	pXrdpServerSetClippingRegion SetClippingRegion;
+	pXrdpServerSetNullClippingRegion SetNullClippingRegion;
+	pXrdpServerSetForeColor SetForeColor;
+	pXrdpServerSetBackColor SetBackColor;
+	pXrdpServerSetRop2 SetRop2;
+	pXrdpServerSetMixMode SetMixMode;
+	pXrdpServerSetBrush SetBrush;
+	pXrdpServerSetPen SetPen;
+	pXrdpServerLineTo LineTo;
+	pXrdpServerAddChar AddChar;
+	pXrdpServerText Text;
+	pXrdpServerReset Reset;
+	pXrdpServerCreateOffscreenSurface CreateOffscreenSurface;
+	pXrdpServerSwitchOffscreenSurface SwitchOffscreenSurface;
+	pXrdpServerDeleteOffscreenSurface DeleteOffscreenSurface;
+	pXrdpServerPaintOffscreenRect PaintOffscreenRect;
+	pXrdpServerWindowNewUpdate WindowNewUpdate;
+	pXrdpServerWindowDelete WindowDelete;
+	pXrdpServerWindowIcon WindowIcon;
+	pXrdpServerWindowCachedIcon WindowCachedIcon;
+	pXrdpServerNotifyNewUpdate NotifyNewUpdate;
+	pXrdpServerNotifyDelete NotifyDelete;
+	pXrdpServerMonitoredDesktop MonitoredDesktop;
+};
+typedef struct xrdp_server_module xrdpServerModule;
+
 struct xrdp_mod
 {
-	int size; /* size of this struct */
-	int version; /* internal version */
+	int size;
+	int version;
 
-	/**
-	 * Client
-	 */
-
-	pXrdpClientStart ClientStart;
-	pXrdpClientConnect ClientConnect;
-	pXrdpClientEvent ClientEvent;
-	pXrdpClientEnd ClientEnd;
-	pXrdpClientSetParam ClientSetParam;
-	pXrdpClientSessionChange ClientSessionChange;
-	pXrdpClientGetEventHandles ClientGetEventHandles;
-	pXrdpClientCheckEventHandles ClientCheckEventHandles;
-
-	/* Server */
-
-	pXrdpServerBeginUpdate ServerBeginUpdate;
-	pXrdpServerEndUpdate ServerEndUpdate;
-	pXrdpServerBeep ServerBeep;
-	pXrdpServerOpaqueRect ServerOpaqueRect;
-	pXrdpServerScreenBlt ServerScreenBlt;
-	pXrdpServerPaintRect ServerPaintRect;
-	pXrdpServerSetPointer ServerSetPointer;
-	pXrdpServerSetPalette ServerSetPalette;
-	pXrdpServerSetClippingRegion ServerSetClippingRegion;
-	pXrdpServerSetNullClippingRegion ServerSetNullClippingRegion;
-	pXrdpServerSetForeColor ServerSetForeColor;
-	pXrdpServerSetBackColor ServerSetBackColor;
-	pXrdpServerSetRop2 ServerSetRop2;
-	pXrdpServerSetMixMode ServerSetMixMode;
-	pXrdpServerSetBrush ServerSetBrush;
-	pXrdpServerSetPen ServerSetPen;
-	pXrdpServerLineTo ServerLineTo;
-	pXrdpServerAddChar ServerAddChar;
-	pXrdpServerText ServerText;
-	pXrdpServerReset ServerReset;
-	pXrdpServerCreateOffscreenSurface ServerCreateOffscreenSurface;
-	pXrdpServerSwitchOffscreenSurface ServerSwitchOffscreenSurface;
-	pXrdpServerDeleteOffscreenSurface ServerDeleteOffscreenSurface;
-	pXrdpServerPaintOffscreenRect ServerPaintOffscreenRect;
-	pXrdpServerWindowNewUpdate ServerWindowNewUpdate;
-	pXrdpServerWindowDelete ServerWindowDelete;
-	pXrdpServerWindowIcon ServerWindowIcon;
-	pXrdpServerWindowCachedIcon ServerWindowCachedIcon;
-	pXrdpServerNotifyNewUpdate ServerNotifyNewUpdate;
-	pXrdpServerNotifyDelete ServerNotifyDelete;
-	pXrdpServerMonitoredDesktop ServerMonitoredDesktop;
+	xrdpClientModule* client;
+	xrdpServerModule* server;
 
 	/* common */
 	long handle; /* pointer to self as int */

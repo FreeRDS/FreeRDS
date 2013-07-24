@@ -760,13 +760,23 @@ int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 
 int xup_module_init(xrdpModule* mod)
 {
-	mod->ClientConnect = x11rdp_xrdp_client_connect;
-	mod->ClientStart = x11rdp_xrdp_client_start;
-	mod->ClientEvent = x11rdp_xrdp_client_event;
-	mod->ClientEnd = x11rdp_xrdp_client_end;
-	mod->ClientSetParam = x11rdp_xrdp_client_set_param;
-	mod->ClientGetEventHandles = x11rdp_xrdp_client_get_event_handles;
-	mod->ClientCheckEventHandles = x11rdp_xrdp_client_check_event_handles;
+	xrdpClientModule* client;
+
+	client = (xrdpClientModule*) malloc(sizeof(xrdpClientModule));
+	mod->client = client;
+
+	if (client)
+	{
+		ZeroMemory(client, sizeof(xrdpClientModule));
+
+		client->Connect = x11rdp_xrdp_client_connect;
+		client->Start = x11rdp_xrdp_client_start;
+		client->Event = x11rdp_xrdp_client_event;
+		client->End = x11rdp_xrdp_client_end;
+		client->SetParam = x11rdp_xrdp_client_set_param;
+		client->GetEventHandles = x11rdp_xrdp_client_get_event_handles;
+		client->CheckEventHandles = x11rdp_xrdp_client_check_event_handles;
+	}
 
 	mod->SendStream = Stream_New(NULL, 8192);
 	mod->ReceiveStream = Stream_New(NULL, 8192);

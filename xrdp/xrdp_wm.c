@@ -928,9 +928,9 @@ int xrdp_wm_mouse_move(xrdpWm *self, int x, int y)
 
 		if (self->mm->mod != 0) /* if screen is mod controlled */
 		{
-			if (self->mm->mod->ClientEvent != 0)
+			if (self->mm->mod->client->Event != 0)
 			{
-				self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_MOUSEMOVE, x, y, 0, 0);
+				self->mm->mod->client->Event(self->mm->mod, WM_XRDP_MOUSEMOVE, x, y, 0, 0);
 			}
 		}
 	}
@@ -1049,48 +1049,48 @@ int xrdp_wm_mouse_click(xrdpWm *self, int x, int y, int but, int down)
 	{
 		if (self->mm->mod != 0) /* if screen is mod controled */
 		{
-			if (self->mm->mod->ClientEvent != 0)
+			if (self->mm->mod->client->Event != 0)
 			{
 				if (but == 1 && down)
 				{
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_LBUTTONDOWN, x, y, 0, 0);
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_LBUTTONDOWN, x, y, 0, 0);
 				}
 				else if (but == 1 && !down)
 				{
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_LBUTTONUP, x, y, 0, 0);
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_LBUTTONUP, x, y, 0, 0);
 				}
 
 				if (but == 2 && down)
 				{
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_RBUTTONDOWN, x, y, 0, 0);
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_RBUTTONDOWN, x, y, 0, 0);
 				}
 				else if (but == 2 && !down)
 				{
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_RBUTTONUP, x, y, 0, 0);
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_RBUTTONUP, x, y, 0, 0);
 				}
 
 				if (but == 3 && down)
 				{
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_BUTTON3DOWN, x, y, 0, 0);
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON3DOWN, x, y, 0, 0);
 				}
 				else if (but == 3 && !down)
 				{
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_BUTTON3UP, x, y, 0, 0);
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON3UP, x, y, 0, 0);
 				}
 
 				if (but == 4)
 				{
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_BUTTON4DOWN,
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON4DOWN,
 							self->mouse_x, self->mouse_y, 0, 0);
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_BUTTON4UP,
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON4UP,
 							self->mouse_x, self->mouse_y, 0, 0);
 				}
 
 				if (but == 5)
 				{
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_BUTTON5DOWN,
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON5DOWN,
 							self->mouse_x, self->mouse_y, 0, 0);
-					self->mm->mod->ClientEvent(self->mm->mod, WM_XRDP_BUTTON5UP,
+					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON5UP,
 							self->mouse_x, self->mouse_y, 0, 0);
 				}
 			}
@@ -1258,7 +1258,7 @@ int xrdp_wm_key(xrdpWm *self, int device_flags, int scan_code)
 
 	if (self->mm->mod != 0)
 	{
-		if (self->mm->mod->ClientEvent != 0)
+		if (self->mm->mod->client->Event != 0)
 		{
 			ki = get_key_info_from_scan_code
 					(device_flags, scan_code, self->keys, self->caps_lock,
@@ -1267,7 +1267,7 @@ int xrdp_wm_key(xrdpWm *self, int device_flags, int scan_code)
 
 			if (ki != 0)
 			{
-				self->mm->mod->ClientEvent(self->mm->mod, msg, ki->chr, ki->sym,
+				self->mm->mod->client->Event(self->mm->mod, msg, ki->chr, ki->sym,
 						scan_code, device_flags);
 			}
 		}
@@ -1305,9 +1305,9 @@ int xrdp_wm_key_sync(xrdpWm *self, int device_flags, int key_flags)
 
 	if (self->mm->mod != 0)
 	{
-		if (self->mm->mod->ClientEvent != 0)
+		if (self->mm->mod->client->Event != 0)
 		{
-			self->mm->mod->ClientEvent(self->mm->mod, 17, key_flags, device_flags,
+			self->mm->mod->client->Event(self->mm->mod, 17, key_flags, device_flags,
 					key_flags, device_flags);
 		}
 	}
