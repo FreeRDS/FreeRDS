@@ -758,48 +758,31 @@ int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 	return status;
 }
 
-xrdpModule* xup_module_init(void)
+int xup_module_init(xrdpModule* mod)
 {
-	xrdpModule* mod;
+	mod->ClientConnect = x11rdp_xrdp_client_connect;
+	mod->ClientStart = x11rdp_xrdp_client_start;
+	mod->ClientEvent = x11rdp_xrdp_client_event;
+	mod->ClientEnd = x11rdp_xrdp_client_end;
+	mod->ClientSetParam = x11rdp_xrdp_client_set_param;
+	mod->ClientGetEventHandles = x11rdp_xrdp_client_get_event_handles;
+	mod->ClientCheckEventHandles = x11rdp_xrdp_client_check_event_handles;
 
-	mod = (xrdpModule*) malloc(sizeof(xrdpModule));
+	mod->SendStream = Stream_New(NULL, 8192);
+	mod->ReceiveStream = Stream_New(NULL, 8192);
 
-	if (mod)
-	{
-		ZeroMemory(mod, sizeof(xrdpModule));
+	mod->TotalLength = 0;
+	mod->TotalCount = 0;
 
-		mod->size = sizeof(xrdpModule);
-		mod->version = 2;
-		mod->handle = (long) mod;
-
-		mod->ClientConnect = x11rdp_xrdp_client_connect;
-		mod->ClientStart = x11rdp_xrdp_client_start;
-		mod->ClientEvent = x11rdp_xrdp_client_event;
-		mod->ClientEnd = x11rdp_xrdp_client_end;
-		mod->ClientSetParam = x11rdp_xrdp_client_set_param;
-		mod->ClientGetEventHandles = x11rdp_xrdp_client_get_event_handles;
-		mod->ClientCheckEventHandles = x11rdp_xrdp_client_check_event_handles;
-
-		mod->SendStream = Stream_New(NULL, 8192);
-		mod->ReceiveStream = Stream_New(NULL, 8192);
-
-		mod->TotalLength = 0;
-		mod->TotalCount = 0;
-	}
-
-	return mod;
+	return 0;
 }
 
 int xup_module_exit(xrdpModule* mod)
 {
-	if (mod)
-	{
-		Stream_Free(mod->SendStream, TRUE);
-		Stream_Free(mod->ReceiveStream, TRUE);
+	Stream_Free(mod->SendStream, TRUE);
+	Stream_Free(mod->ReceiveStream, TRUE);
 
-		g_tcp_close(mod->sck);
-		free(mod);
-	}
+	g_tcp_close(mod->sck);
 
 	return 0;
 }

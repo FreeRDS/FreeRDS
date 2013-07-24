@@ -48,26 +48,26 @@ xrdpMm* xrdp_mm_create(xrdpWm *owner)
 	return self;
 }
 
-static void xrdp_mm_module_cleanup(xrdpMm *self)
+static void xrdp_mm_module_cleanup(xrdpMm* self)
 {
 	log_message(LOG_LEVEL_DEBUG, "xrdp_mm_module_cleanup");
 
 	if (self->mod != 0)
 	{
-		if (self->mod_exit != 0)
+		if (self->ModuleExit)
 		{
 			/* let the module cleanup */
-			self->mod_exit(self->mod);
+			self->ModuleExit(self->mod);
 		}
 	}
 
-	self->mod_init = 0;
-	self->mod_exit = 0;
+	self->ModuleInit = 0;
+	self->ModuleExit = 0;
 	self->mod = 0;
 	self->mod_handle = 0;
 }
 
-void xrdp_mm_delete(xrdpMm *self)
+void xrdp_mm_delete(xrdpMm* self)
 {
 	if (self == 0)
 	{
@@ -85,7 +85,7 @@ void xrdp_mm_delete(xrdpMm *self)
 }
 
 /* Send login information to sesman */
-static int xrdp_mm_send_login(xrdpMm *self)
+static int xrdp_mm_send_login(xrdpMm* self)
 {
 	wStream* s;
 	int rv;
@@ -220,7 +220,7 @@ static int xrdp_mm_send_login(xrdpMm *self)
 /* this goes through the login_names looking for one called 'aname'
  then it copies the corresponding login_values item into 'dest'
  'dest' must be at least 'dest_len' + 1 bytes in size */
-static int xrdp_mm_get_value(xrdpMm *self, char *aname, char *dest, int dest_len)
+static int xrdp_mm_get_value(xrdpMm* self, char *aname, char *dest, int dest_len)
 {
 	char *name;
 	char *value;
@@ -253,7 +253,7 @@ static int xrdp_mm_get_value(xrdpMm *self, char *aname, char *dest, int dest_len
 	return rv;
 }
 
-static int xrdp_mm_setup_mod1(xrdpMm *self)
+static int xrdp_mm_setup_mod1(xrdpMm* self)
 {
 	char lib[256];
 	char text[256];
@@ -293,20 +293,66 @@ static int xrdp_mm_setup_mod1(xrdpMm *self)
 
 		if (!client_module)
 		{
-			self->mod_init = xup_module_init;
-			self->mod_exit = xup_module_exit;
+			self->ModuleInit = xup_module_init;
+			self->ModuleExit = xup_module_exit;
 			self->mod_handle = 1;
 		}
 		else
 		{
-			self->mod_init = freerdp_client_module_init;
-			self->mod_exit = freerdp_client_module_exit;
+			self->ModuleInit = freerdp_client_module_init;
+			self->ModuleExit = freerdp_client_module_exit;
 			self->mod_handle = 1;
 		}
 
-		if ((self->mod_init != 0) && (self->mod_exit != 0))
+		if ((self->ModuleInit != 0) && (self->ModuleExit != 0))
 		{
-			self->mod = self->mod_init();
+			xrdpModule* mod;
+
+			mod = (xrdpModule*) malloc(sizeof(xrdpModule));
+			self->mod = mod;
+
+			if (self->mod)
+			{
+				ZeroMemory(mod, sizeof(xrdpModule));
+
+				mod->size = sizeof(xrdpModule);
+				mod->version = 2;
+				mod->handle = (long) mod;
+
+				mod->ServerBeginUpdate = server_begin_update;
+				mod->ServerEndUpdate = server_end_update;
+				mod->ServerBeep = server_bell_trigger;
+				mod->ServerOpaqueRect = server_opaque_rect;
+				mod->ServerScreenBlt = server_screen_blt;
+				mod->ServerPaintRect = server_paint_rect;
+				mod->ServerSetPointer = server_set_pointer;
+				mod->ServerSetPalette = server_palette;
+				mod->ServerSetClippingRegion = server_set_clip;
+				mod->ServerSetNullClippingRegion = server_reset_clip;
+				mod->ServerSetForeColor = server_set_fgcolor;
+				mod->ServerSetBackColor = server_set_bgcolor;
+				mod->ServerSetRop2 = server_set_opcode;
+				mod->ServerSetMixMode = server_set_mixmode;
+				mod->ServerSetBrush = server_set_brush;
+				mod->ServerSetPen = server_set_pen;
+				mod->ServerLineTo = server_draw_line;
+				mod->ServerAddChar = server_add_char;
+				mod->ServerText = server_draw_text;
+				mod->ServerReset = server_reset;
+				mod->ServerCreateOffscreenSurface = server_create_os_surface;
+				mod->ServerSwitchOffscreenSurface = server_switch_os_surface;
+				mod->ServerDeleteOffscreenSurface = server_delete_os_surface;
+				mod->ServerPaintOffscreenRect = server_paint_rect_os;
+				mod->ServerWindowNewUpdate = server_window_new_update;
+				mod->ServerWindowDelete = server_window_delete;
+				mod->ServerWindowIcon = server_window_icon;
+				mod->ServerWindowCachedIcon = server_window_cached_icon;
+				mod->ServerNotifyNewUpdate = server_notify_new_update;
+				mod->ServerNotifyDelete = server_notify_delete;
+				mod->ServerMonitoredDesktop = server_monitored_desktop;
+
+				self->ModuleInit(mod);
+			}
 
 			if (self->mod != 0)
 			{
@@ -316,7 +362,7 @@ static int xrdp_mm_setup_mod1(xrdpMm *self)
 		}
 		else
 		{
-			log_message(LOG_LEVEL_ERROR, "no mod_init or mod_exit address found");
+			log_message(LOG_LEVEL_ERROR, "no ModuleInit or ModuleExit address found");
 		}
 	}
 
@@ -332,7 +378,7 @@ static int xrdp_mm_setup_mod1(xrdpMm *self)
 	return 0;
 }
 
-static int xrdp_mm_setup_mod2(xrdpMm *self)
+static int xrdp_mm_setup_mod2(xrdpMm* self)
 {
 	char text[256];
 	char *name;
@@ -460,7 +506,7 @@ static int xrdp_mm_setup_mod2(xrdpMm *self)
 	return rv;
 }
 
-static void cleanup_sesman_connection(xrdpMm *self)
+static void cleanup_sesman_connection(xrdpMm* self)
 {
 	self->delete_sesman_trans = 1;
 	self->connected_state = 0;
@@ -472,7 +518,7 @@ static void cleanup_sesman_connection(xrdpMm *self)
 	}
 }
 
-static int xrdp_mm_process_login_response(xrdpMm *self, wStream* s)
+static int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 {
 	int ok;
 	int display;
@@ -572,7 +618,7 @@ static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
 /* This is the callback registered for sesman communication replies. */
 static int xrdp_mm_sesman_data_in(struct trans *trans)
 {
-	xrdpMm *self;
+	xrdpMm* self;
 	wStream* s;
 	int version;
 	int size;
@@ -739,7 +785,7 @@ static int access_control(char *username, char *password, char *srv)
 /* This routine clears all states to make sure that our next login will be
  * as expected. If the user does not press ok on the log window and try to
  * connect again we must make sure that no previous information is stored.*/
-static void cleanup_states(xrdpMm *self)
+static void cleanup_states(xrdpMm* self)
 {
 	if (self != NULL)
 	{
@@ -827,7 +873,7 @@ static const char* getPAMError(const int pamError, char *text, int text_bytes)
 	}
 }
 
-static const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm *self)
+static const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm* self)
 {
 	switch (pamError)
 	{
@@ -878,7 +924,7 @@ static const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm *self)
 #endif
 #endif
 
-int xrdp_mm_connect(xrdpMm *self)
+int xrdp_mm_connect(xrdpMm* self)
 {
 	xrdpList *names;
 	xrdpList *values;
@@ -1110,7 +1156,7 @@ int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount)
 	return 0;
 }
 
-int xrdp_mm_check_wait_objs(xrdpMm *self)
+int xrdp_mm_check_wait_objs(xrdpMm* self)
 {
 	int status;
 

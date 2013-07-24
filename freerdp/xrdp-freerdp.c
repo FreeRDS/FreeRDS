@@ -1509,18 +1509,10 @@ static BOOL xrdp_freerdp_verify_certificate(freerdp* instance, char *subject, ch
 	return TRUE;
 }
 
-xrdpModule* freerdp_client_module_init(void)
+int freerdp_client_module_init(xrdpModule* mod)
 {
-	xrdpModule* mod;
-	modContext *lcon;
+	modContext* lcon;
 	freerdp* instance;
-
-	LLOGLN(0, ("mod_init:"));
-	mod = (xrdpModule*) g_malloc(sizeof(xrdpModule), 1);
-
-	mod->size = sizeof(xrdpModule);
-	mod->version = 2;
-	mod->handle = (long) mod;
 
 	mod->ClientConnect = freerdp_xrdp_client_connect;
 	mod->ClientStart = freerdp_xrdp_client_start;
@@ -1549,7 +1541,7 @@ xrdpModule* freerdp_client_module_init(void)
 	lcon = (modContext*) (instance->context);
 	lcon->modi = mod;
 
-	return mod;
+	return 0;
 }
 
 int freerdp_client_module_exit(xrdpModule* mod)

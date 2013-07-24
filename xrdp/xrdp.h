@@ -195,9 +195,9 @@ struct xrdp_mm
 	xrdpList* login_names;
 	xrdpList* login_values;
 	/* mod vars */
-	long mod_handle; /* returned from g_load_library */
-	xrdpModule* (*mod_init)(void);
-	int (*mod_exit)(xrdpModule*);
+	long mod_handle;
+	int (*ModuleInit)(xrdpModule*);
+	int (*ModuleExit)(xrdpModule*);
 	xrdpModule* mod; /* module interface */
 	int display; /* 10 for :10.0, 11 for :11.0, etc */
 	int code; /* 0 Xvnc session 10 X11rdp session */
