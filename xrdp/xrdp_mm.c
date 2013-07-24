@@ -328,6 +328,8 @@ static int xrdp_mm_setup_mod1(xrdpMm* self)
 					mod->server->BeginUpdate = server_begin_update;
 					mod->server->EndUpdate = server_end_update;
 					mod->server->Beep = server_bell_trigger;
+					mod->server->Message = server_msg;
+					mod->server->IsTerminated = server_is_term;
 					mod->server->OpaqueRect = server_opaque_rect;
 					mod->server->ScreenBlt = server_screen_blt;
 					mod->server->PaintRect = server_paint_rect;

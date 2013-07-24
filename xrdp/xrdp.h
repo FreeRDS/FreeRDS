@@ -623,8 +623,6 @@ int xrdp_mm_connect(xrdpMm* self);
 int xrdp_mm_process_channel_data(xrdpMm* self, LONG_PTR param1, LONG_PTR param2, LONG_PTR param3, LONG_PTR param4);
 int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount);
 int xrdp_mm_check_wait_objs(xrdpMm* self);
-int server_msg(xrdpModule* mod, char* msg, int code);
-int server_is_term(xrdpModule* mod);
 int xrdp_child_fork(void);
 
 /**
@@ -643,6 +641,8 @@ typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod);
 typedef int (*pXrdpServerBeginUpdate)(xrdpModule* mod);
 typedef int (*pXrdpServerEndUpdate)(xrdpModule* mod);
 typedef int (*pXrdpServerBeep)(xrdpModule* mod);
+typedef int (*pXrdpServerMessage)(xrdpModule* mod, char* msg, int code);
+typedef int (*pXrdpServerIsTerminated)(xrdpModule* mod);
 typedef int (*pXrdpServerOpaqueRect)(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg);
 typedef int (*pXrdpServerScreenBlt)(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg);
 typedef int (*pXrdpServerPaintRect)(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg);
@@ -678,6 +678,8 @@ typedef int (*pXrdpServerMonitoredDesktop)(xrdpModule* mod, xrdpRailMonitoredDes
 int server_begin_update(xrdpModule* mod);
 int server_end_update(xrdpModule* mod);
 int server_bell_trigger(xrdpModule* mod);
+int server_msg(xrdpModule* mod, char* msg, int code);
+int server_is_term(xrdpModule* mod);
 int server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg);
 int server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg);
 int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg);
@@ -728,6 +730,8 @@ struct xrdp_server_module
 	pXrdpServerBeginUpdate BeginUpdate;
 	pXrdpServerEndUpdate EndUpdate;
 	pXrdpServerBeep Beep;
+	pXrdpServerMessage Message;
+	pXrdpServerIsTerminated IsTerminated;
 	pXrdpServerOpaqueRect OpaqueRect;
 	pXrdpServerScreenBlt ScreenBlt;
 	pXrdpServerPaintRect PaintRect;

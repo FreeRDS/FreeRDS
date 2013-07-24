@@ -416,7 +416,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_BEGIN_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_begin_update(s, &msg);
-				status = server_begin_update(mod);
+				status = mod->server->BeginUpdate(mod);
 			}
 			break;
 
@@ -425,7 +425,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_END_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_end_update(s, &msg);
-				status = server_end_update(mod);
+				status = mod->server->EndUpdate(mod);
 			}
 			break;
 
@@ -434,7 +434,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_OPAQUE_RECT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_opaque_rect(s, &msg);
-				status = server_opaque_rect(mod, &msg);
+				status = mod->server->OpaqueRect(mod, &msg);
 			}
 			break;
 
@@ -443,7 +443,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_SCREEN_BLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_screen_blt(s, &msg);
-				status = server_screen_blt(mod, &msg);
+				status = mod->server->ScreenBlt(mod, &msg);
 			}
 			break;
 
@@ -461,7 +461,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				if (msg.fbSegmentId)
 					msg.framebuffer = &(mod->framebuffer);
 
-				status = server_paint_rect(mod, &msg);
+				status = mod->server->PaintRect(mod, &msg);
 			}
 			break;
 
@@ -472,9 +472,9 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				xrdp_read_set_clipping_region(s, &msg);
 
 				if (msg.bNullRegion)
-					status = server_reset_clip(mod);
+					status = mod->server->SetNullClippingRegion(mod);
 				else
-					status = server_set_clip(mod, &msg);
+					status = mod->server->SetClippingRegion(mod, &msg);
 			}
 			break;
 
@@ -483,7 +483,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_SET_FORECOLOR msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_set_forecolor(s, &msg);
-				status = server_set_fgcolor(mod, msg.ForeColor);
+				status = mod->server->SetForeColor(mod, msg.ForeColor);
 			}
 			break;
 
@@ -492,7 +492,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_SET_ROP2 msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_set_rop2(s, &msg);
-				status = server_set_opcode(mod, msg.bRop2);
+				status = mod->server->SetRop2(mod, msg.bRop2);
 			}
 			break;
 
@@ -501,7 +501,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_SET_PEN msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_set_pen(s, &msg);
-				status = server_set_pen(mod, msg.PenStyle, msg.PenWidth);
+				status = mod->server->SetPen(mod, msg.PenStyle, msg.PenWidth);
 			}
 			break;
 
@@ -510,7 +510,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_LINE_TO msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_line_to(s, &msg);
-				status = server_draw_line(mod, msg.nXStart, msg.nYStart, msg.nXEnd, msg.nYStart);
+				status = mod->server->LineTo(mod, msg.nXStart, msg.nYStart, msg.nXEnd, msg.nYStart);
 			}
 			break;
 
@@ -519,7 +519,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_SET_POINTER msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_set_pointer(s, &msg);
-				status = server_set_pointer(mod, &msg);
+				status = mod->server->SetPointer(mod, &msg);
 			}
 			break;
 
@@ -528,7 +528,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_CREATE_OS_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_create_os_surface(s, &msg);
-				status = server_create_os_surface(mod, msg.index, msg.width, msg.height);
+				status = mod->server->CreateOffscreenSurface(mod, msg.index, msg.width, msg.height);
 			}
 			break;
 
@@ -537,7 +537,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_SWITCH_OS_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_switch_os_surface(s, &msg);
-				status = server_switch_os_surface(mod, msg.index);
+				status = mod->server->SwitchOffscreenSurface(mod, msg.index);
 			}
 			break;
 
@@ -546,7 +546,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_DELETE_OS_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_delete_os_surface(s, &msg);
-				status = server_delete_os_surface(mod, msg.index);
+				status = mod->server->DeleteOffscreenSurface(mod, msg.index);
 			}
 			break;
 
@@ -555,7 +555,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_MEMBLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_memblt(s, &msg);
-				status = server_paint_rect_os(mod, msg.nLeftRect, msg.nTopRect,
+				status = mod->server->PaintOffscreenRect(mod, msg.nLeftRect, msg.nTopRect,
 						msg.nWidth, msg.nHeight, msg.index, msg.nXSrc, msg.nYSrc);
 			}
 			break;
@@ -565,7 +565,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_WINDOW_NEW_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				status = xrdp_read_window_new_update(s, &msg);
-				server_window_new_update(mod, &msg);
+				status = mod->server->WindowNewUpdate(mod, &msg);
 			}
 			break;
 
@@ -574,7 +574,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_WINDOW_DELETE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				status = xrdp_read_window_delete(s, &msg);
-				server_window_delete(mod, &msg);
+				status = mod->server->WindowDelete(mod, &msg);
 			}
 			break;
 

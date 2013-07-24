@@ -65,6 +65,26 @@ int server_bell_trigger(xrdpModule* mod)
 	return 0;
 }
 
+int server_msg(xrdpModule* mod, char *msg, int code)
+{
+	xrdpWm* wm;
+
+	if (code == 1)
+	{
+		g_writeln(msg);
+		return 0;
+	}
+
+	wm = (xrdpWm*) (mod->wm);
+
+	return xrdp_wm_log_msg(wm, msg);
+}
+
+int server_is_term(xrdpModule* mod)
+{
+	return g_is_term();
+}
+
 int server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 {
 	xrdpWm* wm;
@@ -160,26 +180,6 @@ int server_palette(xrdpModule* mod, int *palette)
 	}
 
 	return 0;
-}
-
-int server_msg(xrdpModule* mod, char *msg, int code)
-{
-	xrdpWm* wm;
-
-	if (code == 1)
-	{
-		g_writeln(msg);
-		return 0;
-	}
-
-	wm = (xrdpWm*) (mod->wm);
-
-	return xrdp_wm_log_msg(wm, msg);
-}
-
-int server_is_term(xrdpModule* mod)
-{
-	return g_is_term();
 }
 
 int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
