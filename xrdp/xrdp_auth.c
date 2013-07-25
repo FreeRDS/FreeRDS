@@ -95,60 +95,60 @@ int xrdp_mm_send_login(xrdpMm* self)
 	Stream_Seek(s, 8);
 
 	/* this code is either 0 for Xvnc or 10 for X11rdp */
-	Stream_Write_UINT16_BE(s, self->code);
+	Stream_Write_UINT16(s, self->code);
 	index = g_strlen(username);
-	Stream_Write_UINT16_BE(s, index);
+	Stream_Write_UINT16(s, index);
 	Stream_Write(s, username, index);
 	index = g_strlen(password);
 
-	Stream_Write_UINT16_BE(s, index);
+	Stream_Write_UINT16(s, index);
 	Stream_Write(s, password, index);
-	Stream_Write_UINT16_BE(s, self->wm->screen->width);
-	Stream_Write_UINT16_BE(s, self->wm->screen->height);
+	Stream_Write_UINT16(s, self->wm->screen->width);
+	Stream_Write_UINT16(s, self->wm->screen->height);
 
 	if (xserverbpp > 0)
 	{
-		Stream_Write_UINT16_BE(s, xserverbpp);
+		Stream_Write_UINT16(s, xserverbpp);
 	}
 	else
 	{
-		Stream_Write_UINT16_BE(s, self->wm->screen->bpp);
+		Stream_Write_UINT16(s, self->wm->screen->bpp);
 	}
 
 	/* send domain */
 	if (self->wm->session->settings->Domain)
 	{
 		index = g_strlen(self->wm->session->settings->Domain);
-		Stream_Write_UINT16_BE(s, index);
+		Stream_Write_UINT16(s, index);
 		Stream_Write(s, self->wm->session->settings->Domain, index);
 	}
 	else
 	{
-		Stream_Write_UINT16_BE(s, 0);
+		Stream_Write_UINT16(s, 0);
 		/* Stream_Write(s, "", 0); */
 	}
 
 	/* send program / shell */
 	index = g_strlen(self->wm->session->settings->AlternateShell);
-	Stream_Write_UINT16_BE(s, index);
+	Stream_Write_UINT16(s, index);
 	Stream_Write(s, self->wm->session->settings->AlternateShell, index);
 
 	/* send directory */
 	index = g_strlen(self->wm->session->settings->ShellWorkingDirectory);
-	Stream_Write_UINT16_BE(s, index);
+	Stream_Write_UINT16(s, index);
 	Stream_Write(s, self->wm->session->settings->ShellWorkingDirectory, index);
 
 	/* send client ip */
 	index = g_strlen(self->wm->session->settings->ClientAddress);
-	Stream_Write_UINT16_BE(s, index);
+	Stream_Write_UINT16(s, index);
 	Stream_Write(s, self->wm->session->settings->ClientAddress, index);
 
 	index = (int) (s->pointer - s->buffer);
 	Stream_SetPosition(s, 0);
 
 	/* Version 0 of the protocol to sesman is currently used by XRDP */
-	Stream_Write_UINT32_BE(s, 0); /* version */
-	Stream_Write_UINT32_BE(s, index); /* size */
+	Stream_Write_UINT32(s, 0); /* version */
+	Stream_Write_UINT32(s, index); /* size */
 
 	s->pointer = s->buffer + index;
 
@@ -171,8 +171,8 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 	char ip[256];
 
 	rv = 0;
-	Stream_Read_UINT16_BE(s, ok);
-	Stream_Read_UINT16_BE(s, display);
+	Stream_Read_UINT16(s, ok);
+	Stream_Read_UINT16(s, display);
 
 	if (ok)
 	{
@@ -207,7 +207,7 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 #ifdef ACCESS
 #ifndef USE_NOPAM
 
-int access_control(char *username, char *password, char *srv)
+int xrdp_mm_access_control(char *username, char *password, char *srv)
 {
 	int reply;
 	int rec = 32 + 1; /* 32 is reserved for PAM failures this means connect failure */
@@ -234,20 +234,20 @@ int access_control(char *username, char *password, char *srv)
 			out_s = Stream_New(NULL, 500);
 			Stream_Seek(out_s, 8);
 
-			Stream_Write_UINT16_BE(out_s, 4); /*0x04 means SCP_GW_AUTHENTICATION*/
+			Stream_Write_UINT16(out_s, 4); /*0x04 means SCP_GW_AUTHENTICATION*/
 			index = g_strlen(username);
-			Stream_Write_UINT16_BE(out_s, index);
+			Stream_Write_UINT16(out_s, index);
 			Stream_Write(out_s, username, index);
 
 			index = g_strlen(password);
-			Stream_Write_UINT16_BE(out_s, index);
+			Stream_Write_UINT16(out_s, index);
 			Stream_Write(out_s, password, index);
 
 			index = (int) (out_s->pointer - out_s->buffer);
 			out_s->pointer = out_s->buffer;
 
-			Stream_Write_UINT32_BE(out_s, 0); /* version */
-			Stream_Write_UINT32_BE(out_s, index); /* size */
+			Stream_Write_UINT32(out_s, 0); /* version */
+			Stream_Write_UINT32(out_s, index); /* size */
 
 			out_s->pointer = out_s->buffer + index;
 
@@ -264,15 +264,15 @@ int access_control(char *username, char *password, char *srv)
 					if (reply > 0)
 					{
 						in_s->length += reply;
-						Stream_Read_UINT32_BE(in_s, version);
-						/*g_writeln("Version number in reply from sesman: %d",version) ; */
-						Stream_Read_UINT32_BE(in_s, size);
+
+						Stream_Read_UINT32(in_s, version);
+						Stream_Read_UINT32(in_s, size);
 
 						if ((size == 14) && (version == 0))
 						{
-							Stream_Read_UINT16_BE(in_s, code);
-							Stream_Read_UINT16_BE(in_s, pAM_errorcode); /* this variable holds the PAM error code if the variable is >32 it is a "invented" code */
-							Stream_Read_UINT16_BE(in_s, dummy);
+							Stream_Read_UINT16(in_s, code);
+							Stream_Read_UINT16(in_s, pAM_errorcode); /* this variable holds the PAM error code if the variable is >32 it is a "invented" code */
+							Stream_Read_UINT16(in_s, dummy);
 
 							if (code != 4) /*0x04 means SCP_GW_AUTHENTICATION*/
 							{

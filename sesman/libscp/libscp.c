@@ -55,7 +55,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 	/* code */
 	if (s->type == SCP_SESSION_TYPE_XRDP)
 	{
-		Stream_Write_UINT16_BE(c->out_s, 10);
+		Stream_Write_UINT16(c->out_s, 10);
 	}
 	else
 	{
@@ -64,21 +64,21 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 	}
 
 	sz = strlen(s->username);
-	Stream_Write_UINT16_BE(c->out_s, sz);
+	Stream_Write_UINT16(c->out_s, sz);
 	Stream_Write(c->out_s, s->username, sz);
 
 	sz = strlen(s->password);
-	Stream_Write_UINT16_BE(c->out_s, sz);
+	Stream_Write_UINT16(c->out_s, sz);
 	Stream_Write(c->out_s, s->password, sz);
-	Stream_Write_UINT16_BE(c->out_s, s->width);
-	Stream_Write_UINT16_BE(c->out_s, s->height);
-	Stream_Write_UINT16_BE(c->out_s, s->bpp);
+	Stream_Write_UINT16(c->out_s, s->width);
+	Stream_Write_UINT16(c->out_s, s->height);
+	Stream_Write_UINT16(c->out_s, s->bpp);
 
 	length = (int) Stream_GetPosition(c->out_s);
 	Stream_SetPosition(c->out_s, 0);
 
-	Stream_Write_UINT32_BE(c->out_s, 0); /* version */
-	Stream_Write_UINT32_BE(c->out_s, length); /* size */
+	Stream_Write_UINT32(c->out_s, 0); /* version */
+	Stream_Write_UINT32(c->out_s, length); /* size */
 
 	Stream_SetPosition(c->out_s, length);
 
@@ -94,7 +94,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 		return SCP_CLIENT_STATE_NETWORK_ERR;
 	}
 
-	Stream_Read_UINT32_BE(c->in_s, version);
+	Stream_Read_UINT32(c->in_s, version);
 
 	if (version != 0)
 	{
@@ -102,7 +102,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 		return SCP_CLIENT_STATE_VERSION_ERR;
 	}
 
-	Stream_Read_UINT32_BE(c->in_s, size);
+	Stream_Read_UINT32(c->in_s, size);
 
 	if (size < 14)
 	{
@@ -121,7 +121,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 	}
 
 	/* check code */
-	Stream_Read_UINT16_BE(c->in_s, sz);
+	Stream_Read_UINT16(c->in_s, sz);
 
 	if (3 != sz)
 	{
@@ -130,7 +130,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 	}
 
 	/* message payload */
-	Stream_Read_UINT16_BE(c->in_s, sz);
+	Stream_Read_UINT16(c->in_s, sz);
 
 	if (1 != sz)
 	{
@@ -138,7 +138,7 @@ enum SCP_CLIENT_STATES_E scp_client_connect(SCP_CONNECTION* c, SCP_SESSION* s)
 		return SCP_CLIENT_STATE_CONNECTION_DENIED;
 	}
 
-	Stream_Read_UINT16_BE(c->in_s, sz);
+	Stream_Read_UINT16(c->in_s, sz);
 	s->display = sz;
 
 	LOG_DBG("[v0:%d] connection terminated", __LINE__);
@@ -172,7 +172,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		if (0 == scp_tcp_force_recv(c->in_sck, c->in_s->buffer, 8))
 		{
 			c->in_s->length = 8;
-			Stream_Read_UINT32_BE(c->in_s, version);
+			Stream_Read_UINT32(c->in_s, version);
 
 			if (version != 0)
 			{
@@ -187,7 +187,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		}
 	}
 
-	Stream_Read_UINT32_BE(c->in_s, size);
+	Stream_Read_UINT32(c->in_s, size);
 
 	Stream_Clear(c->in_s);
 	Stream_SetPosition(c->in_s, 0);
@@ -200,7 +200,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 
 	Stream_Length(c->in_s) = size - 8;
 
-	Stream_Read_UINT16_BE(c->in_s, code);
+	Stream_Read_UINT16(c->in_s, code);
 
 	if (code == 0 || code == 10)
 	{
@@ -217,7 +217,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		scp_session_set_type(session, SCP_SESSION_TYPE_XRDP);
 
 		/* reading username */
-		Stream_Read_UINT16_BE(c->in_s, sz);
+		Stream_Read_UINT16(c->in_s, sz);
 		buf[sz] = '\0';
 		Stream_Read(c->in_s, buf, sz);
 
@@ -229,7 +229,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		}
 
 		/* reading password */
-		Stream_Read_UINT16_BE(c->in_s, sz);
+		Stream_Read_UINT16(c->in_s, sz);
 		buf[sz] = '\0';
 		Stream_Read(c->in_s, buf, sz);
 
@@ -241,19 +241,19 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		}
 
 		/* width */
-		Stream_Read_UINT16_BE(c->in_s, sz);
+		Stream_Read_UINT16(c->in_s, sz);
 		scp_session_set_width(session, sz);
 		/* height */
-		Stream_Read_UINT16_BE(c->in_s, sz);
+		Stream_Read_UINT16(c->in_s, sz);
 		scp_session_set_height(session, sz);
 		/* bpp */
-		Stream_Read_UINT16_BE(c->in_s, sz);
+		Stream_Read_UINT16(c->in_s, sz);
 		scp_session_set_bpp(session, (BYTE)sz);
 
 		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
 			/* reading domain */
-			Stream_Read_UINT16_BE(c->in_s, sz);
+			Stream_Read_UINT16(c->in_s, sz);
 
 			if (sz > 0)
 			{
@@ -266,7 +266,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
 			/* reading program */
-			Stream_Read_UINT16_BE(c->in_s, sz);
+			Stream_Read_UINT16(c->in_s, sz);
 
 			if (sz > 0)
 			{
@@ -279,7 +279,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
 			/* reading directory */
-			Stream_Read_UINT16_BE(c->in_s, sz);
+			Stream_Read_UINT16(c->in_s, sz);
 
 			if (sz > 0)
 			{
@@ -292,7 +292,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		if (Stream_GetRemainingLength(c->in_s) >= 2)
 		{
 			/* reading client IP address */
-			Stream_Read_UINT16_BE(c->in_s, sz);
+			Stream_Read_UINT16(c->in_s, sz);
 
 			if (sz > 0)
 			{
@@ -316,7 +316,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		scp_session_set_version(session, version);
 		scp_session_set_type(session, SCP_GW_AUTHENTICATION);
 		/* reading username */
-		Stream_Read_UINT16_BE(c->in_s, sz);
+		Stream_Read_UINT16(c->in_s, sz);
 		buf[sz] = '\0';
 		Stream_Read(c->in_s, buf, sz);
 
@@ -329,7 +329,7 @@ enum SCP_SERVER_STATES_E scp_server_accept(SCP_CONNECTION* c, SCP_SESSION** s, i
 		}
 
 		/* reading password */
-		Stream_Read_UINT16_BE(c->in_s, sz);
+		Stream_Read_UINT16(c->in_s, sz);
 		buf[sz] = '\0';
 		Stream_Read(c->in_s, buf, sz);
 
@@ -355,11 +355,11 @@ enum SCP_SERVER_STATES_E scp_server_allow_connection(SCP_CONNECTION* c, SCP_DISP
 {
 	int length;
 
-	Stream_Write_UINT32_BE(c->out_s, 0);  /* version */
-	Stream_Write_UINT32_BE(c->out_s, 14); /* size */
-	Stream_Write_UINT16_BE(c->out_s, 3);  /* cmd */
-	Stream_Write_UINT16_BE(c->out_s, 1);  /* data */
-	Stream_Write_UINT16_BE(c->out_s, d);  /* data */
+	Stream_Write_UINT32(c->out_s, 0);  /* version */
+	Stream_Write_UINT32(c->out_s, 14); /* size */
+	Stream_Write_UINT16(c->out_s, 3);  /* cmd */
+	Stream_Write_UINT16(c->out_s, 1);  /* data */
+	Stream_Write_UINT16(c->out_s, d);  /* data */
 
 	length = (int) (c->out_s->pointer - c->out_s->buffer);
 
@@ -377,11 +377,11 @@ enum SCP_SERVER_STATES_E scp_server_deny_connection(SCP_CONNECTION* c)
 {
 	int length;
 
-	Stream_Write_UINT32_BE(c->out_s, 0);  /* version */
-	Stream_Write_UINT32_BE(c->out_s, 14); /* size */
-	Stream_Write_UINT16_BE(c->out_s, 3);  /* cmd */
-	Stream_Write_UINT16_BE(c->out_s, 0);  /* data = 0 - means NOT ok*/
-	Stream_Write_UINT16_BE(c->out_s, 0);  /* reserved for display number*/
+	Stream_Write_UINT32(c->out_s, 0);  /* version */
+	Stream_Write_UINT32(c->out_s, 14); /* size */
+	Stream_Write_UINT16(c->out_s, 3);  /* cmd */
+	Stream_Write_UINT16(c->out_s, 0);  /* data = 0 - means NOT ok*/
+	Stream_Write_UINT16(c->out_s, 0);  /* reserved for display number*/
 
 	length = (int) Stream_GetPosition(c->out_s);
 
@@ -399,12 +399,12 @@ enum SCP_SERVER_STATES_E scp_server_replyauthentication(SCP_CONNECTION* c, unsig
 {
 	int length;
 
-	Stream_Write_UINT32_BE(c->out_s, 0);  /* version */
-	Stream_Write_UINT32_BE(c->out_s, 14); /* size */
+	Stream_Write_UINT32(c->out_s, 0);  /* version */
+	Stream_Write_UINT32(c->out_s, 14); /* size */
 	/* cmd SCP_GW_AUTHENTICATION means authentication reply */
-	Stream_Write_UINT16_BE(c->out_s, SCP_GW_AUTHENTICATION);
-	Stream_Write_UINT16_BE(c->out_s, value);  /* reply code  */
-	Stream_Write_UINT16_BE(c->out_s, 0);  /* dummy data */
+	Stream_Write_UINT16(c->out_s, SCP_GW_AUTHENTICATION);
+	Stream_Write_UINT16(c->out_s, value);  /* reply code  */
+	Stream_Write_UINT16(c->out_s, 0);  /* dummy data */
 
 	length = (int) Stream_GetPosition(c->out_s);
 

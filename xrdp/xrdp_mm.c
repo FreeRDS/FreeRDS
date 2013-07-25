@@ -429,14 +429,14 @@ static int xrdp_mm_sesman_data_in(struct trans *trans)
 	if (!s)
 		return 1;
 
-	Stream_Read_UINT32_BE(s, version);
-	Stream_Read_UINT32_BE(s, size);
+	Stream_Read_UINT32(s, version);
+	Stream_Read_UINT32(s, size);
 
 	error = trans_force_read(trans, size - 8);
 
 	if (error == 0)
 	{
-		Stream_Read_UINT16_BE(s, code);
+		Stream_Read_UINT16(s, code);
 
 		switch (code)
 		{
@@ -444,6 +444,7 @@ static int xrdp_mm_sesman_data_in(struct trans *trans)
 			case 3:
 				error = xrdp_mm_process_login_response(self, s);
 				break;
+
 			default:
 				xrdp_wm_log_msg(self->wm, "An undefined reply code was received from sesman");
 				log_message(LOG_LEVEL_ERROR, "Fatal xrdp_mm_sesman_data_in: unknown cmd code %d", code);
@@ -577,7 +578,7 @@ int xrdp_mm_connect(xrdpMm* self)
 		}
 
 		/* access_control return 0 on success */
-		reply = access_control(pam_auth_username, pam_auth_password, pam_auth_sessionIP);
+		reply = xrdp_mm_access_control(pam_auth_username, pam_auth_password, pam_auth_sessionIP);
 
 		g_sprintf(replytxt, "Reply from access control: %s", getPAMError(reply, pam_error, 127));
 
