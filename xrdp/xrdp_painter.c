@@ -418,6 +418,7 @@ int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, con
 			x1 = x;
 			y1 = y + total_height;
 			flags = 0x03; /* 0x03 0x73; TEXT2_IMPLICIT_X and something else */
+
 			libxrdp_orders_text(self->session, f, flags, 0, self->fg_color, 0, x - 1, y - 1, x
 					+ total_width, y + total_height, 0, 0, 0, 0, x1, y1, data, len * 2, &draw_rect);
 		}
@@ -493,7 +494,7 @@ int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDE
 					msg->backColor, msg->foreColor,
 					msg->bkLeft, msg->bkTop, msg->bkRight, msg->bkBottom,
 					msg->opLeft, msg->opTop, msg->opRight, msg->opBottom,
-					msg->x, msg->y, msg->data, msg->cbData, &draw_rect);
+					msg->x, msg->y, msg->data, (char*) msg->cbData, &draw_rect);
 		}
 
 		k++;

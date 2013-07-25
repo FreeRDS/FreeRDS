@@ -403,7 +403,7 @@ int xrdp_cache_add_palette(xrdpCache *self, int *palette)
 	return index;
 }
 
-int xrdp_cache_add_char(xrdpCache *self, xrdpFontChar *font_item)
+int xrdp_cache_add_char(xrdpCache* self, xrdpFontChar* font_item)
 {
 	int i;
 	int j;
@@ -411,7 +411,8 @@ int xrdp_cache_add_char(xrdpCache *self, xrdpFontChar *font_item)
 	int f;
 	int c;
 	int datasize;
-	xrdpFontChar *fi;
+	xrdpFontChar* fi;
+	XRDP_MSG_CACHE_GLYPH msg;
 
 	self->char_stamp++;
 
@@ -459,7 +460,20 @@ int xrdp_cache_add_char(xrdpCache *self, xrdpFontChar *font_item)
 	fi->width = font_item->width;
 	fi->height = font_item->height;
 	self->char_items[f][c].stamp = self->char_stamp;
-	libxrdp_orders_send_font(self->session, fi, f, c);
+
+	msg.flags = 0;
+	msg.cGlyphs = 1;
+	msg.cacheId = f;
+	msg.glyphData[0].cacheIndex = c;
+	msg.glyphData[0].x = fi->offset;
+	msg.glyphData[0].y = fi->baseline;
+	msg.glyphData[0].cx = fi->width;
+	msg.glyphData[0].cy = fi->height;
+	msg.glyphData[0].aj = (BYTE*) fi->data;
+	msg.unicodeCharacters = NULL;
+
+	libxrdp_orders_send_font(self->session, &msg);
+
 	return MAKELONG(c, f);
 }
 

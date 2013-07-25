@@ -310,81 +310,24 @@ int server_line_to(xrdpModule* mod, int x1, int y1, int x2, int y2)
 	return xrdp_painter_line(p, wm->target_surface, x1, y1, x2, y2);
 }
 
-int server_add_char(xrdpModule* mod, int font, int charactor, int offset, int baseline, int width, int height, char *data)
+int server_add_char(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 {
-	xrdpFontChar fi;
-
-	fi.offset = offset;
-	fi.baseline = baseline;
-	fi.width = width;
-	fi.height = height;
-	fi.incby = 0;
-	fi.data = data;
-
-	return libxrdp_orders_send_font(((xrdpWm*) mod->wm)->session, &fi, font, charactor);
+	return libxrdp_orders_send_font(((xrdpWm*) mod->wm)->session, msg);
 }
 
-#if 0
-struct _GLYPH_INDEX_ORDER
-{
-	UINT32 cacheId;
-	UINT32 flAccel;
-	UINT32 ulCharInc;
-	UINT32 fOpRedundant;
-	UINT32 backColor;
-	UINT32 foreColor;
-	INT32 bkLeft;
-	INT32 bkTop;
-	INT32 bkRight;
-	INT32 bkBottom;
-	INT32 opLeft;
-	INT32 opTop;
-	INT32 opRight;
-	INT32 opBottom;
-	rdpBrush brush;
-	INT32 x;
-	INT32 y;
-	UINT32 cbData;
-	BYTE data[256];
-};
-typedef struct _GLYPH_INDEX_ORDER GLYPH_INDEX_ORDER;
-#endif
-
-int server_text(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top, int clip_right,
-		int clip_bottom, int box_left, int box_top, int box_right, int box_bottom, int x, int y, char *data,
-		int data_len)
+int server_text(xrdpModule* mod, GLYPH_INDEX_ORDER* msg)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
-	GLYPH_INDEX_ORDER glyphIndex;
 
 	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
 
-	glyphIndex.cacheId = font;
-	glyphIndex.flAccel = flags;
-	glyphIndex.ulCharInc = mixmode;
-	glyphIndex.fOpRedundant = 0;
-	glyphIndex.backColor = p->fg_color;
-	glyphIndex.foreColor = p->bg_color;
-	glyphIndex.bkLeft = clip_left;
-	glyphIndex.bkTop = clip_top;
-	glyphIndex.bkRight = clip_right;
-	glyphIndex.bkBottom = clip_bottom;
-	glyphIndex.opLeft = box_left;
-	glyphIndex.opTop = box_top;
-	glyphIndex.opRight = box_right;
-	glyphIndex.opBottom = box_bottom;
-	glyphIndex.x = x;
-	glyphIndex.y = y;
-	glyphIndex.cbData = data_len;
-	CopyMemory(glyphIndex.data, data, data_len);
-
 	wm = (xrdpWm*) (mod->wm);
 
-	return xrdp_painter_draw_text2(p, wm->target_surface, &glyphIndex);
+	return xrdp_painter_draw_text2(p, wm->target_surface, msg);
 }
 
 int server_reset(xrdpModule* mod, int width, int height, int bpp)

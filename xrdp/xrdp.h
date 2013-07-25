@@ -673,11 +673,8 @@ typedef int (*pXrdpServerSetMixMode)(xrdpModule* mod, int mixmode);
 typedef int (*pXrdpServerSetBrush)(xrdpModule* mod, int x_orgin, int y_orgin, int style, char* pattern);
 typedef int (*pXrdpServerSetPen)(xrdpModule* mod, int style, int width);
 typedef int (*pXrdpServerLineTo)(xrdpModule* mod, int x1, int y1, int x2, int y2);
-typedef int (*pXrdpServerAddChar)(xrdpModule* mod, int font, int character,
-		int offset, int baseline, int width, int height, char* data);
-typedef int (*pXrdpServerText)(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top,
-		int clip_right, int clip_bottom, int box_left, int box_top, int box_right, int box_bottom,
-		int x, int y, char* data, int data_len);
+typedef int (*pXrdpServerAddChar)(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg);
+typedef int (*pXrdpServerText)(xrdpModule* mod, GLYPH_INDEX_ORDER* msg);
 typedef int (*pXrdpServerReset)(xrdpModule* mod, int width, int height, int bpp);
 typedef int (*pXrdpServerCreateOffscreenSurface)(xrdpModule* mod, int id, int width, int height);
 typedef int (*pXrdpServerSwitchOffscreenSurface)(xrdpModule* mod, int id);

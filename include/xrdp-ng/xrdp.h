@@ -298,6 +298,16 @@ struct _XRDP_MSG_DELETE_OS_SURFACE
 };
 typedef struct _XRDP_MSG_DELETE_OS_SURFACE XRDP_MSG_DELETE_OS_SURFACE;
 
+struct _XRDP_MSG_CACHE_GLYPH
+{
+	UINT32 cacheId;
+	UINT32 flags;
+	UINT32 cGlyphs;
+	GLYPH_DATA_V2 glyphData[256];
+	BYTE* unicodeCharacters;
+};
+typedef struct _XRDP_MSG_CACHE_GLYPH XRDP_MSG_CACHE_GLYPH;
+
 struct _XRDP_MSG_MEMBLT
 {
 	DEFINE_MSG_COMMON();

@@ -503,6 +503,50 @@ int libxrdp_orders_send_bitmap(xrdpSession* session,
 	return 0;
 }
 
+#if 1
+int libxrdp_orders_send_font(xrdpSession* session, XRDP_MSG_CACHE_GLYPH* msg)
+{
+	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+
+	printf("%s\n", __FUNCTION__);
+
+	if (secondary->glyph_v2)
+	{
+		CACHE_GLYPH_V2_ORDER cache_glyph_v2;
+
+		cache_glyph_v2.flags = 0;
+		cache_glyph_v2.cacheId = msg->cacheId;
+		cache_glyph_v2.cGlyphs = 1;
+		cache_glyph_v2.glyphData[0].cacheIndex = msg->glyphData[0].cacheIndex;
+		cache_glyph_v2.glyphData[0].x = msg->glyphData[0].x;
+		cache_glyph_v2.glyphData[0].y = msg->glyphData[0].y;
+		cache_glyph_v2.glyphData[0].cx = msg->glyphData[0].cx;
+		cache_glyph_v2.glyphData[0].cy = msg->glyphData[0].cy;
+		cache_glyph_v2.glyphData[0].aj = msg->glyphData[0].aj;
+		cache_glyph_v2.unicodeCharacters = NULL;
+
+		IFCALL(secondary->CacheGlyphV2, session->context, &cache_glyph_v2);
+	}
+	else
+	{
+		CACHE_GLYPH_ORDER cache_glyph;
+
+		cache_glyph.cacheId = msg->cacheId;
+		cache_glyph.cGlyphs = 1;
+		cache_glyph.glyphData[0].cacheIndex = msg->glyphData[0].cacheIndex;
+		cache_glyph.glyphData[0].x = msg->glyphData[0].x;
+		cache_glyph.glyphData[0].y = msg->glyphData[0].y;
+		cache_glyph.glyphData[0].cx = msg->glyphData[0].cx;
+		cache_glyph.glyphData[0].cy = msg->glyphData[0].cy;
+		cache_glyph.glyphData[0].aj = msg->glyphData[0].aj;
+		cache_glyph.unicodeCharacters = NULL;
+
+		IFCALL(secondary->CacheGlyph, session->context, &cache_glyph);
+	}
+
+	return 0;
+}
+#else
 int libxrdp_orders_send_font(xrdpSession* session,
 		xrdpFontChar* font_char, int font_index, int char_index)
 {
@@ -546,6 +590,7 @@ int libxrdp_orders_send_font(xrdpSession* session,
 
 	return 0;
 }
+#endif
 
 int libxrdp_reset(xrdpSession* session, int width, int height, int bpp)
 {
