@@ -556,8 +556,8 @@ static void xrdp_freerdp_pat_blt(rdpContext* context, PATBLT_ORDER* patblt)
 	int bgcolor;
 	int server_bpp;
 	int client_bpp;
-	struct brush_item *bi;
-	XRDP_MSG_OPAQUE_RECT msg;
+	struct brush_item* bi;
+	XRDP_MSG_PATBLT msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_pat_blt:"));
@@ -574,38 +574,29 @@ static void xrdp_freerdp_pat_blt(rdpContext* context, PATBLT_ORDER* patblt)
 	fgcolor = convert_color(server_bpp, client_bpp, patblt->foreColor, mod->colormap);
 	bgcolor = convert_color(server_bpp, client_bpp, patblt->backColor, mod->colormap);
 
-	if (fgcolor == bgcolor)
-	{
-		LLOGLN(0, ("Warning same color on both bg and fg"));
-	}
+	msg.bRop = patblt->bRop;
+	msg.foreColor = fgcolor;
+	msg.backColor = bgcolor;
 
-	mod->server->SetMixMode(mod, 1);
-	mod->server->SetRop2(mod, patblt->bRop);
-	mod->server->SetForeColor(mod, fgcolor);
-	mod->server->SetBackColor(mod, bgcolor);
+	msg.brush.x = patblt->brush.x;
+	msg.brush.y = patblt->brush.y;
 
 	if (patblt->brush.style & 0x80)
 	{
 		idx = patblt->brush.hatch;
-
-		if ((idx < 0) || (idx >= 64))
-		{
-			LLOGLN(0, ("xrdp_freerdp_pat_blt: error"));
-			return;
-		}
-
 		bi = mod->brush_cache + idx;
-		mod->server->SetBrush(mod, patblt->brush.x, patblt->brush.y, 3, bi->b8x8);
+
+		msg.brush.style = 3;
+		msg.brush.data = (BYTE*) msg.brush.p8x8;
+		CopyMemory(msg.brush.data, bi->b8x8, 8);
 	}
 	else
 	{
-		mod->server->SetBrush(mod, patblt->brush.x, patblt->brush.y, patblt->brush.style,
-				(char*) (patblt->brush.p8x8));
+		msg.brush.style = patblt->brush.style;
+		msg.brush.data = (BYTE*) patblt->brush.p8x8;
 	}
 
-	mod->server->OpaqueRect(mod, &msg);
-	mod->server->SetRop2(mod, 0xCC);
-	mod->server->SetMixMode(mod, 0);
+	mod->server->PatBlt(mod, &msg);
 }
 
 static void xrdp_freerdp_scr_blt(rdpContext* context, SCRBLT_ORDER* scrblt)

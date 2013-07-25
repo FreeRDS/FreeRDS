@@ -451,7 +451,7 @@ int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDE
 	xrdpRect clip_rect;
 	xrdpRect draw_rect;
 	xrdpRect rect;
-	xrdpRegion *region;
+	xrdpRegion* region;
 	int k;
 	int dx;
 	int dy;
@@ -503,7 +503,7 @@ int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDE
 	{
 		if (rect_intersect(&rect, &clip_rect, &draw_rect))
 		{
-			libxrdp_orders_text(self->session, &msg, &draw_rect);
+			libxrdp_orders_text(self->session, msg, &draw_rect);
 		}
 
 		k++;

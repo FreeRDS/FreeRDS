@@ -201,6 +201,19 @@ struct _XRDP_MSG_PAINT_RECT
 };
 typedef struct _XRDP_MSG_PAINT_RECT XRDP_MSG_PAINT_RECT;
 
+struct _XRDP_MSG_PATBLT
+{
+	INT32 nLeftRect;
+	INT32 nTopRect;
+	INT32 nWidth;
+	INT32 nHeight;
+	UINT32 bRop;
+	UINT32 backColor;
+	UINT32 foreColor;
+	rdpBrush brush;
+};
+typedef struct _XRDP_MSG_PATBLT XRDP_MSG_PATBLT;
+
 struct _XRDP_MSG_SET_CLIPPING_REGION
 {
 	DEFINE_MSG_COMMON();
