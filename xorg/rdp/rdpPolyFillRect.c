@@ -197,8 +197,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 					rdpup_opaque_rect(&msg);
 				}
-
-				rdpup_set_opcode(GXcopy);
 			}
 			else /* non solid fill */
 			{
@@ -266,8 +264,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 						rdpup_opaque_rect(&msg);
 					}
-
-					rdpup_set_opcode(GXcopy);
 				}
 				else /* non solid fill */
 				{

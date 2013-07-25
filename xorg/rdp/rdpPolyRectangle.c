@@ -243,8 +243,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 						rdpup_opaque_rect(&msg);
 					}
-
-					rdpup_set_opcode(GXcopy);
 				}
 				else
 				{
@@ -304,8 +302,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 							rdpup_opaque_rect(&msg);
 						}
-
-						rdpup_set_opcode(GXcopy);
 					}
 					else
 					{

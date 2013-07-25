@@ -1818,7 +1818,6 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 					rdpup_opaque_rect(&msg);
 				}
 
-				rdpup_set_opcode(GXcopy);
 				break;
 
 			case RDI_IMGLL:
@@ -1834,7 +1833,6 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 							box.y2 - box.y1);
 				}
 
-				rdpup_set_opcode(GXcopy);
 				break;
 
 			case RDI_IMGLY:
@@ -1850,7 +1848,6 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 							box.y2 - box.y1);
 				}
 
-				rdpup_set_opcode(GXcopy);
 				break;
 
 			case RDI_LINE:
@@ -1956,7 +1953,6 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 					rdpup_opaque_rect(&msg);
 				}
 
-				rdpup_set_opcode(GXcopy);
 				break;
 
 			case RDI_IMGLL:
@@ -1970,7 +1966,6 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 
-				rdpup_set_opcode(GXcopy);
 				break;
 
 			case RDI_IMGLY:
@@ -1986,7 +1981,6 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 							box.y2 - box.y1);
 				}
 
-				rdpup_set_opcode(GXcopy);
 				break;
 
 			case RDI_LINE:
