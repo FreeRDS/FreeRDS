@@ -48,10 +48,10 @@ int wm_painter_set_target(xrdpPainter *self)
 
 	if (self->wm->target_surface->type == WND_TYPE_SCREEN)
 	{
-		if (self->wm->current_surface_index != 0xffff)
+		if (self->wm->current_surface_index != 0xFFFF)
 		{
-			libxrdp_orders_send_switch_os_surface(self->session, 0xffff);
-			self->wm->current_surface_index = 0xffff;
+			libxrdp_orders_send_switch_os_surface(self->session, 0xFFFF);
+			self->wm->current_surface_index = 0xFFFF;
 		}
 	}
 	else if (self->wm->target_surface->type == WND_TYPE_OFFSCREEN)
@@ -431,9 +431,7 @@ int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, con
 	return 0;
 }
 
-int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap *dst, int font, int flags, int mixmode,
-		int clip_left, int clip_top, int clip_right, int clip_bottom, int box_left, int box_top, int box_right,
-		int box_bottom, int x, int y, char *data, int data_len)
+int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDER* msg)
 {
 	xrdpRect clip_rect;
 	xrdpRect draw_rect;
@@ -456,15 +454,17 @@ int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap *dst, int font, int fl
 
 	if (dst->type != WND_TYPE_OFFSCREEN)
 	{
-		if (box_right - box_left > 1)
+		if (msg->opRight - msg->opLeft > 1)
 		{
-			xrdp_wm_get_vis_region(self->wm, dst, box_left, box_top, box_right - box_left, box_bottom
-					- box_top, region, self->clip_children);
+			xrdp_wm_get_vis_region(self->wm, dst, msg->opLeft, msg->opTop,
+					msg->opRight - msg->opLeft, msg->opBottom - msg->opTop,
+					region, self->clip_children);
 		}
 		else
 		{
-			xrdp_wm_get_vis_region(self->wm, dst, clip_left, clip_top, clip_right - clip_left, clip_bottom
-					- clip_top, region, self->clip_children);
+			xrdp_wm_get_vis_region(self->wm, dst, msg->opLeft, msg->opTop,
+					msg->opRight - msg->opLeft, msg->opBottom - msg->opTop,
+					region, self->clip_children);
 		}
 	}
 	else
@@ -472,31 +472,35 @@ int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap *dst, int font, int fl
 		xrdp_region_add_rect(region, &clip_rect);
 	}
 
-	clip_left += dx;
-	clip_top += dy;
-	clip_right += dx;
-	clip_bottom += dy;
-	box_left += dx;
-	box_top += dy;
-	box_right += dx;
-	box_bottom += dy;
-	x += dx;
-	y += dy;
+	msg->bkLeft += dx;
+	msg->bkTop += dy;
+	msg->bkRight += dx;
+	msg->bkBottom += dy;
+	msg->opLeft += dx;
+	msg->opTop += dy;
+	msg->opRight += dx;
+	msg->opBottom += dy;
+	msg->x += dx;
+	msg->y += dy;
 	k = 0;
 
 	while (xrdp_region_get_rect(region, k, &rect) == 0)
 	{
 		if (rect_intersect(&rect, &clip_rect, &draw_rect))
 		{
-			libxrdp_orders_text(self->session, font, flags, mixmode, self->fg_color, self->bg_color,
-					clip_left, clip_top, clip_right, clip_bottom, box_left, box_top, box_right,
-					box_bottom, x, y, data, data_len, &draw_rect);
+			libxrdp_orders_text(self->session, msg->cacheId,
+					msg->flAccel, msg->ulCharInc,
+					msg->backColor, msg->foreColor,
+					msg->bkLeft, msg->bkTop, msg->bkRight, msg->bkBottom,
+					msg->opLeft, msg->opTop, msg->opRight, msg->opBottom,
+					msg->x, msg->y, msg->data, msg->cbData, &draw_rect);
 		}
 
 		k++;
 	}
 
 	xrdp_region_delete(region);
+
 	return 0;
 }
 

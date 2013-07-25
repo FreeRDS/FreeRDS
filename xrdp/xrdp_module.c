@@ -55,7 +55,7 @@ int server_end_update(xrdpModule* mod)
 	return 0;
 }
 
-int server_bell_trigger(xrdpModule* mod)
+int server_beep(xrdpModule* mod)
 {
 	xrdpWm* wm;
 
@@ -65,7 +65,7 @@ int server_bell_trigger(xrdpModule* mod)
 	return 0;
 }
 
-int server_msg(xrdpModule* mod, char *msg, int code)
+int server_message(xrdpModule* mod, char *msg, int code)
 {
 	xrdpWm* wm;
 
@@ -80,7 +80,7 @@ int server_msg(xrdpModule* mod, char *msg, int code)
 	return xrdp_wm_log_msg(wm, msg);
 }
 
-int server_is_term(xrdpModule* mod)
+int server_is_terminated(xrdpModule* mod)
 {
 	return g_is_term();
 }
@@ -167,7 +167,7 @@ int server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 	return 0;
 }
 
-int server_palette(xrdpModule* mod, int *palette)
+int server_set_palette(xrdpModule* mod, int *palette)
 {
 	xrdpWm* wm;
 
@@ -182,7 +182,7 @@ int server_palette(xrdpModule* mod, int *palette)
 	return 0;
 }
 
-int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
+int server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
 	xrdpPainter* p;
 
@@ -194,7 +194,7 @@ int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
 	return xrdp_painter_set_clip(p, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 }
 
-int server_reset_clip(xrdpModule* mod)
+int server_set_null_clipping_region(xrdpModule* mod)
 {
 	xrdpPainter* p;
 
@@ -206,7 +206,7 @@ int server_reset_clip(xrdpModule* mod)
 	return xrdp_painter_clr_clip(p);
 }
 
-int server_set_fgcolor(xrdpModule* mod, int fgcolor)
+int server_set_forecolor(xrdpModule* mod, int fgcolor)
 {
 	xrdpPainter* p;
 
@@ -221,7 +221,7 @@ int server_set_fgcolor(xrdpModule* mod, int fgcolor)
 	return 0;
 }
 
-int server_set_bgcolor(xrdpModule* mod, int bgcolor)
+int server_set_backcolor(xrdpModule* mod, int bgcolor)
 {
 	xrdpPainter* p;
 
@@ -235,7 +235,7 @@ int server_set_bgcolor(xrdpModule* mod, int bgcolor)
 	return 0;
 }
 
-int server_set_opcode(xrdpModule* mod, int opcode)
+int server_set_rop2(xrdpModule* mod, int opcode)
 {
 	xrdpPainter* p;
 
@@ -249,7 +249,7 @@ int server_set_opcode(xrdpModule* mod, int opcode)
 	return 0;
 }
 
-int server_set_mixmode(xrdpModule* mod, int mixmode)
+int server_set_mix_mode(xrdpModule* mod, int mixmode)
 {
 	xrdpPainter* p;
 
@@ -295,7 +295,7 @@ int server_set_pen(xrdpModule* mod, int style, int width)
 	return 0;
 }
 
-int server_draw_line(xrdpModule* mod, int x1, int y1, int x2, int y2)
+int server_line_to(xrdpModule* mod, int x1, int y1, int x2, int y2)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
@@ -324,22 +324,67 @@ int server_add_char(xrdpModule* mod, int font, int charactor, int offset, int ba
 	return libxrdp_orders_send_font(((xrdpWm*) mod->wm)->session, &fi, font, charactor);
 }
 
-int server_draw_text(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top, int clip_right,
+#if 0
+struct _GLYPH_INDEX_ORDER
+{
+	UINT32 cacheId;
+	UINT32 flAccel;
+	UINT32 ulCharInc;
+	UINT32 fOpRedundant;
+	UINT32 backColor;
+	UINT32 foreColor;
+	INT32 bkLeft;
+	INT32 bkTop;
+	INT32 bkRight;
+	INT32 bkBottom;
+	INT32 opLeft;
+	INT32 opTop;
+	INT32 opRight;
+	INT32 opBottom;
+	rdpBrush brush;
+	INT32 x;
+	INT32 y;
+	UINT32 cbData;
+	BYTE data[256];
+};
+typedef struct _GLYPH_INDEX_ORDER GLYPH_INDEX_ORDER;
+#endif
+
+int server_text(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top, int clip_right,
 		int clip_bottom, int box_left, int box_top, int box_right, int box_bottom, int x, int y, char *data,
 		int data_len)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
+	GLYPH_INDEX_ORDER glyphIndex;
 
 	p = (xrdpPainter*) (mod->painter);
 
 	if (!p)
 		return 0;
 
+	glyphIndex.cacheId = font;
+	glyphIndex.flAccel = flags;
+	glyphIndex.ulCharInc = mixmode;
+	glyphIndex.fOpRedundant = 0;
+	glyphIndex.backColor = p->fg_color;
+	glyphIndex.foreColor = p->bg_color;
+	glyphIndex.bkLeft = clip_left;
+	glyphIndex.bkTop = clip_top;
+	glyphIndex.bkRight = clip_right;
+	glyphIndex.bkBottom = clip_bottom;
+	glyphIndex.opLeft = box_left;
+	glyphIndex.opTop = box_top;
+	glyphIndex.opRight = box_right;
+	glyphIndex.opBottom = box_bottom;
+	glyphIndex.x = x;
+	glyphIndex.y = y;
+	glyphIndex.cbData = data_len;
+	CopyMemory(glyphIndex.data, data, data_len);
+
 	wm = (xrdpWm*) (mod->wm);
 
-	return xrdp_painter_draw_text2(p, wm->target_surface, font, flags, mixmode, clip_left, clip_top, clip_right,
-			clip_bottom, box_left, box_top, box_right, box_bottom, x, y, data, data_len);
+	return xrdp_painter_draw_text2(p, wm->target_surface, &glyphIndex);
 }
 
 int server_reset(xrdpModule* mod, int width, int height, int bpp)
@@ -378,7 +423,7 @@ int server_reset(xrdpModule* mod, int width, int height, int bpp)
 	return 0;
 }
 
-int server_create_os_surface(xrdpModule* mod, int rdpindex, int width, int height)
+int server_create_offscreen_surface(xrdpModule* mod, int rdpindex, int width, int height)
 {
 	xrdpWm* wm;
 	xrdpBitmap *bitmap;
@@ -400,7 +445,7 @@ int server_create_os_surface(xrdpModule* mod, int rdpindex, int width, int heigh
 	return 0;
 }
 
-int server_switch_os_surface(xrdpModule* mod, int rdpindex)
+int server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
 {
 	xrdpWm* wm;
 	xrdpOffscreenBitmapItem *bi;
@@ -441,7 +486,7 @@ int server_switch_os_surface(xrdpModule* mod, int rdpindex)
 	return 0;
 }
 
-int server_delete_os_surface(xrdpModule* mod, int rdpindex)
+int server_delete_offscreen_surface(xrdpModule* mod, int rdpindex)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
@@ -468,7 +513,7 @@ int server_delete_os_surface(xrdpModule* mod, int rdpindex)
 	return 0;
 }
 
-int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
+int server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
 {
 	xrdpWm* wm;
 	xrdpBitmap *b;
@@ -550,30 +595,30 @@ int xrdp_server_module_init(xrdpModule* mod)
 
 		mod->server->BeginUpdate = server_begin_update;
 		mod->server->EndUpdate = server_end_update;
-		mod->server->Beep = server_bell_trigger;
-		mod->server->Message = server_msg;
-		mod->server->IsTerminated = server_is_term;
+		mod->server->Beep = server_beep;
+		mod->server->Message = server_message;
+		mod->server->IsTerminated = server_is_terminated;
 		mod->server->OpaqueRect = server_opaque_rect;
 		mod->server->ScreenBlt = server_screen_blt;
 		mod->server->PaintRect = server_paint_rect;
 		mod->server->SetPointer = server_set_pointer;
-		mod->server->SetPalette = server_palette;
-		mod->server->SetClippingRegion = server_set_clip;
-		mod->server->SetNullClippingRegion = server_reset_clip;
-		mod->server->SetForeColor = server_set_fgcolor;
-		mod->server->SetBackColor = server_set_bgcolor;
-		mod->server->SetRop2 = server_set_opcode;
-		mod->server->SetMixMode = server_set_mixmode;
+		mod->server->SetPalette = server_set_palette;
+		mod->server->SetClippingRegion = server_set_clipping_region;
+		mod->server->SetNullClippingRegion = server_set_null_clipping_region;
+		mod->server->SetForeColor = server_set_forecolor;
+		mod->server->SetBackColor = server_set_backcolor;
+		mod->server->SetRop2 = server_set_rop2;
+		mod->server->SetMixMode = server_set_mix_mode;
 		mod->server->SetBrush = server_set_brush;
 		mod->server->SetPen = server_set_pen;
-		mod->server->LineTo = server_draw_line;
+		mod->server->LineTo = server_line_to;
 		mod->server->AddChar = server_add_char;
-		mod->server->Text = server_draw_text;
+		mod->server->Text = server_text;
 		mod->server->Reset = server_reset;
-		mod->server->CreateOffscreenSurface = server_create_os_surface;
-		mod->server->SwitchOffscreenSurface = server_switch_os_surface;
-		mod->server->DeleteOffscreenSurface = server_delete_os_surface;
-		mod->server->PaintOffscreenRect = server_paint_rect_os;
+		mod->server->CreateOffscreenSurface = server_create_offscreen_surface;
+		mod->server->SwitchOffscreenSurface = server_switch_offscreen_surface;
+		mod->server->DeleteOffscreenSurface = server_delete_offscreen_surface;
+		mod->server->PaintOffscreenRect = server_paint_offscreen_rect;
 		mod->server->WindowNewUpdate = server_window_new_update;
 		mod->server->WindowDelete = server_window_delete;
 		mod->server->WindowIcon = server_window_icon;

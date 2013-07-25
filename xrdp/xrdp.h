@@ -561,22 +561,12 @@ int xrdp_painter_text_width(xrdpPainter* self, char* text);
 int xrdp_painter_text_height(xrdpPainter* self, char* text);
 int xrdp_painter_draw_text(xrdpPainter* self,
 		xrdpBitmap* bitmap, int x, int y, const char* text);
-int xrdp_painter_draw_text2(xrdpPainter* self,
-		xrdpBitmap* bitmap,
-		int font, int flags, int mixmode,
-		int clip_left, int clip_top,
-		int clip_right, int clip_bottom,
-		int box_left, int box_top,
-		int box_right, int box_bottom,
-		int x, int y, char* data, int data_len);
+int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDER* msg);
 int xrdp_painter_copy(xrdpPainter* self,
-		xrdpBitmap* src,
-		xrdpBitmap* dst,
-		int x, int y, int cx, int cy,
-		int srcx, int srcy);
+		xrdpBitmap* src, xrdpBitmap* dst,
+		int x, int y, int cx, int cy, int srcx, int srcy);
 int xrdp_painter_line(xrdpPainter* self,
-		xrdpBitmap* bitmap,
-		int x1, int y1, int x2, int y2);
+		xrdpBitmap* bitmap, int x1, int y1, int x2, int y2);
 
 /* xrdp_font.c */
 xrdpFont* xrdp_font_create(xrdpWm* wm);
