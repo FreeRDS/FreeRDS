@@ -277,22 +277,7 @@ int xrdp_server_set_rop2(xrdpModule* mod, int opcode)
 	return 0;
 }
 
-int xrdp_server_set_pen(xrdpModule* mod, int style, int width)
-{
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	p->pen.style = style;
-	p->pen.width = width;
-
-	return 0;
-}
-
-int xrdp_server_line_to(xrdpModule* mod, int x1, int y1, int x2, int y2)
+int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
@@ -304,7 +289,7 @@ int xrdp_server_line_to(xrdpModule* mod, int x1, int y1, int x2, int y2)
 
 	wm = (xrdpWm*) (mod->wm);
 
-	return xrdp_painter_line(p, wm->target_surface, x1, y1, x2, y2);
+	return xrdp_painter_line(p, wm->target_surface, msg->nXStart, msg->nYStart, msg->nXEnd, msg->nYEnd);
 }
 
 int xrdp_server_add_char(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
@@ -549,7 +534,6 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->SetForeColor = xrdp_server_set_forecolor;
 		mod->server->SetBackColor = xrdp_server_set_backcolor;
 		mod->server->SetRop2 = xrdp_server_set_rop2;
-		mod->server->SetPen = xrdp_server_set_pen;
 		mod->server->LineTo = xrdp_server_line_to;
 		mod->server->AddChar = xrdp_server_add_char;
 		mod->server->Text = xrdp_server_text;

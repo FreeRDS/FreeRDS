@@ -175,17 +175,24 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 			}
 			else if (got_id)
 			{
+				XRDP_MSG_LINE_TO msg;
+
 				rdpup_begin_update();
-				rdpup_set_fgcolor(pGC->fgPixel);
-				rdpup_set_opcode(pGC->alu);
-				rdpup_set_pen(0, pGC->lineWidth);
+
+				msg.bRop2 = rdpup_convert_opcode(pGC->alu);
+				msg.penColor = rdpup_convert_color(pGC->fgPixel);
+				msg.penWidth = pGC->lineWidth;
+				msg.penStyle = 0;
 
 				for (i = 0; i < nseg; i++)
 				{
-					rdpup_draw_line(segs[i].x1, segs[i].y1, segs[i].x2, segs[i].y2);
+					msg.nXStart = segs[i].x1;
+					msg.nYStart = segs[i].y1;
+					msg.nXEnd = segs[i].x2;
+					msg.nYEnd = segs[i].y2;
+					rdpup_draw_line(&msg);
 				}
 
-				rdpup_set_opcode(GXcopy);
 				rdpup_end_update();
 			}
 		}
@@ -201,10 +208,14 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 			}
 			else if (got_id)
 			{
+				XRDP_MSG_LINE_TO msg;
+
 				rdpup_begin_update();
-				rdpup_set_fgcolor(pGC->fgPixel);
-				rdpup_set_opcode(pGC->alu);
-				rdpup_set_pen(0, pGC->lineWidth);
+
+				msg.bRop2 = rdpup_convert_opcode(pGC->alu);
+				msg.penColor = rdpup_convert_color(pGC->fgPixel);
+				msg.penWidth = pGC->lineWidth;
+				msg.penStyle = 0;
 
 				for (j = REGION_NUM_RECTS(&clip_reg) - 1; j >= 0; j--)
 				{
@@ -213,14 +224,15 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 
 					for (i = 0; i < nseg; i++)
 					{
-						rdpup_draw_line(segs[i].x1, segs[i].y1, segs[i].x2, segs[i].y2);
-						LLOGLN(10, ("  %d %d %d %d", segs[i].x1, segs[i].y1,
-								segs[i].x2, segs[i].y2));
+						msg.nXStart = segs[i].x1;
+						msg.nYStart = segs[i].y1;
+						msg.nXEnd = segs[i].x2;
+						msg.nYEnd = segs[i].y2;
+						rdpup_draw_line(&msg);
 					}
 				}
 
 				rdpup_reset_clip();
-				rdpup_set_opcode(GXcopy);
 				rdpup_end_update();
 			}
 		}

@@ -716,26 +716,35 @@ static void xrdp_freerdp_glyph_index(rdpContext* context, GLYPH_INDEX_ORDER* gly
 	mod->server->Text(mod, glyph_index);
 }
 
-static void xrdp_freerdp_line_to(rdpContext* context, LINE_TO_ORDER* line_to)
+static void xrdp_freerdp_line_to(rdpContext* context, LINE_TO_ORDER* lineTo)
 {
 	xrdpModule* mod;
 	int server_bpp;
 	int client_bpp;
 	int fgcolor;
 	int bgcolor;
+	XRDP_MSG_LINE_TO msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_line_to:"));
-	mod->server->SetRop2(mod, line_to->bRop2);
+
 	server_bpp = mod->instance->settings->ColorDepth;
 	client_bpp = mod->bpp;
-	fgcolor = convert_color(server_bpp, client_bpp, line_to->penColor, mod->colormap);
-	bgcolor = convert_color(server_bpp, client_bpp, line_to->backColor, mod->colormap);
-	mod->server->SetForeColor(mod, fgcolor);
-	mod->server->SetBackColor(mod, bgcolor);
-	mod->server->SetPen(mod, line_to->penStyle, line_to->penWidth);
-	mod->server->LineTo(mod, line_to->nXStart, line_to->nYStart, line_to->nXEnd, line_to->nYEnd);
-	mod->server->SetRop2(mod, 0xcc);
+	fgcolor = convert_color(server_bpp, client_bpp, lineTo->penColor, mod->colormap);
+	bgcolor = convert_color(server_bpp, client_bpp, lineTo->backColor, mod->colormap);
+
+	msg.bRop2 = lineTo->bRop2;
+	msg.penColor = fgcolor;
+	msg.backColor = bgcolor;
+	msg.penColor = lineTo->penColor;
+	msg.penStyle = lineTo->penStyle;
+	msg.penWidth = lineTo->penWidth;
+	msg.nXStart = lineTo->nXStart;
+	msg.nYStart = lineTo->nYStart;
+	msg.nXEnd = lineTo->nXEnd;
+	msg.nYEnd = lineTo->nYEnd;
+
+	mod->server->LineTo(mod, &msg);
 }
 
 static void xrdp_freerdp_cache_bitmap(rdpContext* context, CACHE_BITMAP_ORDER* cache_bitmap_order)
@@ -1125,46 +1134,7 @@ static void xrdp_freerdp_polygon_cb(rdpContext* context, POLYGON_CB_ORDER* polyg
 
 static void xrdp_freerdp_polygon_sc(rdpContext* context, POLYGON_SC_ORDER* polygon_sc)
 {
-	int i;
-	xrdpModule* mod;
-	XPoint points[4];
-	int fgcolor;
-	int server_bpp, client_bpp;
 
-	mod = ((modContext*) context)->modi;
-	LLOGLN(10, ("xrdp_freerdp_polygon_sc :%d(points) %d(color) %d(fillmode) %d(bRop) %d(cbData) %d(x) %d(y)", polygon_sc->numPoints,polygon_sc->brushColor,polygon_sc->fillMode,polygon_sc->bRop2,polygon_sc->cbData,polygon_sc->xStart,polygon_sc->yStart));
-
-	if (polygon_sc->numPoints == 3)
-	{
-		server_bpp = mod->instance->settings->ColorDepth;
-		client_bpp = mod->bpp;
-
-		points[0].x = polygon_sc->xStart;
-		points[0].y = polygon_sc->yStart;
-
-		for (i = 0; i < polygon_sc->numPoints; i++)
-		{
-			points[i + 1].x = polygon_sc->points[i].x;
-			points[i + 1].y = polygon_sc->points[i].y;
-		}
-		fgcolor = convert_color(server_bpp, client_bpp, polygon_sc->brushColor, mod->colormap);
-
-		mod->server->SetRop2(mod, polygon_sc->bRop2);
-		mod->server->SetBackColor(mod, 255);
-		mod->server->SetForeColor(mod, fgcolor);
-		mod->server->SetPen(mod, 1, 1);
-
-		// TODO replace with correct brush; this is a workaround
-		// This workaround handles the text cursor in microsoft word.
-		mod->server->LineTo(mod, polygon_sc->xStart, polygon_sc->yStart, polygon_sc->xStart,
-				polygon_sc->yStart + points[2].y);
-
-		mod->server->SetRop2(mod, 0xcc);
-	}
-	else
-	{
-		LLOGLN(0, ("Not handled number of points in xrdp_freerdp_polygon_sc"));
-	}
 }
 
 static void xrdp_freerdp_synchronize(rdpContext* context)

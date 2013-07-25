@@ -431,36 +431,16 @@ int xrdp_write_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg)
 	return 0;
 }
 
-int xrdp_read_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg)
-{
-	Stream_Read_UINT16(s, msg->PenStyle);
-	Stream_Read_UINT16(s, msg->PenWidth);
-
-	return 0;
-}
-
-int xrdp_write_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg)
-{
-	msg->flags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 4;
-
-	if (!s)
-		return msg->length;
-
-	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
-
-	Stream_Write_UINT16(s, msg->PenStyle);
-	Stream_Write_UINT16(s, msg->PenWidth);
-
-	return 0;
-}
-
 int xrdp_read_line_to(wStream* s, XRDP_MSG_LINE_TO* msg)
 {
-	Stream_Read_UINT16(s, msg->nXStart);
-	Stream_Read_UINT16(s, msg->nYStart);
-	Stream_Read_UINT16(s, msg->nXEnd);
-	Stream_Read_UINT16(s, msg->nYEnd);
+	Stream_Read_UINT32(s, msg->nXStart);
+	Stream_Read_UINT32(s, msg->nYStart);
+	Stream_Read_UINT32(s, msg->nXEnd);
+	Stream_Read_UINT32(s, msg->nYEnd);
+	Stream_Read_UINT32(s, msg->bRop2);
+	Stream_Read_UINT32(s, msg->penStyle);
+	Stream_Read_UINT32(s, msg->penWidth);
+	Stream_Read_UINT32(s, msg->penColor);
 
 	return 0;
 }
@@ -468,17 +448,21 @@ int xrdp_read_line_to(wStream* s, XRDP_MSG_LINE_TO* msg)
 int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg)
 {
 	msg->flags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 8;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 32;
 
 	if (!s)
 		return msg->length;
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
-	Stream_Write_UINT16(s, msg->nXStart);
-	Stream_Write_UINT16(s, msg->nYStart);
-	Stream_Write_UINT16(s, msg->nXEnd);
-	Stream_Write_UINT16(s, msg->nYEnd);
+	Stream_Write_UINT32(s, msg->nXStart);
+	Stream_Write_UINT32(s, msg->nYStart);
+	Stream_Write_UINT32(s, msg->nXEnd);
+	Stream_Write_UINT32(s, msg->nYEnd);
+	Stream_Write_UINT32(s, msg->bRop2);
+	Stream_Write_UINT32(s, msg->penStyle);
+	Stream_Write_UINT32(s, msg->penWidth);
+	Stream_Write_UINT32(s, msg->penColor);
 
 	return 0;
 }
@@ -937,10 +921,6 @@ int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 			xrdp_write_set_rop2(s, (XRDP_MSG_SET_ROP2*) msg);
 			break;
 
-		case XRDP_SERVER_SET_PEN:
-			xrdp_write_set_pen(s, (XRDP_MSG_SET_PEN*) msg);
-			break;
-
 		case XRDP_SERVER_LINE_TO:
 			xrdp_write_line_to(s, (XRDP_MSG_LINE_TO*) msg);
 			break;
@@ -1019,10 +999,6 @@ char* xrdp_get_msg_type_string(UINT32 type)
 
 		case XRDP_SERVER_SET_ROP2:
 			return "SetRop2";
-			break;
-
-		case XRDP_SERVER_SET_PEN:
-			return "SetPen";
 			break;
 
 		case XRDP_SERVER_LINE_TO:

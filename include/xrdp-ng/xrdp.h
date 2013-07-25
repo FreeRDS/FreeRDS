@@ -132,9 +132,7 @@ int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
 #define XRDP_SERVER_PAINT_RECT			5
 #define XRDP_SERVER_SET_CLIPPING_REGION		10
 #define XRDP_SERVER_SET_FORECOLOR		12
-#define XRDP_SERVER_SET_BACKCOLOR		13
 #define XRDP_SERVER_SET_ROP2			14
-#define XRDP_SERVER_SET_PEN			17
 #define XRDP_SERVER_LINE_TO			18
 #define XRDP_SERVER_CREATE_OS_SURFACE		20
 #define XRDP_SERVER_SWITCH_OS_SURFACE		21
@@ -203,6 +201,8 @@ typedef struct _XRDP_MSG_PAINT_RECT XRDP_MSG_PAINT_RECT;
 
 struct _XRDP_MSG_PATBLT
 {
+	DEFINE_MSG_COMMON();
+
 	INT32 nLeftRect;
 	INT32 nTopRect;
 	INT32 nWidth;
@@ -241,16 +241,6 @@ struct _XRDP_MSG_SET_ROP2
 	UINT32 bRop2;
 };
 typedef struct _XRDP_MSG_SET_ROP2 XRDP_MSG_SET_ROP2;
-
-struct _XRDP_MSG_SET_PEN
-{
-	DEFINE_MSG_COMMON();
-
-	UINT32 PenStyle;
-	UINT32 PenWidth;
-	UINT32 PenColor;
-};
-typedef struct _XRDP_MSG_SET_PEN XRDP_MSG_SET_PEN;
 
 struct _XRDP_MSG_LINE_TO
 {
@@ -419,9 +409,6 @@ FREERDP_API int xrdp_write_set_forecolor(wStream* s, XRDP_MSG_SET_FORECOLOR* msg
 
 FREERDP_API int xrdp_read_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
 FREERDP_API int xrdp_write_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
-
-FREERDP_API int xrdp_read_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg);
-FREERDP_API int xrdp_write_set_pen(wStream* s, XRDP_MSG_SET_PEN* msg);
 
 FREERDP_API int xrdp_read_line_to(wStream* s, XRDP_MSG_LINE_TO* msg);
 FREERDP_API int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg);

@@ -497,21 +497,12 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			}
 			break;
 
-		case XRDP_SERVER_SET_PEN:
-			{
-				XRDP_MSG_SET_PEN msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_pen(s, &msg);
-				status = mod->server->SetPen(mod, msg.PenStyle, msg.PenWidth);
-			}
-			break;
-
 		case XRDP_SERVER_LINE_TO:
 			{
 				XRDP_MSG_LINE_TO msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_line_to(s, &msg);
-				status = mod->server->LineTo(mod, msg.nXStart, msg.nYStart, msg.nXEnd, msg.nYStart);
+				status = mod->server->LineTo(mod, &msg);
 			}
 			break;
 

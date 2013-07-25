@@ -663,8 +663,7 @@ typedef int (*pXrdpServerSetNullClippingRegion)(xrdpModule* mod);
 typedef int (*pXrdpServerSetForeColor)(xrdpModule* mod, int fgcolor);
 typedef int (*pXrdpServerSetBackColor)(xrdpModule* mod, int bgcolor);
 typedef int (*pXrdpServerSetRop2)(xrdpModule* mod, int opcode);
-typedef int (*pXrdpServerSetPen)(xrdpModule* mod, int style, int width);
-typedef int (*pXrdpServerLineTo)(xrdpModule* mod, int x1, int y1, int x2, int y2);
+typedef int (*pXrdpServerLineTo)(xrdpModule* mod, XRDP_MSG_LINE_TO* msg);
 typedef int (*pXrdpServerAddChar)(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg);
 typedef int (*pXrdpServerText)(xrdpModule* mod, GLYPH_INDEX_ORDER* msg);
 typedef int (*pXrdpServerReset)(xrdpModule* mod, int width, int height, int bpp);
@@ -698,7 +697,6 @@ struct xrdp_server_module
 	pXrdpServerSetForeColor SetForeColor;
 	pXrdpServerSetBackColor SetBackColor;
 	pXrdpServerSetRop2 SetRop2;
-	pXrdpServerSetPen SetPen;
 	pXrdpServerLineTo LineTo;
 	pXrdpServerAddChar AddChar;
 	pXrdpServerText Text;

@@ -1006,6 +1006,11 @@ UINT32 rdpup_convert_color(UINT32 color)
 	return color;
 }
 
+UINT32 rdpup_convert_opcode(int opcode)
+{
+	return g_rdp_opcodes[opcode & 0xF];
+}
+
 int rdpup_init(void)
 {
 	int i;
@@ -1370,30 +1375,10 @@ int rdpup_set_opcode(int opcode)
 	return 0;
 }
 
-int rdpup_set_pen(int style, int width)
+int rdpup_draw_line(XRDP_MSG_LINE_TO* msg)
 {
-	XRDP_MSG_SET_PEN msg;
-
-	msg.PenStyle = style;
-	msg.PenWidth = width;
-
-	msg.type = XRDP_SERVER_SET_PEN;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_draw_line(short x1, short y1, short x2, short y2)
-{
-	XRDP_MSG_LINE_TO msg;
-
-	msg.nXStart = x1;
-	msg.nYStart = y1;
-	msg.nXEnd = x2;
-	msg.nYEnd = y2;
-
-	msg.type = XRDP_SERVER_LINE_TO;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+	msg->type = XRDP_SERVER_LINE_TO;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
 
 	return 0;
 }
@@ -1874,9 +1859,12 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 
 				if (num_clips > 0)
 				{
-					rdpup_set_fgcolor(di->u.line.fg_color);
-					rdpup_set_opcode(di->u.line.opcode);
-					rdpup_set_pen(0, di->u.line.width);
+					XRDP_MSG_LINE_TO msg;
+
+					msg.bRop2 = rdpup_convert_opcode(di->u.line.opcode);
+					msg.penColor = rdpup_convert_color(di->u.line.fg_color);
+					msg.penWidth = di->u.line.width;
+					msg.penStyle = 0;
 
 					for (clip_index = num_clips - 1; clip_index >= 0; clip_index--)
 					{
@@ -1886,15 +1874,17 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 						for (index = 0; index < di->u.line.nseg; index++)
 						{
 							seg = di->u.line.segs + index;
-							LLOGLN(10, ("  RDI_LINE %d %d %d %d", seg->x1, seg->y1,
-									seg->x2, seg->y2));
-							rdpup_draw_line(seg->x1, seg->y1, seg->x2, seg->y2);
+
+							msg.nXStart = seg->x1;
+							msg.nYStart = seg->y1;
+							msg.nXEnd = seg->x2;
+							msg.nYEnd = seg->y2;
+							rdpup_draw_line(&msg);
 						}
 					}
 				}
 
 				rdpup_reset_clip();
-				rdpup_set_opcode(GXcopy);
 				break;
 
 			case RDI_SCRBLT:
@@ -2005,9 +1995,12 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 
 				if (num_clips > 0)
 				{
-					rdpup_set_fgcolor(di->u.line.fg_color);
-					rdpup_set_opcode(di->u.line.opcode);
-					rdpup_set_pen(0, di->u.line.width);
+					XRDP_MSG_LINE_TO msg;
+
+					msg.bRop2 = rdpup_convert_opcode(di->u.line.opcode);
+					msg.penColor = rdpup_convert_color(di->u.line.fg_color);
+					msg.penWidth = di->u.line.width;
+					msg.penStyle = 0;
 
 					for (clip_index = num_clips - 1; clip_index >= 0; clip_index--)
 					{
@@ -2017,15 +2010,17 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 						for (index = 0; index < di->u.line.nseg; index++)
 						{
 							seg = di->u.line.segs + index;
-							LLOGLN(10, ("  RDI_LINE %d %d %d %d", seg->x1, seg->y1,
-									seg->x2, seg->y2));
-							rdpup_draw_line(seg->x1, seg->y1, seg->x2, seg->y2);
+
+							msg.nXStart = seg->x1;
+							msg.nYStart = seg->y1;
+							msg.nXEnd = seg->x2;
+							msg.nYEnd = seg->y2;
+							rdpup_draw_line(&msg);
 						}
 					}
 				}
 
 				rdpup_reset_clip();
-				rdpup_set_opcode(GXcopy);
 				break;
 
 			case RDI_SCRBLT:
