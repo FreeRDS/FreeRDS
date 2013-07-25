@@ -689,7 +689,6 @@ static int xrdp_wm_xor_pat(xrdpWm *self, int x, int y, int cx, int cy)
 	self->painter->rop = 0x5a;
 	xrdp_painter_begin_update(self->painter);
 	self->painter->use_clip = 0;
-	self->painter->mix_mode = 1;
 	self->painter->brush.pattern[0] = 0xaa;
 	self->painter->brush.pattern[1] = 0x55;
 	self->painter->brush.pattern[2] = 0xaa;
@@ -703,19 +702,13 @@ static int xrdp_wm_xor_pat(xrdpWm *self, int x, int y, int cx, int cy)
 	self->painter->brush.style = 3;
 	self->painter->bg_color = self->black;
 	self->painter->fg_color = self->white;
-	/* top */
-	xrdp_painter_fill_rect(self->painter, self->screen, x, y, cx, 5);
-	/* bottom */
-	xrdp_painter_fill_rect(self->painter, self->screen, x, y + (cy - 5), cx, 5);
-	/* left */
-	xrdp_painter_fill_rect(self->painter, self->screen, x, y + 5, 5, cy - 10);
-	/* right */
-	xrdp_painter_fill_rect(self->painter, self->screen, x + (cx - 5), y + 5, 5,
-			cy - 10);
+	xrdp_painter_patblt(self->painter, self->screen, x, y, cx, 5); /* top */
+	xrdp_painter_patblt(self->painter, self->screen, x, y + (cy - 5), cx, 5); /* bottom */
+	xrdp_painter_patblt(self->painter, self->screen, x, y + 5, 5, cy - 10); /* left */
+	xrdp_painter_patblt(self->painter, self->screen, x + (cx - 5), y + 5, 5, cy - 10); /* right */
 	xrdp_painter_end_update(self->painter);
-	self->painter->rop = 0xcc;
+	self->painter->rop = 0xCC;
 	self->painter->clip_children = 1;
-	self->painter->mix_mode = 0;
 	return 0;
 }
 

@@ -300,7 +300,6 @@ struct xrdp_painter
 	int clip_children;
 	int bg_color;
 	int fg_color;
-	int mix_mode;
 	xrdpBrush brush;
 	xrdpPen pen;
 	xrdpSession* session;
@@ -549,24 +548,18 @@ int wm_painter_set_target(xrdpPainter* self);
 int xrdp_painter_begin_update(xrdpPainter* self);
 int xrdp_painter_end_update(xrdpPainter* self);
 int xrdp_painter_font_needed(xrdpPainter* self);
-int xrdp_painter_set_clip(xrdpPainter* self,
-		int x, int y, int cx, int cy);
+int xrdp_painter_set_clip(xrdpPainter* self, int x, int y, int cx, int cy);
 int xrdp_painter_clr_clip(xrdpPainter* self);
-int xrdp_painter_fill_rect(xrdpPainter* self,
-		xrdpBitmap* bitmap, int x, int y, int cx, int cy);
-int xrdp_painter_draw_bitmap(xrdpPainter* self,
-		xrdpBitmap* bitmap, xrdpBitmap* to_draw,
-		int x, int y, int cx, int cy);
+int xrdp_painter_fill_rect(xrdpPainter* self, xrdpBitmap* bitmap, int x, int y, int cx, int cy);
+int xrdp_painter_patblt(xrdpPainter *self, xrdpBitmap* dst, int x, int y, int cx, int cy);
+int xrdp_painter_draw_bitmap(xrdpPainter* self, xrdpBitmap* bitmap, xrdpBitmap* to_draw, int x, int y, int cx, int cy);
 int xrdp_painter_text_width(xrdpPainter* self, char* text);
 int xrdp_painter_text_height(xrdpPainter* self, char* text);
-int xrdp_painter_draw_text(xrdpPainter* self,
-		xrdpBitmap* bitmap, int x, int y, const char* text);
+int xrdp_painter_draw_text(xrdpPainter* self, xrdpBitmap* bitmap, int x, int y, const char* text);
 int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDER* msg);
-int xrdp_painter_copy(xrdpPainter* self,
-		xrdpBitmap* src, xrdpBitmap* dst,
+int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap* src, xrdpBitmap* dst,
 		int x, int y, int cx, int cy, int srcx, int srcy);
-int xrdp_painter_line(xrdpPainter* self,
-		xrdpBitmap* bitmap, int x1, int y1, int x2, int y2);
+int xrdp_painter_line(xrdpPainter* self, xrdpBitmap* bitmap, int x1, int y1, int x2, int y2);
 
 /* xrdp_font.c */
 xrdpFont* xrdp_font_create(xrdpWm* wm);

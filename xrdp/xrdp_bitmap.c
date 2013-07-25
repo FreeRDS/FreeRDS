@@ -1001,10 +1001,9 @@ int xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
 
 static int xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, int x, int y, int cx, int cy)
 {
-	painter->rop = 0xf0;
+	painter->rop = 0xF0;
 	xrdp_painter_begin_update(painter);
 	painter->use_clip = 0;
-	painter->mix_mode = 1;
 	painter->brush.pattern[0] = 0xaa;
 	painter->brush.pattern[1] = 0x55;
 	painter->brush.pattern[2] = 0xaa;
@@ -1018,17 +1017,12 @@ static int xrdp_bitmap_draw_focus_box(xrdpBitmap *self, xrdpPainter *painter, in
 	painter->brush.style = 3;
 	painter->fg_color = self->wm->black;
 	painter->bg_color = self->parent->bg_color;
-	/* top */
-	xrdp_painter_fill_rect(painter, self, x, y, cx, 1);
-	/* bottom */
-	xrdp_painter_fill_rect(painter, self, x, y + (cy - 1), cx, 1);
-	/* left */
-	xrdp_painter_fill_rect(painter, self, x, y + 1, 1, cy - 2);
-	/* right */
-	xrdp_painter_fill_rect(painter, self, x + (cx - 1), y + 1, 1, cy - 2);
+	xrdp_painter_patblt(painter, self, x, y, cx, 1); /* top */
+	xrdp_painter_patblt(painter, self, x, y + (cy - 1), cx, 1); /* bottom */
+	xrdp_painter_patblt(painter, self, x, y + 1, 1, cy - 2); /* left */
+	xrdp_painter_patblt(painter, self, x + (cx - 1), y + 1, 1, cy - 2); /* right */
 	xrdp_painter_end_update(painter);
 	painter->rop = 0xcc;
-	painter->mix_mode = 0;
 	return 0;
 }
 

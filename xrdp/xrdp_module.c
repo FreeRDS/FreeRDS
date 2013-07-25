@@ -157,9 +157,7 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 
 int xrdp_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 {
-	int bpp;
 	xrdpWm* wm;
-	xrdpBitmap* b;
 	xrdpPainter* p;
 
 	wm = (xrdpWm*) (mod->wm);
@@ -168,7 +166,6 @@ int xrdp_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 	if (!p)
 		return 0;
 
-	p->mix_mode = 1;
 	p->rop = msg->bRop;
 	p->fg_color = msg->foreColor;
 	p->pen.color = p->fg_color;
@@ -179,8 +176,9 @@ int xrdp_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 	p->brush.style = msg->brush.style;
 	CopyMemory(p->brush.pattern, msg->brush.p8x8, 8);
 
+	xrdp_painter_patblt(p, wm->target_surface, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+
 	p->rop = 0xCC;
-	p->mix_mode = 0;
 
 	return 0;
 }
@@ -197,7 +195,7 @@ int xrdp_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 	return 0;
 }
 
-int xrdp_server_set_palette(xrdpModule* mod, int *palette)
+int xrdp_server_set_palette(xrdpModule* mod, int* palette)
 {
 	xrdpWm* wm;
 

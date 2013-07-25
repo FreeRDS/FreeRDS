@@ -22,17 +22,18 @@
 
 xrdpPainter* xrdp_painter_create(xrdpWm *wm, xrdpSession *session)
 {
-	xrdpPainter *self;
+	xrdpPainter* self;
 
 	self = (xrdpPainter *) g_malloc(sizeof(xrdpPainter), 1);
 	self->wm = wm;
 	self->session = session;
 	self->rop = 0xCC;
 	self->clip_children = 1;
+
 	return self;
 }
 
-void xrdp_painter_delete(xrdpPainter *self)
+void xrdp_painter_delete(xrdpPainter* self)
 {
 	if (!self)
 		return;
@@ -40,7 +41,7 @@ void xrdp_painter_delete(xrdpPainter *self)
 	free(self);
 }
 
-int wm_painter_set_target(xrdpPainter *self)
+int wm_painter_set_target(xrdpPainter* self)
 {
 	int surface_index;
 	int index;
@@ -84,7 +85,7 @@ int wm_painter_set_target(xrdpPainter *self)
 	return 0;
 }
 
-int xrdp_painter_begin_update(xrdpPainter *self)
+int xrdp_painter_begin_update(xrdpPainter* self)
 {
 	if (!self)
 		return 0;
@@ -94,7 +95,7 @@ int xrdp_painter_begin_update(xrdpPainter *self)
 	return 0;
 }
 
-int xrdp_painter_end_update(xrdpPainter *self)
+int xrdp_painter_end_update(xrdpPainter* self)
 {
 	if (!self)
 		return 0;
@@ -103,7 +104,7 @@ int xrdp_painter_end_update(xrdpPainter *self)
 	return 0;
 }
 
-int xrdp_painter_font_needed(xrdpPainter *self)
+int xrdp_painter_font_needed(xrdpPainter* self)
 {
 	if (!self->font)
 		self->font = self->wm->default_font;
@@ -111,7 +112,7 @@ int xrdp_painter_font_needed(xrdpPainter *self)
 	return 0;
 }
 
-int xrdp_painter_set_clip(xrdpPainter *self, int x, int y, int cx, int cy)
+int xrdp_painter_set_clip(xrdpPainter* self, int x, int y, int cx, int cy)
 {
 	self->use_clip = &self->clip;
 	self->clip.left = x;
@@ -121,13 +122,13 @@ int xrdp_painter_set_clip(xrdpPainter *self, int x, int y, int cx, int cy)
 	return 0;
 }
 
-int xrdp_painter_clr_clip(xrdpPainter *self)
+int xrdp_painter_clr_clip(xrdpPainter* self)
 {
 	self->use_clip = 0;
 	return 0;
 }
 
-int xrdp_painter_text_width(xrdpPainter *self, char *text)
+int xrdp_painter_text_width(xrdpPainter* self, char *text)
 {
 	int index;
 	int rv;
@@ -158,7 +159,7 @@ int xrdp_painter_text_width(xrdpPainter *self, char *text)
 	return rv;
 }
 
-int xrdp_painter_text_height(xrdpPainter *self, char *text)
+int xrdp_painter_text_height(xrdpPainter* self, char *text)
 {
 	int index;
 	int rv;
@@ -193,7 +194,7 @@ int xrdp_painter_text_height(xrdpPainter *self, char *text)
 	return rv;
 }
 
-static int xrdp_painter_setup_brush(xrdpPainter *self, xrdpBrush *out_brush, xrdpBrush *in_brush)
+static int xrdp_painter_setup_brush(xrdpPainter* self, xrdpBrush *out_brush, xrdpBrush *in_brush)
 {
 	int cache_id;
 
@@ -214,44 +215,34 @@ static int xrdp_painter_setup_brush(xrdpPainter *self, xrdpBrush *out_brush, xrd
 }
 
 /* fill in an area of the screen with one color */
-int xrdp_painter_fill_rect(xrdpPainter *self, xrdpBitmap *dst, int x, int y, int cx, int cy)
+int xrdp_painter_fill_rect(xrdpPainter* self, xrdpBitmap* dst, int x, int y, int cx, int cy)
 {
-	xrdpRect clip_rect;
-	xrdpRect draw_rect;
-	xrdpRect rect;
-	xrdpRegion *region;
-	xrdpBrush brush;
 	int k;
 	int dx;
 	int dy;
-	int rop;
+	xrdpRect clip_rect;
+	xrdpRect draw_rect;
+	xrdpRect rect;
+	xrdpRegion* region;
 
 	if (!self)
 		return 0;
 
-	/* todo data */
-
-	if (dst->type == WND_TYPE_BITMAP) /* 0 */
-	{
+	if (dst->type == WND_TYPE_BITMAP)
 		return 0;
-	}
 
 	xrdp_bitmap_get_screen_clip(dst, self, &clip_rect, &dx, &dy);
 	region = xrdp_region_create(self->wm);
 
 	if (dst->type != WND_TYPE_OFFSCREEN)
-	{
 		xrdp_wm_get_vis_region(self->wm, dst, x, y, cx, cy, region, self->clip_children);
-	}
 	else
-	{
 		xrdp_region_add_rect(region, &clip_rect);
-	}
 
 	x += dx;
 	y += dy;
 
-	if (self->mix_mode == 0 && self->rop == 0xcc)
+	if (self->rop == 0xCC)
 	{
 		k = 0;
 
@@ -265,7 +256,7 @@ int xrdp_painter_fill_rect(xrdpPainter *self, xrdpBitmap *dst, int x, int y, int
 			k++;
 		}
 	}
-	else if (self->mix_mode == 0 && ((self->rop & 0xf) == 0x0 || /* black */
+	else if (((self->rop & 0xf) == 0x0 || /* black */
 		(self->rop & 0xf) == 0xf || /* white */
 		(self->rop & 0xf) == 0x5)) /* DSTINVERT */
 	{
@@ -281,50 +272,82 @@ int xrdp_painter_fill_rect(xrdpPainter *self, xrdpBitmap *dst, int x, int y, int
 			k++;
 		}
 	}
-	else
-	{
-		k = 0;
-		rop = self->rop;
-
-		/* if opcode is in the form 0x00, 0x11, 0x22, ... convert it */
-		if (((rop & 0xf0) >> 4) == (rop & 0xf))
-		{
-			switch (rop)
-			{
-				case 0x66: /* xor */
-					rop = 0x5a;
-					break;
-				case 0xaa: /* noop */
-					rop = 0xfb;
-					break;
-				case 0xcc: /* copy */
-					rop = 0xf0;
-					break;
-				case 0x88: /* and */
-					rop = 0xc0;
-					break;
-			}
-		}
-
-		xrdp_painter_setup_brush(self, &brush, &self->brush);
-
-		while (xrdp_region_get_rect(region, k, &rect) == 0)
-		{
-			if (rect_intersect(&rect, &clip_rect, &draw_rect))
-			{
-				libxrdp_orders_pat_blt(self->session, x, y, cx, cy, rop, self->bg_color,
-						self->fg_color, &brush, &draw_rect);
-			}
-
-			k++;
-		}
-	}
 
 	xrdp_region_delete(region);
 	return 0;
 }
 
-int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, const char *text)
+int xrdp_painter_patblt(xrdpPainter* self, xrdpBitmap* dst, int x, int y, int cx, int cy)
+{
+	int k;
+	int dx;
+	int dy;
+	int rop;
+	xrdpRect rect;
+	xrdpBrush brush;
+	xrdpRect clip_rect;
+	xrdpRect draw_rect;
+	xrdpRegion* region;
+
+	if (!self)
+		return 0;
+
+	if (dst->type == WND_TYPE_BITMAP)
+		return 0;
+
+	xrdp_bitmap_get_screen_clip(dst, self, &clip_rect, &dx, &dy);
+	region = xrdp_region_create(self->wm);
+
+	if (dst->type != WND_TYPE_OFFSCREEN)
+		xrdp_wm_get_vis_region(self->wm, dst, x, y, cx, cy, region, self->clip_children);
+	else
+		xrdp_region_add_rect(region, &clip_rect);
+
+	x += dx;
+	y += dy;
+
+	k = 0;
+	rop = self->rop;
+
+	/* if opcode is in the form 0x00, 0x11, 0x22, ... convert it */
+	if (((rop & 0xF0) >> 4) == (rop & 0xf))
+	{
+		switch (rop)
+		{
+			case 0x66: /* xor */
+				rop = 0x5a;
+				break;
+			case 0xaa: /* noop */
+				rop = 0xfb;
+				break;
+			case 0xcc: /* copy */
+				rop = 0xf0;
+				break;
+			case 0x88: /* and */
+				rop = 0xc0;
+				break;
+		}
+	}
+
+	xrdp_painter_setup_brush(self, &brush, &self->brush);
+
+	while (xrdp_region_get_rect(region, k, &rect) == 0)
+	{
+		if (rect_intersect(&rect, &clip_rect, &draw_rect))
+		{
+			libxrdp_orders_pat_blt(self->session, x, y, cx, cy, rop, self->bg_color,
+					self->fg_color, &brush, &draw_rect);
+		}
+
+		k++;
+	}
+
+	xrdp_region_delete(region);
+
+	return 0;
+}
+
+int xrdp_painter_draw_text(xrdpPainter* self, xrdpBitmap *dst, int x, int y, const char *text)
 {
 	int i;
 	int f;
@@ -446,7 +469,7 @@ int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap *dst, int x, int y, con
 	return 0;
 }
 
-int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDER* msg)
+int xrdp_painter_draw_text2(xrdpPainter* self, xrdpBitmap* dst, GLYPH_INDEX_ORDER* msg)
 {
 	xrdpRect clip_rect;
 	xrdpRect draw_rect;
@@ -514,7 +537,7 @@ int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDE
 	return 0;
 }
 
-int xrdp_painter_copy(xrdpPainter *self, xrdpBitmap *src, xrdpBitmap *dst, int x, int y, int cx, int cy, int srcx, int srcy)
+int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap *src, xrdpBitmap *dst, int x, int y, int cx, int cy, int srcx, int srcy)
 {
 	xrdpRect clip_rect;
 	xrdpRect draw_rect;
@@ -703,7 +726,7 @@ int xrdp_painter_copy(xrdpPainter *self, xrdpBitmap *src, xrdpBitmap *dst, int x
 	return 0;
 }
 
-int xrdp_painter_line(xrdpPainter *self, xrdpBitmap *dst, int x1, int y1, int x2, int y2)
+int xrdp_painter_line(xrdpPainter* self, xrdpBitmap *dst, int x1, int y1, int x2, int y2)
 {
 	xrdpRect clip_rect;
 	xrdpRect draw_rect;
