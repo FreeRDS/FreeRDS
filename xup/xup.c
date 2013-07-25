@@ -102,7 +102,7 @@ int lib_recv(xrdpModule* mod, BYTE* data, int length)
 	{
 		if (g_tcp_last_error_would_block(mod->sck))
 		{
-			if (server_is_term(mod))
+			if (mod->server->IsTerminated(mod))
 			{
 				return -1;
 			}
@@ -138,7 +138,7 @@ int lib_send_all(xrdpModule* mod, unsigned char *data, int len)
 		{
 			if (g_tcp_last_error_would_block(mod->sck))
 			{
-				if (server_is_term(mod))
+				if (mod->server->IsTerminated(mod))
 				{
 					return 1;
 				}
@@ -190,24 +190,25 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 	opaqueRect.nHeight = mod->height;
 
 	/* clear screen */
-	server_begin_update(mod);
-	server_set_fgcolor(mod, 0);
-	server_opaque_rect(mod, &opaqueRect);
-	server_end_update(mod);
 
-	server_msg(mod, "started connecting", 0);
+	mod->server->BeginUpdate(mod);
+	mod->server->SetForeColor(mod, 0);
+	mod->server->OpaqueRect(mod, &opaqueRect);
+	mod->server->EndUpdate(mod);
+
+	mod->server->Message(mod, "started connecting", 0);
 
 	/* only support 8, 15, 16, and 24 bpp connections from rdp client */
 	if (mod->bpp != 8 && mod->bpp != 15 && mod->bpp != 16 && mod->bpp != 24 && mod->bpp != 32)
 	{
-		server_msg(mod, "error - only supporting 8, 15, 16, 24 and 32 bpp rdp connections", 0);
+		mod->server->Message(mod, "error - only supporting 8, 15, 16, 24 and 32 bpp rdp connections", 0);
 		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 
 	if (g_strcmp(mod->ip, "") == 0)
 	{
-		server_msg(mod, "error - no ip set", 0);
+		mod->server->Message(mod, "error - no ip set", 0);
 		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
@@ -236,7 +237,7 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 			g_tcp_set_no_delay(mod->sck);
 		}
 
-		server_msg(mod, "connecting...", 0);
+		mod->server->Message(mod, "connecting...", 0);
 
 		if (use_uds)
 		{
@@ -258,9 +259,9 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 				{
 					index++;
 
-					if ((index >= 30) || server_is_term(mod))
+					if ((index >= 30) || mod->server->IsTerminated(mod))
 					{
-						server_msg(mod, "connect timeout", 0);
+						mod->server->Message(mod, "connect timeout", 0);
 						status = 1;
 						break;
 					}
@@ -268,7 +269,7 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 			}
 			else
 			{
-				server_msg(mod, "connect error", 0);
+				mod->server->Message(mod, "connect error", 0);
 			}
 		}
 
@@ -283,7 +284,7 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 
 		if (i >= 4)
 		{
-			server_msg(mod, "connection problem, giving up", 0);
+			mod->server->Message(mod, "connection problem, giving up", 0);
 			break;
 		}
 
@@ -318,13 +319,13 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 
 	if (status != 0)
 	{
-		server_msg(mod, "some problem", 0);
+		mod->server->Message(mod, "some problem", 0);
 		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 	else
 	{
-		server_msg(mod, "connected ok", 0);
+		mod->server->Message(mod, "connected ok", 0);
 		mod->SocketEvent = CreateFileDescriptorEvent(NULL, TRUE, FALSE, mod->sck);
 	}
 

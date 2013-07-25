@@ -620,10 +620,21 @@ int xrdp_bitmap_compress(char* in_data, int width, int height,
 xrdpMm* xrdp_mm_create(xrdpWm* owner);
 void xrdp_mm_delete(xrdpMm* self);
 int xrdp_mm_connect(xrdpMm* self);
+int xrdp_mm_setup_mod1(xrdpMm* self);
+int xrdp_mm_setup_mod2(xrdpMm* self);
+int xrdp_mm_get_value(xrdpMm* self, char *aname, char *dest, int dest_len);
+void xrdp_mm_cleanup_sesman_connection(xrdpMm* self);
 int xrdp_mm_process_channel_data(xrdpMm* self, LONG_PTR param1, LONG_PTR param2, LONG_PTR param3, LONG_PTR param4);
 int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount);
 int xrdp_mm_check_wait_objs(xrdpMm* self);
 int xrdp_child_fork(void);
+
+/* xrdp_auth.c */
+int xrdp_mm_send_login(xrdpMm* self);
+int xrdp_mm_process_login_response(xrdpMm* self, wStream* s);
+int access_control(char *username, char *password, char *srv);
+const char* getPAMError(const int pamError, char *text, int text_bytes);
+const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm* self);
 
 int xrdp_server_module_init(xrdpModule* mod);
 

@@ -30,6 +30,7 @@ set(${MODULE_PREFIX}_SRCS
 	funcs.c
 	lang.c
 	xrdp.c
+	xrdp_auth.c
 	xrdp_bitmap.c
 	xrdp_cache.c
 	xrdp_font.c
