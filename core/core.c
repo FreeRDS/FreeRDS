@@ -379,43 +379,16 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	return 0;
 }
 
-int libxrdp_orders_text(xrdpSession* session,
-		int font, int flags, int mixmode,
-		int fg_color, int bg_color,
-		int clip_left, int clip_top,
-		int clip_right, int clip_bottom,
-		int box_left, int box_top,
-		int box_right, int box_bottom,
-		int x, int y, char* data, int data_len,
-		xrdpRect* rect)
+int libxrdp_orders_text(xrdpSession* session, GLYPH_INDEX_ORDER* msg, xrdpRect* rect)
 {
 	GLYPH_INDEX_ORDER glyph_index;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s\n", __FUNCTION__);
-
-	glyph_index.cacheId = font;
-	glyph_index.flAccel = flags;
-	glyph_index.ulCharInc = mixmode;
-	glyph_index.fOpRedundant = 0;
-	glyph_index.backColor = fg_color;
-	glyph_index.foreColor = bg_color;
-	glyph_index.bkLeft = clip_left;
-	glyph_index.bkTop = clip_top;
-	glyph_index.bkRight = clip_right;
-	glyph_index.bkBottom = clip_bottom;
-	glyph_index.opLeft = box_left;
-	glyph_index.opTop = box_top;
-	glyph_index.opRight = box_right;
-	glyph_index.opBottom = box_bottom;
-	glyph_index.x = x;
-	glyph_index.y = y;
-	glyph_index.cbData = data_len;
-	CopyMemory(glyph_index.data, data, data_len);
+	printf("%s: cacheId: %d\n", __FUNCTION__, msg->cacheId);
 
 	libxrdp_set_bounds_rect(session, rect);
 
-	IFCALL(primary->GlyphIndex, session->context, &glyph_index);
+	IFCALL(primary->GlyphIndex, session->context, msg);
 
 	return 0;
 }
@@ -503,12 +476,12 @@ int libxrdp_orders_send_bitmap(xrdpSession* session,
 	return 0;
 }
 
-#if 1
 int libxrdp_orders_send_font(xrdpSession* session, XRDP_MSG_CACHE_GLYPH* msg)
 {
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s\n", __FUNCTION__);
+	printf("%s: cacheId: %d cacheIndex: %d\n", __FUNCTION__,
+			msg->cacheId, msg->glyphData[0].cacheIndex);
 
 	if (secondary->glyph_v2)
 	{
@@ -546,51 +519,6 @@ int libxrdp_orders_send_font(xrdpSession* session, XRDP_MSG_CACHE_GLYPH* msg)
 
 	return 0;
 }
-#else
-int libxrdp_orders_send_font(xrdpSession* session,
-		xrdpFontChar* font_char, int font_index, int char_index)
-{
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
-
-	printf("%s\n", __FUNCTION__);
-
-	if (secondary->glyph_v2)
-	{
-		CACHE_GLYPH_V2_ORDER cache_glyph_v2;
-
-		cache_glyph_v2.flags = 0;
-		cache_glyph_v2.cacheId = font_index;
-		cache_glyph_v2.cGlyphs = 1;
-		cache_glyph_v2.glyphData[0].cacheIndex = char_index;
-		cache_glyph_v2.glyphData[0].x = font_char->offset;
-		cache_glyph_v2.glyphData[0].y = font_char->baseline;
-		cache_glyph_v2.glyphData[0].cx = font_char->width;
-		cache_glyph_v2.glyphData[0].cy = font_char->height;
-		cache_glyph_v2.glyphData[0].aj = (BYTE*) font_char->data;
-		cache_glyph_v2.unicodeCharacters = NULL;
-
-		IFCALL(secondary->CacheGlyphV2, session->context, &cache_glyph_v2);
-	}
-	else
-	{
-		CACHE_GLYPH_ORDER cache_glyph;
-
-		cache_glyph.cacheId = font_index;
-		cache_glyph.cGlyphs = 1;
-		cache_glyph.glyphData[0].cacheIndex = char_index;
-		cache_glyph.glyphData[0].x = font_char->offset;
-		cache_glyph.glyphData[0].y = font_char->baseline;
-		cache_glyph.glyphData[0].cx = font_char->width;
-		cache_glyph.glyphData[0].cy = font_char->height;
-		cache_glyph.glyphData[0].aj = (BYTE*) font_char->data;
-		cache_glyph.unicodeCharacters = NULL;
-
-		IFCALL(secondary->CacheGlyph, session->context, &cache_glyph);
-	}
-
-	return 0;
-}
-#endif
 
 int libxrdp_reset(xrdpSession* session, int width, int height, int bpp)
 {
