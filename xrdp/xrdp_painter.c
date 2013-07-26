@@ -18,13 +18,17 @@
  * painter, gc
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "xrdp.h"
 
-xrdpPainter* xrdp_painter_create(xrdpWm *wm, xrdpSession *session)
+xrdpPainter* xrdp_painter_create(xrdpWm* wm, xrdpSession* session)
 {
 	xrdpPainter* self;
 
-	self = (xrdpPainter *) g_malloc(sizeof(xrdpPainter), 1);
+	self = (xrdpPainter*) g_malloc(sizeof(xrdpPainter), 1);
 	self->wm = wm;
 	self->session = session;
 	self->rop = 0xCC;

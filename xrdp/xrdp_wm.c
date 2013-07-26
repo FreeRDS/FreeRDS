@@ -1529,15 +1529,15 @@ static int xrdp_wm_log_wnd_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, 
 
 void add_string_to_logwindow(char *msg, xrdpList *log)
 {
-	char *new_part_message;
-	char *current_pointer = msg ;
+	char* new_part_message;
+	char* current_pointer = msg;
 	int processedlen = 0;
 
 	do
 	{
 		new_part_message = g_strndup(current_pointer, LOG_WINDOW_CHAR_PER_LINE) ;
 		g_writeln(new_part_message);
-		list_add_item(log, (long)new_part_message);
+		list_add_item(log, (long) new_part_message);
 		processedlen = processedlen + g_strlen(new_part_message);
 		current_pointer = current_pointer + g_strlen(new_part_message) ;
 	}

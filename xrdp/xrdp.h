@@ -620,6 +620,7 @@ const char* getPAMError(const int pamError, char *text, int text_bytes);
 const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm* self);
 
 int xrdp_server_module_init(xrdpModule* mod);
+int xrdp_message_server_module_init(xrdpModule* mod);
 
 /**
  * Module Interface
@@ -755,6 +756,12 @@ struct xrdp_mod
 	struct pointer_item pointer_cache[32];
 
 	XRDP_FRAMEBUFFER framebuffer;
+
+	wMessageQueue* ClientQueue;
+	wMessageQueue* ServerQueue;
+
+	xrdpClientModule* ClientProxy;
+	xrdpServerModule* ServerProxy;
 };
 
 #endif /* XRDP_H */

@@ -551,5 +551,7 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->MonitoredDesktop = xrdp_server_monitored_desktop;
 	}
 
+	xrdp_message_server_module_init(mod);
+
 	return 0;
 }

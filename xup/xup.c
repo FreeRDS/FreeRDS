@@ -776,6 +776,8 @@ int xup_module_init(xrdpModule* mod)
 	mod->TotalLength = 0;
 	mod->TotalCount = 0;
 
+	mod->ServerQueue = MessageQueue_New();
+
 	return 0;
 }
 

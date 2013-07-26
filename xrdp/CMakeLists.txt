@@ -34,10 +34,11 @@ set(${MODULE_PREFIX}_SRCS
 	xrdp_bitmap.c
 	xrdp_cache.c
 	xrdp_font.c
-	xrdp_listen.c
+	xrdp_listener.c
 	xrdp_login_wnd.c
 	xrdp_mm.c
 	xrdp_module.c
+	xrdp_pipeline.c
 	xrdp_painter.c
 	xrdp_process.c
 	xrdp_region.c
