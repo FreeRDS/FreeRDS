@@ -289,7 +289,7 @@ int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 
 	wm = (xrdpWm*) (mod->wm);
 
-	return xrdp_painter_line(p, wm->target_surface, msg->nXStart, msg->nYStart, msg->nXEnd, msg->nYEnd);
+	return xrdp_painter_line(p, wm->target_surface, msg);
 }
 
 int xrdp_server_add_char(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)

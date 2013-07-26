@@ -314,39 +314,27 @@ int libxrdp_orders_dest_blt(xrdpSession* session,
 	return 0;
 }
 
-int libxrdp_orders_line(xrdpSession* session, int mix_mode,
-		int startx, int starty,	int endx, int endy, int rop,
-		int bg_color, xrdpPen* pen, xrdpRect* rect)
+int libxrdp_orders_line(xrdpSession* session, XRDP_MSG_LINE_TO* msg, xrdpRect* rect)
 {
-	LINE_TO_ORDER line_to;
+	LINE_TO_ORDER lineTo;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
 	printf("%s\n", __FUNCTION__);
 
-	line_to.backMode = mix_mode;
-	line_to.nXStart = startx;
-	line_to.nYStart = starty;
-	line_to.nXEnd = endx;
-	line_to.nYEnd = endy;
-	line_to.backColor = bg_color;
-	line_to.bRop2 = rop;
-
-	if (pen)
-	{
-		line_to.penStyle = pen->style;
-		line_to.penWidth = pen->width;
-		line_to.penColor = pen->color;
-	}
-	else
-	{
-		line_to.penStyle = 0;
-		line_to.penWidth = 0;
-		line_to.penColor = 0;
-	}
+	lineTo.backMode = 1;
+	lineTo.nXStart = msg->nXStart;
+	lineTo.nYStart = msg->nYStart;
+	lineTo.nXEnd = msg->nXEnd;
+	lineTo.nYEnd = msg->nYEnd;
+	lineTo.backColor = msg->backColor;
+	lineTo.bRop2 = msg->bRop2;
+	lineTo.penStyle = msg->penStyle;
+	lineTo.penWidth = msg->penWidth;
+	lineTo.penColor = msg->penColor;
 
 	libxrdp_set_bounds_rect(session, rect);
 
-	IFCALL(primary->LineTo, session->context, &line_to);
+	IFCALL(primary->LineTo, session->context, &lineTo);
 
 	return 0;
 }
