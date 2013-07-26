@@ -469,19 +469,15 @@ int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg)
 
 int xrdp_read_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 {
-	int BytesPerPixel;
-
 	Stream_Read_UINT16(s, msg->xPos);
 	Stream_Read_UINT16(s, msg->yPos);
 	Stream_Read_UINT16(s, msg->xorBpp);
+	Stream_Read_UINT16(s, msg->lengthXorMask);
+	Stream_Read_UINT16(s, msg->lengthAndMask);
 
-	BytesPerPixel = (msg->xorBpp == 0) ? 3 : (msg->xorBpp + 7) / 8;
-
-	msg->lengthXorMask = 32 * (32 * BytesPerPixel);
 	Stream_GetPointer(s, msg->xorMaskData);
 	Stream_Seek(s, msg->lengthXorMask);
 
-	msg->lengthXorMask = 32 * (32 / 8);
 	Stream_GetPointer(s, msg->andMaskData);
 	Stream_Seek(s, msg->lengthAndMask);
 
@@ -490,11 +486,18 @@ int xrdp_read_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 
 int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 {
-	int BytesPerPixel = (msg->xorBpp == 0) ? 3 : (msg->xorBpp + 7) / 8;
-	int size = 6 + 32 * (32 * BytesPerPixel) + 32 * (32 / 8);
+	if (!msg->xorBpp)
+		msg->xorBpp = 24;
+
+	if (!msg->lengthXorMask)
+		msg->lengthXorMask = ((msg->xorBpp + 7) / 8) * 32 * 32;
+
+	if (!msg->lengthAndMask)
+		msg->lengthAndMask = 32 * (32 / 8);
 
 	msg->flags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + size;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) +
+			10 + msg->lengthXorMask + msg->lengthAndMask;
 
 	if (!s)
 		return msg->length;
@@ -516,8 +519,10 @@ int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 	Stream_Write_UINT16(s, msg->xPos);
 	Stream_Write_UINT16(s, msg->yPos);
 	Stream_Write_UINT16(s, msg->xorBpp);
-	Stream_Write(s, msg->xorMaskData, 32 * (32 * BytesPerPixel));
-	Stream_Write(s, msg->andMaskData, 32 * (32 / 8));
+	Stream_Write_UINT16(s, msg->lengthXorMask);
+	Stream_Write_UINT16(s, msg->lengthAndMask);
+	Stream_Write(s, msg->xorMaskData, msg->lengthXorMask);
+	Stream_Write(s, msg->andMaskData, msg->lengthAndMask);
 
 	return 0;
 }

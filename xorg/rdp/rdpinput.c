@@ -673,7 +673,9 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 
 	msg.xorBpp = bpp;
 	msg.xorMaskData = (BYTE*) cur_data;
+	msg.lengthXorMask = 0;
 	msg.andMaskData = (BYTE*) cur_mask;
+	msg.lengthAndMask = 0;
 
 	rdpup_set_pointer(&msg);
 

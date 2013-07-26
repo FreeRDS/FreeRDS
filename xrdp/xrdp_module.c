@@ -195,10 +195,7 @@ int xrdp_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
 	xrdpWm* wm = (xrdpWm*) (mod->wm);
 
-	if (msg->xorBpp == 1)
-		msg->xorBpp = 0;
-
-	xrdp_wm_pointer(wm, (char*) msg->xorMaskData, (char*) msg->andMaskData, msg->xPos, msg->yPos, msg->xorBpp);
+	xrdp_wm_pointer(wm, msg);
 
 	return 0;
 }

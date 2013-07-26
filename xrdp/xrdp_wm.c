@@ -150,28 +150,31 @@ static int xrdp_wm_get_pixel(unsigned char *data, int x, int y, int width, int b
 	return 0;
 }
 
-int xrdp_wm_pointer(xrdpWm* self, char *data, char *mask, int x, int y, int bpp)
+int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg)
 {
-	int bytes;
+	int bpp;
 	xrdpPointerItem pointer_item;
 
-	if (bpp == 0)
+	bpp = msg->xorBpp;
+
+	if (!bpp)
 		bpp = 24;
 
-	bytes = ((bpp + 7) / 8) * 32 * 32;
-	g_memset(&pointer_item, 0, sizeof(xrdpPointerItem));
-	pointer_item.x = x;
-	pointer_item.y = y;
+	ZeroMemory(&pointer_item, sizeof(xrdpPointerItem));
+
+	pointer_item.x = msg->xPos;
+	pointer_item.y = msg->yPos;
 	pointer_item.bpp = bpp;
-	g_memcpy(pointer_item.data, data, bytes);
-	g_memcpy(pointer_item.mask, mask, 32 * 32 / 8);
+	CopyMemory(pointer_item.data, msg->xorMaskData, msg->lengthXorMask);
+	CopyMemory(pointer_item.mask, msg->andMaskData, msg->lengthAndMask);
+
 	self->screen->pointer = xrdp_cache_add_pointer(self->cache, &pointer_item);
 
 	return 0;
 }
 
 /* returns error */
-int xrdp_wm_load_pointer(xrdpWm* self, char *file_name, char *data, char *mask, int *x, int *y)
+int xrdp_wm_load_pointer(xrdpWm* self, char* file_name, char* data, char* mask, int* x, int* y)
 {
 	int fd;
 	int bpp;

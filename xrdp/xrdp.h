@@ -484,7 +484,7 @@ int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code);
 int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
 int xrdp_wm_pu(xrdpWm* self, xrdpBitmap* control);
 int xrdp_wm_send_pointer(xrdpWm* self, int cache_idx, char* data, char* mask, int x, int y, int bpp);
-int xrdp_wm_pointer(xrdpWm* self, char* data, char* mask, int x, int y, int bpp);
+int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg);
 int callback(long id, int msg, long param1, long param2, long param3, long param4);
 int xrdp_wm_delete_all_childs(xrdpWm* self);
 int xrdp_wm_log_msg(xrdpWm* self, char* msg);
