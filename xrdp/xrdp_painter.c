@@ -169,15 +169,11 @@ int xrdp_painter_text_height(xrdpPainter* self, char *text)
 
 	xrdp_painter_font_needed(self);
 
-	if (self->font == 0)
-	{
+	if (!self->font)
 		return 0;
-	}
 
-	if (text == 0)
-	{
+	if (!text)
 		return 0;
-	}
 
 	rv = 0;
 	len = g_mbstowcs(0, text, 0);
@@ -767,7 +763,7 @@ int xrdp_painter_line(xrdpPainter* self, xrdpBitmap *dst, int x1, int y1, int x2
 
 	if (rop < 0x01 || rop > 0x10)
 	{
-		rop = (rop & 0xf) + 1;
+		rop = (rop & 0xF) + 1;
 	}
 
 	while (xrdp_region_get_rect(region, k, &rect) == 0)
