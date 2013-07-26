@@ -576,32 +576,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 
 				status = xrdp_read_shared_framebuffer(s, &msg);
-
-				mod->framebuffer.fbWidth = msg.width;
-				mod->framebuffer.fbHeight = msg.height;
-				mod->framebuffer.fbScanline = msg.scanline;
-				mod->framebuffer.fbSegmentId = msg.segmentId;
-				mod->framebuffer.fbBitsPerPixel = msg.bitsPerPixel;
-				mod->framebuffer.fbBytesPerPixel = msg.bytesPerPixel;
-
-				printf("received shared framebuffer message: mod->framebuffer.fbAttached: %d msg.attach: %d\n",
-						mod->framebuffer.fbAttached, msg.attach);
-
-				if (!mod->framebuffer.fbAttached && msg.attach)
-				{
-					mod->framebuffer.fbSharedMemory = (BYTE*) shmat(mod->framebuffer.fbSegmentId, 0, 0);
-					mod->framebuffer.fbAttached = TRUE;
-
-					printf("attached segment %d to %p\n",
-							mod->framebuffer.fbSegmentId, mod->framebuffer.fbSharedMemory);
-				}
-
-				if (mod->framebuffer.fbAttached && !msg.attach)
-				{
-					shmdt(mod->framebuffer.fbSharedMemory);
-					mod->framebuffer.fbAttached = FALSE;
-					mod->framebuffer.fbSharedMemory = 0;
-				}
+				status = mod->server->SharedFramebuffer(mod, &msg);
 			}
 			break;
 
@@ -727,6 +702,12 @@ int x11rdp_xrdp_client_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD*
 			events[*nCount] = mod->SocketEvent;
 			(*nCount)++;
 		}
+
+		if (mod->ServerQueue)
+		{
+			events[*nCount] = MessageQueue_Event(mod->ServerQueue);
+			(*nCount)++;
+		}
 	}
 
 	return 0;
@@ -746,6 +727,15 @@ int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 	{
 		status = xup_recv(mod);
 	}
+
+	if (WaitForSingleObject(MessageQueue_Event(mod->ServerQueue), 0) == WAIT_OBJECT_0)
+	{
+		status = xrdp_message_server_queue_process_pending_messages(mod);
+	}
+
+	status = 0;
+
+	printf("x11rdp_xrdp_client_check_event_handles: %d\n", status);
 
 	return status;
 }

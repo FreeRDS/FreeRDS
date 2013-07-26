@@ -22,6 +22,14 @@
 #include "config.h"
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/shm.h>
+#include <sys/stat.h>
+
 #include "log.h"
 
 #include "xrdp.h"
@@ -312,6 +320,37 @@ int xrdp_server_text(xrdpModule* mod, GLYPH_INDEX_ORDER* msg)
 	return xrdp_painter_draw_text2(p, wm->target_surface, msg);
 }
 
+int xrdp_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
+{
+	mod->framebuffer.fbWidth = msg->width;
+	mod->framebuffer.fbHeight = msg->height;
+	mod->framebuffer.fbScanline = msg->scanline;
+	mod->framebuffer.fbSegmentId = msg->segmentId;
+	mod->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
+	mod->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
+
+	printf("received shared framebuffer message: mod->framebuffer.fbAttached: %d msg->attach: %d\n",
+			mod->framebuffer.fbAttached, msg->attach);
+
+	if (!mod->framebuffer.fbAttached && msg->attach)
+	{
+		mod->framebuffer.fbSharedMemory = (BYTE*) shmat(mod->framebuffer.fbSegmentId, 0, 0);
+		mod->framebuffer.fbAttached = TRUE;
+
+		printf("attached segment %d to %p\n",
+				mod->framebuffer.fbSegmentId, mod->framebuffer.fbSharedMemory);
+	}
+
+	if (mod->framebuffer.fbAttached && !msg->attach)
+	{
+		shmdt(mod->framebuffer.fbSharedMemory);
+		mod->framebuffer.fbAttached = FALSE;
+		mod->framebuffer.fbSharedMemory = 0;
+	}
+
+	return 0;
+}
+
 int xrdp_server_reset(xrdpModule* mod, int width, int height, int bpp)
 {
 	xrdpWm* wm;
@@ -537,6 +576,7 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->LineTo = xrdp_server_line_to;
 		mod->server->AddChar = xrdp_server_add_char;
 		mod->server->Text = xrdp_server_text;
+		mod->server->SharedFramebuffer = xrdp_server_shared_framebuffer;
 		mod->server->Reset = xrdp_server_reset;
 		mod->server->CreateOffscreenSurface = xrdp_server_create_offscreen_surface;
 		mod->server->SwitchOffscreenSurface = xrdp_server_switch_offscreen_surface;

@@ -25,30 +25,26 @@
 
 int xrdp_message_server_begin_update(xrdpModule* mod)
 {
-	int status;
-	status = mod->ServerProxy->BeginUpdate(mod);
-	return status;
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_BEGIN_UPDATE, NULL, NULL);
+	return 0;
 }
 
 int xrdp_message_server_end_update(xrdpModule* mod)
 {
-	int status;
-	status = mod->ServerProxy->EndUpdate(mod);
-	return status;
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_END_UPDATE, NULL, NULL);
+	return 0;
 }
 
 int xrdp_message_server_beep(xrdpModule* mod)
 {
-	int status;
-	status = mod->ServerProxy->Beep(mod);
-	return status;
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_BEEP, NULL, NULL);
+	return 0;
 }
 
 int xrdp_message_server_message(xrdpModule* mod, char* msg, int code)
 {
-	int status;
-	status = mod->ServerProxy->Message(mod, msg, code);
-	return status;
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_MESSAGE, (void*) msg, (void*) (size_t) code);
+	return 0;
 }
 
 int xrdp_message_server_is_terminated(xrdpModule* mod)
@@ -60,185 +56,474 @@ int xrdp_message_server_is_terminated(xrdpModule* mod)
 
 int xrdp_message_server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 {
-	int status;
-	status = mod->ServerProxy->OpaqueRect(mod, msg);
-	return status;
+	XRDP_MSG_OPAQUE_RECT* wParam;
+
+	wParam = (XRDP_MSG_OPAQUE_RECT*) malloc(sizeof(XRDP_MSG_OPAQUE_RECT));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_OPAQUE_RECT));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_OPAQUE_RECT, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
 {
-	int status;
-	status = mod->ServerProxy->ScreenBlt(mod, msg);
-	return status;
+	XRDP_MSG_SCREEN_BLT* wParam;
+
+	wParam = (XRDP_MSG_SCREEN_BLT*) malloc(sizeof(XRDP_MSG_SCREEN_BLT));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SCREEN_BLT));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SCREEN_BLT, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
-	int status;
-	status = mod->ServerProxy->PaintRect(mod, msg);
-	return status;
+	XRDP_MSG_PAINT_RECT* wParam;
+
+	wParam = (XRDP_MSG_PAINT_RECT*) malloc(sizeof(XRDP_MSG_PAINT_RECT));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_PAINT_RECT));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_PAINT_RECT, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 {
-	int status;
-	status = mod->ServerProxy->PatBlt(mod, msg);
-	return status;
+	XRDP_MSG_PATBLT* wParam;
+
+	wParam = (XRDP_MSG_PATBLT*) malloc(sizeof(XRDP_MSG_PATBLT));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_PATBLT));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_PATBLT, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
-	int status;
-	status = mod->ServerProxy->SetPointer(mod, msg);
-	return status;
+	XRDP_MSG_SET_POINTER* wParam;
+
+	wParam = (XRDP_MSG_SET_POINTER*) malloc(sizeof(XRDP_MSG_SET_POINTER));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SET_POINTER));
+
+	if (wParam->andMaskData)
+	{
+		wParam->andMaskData = (BYTE*) malloc(wParam->lengthAndMask);
+		CopyMemory(wParam->andMaskData, msg->andMaskData, wParam->lengthAndMask);
+	}
+
+	if (wParam->xorMaskData)
+	{
+		wParam->xorMaskData = (BYTE*) malloc(wParam->lengthXorMask);
+		CopyMemory(wParam->xorMaskData, msg->xorMaskData, wParam->lengthXorMask);
+	}
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_POINTER, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_set_palette(xrdpModule* mod, int* palette)
 {
-	int status;
-	status = mod->ServerProxy->SetPalette(mod, palette);
-	return status;
+	int* wParam;
+
+	wParam = (int*) malloc(256 * sizeof(int));
+	CopyMemory(wParam, palette, 256 * sizeof(int));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_PALETTE, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
-	int status;
-	status = mod->ServerProxy->SetClippingRegion(mod, msg);
-	return status;
+	XRDP_MSG_SET_CLIPPING_REGION* wParam;
+
+	wParam = (XRDP_MSG_SET_CLIPPING_REGION*) malloc(sizeof(XRDP_MSG_SET_CLIPPING_REGION));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SET_CLIPPING_REGION));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_CLIPPING_REGION, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_set_null_clipping_region(xrdpModule* mod)
 {
-	int status;
-	status = mod->ServerProxy->SetNullClippingRegion(mod);
-	return status;
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_NULL_CLIPPING_REGION, NULL, NULL);
+	return 0;
 }
 
 int xrdp_message_server_set_forecolor(xrdpModule* mod, int fgcolor)
 {
-	int status;
-	status = mod->ServerProxy->SetForeColor(mod, fgcolor);
-	return status;
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_FORECOLOR, (void*) (size_t) fgcolor, NULL);
+	return 0;
 }
 
 int xrdp_message_server_set_backcolor(xrdpModule* mod, int bgcolor)
 {
-	int status;
-	status = mod->ServerProxy->SetBackColor(mod, bgcolor);
-	return status;
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_BACKCOLOR, (void*) (size_t) bgcolor, NULL);
+	return 0;
 }
 
 int xrdp_message_server_set_rop2(xrdpModule* mod, int opcode)
 {
-	int status;
-	status = mod->ServerProxy->SetRop2(mod, opcode);
-	return status;
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_ROP2, (void*) (size_t) opcode, NULL);
+	return 0;
 }
 
 int xrdp_message_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 {
-	int status;
-	status = mod->ServerProxy->LineTo(mod, msg);
-	return status;
+	XRDP_MSG_LINE_TO* wParam;
+
+	wParam = (XRDP_MSG_LINE_TO*) malloc(sizeof(XRDP_MSG_LINE_TO));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_LINE_TO));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_LINE_TO, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_add_char(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 {
-	int status;
-	status = mod->ServerProxy->AddChar(mod, msg);
-	return status;
+	XRDP_MSG_CACHE_GLYPH* wParam;
+
+	wParam = (XRDP_MSG_CACHE_GLYPH*) malloc(sizeof(XRDP_MSG_CACHE_GLYPH));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_CACHE_GLYPH));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_CACHE_GLYPH, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_text(xrdpModule* mod, GLYPH_INDEX_ORDER* msg)
 {
-	int status;
-	status = mod->ServerProxy->Text(mod, msg);
-	return status;
+	GLYPH_INDEX_ORDER* wParam;
+
+	wParam = (GLYPH_INDEX_ORDER*) malloc(sizeof(GLYPH_INDEX_ORDER));
+	CopyMemory(wParam, msg, sizeof(GLYPH_INDEX_ORDER));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_TEXT, (void*) wParam, NULL);
+
+	return 0;
+}
+
+int xrdp_message_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
+{
+	XRDP_MSG_SHARED_FRAMEBUFFER* wParam;
+
+	wParam = (XRDP_MSG_SHARED_FRAMEBUFFER*) malloc(sizeof(XRDP_MSG_SHARED_FRAMEBUFFER));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SHARED_FRAMEBUFFER));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SHARED_FRAMEBUFFER, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_reset(xrdpModule* mod, int width, int height, int bpp)
 {
-	int status;
-	status = mod->ServerProxy->Reset(mod, width, height, bpp);
-	return status;
+	XRDP_MSG_RESET* wParam;
+
+	wParam = (XRDP_MSG_RESET*) malloc(sizeof(XRDP_MSG_RESET));
+
+	wParam->DesktopWidth = width;
+	wParam->DesktopHeight = height;
+	wParam->ColorDepth = bpp;
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_RESET, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_create_offscreen_surface(xrdpModule* mod, int rdpindex, int width, int height)
 {
-	int status;
-	status = mod->ServerProxy->CreateOffscreenSurface(mod, rdpindex, width, height);
-	return status;
+	XRDP_MSG_CREATE_OS_SURFACE* wParam;
+
+	wParam = (XRDP_MSG_CREATE_OS_SURFACE*) malloc(sizeof(XRDP_MSG_CREATE_OS_SURFACE));
+
+	wParam->index = rdpindex;
+	wParam->width = width;
+	wParam->height = height;
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_CREATE_OS_SURFACE, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
 {
-	int status;
-	status = mod->ServerProxy->SwitchOffscreenSurface(mod, rdpindex);
-	return status;
+	XRDP_MSG_SWITCH_OS_SURFACE* wParam;
+
+	wParam = (XRDP_MSG_SWITCH_OS_SURFACE*) malloc(sizeof(XRDP_MSG_SWITCH_OS_SURFACE));
+
+	wParam->index = rdpindex;
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SWITCH_OS_SURFACE, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_delete_offscreen_surface(xrdpModule* mod, int rdpindex)
 {
-	int status;
-	status = mod->ServerProxy->DeleteOffscreenSurface(mod, rdpindex);
-	return status;
+	XRDP_MSG_DELETE_OS_SURFACE* wParam;
+
+	wParam = (XRDP_MSG_DELETE_OS_SURFACE*) malloc(sizeof(XRDP_MSG_DELETE_OS_SURFACE));
+
+	wParam->index = rdpindex;
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_DELETE_OS_SURFACE, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
 {
-	int status;
-	status = mod->ServerProxy->PaintOffscreenRect(mod, x, y, cx, cy, rdpindex, srcx, srcy);
-	return status;
+	XRDP_MSG_MEMBLT* wParam;
+
+	wParam = (XRDP_MSG_MEMBLT*) malloc(sizeof(XRDP_MSG_MEMBLT));
+
+	wParam->nLeftRect = x;
+	wParam->nTopRect = y;
+	wParam->nWidth = cx;
+	wParam->nHeight = cy;
+	wParam->index = rdpindex;
+	wParam->nXSrc = srcx;
+	wParam->nYSrc = srcy;
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_MEMBLT, (void*) wParam, NULL);
+
+	return 0;
 }
 
 int xrdp_message_server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 {
-	int status;
-	status = mod->ServerProxy->WindowNewUpdate(mod, msg);
-	return status;
+	//mod->ServerProxy->WindowNewUpdate(mod, msg);
+	return 0;
 }
 
 int xrdp_message_server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
 {
-	int status;
-	status = mod->ServerProxy->WindowDelete(mod, msg);
-	return status;
+	//mod->ServerProxy->WindowDelete(mod, msg);
+	return 0;
 }
 
-int xrdp_message_server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id,
-		xrdpRailIconInfo* icon_info, int flags)
+int xrdp_message_server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags)
 {
-	int status;
-	status = mod->ServerProxy->WindowIcon(mod, window_id, cache_entry, cache_id, icon_info, flags);
-	return status;
+	//mod->ServerProxy->WindowIcon(mod, window_id, cache_entry, cache_id, icon_info, flags);
+	return 0;
 }
 
 int xrdp_message_server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags)
 {
-	int status;
-	status = mod->ServerProxy->WindowCachedIcon(mod, window_id, cache_entry, cache_id, flags);
-	return status;
+	//mod->ServerProxy->WindowCachedIcon(mod, window_id, cache_entry, cache_id, flags);
+	return 0;
 }
 
 int xrdp_message_server_notify_new_update(xrdpModule* mod, int window_id, int notify_id,
 		xrdpRailNotifyStateOrder* notify_state, int flags)
 {
-	int status;
-	status = mod->ServerProxy->NotifyNewUpdate(mod, window_id, notify_id, notify_state, flags);
-	return status;
+	//mod->ServerProxy->NotifyNewUpdate(mod, window_id, notify_id, notify_state, flags);
+	return 0;
 }
 
 int xrdp_message_server_notify_delete(xrdpModule* mod, int window_id, int notify_id)
 {
-	int status;
-	status = mod->ServerProxy->NotifyDelete(mod, window_id, notify_id);
-	return status;
+	//mod->ServerProxy->NotifyDelete(mod, window_id, notify_id);
+	return 0;
 }
 
 int xrdp_message_server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags)
 {
+	//mod->ServerProxy->MonitoredDesktop(mod, mdo, flags);
+	return 0;
+}
+
+int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message)
+{
 	int status;
-	status = mod->ServerProxy->MonitoredDesktop(mod, mdo, flags);
+
+	if (message->id == WMQ_QUIT)
+		return 0;
+
+	switch (message->id)
+	{
+		case XRDP_SERVER_BEGIN_UPDATE:
+			status = mod->ServerProxy->BeginUpdate(mod);
+			break;
+
+		case XRDP_SERVER_END_UPDATE:
+			status = mod->ServerProxy->EndUpdate(mod);
+			break;
+
+		case XRDP_SERVER_BEEP:
+			status = mod->ServerProxy->Beep(mod);
+			break;
+
+		case XRDP_SERVER_MESSAGE:
+			status = mod->ServerProxy->Message(mod, (char*) message->wParam, (int) (size_t) message->lParam);
+			break;
+
+		case XRDP_SERVER_OPAQUE_RECT:
+			status = mod->ServerProxy->OpaqueRect(mod, (XRDP_MSG_OPAQUE_RECT*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_SCREEN_BLT:
+			status = mod->ServerProxy->ScreenBlt(mod, (XRDP_MSG_SCREEN_BLT*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_PAINT_RECT:
+			status = mod->ServerProxy->PaintRect(mod, (XRDP_MSG_PAINT_RECT*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_PATBLT:
+			status = mod->ServerProxy->PatBlt(mod, (XRDP_MSG_PATBLT*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_SET_POINTER:
+			{
+				XRDP_MSG_SET_POINTER* wParam = (XRDP_MSG_SET_POINTER*) message->wParam;
+				status = mod->ServerProxy->SetPointer(mod, wParam);
+
+				if (wParam->andMaskData)
+					free(wParam->andMaskData);
+
+				if (wParam->xorMaskData)
+					free(wParam->xorMaskData);
+
+				free(wParam);
+			}
+			break;
+
+		case XRDP_SERVER_SET_PALETTE:
+			status = mod->ServerProxy->SetPalette(mod, (int*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_SET_CLIPPING_REGION:
+			status = mod->ServerProxy->SetClippingRegion(mod, (XRDP_MSG_SET_CLIPPING_REGION*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_SET_NULL_CLIPPING_REGION:
+			status = mod->ServerProxy->SetNullClippingRegion(mod);
+			break;
+
+		case XRDP_SERVER_SET_FORECOLOR:
+			status = mod->ServerProxy->SetForeColor(mod, (int) (size_t) message->wParam);
+			break;
+
+		case XRDP_SERVER_SET_BACKCOLOR:
+			status = mod->ServerProxy->SetBackColor(mod, (int) (size_t) message->wParam);
+			break;
+
+		case XRDP_SERVER_SET_ROP2:
+			status = mod->ServerProxy->SetRop2(mod, (int) (size_t) message->wParam);
+			break;
+
+		case XRDP_SERVER_LINE_TO:
+			status = mod->ServerProxy->LineTo(mod, (XRDP_MSG_LINE_TO*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_CACHE_GLYPH:
+			status = mod->ServerProxy->AddChar(mod, (XRDP_MSG_CACHE_GLYPH*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_TEXT:
+			status = mod->ServerProxy->Text(mod, (GLYPH_INDEX_ORDER*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_SHARED_FRAMEBUFFER:
+			status = mod->ServerProxy->SharedFramebuffer(mod, (XRDP_MSG_SHARED_FRAMEBUFFER*) message->wParam);
+			free(message->wParam);
+			break;
+
+		case XRDP_SERVER_RESET:
+			{
+				XRDP_MSG_RESET* wParam = (XRDP_MSG_RESET*) message->wParam;
+				status = mod->ServerProxy->Reset(mod, wParam->DesktopWidth, wParam->DesktopHeight, wParam->ColorDepth);
+				free(message->wParam);
+			}
+			break;
+
+		case XRDP_SERVER_CREATE_OS_SURFACE:
+			{
+				XRDP_MSG_CREATE_OS_SURFACE* wParam = (XRDP_MSG_CREATE_OS_SURFACE*) message->wParam;
+				status = mod->ServerProxy->CreateOffscreenSurface(mod, wParam->index, wParam->width, wParam->height);
+				free(wParam);
+			}
+			break;
+
+		case XRDP_SERVER_SWITCH_OS_SURFACE:
+			{
+				XRDP_MSG_SWITCH_OS_SURFACE* wParam = (XRDP_MSG_SWITCH_OS_SURFACE*) message->wParam;
+				status = mod->ServerProxy->SwitchOffscreenSurface(mod, wParam->index);
+				free(wParam);
+			}
+			break;
+
+		case XRDP_SERVER_DELETE_OS_SURFACE:
+			{
+				XRDP_MSG_DELETE_OS_SURFACE* wParam = (XRDP_MSG_DELETE_OS_SURFACE*) message->wParam;
+				status = mod->ServerProxy->DeleteOffscreenSurface(mod, wParam->index);
+				free(wParam);
+			}
+			break;
+
+		case XRDP_SERVER_MEMBLT:
+			{
+				XRDP_MSG_MEMBLT* wParam = (XRDP_MSG_MEMBLT*) message->wParam;
+
+				status = mod->ServerProxy->PaintOffscreenRect(mod, wParam->nLeftRect, wParam->nTopRect,
+						wParam->nWidth, wParam->nHeight, wParam->index, wParam->nXSrc, wParam->nYSrc);
+
+				free(wParam);
+			}
+			break;
+
+		default:
+			status = -1;
+			break;
+	}
+
+	if (status < 0)
+	{
+		printf("xrdp_message_server_queue_process_message (%d) status: %d\n", message->id, status);
+		return -1;
+	}
+
+	return 1;
+}
+
+int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod)
+{
+	int count;
+	int status;
+	wMessage message;
+	wMessageQueue* queue;
+
+	count = 0;
+	status = 1;
+	queue = mod->ServerQueue;
+
+	while (MessageQueue_Peek(queue, &message, TRUE))
+	{
+		status = xrdp_message_server_queue_process_message(mod, &message);
+
+		if (!status)
+			break;
+
+		count++;
+	}
+
 	return status;
 }
 
@@ -246,7 +531,9 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 {
 	mod->ServerProxy = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
 
-	if (mod->server)
+	mod->ServerProxy = NULL; /* disable for now */
+
+	if (mod->ServerProxy)
 	{
 		CopyMemory(mod->ServerProxy, mod->server, sizeof(xrdpServerModule));
 
@@ -269,6 +556,7 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->LineTo = xrdp_message_server_line_to;
 		mod->server->AddChar = xrdp_message_server_add_char;
 		mod->server->Text = xrdp_message_server_text;
+		mod->server->SharedFramebuffer = xrdp_message_server_shared_framebuffer;
 		mod->server->Reset = xrdp_message_server_reset;
 		mod->server->CreateOffscreenSurface = xrdp_message_server_create_offscreen_surface;
 		mod->server->SwitchOffscreenSurface = xrdp_message_server_switch_offscreen_surface;
@@ -282,6 +570,8 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->NotifyDelete = xrdp_message_server_notify_delete;
 		mod->server->MonitoredDesktop = xrdp_message_server_monitored_desktop;
 	}
+
+	mod->ServerQueue = MessageQueue_New();
 
 	return 0;
 }

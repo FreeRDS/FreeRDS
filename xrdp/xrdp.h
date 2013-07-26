@@ -622,6 +622,9 @@ const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm* self);
 int xrdp_server_module_init(xrdpModule* mod);
 int xrdp_message_server_module_init(xrdpModule* mod);
 
+int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod);
+int xrdp_message_server_module_init(xrdpModule* mod);
+
 /**
  * Module Interface
  */
@@ -667,6 +670,7 @@ typedef int (*pXrdpServerSetRop2)(xrdpModule* mod, int opcode);
 typedef int (*pXrdpServerLineTo)(xrdpModule* mod, XRDP_MSG_LINE_TO* msg);
 typedef int (*pXrdpServerAddChar)(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg);
 typedef int (*pXrdpServerText)(xrdpModule* mod, GLYPH_INDEX_ORDER* msg);
+typedef int (*pXrdpServerSharedFramebuffer)(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg);
 typedef int (*pXrdpServerReset)(xrdpModule* mod, int width, int height, int bpp);
 typedef int (*pXrdpServerCreateOffscreenSurface)(xrdpModule* mod, int id, int width, int height);
 typedef int (*pXrdpServerSwitchOffscreenSurface)(xrdpModule* mod, int id);
@@ -701,6 +705,7 @@ struct xrdp_server_module
 	pXrdpServerLineTo LineTo;
 	pXrdpServerAddChar AddChar;
 	pXrdpServerText Text;
+	pXrdpServerSharedFramebuffer SharedFramebuffer;
 	pXrdpServerReset Reset;
 	pXrdpServerCreateOffscreenSurface CreateOffscreenSurface;
 	pXrdpServerSwitchOffscreenSurface SwitchOffscreenSurface;
