@@ -1349,20 +1349,6 @@ int rdpup_reset_clip(void)
 	return 0;
 }
 
-int rdpup_set_fgcolor(int fgcolor)
-{
-	XRDP_MSG_SET_FORECOLOR msg;
-
-	fgcolor = fgcolor & g_Bpp_mask;
-	fgcolor = convert_pixel(fgcolor) & g_rdpScreen.rdp_Bpp_mask;
-	msg.ForeColor = fgcolor;
-
-	msg.type = XRDP_SERVER_SET_FORECOLOR;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
 int rdpup_set_opcode(int opcode)
 {
 	XRDP_MSG_SET_ROP2 msg;
@@ -1622,7 +1608,6 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 				msg.nHeight = lh;
 				msg.color = rdpup_convert_color(single_color);
 
-				rdpup_set_fgcolor(single_color);
 				rdpup_opaque_rect(&msg);
 			}
 			else
@@ -1798,7 +1783,6 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 		switch (di->type)
 		{
 			case RDI_FILL:
-				rdpup_set_fgcolor(di->u.fill.fg_color);
 				rdpup_set_opcode(di->u.fill.opcode);
 				count = REGION_NUM_RECTS(di->reg);
 
@@ -1933,7 +1917,6 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 		switch (di->type)
 		{
 			case RDI_FILL:
-				rdpup_set_fgcolor(di->u.fill.fg_color);
 				rdpup_set_opcode(di->u.fill.opcode);
 				count = REGION_NUM_RECTS(di->reg);
 

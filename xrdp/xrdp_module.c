@@ -104,6 +104,8 @@ int xrdp_server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 		return 0;
 
 	wm = (xrdpWm*) (mod->wm);
+
+	p->fg_color = msg->color;
 	xrdp_painter_fill_rect(p, wm->target_surface, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
 	return 0;

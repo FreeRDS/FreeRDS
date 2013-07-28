@@ -633,17 +633,17 @@ static void xrdp_freerdp_opaque_rect(rdpContext* context, OPAQUE_RECT_ORDER* opa
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_opaque_rect:"));
 
-	msg.nLeftRect = opaqueRect->nLeftRect;
-	msg.nTopRect = opaqueRect->nTopRect;
-	msg.nWidth = opaqueRect->nWidth;
-	msg.nHeight = opaqueRect->nHeight;
-
 	server_bpp = mod->instance->settings->ColorDepth;
 	client_bpp = mod->bpp;
 
 	fgcolor = convert_color(server_bpp, client_bpp, opaqueRect->color, mod->colormap);
 
-	mod->server->SetForeColor(mod, fgcolor);
+	msg.nLeftRect = opaqueRect->nLeftRect;
+	msg.nTopRect = opaqueRect->nTopRect;
+	msg.nWidth = opaqueRect->nWidth;
+	msg.nHeight = opaqueRect->nHeight;
+	msg.color = fgcolor;
+
 	mod->server->OpaqueRect(mod, &msg);
 }
 

@@ -189,11 +189,11 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 	opaqueRect.nLeftRect = 0;
 	opaqueRect.nWidth = mod->width;
 	opaqueRect.nHeight = mod->height;
+	opaqueRect.color = 0;
 
 	/* clear screen */
 
 	mod->server->BeginUpdate(mod);
-	mod->server->SetForeColor(mod, 0);
 	mod->server->OpaqueRect(mod, &opaqueRect);
 	mod->server->EndUpdate(mod);
 

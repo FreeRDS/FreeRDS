@@ -223,6 +223,7 @@ int xrdp_read_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg)
 	Stream_Read_UINT16(s, msg->nTopRect);
 	Stream_Read_UINT16(s, msg->nWidth);
 	Stream_Read_UINT16(s, msg->nHeight);
+	Stream_Read_UINT32(s, msg->color);
 
 	return 0;
 }
@@ -230,7 +231,7 @@ int xrdp_read_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg)
 int xrdp_write_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg)
 {
 	msg->flags = XRDP_MSG_FLAG_RECT;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 8;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 12;
 
 	if (!s)
 		return msg->length;
@@ -246,6 +247,7 @@ int xrdp_write_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg)
 	Stream_Write_UINT16(s, msg->nTopRect);
 	Stream_Write_UINT16(s, msg->nWidth);
 	Stream_Write_UINT16(s, msg->nHeight);
+	Stream_Write_UINT32(s, msg->color);
 
 	return 0;
 }

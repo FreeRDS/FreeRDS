@@ -228,7 +228,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 				if (pGC->lineStyle == LineSolid)
 				{
-					rdpup_set_fgcolor(pGC->fgPixel);
 					rdpup_set_opcode(pGC->alu);
 
 					for (i = 0; i < nrects * 4; i++)
@@ -287,7 +286,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 					{
 						XRDP_MSG_OPAQUE_RECT msg;
 
-						rdpup_set_fgcolor(pGC->fgPixel);
 						rdpup_set_opcode(pGC->alu);
 
 						for (j = num_clips - 1; j >= 0; j--)

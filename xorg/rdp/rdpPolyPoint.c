@@ -223,7 +223,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 				XRDP_MSG_OPAQUE_RECT msg;
 
 				rdpup_begin_update();
-				rdpup_set_fgcolor(pGC->fgPixel);
 
 				for (i = 0; i < npt; i++)
 				{
@@ -270,7 +269,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 				XRDP_MSG_OPAQUE_RECT msg;
 
 				rdpup_begin_update();
-				rdpup_set_fgcolor(pGC->fgPixel);
 
 				for (j = num_clips - 1; j >= 0; j--)
 				{
