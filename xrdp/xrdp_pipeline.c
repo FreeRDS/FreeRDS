@@ -85,6 +85,12 @@ int xrdp_message_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	wParam = (XRDP_MSG_PAINT_RECT*) malloc(sizeof(XRDP_MSG_PAINT_RECT));
 	CopyMemory(wParam, msg, sizeof(XRDP_MSG_PAINT_RECT));
 
+	if (msg->bitmapDataLength)
+	{
+		wParam->bitmapData = (BYTE*) malloc(msg->bitmapDataLength);
+		CopyMemory(wParam->bitmapData, msg->bitmapData, msg->bitmapDataLength);
+	}
+
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_PAINT_RECT, (void*) wParam, NULL);
 
 	return 0;
@@ -376,8 +382,15 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			break;
 
 		case XRDP_SERVER_PAINT_RECT:
-			status = mod->ServerProxy->PaintRect(mod, (XRDP_MSG_PAINT_RECT*) message->wParam);
-			free(message->wParam);
+			{
+				XRDP_MSG_PAINT_RECT* wParam = (XRDP_MSG_PAINT_RECT*) message->wParam;
+				status = mod->ServerProxy->PaintRect(mod, wParam);
+
+				if (wParam->bitmapDataLength)
+					free(wParam->bitmapData);
+
+				free(message->wParam);
+			}
 			break;
 
 		case XRDP_SERVER_PATBLT:
@@ -531,7 +544,7 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 {
 	mod->ServerProxy = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
 
-	//mod->ServerProxy = NULL; /* disable */
+	mod->ServerProxy = NULL; /* disable */
 
 	if (mod->ServerProxy)
 	{
