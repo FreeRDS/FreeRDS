@@ -762,6 +762,11 @@ struct xrdp_mod
 
 	XRDP_FRAMEBUFFER framebuffer;
 
+	HANDLE StopEvent;
+
+	HANDLE ClientThread;
+	HANDLE ServerThread;
+
 	wMessageQueue* ClientQueue;
 	wMessageQueue* ServerQueue;
 

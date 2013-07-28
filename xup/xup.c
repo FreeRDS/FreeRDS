@@ -38,6 +38,7 @@
 
 #include <winpr/crt.h>
 #include <winpr/synch.h>
+#include <winpr/thread.h>
 #include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
@@ -327,6 +328,7 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 	{
 		mod->server->Message(mod, "connected ok", 0);
 		mod->SocketEvent = CreateFileDescriptorEvent(NULL, TRUE, FALSE, mod->sck);
+		ResumeThread(mod->ServerThread);
 	}
 
 	return 0;
@@ -659,6 +661,8 @@ int xup_recv(xrdpModule* mod)
 
 int x11rdp_xrdp_client_end(xrdpModule* mod)
 {
+	SetEvent(mod->StopEvent);
+
 	return 0;
 }
 
@@ -693,16 +697,39 @@ int x11rdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
 	return 0;
 }
 
+void* x11rdp_xrdp_client_thread(void* arg)
+{
+	DWORD status;
+	DWORD nCount;
+	HANDLE events[8];
+	xrdpModule* mod = (xrdpModule*) arg;
+
+	nCount = 0;
+	events[nCount++] = mod->StopEvent;
+	events[nCount++] = mod->SocketEvent;
+
+	while (1)
+	{
+		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
+
+		if (WaitForSingleObject(mod->StopEvent, 0) == WAIT_OBJECT_0)
+		{
+			break;
+		}
+
+		if (WaitForSingleObject(mod->SocketEvent, 0) == WAIT_OBJECT_0)
+		{
+			xup_recv(mod);
+		}
+	}
+
+	return NULL;
+}
+
 int x11rdp_xrdp_client_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
 	if (mod)
 	{
-		if (mod->SocketEvent)
-		{
-			events[*nCount] = mod->SocketEvent;
-			(*nCount)++;
-		}
-
 		if (mod->ServerQueue)
 		{
 			events[*nCount] = MessageQueue_Event(mod->ServerQueue);
@@ -720,22 +747,12 @@ int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 	if (!mod)
 		return 0;
 
-	if (!mod->SocketEvent)
-		return 0;
-
-	if (WaitForSingleObject(mod->SocketEvent, 0) == WAIT_OBJECT_0)
-	{
-		status = xup_recv(mod);
-	}
-
 	if (WaitForSingleObject(MessageQueue_Event(mod->ServerQueue), 0) == WAIT_OBJECT_0)
 	{
 		status = xrdp_message_server_queue_process_pending_messages(mod);
 	}
 
 	status = 0;
-
-	printf("x11rdp_xrdp_client_check_event_handles: %d\n", status);
 
 	return status;
 }
@@ -766,13 +783,20 @@ int xup_module_init(xrdpModule* mod)
 	mod->TotalLength = 0;
 	mod->TotalCount = 0;
 
-	mod->ServerQueue = MessageQueue_New();
+	mod->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	mod->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) x11rdp_xrdp_client_thread,
+			(void*) mod, CREATE_SUSPENDED, NULL);
 
 	return 0;
 }
 
 int xup_module_exit(xrdpModule* mod)
 {
+	SetEvent(mod->StopEvent);
+
+	WaitForSingleObject(mod->ServerThread, INFINITE);
+
 	Stream_Free(mod->SendStream, TRUE);
 	Stream_Free(mod->ReceiveStream, TRUE);
 
