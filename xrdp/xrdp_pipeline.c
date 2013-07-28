@@ -544,7 +544,7 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 {
 	mod->ServerProxy = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
 
-	//mod->ServerProxy = NULL; /* disable */
+	mod->ServerProxy = NULL; /* disable */
 
 	if (mod->ServerProxy)
 	{

@@ -79,13 +79,13 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
-	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
+	rdpPixmapRec* pDstPriv;
+	rdpPixmapRec*pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolyRectangle:"));
 
 	/* make a copy of rects */
-	rect1 = (xRectangle *)g_malloc(sizeof(xRectangle) * nrects, 0);
+	rect1 = (xRectangle*) g_malloc(sizeof(xRectangle) * nrects, 0);
 
 	for (i = 0; i < nrects; i++)
 	{
@@ -103,7 +103,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -130,7 +130,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{
@@ -164,7 +164,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 	if ((cd != 0) && (nrects > 0))
 	{
-		regRects = (xRectangle *)g_malloc(nrects * 4 * sizeof(xRectangle), 0);
+		regRects = (xRectangle*) g_malloc(nrects * 4 * sizeof(xRectangle), 0);
 		lw = pGC->lineWidth;
 
 		if (lw < 1)
@@ -210,8 +210,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 				if (pGC->lineStyle == LineSolid)
 				{
-					draw_item_add_fill_region(pDirtyPriv, fill_reg, pGC->fgPixel,
-							pGC->alu);
+					draw_item_add_fill_region(pDirtyPriv, fill_reg, pGC->fgPixel, pGC->alu);
 				}
 				else
 				{
@@ -270,8 +269,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 				{
 					if (pGC->lineStyle == LineSolid)
 					{
-						draw_item_add_fill_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
-								pGC->alu);
+						draw_item_add_fill_region(pDirtyPriv, &clip_reg, pGC->fgPixel, pGC->alu);
 					}
 					else
 					{

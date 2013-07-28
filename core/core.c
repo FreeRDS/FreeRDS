@@ -369,7 +369,6 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 
 int libxrdp_orders_text(xrdpSession* session, GLYPH_INDEX_ORDER* msg, xrdpRect* rect)
 {
-	GLYPH_INDEX_ORDER glyph_index;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
 	printf("%s: cacheId: %d\n", __FUNCTION__, msg->cacheId);
@@ -702,7 +701,7 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	rdpUpdate* update = session->context->update;
 
 	MaxRegionWidth = 64 * 8;
-	MaxRegionHeight = 64 * 8;
+	MaxRegionHeight = 64 * 6;
 
 	if ((msg->nWidth * msg->nHeight) > (MaxRegionWidth * MaxRegionHeight))
 	{

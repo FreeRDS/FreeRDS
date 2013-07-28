@@ -23,6 +23,8 @@
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
 
+#include <freerdp/gdi/gdi.h>
+
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
