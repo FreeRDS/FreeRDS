@@ -49,7 +49,7 @@ int wm_painter_set_target(xrdpPainter* self)
 {
 	int surface_index;
 	int index;
-	xrdpList *del_list;
+	xrdpList* del_list;
 
 	if (self->wm->target_surface->type == WND_TYPE_SCREEN)
 	{
@@ -96,6 +96,7 @@ int xrdp_painter_begin_update(xrdpPainter* self)
 
 	libxrdp_orders_init(self->session);
 	wm_painter_set_target(self);
+
 	return 0;
 }
 
@@ -105,6 +106,7 @@ int xrdp_painter_end_update(xrdpPainter* self)
 		return 0;
 
 	libxrdp_orders_send(self->session);
+
 	return 0;
 }
 
@@ -138,7 +140,7 @@ int xrdp_painter_text_width(xrdpPainter* self, char *text)
 	int rv;
 	int len;
 	xrdpFontChar *font_item;
-	wchar_t *wstr;
+	wchar_t* wstr;
 
 	xrdp_painter_font_needed(self);
 
@@ -150,7 +152,7 @@ int xrdp_painter_text_width(xrdpPainter* self, char *text)
 
 	rv = 0;
 	len = g_mbstowcs(0, text, 0);
-	wstr = (wchar_t *) g_malloc((len + 2) * sizeof(wchar_t), 0);
+	wstr = (wchar_t*) g_malloc((len + 2) * sizeof(wchar_t), 0);
 	g_mbstowcs(wstr, text, len + 1);
 
 	for (index = 0; index < len; index++)
@@ -168,8 +170,8 @@ int xrdp_painter_text_height(xrdpPainter* self, char *text)
 	int index;
 	int rv;
 	int len;
-	xrdpFontChar *font_item;
-	wchar_t *wstr;
+	xrdpFontChar* font_item;
+	wchar_t* wstr;
 
 	xrdp_painter_font_needed(self);
 
@@ -533,7 +535,7 @@ int xrdp_painter_draw_text2(xrdpPainter* self, xrdpBitmap* dst, GLYPH_INDEX_ORDE
 	return 0;
 }
 
-int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap *src, xrdpBitmap *dst, int x, int y, int cx, int cy, int srcx, int srcy)
+int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap* src, xrdpBitmap* dst, int x, int y, int cx, int cy, int srcx, int srcy)
 {
 	xrdpRect clip_rect;
 	xrdpRect draw_rect;
@@ -555,7 +557,7 @@ int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap *src, xrdpBitmap *dst, int x
 	int w;
 	int h;
 	int index;
-	xrdpList *del_list;
+	xrdpList* del_list;
 
 	if (!self || !src || !dst)
 		return 0;
@@ -587,8 +589,7 @@ int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap *src, xrdpBitmap *dst, int x
 		{
 			if (rect_intersect(&rect1, &clip_rect, &draw_rect))
 			{
-				libxrdp_orders_screen_blt(self->session, x, y, cx, cy, srcx, srcy, self->rop,
-						&draw_rect);
+				libxrdp_orders_screen_blt(self->session, x, y, cx, cy, srcx, srcy, self->rop, &draw_rect);
 			}
 
 			k++;
@@ -618,7 +619,7 @@ int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap *src, xrdpBitmap *dst, int x
 		y += dy;
 
 		palette_id = 0;
-		cache_id = 255; // todo
+		cache_id = 0xFF; // todo
 		cache_idx = src->item_index; // todo
 
 		if (src->tab_stop == 0)

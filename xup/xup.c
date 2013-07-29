@@ -300,6 +300,8 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 		XRDP_MSG_REFRESH_RECT msg;
 
 		msg.flags = 0;
+		msg.type = XRDP_CLIENT_REFRESH_RECT;
+
 		msg.numberOfAreas = 1;
 		msg.areasToRefresh = &rect;
 

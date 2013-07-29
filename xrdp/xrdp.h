@@ -458,9 +458,9 @@ int xrdp_cache_add_char(xrdpCache* self, xrdpFontChar* font_item);
 int xrdp_cache_add_pointer(xrdpCache* self, xrdpPointerItem* pointer_item);
 int xrdp_cache_add_pointer_static(xrdpCache* self, xrdpPointerItem* pointer_item, int index);
 int xrdp_cache_add_brush(xrdpCache* self, char* brush_item_data);
-int xrdp_cache_add_os_bitmap(xrdpCache* self, xrdpBitmap* bitmap, int rdpindex);
-int xrdp_cache_remove_os_bitmap(xrdpCache* self, int rdpindex);
-struct xrdp_os_bitmap_item* xrdp_cache_get_os_bitmap(xrdpCache* self, int rdpindex);
+int xrdp_cache_add_offscreen_bitmap(xrdpCache* self, xrdpBitmap* bitmap, int rdpindex);
+int xrdp_cache_remove_offscreen_bitmap(xrdpCache* self, int rdpindex);
+struct xrdp_os_bitmap_item* xrdp_cache_get_offscreen_bitmap(xrdpCache* self, int rdpindex);
 
 /* xrdp_wm.c */
 xrdpWm* xrdp_wm_create(xrdpProcess* owner);

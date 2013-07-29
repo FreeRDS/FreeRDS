@@ -386,15 +386,16 @@ int xrdp_server_reset(xrdpModule* mod, int width, int height, int bpp)
 	return 0;
 }
 
-int xrdp_server_create_offscreen_surface(xrdpModule* mod, int rdpindex, int width, int height)
+int xrdp_server_create_offscreen_surface(xrdpModule* mod, int cacheIndex, int width, int height)
 {
 	xrdpWm* wm;
 	xrdpBitmap *bitmap;
 	int error;
 
 	wm = (xrdpWm*) (mod->wm);
+
 	bitmap = xrdp_bitmap_create(width, height, wm->screen->bpp, WND_TYPE_OFFSCREEN, wm);
-	error = xrdp_cache_add_os_bitmap(wm->cache, bitmap, rdpindex);
+	error = xrdp_cache_add_offscreen_bitmap(wm->cache, bitmap, cacheIndex);
 
 	if (error != 0)
 	{
@@ -402,8 +403,8 @@ int xrdp_server_create_offscreen_surface(xrdpModule* mod, int rdpindex, int widt
 		return 1;
 	}
 
-	bitmap->item_index = rdpindex;
-	bitmap->id = rdpindex;
+	bitmap->item_index = cacheIndex;
+	bitmap->id = cacheIndex;
 
 	return 0;
 }
@@ -429,7 +430,7 @@ int xrdp_server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
 		return 0;
 	}
 
-	bi = xrdp_cache_get_os_bitmap(wm->cache, rdpindex);
+	bi = xrdp_cache_get_offscreen_bitmap(wm->cache, rdpindex);
 
 	if (bi != 0)
 	{
@@ -449,7 +450,7 @@ int xrdp_server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
 	return 0;
 }
 
-int xrdp_server_delete_offscreen_surface(xrdpModule* mod, int rdpindex)
+int xrdp_server_delete_offscreen_surface(xrdpModule* mod, int cacheIndex)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
@@ -458,7 +459,7 @@ int xrdp_server_delete_offscreen_surface(xrdpModule* mod, int rdpindex)
 
 	if (wm->target_surface->type == WND_TYPE_OFFSCREEN)
 	{
-		if (wm->target_surface->id == rdpindex)
+		if (wm->target_surface->id == cacheIndex)
 		{
 			g_writeln("server_delete_os_surface: setting target_surface to screen");
 			wm->target_surface = wm->screen;
@@ -471,17 +472,17 @@ int xrdp_server_delete_offscreen_surface(xrdpModule* mod, int rdpindex)
 		}
 	}
 
-	xrdp_cache_remove_os_bitmap(wm->cache, rdpindex);
+	xrdp_cache_remove_offscreen_bitmap(wm->cache, cacheIndex);
 
 	return 0;
 }
 
-int xrdp_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
+int xrdp_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int cy, int cacheIndex, int srcx, int srcy)
 {
 	xrdpWm* wm;
-	xrdpBitmap *b;
+	xrdpBitmap* b;
 	xrdpPainter* p;
-	xrdpOffscreenBitmapItem *bi;
+	xrdpOffscreenBitmapItem* bi;
 
 	p = (xrdpPainter*) (mod->painter);
 
@@ -489,7 +490,7 @@ int xrdp_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int 
 		return 0;
 
 	wm = (xrdpWm*) (mod->wm);
-	bi = xrdp_cache_get_os_bitmap(wm->cache, rdpindex);
+	bi = xrdp_cache_get_offscreen_bitmap(wm->cache, cacheIndex);
 
 	if (bi != 0)
 	{
@@ -498,7 +499,7 @@ int xrdp_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int 
 	}
 	else
 	{
-		log_message(LOG_LEVEL_ERROR, "server_paint_rect_os: error finding id %d", rdpindex);
+		log_message(LOG_LEVEL_ERROR, "server_paint_rect_os: error finding id %d", cacheIndex);
 	}
 
 	return 0;

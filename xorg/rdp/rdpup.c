@@ -848,9 +848,6 @@ static int rdpup_process_capabilities_msg(wStream* s)
 
 	g_can_do_pix_to_pix = 0;
 
-	if (g_rdpScreen.OffscreenCacheEntries == 2000)
-		g_can_do_pix_to_pix = 1;
-
 	process_screen_parameters(msg.DesktopWidth, msg.DesktopHeight, msg.ColorDepth);
 
 	return 0;
