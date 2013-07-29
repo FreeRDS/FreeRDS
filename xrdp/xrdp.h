@@ -552,6 +552,7 @@ int xrdp_painter_set_clip(xrdpPainter* self, int x, int y, int cx, int cy);
 int xrdp_painter_clr_clip(xrdpPainter* self);
 int xrdp_painter_fill_rect(xrdpPainter* self, xrdpBitmap* bitmap, int x, int y, int cx, int cy);
 int xrdp_painter_patblt(xrdpPainter *self, xrdpBitmap* dst, int x, int y, int cx, int cy);
+int xrdp_painter_dstblt(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_DSTBLT* msg);
 int xrdp_painter_draw_bitmap(xrdpPainter* self, xrdpBitmap* bitmap, xrdpBitmap* to_draw, int x, int y, int cx, int cy);
 int xrdp_painter_text_width(xrdpPainter* self, char* text);
 int xrdp_painter_text_height(xrdpPainter* self, char* text);
@@ -660,6 +661,7 @@ typedef int (*pXrdpServerOpaqueRect)(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 typedef int (*pXrdpServerScreenBlt)(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg);
 typedef int (*pXrdpServerPaintRect)(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg);
 typedef int (*pXrdpServerPatBlt)(xrdpModule* mod, XRDP_MSG_PATBLT* msg);
+typedef int (*pXrdpServerDstBlt)(xrdpModule* mod, XRDP_MSG_DSTBLT* msg);
 typedef int (*pXrdpServerSetPointer)(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg);
 typedef int (*pXrdpServerSetPalette)(xrdpModule* mod, int* palette);
 typedef int (*pXrdpServerSetClippingRegion)(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg);
@@ -693,6 +695,7 @@ struct xrdp_server_module
 	pXrdpServerScreenBlt ScreenBlt;
 	pXrdpServerPaintRect PaintRect;
 	pXrdpServerPatBlt PatBlt;
+	pXrdpServerDstBlt DstBlt;
 	pXrdpServerSetPointer SetPointer;
 	pXrdpServerSetPalette SetPalette;
 	pXrdpServerSetClippingRegion SetClippingRegion;

@@ -193,6 +193,22 @@ int xrdp_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 	return 0;
 }
 
+int xrdp_server_dstblt(xrdpModule* mod, XRDP_MSG_DSTBLT* msg)
+{
+	xrdpWm* wm;
+	xrdpPainter* p;
+
+	wm = (xrdpWm*) (mod->wm);
+	p = (xrdpPainter*) (mod->painter);
+
+	if (!p)
+		return 0;
+
+	xrdp_painter_dstblt(p, wm->target_surface, msg);
+
+	return 0;
+}
+
 int xrdp_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
 	xrdpWm* wm = (xrdpWm*) (mod->wm);
@@ -537,6 +553,7 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->ScreenBlt = xrdp_server_screen_blt;
 		mod->server->PaintRect = xrdp_server_paint_rect;
 		mod->server->PatBlt = xrdp_server_patblt;
+		mod->server->DstBlt = xrdp_server_dstblt;
 		mod->server->SetPointer = xrdp_server_set_pointer;
 		mod->server->SetPalette = xrdp_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_server_set_clipping_region;

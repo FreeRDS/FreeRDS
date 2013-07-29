@@ -533,7 +533,7 @@ static void xrdp_freerdp_bitmap_update(rdpContext* context, BITMAP_UPDATE *bitma
 static void xrdp_freerdp_dst_blt(rdpContext* context, DSTBLT_ORDER* dstblt)
 {
 	xrdpModule* mod;
-	XRDP_MSG_OPAQUE_RECT msg;
+	XRDP_MSG_DSTBLT msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_dst_blt:"));
@@ -542,10 +542,9 @@ static void xrdp_freerdp_dst_blt(rdpContext* context, DSTBLT_ORDER* dstblt)
 	msg.nTopRect = dstblt->nTopRect;
 	msg.nWidth = dstblt->nWidth;
 	msg.nHeight = dstblt->nHeight;
+	msg.bRop = dstblt->bRop;
 
-	mod->server->SetRop2(mod, dstblt->bRop);
-	mod->server->OpaqueRect(mod, &msg);
-	mod->server->SetRop2(mod, 0xcc);
+	mod->server->DstBlt(mod, &msg);
 }
 
 static void xrdp_freerdp_pat_blt(rdpContext* context, PATBLT_ORDER* patblt)
@@ -618,7 +617,6 @@ static void xrdp_freerdp_scr_blt(rdpContext* context, SCRBLT_ORDER* scrblt)
 
 	mod->server->SetRop2(mod, msg.bRop);
 	mod->server->ScreenBlt(mod, &msg);
-
 	mod->server->SetRop2(mod, 0xcc);
 }
 

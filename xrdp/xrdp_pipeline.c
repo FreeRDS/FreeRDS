@@ -108,6 +108,18 @@ int xrdp_message_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 	return 0;
 }
 
+int xrdp_message_server_dstblt(xrdpModule* mod, XRDP_MSG_DSTBLT* msg)
+{
+	XRDP_MSG_DSTBLT* wParam;
+
+	wParam = (XRDP_MSG_DSTBLT*) malloc(sizeof(XRDP_MSG_DSTBLT));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_DSTBLT));
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_DSTBLT, (void*) wParam, NULL);
+
+	return 0;
+}
+
 int xrdp_message_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
 	XRDP_MSG_SET_POINTER* wParam;
@@ -386,6 +398,11 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			free(message->wParam);
 			break;
 
+		case XRDP_SERVER_DSTBLT:
+			status = mod->ServerProxy->DstBlt(mod, (XRDP_MSG_DSTBLT*) message->wParam);
+			free(message->wParam);
+			break;
+
 		case XRDP_SERVER_SET_POINTER:
 			{
 				XRDP_MSG_SET_POINTER* wParam = (XRDP_MSG_SET_POINTER*) message->wParam;
@@ -539,6 +556,7 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->ScreenBlt = xrdp_message_server_screen_blt;
 		mod->server->PaintRect = xrdp_message_server_paint_rect;
 		mod->server->PatBlt = xrdp_message_server_patblt;
+		mod->server->DstBlt = xrdp_message_server_dstblt;
 		mod->server->SetPointer = xrdp_message_server_set_pointer;
 		mod->server->SetPalette = xrdp_message_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_message_server_set_clipping_region;

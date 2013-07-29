@@ -136,7 +136,8 @@ int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
 #define XRDP_SERVER_MESSAGE			7
 #define XRDP_SERVER_IS_TERMINATED		8
 #define XRDP_SERVER_PATBLT			9
-#define XRDP_SERVER_SET_CLIPPING_REGION		10
+#define XRDP_SERVER_DSTBLT			10
+#define XRDP_SERVER_SET_CLIPPING_REGION		12
 #define XRDP_SERVER_SET_PALETTE			13
 #define XRDP_SERVER_SET_ROP2			14
 #define XRDP_SERVER_LINE_TO			18
@@ -208,6 +209,18 @@ struct _XRDP_MSG_PAINT_RECT
 	XRDP_FRAMEBUFFER* framebuffer;
 };
 typedef struct _XRDP_MSG_PAINT_RECT XRDP_MSG_PAINT_RECT;
+
+struct _XRDP_MSG_DSTBLT
+{
+	DEFINE_MSG_COMMON();
+
+	INT32 nLeftRect;
+	INT32 nTopRect;
+	INT32 nWidth;
+	INT32 nHeight;
+	UINT32 bRop;
+};
+typedef struct _XRDP_MSG_DSTBLT XRDP_MSG_DSTBLT;
 
 struct _XRDP_MSG_PATBLT
 {
@@ -445,6 +458,12 @@ FREERDP_API int xrdp_write_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg);
 
 FREERDP_API int xrdp_read_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg);
 FREERDP_API int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg);
+
+FREERDP_API int xrdp_read_patblt(wStream* s, XRDP_MSG_PATBLT* msg);
+FREERDP_API int xrdp_write_patblt(wStream* s, XRDP_MSG_PATBLT* msg);
+
+FREERDP_API int xrdp_read_dstblt(wStream* s, XRDP_MSG_DSTBLT* msg);
+FREERDP_API int xrdp_write_dstblt(wStream* s, XRDP_MSG_DSTBLT* msg);
 
 FREERDP_API int xrdp_read_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg);
 FREERDP_API int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg);

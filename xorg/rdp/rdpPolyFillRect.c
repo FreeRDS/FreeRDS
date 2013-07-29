@@ -48,7 +48,7 @@ static void rdpPolyFillRectOrg(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, 
 	GC_OP_EPILOGUE(pGC);
 }
 
-void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle *prectInit)
+void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle* prectInit)
 {
 	int j;
 	int cd;
@@ -61,12 +61,13 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	int dirty_type;
 	int post_process;
 	int reset_surface;
+	UINT32 dstblt_rop;
 
 	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
-	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
+	rdpPixmapRec* pDstPriv;
+	rdpPixmapRec* pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolyFillRect:"));
 
@@ -83,7 +84,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -110,7 +111,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{
@@ -146,13 +147,9 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	{
 		if (dirty_type != 0)
 		{
-			if (pGC->fillStyle == 0 && /* solid fill */
-					(pGC->alu == GXclear ||
-							pGC->alu == GXset ||
-							pGC->alu == GXinvert ||
-							pGC->alu == GXnoop ||
-							pGC->alu == GXand ||
-							pGC->alu == GXcopy))
+			dstblt_rop = rdp_dstblt_rop(pGC->alu);
+
+			if ((pGC->fillStyle == 0) && (dstblt_rop))
 			{
 				draw_item_add_fill_region(pDirtyPriv, fill_reg, pGC->fgPixel, pGC->alu);
 			}
@@ -165,18 +162,11 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 		{
 			rdpup_begin_update();
 
-			if (pGC->fillStyle == 0 && /* solid fill */
-					(pGC->alu == GXclear ||
-							pGC->alu == GXset ||
-							pGC->alu == GXinvert ||
-							pGC->alu == GXnoop ||
-							pGC->alu == GXand ||
-							pGC->alu == GXcopy))
-			{
-				XRDP_MSG_OPAQUE_RECT msg;
+			dstblt_rop = rdp_dstblt_rop(pGC->alu);
 
-				rdpup_set_opcode(pGC->alu);
-				msg.color = rdpup_convert_color(pGC->fgPixel);
+			if ((pGC->fillStyle == 0) && (dstblt_rop))
+			{
+				XRDP_MSG_DSTBLT msg;
 
 				for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
 				{
@@ -186,11 +176,12 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 					msg.nTopRect = box.y1;
 					msg.nWidth = box.x2 - box.x1;
 					msg.nHeight = box.y2 - box.y1;
+					msg.bRop = dstblt_rop;
 
-					rdpup_opaque_rect(&msg);
+					rdpup_dstblt(&msg);
 				}
 			}
-			else /* non solid fill */
+			else
 			{
 				for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
 				{
@@ -209,15 +200,11 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 		if (num_clips > 0)
 		{
+			dstblt_rop = rdp_dstblt_rop(pGC->alu);
+
 			if (dirty_type != 0)
 			{
-				if (pGC->fillStyle == 0 && /* solid fill */
-						(pGC->alu == GXclear ||
-								pGC->alu == GXset ||
-								pGC->alu == GXinvert ||
-								pGC->alu == GXnoop ||
-								pGC->alu == GXand ||
-								pGC->alu == GXcopy))
+				if ((pGC->fillStyle == 0) && (dstblt_rop))
 				{
 					draw_item_add_fill_region(pDirtyPriv, &clip_reg, pGC->fgPixel, pGC->alu);
 				}
@@ -230,17 +217,9 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 			{
 				rdpup_begin_update();
 
-				if (pGC->fillStyle == 0 && /* solid fill */
-						(pGC->alu == GXclear ||
-								pGC->alu == GXset ||
-								pGC->alu == GXinvert ||
-								pGC->alu == GXnoop ||
-								pGC->alu == GXand ||
-								pGC->alu == GXcopy))
+				if ((pGC->fillStyle == 0) && (dstblt_rop))
 				{
-					XRDP_MSG_OPAQUE_RECT msg;
-
-					rdpup_set_opcode(pGC->alu);
+					XRDP_MSG_DSTBLT msg;
 
 					for (j = num_clips - 1; j >= 0; j--)
 					{
@@ -250,12 +229,12 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 						msg.nTopRect = box.y1;
 						msg.nWidth = box.x2 - box.x1;
 						msg.nHeight = box.y2 - box.y1;
-						msg.color = rdpup_convert_color(pGC->fgPixel);
+						msg.bRop = dstblt_rop;
 
-						rdpup_opaque_rect(&msg);
+						rdpup_dstblt(&msg);
 					}
 				}
-				else /* non solid fill */
+				else
 				{
 					for (j = num_clips - 1; j >= 0; j--)
 					{

@@ -1014,6 +1014,36 @@ UINT32 rdpup_convert_opcode(int opcode)
 	return g_rdp_opcodes[opcode & 0xF];
 }
 
+UINT32 rdp_dstblt_rop(int opcode)
+{
+	UINT32 rop = 0;
+
+	switch (opcode)
+	{
+		case GXclear:
+			rop = GDI_BLACKNESS;
+			break;
+
+		case GXset:
+			rop = GDI_WHITENESS;
+			break;
+
+		case GXnoop:
+			rop = GDI_D;
+			break;
+
+		case GXinvert:
+			rop = GDI_DSTINVERT;
+			break;
+
+		default:
+			rop = 0;
+			break;
+	}
+
+	return rop;
+}
+
 int rdpup_init(void)
 {
 	int i;
@@ -1310,6 +1340,34 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 
 	msg.type = XRDP_SERVER_SCREEN_BLT;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
+
+	return 0;
+}
+
+int rdpup_patblt(XRDP_MSG_PATBLT* msg)
+{
+	if (g_rdpScreen.CodecMode)
+	{
+		rdpup_send_area(NULL, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+		return 0;
+	}
+
+	msg->type = XRDP_SERVER_PATBLT;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
+
+	return 0;
+}
+
+int rdpup_dstblt(XRDP_MSG_DSTBLT* msg)
+{
+	if (g_rdpScreen.CodecMode)
+	{
+		rdpup_send_area(NULL, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+		return 0;
+	}
+
+	msg->type = XRDP_SERVER_DSTBLT;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
 
 	return 0;
 }
@@ -1784,7 +1842,6 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec* pDirtyPriv)
 		switch (di->type)
 		{
 			case RDI_FILL:
-				rdpup_set_opcode(di->u.fill.opcode);
 				count = REGION_NUM_RECTS(di->reg);
 
 				for (index = 0; index < count; index++)
@@ -1912,7 +1969,6 @@ int rdpup_check_dirty_screen(rdpPixmapRec* pDirtyPriv)
 		switch (di->type)
 		{
 			case RDI_FILL:
-				rdpup_set_opcode(di->u.fill.opcode);
 				count = REGION_NUM_RECTS(di->reg);
 
 				for (index = 0; index < count; index++)
