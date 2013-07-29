@@ -745,8 +745,6 @@ int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 		status = xrdp_message_server_queue_process_pending_messages(mod);
 	}
 
-	status = 0;
-
 	return status;
 }
 

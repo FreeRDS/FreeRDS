@@ -343,7 +343,7 @@ int xrdp_server_reset(xrdpModule* mod, int width, int height, int bpp)
 
 	if (libxrdp_reset(wm->session, width, height, bpp) != 0)
 	{
-		return 1;
+		return 0;
 	}
 
 	/* reset cache */

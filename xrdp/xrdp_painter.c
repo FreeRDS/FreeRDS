@@ -781,5 +781,6 @@ int xrdp_painter_line(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_LINE_TO* msg)
 	}
 
 	xrdp_region_delete(region);
+
 	return 0;
 }

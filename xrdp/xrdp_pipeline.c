@@ -493,7 +493,7 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 		return -1;
 	}
 
-	return 1;
+	return 0;
 }
 
 int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod)
@@ -504,7 +504,7 @@ int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod)
 	wMessageQueue* queue;
 
 	count = 0;
-	status = 1;
+	status = 0;
 	queue = mod->ServerQueue;
 
 	while (MessageQueue_Peek(queue, &message, TRUE))
@@ -524,7 +524,7 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 {
 	mod->ServerProxy = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
 
-	mod->ServerProxy = NULL; /* disable */
+	//mod->ServerProxy = NULL; /* disable */
 
 	if (mod->ServerProxy)
 	{
