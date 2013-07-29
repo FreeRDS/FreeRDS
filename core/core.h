@@ -131,6 +131,9 @@ struct xrdp_session
 	BOOL codecMode;
 	int bytesPerPixel;
 
+	UINT32 frameId;
+	BOOL frameContext;
+
 	wStream* bs;
 	wStream* bts;
 

@@ -272,6 +272,11 @@ void xrdp_input_register_callbacks(rdpInput* input)
 	input->ExtendedMouseEvent = xrdp_input_extended_mouse_event;
 }
 
+void xrdp_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
+{
+	printf("FrameAck: %d\n", frameId);
+}
+
 void* xrdp_process_main_thread(void* arg)
 {
 	DWORD status;
@@ -303,6 +308,8 @@ void* xrdp_process_main_thread(void* arg)
 
 	xfp->session->callback = callback;
 	xrdp_input_register_callbacks(client->input);
+
+	client->update->SurfaceFrameAcknowledge = xrdp_update_frame_acknowledge;
 
 	ClientEvent = client->GetEventHandle(client);
 	GlobalTermEvent = g_get_term_event();

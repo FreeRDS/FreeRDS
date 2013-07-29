@@ -709,6 +709,9 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		int rows, cols;
 		XRDP_MSG_PAINT_RECT subMsg;
 
+		session->frameContext = TRUE;
+		libxrdp_orders_send_frame_marker(session, 0, session->frameId);
+
 		rows = (msg->nWidth + (MaxRegionWidth - (msg->nWidth % MaxRegionWidth))) / MaxRegionWidth;
 		cols = (msg->nHeight + (MaxRegionHeight - (msg->nHeight % MaxRegionHeight))) / MaxRegionHeight;
 
@@ -734,6 +737,9 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 					libxrdp_send_surface_bits(session, bpp, &subMsg);
 			}
 		}
+
+		libxrdp_orders_send_frame_marker(session, 1, session->frameId++);
+		session->frameContext = FALSE;
 
 		return 0;
 	}
@@ -771,6 +777,9 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	rect.y = 0;
 	rect.width = msg->nWidth;
 	rect.height = msg->nHeight;
+
+	if (!session->frameContext)
+		libxrdp_orders_send_frame_marker(session, 0, session->frameId);
 
 	if (session->settings->RemoteFxCodec)
 	{
@@ -812,6 +821,9 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	cmd.bitmapData = Stream_Buffer(s);
 
 	IFCALL(update->SurfaceBits, update->context, &cmd);
+
+	if (!session->frameContext)
+		libxrdp_orders_send_frame_marker(session, 1, session->frameId++);
 
 	return 0;
 }
