@@ -73,21 +73,6 @@ int xrdp_server_beep(xrdpModule* mod)
 	return 0;
 }
 
-int xrdp_server_message(xrdpModule* mod, char *msg, int code)
-{
-	xrdpWm* wm;
-
-	if (code == 1)
-	{
-		g_writeln(msg);
-		return 0;
-	}
-
-	wm = (xrdpWm*) (mod->wm);
-
-	return xrdp_wm_log_msg(wm, msg);
-}
-
 int xrdp_server_is_terminated(xrdpModule* mod)
 {
 	return g_is_term();
@@ -250,20 +235,6 @@ int xrdp_server_set_null_clipping_region(xrdpModule* mod)
 		return 0;
 
 	return xrdp_painter_clr_clip(p);
-}
-
-int xrdp_server_set_rop2(xrdpModule* mod, int opcode)
-{
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	p->rop = opcode;
-
-	return 0;
 }
 
 int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
@@ -446,7 +417,7 @@ int xrdp_server_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELETE_OFFSCR
 	return 0;
 }
 
-int xrdp_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int cy, int cacheIndex, int srcx, int srcy)
+int xrdp_server_paint_offscreen_surface(xrdpModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
 	xrdpWm* wm;
 	xrdpBitmap* b;
@@ -459,16 +430,17 @@ int xrdp_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int 
 		return 0;
 
 	wm = (xrdpWm*) (mod->wm);
-	bi = xrdp_cache_get_offscreen_bitmap(wm->cache, cacheIndex);
+	bi = xrdp_cache_get_offscreen_bitmap(wm->cache, msg->cacheIndex);
 
-	if (bi != 0)
+	if (bi)
 	{
 		b = bi->bitmap;
-		xrdp_painter_copy(p, b, wm->target_surface, x, y, cx, cy, srcx, srcy);
+		xrdp_painter_copy(p, b, wm->target_surface, msg->nLeftRect, msg->nTopRect,
+				msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
 	}
 	else
 	{
-		log_message(LOG_LEVEL_ERROR, "server_paint_rect_os: error finding id %d", cacheIndex);
+		log_message(LOG_LEVEL_ERROR, "server_paint_rect_os: error finding id %d", msg->cacheIndex);
 	}
 
 	return 0;
@@ -529,7 +501,6 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->BeginUpdate = xrdp_server_begin_update;
 		mod->server->EndUpdate = xrdp_server_end_update;
 		mod->server->Beep = xrdp_server_beep;
-		mod->server->Message = xrdp_server_message;
 		mod->server->IsTerminated = xrdp_server_is_terminated;
 		mod->server->OpaqueRect = xrdp_server_opaque_rect;
 		mod->server->ScreenBlt = xrdp_server_screen_blt;
@@ -540,7 +511,6 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->SetPalette = xrdp_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_server_set_clipping_region;
 		mod->server->SetNullClippingRegion = xrdp_server_set_null_clipping_region;
-		mod->server->SetRop2 = xrdp_server_set_rop2;
 		mod->server->LineTo = xrdp_server_line_to;
 		mod->server->AddChar = xrdp_server_add_char;
 		mod->server->Text = xrdp_server_text;
@@ -549,7 +519,7 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->CreateOffscreenSurface = xrdp_server_create_offscreen_surface;
 		mod->server->SwitchOffscreenSurface = xrdp_server_switch_offscreen_surface;
 		mod->server->DeleteOffscreenSurface = xrdp_server_delete_offscreen_surface;
-		mod->server->PaintOffscreenRect = xrdp_server_paint_offscreen_rect;
+		mod->server->PaintOffscreenSurface = xrdp_server_paint_offscreen_surface;
 		mod->server->WindowNewUpdate = xrdp_server_window_new_update;
 		mod->server->WindowDelete = xrdp_server_window_delete;
 		mod->server->WindowIcon = xrdp_server_window_icon;

@@ -197,19 +197,15 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 	mod->server->OpaqueRect(mod, &opaqueRect);
 	mod->server->EndUpdate(mod);
 
-	mod->server->Message(mod, "started connecting", 0);
-
 	/* only support 8, 15, 16, and 24 bpp connections from rdp client */
 	if (mod->bpp != 8 && mod->bpp != 15 && mod->bpp != 16 && mod->bpp != 24 && mod->bpp != 32)
 	{
-		mod->server->Message(mod, "error - only supporting 8, 15, 16, 24 and 32 bpp rdp connections", 0);
 		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 
 	if (g_strcmp(mod->ip, "") == 0)
 	{
-		mod->server->Message(mod, "error - no ip set", 0);
 		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
@@ -238,8 +234,6 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 			g_tcp_set_no_delay(mod->sck);
 		}
 
-		mod->server->Message(mod, "connecting...", 0);
-
 		if (use_uds)
 		{
 			status = g_tcp_local_connect(mod->sck, con_port);
@@ -262,7 +256,6 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 
 					if ((index >= 30) || mod->server->IsTerminated(mod))
 					{
-						mod->server->Message(mod, "connect timeout", 0);
 						status = 1;
 						break;
 					}
@@ -270,7 +263,7 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 			}
 			else
 			{
-				mod->server->Message(mod, "connect error", 0);
+
 			}
 		}
 
@@ -285,7 +278,7 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 
 		if (i >= 4)
 		{
-			mod->server->Message(mod, "connection problem, giving up", 0);
+
 			break;
 		}
 
@@ -322,13 +315,11 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 
 	if (status != 0)
 	{
-		mod->server->Message(mod, "some problem", 0);
 		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 	else
 	{
-		mod->server->Message(mod, "connected ok", 0);
 		mod->SocketEvent = CreateFileDescriptorEvent(NULL, TRUE, FALSE, mod->sck);
 		ResumeThread(mod->ServerThread);
 	}
@@ -452,6 +443,24 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			}
 			break;
 
+		case XRDP_SERVER_PATBLT:
+			{
+				XRDP_MSG_PATBLT msg;
+				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
+				xrdp_read_patblt(s, &msg);
+				status = mod->server->PatBlt(mod, &msg);
+			}
+			break;
+
+		case XRDP_SERVER_DSTBLT:
+			{
+				XRDP_MSG_DSTBLT msg;
+				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
+				xrdp_read_dstblt(s, &msg);
+				status = mod->server->DstBlt(mod, &msg);
+			}
+			break;
+
 		case XRDP_SERVER_PAINT_RECT:
 			{
 				int status;
@@ -480,15 +489,6 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 					status = mod->server->SetNullClippingRegion(mod);
 				else
 					status = mod->server->SetClippingRegion(mod, &msg);
-			}
-			break;
-
-		case XRDP_SERVER_SET_ROP2:
-			{
-				XRDP_MSG_SET_ROP2 msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_rop2(s, &msg);
-				status = mod->server->SetRop2(mod, msg.bRop2);
 			}
 			break;
 
@@ -537,13 +537,12 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			}
 			break;
 
-		case XRDP_SERVER_MEMBLT:
+		case XRDP_SERVER_PAINT_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_MEMBLT msg;
+				XRDP_MSG_PAINT_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_memblt(s, &msg);
-				status = mod->server->PaintOffscreenRect(mod, msg.nLeftRect, msg.nTopRect,
-						msg.nWidth, msg.nHeight, msg.index, msg.nXSrc, msg.nYSrc);
+				xrdp_read_paint_offscreen_surface(s, &msg);
+				status = mod->server->PaintOffscreenSurface(mod, &msg);
 			}
 			break;
 

@@ -133,19 +133,17 @@ int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
 #define XRDP_SERVER_SCREEN_BLT			4
 #define XRDP_SERVER_PAINT_RECT			5
 #define XRDP_SERVER_BEEP			6
-#define XRDP_SERVER_MESSAGE			7
 #define XRDP_SERVER_IS_TERMINATED		8
 #define XRDP_SERVER_PATBLT			9
 #define XRDP_SERVER_DSTBLT			10
 #define XRDP_SERVER_SET_CLIPPING_REGION		12
 #define XRDP_SERVER_SET_PALETTE			13
-#define XRDP_SERVER_SET_ROP2			14
 #define XRDP_SERVER_LINE_TO			18
 #define XRDP_SERVER_SET_NULL_CLIPPING_REGION	19
 #define XRDP_SERVER_CREATE_OFFSCREEN_SURFACE	20
 #define XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE	21
 #define XRDP_SERVER_DELETE_OFFSCREEN_SURFACE	22
-#define XRDP_SERVER_MEMBLT			23
+#define XRDP_SERVER_PAINT_OFFSCREEN_SURFACE	23
 #define XRDP_SERVER_CACHE_GLYPH			24
 #define XRDP_SERVER_GLYPH_INDEX			25
 #define XRDP_SERVER_RESET			29
@@ -249,14 +247,6 @@ struct _XRDP_MSG_SET_CLIPPING_REGION
 };
 typedef struct _XRDP_MSG_SET_CLIPPING_REGION XRDP_MSG_SET_CLIPPING_REGION;
 
-struct _XRDP_MSG_SET_ROP2
-{
-	DEFINE_MSG_COMMON();
-
-	UINT32 bRop2;
-};
-typedef struct _XRDP_MSG_SET_ROP2 XRDP_MSG_SET_ROP2;
-
 struct _XRDP_MSG_LINE_TO
 {
 	DEFINE_MSG_COMMON();
@@ -324,10 +314,11 @@ struct _XRDP_MSG_DELETE_OFFSCREEN_SURFACE
 };
 typedef struct _XRDP_MSG_DELETE_OFFSCREEN_SURFACE XRDP_MSG_DELETE_OFFSCREEN_SURFACE;
 
-struct _XRDP_MSG_MEMBLT
+struct _XRDP_MSG_PAINT_OFFSCREEN_SURFACE
 {
 	DEFINE_MSG_COMMON();
 
+	UINT32 cacheIndex;
 	INT32 nLeftRect;
 	INT32 nTopRect;
 	INT32 nWidth;
@@ -335,9 +326,8 @@ struct _XRDP_MSG_MEMBLT
 	UINT32 bRop;
 	INT32 nXSrc;
 	INT32 nYSrc;
-	int index;
 };
-typedef struct _XRDP_MSG_MEMBLT XRDP_MSG_MEMBLT;
+typedef struct _XRDP_MSG_PAINT_OFFSCREEN_SURFACE XRDP_MSG_PAINT_OFFSCREEN_SURFACE;
 
 struct _XRDP_MSG_CACHE_GLYPH
 {
@@ -471,9 +461,6 @@ FREERDP_API int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg);
 FREERDP_API int xrdp_read_set_clipping_region(wStream* s, XRDP_MSG_SET_CLIPPING_REGION* msg);
 FREERDP_API int xrdp_write_set_clipping_region(wStream* s, XRDP_MSG_SET_CLIPPING_REGION* msg);
 
-FREERDP_API int xrdp_read_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
-FREERDP_API int xrdp_write_set_rop2(wStream* s, XRDP_MSG_SET_ROP2* msg);
-
 FREERDP_API int xrdp_read_line_to(wStream* s, XRDP_MSG_LINE_TO* msg);
 FREERDP_API int xrdp_write_line_to(wStream* s, XRDP_MSG_LINE_TO* msg);
 
@@ -489,8 +476,8 @@ FREERDP_API int xrdp_write_switch_offscreen_surface(wStream* s, XRDP_MSG_SWITCH_
 FREERDP_API int xrdp_read_delete_offscreen_surface(wStream* s, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg);
 FREERDP_API int xrdp_write_delete_offscreen_surface(wStream* s, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg);
 
-FREERDP_API int xrdp_read_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
-FREERDP_API int xrdp_write_memblt(wStream* s, XRDP_MSG_MEMBLT* msg);
+FREERDP_API int xrdp_read_paint_offscreen_surface(wStream* s, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg);
+FREERDP_API int xrdp_write_paint_offscreen_surface(wStream* s, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg);
 
 FREERDP_API int xrdp_read_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 FREERDP_API int xrdp_write_window_new_update(wStream* s, XRDP_MSG_WINDOW_NEW_UPDATE* msg);

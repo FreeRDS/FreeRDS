@@ -1410,18 +1410,6 @@ int rdpup_reset_clip(void)
 	return 0;
 }
 
-int rdpup_set_opcode(int opcode)
-{
-	XRDP_MSG_SET_ROP2 msg;
-
-	msg.bRop2 = g_rdp_opcodes[opcode & 0xF];
-
-	msg.type = XRDP_SERVER_SET_ROP2;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
 int rdpup_draw_line(XRDP_MSG_LINE_TO* msg)
 {
 	msg->type = XRDP_SERVER_LINE_TO;
@@ -1708,17 +1696,18 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 
 void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
 {
-	XRDP_MSG_MEMBLT msg;
+	XRDP_MSG_PAINT_OFFSCREEN_SURFACE msg;
 
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
 	msg.nWidth = cx;
 	msg.nHeight = cy;
-	msg.index = rdpindex;
+	msg.cacheIndex = rdpindex;
 	msg.nXSrc = srcx;
 	msg.nYSrc = srcy;
+	msg.bRop = GDI_SRCCOPY;
 
-	msg.type = XRDP_SERVER_MEMBLT;
+	msg.type = XRDP_SERVER_PAINT_OFFSCREEN_SURFACE;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 }
 
@@ -1863,7 +1852,6 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec* pDirtyPriv)
 				break;
 
 			case RDI_IMGLL:
-				rdpup_set_opcode(di->u.img.opcode);
 				count = REGION_NUM_RECTS(di->reg);
 
 				for (index = 0; index < count; index++)
@@ -1876,7 +1864,6 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec* pDirtyPriv)
 				break;
 
 			case RDI_IMGLY:
-				rdpup_set_opcode(di->u.img.opcode);
 				count = REGION_NUM_RECTS(di->reg);
 
 				for (index = 0; index < count; index++)
@@ -1990,7 +1977,6 @@ int rdpup_check_dirty_screen(rdpPixmapRec* pDirtyPriv)
 				break;
 
 			case RDI_IMGLL:
-				rdpup_set_opcode(di->u.img.opcode);
 				count = REGION_NUM_RECTS(di->reg);
 
 				for (index = 0; index < count; index++)
@@ -2003,7 +1989,6 @@ int rdpup_check_dirty_screen(rdpPixmapRec* pDirtyPriv)
 				break;
 
 			case RDI_IMGLY:
-				rdpup_set_opcode(di->u.img.opcode);
 				count = REGION_NUM_RECTS(di->reg);
 
 				for (index = 0; index < count; index++)

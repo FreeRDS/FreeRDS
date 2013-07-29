@@ -41,12 +41,6 @@ int xrdp_message_server_beep(xrdpModule* mod)
 	return 0;
 }
 
-int xrdp_message_server_message(xrdpModule* mod, char* msg, int code)
-{
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_MESSAGE, (void*) msg, (void*) (size_t) code);
-	return 0;
-}
-
 int xrdp_message_server_is_terminated(xrdpModule* mod)
 {
 	int status;
@@ -174,12 +168,6 @@ int xrdp_message_server_set_null_clipping_region(xrdpModule* mod)
 	return 0;
 }
 
-int xrdp_message_server_set_rop2(xrdpModule* mod, int opcode)
-{
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_ROP2, (void*) (size_t) opcode, NULL);
-	return 0;
-}
-
 int xrdp_message_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 {
 	XRDP_MSG_LINE_TO* wParam;
@@ -276,21 +264,14 @@ int xrdp_message_server_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELET
 	return 0;
 }
 
-int xrdp_message_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int cy, int cacheIndex, int srcx, int srcy)
+int xrdp_message_server_paint_offscreen_surface(xrdpModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
-	XRDP_MSG_MEMBLT* wParam;
+	XRDP_MSG_PAINT_OFFSCREEN_SURFACE* wParam;
 
-	wParam = (XRDP_MSG_MEMBLT*) malloc(sizeof(XRDP_MSG_MEMBLT));
+	wParam = (XRDP_MSG_PAINT_OFFSCREEN_SURFACE*) malloc(sizeof(XRDP_MSG_PAINT_OFFSCREEN_SURFACE));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_PAINT_OFFSCREEN_SURFACE));
 
-	wParam->nLeftRect = x;
-	wParam->nTopRect = y;
-	wParam->nWidth = cx;
-	wParam->nHeight = cy;
-	wParam->index = cacheIndex;
-	wParam->nXSrc = srcx;
-	wParam->nYSrc = srcy;
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_MEMBLT, (void*) wParam, NULL);
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_PAINT_OFFSCREEN_SURFACE, (void*) wParam, NULL);
 
 	return 0;
 }
@@ -359,10 +340,6 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			status = mod->ServerProxy->Beep(mod);
 			break;
 
-		case XRDP_SERVER_MESSAGE:
-			status = mod->ServerProxy->Message(mod, (char*) message->wParam, (int) (size_t) message->lParam);
-			break;
-
 		case XRDP_SERVER_OPAQUE_RECT:
 			status = mod->ServerProxy->OpaqueRect(mod, (XRDP_MSG_OPAQUE_RECT*) message->wParam);
 			free(message->wParam);
@@ -424,10 +401,6 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			status = mod->ServerProxy->SetNullClippingRegion(mod);
 			break;
 
-		case XRDP_SERVER_SET_ROP2:
-			status = mod->ServerProxy->SetRop2(mod, (int) (size_t) message->wParam);
-			break;
-
 		case XRDP_SERVER_LINE_TO:
 			status = mod->ServerProxy->LineTo(mod, (XRDP_MSG_LINE_TO*) message->wParam);
 			free(message->wParam);
@@ -477,15 +450,9 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			}
 			break;
 
-		case XRDP_SERVER_MEMBLT:
-			{
-				XRDP_MSG_MEMBLT* wParam = (XRDP_MSG_MEMBLT*) message->wParam;
-
-				status = mod->ServerProxy->PaintOffscreenRect(mod, wParam->nLeftRect, wParam->nTopRect,
-						wParam->nWidth, wParam->nHeight, wParam->index, wParam->nXSrc, wParam->nYSrc);
-
-				free(wParam);
-			}
+		case XRDP_SERVER_PAINT_OFFSCREEN_SURFACE:
+			status = mod->ServerProxy->PaintOffscreenSurface(mod, (XRDP_MSG_PAINT_OFFSCREEN_SURFACE*) message->wParam);
+			free(message->wParam);
 			break;
 
 		default:
@@ -539,7 +506,6 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->BeginUpdate = xrdp_message_server_begin_update;
 		mod->server->EndUpdate = xrdp_message_server_end_update;
 		mod->server->Beep = xrdp_message_server_beep;
-		mod->server->Message = xrdp_message_server_message;
 		mod->server->IsTerminated = xrdp_message_server_is_terminated;
 		mod->server->OpaqueRect = xrdp_message_server_opaque_rect;
 		mod->server->ScreenBlt = xrdp_message_server_screen_blt;
@@ -550,7 +516,6 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->SetPalette = xrdp_message_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_message_server_set_clipping_region;
 		mod->server->SetNullClippingRegion = xrdp_message_server_set_null_clipping_region;
-		mod->server->SetRop2 = xrdp_message_server_set_rop2;
 		mod->server->LineTo = xrdp_message_server_line_to;
 		mod->server->AddChar = xrdp_message_server_add_char;
 		mod->server->Text = xrdp_message_server_text;
@@ -559,7 +524,7 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->CreateOffscreenSurface = xrdp_message_server_create_offscreen_surface;
 		mod->server->SwitchOffscreenSurface = xrdp_message_server_switch_offscreen_surface;
 		mod->server->DeleteOffscreenSurface = xrdp_message_server_delete_offscreen_surface;
-		mod->server->PaintOffscreenRect = xrdp_message_server_paint_offscreen_rect;
+		mod->server->PaintOffscreenSurface = xrdp_message_server_paint_offscreen_surface;
 		mod->server->WindowNewUpdate = xrdp_message_server_window_new_update;
 		mod->server->WindowDelete = xrdp_message_server_window_delete;
 		mod->server->WindowIcon = xrdp_message_server_window_icon;

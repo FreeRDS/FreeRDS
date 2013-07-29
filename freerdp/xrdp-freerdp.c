@@ -157,7 +157,6 @@ static int freerdp_xrdp_client_connect(xrdpModule* mod)
 				}
 			}
 			log_message(LOG_LEVEL_INFO, buf);
-			mod->server->Message(mod, buf, 0);
 		}
 
 #endif
@@ -615,9 +614,7 @@ static void xrdp_freerdp_scr_blt(rdpContext* context, SCRBLT_ORDER* scrblt)
 	msg.nXSrc = scrblt->nXSrc;
 	msg.nYSrc = scrblt->nYSrc;
 
-	mod->server->SetRop2(mod, msg.bRop);
 	mod->server->ScreenBlt(mod, &msg);
-	mod->server->SetRop2(mod, 0xcc);
 }
 
 static void xrdp_freerdp_opaque_rect(rdpContext* context, OPAQUE_RECT_ORDER* opaqueRect)
@@ -687,9 +684,7 @@ static void xrdp_freerdp_mem_blt(rdpContext* context, MEMBLT_ORDER* memblt)
 	msg.nXSrc = memblt->nXSrc;
 	msg.nYSrc = memblt->nYSrc;
 
-	mod->server->SetRop2(mod, memblt->bRop);
 	mod->server->PaintRect(mod, &msg);
-	mod->server->SetRop2(mod, 0xCC);
 }
 
 static void xrdp_freerdp_glyph_index(rdpContext* context, GLYPH_INDEX_ORDER* glyphIndex)

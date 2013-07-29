@@ -380,7 +380,6 @@ int rdpup_dstblt(XRDP_MSG_DSTBLT* msg);
 int rdpup_set_clipping_region(XRDP_MSG_SET_CLIPPING_REGION* msg);
 int rdpup_set_clip(short x, short y, int cx, int cy);
 int rdpup_reset_clip(void);
-int rdpup_set_opcode(int opcode);
 int rdpup_draw_line(XRDP_MSG_LINE_TO* msg);
 void rdpup_send_area(struct image_data* id, int x, int y, int w, int h);
 void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h);
