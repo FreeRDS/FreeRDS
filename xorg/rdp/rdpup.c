@@ -1440,13 +1440,13 @@ int rdpup_set_pointer(XRDP_MSG_SET_POINTER* msg)
 
 int rdpup_create_os_surface(int rdpindex, int width, int height)
 {
-	XRDP_MSG_CREATE_OS_SURFACE msg;
+	XRDP_MSG_CREATE_OFFSCREEN_SURFACE msg;
 
-	msg.index = rdpindex;
-	msg.width = width;
-	msg.height = height;
+	msg.cacheIndex = rdpindex;
+	msg.nWidth = width;
+	msg.nHeight = height;
 
-	msg.type = XRDP_SERVER_CREATE_OS_SURFACE;
+	msg.type = XRDP_SERVER_CREATE_OFFSCREEN_SURFACE;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 
 	return 0;
@@ -1454,16 +1454,16 @@ int rdpup_create_os_surface(int rdpindex, int width, int height)
 
 int rdpup_switch_os_surface(int rdpindex)
 {
-	XRDP_MSG_SWITCH_OS_SURFACE msg;
+	XRDP_MSG_SWITCH_OFFSCREEN_SURFACE msg;
 
 	if (g_rdpindex == rdpindex)
 		return 0;
 
 	g_rdpindex = rdpindex;
 
-	msg.index = rdpindex;
+	msg.cacheIndex = rdpindex;
 
-	msg.type = XRDP_SERVER_SWITCH_OS_SURFACE;
+	msg.type = XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 
 	return 0;
@@ -1471,11 +1471,11 @@ int rdpup_switch_os_surface(int rdpindex)
 
 int rdpup_delete_os_surface(int rdpindex)
 {
-	XRDP_MSG_DELETE_OS_SURFACE msg;
+	XRDP_MSG_DELETE_OFFSCREEN_SURFACE msg;
 
-	msg.index = rdpindex;
+	msg.cacheIndex = rdpindex;
 
-	msg.type = XRDP_SERVER_DELETE_OS_SURFACE;
+	msg.type = XRDP_SERVER_DELETE_OFFSCREEN_SURFACE;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 
 	return 0;

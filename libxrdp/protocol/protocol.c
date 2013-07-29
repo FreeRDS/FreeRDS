@@ -597,16 +597,16 @@ int xrdp_write_set_pointer(wStream* s, XRDP_MSG_SET_POINTER* msg)
 	return 0;
 }
 
-int xrdp_read_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg)
+int xrdp_read_create_offscreen_surface(wStream* s, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
-	Stream_Read_UINT32(s, msg->index);
-	Stream_Read_UINT16(s, msg->width);
-	Stream_Read_UINT16(s, msg->height);
+	Stream_Read_UINT32(s, msg->cacheIndex);
+	Stream_Read_UINT16(s, msg->nWidth);
+	Stream_Read_UINT16(s, msg->nHeight);
 
 	return 0;
 }
 
-int xrdp_write_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg)
+int xrdp_write_create_offscreen_surface(wStream* s, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
 	msg->msgFlags = 0;
 	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 8;
@@ -616,43 +616,21 @@ int xrdp_write_create_os_surface(wStream* s, XRDP_MSG_CREATE_OS_SURFACE* msg)
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
-	Stream_Write_UINT32(s, msg->index);
-	Stream_Write_UINT16(s, msg->width);
-	Stream_Write_UINT16(s, msg->height);
+	Stream_Write_UINT32(s, msg->cacheIndex);
+	Stream_Write_UINT16(s, msg->nWidth);
+	Stream_Write_UINT16(s, msg->nHeight);
 
 	return 0;
 }
 
-int xrdp_read_switch_os_surface(wStream* s, XRDP_MSG_SWITCH_OS_SURFACE* msg)
+int xrdp_read_switch_offscreen_surface(wStream* s, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
-	Stream_Read_UINT32(s, msg->index);
+	Stream_Read_UINT32(s, msg->cacheIndex);
 
 	return 0;
 }
 
-int xrdp_write_switch_os_surface(wStream* s, XRDP_MSG_SWITCH_OS_SURFACE* msg)
-{
-	msg->msgFlags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 4;
-
-	if (!s)
-		return msg->length;
-
-	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
-
-	Stream_Write_UINT32(s, msg->index);
-
-	return 0;
-}
-
-int xrdp_read_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg)
-{
-	Stream_Read_UINT32(s, msg->index);
-
-	return 0;
-}
-
-int xrdp_write_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg)
+int xrdp_write_switch_offscreen_surface(wStream* s, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
 	msg->msgFlags = 0;
 	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 4;
@@ -662,7 +640,29 @@ int xrdp_write_delete_os_surface(wStream* s, XRDP_MSG_DELETE_OS_SURFACE* msg)
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
-	Stream_Write_UINT32(s, msg->index);
+	Stream_Write_UINT32(s, msg->cacheIndex);
+
+	return 0;
+}
+
+int xrdp_read_delete_offscreen_surface(wStream* s, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
+{
+	Stream_Read_UINT32(s, msg->cacheIndex);
+
+	return 0;
+}
+
+int xrdp_write_delete_offscreen_surface(wStream* s, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 4;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->cacheIndex);
 
 	return 0;
 }
@@ -1008,16 +1008,16 @@ int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 			xrdp_write_set_pointer(s, (XRDP_MSG_SET_POINTER*) msg);
 			break;
 
-		case XRDP_SERVER_CREATE_OS_SURFACE:
-			xrdp_write_create_os_surface(s, (XRDP_MSG_CREATE_OS_SURFACE*) msg);
+		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:
+			xrdp_write_create_offscreen_surface(s, (XRDP_MSG_CREATE_OFFSCREEN_SURFACE*) msg);
 			break;
 
-		case XRDP_SERVER_SWITCH_OS_SURFACE:
-			xrdp_write_switch_os_surface(s, (XRDP_MSG_SWITCH_OS_SURFACE*) msg);
+		case XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE:
+			xrdp_write_switch_offscreen_surface(s, (XRDP_MSG_SWITCH_OFFSCREEN_SURFACE*) msg);
 			break;
 
-		case XRDP_SERVER_DELETE_OS_SURFACE:
-			xrdp_write_delete_os_surface(s, (XRDP_MSG_DELETE_OS_SURFACE*) msg);
+		case XRDP_SERVER_DELETE_OFFSCREEN_SURFACE:
+			xrdp_write_delete_offscreen_surface(s, (XRDP_MSG_DELETE_OFFSCREEN_SURFACE*) msg);
 			break;
 
 		case XRDP_SERVER_MEMBLT:
@@ -1092,15 +1092,15 @@ char* xrdp_get_msg_type_string(UINT32 type)
 			return "SetPointer";
 			break;
 
-		case XRDP_SERVER_CREATE_OS_SURFACE:
+		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:
 			return "CreateOffscreenSurface";
 			break;
 
-		case XRDP_SERVER_SWITCH_OS_SURFACE:
+		case XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE:
 			return "SwitchOffscreenSurface";
 			break;
 
-		case XRDP_SERVER_DELETE_OS_SURFACE:
+		case XRDP_SERVER_DELETE_OFFSCREEN_SURFACE:
 			return "DeleteOffscreenSurface";
 			break;
 

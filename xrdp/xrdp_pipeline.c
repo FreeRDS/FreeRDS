@@ -211,7 +211,7 @@ int xrdp_message_server_text(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
 	wParam = (XRDP_MSG_GLYPH_INDEX*) malloc(sizeof(XRDP_MSG_GLYPH_INDEX));
 	CopyMemory(wParam, msg, sizeof(XRDP_MSG_GLYPH_INDEX));
 
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_TEXT, (void*) wParam, NULL);
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_GLYPH_INDEX, (void*) wParam, NULL);
 
 	return 0;
 }
@@ -243,43 +243,38 @@ int xrdp_message_server_reset(xrdpModule* mod, int width, int height, int bpp)
 	return 0;
 }
 
-int xrdp_message_server_create_offscreen_surface(xrdpModule* mod, int cacheIndex, int width, int height)
+int xrdp_message_server_create_offscreen_surface(xrdpModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
-	XRDP_MSG_CREATE_OS_SURFACE* wParam;
+	XRDP_MSG_CREATE_OFFSCREEN_SURFACE* wParam;
 
-	wParam = (XRDP_MSG_CREATE_OS_SURFACE*) malloc(sizeof(XRDP_MSG_CREATE_OS_SURFACE));
+	wParam = (XRDP_MSG_CREATE_OFFSCREEN_SURFACE*) malloc(sizeof(XRDP_MSG_CREATE_OFFSCREEN_SURFACE));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_CREATE_OFFSCREEN_SURFACE));
 
-	wParam->index = cacheIndex;
-	wParam->width = width;
-	wParam->height = height;
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_CREATE_OS_SURFACE, (void*) wParam, NULL);
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_CREATE_OFFSCREEN_SURFACE, (void*) wParam, NULL);
 
 	return 0;
 }
 
-int xrdp_message_server_switch_offscreen_surface(xrdpModule* mod, int cacheIndex)
+int xrdp_message_server_switch_offscreen_surface(xrdpModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
-	XRDP_MSG_SWITCH_OS_SURFACE* wParam;
+	XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* wParam;
 
-	wParam = (XRDP_MSG_SWITCH_OS_SURFACE*) malloc(sizeof(XRDP_MSG_SWITCH_OS_SURFACE));
+	wParam = (XRDP_MSG_SWITCH_OFFSCREEN_SURFACE*) malloc(sizeof(XRDP_MSG_SWITCH_OFFSCREEN_SURFACE));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SWITCH_OFFSCREEN_SURFACE));
 
-	wParam->index = cacheIndex;
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SWITCH_OS_SURFACE, (void*) wParam, NULL);
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE, (void*) wParam, NULL);
 
 	return 0;
 }
 
-int xrdp_message_server_delete_offscreen_surface(xrdpModule* mod, int cacheIndex)
+int xrdp_message_server_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
-	XRDP_MSG_DELETE_OS_SURFACE* wParam;
+	XRDP_MSG_DELETE_OFFSCREEN_SURFACE* wParam;
 
-	wParam = (XRDP_MSG_DELETE_OS_SURFACE*) malloc(sizeof(XRDP_MSG_DELETE_OS_SURFACE));
+	wParam = (XRDP_MSG_DELETE_OFFSCREEN_SURFACE*) malloc(sizeof(XRDP_MSG_DELETE_OFFSCREEN_SURFACE));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_DELETE_OFFSCREEN_SURFACE));
 
-	wParam->index = cacheIndex;
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_DELETE_OS_SURFACE, (void*) wParam, NULL);
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_DELETE_OFFSCREEN_SURFACE, (void*) wParam, NULL);
 
 	return 0;
 }
@@ -446,7 +441,7 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			free(message->wParam);
 			break;
 
-		case XRDP_SERVER_TEXT:
+		case XRDP_SERVER_GLYPH_INDEX:
 			status = mod->ServerProxy->Text(mod, (XRDP_MSG_GLYPH_INDEX*) message->wParam);
 			free(message->wParam);
 			break;
@@ -464,26 +459,26 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			}
 			break;
 
-		case XRDP_SERVER_CREATE_OS_SURFACE:
+		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_CREATE_OS_SURFACE* wParam = (XRDP_MSG_CREATE_OS_SURFACE*) message->wParam;
-				status = mod->ServerProxy->CreateOffscreenSurface(mod, wParam->index, wParam->width, wParam->height);
+				XRDP_MSG_CREATE_OFFSCREEN_SURFACE* wParam = (XRDP_MSG_CREATE_OFFSCREEN_SURFACE*) message->wParam;
+				status = mod->ServerProxy->CreateOffscreenSurface(mod, wParam);
 				free(wParam);
 			}
 			break;
 
-		case XRDP_SERVER_SWITCH_OS_SURFACE:
+		case XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_SWITCH_OS_SURFACE* wParam = (XRDP_MSG_SWITCH_OS_SURFACE*) message->wParam;
-				status = mod->ServerProxy->SwitchOffscreenSurface(mod, wParam->index);
+				XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* wParam = (XRDP_MSG_SWITCH_OFFSCREEN_SURFACE*) message->wParam;
+				status = mod->ServerProxy->SwitchOffscreenSurface(mod, wParam);
 				free(wParam);
 			}
 			break;
 
-		case XRDP_SERVER_DELETE_OS_SURFACE:
+		case XRDP_SERVER_DELETE_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_DELETE_OS_SURFACE* wParam = (XRDP_MSG_DELETE_OS_SURFACE*) message->wParam;
-				status = mod->ServerProxy->DeleteOffscreenSurface(mod, wParam->index);
+				XRDP_MSG_DELETE_OFFSCREEN_SURFACE* wParam = (XRDP_MSG_DELETE_OFFSCREEN_SURFACE*) message->wParam;
+				status = mod->ServerProxy->DeleteOffscreenSurface(mod, wParam);
 				free(wParam);
 			}
 			break;

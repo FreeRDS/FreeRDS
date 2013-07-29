@@ -510,30 +510,30 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			}
 			break;
 
-		case XRDP_SERVER_CREATE_OS_SURFACE:
+		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_CREATE_OS_SURFACE msg;
+				XRDP_MSG_CREATE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_create_os_surface(s, &msg);
-				status = mod->server->CreateOffscreenSurface(mod, msg.index, msg.width, msg.height);
+				xrdp_read_create_offscreen_surface(s, &msg);
+				status = mod->server->CreateOffscreenSurface(mod, &msg);
 			}
 			break;
 
-		case XRDP_SERVER_SWITCH_OS_SURFACE:
+		case XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_SWITCH_OS_SURFACE msg;
+				XRDP_MSG_SWITCH_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_switch_os_surface(s, &msg);
-				status = mod->server->SwitchOffscreenSurface(mod, msg.index);
+				xrdp_read_switch_offscreen_surface(s, &msg);
+				status = mod->server->SwitchOffscreenSurface(mod, &msg);
 			}
 			break;
 
-		case XRDP_SERVER_DELETE_OS_SURFACE:
+		case XRDP_SERVER_DELETE_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_DELETE_OS_SURFACE msg;
+				XRDP_MSG_DELETE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_delete_os_surface(s, &msg);
-				status = mod->server->DeleteOffscreenSurface(mod, msg.index);
+				xrdp_read_delete_offscreen_surface(s, &msg);
+				status = mod->server->DeleteOffscreenSurface(mod, &msg);
 			}
 			break;
 

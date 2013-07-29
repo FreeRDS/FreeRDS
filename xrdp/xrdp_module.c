@@ -373,30 +373,30 @@ int xrdp_server_reset(xrdpModule* mod, int width, int height, int bpp)
 	return 0;
 }
 
-int xrdp_server_create_offscreen_surface(xrdpModule* mod, int cacheIndex, int width, int height)
+int xrdp_server_create_offscreen_surface(xrdpModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
+	int status;
 	xrdpWm* wm;
 	xrdpBitmap *bitmap;
-	int error;
 
 	wm = (xrdpWm*) (mod->wm);
 
-	bitmap = xrdp_bitmap_create(width, height, wm->screen->bpp, WND_TYPE_OFFSCREEN, wm);
-	error = xrdp_cache_add_offscreen_bitmap(wm->cache, bitmap, cacheIndex);
+	bitmap = xrdp_bitmap_create(msg->nWidth, msg->nHeight, wm->screen->bpp, WND_TYPE_OFFSCREEN, wm);
+	status = xrdp_cache_add_offscreen_bitmap(wm->cache, bitmap, msg->cacheIndex);
 
-	if (error != 0)
+	if (status != 0)
 	{
 		log_message(LOG_LEVEL_ERROR, "server_create_os_surface: xrdp_cache_add_os_bitmap failed");
 		return 1;
 	}
 
-	bitmap->item_index = cacheIndex;
-	bitmap->id = cacheIndex;
+	bitmap->item_index = msg->cacheIndex;
+	bitmap->id = msg->cacheIndex;
 
 	return 0;
 }
 
-int xrdp_server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
+int xrdp_server_switch_offscreen_surface(xrdpModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
 	xrdpWm* wm;
 	xrdpOffscreenBitmapItem* bi;
@@ -404,7 +404,7 @@ int xrdp_server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
 
 	wm = (xrdpWm*) (mod->wm);
 
-	if (rdpindex == -1)
+	if (msg->cacheIndex == -1)
 	{
 		wm->target_surface = wm->screen;
 		p = (xrdpPainter*) (mod->painter);
@@ -417,7 +417,7 @@ int xrdp_server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
 		return 0;
 	}
 
-	bi = xrdp_cache_get_offscreen_bitmap(wm->cache, rdpindex);
+	bi = xrdp_cache_get_offscreen_bitmap(wm->cache, msg->cacheIndex);
 
 	if (bi != 0)
 	{
@@ -431,13 +431,13 @@ int xrdp_server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
 	}
 	else
 	{
-		log_message(LOG_LEVEL_ERROR, "server_switch_os_surface: error finding id %d", rdpindex);
+		log_message(LOG_LEVEL_ERROR, "server_switch_os_surface: error finding id %d", msg->cacheIndex);
 	}
 
 	return 0;
 }
 
-int xrdp_server_delete_offscreen_surface(xrdpModule* mod, int cacheIndex)
+int xrdp_server_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
@@ -446,9 +446,10 @@ int xrdp_server_delete_offscreen_surface(xrdpModule* mod, int cacheIndex)
 
 	if (wm->target_surface->type == WND_TYPE_OFFSCREEN)
 	{
-		if (wm->target_surface->id == cacheIndex)
+		if (wm->target_surface->id == msg->cacheIndex)
 		{
 			g_writeln("server_delete_os_surface: setting target_surface to screen");
+
 			wm->target_surface = wm->screen;
 			p = (xrdpPainter*) (mod->painter);
 
@@ -459,7 +460,7 @@ int xrdp_server_delete_offscreen_surface(xrdpModule* mod, int cacheIndex)
 		}
 	}
 
-	xrdp_cache_remove_offscreen_bitmap(wm->cache, cacheIndex);
+	xrdp_cache_remove_offscreen_bitmap(wm->cache, msg->cacheIndex);
 
 	return 0;
 }
