@@ -564,7 +564,7 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	cache_bitmap_v2.cacheId = cache_id;
 	cache_bitmap_v2.cacheIndex = cache_idx;
 	cache_bitmap_v2.compressed = TRUE;
-	cache_bitmap_v2.flags = CBR2_NO_BITMAP_COMPRESSION_HDR;
+	cache_bitmap_v2.flags = 0;
 
 	s = session->bs;
 	ts = session->bts;
