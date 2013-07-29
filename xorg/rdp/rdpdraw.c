@@ -109,23 +109,23 @@ GCOps g_rdpGCOps =
 /* return 2, draw using clip */
 int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 {
-	WindowPtr pWindow;
-	RegionPtr temp;
+	int status;
 	BoxRec box;
-	int rv;
+	RegionPtr temp;
+	WindowPtr pWindow;
 
-	rv = 0;
+	status = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
 		switch (pGC->clientClipType)
 		{
 			case CT_NONE:
-				rv = 1;
+				status = 1;
 				break;
 
 			case CT_REGION:
-				rv = 2;
+				status = 2;
 				RegionCopy(pRegion, pGC->clientClip);
 				break;
 
@@ -134,7 +134,7 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 				break;
 		}
 
-		if (rv == 2) /* check if the clip is the entire pixmap */
+		if (status == 2) /* check if the clip is the entire pixmap */
 		{
 			box.x1 = 0;
 			box.y1 = 0;
@@ -143,7 +143,7 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 
 			if (RegionContainsRect(pRegion, &box) == rgnIN)
 			{
-				rv = 1;
+				status = 1;
 			}
 		}
 	}
@@ -167,23 +167,25 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 				switch (pGC->clientClipType)
 				{
 					case CT_NONE:
-						rv = 2;
+						status = 2;
 						RegionCopy(pRegion, temp);
 						break;
+
 					case CT_REGION:
-						rv = 2;
+						status = 2;
 						RegionCopy(pRegion, pGC->clientClip);
 						RegionTranslate(pRegion,
 								pDrawable->x + pGC->clipOrg.x,
 								pDrawable->y + pGC->clipOrg.y);
 						RegionIntersect(pRegion, pRegion, temp);
 						break;
+
 					default:
 						rdpLog("unimp clip type %d\n", pGC->clientClipType);
 						break;
 				}
 
-				if (rv == 2) /* check if the clip is the entire screen */
+				if (status == 2) /* check if the clip is the entire screen */
 				{
 					box.x1 = 0;
 					box.y1 = 0;
@@ -192,14 +194,14 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 
 					if (RegionContainsRect(pRegion, &box) == rgnIN)
 					{
-						rv = 1;
+						status = 1;
 					}
 				}
 			}
 		}
 	}
 
-	return rv;
+	return status;
 }
 
 void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n, BoxPtr pbox)
@@ -398,7 +400,7 @@ Bool rdpCloseScreen(int i, ScreenPtr pScreen)
 	return 1;
 }
 
-int draw_item_add(rdpPixmapRec *priv, struct rdp_draw_item *di)
+int draw_item_add(rdpPixmapRec* priv, struct rdp_draw_item* di)
 {
 	if (priv->draw_item_tail == 0)
 	{
@@ -420,7 +422,7 @@ int draw_item_add(rdpPixmapRec *priv, struct rdp_draw_item *di)
 	return 0;
 }
 
-int draw_item_remove(rdpPixmapRec *priv, struct rdp_draw_item *di)
+int draw_item_remove(rdpPixmapRec* priv, struct rdp_draw_item* di)
 {
 	if (di->prev != 0)
 	{
@@ -452,12 +454,13 @@ int draw_item_remove(rdpPixmapRec *priv, struct rdp_draw_item *di)
 
 	RegionDestroy(di->reg);
 	free(di);
+
 	return 0;
 }
 
-int draw_item_remove_all(rdpPixmapRec *priv)
+int draw_item_remove_all(rdpPixmapRec* priv)
 {
-	struct rdp_draw_item *di;
+	struct rdp_draw_item* di;
 
 	di = priv->draw_item_head;
 
@@ -470,13 +473,14 @@ int draw_item_remove_all(rdpPixmapRec *priv)
 	return 0;
 }
 
-int draw_item_pack(PixmapPtr pix, rdpPixmapRec *priv)
+int draw_item_pack(PixmapPtr pix, rdpPixmapRec* priv)
 {
-	struct rdp_draw_item *di;
-	struct rdp_draw_item *di_prev;
+	int packed_count = 0;
+	int original_count = 0;
+	struct rdp_draw_item* di;
+	struct rdp_draw_item* di_prev;
 
 #if 1
-
 	/* look for repeating draw types */
 	if (priv->draw_item_head != 0)
 	{
@@ -509,10 +513,8 @@ int draw_item_pack(PixmapPtr pix, rdpPixmapRec *priv)
 			}
 		}
 	}
-
 #endif
 #if 1
-
 	/* subtract regions */
 	if (priv->draw_item_tail != 0)
 	{
@@ -534,8 +536,8 @@ int draw_item_pack(PixmapPtr pix, rdpPixmapRec *priv)
 					while (di_prev != 0)
 					{
 						/* D = M - S */
-								RegionSubtract(di_prev->reg, di_prev->reg, di->reg);
-								di_prev = di_prev->prev;
+						RegionSubtract(di_prev->reg, di_prev->reg, di->reg);
+						di_prev = di_prev->prev;
 					}
 				}
 
@@ -564,51 +566,52 @@ int draw_item_pack(PixmapPtr pix, rdpPixmapRec *priv)
 			di = di->next;
 		}
 	}
-
 #endif
+
 	return 0;
 }
 
-int draw_item_add_img_region(rdpPixmapRec *priv, RegionPtr reg, int opcode, int type)
+int draw_item_add_img_region(rdpPixmapRec* priv, RegionPtr reg, int opcode, int type)
 {
-	struct rdp_draw_item *di;
+	struct rdp_draw_item* di;
 
-	di = (struct rdp_draw_item *)g_malloc(sizeof(struct rdp_draw_item), 1);
+	di = (struct rdp_draw_item*) g_malloc(sizeof(struct rdp_draw_item), 1);
 	di->type = type;
 	di->reg = RegionCreate(NullBox, 0);
 	RegionCopy(di->reg, reg);
 	di->u.img.opcode = opcode;
 	draw_item_add(priv, di);
+
 	return 0;
 }
 
-int draw_item_add_fill_region(rdpPixmapRec *priv, RegionPtr reg, int color, int opcode)
+int draw_item_add_fill_region(rdpPixmapRec* priv, RegionPtr reg, int color, int opcode)
 {
-	struct rdp_draw_item *di;
+	struct rdp_draw_item* di;
 
-	di = (struct rdp_draw_item *)g_malloc(sizeof(struct rdp_draw_item), 1);
+	di = (struct rdp_draw_item*) g_malloc(sizeof(struct rdp_draw_item), 1);
 	di->type = RDI_FILL;
 	di->u.fill.fg_color = color;
 	di->u.fill.opcode = opcode;
 	di->reg = RegionCreate(NullBox, 0);
 	RegionCopy(di->reg, reg);
 	draw_item_add(priv, di);
+
 	return 0;
 }
 
-int draw_item_add_line_region(rdpPixmapRec *priv, RegionPtr reg, int color,
+int draw_item_add_line_region(rdpPixmapRec* priv, RegionPtr reg, int color,
 		int opcode, int width, xSegment *segs, int nseg, int is_segment)
 {
-	struct rdp_draw_item *di;
+	struct rdp_draw_item* di;
 
-	LLOGLN(10, ("draw_item_add_line_region:"));
-	di = (struct rdp_draw_item *)g_malloc(sizeof(struct rdp_draw_item), 1);
+	di = (struct rdp_draw_item*) g_malloc(sizeof(struct rdp_draw_item), 1);
 	di->type = RDI_LINE;
 	di->u.line.fg_color = color;
 	di->u.line.opcode = opcode;
 	di->u.line.width = width;
-	di->u.line.segs = (xSegment *)g_malloc(sizeof(xSegment) * nseg, 1);
-	memcpy(di->u.line.segs, segs, sizeof(xSegment) * nseg);
+	di->u.line.segs = (xSegment*) g_malloc(sizeof(xSegment) * nseg, 1);
+	CopyMemory(di->u.line.segs, segs, sizeof(xSegment) * nseg);
 	di->u.line.nseg = nseg;
 
 	if (is_segment)
@@ -620,16 +623,15 @@ int draw_item_add_line_region(rdpPixmapRec *priv, RegionPtr reg, int color,
 	di->flags |= 1;
 	RegionCopy(di->reg, reg);
 	draw_item_add(priv, di);
+
 	return 0;
 }
 
-int draw_item_add_srcblt_region(rdpPixmapRec *priv, RegionPtr reg,
-		int srcx, int srcy, int dstx, int dsty, int cx, int cy)
+int draw_item_add_srcblt_region(rdpPixmapRec* priv, RegionPtr reg, int srcx, int srcy, int dstx, int dsty, int cx, int cy)
 {
-	struct rdp_draw_item *di;
+	struct rdp_draw_item* di;
 
-	LLOGLN(10, ("draw_item_add_srcblt_region:"));
-	di = (struct rdp_draw_item *)g_malloc(sizeof(struct rdp_draw_item), 1);
+	di = (struct rdp_draw_item*) g_malloc(sizeof(struct rdp_draw_item), 1);
 	di->type = RDI_SCRBLT;
 	di->u.scrblt.srcx = srcx;
 	di->u.scrblt.srcy = srcy;
@@ -640,13 +642,14 @@ int draw_item_add_srcblt_region(rdpPixmapRec *priv, RegionPtr reg,
 	di->reg = RegionCreate(NullBox, 0);
 	RegionCopy(di->reg, reg);
 	draw_item_add(priv, di);
+
 	return 0;
 }
 
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint)
 {
 	PixmapPtr rv;
-	rdpPixmapRec *priv;
+	rdpPixmapRec* priv;
 	int org_width;
 
 	org_width = width;
@@ -656,6 +659,7 @@ PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, u
 
 	LLOGLN(10, ("rdpCreatePixmap: width %d org_width %d height %d depth %d screen depth %d usage_hint %d",
 			width, org_width, height, depth, g_rdpScreen.depth, usage_hint));
+
 	pScreen->CreatePixmap = g_rdpScreen.CreatePixmap;
 	rv = pScreen->CreatePixmap(pScreen, width, height, depth, usage_hint);
 	priv = GETPIXPRIV(rv);
@@ -668,13 +672,11 @@ PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, u
 	return rv;
 }
 
-extern struct rdpup_os_bitmap *g_os_bitmaps;
-
 Bool rdpDestroyPixmap(PixmapPtr pPixmap)
 {
-	Bool rv;
+	Bool status;
 	ScreenPtr pScreen;
-	rdpPixmapRec *priv;
+	rdpPixmapRec* priv;
 
 	LLOGLN(10, ("rdpDestroyPixmap:"));
 	priv = GETPIXPRIV(pPixmap);
@@ -692,9 +694,10 @@ Bool rdpDestroyPixmap(PixmapPtr pPixmap)
 
 	pScreen = pPixmap->drawable.pScreen;
 	pScreen->DestroyPixmap = g_rdpScreen.DestroyPixmap;
-	rv = pScreen->DestroyPixmap(pPixmap);
+	status = pScreen->DestroyPixmap(pPixmap);
 	pScreen->DestroyPixmap = rdpDestroyPixmap;
-	return rv;
+
+	return status;
 }
 
 int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
@@ -709,20 +712,24 @@ int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
 	{
 		width = pix->drawable.width;
 		height = pix->drawable.height;
+
 		if ((pix->drawable.depth >= g_rdpScreen.depth) &&
 				(width > 1) && (height > 1) && (priv->kind_width > 0))
 		{
 			LLOGLN(10, ("%d %d", priv->kind_width, pix->drawable.width));
+
 			priv->rdpindex = rdpup_add_os_bitmap(pix, priv);
+
 			if (priv->rdpindex >= 0)
 			{
 				priv->status = 1;
-				rdpup_create_os_surface(priv->rdpindex,
-						priv->kind_width, height);
+				rdpup_create_os_surface(priv->rdpindex, priv->kind_width, height);
+
 				box.x1 = 0;
 				box.y1 = 0;
 				box.x2 = width;
 				box.y2 = height;
+
 				if (g_do_dirty_os)
 				{
 					if (priv->con_number != g_con_number)
@@ -740,28 +747,31 @@ int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
 					rdpup_get_pixmap_image_rect(pix, &id);
 					rdpup_switch_os_surface(priv->rdpindex);
 					rdpup_begin_update();
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-							box.y2 - box.y1);
+					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 					rdpup_end_update();
 					rdpup_switch_os_surface(-1);
 				}
+
 				return 1;
 			}
 		}
+
 		return 0;
 	}
+
 	return 1;
 }
 
 Bool rdpCreateWindow(WindowPtr pWindow)
 {
+	Bool rv;
 	ScreenPtr pScreen;
 	rdpWindowRec *priv;
-	Bool rv;
 
 	LLOGLN(10, ("rdpCreateWindow:"));
 	priv = GETWINPRIV(pWindow);
 	LLOGLN(10, ("  %p status %d", priv, priv->status));
+
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->CreateWindow = g_rdpScreen.CreateWindow;
 	rv = pScreen->CreateWindow(pWindow);
@@ -782,6 +792,7 @@ Bool rdpDestroyWindow(WindowPtr pWindow)
 
 	LLOGLN(10, ("rdpDestroyWindow:"));
 	//priv = GETWINPRIV(pWindow);
+
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->DestroyWindow = g_rdpScreen.DestroyWindow;
 	rv = pScreen->DestroyWindow(pWindow);
@@ -1022,8 +1033,7 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 	g_pScreen->CopyWindow = rdpCopyWindow;
 }
 
-void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h,
-		Bool generateExposures)
+void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool generateExposures)
 {
 	int j;
 	BoxRec box;
@@ -1108,6 +1118,7 @@ RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 
 	RegionUninit(&reg);
 	//g_pScreen->RestoreAreas = rdpRestoreAreas;
+
 	return rv;
 }
 
@@ -1188,6 +1199,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	struct image_data id;
 
 	LLOGLN(10, ("rdpComposite:"));
+
 	ps = GetPictureScreen(g_pScreen);
 	ps->Composite = g_rdpScreen.Composite;
 	ps->Composite(op, pSrc, pMask, pDst, xSrc, ySrc, xMask, yMask, xDst, yDst, width, height);
@@ -1203,7 +1215,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 
 	if (p->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)p;
+		pDstPixmap = (PixmapPtr) p;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -1232,7 +1244,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	{
 		if (p->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)p;
+			pDstWnd = (WindowPtr) p;
 
 			if (pDstWnd->viewable)
 			{

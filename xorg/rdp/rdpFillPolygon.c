@@ -127,7 +127,7 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -154,7 +154,7 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{

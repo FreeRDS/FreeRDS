@@ -81,7 +81,7 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDst;
+		pDstPixmap = (PixmapPtr) pDst;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -108,7 +108,7 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 	{
 		if (pDst->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDst;
+			pDstWnd = (WindowPtr) pDst;
 
 			if (pDstWnd->viewable)
 			{

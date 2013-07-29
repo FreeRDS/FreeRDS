@@ -112,7 +112,7 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{

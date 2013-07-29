@@ -92,7 +92,7 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDst;
+		pDstPixmap = (PixmapPtr) pDst;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -119,7 +119,7 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	{
 		if (pDst->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDst;
+			pDstWnd = (WindowPtr) pDst;
 
 			if (pDstWnd->viewable)
 			{
@@ -210,8 +210,7 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 				else
 				{
 					pbox = RegionExtents(&clip_reg);
-					rdpup_send_area(&id, pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
-							pbox->y2 - pbox->y1);
+					rdpup_send_area(&id, pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
 				}
 
 				RegionUninit(&box_reg);

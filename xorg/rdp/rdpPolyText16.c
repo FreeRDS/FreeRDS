@@ -88,7 +88,7 @@ int rdpPolyText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, uns
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -115,7 +115,7 @@ int rdpPolyText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, uns
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{

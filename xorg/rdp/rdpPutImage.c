@@ -83,7 +83,7 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDst;
+		pDstPixmap = (PixmapPtr) pDst;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -110,7 +110,7 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	{
 		if (pDst->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDst;
+			pDstWnd = (WindowPtr) pDst;
 
 			if (pDstWnd->viewable)
 			{

@@ -1747,26 +1747,22 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 }
 
-int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
+int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec* pDirtyPriv)
 {
 	int index;
 	int clip_index;
 	int count;
 	int num_clips;
 	BoxRec box;
-	xSegment *seg;
+	xSegment* seg;
 	struct image_data id;
-	struct rdp_draw_item *di;
+	struct rdp_draw_item* di;
 
-	if (pDirtyPriv == 0)
-	{
+	if (!pDirtyPriv)
 		return 0;
-	}
 
-	if (pDirtyPriv->is_dirty == 0)
-	{
+	if (!pDirtyPriv->is_dirty)
 		return 0;
-	}
 
 	/* update use time / count */
 	g_os_bitmaps[pDirtyPriv->rdpindex].stamp = g_os_bitmap_stamp;
@@ -1775,7 +1771,9 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 	LLOGLN(10, ("-----------------got dirty"));
 	rdpup_switch_os_surface(pDirtyPriv->rdpindex);
 	rdpup_get_pixmap_image_rect(pDirtyPixmap, &id);
+
 	rdpup_begin_update();
+
 	draw_item_pack(pDirtyPixmap, pDirtyPriv);
 	di = pDirtyPriv->draw_item_head;
 
@@ -1877,19 +1875,21 @@ int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
 
 	draw_item_remove_all(pDirtyPriv);
 	rdpup_end_update();
+
 	pDirtyPriv->is_dirty = 0;
 	rdpup_switch_os_surface(-1);
+
 	return 0;
 }
 
-int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
+int rdpup_check_dirty_screen(rdpPixmapRec* pDirtyPriv)
 {
 	int index;
 	int clip_index;
 	int count;
 	int num_clips;
 	BoxRec box;
-	xSegment *seg;
+	xSegment* seg;
 	struct image_data id;
 	struct rdp_draw_item *di;
 
@@ -2003,6 +2003,7 @@ int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
 
 	draw_item_remove_all(pDirtyPriv);
 	rdpup_end_update();
+
 	pDirtyPriv->is_dirty = 0;
 
 	return 0;

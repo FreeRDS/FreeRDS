@@ -49,7 +49,7 @@ DeviceIntPtr g_pointer = 0;
 DeviceIntPtr g_keyboard = 0;
 
 int g_do_dirty_os = 1; /* delay remoting off screen bitmaps */
-int g_do_dirty_ons = 0; /* delay remoting screen */
+int g_do_dirty_ons = 1; /* delay remoting screen */
 Bool g_wrapWindow = 1;
 Bool g_wrapPixmap = 1;
 
