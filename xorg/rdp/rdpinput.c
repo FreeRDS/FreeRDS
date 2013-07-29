@@ -50,10 +50,9 @@ keyboard and mouse stuff
 #define DEBUG_OUT_INPUT(arg) ErrorF arg
 #endif
 
-extern ScreenPtr g_pScreen; /* in rdpmain.c */
-extern DeviceIntPtr g_pointer; /* in rdpmain.c */
-extern DeviceIntPtr g_keyboard; /* in rdpmain.c */
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
+extern DeviceIntPtr g_pointer;
+extern DeviceIntPtr g_keyboard;
+extern rdpScreenInfoRec g_rdpScreen;
 
 static int g_old_button_mask = 0;
 static int g_pause_spe = 0;

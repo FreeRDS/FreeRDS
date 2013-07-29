@@ -55,7 +55,6 @@ extern ScreenPtr g_pScreen; /* from rdpmain.c */
 extern int g_Bpp; /* from rdpmain.c */
 extern int g_Bpp_mask; /* from rdpmain.c */
 extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
-extern int g_can_do_pix_to_pix; /* from rdpmain.c */
 extern int g_use_rail; /* from rdpmain.c */
 
 /* true is to use unix domain socket */
@@ -845,8 +844,6 @@ static int rdpup_process_capabilities_msg(wStream* s)
 		g_use_rail = 1;
 		rdpup_send_rail();
 	}
-
-	g_can_do_pix_to_pix = 0;
 
 	process_screen_parameters(msg.DesktopWidth, msg.DesktopHeight, msg.ColorDepth);
 

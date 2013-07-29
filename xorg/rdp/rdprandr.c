@@ -30,11 +30,9 @@ RandR extension implementation
 #define DEBUG_OUT(arg) ErrorF arg
 #endif
 
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
-extern DeviceIntPtr g_pointer; /* in rdpmain.c */
-extern DeviceIntPtr g_keyboard; /* in rdpmain.c */
-extern ScreenPtr g_pScreen; /* in rdpmain.c */
-extern WindowPtr g_invalidate_window; /* in rdpmain.c */
+extern rdpScreenInfoRec g_rdpScreen;
+extern ScreenPtr g_pScreen;
+extern WindowPtr g_invalidate_window;
 
 static XID g_wid = 0;
 

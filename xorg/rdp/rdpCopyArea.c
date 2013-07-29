@@ -30,21 +30,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpGCIndex; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpWindowIndex; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpPixmapIndex; /* from rdpmain.c */
-extern int g_Bpp; /* from rdpmain.c */
-extern ScreenPtr g_pScreen; /* from rdpmain.c */
-extern Bool g_wrapPixmap; /* from rdpmain.c */
-extern int g_can_do_pix_to_pix; /* from rdpmain.c */
-extern int g_do_dirty_os; /* in rdpmain.c */
-extern int g_do_dirty_ons; /* in rdpmain.c */
-extern rdpPixmapRec g_screenPriv; /* in rdpmain.c */
+extern DevPrivateKeyRec g_rdpGCIndex;
+extern DevPrivateKeyRec g_rdpPixmapIndex;
+extern int g_do_dirty_os;
+extern int g_do_dirty_ons;
+extern rdpPixmapRec g_screenPriv;
 
-extern GCOps g_rdpGCOps; /* from rdpdraw.c */
-
-extern int g_con_number; /* in rdpup.c */
+extern GCOps g_rdpGCOps;
 
 static RegionPtr rdpCopyAreaOrg(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 		int srcx, int srcy, int w, int h, int dstx, int dsty)
@@ -267,71 +259,6 @@ static RegionPtr rdpCopyAreaPixmapToWnd(PixmapPtr pSrcPixmap, rdpPixmapRec *pSrc
 	return rv;
 }
 
-/* draw from an off screen pixmap to an off screen pixmap */
-static RegionPtr rdpCopyAreaPixmapToPixmap(PixmapPtr pSrcPixmap, rdpPixmapRec *pSrcPriv,
-		PixmapPtr pDstPixmap, rdpPixmapRec *pDstPriv,
-		GCPtr pGC, int srcx, int srcy, int w, int h, int dstx, int dsty)
-{
-	int lsrcx;
-	int lsrcy;
-	int ldstx;
-	int ldsty;
-	int cd;
-	int j;
-	int num_clips;
-	RegionPtr rv;
-	RegionRec clip_reg;
-	BoxRec box;
-
-	LLOGLN(10, ("rdpCopyAreaPixmapToPixmap:"));
-
-	rv = rdpCopyAreaOrg(&(pSrcPixmap->drawable), &(pDstPixmap->drawable),
-			pGC, srcx, srcy, w, h, dstx, dsty);
-	RegionInit(&clip_reg, NullBox, 0);
-	cd = rdp_get_clip(&clip_reg, &(pDstPixmap->drawable), pGC);
-	LLOGLN(10, ("rdpCopyAreaPixmapToPixmap: cd %d", cd));
-	ldstx = pDstPixmap->drawable.x + dstx;
-	ldsty = pDstPixmap->drawable.y + dsty;
-	lsrcx = pSrcPixmap->drawable.x + srcx;
-	lsrcy = pSrcPixmap->drawable.y + srcy;
-
-	if (cd == 1)
-	{
-		rdpup_switch_os_surface(pDstPriv->rdpindex);
-		rdpup_begin_update();
-		rdpup_paint_rect_os(ldstx, ldsty, w, h, pSrcPriv->rdpindex, lsrcx, lsrcy);
-		LLOGLN(10, ("%d %d %d %d %d %d", ldstx, ldsty, w, h, lsrcx, lsrcy));
-		rdpup_end_update();
-		rdpup_switch_os_surface(-1);
-	}
-	else if (cd == 2)
-	{
-		num_clips = REGION_NUM_RECTS(&clip_reg);
-
-		if (num_clips > 0)
-		{
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			rdpup_begin_update();
-			LLOGLN(10, ("rdpCopyAreaPixmapToPixmap: num_clips %d", num_clips));
-
-			for (j = 0; j < num_clips; j++)
-			{
-				box = REGION_RECTS(&clip_reg)[j];
-				rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-				rdpup_paint_rect_os(ldstx, ldsty, w, h, pSrcPriv->rdpindex, lsrcx, lsrcy);
-				LLOGLN(10, ("%d %d %d %d %d %d", ldstx, ldsty, w, h, lsrcx, lsrcy));
-			}
-
-			rdpup_reset_clip();
-			rdpup_end_update();
-			rdpup_switch_os_surface(-1);
-		}
-	}
-
-	RegionUninit(&clip_reg);
-	return rv;
-}
-
 RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 		int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
@@ -362,7 +289,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 	if (pSrc->type == DRAWABLE_WINDOW)
 	{
-		pSrcWnd = (WindowPtr)pSrc;
+		pSrcWnd = (WindowPtr) pSrc;
 
 		if (pSrcWnd->viewable)
 		{
@@ -370,7 +297,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 			if (pDst->type == DRAWABLE_WINDOW)
 			{
-				pDstWnd = (WindowPtr)pDst;
+				pDstWnd = (WindowPtr) pDst;
 
 				if (pDstWnd->viewable)
 				{
@@ -384,7 +311,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 			}
 			else if (pDst->type == DRAWABLE_PIXMAP)
 			{
-				pDstPixmap = (PixmapPtr)pDst;
+				pDstPixmap = (PixmapPtr) pDst;
 				pDstPriv = GETPIXPRIV(pDstPixmap);
 
 				if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -411,7 +338,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 		{
 			if (pDst->type == DRAWABLE_WINDOW)
 			{
-				pDstWnd = (WindowPtr)pDst;
+				pDstWnd = (WindowPtr) pDst;
 
 				if (pDstWnd->viewable)
 				{
@@ -419,24 +346,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 					rdpup_check_dirty(pSrcPixmap, pSrcPriv);
 					return rdpCopyAreaPixmapToWnd(pSrcPixmap, pSrcPriv, pDstWnd, pGC,
 							srcx, srcy, w, h, dstx, dsty);
-				}
-			}
-			else if (pDst->type == DRAWABLE_PIXMAP)
-			{
-				pDstPixmap = (PixmapPtr)pDst;
-				pDstPriv = GETPIXPRIV(pDstPixmap);
-
-				if (xrdp_is_os(pDstPixmap, pDstPriv))
-				{
-					if (g_can_do_pix_to_pix)
-					{
-						rdpup_check_dirty(pSrcPixmap, pSrcPriv);
-						rdpup_check_dirty(pDstPixmap, pDstPriv);
-						return rdpCopyAreaPixmapToPixmap(pSrcPixmap, pSrcPriv,
-								pDstPixmap, pDstPriv,
-								pGC, srcx, srcy, w, h,
-								dstx, dsty);
-					}
 				}
 			}
 		}

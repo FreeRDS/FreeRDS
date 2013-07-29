@@ -56,7 +56,6 @@ extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
 extern DevPrivateKeyRec g_rdpGCIndex; /* from rdpmain.c */
 extern DevPrivateKeyRec g_rdpWindowIndex; /* from rdpmain.c */
 extern DevPrivateKeyRec g_rdpPixmapIndex; /* from rdpmain.c */
-extern int g_Bpp; /* from rdpmain.c */
 extern ScreenPtr g_pScreen; /* from rdpmain.c */
 extern Bool g_wrapPixmap; /* from rdpmain.c */
 extern WindowPtr g_invalidate_window; /* in rdpmain.c */
