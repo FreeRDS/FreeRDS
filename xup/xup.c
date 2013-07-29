@@ -55,7 +55,7 @@ static int lib_send_capabilities(xrdpModule* mod)
 	s = mod->SendStream;
 	Stream_SetPosition(s, 0);
 
-	msg.flags = 0;
+	msg.msgFlags = 0;
 	msg.type = XRDP_CLIENT_CAPABILITIES;
 
 	settings = mod->settings;
@@ -299,7 +299,7 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 		RECTANGLE_16 rect;
 		XRDP_MSG_REFRESH_RECT msg;
 
-		msg.flags = 0;
+		msg.msgFlags = 0;
 		msg.type = XRDP_CLIENT_REFRESH_RECT;
 
 		msg.numberOfAreas = 1;
@@ -366,7 +366,7 @@ int x11rdp_xrdp_client_event(xrdpModule* mod, int subtype, long param1, long par
 					 15  0      65507  29     0
 					 16  0      65507  29     49152 */
 
-					msg.flags = 0;
+					msg.msgFlags = 0;
 					msg.type = XRDP_CLIENT_EVENT;
 
 					msg.subType = 16; /* key up */
@@ -391,7 +391,7 @@ int x11rdp_xrdp_client_event(xrdpModule* mod, int subtype, long param1, long par
 		}
 	}
 
-	msg.flags = 0;
+	msg.msgFlags = 0;
 	msg.type = XRDP_CLIENT_EVENT;
 
 	msg.subType = subtype;
@@ -480,15 +480,6 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 					status = mod->server->SetNullClippingRegion(mod);
 				else
 					status = mod->server->SetClippingRegion(mod, &msg);
-			}
-			break;
-
-		case XRDP_SERVER_SET_FORECOLOR:
-			{
-				XRDP_MSG_SET_FORECOLOR msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_forecolor(s, &msg);
-				status = mod->server->SetForeColor(mod, msg.ForeColor);
 			}
 			break;
 

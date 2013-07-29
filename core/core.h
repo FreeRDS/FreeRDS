@@ -182,7 +182,7 @@ FREERDP_API int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
 		int srcy, int cache_idx, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_text(xrdpSession* session, GLYPH_INDEX_ORDER* msg, xrdpRect* rect);
+FREERDP_API int libxrdp_orders_text(xrdpSession* session, XRDP_MSG_GLYPH_INDEX* msg, xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_send_palette(xrdpSession* session, int* palette, int cache_id);
 

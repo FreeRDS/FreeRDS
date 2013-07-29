@@ -475,8 +475,6 @@ int draw_item_remove_all(rdpPixmapRec* priv)
 
 int draw_item_pack(PixmapPtr pix, rdpPixmapRec* priv)
 {
-	int packed_count = 0;
-	int original_count = 0;
 	struct rdp_draw_item* di;
 	struct rdp_draw_item* di_prev;
 

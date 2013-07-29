@@ -556,7 +556,7 @@ int xrdp_painter_draw_bitmap(xrdpPainter* self, xrdpBitmap* bitmap, xrdpBitmap* 
 int xrdp_painter_text_width(xrdpPainter* self, char* text);
 int xrdp_painter_text_height(xrdpPainter* self, char* text);
 int xrdp_painter_draw_text(xrdpPainter* self, xrdpBitmap* bitmap, int x, int y, const char* text);
-int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, GLYPH_INDEX_ORDER* msg);
+int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, XRDP_MSG_GLYPH_INDEX* msg);
 int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap* src, xrdpBitmap* dst,
 		int x, int y, int cx, int cy, int srcx, int srcy);
 int xrdp_painter_line(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_LINE_TO* msg);
@@ -664,12 +664,10 @@ typedef int (*pXrdpServerSetPointer)(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 typedef int (*pXrdpServerSetPalette)(xrdpModule* mod, int* palette);
 typedef int (*pXrdpServerSetClippingRegion)(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg);
 typedef int (*pXrdpServerSetNullClippingRegion)(xrdpModule* mod);
-typedef int (*pXrdpServerSetForeColor)(xrdpModule* mod, int fgcolor);
-typedef int (*pXrdpServerSetBackColor)(xrdpModule* mod, int bgcolor);
 typedef int (*pXrdpServerSetRop2)(xrdpModule* mod, int opcode);
 typedef int (*pXrdpServerLineTo)(xrdpModule* mod, XRDP_MSG_LINE_TO* msg);
 typedef int (*pXrdpServerAddChar)(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg);
-typedef int (*pXrdpServerText)(xrdpModule* mod, GLYPH_INDEX_ORDER* msg);
+typedef int (*pXrdpServerText)(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg);
 typedef int (*pXrdpServerSharedFramebuffer)(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg);
 typedef int (*pXrdpServerReset)(xrdpModule* mod, int width, int height, int bpp);
 typedef int (*pXrdpServerCreateOffscreenSurface)(xrdpModule* mod, int id, int width, int height);
@@ -699,8 +697,6 @@ struct xrdp_server_module
 	pXrdpServerSetPalette SetPalette;
 	pXrdpServerSetClippingRegion SetClippingRegion;
 	pXrdpServerSetNullClippingRegion SetNullClippingRegion;
-	pXrdpServerSetForeColor SetForeColor;
-	pXrdpServerSetBackColor SetBackColor;
 	pXrdpServerSetRop2 SetRop2;
 	pXrdpServerLineTo LineTo;
 	pXrdpServerAddChar AddChar;

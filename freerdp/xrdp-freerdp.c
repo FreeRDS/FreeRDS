@@ -694,26 +694,45 @@ static void xrdp_freerdp_mem_blt(rdpContext* context, MEMBLT_ORDER* memblt)
 	mod->server->SetRop2(mod, 0xCC);
 }
 
-static void xrdp_freerdp_glyph_index(rdpContext* context, GLYPH_INDEX_ORDER* glyph_index)
+static void xrdp_freerdp_glyph_index(rdpContext* context, GLYPH_INDEX_ORDER* glyphIndex)
 {
 	xrdpModule* mod;
 	int server_bpp;
 	int client_bpp;
 	int fgcolor;
 	int bgcolor;
+	XRDP_MSG_GLYPH_INDEX msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_glyph_index:"));
 	server_bpp = mod->instance->settings->ColorDepth;
 	client_bpp = mod->bpp;
 
-	fgcolor = convert_color(server_bpp, client_bpp, glyph_index->foreColor, mod->colormap);
-	bgcolor = convert_color(server_bpp, client_bpp, glyph_index->backColor, mod->colormap);
+	fgcolor = convert_color(server_bpp, client_bpp, glyphIndex->foreColor, mod->colormap);
+	bgcolor = convert_color(server_bpp, client_bpp, glyphIndex->backColor, mod->colormap);
 
-	mod->server->SetBackColor(mod, fgcolor);
-	mod->server->SetForeColor(mod, bgcolor);
+	msg.backColor = fgcolor;
+	msg.foreColor = bgcolor;
+	msg.cacheId = glyphIndex->cacheId;
+	msg.flAccel = glyphIndex->flAccel;
+	msg.ulCharInc = glyphIndex->ulCharInc;
+	msg.fOpRedundant = glyphIndex->fOpRedundant;
+	msg.bkLeft = glyphIndex->bkLeft;
+	msg.bkTop = glyphIndex->bkTop;
+	msg.bkRight = glyphIndex->bkRight;
+	msg.bkBottom = glyphIndex->bkBottom;
+	msg.opLeft = glyphIndex->opLeft;
+	msg.opTop = glyphIndex->opTop;
+	msg.opRight = glyphIndex->opRight;
+	msg.opBottom = glyphIndex->opBottom;
+	CopyMemory(&msg.brush, &glyphIndex->brush, sizeof(rdpBrush));
+	msg.brush.data = msg.brush.p8x8;
+	msg.x = glyphIndex->x;
+	msg.y = glyphIndex->y;
+	msg.cbData = glyphIndex->cbData;
+	CopyMemory(msg.data, glyphIndex->data, msg.cbData);
 
-	mod->server->Text(mod, glyph_index);
+	mod->server->Text(mod, &msg);
 }
 
 static void xrdp_freerdp_line_to(rdpContext* context, LINE_TO_ORDER* lineTo)

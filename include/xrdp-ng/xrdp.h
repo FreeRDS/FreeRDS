@@ -44,7 +44,7 @@ typedef struct _XRDP_RECT XRDP_RECT;
 #define DEFINE_MSG_COMMON() \
 	UINT32 type; \
 	UINT32 length; \
-	UINT32 flags; \
+	UINT32 msgFlags; \
 	XRDP_RECT rect
 
 struct _XRDP_MSG_COMMON
@@ -137,8 +137,6 @@ int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
 #define XRDP_SERVER_IS_TERMINATED		8
 #define XRDP_SERVER_PATBLT			9
 #define XRDP_SERVER_SET_CLIPPING_REGION		10
-#define XRDP_SERVER_SET_BACKCOLOR		11
-#define XRDP_SERVER_SET_FORECOLOR		12
 #define XRDP_SERVER_SET_PALETTE			13
 #define XRDP_SERVER_SET_ROP2			14
 #define XRDP_SERVER_LINE_TO			18
@@ -330,6 +328,8 @@ typedef struct _XRDP_MSG_MEMBLT XRDP_MSG_MEMBLT;
 
 struct _XRDP_MSG_CACHE_GLYPH
 {
+	DEFINE_MSG_COMMON();
+
 	UINT32 cacheId;
 	UINT32 flags;
 	UINT32 cGlyphs;
@@ -337,6 +337,32 @@ struct _XRDP_MSG_CACHE_GLYPH
 	BYTE* unicodeCharacters;
 };
 typedef struct _XRDP_MSG_CACHE_GLYPH XRDP_MSG_CACHE_GLYPH;
+
+struct _XRDP_MSG_GLYPH_INDEX
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 cacheId;
+	UINT32 flAccel;
+	UINT32 ulCharInc;
+	UINT32 fOpRedundant;
+	UINT32 backColor;
+	UINT32 foreColor;
+	INT32 bkLeft;
+	INT32 bkTop;
+	INT32 bkRight;
+	INT32 bkBottom;
+	INT32 opLeft;
+	INT32 opTop;
+	INT32 opRight;
+	INT32 opBottom;
+	rdpBrush brush;
+	INT32 x;
+	INT32 y;
+	UINT32 cbData;
+	BYTE data[256];
+};
+typedef struct _XRDP_MSG_GLYPH_INDEX XRDP_MSG_GLYPH_INDEX;
 
 struct _XRDP_MSG_RESET
 {

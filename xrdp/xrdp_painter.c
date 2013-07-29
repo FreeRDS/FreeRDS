@@ -372,7 +372,7 @@ int xrdp_painter_draw_text(xrdpPainter* self, xrdpBitmap *dst, int x, int y, con
 	xrdpFont* font;
 	xrdpFontChar* font_item;
 	wchar_t* wstr;
-	GLYPH_INDEX_ORDER msg;
+	XRDP_MSG_GLYPH_INDEX msg;
 
 	if (!self)
 		return 0;
@@ -469,7 +469,7 @@ int xrdp_painter_draw_text(xrdpPainter* self, xrdpBitmap *dst, int x, int y, con
 	return 0;
 }
 
-int xrdp_painter_draw_text2(xrdpPainter* self, xrdpBitmap* dst, GLYPH_INDEX_ORDER* msg)
+int xrdp_painter_draw_text2(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_GLYPH_INDEX* msg)
 {
 	int k;
 	int dx;

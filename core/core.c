@@ -367,15 +367,37 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	return 0;
 }
 
-int libxrdp_orders_text(xrdpSession* session, GLYPH_INDEX_ORDER* msg, xrdpRect* rect)
+int libxrdp_orders_text(xrdpSession* session, XRDP_MSG_GLYPH_INDEX* msg, xrdpRect* rect)
 {
+	GLYPH_INDEX_ORDER glyphIndex;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
 	printf("%s: cacheId: %d\n", __FUNCTION__, msg->cacheId);
 
+	glyphIndex.backColor = msg->backColor;
+	glyphIndex.foreColor = msg->foreColor;
+	glyphIndex.cacheId = msg->cacheId;
+	glyphIndex.flAccel = msg->flAccel;
+	glyphIndex.ulCharInc = msg->ulCharInc;
+	glyphIndex.fOpRedundant = msg->fOpRedundant;
+	glyphIndex.bkLeft = msg->bkLeft;
+	glyphIndex.bkTop = msg->bkTop;
+	glyphIndex.bkRight = msg->bkRight;
+	glyphIndex.bkBottom = msg->bkBottom;
+	glyphIndex.opLeft = msg->opLeft;
+	glyphIndex.opTop = msg->opTop;
+	glyphIndex.opRight = msg->opRight;
+	glyphIndex.opBottom = msg->opBottom;
+	CopyMemory(&glyphIndex.brush, &msg->brush, sizeof(rdpBrush));
+	glyphIndex.brush.data = glyphIndex.brush.p8x8;
+	glyphIndex.x = msg->x;
+	glyphIndex.y = msg->y;
+	glyphIndex.cbData = msg->cbData;
+	CopyMemory(glyphIndex.data, msg->data, glyphIndex.cbData);
+
 	libxrdp_set_bounds_rect(session, rect);
 
-	IFCALL(primary->GlyphIndex, session->context, msg);
+	IFCALL(primary->GlyphIndex, session->context, &glyphIndex);
 
 	return 0;
 }

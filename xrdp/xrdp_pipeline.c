@@ -162,18 +162,6 @@ int xrdp_message_server_set_null_clipping_region(xrdpModule* mod)
 	return 0;
 }
 
-int xrdp_message_server_set_forecolor(xrdpModule* mod, int fgcolor)
-{
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_FORECOLOR, (void*) (size_t) fgcolor, NULL);
-	return 0;
-}
-
-int xrdp_message_server_set_backcolor(xrdpModule* mod, int bgcolor)
-{
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_BACKCOLOR, (void*) (size_t) bgcolor, NULL);
-	return 0;
-}
-
 int xrdp_message_server_set_rop2(xrdpModule* mod, int opcode)
 {
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_ROP2, (void*) (size_t) opcode, NULL);
@@ -204,12 +192,12 @@ int xrdp_message_server_add_char(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 	return 0;
 }
 
-int xrdp_message_server_text(xrdpModule* mod, GLYPH_INDEX_ORDER* msg)
+int xrdp_message_server_text(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
 {
-	GLYPH_INDEX_ORDER* wParam;
+	XRDP_MSG_GLYPH_INDEX* wParam;
 
-	wParam = (GLYPH_INDEX_ORDER*) malloc(sizeof(GLYPH_INDEX_ORDER));
-	CopyMemory(wParam, msg, sizeof(GLYPH_INDEX_ORDER));
+	wParam = (XRDP_MSG_GLYPH_INDEX*) malloc(sizeof(XRDP_MSG_GLYPH_INDEX));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_GLYPH_INDEX));
 
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_TEXT, (void*) wParam, NULL);
 
@@ -243,13 +231,13 @@ int xrdp_message_server_reset(xrdpModule* mod, int width, int height, int bpp)
 	return 0;
 }
 
-int xrdp_message_server_create_offscreen_surface(xrdpModule* mod, int rdpindex, int width, int height)
+int xrdp_message_server_create_offscreen_surface(xrdpModule* mod, int cacheIndex, int width, int height)
 {
 	XRDP_MSG_CREATE_OS_SURFACE* wParam;
 
 	wParam = (XRDP_MSG_CREATE_OS_SURFACE*) malloc(sizeof(XRDP_MSG_CREATE_OS_SURFACE));
 
-	wParam->index = rdpindex;
+	wParam->index = cacheIndex;
 	wParam->width = width;
 	wParam->height = height;
 
@@ -258,33 +246,33 @@ int xrdp_message_server_create_offscreen_surface(xrdpModule* mod, int rdpindex, 
 	return 0;
 }
 
-int xrdp_message_server_switch_offscreen_surface(xrdpModule* mod, int rdpindex)
+int xrdp_message_server_switch_offscreen_surface(xrdpModule* mod, int cacheIndex)
 {
 	XRDP_MSG_SWITCH_OS_SURFACE* wParam;
 
 	wParam = (XRDP_MSG_SWITCH_OS_SURFACE*) malloc(sizeof(XRDP_MSG_SWITCH_OS_SURFACE));
 
-	wParam->index = rdpindex;
+	wParam->index = cacheIndex;
 
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SWITCH_OS_SURFACE, (void*) wParam, NULL);
 
 	return 0;
 }
 
-int xrdp_message_server_delete_offscreen_surface(xrdpModule* mod, int rdpindex)
+int xrdp_message_server_delete_offscreen_surface(xrdpModule* mod, int cacheIndex)
 {
 	XRDP_MSG_DELETE_OS_SURFACE* wParam;
 
 	wParam = (XRDP_MSG_DELETE_OS_SURFACE*) malloc(sizeof(XRDP_MSG_DELETE_OS_SURFACE));
 
-	wParam->index = rdpindex;
+	wParam->index = cacheIndex;
 
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_DELETE_OS_SURFACE, (void*) wParam, NULL);
 
 	return 0;
 }
 
-int xrdp_message_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
+int xrdp_message_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int cx, int cy, int cacheIndex, int srcx, int srcy)
 {
 	XRDP_MSG_MEMBLT* wParam;
 
@@ -294,7 +282,7 @@ int xrdp_message_server_paint_offscreen_rect(xrdpModule* mod, int x, int y, int 
 	wParam->nTopRect = y;
 	wParam->nWidth = cx;
 	wParam->nHeight = cy;
-	wParam->index = rdpindex;
+	wParam->index = cacheIndex;
 	wParam->nXSrc = srcx;
 	wParam->nYSrc = srcy;
 
@@ -427,14 +415,6 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			status = mod->ServerProxy->SetNullClippingRegion(mod);
 			break;
 
-		case XRDP_SERVER_SET_FORECOLOR:
-			status = mod->ServerProxy->SetForeColor(mod, (int) (size_t) message->wParam);
-			break;
-
-		case XRDP_SERVER_SET_BACKCOLOR:
-			status = mod->ServerProxy->SetBackColor(mod, (int) (size_t) message->wParam);
-			break;
-
 		case XRDP_SERVER_SET_ROP2:
 			status = mod->ServerProxy->SetRop2(mod, (int) (size_t) message->wParam);
 			break;
@@ -450,7 +430,7 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			break;
 
 		case XRDP_SERVER_TEXT:
-			status = mod->ServerProxy->Text(mod, (GLYPH_INDEX_ORDER*) message->wParam);
+			status = mod->ServerProxy->Text(mod, (XRDP_MSG_GLYPH_INDEX*) message->wParam);
 			free(message->wParam);
 			break;
 
@@ -563,8 +543,6 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->SetPalette = xrdp_message_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_message_server_set_clipping_region;
 		mod->server->SetNullClippingRegion = xrdp_message_server_set_null_clipping_region;
-		mod->server->SetForeColor = xrdp_message_server_set_forecolor;
-		mod->server->SetBackColor = xrdp_message_server_set_backcolor;
 		mod->server->SetRop2 = xrdp_message_server_set_rop2;
 		mod->server->LineTo = xrdp_message_server_line_to;
 		mod->server->AddChar = xrdp_message_server_add_char;
