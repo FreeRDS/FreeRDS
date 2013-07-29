@@ -218,17 +218,12 @@ int xrdp_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 	return 0;
 }
 
-int xrdp_server_set_palette(xrdpModule* mod, int* palette)
+int xrdp_server_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
 {
-	xrdpWm* wm;
+	xrdpWm* wm = (xrdpWm*) (mod->wm);
 
-	wm = (xrdpWm*) (mod->wm);
-
-	if (g_memcmp(wm->palette, palette, 255 * sizeof(int)) != 0)
-	{
-		g_memcpy(wm->palette, palette, 256 * sizeof(int));
-		xrdp_wm_send_palette(wm);
-	}
+	CopyMemory(wm->palette, msg->palette, 256 * sizeof(UINT32));
+	xrdp_wm_send_palette(wm);
 
 	return 0;
 }
@@ -337,7 +332,7 @@ int xrdp_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER*
 	return 0;
 }
 
-int xrdp_server_reset(xrdpModule* mod, int width, int height, int bpp)
+int xrdp_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
 {
 	xrdpWm* wm;
 	rdpSettings* settings;
@@ -345,22 +340,8 @@ int xrdp_server_reset(xrdpModule* mod, int width, int height, int bpp)
 	wm = (xrdpWm*) (mod->wm);
 	settings = wm->session->settings;
 
-	/* older client can't resize */
-	if (settings->ClientBuild <= 419)
-	{
+	if (libxrdp_reset(wm->session, msg) != 0)
 		return 0;
-	}
-
-	/* if same, don't need to do anything */
-	if ((settings->DesktopWidth == width) && (settings->DesktopHeight == height) && (settings->ColorDepth == bpp))
-	{
-		return 0;
-	}
-
-	if (libxrdp_reset(wm->session, width, height, bpp) != 0)
-	{
-		return 0;
-	}
 
 	/* reset cache */
 	xrdp_cache_reset(wm->cache);

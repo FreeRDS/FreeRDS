@@ -144,12 +144,12 @@ int xrdp_message_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 	return 0;
 }
 
-int xrdp_message_server_set_palette(xrdpModule* mod, int* palette)
+int xrdp_message_server_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
 {
-	int* wParam;
+	XRDP_MSG_SET_PALETTE* wParam;
 
-	wParam = (int*) malloc(256 * sizeof(int));
-	CopyMemory(wParam, palette, 256 * sizeof(int));
+	wParam = (XRDP_MSG_SET_PALETTE*) malloc(sizeof(XRDP_MSG_SET_PALETTE));
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SET_PALETTE));
 
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_PALETTE, (void*) wParam, NULL);
 
@@ -228,15 +228,12 @@ int xrdp_message_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAM
 	return 0;
 }
 
-int xrdp_message_server_reset(xrdpModule* mod, int width, int height, int bpp)
+int xrdp_message_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
 {
 	XRDP_MSG_RESET* wParam;
 
 	wParam = (XRDP_MSG_RESET*) malloc(sizeof(XRDP_MSG_RESET));
-
-	wParam->DesktopWidth = width;
-	wParam->DesktopHeight = height;
-	wParam->ColorDepth = bpp;
+	CopyMemory(wParam, msg, sizeof(XRDP_MSG_RESET));
 
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_RESET, (void*) wParam, NULL);
 
@@ -414,7 +411,7 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			break;
 
 		case XRDP_SERVER_SET_PALETTE:
-			status = mod->ServerProxy->SetPalette(mod, (int*) message->wParam);
+			status = mod->ServerProxy->SetPalette(mod, (XRDP_MSG_SET_PALETTE*) message->wParam);
 			free(message->wParam);
 			break;
 
@@ -452,11 +449,8 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			break;
 
 		case XRDP_SERVER_RESET:
-			{
-				XRDP_MSG_RESET* wParam = (XRDP_MSG_RESET*) message->wParam;
-				status = mod->ServerProxy->Reset(mod, wParam->DesktopWidth, wParam->DesktopHeight, wParam->ColorDepth);
-				free(message->wParam);
-			}
+			status = mod->ServerProxy->Reset(mod, (XRDP_MSG_RESET*) message->wParam);
+			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:

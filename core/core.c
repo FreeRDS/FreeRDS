@@ -529,9 +529,14 @@ int libxrdp_orders_send_font(xrdpSession* session, XRDP_MSG_CACHE_GLYPH* msg)
 	return 0;
 }
 
-int libxrdp_reset(xrdpSession* session, int width, int height, int bpp)
+int libxrdp_reset(xrdpSession* session, XRDP_MSG_RESET* msg)
 {
 	printf("%s\n", __FUNCTION__);
+
+	session->settings->DesktopWidth = msg->DesktopWidth;
+	session->settings->DesktopHeight = msg->DesktopHeight;
+	session->settings->ColorDepth = msg->ColorDepth;
+
 	return 0;
 }
 

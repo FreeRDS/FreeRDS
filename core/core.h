@@ -196,7 +196,7 @@ FREERDP_API int libxrdp_orders_send_bitmap(xrdpSession* session,
 
 FREERDP_API int libxrdp_orders_send_font(xrdpSession* session, XRDP_MSG_CACHE_GLYPH* msg);
 
-FREERDP_API int libxrdp_reset(xrdpSession* session, int width, int height, int bpp);
+FREERDP_API int libxrdp_reset(xrdpSession* session, XRDP_MSG_RESET* msg);
 
 FREERDP_API int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx);
