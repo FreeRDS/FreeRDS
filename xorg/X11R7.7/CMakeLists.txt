@@ -10,7 +10,10 @@ if (!PYTHONINTERP_FOUND)
         message(FATAL_ERROR "python interpreter required for building")
 endif()
 
-set(X11RDP_PREFIX "/opt/X11rdp")
+if (NOT X11RDP_PREFIX)
+	set(X11RDP_PREFIX "/opt/X11rdp")
+endif()
+message(STATUS "X11RDP_PREFIX set to ${X11RDP_PREFIX}")
 
 set(EXTERNAL_PROJECTS_BASE "${CMAKE_BINARY_DIR}/X11rdp")
 set_property(DIRECTORY PROPERTY "EP_BASE" ${EXTERNAL_PROJECTS_BASE})
