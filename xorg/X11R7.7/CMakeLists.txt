@@ -5,6 +5,10 @@ project(x11rdp C)
 
 include(GNUInstallDirs)
 include(ExternalProject)
+include(FindPythonInterp)
+if (!PYTHONINTERP_FOUND)
+        message(FATAL_ERROR "python interpreter required for building")
+endif()
 
 set(X11RDP_PREFIX "/opt/X11rdp")
 
@@ -47,18 +51,6 @@ set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX}")
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")
 set(${EXTERNAL_PROJECT}_DEPENDS "")
-list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECT})
-
-set(EXTERNAL_PROJECT "Python")
-set(${EXTERNAL_PROJECT}_VERSION "2.7")
-set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}")
-set(${EXTERNAL_PROJECT}_EXT ".tar.bz2")
-set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
-set(${EXTERNAL_PROJECT}_URL "http://www.python.org/ftp/python/2.7/${${EXTERNAL_PROJECT}_FILE}")
-set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX};--with-system-expat")
-set(${EXTERNAL_PROJECT}_UPDATE "")
-set(${EXTERNAL_PROJECT}_MAKE "")
-set(${EXTERNAL_PROJECT}_DEPENDS "expat")
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECT})
 
 set(EXTERNAL_PROJECT "libxml2")
@@ -962,7 +954,7 @@ set(${EXTERNAL_PROJECT}_URL "ftp://ftp.freedesktop.org/pub/mesa/${${EXTERNAL_PRO
 set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=${X11RDP_PREFIX};--with-expat=${X11RDP_PREFIX};--enable-opengl;--enable-dri;--enable-glx;--enable-egl")
 set(${EXTERNAL_PROJECT}_UPDATE "autoreconf;-fvi;${EXTERNAL_PROJECTS_BASE}/Source/${EXTERNAL_PROJECT}")
 set(${EXTERNAL_PROJECT}_MAKE "")
-set(${EXTERNAL_PROJECT}_DEPENDS "expat;dri2proto;glproto;libdrm;Python;makedepend;libX11;libXdamage;libXfixes;libXt")
+set(${EXTERNAL_PROJECT}_DEPENDS "expat;dri2proto;glproto;libdrm;makedepend;libX11;libXdamage;libXfixes;libXt")
 list(APPEND EXTERNAL_PROJECTS_X11_MESA ${EXTERNAL_PROJECT})
 
 if(NOT WITH_LLVM)
