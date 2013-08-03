@@ -192,8 +192,16 @@ int makecert_argc = (sizeof(makecert_argv) / sizeof(char*));
 
 int xrdp_generate_certificate(rdpSettings* settings)
 {
+	char* config_home;
 	char* server_file_path;
 	MAKECERT_CONTEXT* context;
+
+	config_home = GetKnownPath(KNOWN_PATH_XDG_CONFIG_HOME);
+
+	if (!PathFileExistsA(config_home))
+		CreateDirectoryA(config_home, 0);
+
+	free(config_home);
 
 	if (!PathFileExistsA(settings->ConfigPath))
 		CreateDirectoryA(settings->ConfigPath, 0);

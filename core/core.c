@@ -728,7 +728,13 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	rdpUpdate* update = session->context->update;
 
 	MaxRegionWidth = 64 * 8;
-	MaxRegionHeight = 64 * 6;
+	MaxRegionHeight = 64 * 4;
+
+	if (session->settings->NSCodec)
+	{
+		MaxRegionWidth = 64 * 5;
+		MaxRegionHeight = 64 * 2;
+	}
 
 	if ((msg->nWidth * msg->nHeight) > (MaxRegionWidth * MaxRegionHeight))
 	{
