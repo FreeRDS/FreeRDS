@@ -243,12 +243,12 @@ int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 	return xrdp_painter_line(p, wm->target_surface, msg);
 }
 
-int xrdp_server_add_char(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
+int xrdp_server_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 {
 	return libxrdp_orders_send_font(((xrdpWm*) mod->wm)->session, msg);
 }
 
-int xrdp_server_text(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
+int xrdp_server_glyph_index(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
@@ -502,8 +502,8 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->SetPalette = xrdp_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_server_set_clipping_region;
 		mod->server->LineTo = xrdp_server_line_to;
-		mod->server->AddChar = xrdp_server_add_char;
-		mod->server->Text = xrdp_server_text;
+		mod->server->CacheGlyph = xrdp_server_cache_glyph;
+		mod->server->GlyphIndex = xrdp_server_glyph_index;
 		mod->server->SharedFramebuffer = xrdp_server_shared_framebuffer;
 		mod->server->Reset = xrdp_server_reset;
 		mod->server->CreateOffscreenSurface = xrdp_server_create_offscreen_surface;

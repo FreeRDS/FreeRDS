@@ -362,7 +362,7 @@ void xrdp_reset_free(XRDP_MSG_RESET* msg)
 	free(msg);
 }
 
-void* xrdp_server_message_duplicate(xrdpModule* mod, XRDP_MSG_COMMON* msg)
+void* xrdp_server_message_copy(xrdpModule* mod, XRDP_MSG_COMMON* msg)
 {
 	void* dup = NULL;
 	XRDP_MSG_DEFINITION* msgDef;
@@ -391,6 +391,17 @@ void xrdp_server_message_free(xrdpModule* mod, XRDP_MSG_COMMON* msg)
 	}
 }
 
+int xrdp_server_message_enqueue(xrdpModule* mod, XRDP_MSG_COMMON* msg)
+{
+	void* dup = NULL;
+
+	dup = xrdp_server_message_copy(mod, msg);
+
+	MessageQueue_Post(mod->ServerQueue, (void*) mod, msg->type, (void*) dup, NULL);
+
+	return 0;
+}
+
 /**
  * Server Callbacks
  */
@@ -404,242 +415,122 @@ int xrdp_message_server_is_terminated(xrdpModule* mod)
 
 int xrdp_message_server_begin_update(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
 {
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_BEGIN_UPDATE, NULL, NULL);
-	return 0;
+	msg->type = XRDP_SERVER_BEGIN_UPDATE;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_end_update(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg)
 {
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_END_UPDATE, NULL, NULL);
-	return 0;
+	msg->type = XRDP_SERVER_END_UPDATE;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_beep(xrdpModule* mod, XRDP_MSG_BEEP* msg)
 {
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_BEEP, NULL, NULL);
-	return 0;
+	msg->type = XRDP_SERVER_BEEP;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 {
-	XRDP_MSG_OPAQUE_RECT* wParam;
-
-	wParam = (XRDP_MSG_OPAQUE_RECT*) malloc(sizeof(XRDP_MSG_OPAQUE_RECT));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_OPAQUE_RECT));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_OPAQUE_RECT, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_OPAQUE_RECT;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
 {
-	XRDP_MSG_SCREEN_BLT* wParam;
-
-	wParam = (XRDP_MSG_SCREEN_BLT*) malloc(sizeof(XRDP_MSG_SCREEN_BLT));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SCREEN_BLT));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SCREEN_BLT, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_SCREEN_BLT;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
-	XRDP_MSG_PAINT_RECT* wParam;
-
-	wParam = (XRDP_MSG_PAINT_RECT*) malloc(sizeof(XRDP_MSG_PAINT_RECT));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_PAINT_RECT));
-
-	if (msg->bitmapDataLength)
-	{
-		wParam->bitmapData = (BYTE*) malloc(msg->bitmapDataLength);
-		CopyMemory(wParam->bitmapData, msg->bitmapData, msg->bitmapDataLength);
-	}
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_PAINT_RECT, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_PAINT_RECT;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 {
-	XRDP_MSG_PATBLT* wParam;
-
-	wParam = (XRDP_MSG_PATBLT*) malloc(sizeof(XRDP_MSG_PATBLT));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_PATBLT));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_PATBLT, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_PATBLT;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_dstblt(xrdpModule* mod, XRDP_MSG_DSTBLT* msg)
 {
-	XRDP_MSG_DSTBLT* wParam;
-
-	wParam = (XRDP_MSG_DSTBLT*) malloc(sizeof(XRDP_MSG_DSTBLT));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_DSTBLT));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_DSTBLT, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_DSTBLT;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
-	XRDP_MSG_SET_POINTER* wParam;
-
-	wParam = (XRDP_MSG_SET_POINTER*) malloc(sizeof(XRDP_MSG_SET_POINTER));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SET_POINTER));
-
-	if (wParam->andMaskData)
-	{
-		wParam->andMaskData = (BYTE*) malloc(wParam->lengthAndMask);
-		CopyMemory(wParam->andMaskData, msg->andMaskData, wParam->lengthAndMask);
-	}
-
-	if (wParam->xorMaskData)
-	{
-		wParam->xorMaskData = (BYTE*) malloc(wParam->lengthXorMask);
-		CopyMemory(wParam->xorMaskData, msg->xorMaskData, wParam->lengthXorMask);
-	}
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_POINTER, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_SET_POINTER;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
 {
-	XRDP_MSG_SET_PALETTE* wParam;
-
-	wParam = (XRDP_MSG_SET_PALETTE*) malloc(sizeof(XRDP_MSG_SET_PALETTE));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SET_PALETTE));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_PALETTE, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_SET_PALETTE;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
-	XRDP_MSG_SET_CLIPPING_REGION* wParam;
-
-	wParam = (XRDP_MSG_SET_CLIPPING_REGION*) malloc(sizeof(XRDP_MSG_SET_CLIPPING_REGION));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SET_CLIPPING_REGION));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_CLIPPING_REGION, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_SET_CLIPPING_REGION;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 {
-	XRDP_MSG_LINE_TO* wParam;
-
-	wParam = (XRDP_MSG_LINE_TO*) malloc(sizeof(XRDP_MSG_LINE_TO));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_LINE_TO));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_LINE_TO, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_LINE_TO;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 {
-	XRDP_MSG_CACHE_GLYPH* wParam;
-
-	wParam = (XRDP_MSG_CACHE_GLYPH*) malloc(sizeof(XRDP_MSG_CACHE_GLYPH));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_CACHE_GLYPH));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_CACHE_GLYPH, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_CACHE_GLYPH;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_text(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
+int xrdp_message_glyph_index(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
 {
-	XRDP_MSG_GLYPH_INDEX* wParam;
-
-	wParam = (XRDP_MSG_GLYPH_INDEX*) malloc(sizeof(XRDP_MSG_GLYPH_INDEX));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_GLYPH_INDEX));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_GLYPH_INDEX, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_GLYPH_INDEX;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 {
-	XRDP_MSG_SHARED_FRAMEBUFFER* wParam;
-
-	wParam = (XRDP_MSG_SHARED_FRAMEBUFFER*) malloc(sizeof(XRDP_MSG_SHARED_FRAMEBUFFER));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SHARED_FRAMEBUFFER));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SHARED_FRAMEBUFFER, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_SHARED_FRAMEBUFFER;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
 {
-	XRDP_MSG_RESET* wParam;
-
-	wParam = (XRDP_MSG_RESET*) malloc(sizeof(XRDP_MSG_RESET));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_RESET));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_RESET, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_RESET;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_create_offscreen_surface(xrdpModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
-	XRDP_MSG_CREATE_OFFSCREEN_SURFACE* wParam;
-
-	wParam = (XRDP_MSG_CREATE_OFFSCREEN_SURFACE*) malloc(sizeof(XRDP_MSG_CREATE_OFFSCREEN_SURFACE));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_CREATE_OFFSCREEN_SURFACE));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_CREATE_OFFSCREEN_SURFACE, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_CREATE_OFFSCREEN_SURFACE;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_switch_offscreen_surface(xrdpModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
-	XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* wParam;
-
-	wParam = (XRDP_MSG_SWITCH_OFFSCREEN_SURFACE*) malloc(sizeof(XRDP_MSG_SWITCH_OFFSCREEN_SURFACE));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_SWITCH_OFFSCREEN_SURFACE));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
-	XRDP_MSG_DELETE_OFFSCREEN_SURFACE* wParam;
-
-	wParam = (XRDP_MSG_DELETE_OFFSCREEN_SURFACE*) malloc(sizeof(XRDP_MSG_DELETE_OFFSCREEN_SURFACE));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_DELETE_OFFSCREEN_SURFACE));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_DELETE_OFFSCREEN_SURFACE, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_DELETE_OFFSCREEN_SURFACE;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_paint_offscreen_surface(xrdpModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
-	XRDP_MSG_PAINT_OFFSCREEN_SURFACE* wParam;
-
-	wParam = (XRDP_MSG_PAINT_OFFSCREEN_SURFACE*) malloc(sizeof(XRDP_MSG_PAINT_OFFSCREEN_SURFACE));
-	CopyMemory(wParam, msg, sizeof(XRDP_MSG_PAINT_OFFSCREEN_SURFACE));
-
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_PAINT_OFFSCREEN_SURFACE, (void*) wParam, NULL);
-
-	return 0;
+	msg->type = XRDP_SERVER_PAINT_OFFSCREEN_SURFACE;
+	return xrdp_server_message_enqueue(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int xrdp_message_server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
@@ -708,119 +599,78 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 
 		case XRDP_SERVER_OPAQUE_RECT:
 			status = mod->ServerProxy->OpaqueRect(mod, (XRDP_MSG_OPAQUE_RECT*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_SCREEN_BLT:
 			status = mod->ServerProxy->ScreenBlt(mod, (XRDP_MSG_SCREEN_BLT*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_PAINT_RECT:
-			{
-				XRDP_MSG_PAINT_RECT* wParam = (XRDP_MSG_PAINT_RECT*) message->wParam;
-				status = mod->ServerProxy->PaintRect(mod, wParam);
-
-				if (wParam->bitmapDataLength)
-					free(wParam->bitmapData);
-
-				free(message->wParam);
-			}
+			status = mod->ServerProxy->PaintRect(mod, (XRDP_MSG_PAINT_RECT*) message->wParam);
 			break;
 
 		case XRDP_SERVER_PATBLT:
 			status = mod->ServerProxy->PatBlt(mod, (XRDP_MSG_PATBLT*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_DSTBLT:
 			status = mod->ServerProxy->DstBlt(mod, (XRDP_MSG_DSTBLT*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_SET_POINTER:
-			{
-				XRDP_MSG_SET_POINTER* wParam = (XRDP_MSG_SET_POINTER*) message->wParam;
-				status = mod->ServerProxy->SetPointer(mod, wParam);
-
-				if (wParam->andMaskData)
-					free(wParam->andMaskData);
-
-				if (wParam->xorMaskData)
-					free(wParam->xorMaskData);
-
-				free(wParam);
-			}
+			status = mod->ServerProxy->SetPointer(mod, (XRDP_MSG_SET_POINTER*) message->wParam);
 			break;
 
 		case XRDP_SERVER_SET_PALETTE:
 			status = mod->ServerProxy->SetPalette(mod, (XRDP_MSG_SET_PALETTE*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_SET_CLIPPING_REGION:
 			status = mod->ServerProxy->SetClippingRegion(mod, (XRDP_MSG_SET_CLIPPING_REGION*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_LINE_TO:
 			status = mod->ServerProxy->LineTo(mod, (XRDP_MSG_LINE_TO*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_CACHE_GLYPH:
-			status = mod->ServerProxy->AddChar(mod, (XRDP_MSG_CACHE_GLYPH*) message->wParam);
-			free(message->wParam);
+			status = mod->ServerProxy->CacheGlyph(mod, (XRDP_MSG_CACHE_GLYPH*) message->wParam);
 			break;
 
 		case XRDP_SERVER_GLYPH_INDEX:
-			status = mod->ServerProxy->Text(mod, (XRDP_MSG_GLYPH_INDEX*) message->wParam);
-			free(message->wParam);
+			status = mod->ServerProxy->GlyphIndex(mod, (XRDP_MSG_GLYPH_INDEX*) message->wParam);
 			break;
 
 		case XRDP_SERVER_SHARED_FRAMEBUFFER:
 			status = mod->ServerProxy->SharedFramebuffer(mod, (XRDP_MSG_SHARED_FRAMEBUFFER*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_RESET:
 			status = mod->ServerProxy->Reset(mod, (XRDP_MSG_RESET*) message->wParam);
-			free(message->wParam);
 			break;
 
 		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:
-			{
-				XRDP_MSG_CREATE_OFFSCREEN_SURFACE* wParam = (XRDP_MSG_CREATE_OFFSCREEN_SURFACE*) message->wParam;
-				status = mod->ServerProxy->CreateOffscreenSurface(mod, wParam);
-				free(wParam);
-			}
+			status = mod->ServerProxy->CreateOffscreenSurface(mod, (XRDP_MSG_CREATE_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE:
-			{
-				XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* wParam = (XRDP_MSG_SWITCH_OFFSCREEN_SURFACE*) message->wParam;
-				status = mod->ServerProxy->SwitchOffscreenSurface(mod, wParam);
-				free(wParam);
-			}
+			status = mod->ServerProxy->SwitchOffscreenSurface(mod, (XRDP_MSG_SWITCH_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case XRDP_SERVER_DELETE_OFFSCREEN_SURFACE:
-			{
-				XRDP_MSG_DELETE_OFFSCREEN_SURFACE* wParam = (XRDP_MSG_DELETE_OFFSCREEN_SURFACE*) message->wParam;
-				status = mod->ServerProxy->DeleteOffscreenSurface(mod, wParam);
-				free(wParam);
-			}
+			status = mod->ServerProxy->DeleteOffscreenSurface(mod, (XRDP_MSG_DELETE_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case XRDP_SERVER_PAINT_OFFSCREEN_SURFACE:
 			status = mod->ServerProxy->PaintOffscreenSurface(mod, (XRDP_MSG_PAINT_OFFSCREEN_SURFACE*) message->wParam);
-			free(message->wParam);
 			break;
 
 		default:
 			status = -1;
 			break;
 	}
+
+	xrdp_server_message_free(mod, (XRDP_MSG_COMMON*) message->wParam);
 
 	if (status < 0)
 	{
@@ -878,8 +728,8 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->SetPalette = xrdp_message_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_message_server_set_clipping_region;
 		mod->server->LineTo = xrdp_message_server_line_to;
-		mod->server->AddChar = xrdp_message_server_cache_glyph;
-		mod->server->Text = xrdp_message_server_text;
+		mod->server->CacheGlyph = xrdp_message_server_cache_glyph;
+		mod->server->GlyphIndex = xrdp_message_glyph_index;
 		mod->server->SharedFramebuffer = xrdp_message_server_shared_framebuffer;
 		mod->server->Reset = xrdp_message_server_reset;
 		mod->server->CreateOffscreenSurface = xrdp_message_server_create_offscreen_surface;
@@ -894,6 +744,8 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->NotifyDelete = xrdp_message_server_notify_delete;
 		mod->server->MonitoredDesktop = xrdp_message_server_monitored_desktop;
 	}
+
+	mod->ServerList = ArrayList_New(FALSE);
 
 	mod->ServerQueue = MessageQueue_New();
 

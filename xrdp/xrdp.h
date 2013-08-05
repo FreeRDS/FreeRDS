@@ -698,8 +698,8 @@ struct xrdp_server_module
 	pXrdpServerSetPalette SetPalette;
 	pXrdpServerSetClippingRegion SetClippingRegion;
 	pXrdpServerLineTo LineTo;
-	pXrdpServerCacheGlyph AddChar;
-	pXrdpServerGlyphIndex Text;
+	pXrdpServerCacheGlyph CacheGlyph;
+	pXrdpServerGlyphIndex GlyphIndex;
 	pXrdpServerSharedFramebuffer SharedFramebuffer;
 	pXrdpServerReset Reset;
 	pXrdpServerCreateOffscreenSurface CreateOffscreenSurface;
@@ -761,6 +761,9 @@ struct xrdp_mod
 
 	HANDLE ClientThread;
 	HANDLE ServerThread;
+
+	wArrayList* ClientList;
+	wArrayList* ServerList;
 
 	wMessageQueue* ClientQueue;
 	wMessageQueue* ServerQueue;

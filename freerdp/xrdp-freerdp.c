@@ -738,7 +738,7 @@ static void xrdp_freerdp_glyph_index(rdpContext* context, GLYPH_INDEX_ORDER* gly
 	msg.cbData = glyphIndex->cbData;
 	CopyMemory(msg.data, glyphIndex->data, msg.cbData);
 
-	mod->server->Text(mod, &msg);
+	mod->server->GlyphIndex(mod, &msg);
 }
 
 static void xrdp_freerdp_line_to(rdpContext* context, LINE_TO_ORDER* lineTo)
@@ -905,7 +905,7 @@ static void xrdp_freerdp_cache_glyph(rdpContext* context, CACHE_GLYPH_ORDER* cac
 		msg.glyphData[0].aj = gd->aj;
 		msg.glyphData[0].cb = gd->cb;
 
-		mod->server->AddChar(mod, &msg);
+		mod->server->CacheGlyph(mod, &msg);
 
 		free(gd->aj);
 		gd->aj = NULL;
