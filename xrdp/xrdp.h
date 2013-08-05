@@ -623,6 +623,7 @@ const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm* self);
 int xrdp_server_module_init(xrdpModule* mod);
 int xrdp_message_server_module_init(xrdpModule* mod);
 
+int xrdp_message_server_queue_pack(xrdpModule* mod);
 int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod);
 int xrdp_message_server_module_init(xrdpModule* mod);
 
@@ -758,17 +759,10 @@ struct xrdp_mod
 	XRDP_FRAMEBUFFER framebuffer;
 
 	HANDLE StopEvent;
-
-	HANDLE ClientThread;
+	HANDLE ServerTimer;
 	HANDLE ServerThread;
-
-	wArrayList* ClientList;
-	wArrayList* ServerList;
-
-	wMessageQueue* ClientQueue;
+	wLinkedList* ServerList;
 	wMessageQueue* ServerQueue;
-
-	xrdpClientModule* ClientProxy;
 	xrdpServerModule* ServerProxy;
 };
 

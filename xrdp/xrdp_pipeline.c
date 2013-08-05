@@ -397,7 +397,9 @@ int xrdp_server_message_enqueue(xrdpModule* mod, XRDP_MSG_COMMON* msg)
 
 	dup = xrdp_server_message_copy(mod, msg);
 
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, msg->type, (void*) dup, NULL);
+	LinkedList_AddLast(mod->ServerList, (void*) dup);
+
+	//MessageQueue_Post(mod->ServerQueue, (void*) mod, msg->type, (void*) dup, NULL);
 
 	return 0;
 }
@@ -681,6 +683,27 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 	return 0;
 }
 
+int xrdp_message_server_queue_pack(xrdpModule* mod)
+{
+	wLinkedList* list;
+	XRDP_MSG_COMMON* node;
+
+	list = mod->ServerList;
+
+	LinkedList_Enumerator_Reset(list);
+
+	while (LinkedList_Enumerator_MoveNext(list))
+	{
+		node = (XRDP_MSG_COMMON*) LinkedList_Enumerator_Current(list);
+
+		MessageQueue_Post(mod->ServerQueue, (void*) mod, node->type, (void*) node, NULL);
+	}
+
+	LinkedList_Clear(list);
+
+	return 0;
+}
+
 int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod)
 {
 	int count;
@@ -707,6 +730,8 @@ int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod)
 
 int xrdp_message_server_module_init(xrdpModule* mod)
 {
+	LARGE_INTEGER due;
+
 	mod->ServerProxy = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
 
 	//mod->ServerProxy = NULL; /* disable */
@@ -745,9 +770,12 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->MonitoredDesktop = xrdp_message_server_monitored_desktop;
 	}
 
-	mod->ServerList = ArrayList_New(FALSE);
-
+	mod->ServerList = LinkedList_New();
 	mod->ServerQueue = MessageQueue_New();
+
+	due.QuadPart = 0;
+	mod->ServerTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+	SetWaitableTimer(mod->ServerTimer, &due, 1000 / 25, NULL, NULL, 0);
 
 	XRDP_MSG_DEFINITIONS[XRDP_SERVER_BEGIN_UPDATE].Copy = (pXrdpMessageCopy) xrdp_begin_update_copy;
 	XRDP_MSG_DEFINITIONS[XRDP_SERVER_BEGIN_UPDATE].Free = (pXrdpMessageFree) xrdp_begin_update_free;

@@ -704,7 +704,7 @@ void* x11rdp_xrdp_client_thread(void* arg)
 
 	while (1)
 	{
-		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
+		status = WaitForMultipleObjects(nCount, events, FALSE, 1000 / 25);
 
 		if (WaitForSingleObject(mod->StopEvent, 0) == WAIT_OBJECT_0)
 		{
@@ -740,6 +740,8 @@ int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 
 	if (!mod)
 		return 0;
+
+	xrdp_message_server_queue_pack(mod);
 
 	if (WaitForSingleObject(MessageQueue_Event(mod->ServerQueue), 0) == WAIT_OBJECT_0)
 	{
