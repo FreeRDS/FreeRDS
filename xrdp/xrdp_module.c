@@ -34,7 +34,7 @@
 
 #include "xrdp.h"
 
-int xrdp_server_begin_update(xrdpModule* mod)
+int xrdp_server_begin_update(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
 {
 	xrdpWm* wm;
 	xrdpPainter* p;
@@ -47,7 +47,7 @@ int xrdp_server_begin_update(xrdpModule* mod)
 	return 0;
 }
 
-int xrdp_server_end_update(xrdpModule* mod)
+int xrdp_server_end_update(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg)
 {
 	xrdpPainter* p;
 
@@ -63,7 +63,7 @@ int xrdp_server_end_update(xrdpModule* mod)
 	return 0;
 }
 
-int xrdp_server_beep(xrdpModule* mod)
+int xrdp_server_beep(xrdpModule* mod, XRDP_MSG_BEEP* msg)
 {
 	xrdpWm* wm;
 

@@ -652,10 +652,11 @@ struct xrdp_client_module
 };
 typedef struct xrdp_client_module xrdpClientModule;
 
-typedef int (*pXrdpServerBeginUpdate)(xrdpModule* mod);
-typedef int (*pXrdpServerEndUpdate)(xrdpModule* mod);
-typedef int (*pXrdpServerBeep)(xrdpModule* mod);
 typedef int (*pXrdpServerIsTerminated)(xrdpModule* mod);
+
+typedef int (*pXrdpServerBeginUpdate)(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg);
+typedef int (*pXrdpServerEndUpdate)(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg);
+typedef int (*pXrdpServerBeep)(xrdpModule* mod, XRDP_MSG_BEEP* msg);
 typedef int (*pXrdpServerOpaqueRect)(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg);
 typedef int (*pXrdpServerScreenBlt)(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg);
 typedef int (*pXrdpServerPaintRect)(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg);

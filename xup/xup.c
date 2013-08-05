@@ -184,7 +184,13 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 	wStream* s;
 	char con_port[256];
 	XRDP_MSG_OPAQUE_RECT opaqueRect;
+	XRDP_MSG_BEGIN_UPDATE beginUpdate;
+	XRDP_MSG_END_UPDATE endUpdate;
 
+	beginUpdate.type = XRDP_SERVER_BEGIN_UPDATE;
+	endUpdate.type = XRDP_SERVER_END_UPDATE;
+
+	opaqueRect.type = XRDP_SERVER_OPAQUE_RECT;
 	opaqueRect.nTopRect = 0;
 	opaqueRect.nLeftRect = 0;
 	opaqueRect.nWidth = mod->width;
@@ -193,9 +199,9 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 
 	/* clear screen */
 
-	mod->server->BeginUpdate(mod);
+	mod->server->BeginUpdate(mod, &beginUpdate);
 	mod->server->OpaqueRect(mod, &opaqueRect);
-	mod->server->EndUpdate(mod);
+	mod->server->EndUpdate(mod, &endUpdate);
 
 	/* only support 8, 15, 16, and 24 bpp connections from rdp client */
 	if (mod->bpp != 8 && mod->bpp != 15 && mod->bpp != 16 && mod->bpp != 24 && mod->bpp != 32)
@@ -412,7 +418,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_BEGIN_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_begin_update(s, &msg);
-				status = mod->server->BeginUpdate(mod);
+				status = mod->server->BeginUpdate(mod, &msg);
 			}
 			break;
 
@@ -421,7 +427,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_END_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_end_update(s, &msg);
-				status = mod->server->EndUpdate(mod);
+				status = mod->server->EndUpdate(mod, &msg);
 			}
 			break;
 

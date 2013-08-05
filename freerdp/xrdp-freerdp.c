@@ -412,19 +412,27 @@ int freerdp_xrdp_client_check_event_handles(xrdpModule* mod)
 static void xrdp_freerdp_begin_paint(rdpContext* context)
 {
 	xrdpModule* mod;
+	XRDP_MSG_BEGIN_UPDATE msg;
 
 	LLOGLN(10, ("xrdp_freerdp_begin_paint:"));
+
 	mod = ((modContext*) context)->modi;
-	mod->server->BeginUpdate(mod);
+
+	msg.type = XRDP_SERVER_BEGIN_UPDATE;
+	mod->server->BeginUpdate(mod, &msg);
 }
 
 static void xrdp_freerdp_end_paint(rdpContext* context)
 {
 	xrdpModule* mod;
+	XRDP_MSG_END_UPDATE msg;
 
 	LLOGLN(10, ("xrdp_freerdp_end_paint:"));
+
 	mod = ((modContext*) context)->modi;
-	mod->server->EndUpdate(mod);
+
+	msg.type = XRDP_SERVER_END_UPDATE;
+	mod->server->EndUpdate(mod, &msg);
 }
 
 static void xrdp_freerdp_set_bounds(rdpContext* context, rdpBounds *bounds)

@@ -402,19 +402,19 @@ int xrdp_message_server_is_terminated(xrdpModule* mod)
 	return status;
 }
 
-int xrdp_message_server_begin_update(xrdpModule* mod)
+int xrdp_message_server_begin_update(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
 {
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_BEGIN_UPDATE, NULL, NULL);
 	return 0;
 }
 
-int xrdp_message_server_end_update(xrdpModule* mod)
+int xrdp_message_server_end_update(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg)
 {
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_END_UPDATE, NULL, NULL);
 	return 0;
 }
 
-int xrdp_message_server_beep(xrdpModule* mod)
+int xrdp_message_server_beep(xrdpModule* mod, XRDP_MSG_BEEP* msg)
 {
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_BEEP, NULL, NULL);
 	return 0;
@@ -546,7 +546,7 @@ int xrdp_message_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 	return 0;
 }
 
-int xrdp_message_server_add_char(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
+int xrdp_message_server_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 {
 	XRDP_MSG_CACHE_GLYPH* wParam;
 
@@ -695,15 +695,15 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 	switch (message->id)
 	{
 		case XRDP_SERVER_BEGIN_UPDATE:
-			status = mod->ServerProxy->BeginUpdate(mod);
+			status = mod->ServerProxy->BeginUpdate(mod, (XRDP_MSG_BEGIN_UPDATE*) message->wParam);
 			break;
 
 		case XRDP_SERVER_END_UPDATE:
-			status = mod->ServerProxy->EndUpdate(mod);
+			status = mod->ServerProxy->EndUpdate(mod, (XRDP_MSG_END_UPDATE*) message->wParam);
 			break;
 
 		case XRDP_SERVER_BEEP:
-			status = mod->ServerProxy->Beep(mod);
+			status = mod->ServerProxy->Beep(mod, (XRDP_MSG_BEEP*) message->wParam);
 			break;
 
 		case XRDP_SERVER_OPAQUE_RECT:
@@ -878,7 +878,7 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->SetPalette = xrdp_message_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_message_server_set_clipping_region;
 		mod->server->LineTo = xrdp_message_server_line_to;
-		mod->server->AddChar = xrdp_message_server_add_char;
+		mod->server->AddChar = xrdp_message_server_cache_glyph;
 		mod->server->Text = xrdp_message_server_text;
 		mod->server->SharedFramebuffer = xrdp_message_server_shared_framebuffer;
 		mod->server->Reset = xrdp_message_server_reset;
