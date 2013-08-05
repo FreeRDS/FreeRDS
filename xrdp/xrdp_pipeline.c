@@ -395,6 +395,13 @@ void xrdp_server_message_free(xrdpModule* mod, XRDP_MSG_COMMON* msg)
  * Server Callbacks
  */
 
+int xrdp_message_server_is_terminated(xrdpModule* mod)
+{
+	int status;
+	status = mod->ServerProxy->IsTerminated(mod);
+	return status;
+}
+
 int xrdp_message_server_begin_update(xrdpModule* mod)
 {
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_BEGIN_UPDATE, NULL, NULL);
@@ -411,13 +418,6 @@ int xrdp_message_server_beep(xrdpModule* mod)
 {
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_BEEP, NULL, NULL);
 	return 0;
-}
-
-int xrdp_message_server_is_terminated(xrdpModule* mod)
-{
-	int status;
-	status = mod->ServerProxy->IsTerminated(mod);
-	return status;
 }
 
 int xrdp_message_server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
@@ -531,12 +531,6 @@ int xrdp_message_server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPI
 
 	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_CLIPPING_REGION, (void*) wParam, NULL);
 
-	return 0;
-}
-
-int xrdp_message_server_set_null_clipping_region(xrdpModule* mod)
-{
-	MessageQueue_Post(mod->ServerQueue, (void*) mod, XRDP_SERVER_SET_NULL_CLIPPING_REGION, NULL, NULL);
 	return 0;
 }
 
@@ -769,10 +763,6 @@ int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message
 			free(message->wParam);
 			break;
 
-		case XRDP_SERVER_SET_NULL_CLIPPING_REGION:
-			status = mod->ServerProxy->SetNullClippingRegion(mod);
-			break;
-
 		case XRDP_SERVER_LINE_TO:
 			status = mod->ServerProxy->LineTo(mod, (XRDP_MSG_LINE_TO*) message->wParam);
 			free(message->wParam);
@@ -887,7 +877,6 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->SetPointer = xrdp_message_server_set_pointer;
 		mod->server->SetPalette = xrdp_message_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_message_server_set_clipping_region;
-		mod->server->SetNullClippingRegion = xrdp_message_server_set_null_clipping_region;
 		mod->server->LineTo = xrdp_message_server_line_to;
 		mod->server->AddChar = xrdp_message_server_add_char;
 		mod->server->Text = xrdp_message_server_text;

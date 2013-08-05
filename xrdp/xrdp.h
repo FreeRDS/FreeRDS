@@ -664,7 +664,6 @@ typedef int (*pXrdpServerDstBlt)(xrdpModule* mod, XRDP_MSG_DSTBLT* msg);
 typedef int (*pXrdpServerSetPointer)(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg);
 typedef int (*pXrdpServerSetPalette)(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg);
 typedef int (*pXrdpServerSetClippingRegion)(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg);
-typedef int (*pXrdpServerSetNullClippingRegion)(xrdpModule* mod);
 typedef int (*pXrdpServerLineTo)(xrdpModule* mod, XRDP_MSG_LINE_TO* msg);
 typedef int (*pXrdpServerCacheGlyph)(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg);
 typedef int (*pXrdpServerGlyphIndex)(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg);
@@ -697,7 +696,6 @@ struct xrdp_server_module
 	pXrdpServerSetPointer SetPointer;
 	pXrdpServerSetPalette SetPalette;
 	pXrdpServerSetClippingRegion SetClippingRegion;
-	pXrdpServerSetNullClippingRegion SetNullClippingRegion;
 	pXrdpServerLineTo LineTo;
 	pXrdpServerCacheGlyph AddChar;
 	pXrdpServerGlyphIndex Text;

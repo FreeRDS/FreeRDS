@@ -222,19 +222,10 @@ int xrdp_server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGIO
 	if (!p)
 		return 0;
 
-	return xrdp_painter_set_clip(p, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
-}
-
-int xrdp_server_set_null_clipping_region(xrdpModule* mod)
-{
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	return xrdp_painter_clr_clip(p);
+	if (!msg->bNullRegion)
+		return xrdp_painter_set_clip(p, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+	else
+		return xrdp_painter_clr_clip(p);
 }
 
 int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
@@ -510,7 +501,6 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->SetPointer = xrdp_server_set_pointer;
 		mod->server->SetPalette = xrdp_server_set_palette;
 		mod->server->SetClippingRegion = xrdp_server_set_clipping_region;
-		mod->server->SetNullClippingRegion = xrdp_server_set_null_clipping_region;
 		mod->server->LineTo = xrdp_server_line_to;
 		mod->server->AddChar = xrdp_server_add_char;
 		mod->server->Text = xrdp_server_text;

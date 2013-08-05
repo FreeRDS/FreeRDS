@@ -484,11 +484,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				XRDP_MSG_SET_CLIPPING_REGION msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_read_set_clipping_region(s, &msg);
-
-				if (msg.bNullRegion)
-					status = mod->server->SetNullClippingRegion(mod);
-				else
-					status = mod->server->SetClippingRegion(mod, &msg);
+				status = mod->server->SetClippingRegion(mod, &msg);
 			}
 			break;
 

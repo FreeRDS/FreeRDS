@@ -437,6 +437,7 @@ static void xrdp_freerdp_set_bounds(rdpContext* context, rdpBounds *bounds)
 
 	if (bounds != 0)
 	{
+		msg.bNullRegion = FALSE;
 		msg.nLeftRect = bounds->left;
 		msg.nTopRect = bounds->top;
 		msg.nWidth = (bounds->right - bounds->left) + 1;
@@ -446,7 +447,11 @@ static void xrdp_freerdp_set_bounds(rdpContext* context, rdpBounds *bounds)
 	}
 	else
 	{
-		mod->server->SetNullClippingRegion(mod);
+		msg.bNullRegion = TRUE;
+		msg.nLeftRect = msg.nTopRect = 0;
+		msg.nWidth = msg.nHeight = 0;
+
+		mod->server->SetClippingRegion(mod, &msg);
 	}
 }
 
