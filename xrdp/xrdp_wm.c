@@ -71,39 +71,6 @@ void xrdp_wm_delete(xrdpWm* self)
 	free(self);
 }
 
-int xrdp_wm_set_focused(xrdpWm* self, xrdpBitmap *wnd)
-{
-	xrdpBitmap *focus_out_control;
-	xrdpBitmap *focus_in_control;
-
-	if (!self)
-		return 0;
-
-	if (self->focused_window == wnd)
-		return 0;
-
-	focus_out_control = 0;
-	focus_in_control = 0;
-
-	if (self->focused_window != 0)
-	{
-		xrdp_bitmap_set_focus(self->focused_window, 0);
-		focus_out_control = self->focused_window->focused_control;
-	}
-
-	self->focused_window = wnd;
-
-	if (self->focused_window != 0)
-	{
-		xrdp_bitmap_set_focus(self->focused_window, 1);
-		focus_in_control = self->focused_window->focused_control;
-	}
-
-	xrdp_bitmap_invalidate(focus_out_control, 0);
-	xrdp_bitmap_invalidate(focus_in_control, 0);
-	return 0;
-}
-
 static int xrdp_wm_get_pixel(unsigned char *data, int x, int y, int width, int bpp)
 {
 	int start;
@@ -614,42 +581,6 @@ int xrdp_wm_get_vis_region(xrdpWm* self, xrdpBitmap* bitmap, int x, int y, int c
 	return 0;
 }
 
-/* return the window at x, y on the screen */
-static xrdpBitmap* xrdp_wm_at_pos(xrdpBitmap *wnd, int x, int y, xrdpBitmap **wnd1)
-{
-	int i;
-	xrdpBitmap *p;
-	xrdpBitmap *q;
-
-	/* loop through all windows in z order */
-	for (i = 0; i < wnd->child_list->count; i++)
-	{
-		p = (xrdpBitmap *)list_get_item(wnd->child_list, i);
-
-		if (x >= p->left && y >= p->top && x < p->left + p->width &&
-				y < p->top + p->height)
-		{
-			if (wnd1 != 0)
-			{
-				*wnd1 = p;
-			}
-
-			q = xrdp_wm_at_pos(p, x - p->left, y - p->top, 0);
-
-			if (q == 0)
-			{
-				return p;
-			}
-			else
-			{
-				return q;
-			}
-		}
-	}
-
-	return 0;
-}
-
 static int xrdp_wm_xor_pat(xrdpWm* self, int x, int y, int cx, int cy)
 {
 	self->painter->clip_children = 0;
@@ -845,8 +776,6 @@ static int xrdp_wm_draw_dragging_box(xrdpWm* self, int do_begin_end)
 
 int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 {
-	xrdpBitmap *b;
-
 	if (!self)
 		return 0;
 
@@ -876,60 +805,17 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 		return 0;
 	}
 
-	b = xrdp_wm_at_pos(self->screen, x, y, 0);
-
-	if (b == 0) /* if b is null, the movement must be over the screen */
+	if (self->screen->pointer != self->current_pointer)
 	{
-		if (self->screen->pointer != self->current_pointer)
-		{
-			libxrdp_set_pointer(self->session, self->screen->pointer);
-			self->current_pointer = self->screen->pointer;
-		}
-
-		if (self->mm->mod != 0) /* if screen is mod controlled */
-		{
-			if (self->mm->mod->client->Event != 0)
-			{
-				self->mm->mod->client->Event(self->mm->mod, WM_XRDP_MOUSEMOVE, x, y, 0, 0);
-			}
-		}
+		libxrdp_set_pointer(self->session, self->screen->pointer);
+		self->current_pointer = self->screen->pointer;
 	}
 
-	if (self->button_down != 0)
+	if (self->mm->mod != 0) /* if screen is mod controlled */
 	{
-		if (b == self->button_down && self->button_down->state == 0)
+		if (self->mm->mod->client->Event != 0)
 		{
-			self->button_down->state = 1;
-			xrdp_bitmap_invalidate(self->button_down, 0);
-		}
-		else if (b != self->button_down)
-		{
-			self->button_down->state = 0;
-			xrdp_bitmap_invalidate(self->button_down, 0);
-		}
-	}
-
-	if (b != 0)
-	{
-		if (!self->dragging)
-		{
-			if (b->pointer != self->current_pointer)
-			{
-				libxrdp_set_pointer(self->session, b->pointer);
-				self->current_pointer = b->pointer;
-			}
-
-			xrdp_bitmap_def_proc(b, WM_XRDP_MOUSEMOVE,
-					xrdp_bitmap_from_screenx(b, x),
-					xrdp_bitmap_from_screeny(b, y));
-
-			if (self->button_down == 0)
-			{
-				if (b->notify != 0)
-				{
-					b->notify(b->owner, b, 2, x, y);
-				}
-			}
+			self->mm->mod->client->Event(self->mm->mod, WM_XRDP_MOUSEMOVE, x, y, 0, 0);
 		}
 	}
 
@@ -938,9 +824,6 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 
 int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down)
 {
-	xrdpBitmap *control;
-	xrdpBitmap *focus_out_control;
-	xrdpBitmap *wnd;
 	int newx;
 	int newy;
 	int oldx;
@@ -983,8 +866,6 @@ int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down)
 		self->dragging_window = 0;
 		self->dragging = 0;
 	}
-
-	xrdp_wm_set_focused(self, 0);
 
 	/* no matter what, mouse is up, reset button_down */
 	if (but == 1 && !down && self->button_down != 0)
@@ -1040,10 +921,6 @@ int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code)
 						scan_code, device_flags);
 			}
 		}
-	}
-	else if (self->focused_window != 0)
-	{
-		xrdp_bitmap_def_proc(self->focused_window, msg, scan_code, device_flags);
 	}
 
 	return 0;

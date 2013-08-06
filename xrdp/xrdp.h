@@ -470,7 +470,6 @@ void xrdp_wm_delete(xrdpWm* self);
 int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name);
 int xrdp_wm_load_static_pointers(xrdpWm* self);
 int xrdp_wm_init(xrdpWm* self);
-int xrdp_wm_set_focused(xrdpWm* self, xrdpBitmap* wnd);
 int xrdp_wm_get_vis_region(xrdpWm* self, xrdpBitmap* bitmap,
 		int x, int y, int cx, int cy, xrdpRegion* region, int clip_children);
 int xrdp_wm_mouse_move(xrdpWm* self, int x, int y);
@@ -513,7 +512,6 @@ int xrdp_region_get_rect(xrdpRegion* self, int index, xrdpRect* rect);
 xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm* wm);
 xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char* data, xrdpWm* wm);
 void xrdp_bitmap_delete(xrdpBitmap* self);
-xrdpBitmap* xrdp_bitmap_get_child_by_id(xrdpBitmap* self, int id);
 int xrdp_bitmap_set_focus(xrdpBitmap* self, int focused);
 int xrdp_bitmap_resize(xrdpBitmap* self, int width, int height);
 int xrdp_bitmap_load(xrdpBitmap* self, const char* filename, int* palette);
