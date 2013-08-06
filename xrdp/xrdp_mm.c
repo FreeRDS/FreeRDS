@@ -22,13 +22,11 @@
 #include "config.h"
 #endif
 
-#define ACCESS
 #include "xrdp.h"
 #include "log.h"
-#ifdef ACCESS
-#ifndef USE_NOPAM
+
+#ifdef WITH_PAM
 #include "security/_pam_types.h"
-#endif
 #endif
 
 #include "xup.h"
@@ -444,8 +442,7 @@ int xrdp_mm_connect(xrdpMm* self)
 	char errstr[256];
 	char text[256];
 	char port[8];
-#ifdef ACCESS
-#ifndef USE_NOPAM
+#ifdef WITH_PAM
 	int use_pam_auth = 0;
 	char pam_auth_sessionIP[256];
 	char pam_auth_password[256];
@@ -455,7 +452,7 @@ int xrdp_mm_connect(xrdpMm* self)
 	char password[256];
 	username[0] = 0;
 	password[0] = 0;
-#endif
+
 	/* make sure we start in correct state */
 	cleanup_states(self);
 	g_memset(ip, 0, sizeof(ip));
@@ -484,8 +481,7 @@ int xrdp_mm_connect(xrdpMm* self)
 			}
 		}
 
-#ifdef ACCESS
-#ifndef USE_NOPAM
+#ifdef WITH_PAM
 		else if (g_strcasecmp(name, "pamusername") == 0)
 		{
 			use_pam_auth = 1;
@@ -508,11 +504,9 @@ int xrdp_mm_connect(xrdpMm* self)
 		{
 			g_strncpy(username, value, 255);
 		}
-#endif
 	}
 
-#ifdef ACCESS
-#ifndef USE_NOPAM
+#ifdef WITH_PAM
 	if (use_pam_auth)
 	{
 		int reply;
@@ -557,7 +551,6 @@ int xrdp_mm_connect(xrdpMm* self)
 			return rv;
 		}
 	}
-#endif
 #endif
 
 	if (self->sesman_controlled)

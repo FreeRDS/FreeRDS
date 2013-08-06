@@ -22,13 +22,11 @@
 #include "config.h"
 #endif
 
-#define ACCESS
 #include "xrdp.h"
 #include "log.h"
-#ifdef ACCESS
-#ifndef USE_NOPAM
+
+#ifdef WITH_PAM
 #include "security/_pam_types.h"
-#endif
 #endif
 
 int xrdp_mm_send_login(xrdpMm* self)
@@ -51,8 +49,8 @@ int xrdp_mm_send_login(xrdpMm* self)
 
 	for (index = 0; index < count; index++)
 	{
-		name = (char *) list_get_item(self->login_names, index);
-		value = (char *) list_get_item(self->login_values, index);
+		name = (char*) list_get_item(self->login_names, index);
+		value = (char*) list_get_item(self->login_values, index);
 
 		if (g_strcasecmp(name, "username") == 0)
 		{
@@ -193,8 +191,7 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 	return rv;
 }
 
-#ifdef ACCESS
-#ifndef USE_NOPAM
+#ifdef WITH_PAM
 
 int xrdp_mm_access_control(char *username, char *password, char *srv)
 {
@@ -310,10 +307,8 @@ int xrdp_mm_access_control(char *username, char *password, char *srv)
 	return rec;
 }
 #endif
-#endif
 
-#ifdef ACCESS
-#ifndef USE_NOPAM
+#ifdef WITH_PAM
 const char* getPAMError(const int pamError, char *text, int text_bytes)
 {
 	switch (pamError)
@@ -434,5 +429,5 @@ const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm* self)
 			return "No expected error";
 	}
 }
-#endif
+
 #endif

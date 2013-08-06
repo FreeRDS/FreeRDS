@@ -150,53 +150,6 @@ void xrdp_bitmap_delete(xrdpBitmap* self)
 	free(self);
 }
 
-int xrdp_bitmap_resize(xrdpBitmap* self, int width, int height)
-{
-	int Bpp = 0;
-
-	if ((width == self->width) && (height == self->height))
-	{
-		return 0;
-	}
-
-	if (self->do_not_free_data)
-	{
-		return 1;
-	}
-
-	self->width = width;
-	self->height = height;
-	Bpp = 4;
-
-	switch (self->bpp)
-	{
-		case 8:
-			Bpp = 1;
-			break;
-
-		case 15:
-			Bpp = 2;
-			break;
-
-		case 16:
-			Bpp = 2;
-			break;
-
-		case 24:
-			Bpp = 4;
-			break;
-
-		case 32:
-			Bpp = 4;
-			break;
-	}
-
-	free(self->data);
-	self->data = (char *) g_malloc(width * height * Bpp, 0);
-	self->line_size = width * Bpp;
-	return 0;
-}
-
 /* copy part of self at x, y to 0, 0 in dest */
 /* returns error */
 int xrdp_bitmap_copy_box(xrdpBitmap* self, xrdpBitmap *dest, int x, int y, int cx, int cy)

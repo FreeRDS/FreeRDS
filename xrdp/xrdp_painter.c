@@ -134,68 +134,6 @@ int xrdp_painter_clr_clip(xrdpPainter* self)
 	return 0;
 }
 
-int xrdp_painter_text_width(xrdpPainter* self, char *text)
-{
-	int index;
-	int rv;
-	int len;
-	xrdpFontChar *font_item;
-	wchar_t* wstr;
-
-	xrdp_painter_font_needed(self);
-
-	if (!self->font)
-		return 0;
-
-	if (!text)
-		return 0;
-
-	rv = 0;
-	len = g_mbstowcs(0, text, 0);
-	wstr = (wchar_t*) g_malloc((len + 2) * sizeof(wchar_t), 0);
-	g_mbstowcs(wstr, text, len + 1);
-
-	for (index = 0; index < len; index++)
-	{
-		font_item = self->font->font_items + wstr[index];
-		rv = rv + font_item->incby;
-	}
-
-	free(wstr);
-	return rv;
-}
-
-int xrdp_painter_text_height(xrdpPainter* self, char *text)
-{
-	int index;
-	int rv;
-	int len;
-	xrdpFontChar* font_item;
-	wchar_t* wstr;
-
-	xrdp_painter_font_needed(self);
-
-	if (!self->font)
-		return 0;
-
-	if (!text)
-		return 0;
-
-	rv = 0;
-	len = g_mbstowcs(0, text, 0);
-	wstr = (wchar_t *) g_malloc((len + 2) * sizeof(wchar_t), 0);
-	g_mbstowcs(wstr, text, len + 1);
-
-	for (index = 0; index < len; index++)
-	{
-		font_item = self->font->font_items + wstr[index];
-		rv = MAX(rv, font_item->height);
-	}
-
-	free(wstr);
-	return rv;
-}
-
 static int xrdp_painter_setup_brush(xrdpPainter* self, xrdpBrush *out_brush, xrdpBrush *in_brush)
 {
 	int cache_id;
