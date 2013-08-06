@@ -742,7 +742,7 @@ int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 
 	xrdp_message_server_queue_pack(mod);
 
-	if (WaitForSingleObject(MessageQueue_Event(mod->ServerQueue), 0) == WAIT_OBJECT_0)
+	while (WaitForSingleObject(MessageQueue_Event(mod->ServerQueue), 0) == WAIT_OBJECT_0)
 	{
 		status = xrdp_message_server_queue_process_pending_messages(mod);
 	}

@@ -261,7 +261,7 @@ int xrdp_server_glyph_index(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
 
 	wm = (xrdpWm*) (mod->wm);
 
-	return xrdp_painter_draw_text2(p, wm->target_surface, msg);
+	return xrdp_painter_draw_text(p, wm->target_surface, msg);
 }
 
 int xrdp_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)

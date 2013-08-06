@@ -540,13 +540,6 @@ int callback(long id, int msg, long param1, long param2, long param3, long param
 		case 0x8001: /* RDP_INPUT_MOUSE */
 			rv = xrdp_wm_process_input_mouse(wm, param3, param1, param2);
 			break;
-
-		case 0x4444: /* invalidate, this is not from RDP_DATA_PDU_INPUT */
-			/* like the rest, its from RDP_PDU_DATA with code 33 */
-			/* its the rdp client asking for a screen update */
-			MAKERECT(rect, param1, param2, param3, param4);
-			rv = xrdp_bitmap_invalidate(wm->screen, &rect);
-			break;
 	}
 
 	return rv;

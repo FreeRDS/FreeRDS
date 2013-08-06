@@ -430,7 +430,6 @@ xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char* d
 void xrdp_bitmap_delete(xrdpBitmap* self);
 int xrdp_bitmap_copy_box(xrdpBitmap* self, xrdpBitmap* dest, int x, int y, int cx, int cy);
 int xrdp_bitmap_compare(xrdpBitmap* self, xrdpBitmap* b);
-int xrdp_bitmap_invalidate(xrdpBitmap* self, xrdpRect* rect);
 int xrdp_bitmap_get_screen_clip(xrdpBitmap* self, xrdpPainter* painter, xrdpRect* rect, int* dx, int* dy);
 
 /* xrdp_painter.c */
@@ -445,9 +444,7 @@ int xrdp_painter_clr_clip(xrdpPainter* self);
 int xrdp_painter_fill_rect(xrdpPainter* self, xrdpBitmap* bitmap, int x, int y, int cx, int cy);
 int xrdp_painter_patblt(xrdpPainter *self, xrdpBitmap* dst, int x, int y, int cx, int cy);
 int xrdp_painter_dstblt(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_DSTBLT* msg);
-int xrdp_painter_draw_bitmap(xrdpPainter* self, xrdpBitmap* bitmap, xrdpBitmap* to_draw, int x, int y, int cx, int cy);
-int xrdp_painter_draw_text(xrdpPainter* self, xrdpBitmap* bitmap, int x, int y, const char* text);
-int xrdp_painter_draw_text2(xrdpPainter *self, xrdpBitmap* dst, XRDP_MSG_GLYPH_INDEX* msg);
+int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap* dst, XRDP_MSG_GLYPH_INDEX* msg);
 int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap* src, xrdpBitmap* dst,
 		int x, int y, int cx, int cy, int srcx, int srcy);
 int xrdp_painter_line(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_LINE_TO* msg);
@@ -455,8 +452,7 @@ int xrdp_painter_line(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_LINE_TO* msg)
 /* xrdp_font.c */
 xrdpFont* xrdp_font_create(xrdpWm* wm);
 void xrdp_font_delete(xrdpFont* self);
-int xrdp_font_item_compare(xrdpFontChar* font1,
-		xrdpFontChar* font2);
+int xrdp_font_item_compare(xrdpFontChar* font1, xrdpFontChar* font2);
 
 /* funcs.c */
 int rect_contains_pt(xrdpRect* in, int x, int y);
