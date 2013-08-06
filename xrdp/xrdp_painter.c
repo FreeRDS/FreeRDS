@@ -488,7 +488,7 @@ int xrdp_painter_draw_text(xrdpPainter* self, xrdpBitmap *dst, int x, int y, con
 			msg.x = x1;
 			msg.y = y1;
 			msg.cbData = len * 2;
-			CopyMemory(msg.data, data, msg.cbData);
+			msg.data = (BYTE*) data;
 
 			libxrdp_orders_text(self->session, &msg, &draw_rect);
 		}

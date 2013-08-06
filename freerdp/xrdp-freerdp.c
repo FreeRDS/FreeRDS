@@ -736,6 +736,7 @@ static void xrdp_freerdp_glyph_index(rdpContext* context, GLYPH_INDEX_ORDER* gly
 	msg.x = glyphIndex->x;
 	msg.y = glyphIndex->y;
 	msg.cbData = glyphIndex->cbData;
+	msg.data = (BYTE*) malloc(msg.cbData);
 	CopyMemory(msg.data, glyphIndex->data, msg.cbData);
 
 	mod->server->GlyphIndex(mod, &msg);

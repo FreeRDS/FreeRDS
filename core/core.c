@@ -191,6 +191,8 @@ int libxrdp_orders_init(xrdpSession* session)
 
 	printf("%s\n", __FUNCTION__);
 
+	printf("sizeof(XRDP_MSG_SERVER): %d\n", sizeof(XRDP_MSG_SERVER));
+
 	update->BeginPaint(session->context);
 
 	return 0;

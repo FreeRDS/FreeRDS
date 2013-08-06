@@ -412,6 +412,7 @@ int xrdp_cache_add_char(xrdpCache* self, xrdpFontChar* font_item)
 	int c;
 	int datasize;
 	xrdpFontChar* fi;
+	XRDP_GLYPH_DATA glyphData;
 	XRDP_MSG_CACHE_GLYPH msg;
 
 	self->char_stamp++;
@@ -464,6 +465,7 @@ int xrdp_cache_add_char(xrdpCache* self, xrdpFontChar* font_item)
 	msg.flags = 0;
 	msg.cGlyphs = 1;
 	msg.cacheId = f;
+	msg.glyphData = &glyphData;
 	msg.glyphData[0].cacheIndex = c;
 	msg.glyphData[0].x = fi->offset;
 	msg.glyphData[0].y = fi->baseline;
