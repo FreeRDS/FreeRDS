@@ -32,6 +32,16 @@
 
 #define XRDP_MSG_FLAG_RECT		0x00000001
 
+/**
+ * XRDP_RECT matches the memory layout of pixman_rectangle32_t:
+ *
+ * struct pixman_rectangle32
+ * {
+ * 	int32_t x, y;
+ * 	uint32_t width, height;
+ * };
+ */
+
 struct _XRDP_RECT
 {
 	INT32 x;

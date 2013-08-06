@@ -123,10 +123,6 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	xrdpPainter* p;
 
 	wm = (xrdpWm*) (mod->wm);
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
 
 	if (msg->fbSegmentId)
 		bpp = msg->framebuffer->fbBitsPerPixel;
@@ -139,6 +135,11 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	}
 	else
 	{
+		p = (xrdpPainter*) (mod->painter);
+
+		if (!p)
+			return 0;
+
 		b = xrdp_bitmap_create_with_data(msg->nWidth, msg->nHeight, bpp, (char*) msg->bitmapData, wm);
 
 		xrdp_painter_copy(p, b, wm->target_surface, msg->nLeftRect, msg->nTopRect,
