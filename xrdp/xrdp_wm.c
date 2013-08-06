@@ -255,7 +255,7 @@ unsigned int xrdp_wm_htoi (const char *ptr)
 	return value;
 }
 
-int xrdp_wm_load_static_colors_plus(xrdpWm* self, char *autorun_name)
+int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name)
 {
 	int bindex;
 	int gindex;
@@ -283,8 +283,6 @@ int xrdp_wm_load_static_colors_plus(xrdpWm* self, char *autorun_name)
 	self->red        = HCOLOR(self->screen->bpp, 0xff0000);
 	self->green      = HCOLOR(self->screen->bpp, 0x00ff00);
 	self->background = HCOLOR(self->screen->bpp, 0x000000);
-
-	self->hide_log_window = 1;
 
 	/* now load them from the globals in xrdp.ini if defined */
 	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
@@ -400,7 +398,6 @@ int xrdp_wm_load_static_colors_plus(xrdpWm* self, char *autorun_name)
 	return 0;
 }
 
-/* returns error */
 int xrdp_wm_load_static_pointers(xrdpWm* self)
 {
 	xrdpPointerItem pointer_item;
@@ -412,12 +409,14 @@ int xrdp_wm_load_static_pointers(xrdpWm* self)
 	xrdp_wm_load_pointer(self, file_path, pointer_item.data,
 			pointer_item.mask, &pointer_item.x, &pointer_item.y);
 	xrdp_cache_add_pointer_static(self->cache, &pointer_item, 1);
+
 	DEBUG(("sending cursor"));
 	g_snprintf(file_path, 255, "%s/cursor0.cur", XRDP_SHARE_PATH);
 	g_memset(&pointer_item, 0, sizeof(pointer_item));
 	xrdp_wm_load_pointer(self, file_path, pointer_item.data,
 			pointer_item.mask, &pointer_item.x, &pointer_item.y);
 	xrdp_cache_add_pointer_static(self->cache, &pointer_item, 0);
+
 	return 0;
 }
 
@@ -540,236 +539,16 @@ int xrdp_wm_init(xrdpWm* self)
 /* putting the rects in region */
 int xrdp_wm_get_vis_region(xrdpWm* self, xrdpBitmap* bitmap, int x, int y, int cx, int cy, xrdpRegion *region, int clip_children)
 {
-	int i;
-	xrdpBitmap *p;
 	xrdpRect a;
-	xrdpRect b;
 
 	/* area we are drawing */
 	MAKERECT(a, bitmap->left + x, bitmap->top + y, cx, cy);
-	p = bitmap->parent;
-
-	while (p != 0)
-	{
-		RECTOFFSET(a, p->left, p->top);
-		p = p->parent;
-	}
 
 	a.left = MAX(self->screen->left, a.left);
 	a.top = MAX(self->screen->top, a.top);
 	a.right = MIN(self->screen->left + self->screen->width, a.right);
 	a.bottom = MIN(self->screen->top + self->screen->height, a.bottom);
 	xrdp_region_add_rect(region, &a);
-
-	if (clip_children)
-	{
-		/* loop through all windows in z order */
-		for (i = 0; i < self->screen->child_list->count; i++)
-		{
-			p = (xrdpBitmap *)list_get_item(self->screen->child_list, i);
-
-			if (p == bitmap || p == bitmap->parent)
-			{
-				return 0;
-			}
-
-			MAKERECT(b, p->left, p->top, p->width, p->height);
-			xrdp_region_subtract_rect(region, &b);
-		}
-	}
-
-	return 0;
-}
-
-static int xrdp_wm_xor_pat(xrdpWm* self, int x, int y, int cx, int cy)
-{
-	self->painter->clip_children = 0;
-	self->painter->rop = 0x5a;
-	xrdp_painter_begin_update(self->painter);
-	self->painter->use_clip = 0;
-	self->painter->brush.pattern[0] = 0xaa;
-	self->painter->brush.pattern[1] = 0x55;
-	self->painter->brush.pattern[2] = 0xaa;
-	self->painter->brush.pattern[3] = 0x55;
-	self->painter->brush.pattern[4] = 0xaa;
-	self->painter->brush.pattern[5] = 0x55;
-	self->painter->brush.pattern[6] = 0xaa;
-	self->painter->brush.pattern[7] = 0x55;
-	self->painter->brush.x_orgin = 0;
-	self->painter->brush.x_orgin = 0;
-	self->painter->brush.style = 3;
-	self->painter->bg_color = self->black;
-	self->painter->fg_color = self->white;
-	xrdp_painter_patblt(self->painter, self->screen, x, y, cx, 5); /* top */
-	xrdp_painter_patblt(self->painter, self->screen, x, y + (cy - 5), cx, 5); /* bottom */
-	xrdp_painter_patblt(self->painter, self->screen, x, y + 5, 5, cy - 10); /* left */
-	xrdp_painter_patblt(self->painter, self->screen, x + (cx - 5), y + 5, 5, cy - 10); /* right */
-	xrdp_painter_end_update(self->painter);
-	self->painter->rop = 0xCC;
-	self->painter->clip_children = 1;
-	return 0;
-}
-
-/* this don't are about nothing, just copy the bits */
-/* no clipping rects, no windows in the way, nothing */
-static int xrdp_wm_bitblt(xrdpWm* self, xrdpBitmap *dst, int dx, int dy,
-		xrdpBitmap *src, int sx, int sy, int sw, int sh, int rop)
-{
-	if (self->screen == dst && self->screen == src)
-	{
-		libxrdp_orders_init(self->session);
-		libxrdp_orders_screen_blt(self->session, dx, dy, sw, sh, sx, sy, rop, 0);
-		libxrdp_orders_send(self->session);
-	}
-
-	return 0;
-}
-
-/* return true is rect is totaly exposed going in reverse z order */
-/* from wnd up */
-static int xrdp_wm_is_rect_vis(xrdpWm* self, xrdpBitmap *wnd, xrdpRect *rect)
-{
-	xrdpRect wnd_rect;
-	xrdpBitmap *b;
-	int i;;
-
-	/* if rect is part off screen */
-	if (rect->left < 0)
-		return 0;
-
-	if (rect->top < 0)
-		return 0;
-
-	if (rect->right >= self->screen->width)
-		return 0;
-
-	if (rect->bottom >= self->screen->height)
-		return 0;
-
-	i = list_index_of(self->screen->child_list, (long)wnd);
-	i--;
-
-	while (i >= 0)
-	{
-		b = (xrdpBitmap *)list_get_item(self->screen->child_list, i);
-		MAKERECT(wnd_rect, b->left, b->top, b->width, b->height);
-
-		if (rect_intersect(rect, &wnd_rect, 0))
-		{
-			return 0;
-		}
-
-		i--;
-	}
-
-	return 1;
-}
-
-static int xrdp_wm_move_window(xrdpWm* self, xrdpBitmap *wnd, int dx, int dy)
-{
-	xrdpRect rect1;
-	xrdpRect rect2;
-	xrdpRegion *r;
-	int i;
-
-	MAKERECT(rect1, wnd->left, wnd->top, wnd->width, wnd->height);
-
-	if (xrdp_wm_is_rect_vis(self, wnd, &rect1))
-	{
-		rect2 = rect1;
-		RECTOFFSET(rect2, dx, dy);
-
-		if (xrdp_wm_is_rect_vis(self, wnd, &rect2))
-		{
-			/* if both src and dst are unobscured, we can do a bitblt move */
-			xrdp_wm_bitblt(self, self->screen, wnd->left + dx, wnd->top + dy,
-					self->screen, wnd->left, wnd->top,
-					wnd->width, wnd->height, 0xcc);
-			wnd->left += dx;
-			wnd->top += dy;
-			r = xrdp_region_create(self);
-			xrdp_region_add_rect(r, &rect1);
-			xrdp_region_subtract_rect(r, &rect2);
-			i = 0;
-
-			while (xrdp_region_get_rect(r, i, &rect1) == 0)
-			{
-				xrdp_bitmap_invalidate(self->screen, &rect1);
-				i++;
-			}
-
-			xrdp_region_delete(r);
-			return 0;
-		}
-	}
-
-	wnd->left += dx;
-	wnd->top += dy;
-	xrdp_bitmap_invalidate(self->screen, &rect1);
-	xrdp_bitmap_invalidate(wnd, 0);
-	return 0;
-}
-
-static int xrdp_wm_undraw_dragging_box(xrdpWm* self, int do_begin_end)
-{
-	int boxx;
-	int boxy;
-
-	if (!self)
-		return 0;
-
-	if (self->dragging)
-	{
-		if (self->draggingxorstate)
-		{
-			if (do_begin_end)
-			{
-				xrdp_painter_begin_update(self->painter);
-			}
-
-			boxx = self->draggingx - self->draggingdx;
-			boxy = self->draggingy - self->draggingdy;
-			xrdp_wm_xor_pat(self, boxx, boxy, self->draggingcx, self->draggingcy);
-			self->draggingxorstate = 0;
-
-			if (do_begin_end)
-			{
-				xrdp_painter_end_update(self->painter);
-			}
-		}
-	}
-
-	return 0;
-}
-
-static int xrdp_wm_draw_dragging_box(xrdpWm* self, int do_begin_end)
-{
-	int boxx;
-	int boxy;
-
-	if (!self)
-		return 0;
-
-	if (self->dragging)
-	{
-		if (!self->draggingxorstate)
-		{
-			if (do_begin_end)
-			{
-				xrdp_painter_begin_update(self->painter);
-			}
-
-			boxx = self->draggingx - self->draggingdx;
-			boxy = self->draggingy - self->draggingdy;
-			xrdp_wm_xor_pat(self, boxx, boxy, self->draggingcx, self->draggingcy);
-			self->draggingxorstate = 1;
-
-			if (do_begin_end)
-			{
-				xrdp_painter_end_update(self->painter);
-			}
-		}
-	}
 
 	return 0;
 }
@@ -794,24 +573,13 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 	self->mouse_x = x;
 	self->mouse_y = y;
 
-	if (self->dragging)
-	{
-		xrdp_painter_begin_update(self->painter);
-		xrdp_wm_undraw_dragging_box(self, 0);
-		self->draggingx = x;
-		self->draggingy = y;
-		xrdp_wm_draw_dragging_box(self, 0);
-		xrdp_painter_end_update(self->painter);
-		return 0;
-	}
-
 	if (self->screen->pointer != self->current_pointer)
 	{
 		libxrdp_set_pointer(self->session, self->screen->pointer);
 		self->current_pointer = self->screen->pointer;
 	}
 
-	if (self->mm->mod != 0) /* if screen is mod controlled */
+	if (self->mm->mod)
 	{
 		if (self->mm->mod->client->Event != 0)
 		{
@@ -822,12 +590,9 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 	return 0;
 }
 
-int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down)
+int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int button, int down)
 {
-	int newx;
-	int newy;
-	int oldx;
-	int oldy;
+	pXrdpClientEvent ClientEvent = NULL;
 
 	if (!self)
 		return 0;
@@ -844,33 +609,34 @@ int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down)
 	if (y >= self->screen->height)
 		y = self->screen->height;
 
-	if (self->dragging && but == 1 && !down && self->dragging_window != 0)
+	if (self->mm->mod)
 	{
-		/* if done dragging */
-		self->draggingx = x;
-		self->draggingy = y;
-		newx = self->draggingx - self->draggingdx;
-		newy = self->draggingy - self->draggingdy;
-		oldx = self->dragging_window->left;
-		oldy = self->dragging_window->top;
-
-		/* draw xor box one more time */
-		if (self->draggingxorstate)
-		{
-			xrdp_wm_xor_pat(self, newx, newy, self->draggingcx, self->draggingcy);
-		}
-
-		self->draggingxorstate = 0;
-		/* move screen to new location */
-		xrdp_wm_move_window(self, self->dragging_window, newx - oldx, newy - oldy);
-		self->dragging_window = 0;
-		self->dragging = 0;
+		if (self->mm->mod->client->Event)
+			ClientEvent = self->mm->mod->client->Event;
 	}
 
-	/* no matter what, mouse is up, reset button_down */
-	if (but == 1 && !down && self->button_down != 0)
+	if (ClientEvent)
 	{
-		self->button_down = 0;
+		if (button == 1)
+		{
+			ClientEvent(self->mm->mod, (down) ? WM_XRDP_LBUTTONDOWN : WM_XRDP_LBUTTONUP, x, y, 0, 0);
+		}
+		else if (button == 2)
+		{
+			ClientEvent(self->mm->mod, (down) ? WM_XRDP_RBUTTONDOWN : WM_XRDP_RBUTTONUP, x, y, 0, 0);
+		}
+		else if (button == 3)
+		{
+			ClientEvent(self->mm->mod, (down) ? WM_XRDP_BUTTON3DOWN : WM_XRDP_BUTTON3UP, x, y, 0, 0);
+		}
+		else if (button == 4)
+		{
+			ClientEvent(self->mm->mod, (down) ? WM_XRDP_BUTTON4DOWN : WM_XRDP_BUTTON4UP, x, y, 0, 0);
+		}
+		else if (button == 5)
+		{
+			ClientEvent(self->mm->mod, (down) ? WM_XRDP_BUTTON5DOWN : WM_XRDP_BUTTON5UP, x, y, 0, 0);
+		}
 	}
 
 	return 0;
@@ -1018,23 +784,6 @@ int xrdp_wm_process_input_mouse(xrdpWm* self, int device_flags, int x, int y)
 	return 0;
 }
 
-int xrdp_wm_delete_all_childs(xrdpWm* self)
-{
-	int index;
-	xrdpBitmap *b;
-	xrdpRect rect;
-
-	for (index = self->screen->child_list->count - 1; index >= 0; index--)
-	{
-		b = (xrdpBitmap*) list_get_item(self->screen->child_list, index);
-		MAKERECT(rect, b->left, b->top, b->width, b->height);
-		xrdp_bitmap_delete(b);
-		xrdp_bitmap_invalidate(self->screen, &rect);
-	}
-
-	return 0;
-}
-
 /* this is the callbacks coming from libxrdp.so */
 int callback(long id, int msg, long param1, long param2, long param3, long param4)
 {
@@ -1089,8 +838,6 @@ static int xrdp_wm_login_mode_changed(xrdpWm* self)
 		/* this is the initial state of the login window */
 		xrdp_wm_set_login_mode(self, 1); /* put the wm in login mode */
 		list_clear(self->log);
-		xrdp_wm_delete_all_childs(self);
-		self->dragging = 0;
 		xrdp_wm_init(self);
 	}
 	else if (self->login_mode == 2)
@@ -1098,8 +845,6 @@ static int xrdp_wm_login_mode_changed(xrdpWm* self)
 		if (xrdp_mm_connect(self->mm) == 0)
 		{
 			xrdp_wm_set_login_mode(self, 3); /* put the wm in connected mode */
-			xrdp_wm_delete_all_childs(self);
-			self->dragging = 0;
 		}
 		else
 		{
@@ -1108,8 +853,6 @@ static int xrdp_wm_login_mode_changed(xrdpWm* self)
 	}
 	else if (self->login_mode == 10)
 	{
-		xrdp_wm_delete_all_childs(self);
-		self->dragging = 0;
 		xrdp_wm_set_login_mode(self, 11);
 	}
 

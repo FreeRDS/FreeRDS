@@ -231,7 +231,6 @@ struct xrdp_wm
 	xrdpPainter* painter;
 	xrdpCache* cache;
 	int palette[256];
-	xrdpBitmap* login_window;
 	/* generic colors */
 	int black;
 	int grey;
@@ -242,22 +241,6 @@ struct xrdp_wm
 	int red;
 	int green;
 	int background;
-	/* dragging info */
-	int dragging;
-	int draggingx;
-	int draggingy;
-	int draggingcx;
-	int draggingcy;
-	int draggingdx;
-	int draggingdy;
-	int draggingorgx;
-	int draggingorgy;
-	int draggingxorstate;
-	xrdpBitmap* dragging_window;
-	/* the down(clicked) button */
-	xrdpBitmap* button_down;
-	/* popup for combo box */
-	xrdpBitmap* popup_wnd;
 	/* focused window */
 	xrdpBitmap* focused_window;
 	/* pointer */
@@ -271,13 +254,11 @@ struct xrdp_wm
 	int num_lock;
 	/* session log */
 	xrdpList* log;
-	xrdpBitmap* log_wnd;
 	int login_mode;
 	HANDLE LoginModeEvent;
 	xrdpMm* mm;
 	xrdpFont* default_font;
 	xrdpKeymap keymap;
-	int hide_log_window;
 	xrdpBitmap* target_surface; /* either screen or os surface */
 	int current_surface_index;
 	int hints;
@@ -318,9 +299,6 @@ struct xrdp_bitmap
 	int width;
 	int height;
 	xrdpWm* wm;
-	/* msg 1 = click 2 = mouse move 3 = paint 100 = modal result */
-	/* see messages in constants.h */
-	int (*notify)(xrdpBitmap* wnd, xrdpBitmap* sender, int msg, long param1, long param2);
 	/* for bitmap */
 	int bpp;
 	int line_size; /* in bytes */
@@ -333,29 +311,7 @@ struct xrdp_bitmap
 	int bg_color;
 	int tab_stop;
 	int id;
-	char* caption1;
-	/* for window or screen */
-	xrdpBitmap* modal_dialog;
-	xrdpBitmap* focused_control;
-	xrdpBitmap* owner; /* window that created us */
-	xrdpBitmap* parent; /* window contained in */
-	/* for modal dialog */
-	xrdpBitmap* default_button; /* button when enter is pressed */
-	xrdpBitmap* esc_button; /* button when esc is pressed */
-	/* list of child windows */
-	xrdpList* child_list;
-	/* for edit */
-	int edit_pos;
-	wchar_t password_char;
-	/* for button or combo */
-	int state; /* for button 0 = normal 1 = down */
-	/* for combo */
-	xrdpList* string_list;
-	xrdpList* data_list;
-	/* for combo or popup */
 	int item_index;
-	/* for popup */
-	xrdpBitmap* popped_from;
 	int item_height;
 	/* crc */
 	int crc;
@@ -467,7 +423,6 @@ struct xrdp_os_bitmap_item* xrdp_cache_get_offscreen_bitmap(xrdpCache* self, int
 /* xrdp_wm.c */
 xrdpWm* xrdp_wm_create(xrdpProcess* owner);
 void xrdp_wm_delete(xrdpWm* self);
-int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name);
 int xrdp_wm_load_static_pointers(xrdpWm* self);
 int xrdp_wm_init(xrdpWm* self);
 int xrdp_wm_get_vis_region(xrdpWm* self, xrdpBitmap* bitmap,
@@ -479,7 +434,6 @@ int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code);
 int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
 int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg);
 int callback(long id, int msg, long param1, long param2, long param3, long param4);
-int xrdp_wm_delete_all_childs(xrdpWm* self);
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount);
 int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
@@ -503,8 +457,7 @@ int xrdp_listen_main_loop(xrdpListener* self);
 xrdpRegion* xrdp_region_create(xrdpWm* wm);
 void xrdp_region_delete(xrdpRegion* self);
 int xrdp_region_add_rect(xrdpRegion* self, xrdpRect* rect);
-int xrdp_region_insert_rect(xrdpRegion* self, int i, int left,
-		int top, int right, int bottom);
+int xrdp_region_insert_rect(xrdpRegion* self, int i, int left, int top, int right, int bottom);
 int xrdp_region_subtract_rect(xrdpRegion* self, xrdpRect* rect);
 int xrdp_region_get_rect(xrdpRegion* self, int index, xrdpRect* rect);
 
@@ -512,25 +465,15 @@ int xrdp_region_get_rect(xrdpRegion* self, int index, xrdpRect* rect);
 xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm* wm);
 xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char* data, xrdpWm* wm);
 void xrdp_bitmap_delete(xrdpBitmap* self);
-int xrdp_bitmap_set_focus(xrdpBitmap* self, int focused);
 int xrdp_bitmap_resize(xrdpBitmap* self, int width, int height);
-int xrdp_bitmap_load(xrdpBitmap* self, const char* filename, int* palette);
 int xrdp_bitmap_get_pixel(xrdpBitmap* self, int x, int y);
 int xrdp_bitmap_set_pixel(xrdpBitmap* self, int x, int y, int pixel);
-int xrdp_bitmap_copy_box(xrdpBitmap* self,
-		xrdpBitmap* dest, int x, int y, int cx, int cy);
-int xrdp_bitmap_copy_box_with_crc(xrdpBitmap* self,
-		xrdpBitmap* dest, int x, int y, int cx, int cy);
+int xrdp_bitmap_copy_box(xrdpBitmap* self, xrdpBitmap* dest, int x, int y, int cx, int cy);
+int xrdp_bitmap_copy_box_with_crc(xrdpBitmap* self, xrdpBitmap* dest, int x, int y, int cx, int cy);
 int xrdp_bitmap_compare(xrdpBitmap* self, xrdpBitmap* b);
 int xrdp_bitmap_compare_with_crc(xrdpBitmap* self, xrdpBitmap* b);
 int xrdp_bitmap_invalidate(xrdpBitmap* self, xrdpRect* rect);
-int xrdp_bitmap_def_proc(xrdpBitmap* self, int msg, int param1, int param2);
-int xrdp_bitmap_to_screenx(xrdpBitmap* self, int x);
-int xrdp_bitmap_to_screeny(xrdpBitmap* self, int y);
-int xrdp_bitmap_from_screenx(xrdpBitmap* self, int x);
-int xrdp_bitmap_from_screeny(xrdpBitmap* self, int y);
-int xrdp_bitmap_get_screen_clip(xrdpBitmap* self,
-		xrdpPainter* painter, xrdpRect* rect, int* dx, int* dy);
+int xrdp_bitmap_get_screen_clip(xrdpBitmap* self, xrdpPainter* painter, xrdpRect* rect, int* dx, int* dy);
 
 /* xrdp_painter.c */
 xrdpPainter* xrdp_painter_create(xrdpWm* wm, xrdpSession* session);

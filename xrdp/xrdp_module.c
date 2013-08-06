@@ -306,12 +306,8 @@ int xrdp_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
 	if (libxrdp_reset(wm->session, msg) != 0)
 		return 0;
 
-	/* reset cache */
 	xrdp_cache_reset(wm->cache);
-	/* resize the main window */
 	xrdp_bitmap_resize(wm->screen, settings->DesktopWidth, settings->DesktopHeight);
-	/* load some stuff */
-	xrdp_wm_load_static_colors_plus(wm, 0);
 	xrdp_wm_load_static_pointers(wm);
 
 	return 0;

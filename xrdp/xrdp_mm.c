@@ -121,33 +121,15 @@ int xrdp_mm_get_value(xrdpMm* self, char *aname, char *dest, int dest_len)
 
 int xrdp_mm_setup_mod1(xrdpMm* self)
 {
-	char lib[256];
 	int client_module = 0;
 
 	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod1");
 
-	if (self == 0)
-	{
+	if (!self)
 		return 1;
-	}
-
-	lib[0] = 0;
-
-	if (xrdp_mm_get_value(self, "lib", lib, 255) != 0)
-	{
-		return 1;
-	}
-
-	if (lib[0] == 0)
-	{
-		return 1;
-	}
 
 	if (self->mod_handle == 0)
 	{
-		if (strcmp(lib, "libxrdp-ng-freerdp.so") == 0)
-			client_module = 1;
-
 		if (!client_module)
 		{
 			self->ModuleInit = xup_module_init;
@@ -181,9 +163,9 @@ int xrdp_mm_setup_mod1(xrdpMm* self)
 				self->ModuleInit(mod);
 			}
 
-			if (self->mod != 0)
+			if (self->mod)
 			{
-				g_writeln("loaded module '%s' ok, interface size %d, version %d", lib,
+				g_writeln("loaded module ok, interface size %d, version %d",
 						self->mod->size, self->mod->version);
 			}
 		}
@@ -193,8 +175,7 @@ int xrdp_mm_setup_mod1(xrdpMm* self)
 		}
 	}
 
-	/* id self->mod is null, there must be a problem */
-	if (self->mod == 0)
+	if (!self->mod)
 	{
 		DEBUG(("problem loading lib in xrdp_mm_setup_mod1"));
 		return 1;
@@ -234,37 +215,23 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 	{
 		if (self->display > 0)
 		{
-			if (self->code == 0) /* Xvnc */
+			use_uds = 1;
+
+			if (xrdp_mm_get_value(self, "ip", text, 255) == 0)
 			{
-				g_snprintf(text, 255, "%d", 5900 + self->display);
+				if (g_strcmp(text, "127.0.0.1") != 0)
+				{
+					use_uds = 0;
+				}
+			}
+
+			if (use_uds)
+			{
+				g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
 			}
 			else
 			{
-				if (self->code == 10) /* X11rdp */
-				{
-					use_uds = 1;
-
-					if (xrdp_mm_get_value(self, "ip", text, 255) == 0)
-					{
-						if (g_strcmp(text, "127.0.0.1") != 0)
-						{
-							use_uds = 0;
-						}
-					}
-
-					if (use_uds)
-					{
-						g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
-					}
-					else
-					{
-						g_snprintf(text, 255, "%d", 6200 + self->display);
-					}
-				}
-				else
-				{
-					SetEvent(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
-				}
+				g_snprintf(text, 255, "%d", 6200 + self->display);
 			}
 		}
 	}

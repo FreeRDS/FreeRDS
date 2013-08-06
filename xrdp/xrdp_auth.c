@@ -179,7 +179,6 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 			{
 				xrdp_mm_get_value(self, "ip", ip, 255);
 				xrdp_wm_set_login_mode(self->wm, 10);
-				self->wm->dragging = 0;
 			}
 		}
 	}
