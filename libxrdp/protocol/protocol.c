@@ -23,14 +23,16 @@
 
 #include <xrdp-ng/xrdp.h>
 
+typedef int (*pXrdpMessageRead)(wStream* s, XRDP_MSG_COMMON* msg);
+typedef int (*pXrdpMessageWrite)(wStream* s, XRDP_MSG_COMMON* msg);
 typedef void* (*pXrdpMessageCopy)(XRDP_MSG_COMMON* msg);
 typedef void (*pXrdpMessageFree)(XRDP_MSG_COMMON* msg);
 
 struct _XRDP_MSG_DEFINITION
 {
-	const char* name;
-	void* pA;
-	void* pB;
+	const char* Name;
+	pXrdpMessageRead Read;
+	pXrdpMessageWrite Write;
 	pXrdpMessageCopy Copy;
 	pXrdpMessageFree Free;
 };
@@ -236,8 +238,8 @@ void xrdp_begin_update_free(XRDP_MSG_BEGIN_UPDATE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_BEGIN_UPDATE_DEFINITION =
 {
 	"BeginUpdate",
-	xrdp_read_begin_update,
-	xrdp_write_begin_update,
+	(pXrdpMessageRead) xrdp_read_begin_update,
+	(pXrdpMessageWrite) xrdp_write_begin_update,
 	(pXrdpMessageCopy) xrdp_begin_update_copy,
 	(pXrdpMessageFree) xrdp_begin_update_free
 };
@@ -282,8 +284,8 @@ void xrdp_end_update_free(XRDP_MSG_END_UPDATE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_END_UPDATE_DEFINITION =
 {
 	"EndUpdate",
-	xrdp_read_end_update,
-	xrdp_write_end_update,
+	(pXrdpMessageRead) xrdp_read_end_update,
+	(pXrdpMessageWrite) xrdp_write_end_update,
 	(pXrdpMessageCopy) xrdp_end_update_copy,
 	(pXrdpMessageFree) xrdp_end_update_free
 };
@@ -340,8 +342,8 @@ void xrdp_set_clipping_region_free(XRDP_MSG_SET_CLIPPING_REGION* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_SET_CLIPPING_REGION_DEFINITION =
 {
 	"SetClippingRegion",
-	xrdp_read_set_clipping_region,
-	xrdp_write_set_clipping_region,
+	(pXrdpMessageRead) xrdp_read_set_clipping_region,
+	(pXrdpMessageWrite) xrdp_write_set_clipping_region,
 	(pXrdpMessageCopy) xrdp_set_clipping_region_copy,
 	(pXrdpMessageFree) xrdp_set_clipping_region_free
 };
@@ -403,8 +405,8 @@ void xrdp_opaque_rect_free(XRDP_MSG_OPAQUE_RECT* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_OPAQUE_RECT_DEFINITION =
 {
 	"OpaqueRect",
-	xrdp_read_opaque_rect,
-	xrdp_write_opaque_rect,
+	(pXrdpMessageRead) xrdp_read_opaque_rect,
+	(pXrdpMessageWrite) xrdp_write_opaque_rect,
 	(pXrdpMessageCopy) xrdp_opaque_rect_copy,
 	(pXrdpMessageFree) xrdp_opaque_rect_free
 };
@@ -468,8 +470,8 @@ void xrdp_screen_blt_free(XRDP_MSG_SCREEN_BLT* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_SCREEN_BLT_DEFINITION =
 {
 	"ScreenBlt",
-	xrdp_read_screen_blt,
-	xrdp_write_screen_blt,
+	(pXrdpMessageRead) xrdp_read_screen_blt,
+	(pXrdpMessageWrite) xrdp_write_screen_blt,
 	(pXrdpMessageCopy) xrdp_screen_blt_copy,
 	(pXrdpMessageFree) xrdp_screen_blt_free
 };
@@ -575,8 +577,8 @@ void xrdp_paint_rect_free(XRDP_MSG_PAINT_RECT* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_PAINT_RECT_DEFINITION =
 {
 	"PaintRect",
-	xrdp_read_paint_rect,
-	xrdp_write_paint_rect,
+	(pXrdpMessageRead) xrdp_read_paint_rect,
+	(pXrdpMessageWrite) xrdp_write_paint_rect,
 	(pXrdpMessageCopy) xrdp_paint_rect_copy,
 	(pXrdpMessageFree) xrdp_paint_rect_free
 };
@@ -658,8 +660,8 @@ void xrdp_patblt_free(XRDP_MSG_PATBLT* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_PATBLT_DEFINITION =
 {
 	"PatBlt",
-	xrdp_read_patblt,
-	xrdp_write_patblt,
+	(pXrdpMessageRead) xrdp_read_patblt,
+	(pXrdpMessageWrite) xrdp_write_patblt,
 	(pXrdpMessageCopy) xrdp_patblt_copy,
 	(pXrdpMessageFree) xrdp_patblt_free
 };
@@ -721,8 +723,8 @@ void xrdp_dstblt_free(XRDP_MSG_DSTBLT* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_DSTBLT_DEFINITION =
 {
 	"DstBlt",
-	xrdp_read_dstblt,
-	xrdp_write_dstblt,
+	(pXrdpMessageRead) xrdp_read_dstblt,
+	(pXrdpMessageWrite) xrdp_write_dstblt,
 	(pXrdpMessageCopy) xrdp_dstblt_copy,
 	(pXrdpMessageFree) xrdp_dstblt_free
 };
@@ -785,8 +787,8 @@ void xrdp_line_to_free(XRDP_MSG_LINE_TO* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_LINE_TO_DEFINITION =
 {
 	"LineTo",
-	xrdp_read_line_to,
-	xrdp_write_line_to,
+	(pXrdpMessageRead) xrdp_read_line_to,
+	(pXrdpMessageWrite) xrdp_write_line_to,
 	(pXrdpMessageCopy) xrdp_line_to_copy,
 	(pXrdpMessageFree) xrdp_line_to_free
 };
@@ -839,8 +841,8 @@ void xrdp_create_offscreen_surface_free(XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_CREATE_OFFSCREEN_SURFACE_DEFINITION =
 {
 	"CreateOffscreenSurface",
-	xrdp_read_create_offscreen_surface,
-	xrdp_write_create_offscreen_surface,
+	(pXrdpMessageRead) xrdp_read_create_offscreen_surface,
+	(pXrdpMessageWrite) xrdp_write_create_offscreen_surface,
 	(pXrdpMessageCopy) xrdp_create_offscreen_surface_copy,
 	(pXrdpMessageFree) xrdp_create_offscreen_surface_free
 };
@@ -889,8 +891,8 @@ void xrdp_switch_offscreen_surface_free(XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_SWITCH_OFFSCREEN_SURFACE_DEFINITION =
 {
 	"SwitchOffscreenSurface",
-	xrdp_read_switch_offscreen_surface,
-	xrdp_write_switch_offscreen_surface,
+	(pXrdpMessageRead) xrdp_read_switch_offscreen_surface,
+	(pXrdpMessageWrite) xrdp_write_switch_offscreen_surface,
 	(pXrdpMessageCopy) xrdp_switch_offscreen_surface_copy,
 	(pXrdpMessageFree) xrdp_switch_offscreen_surface_free
 };
@@ -939,8 +941,8 @@ void xrdp_delete_offscreen_surface_free(XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_DELETE_OFFSCREEN_SURFACE_DEFINITION =
 {
 	"DeleteOffscreenSurface",
-	xrdp_read_delete_offscreen_surface,
-	xrdp_write_delete_offscreen_surface,
+	(pXrdpMessageRead) xrdp_read_delete_offscreen_surface,
+	(pXrdpMessageWrite) xrdp_write_delete_offscreen_surface,
 	(pXrdpMessageCopy) xrdp_delete_offscreen_surface_copy,
 	(pXrdpMessageFree) xrdp_delete_offscreen_surface_free
 };
@@ -1003,8 +1005,8 @@ void xrdp_paint_offscreen_surface_free(XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_PAINT_OFFSCREEN_SURFACE_DEFINITION =
 {
 	"PaintOffscreenSurface",
-	xrdp_read_paint_offscreen_surface,
-	xrdp_write_paint_offscreen_surface,
+	(pXrdpMessageRead) xrdp_read_paint_offscreen_surface,
+	(pXrdpMessageWrite) xrdp_write_paint_offscreen_surface,
 	(pXrdpMessageCopy) xrdp_paint_offscreen_surface_copy,
 	(pXrdpMessageFree) xrdp_paint_offscreen_surface_free
 };
@@ -1040,8 +1042,8 @@ void xrdp_set_palette_free(XRDP_MSG_SET_PALETTE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_SET_PALETTE_DEFINITION =
 {
 	"SetPalette",
-	xrdp_read_set_palette,
-	xrdp_write_set_palette,
+	(pXrdpMessageRead) xrdp_read_set_palette,
+	(pXrdpMessageWrite) xrdp_write_set_palette,
 	(pXrdpMessageCopy) xrdp_set_palette_copy,
 	(pXrdpMessageFree) xrdp_set_palette_free
 };
@@ -1078,8 +1080,8 @@ void xrdp_cache_glyph_free(XRDP_MSG_CACHE_GLYPH* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_CACHE_GLYPH_DEFINITION =
 {
 	"CacheGlyph",
-	xrdp_read_cache_glyph,
-	xrdp_write_cache_glyph,
+	(pXrdpMessageRead) xrdp_read_cache_glyph,
+	(pXrdpMessageWrite) xrdp_write_cache_glyph,
 	(pXrdpMessageCopy) xrdp_cache_glyph_copy,
 	(pXrdpMessageFree) xrdp_cache_glyph_free
 };
@@ -1116,8 +1118,8 @@ void xrdp_glyph_index_free(XRDP_MSG_GLYPH_INDEX* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_GLYPH_INDEX_DEFINITION =
 {
 	"GlyphIndex",
-	xrdp_read_glyph_index,
-	xrdp_write_glyph_index,
+	(pXrdpMessageRead) xrdp_read_glyph_index,
+	(pXrdpMessageWrite) xrdp_write_glyph_index,
 	(pXrdpMessageCopy) xrdp_glyph_index_copy,
 	(pXrdpMessageFree) xrdp_glyph_index_free
 };
@@ -1222,8 +1224,8 @@ void xrdp_set_pointer_free(XRDP_MSG_SET_POINTER* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_SET_POINTER_DEFINITION =
 {
 	"SetPointer",
-	xrdp_read_set_pointer,
-	xrdp_write_set_pointer,
+	(pXrdpMessageRead) xrdp_read_set_pointer,
+	(pXrdpMessageWrite) xrdp_write_set_pointer,
 	(pXrdpMessageCopy) xrdp_set_pointer_copy,
 	(pXrdpMessageFree) xrdp_set_pointer_free
 };
@@ -1284,8 +1286,8 @@ void xrdp_shared_framebuffer_free(XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_SHARED_FRAMEBUFFER_DEFINITION =
 {
 	"SharedFramebuffer",
-	xrdp_read_shared_framebuffer,
-	xrdp_write_shared_framebuffer,
+	(pXrdpMessageRead) xrdp_read_shared_framebuffer,
+	(pXrdpMessageWrite) xrdp_write_shared_framebuffer,
 	(pXrdpMessageCopy) xrdp_shared_framebuffer_copy,
 	(pXrdpMessageFree) xrdp_shared_framebuffer_free
 };
@@ -1322,8 +1324,8 @@ void xrdp_beep_free(XRDP_MSG_BEEP* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_BEEP_DEFINITION =
 {
 	"Beep",
-	xrdp_read_beep,
-	xrdp_write_beep,
+	(pXrdpMessageRead) xrdp_read_beep,
+	(pXrdpMessageWrite) xrdp_write_beep,
 	(pXrdpMessageCopy) xrdp_beep_copy,
 	(pXrdpMessageFree) xrdp_beep_free
 };
@@ -1360,8 +1362,8 @@ void xrdp_reset_free(XRDP_MSG_RESET* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_RESET_DEFINITION =
 {
 	"Reset",
-	xrdp_read_reset,
-	xrdp_write_reset,
+	(pXrdpMessageRead) xrdp_read_reset,
+	(pXrdpMessageWrite) xrdp_write_reset,
 	(pXrdpMessageCopy) xrdp_reset_copy,
 	(pXrdpMessageFree) xrdp_reset_free
 };
@@ -1591,8 +1593,8 @@ void xrdp_window_new_update_free(XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_WINDOW_NEW_UPDATE_DEFINITION =
 {
 	"WindowNewUpdate",
-	xrdp_read_window_new_update,
-	xrdp_write_window_new_update,
+	(pXrdpMessageRead) xrdp_read_window_new_update,
+	(pXrdpMessageWrite) xrdp_write_window_new_update,
 	(pXrdpMessageCopy) xrdp_window_new_update_copy,
 	(pXrdpMessageFree) xrdp_window_new_update_free
 };
@@ -1641,8 +1643,8 @@ void xrdp_window_delete_free(XRDP_MSG_WINDOW_DELETE* msg)
 static XRDP_MSG_DEFINITION XRDP_MSG_WINDOW_DELETE_DEFINITION =
 {
 	"WindowDelete",
-	xrdp_read_window_delete,
-	xrdp_write_window_delete,
+	(pXrdpMessageRead) xrdp_read_window_delete,
+	(pXrdpMessageWrite) xrdp_write_window_delete,
 	(pXrdpMessageCopy) xrdp_window_delete_copy,
 	(pXrdpMessageFree) xrdp_window_delete_free
 };
@@ -1687,81 +1689,32 @@ static XRDP_MSG_DEFINITION* XRDP_SERVER_MSG_DEFINITIONS[32] =
 	NULL /* 31 */
 };
 
+int xrdp_server_message_read(wStream* s, XRDP_MSG_COMMON* msg)
+{
+	int status = 0;
+	XRDP_MSG_DEFINITION* msgDef;
+
+	msgDef = XRDP_SERVER_MSG_DEFINITIONS[msg->type];
+
+	if (msgDef)
+	{
+		if (msgDef->Read)
+			status = msgDef->Read(s, msg);
+	}
+
+	return status;
+}
+
 int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 {
-	switch (msg->type)
+	XRDP_MSG_DEFINITION* msgDef;
+
+	msgDef = XRDP_SERVER_MSG_DEFINITIONS[msg->type];
+
+	if (msgDef)
 	{
-		case XRDP_SERVER_BEGIN_UPDATE:
-			xrdp_write_begin_update(s, (XRDP_MSG_BEGIN_UPDATE*) msg);
-			break;
-
-		case XRDP_SERVER_END_UPDATE:
-			xrdp_write_end_update(s, (XRDP_MSG_END_UPDATE*) msg);
-			break;
-
-		case XRDP_SERVER_OPAQUE_RECT:
-			xrdp_write_opaque_rect(s, (XRDP_MSG_OPAQUE_RECT*) msg);
-			break;
-
-		case XRDP_SERVER_SCREEN_BLT:
-			xrdp_write_screen_blt(s, (XRDP_MSG_SCREEN_BLT*) msg);
-			break;
-
-		case XRDP_SERVER_PATBLT:
-			xrdp_write_patblt(s, (XRDP_MSG_PATBLT*) msg);
-			break;
-
-		case XRDP_SERVER_DSTBLT:
-			xrdp_write_dstblt(s, (XRDP_MSG_DSTBLT*) msg);
-			break;
-
-		case XRDP_SERVER_PAINT_RECT:
-			xrdp_write_paint_rect(s, (XRDP_MSG_PAINT_RECT*) msg);
-			break;
-
-		case XRDP_SERVER_SET_CLIPPING_REGION:
-			xrdp_write_set_clipping_region(s, (XRDP_MSG_SET_CLIPPING_REGION*) msg);
-			break;
-
-		case XRDP_SERVER_LINE_TO:
-			xrdp_write_line_to(s, (XRDP_MSG_LINE_TO*) msg);
-			break;
-
-		case XRDP_SERVER_SET_POINTER:
-			xrdp_write_set_pointer(s, (XRDP_MSG_SET_POINTER*) msg);
-			break;
-
-		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:
-			xrdp_write_create_offscreen_surface(s, (XRDP_MSG_CREATE_OFFSCREEN_SURFACE*) msg);
-			break;
-
-		case XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE:
-			xrdp_write_switch_offscreen_surface(s, (XRDP_MSG_SWITCH_OFFSCREEN_SURFACE*) msg);
-			break;
-
-		case XRDP_SERVER_DELETE_OFFSCREEN_SURFACE:
-			xrdp_write_delete_offscreen_surface(s, (XRDP_MSG_DELETE_OFFSCREEN_SURFACE*) msg);
-			break;
-
-		case XRDP_SERVER_PAINT_OFFSCREEN_SURFACE:
-			xrdp_write_paint_offscreen_surface(s, (XRDP_MSG_PAINT_OFFSCREEN_SURFACE*) msg);
-			break;
-
-		case XRDP_SERVER_WINDOW_NEW_UPDATE:
-			xrdp_write_window_new_update(s, (XRDP_MSG_WINDOW_NEW_UPDATE*) msg);
-			break;
-
-		case XRDP_SERVER_WINDOW_DELETE:
-			xrdp_write_window_delete(s, (XRDP_MSG_WINDOW_DELETE*) msg);
-			break;
-
-		case XRDP_SERVER_SHARED_FRAMEBUFFER:
-			xrdp_write_shared_framebuffer(s, (XRDP_MSG_SHARED_FRAMEBUFFER*) msg);
-			break;
-
-		default:
-			msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg);
-			break;
+		if (msgDef->Write)
+			msgDef->Write(s, msg);
 	}
 
 	return msg->length;
@@ -1775,8 +1728,8 @@ char* xrdp_get_msg_type_string(UINT32 type)
 
 	if (msgDef)
 	{
-		if (msgDef->name)
-			return (char*) msgDef->name;
+		if (msgDef->Name)
+			return (char*) msgDef->Name;
 	}
 
 	return "Unknown";

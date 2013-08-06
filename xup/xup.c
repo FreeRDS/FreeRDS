@@ -417,7 +417,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_BEGIN_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_begin_update(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->BeginUpdate(mod, &msg);
 			}
 			break;
@@ -426,7 +426,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_END_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_end_update(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->EndUpdate(mod, &msg);
 			}
 			break;
@@ -435,7 +435,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_OPAQUE_RECT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_opaque_rect(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->OpaqueRect(mod, &msg);
 			}
 			break;
@@ -444,7 +444,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_SCREEN_BLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_screen_blt(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->ScreenBlt(mod, &msg);
 			}
 			break;
@@ -453,7 +453,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_PATBLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_patblt(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->PatBlt(mod, &msg);
 			}
 			break;
@@ -462,7 +462,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_DSTBLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_dstblt(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->DstBlt(mod, &msg);
 			}
 			break;
@@ -476,7 +476,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				msg.fbSegmentId = 0;
 				msg.framebuffer = NULL;
 
-				xrdp_read_paint_rect(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 
 				if (msg.fbSegmentId)
 					msg.framebuffer = &(mod->framebuffer);
@@ -489,7 +489,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_SET_CLIPPING_REGION msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_clipping_region(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->SetClippingRegion(mod, &msg);
 			}
 			break;
@@ -498,7 +498,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_LINE_TO msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_line_to(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->LineTo(mod, &msg);
 			}
 			break;
@@ -507,7 +507,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_SET_POINTER msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_pointer(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->SetPointer(mod, &msg);
 			}
 			break;
@@ -516,7 +516,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_CREATE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_create_offscreen_surface(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->CreateOffscreenSurface(mod, &msg);
 			}
 			break;
@@ -525,7 +525,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_SWITCH_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_switch_offscreen_surface(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->SwitchOffscreenSurface(mod, &msg);
 			}
 			break;
@@ -534,7 +534,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_DELETE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_delete_offscreen_surface(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->DeleteOffscreenSurface(mod, &msg);
 			}
 			break;
@@ -543,7 +543,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_PAINT_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_paint_offscreen_surface(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->PaintOffscreenSurface(mod, &msg);
 			}
 			break;
@@ -552,7 +552,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_WINDOW_NEW_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				status = xrdp_read_window_new_update(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->WindowNewUpdate(mod, &msg);
 			}
 			break;
@@ -561,7 +561,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_WINDOW_DELETE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				status = xrdp_read_window_delete(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->WindowDelete(mod, &msg);
 			}
 			break;
@@ -570,8 +570,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_SHARED_FRAMEBUFFER msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-
-				status = xrdp_read_shared_framebuffer(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 				status = mod->server->SharedFramebuffer(mod, &msg);
 			}
 			break;
