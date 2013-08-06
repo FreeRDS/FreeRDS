@@ -79,7 +79,7 @@ static int g_crc_table[256] =
 
 xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm *wm)
 {
-	xrdpBitmap *self = (xrdpBitmap *) NULL;
+	xrdpBitmap* self = (xrdpBitmap *) NULL;
 	int Bpp = 0;
 
 	self = (xrdpBitmap *) g_malloc(sizeof(xrdpBitmap), 1);
@@ -112,7 +112,7 @@ xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm 
 			break;
 	}
 
-	if (self->type == WND_TYPE_BITMAP || self->type == WND_TYPE_IMAGE)
+	if (self->type == WND_TYPE_BITMAP)
 	{
 		self->data = (char*) g_malloc(width * height * Bpp, 0);
 	}
@@ -125,7 +125,7 @@ xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm 
 
 xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char *data, xrdpWm *wm)
 {
-	xrdpBitmap *self = (xrdpBitmap *) NULL;
+	xrdpBitmap* self = (xrdpBitmap *) NULL;
 
 	self = (xrdpBitmap *) g_malloc(sizeof(xrdpBitmap), 1);
 	self->type = WND_TYPE_BITMAP;
@@ -139,7 +139,7 @@ xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char *d
 	return self;
 }
 
-void xrdp_bitmap_delete(xrdpBitmap *self)
+void xrdp_bitmap_delete(xrdpBitmap* self)
 {
 	if (!self)
 		return;
@@ -150,7 +150,7 @@ void xrdp_bitmap_delete(xrdpBitmap *self)
 	free(self);
 }
 
-int xrdp_bitmap_resize(xrdpBitmap *self, int width, int height)
+int xrdp_bitmap_resize(xrdpBitmap* self, int width, int height)
 {
 	int Bpp = 0;
 
@@ -197,179 +197,9 @@ int xrdp_bitmap_resize(xrdpBitmap *self, int width, int height)
 	return 0;
 }
 
-int xrdp_bitmap_get_pixel(xrdpBitmap *self, int x, int y)
-{
-	if (self == 0)
-	{
-		return 0;
-	}
-
-	if (self->data == 0)
-	{
-		return 0;
-	}
-
-	if (x >= 0 && x < self->width && y >= 0 && y < self->height)
-	{
-		if (self->bpp == 8)
-		{
-			return GETPIXEL8(self->data, x, y, self->width);
-		}
-		else if (self->bpp == 15 || self->bpp == 16)
-		{
-			return GETPIXEL16(self->data, x, y, self->width);
-		}
-		else if (self->bpp == 24)
-		{
-			return GETPIXEL32(self->data, x, y, self->width);
-		}
-		else if (self->bpp == 32)
-		{
-			return GETPIXEL32(self->data, x, y, self->width);
-		}
-	}
-
-	return 0;
-}
-
-int xrdp_bitmap_set_pixel(xrdpBitmap *self, int x, int y, int pixel)
-{
-	if (self == 0)
-	{
-		return 0;
-	}
-
-	if (self->data == 0)
-	{
-		return 0;
-	}
-
-	if (x >= 0 && x < self->width && y >= 0 && y < self->height)
-	{
-		if (self->bpp == 8)
-		{
-			SETPIXEL8(self->data, x, y, self->width, pixel);
-		}
-		else if (self->bpp == 15 || self->bpp == 16)
-		{
-			SETPIXEL16(self->data, x, y, self->width, pixel);
-		}
-		else if (self->bpp == 24)
-		{
-			SETPIXEL32(self->data, x, y, self->width, pixel);
-		}
-		else if (self->bpp == 32)
-		{
-			SETPIXEL32(self->data, x, y, self->width, pixel);
-		}
-	}
-
-	return 0;
-}
-
 /* copy part of self at x, y to 0, 0 in dest */
 /* returns error */
-int xrdp_bitmap_copy_box(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
-{
-	int i = 0;
-	int j = 0;
-	int destx = 0;
-	int desty = 0;
-	int pixel = 0;
-
-	if (self == 0)
-	{
-		return 1;
-	}
-
-	if (dest == 0)
-	{
-		return 1;
-	}
-
-	if (self->type != WND_TYPE_BITMAP && self->type != WND_TYPE_IMAGE)
-	{
-		return 1;
-	}
-
-	if (dest->type != WND_TYPE_BITMAP && dest->type != WND_TYPE_IMAGE)
-	{
-		return 1;
-	}
-
-	if (self->bpp != dest->bpp)
-	{
-		return 1;
-	}
-
-	destx = 0;
-	desty = 0;
-
-	if (!check_bounds(self, &x, &y, &cx, &cy))
-	{
-		return 1;
-	}
-
-	if (!check_bounds(dest, &destx, &desty, &cx, &cy))
-	{
-		return 1;
-	}
-
-	if (self->bpp == 32)
-	{
-		for (i = 0; i < cy; i++)
-		{
-			for (j = 0; j < cx; j++)
-			{
-				pixel = GETPIXEL32(self->data, j + x, i + y, self->width);
-				SETPIXEL32(dest->data, j + destx, i + desty, dest->width, pixel);
-			}
-		}
-	}
-	else if (self->bpp == 24)
-	{
-		for (i = 0; i < cy; i++)
-		{
-			for (j = 0; j < cx; j++)
-			{
-				pixel = GETPIXEL32(self->data, j + x, i + y, self->width);
-				SETPIXEL32(dest->data, j + destx, i + desty, dest->width, pixel);
-			}
-		}
-	}
-	else if (self->bpp == 15 || self->bpp == 16)
-	{
-		for (i = 0; i < cy; i++)
-		{
-			for (j = 0; j < cx; j++)
-			{
-				pixel = GETPIXEL16(self->data, j + x, i + y, self->width);
-				SETPIXEL16(dest->data, j + destx, i + desty, dest->width, pixel);
-			}
-		}
-	}
-	else if (self->bpp == 8)
-	{
-		for (i = 0; i < cy; i++)
-		{
-			for (j = 0; j < cx; j++)
-			{
-				pixel = GETPIXEL8(self->data, j + x, i + y, self->width);
-				SETPIXEL8(dest->data, j + destx, i + desty, dest->width, pixel);
-			}
-		}
-	}
-	else
-	{
-		return 1;
-	}
-
-	return 0;
-}
-
-/* copy part of self at x, y to 0, 0 in dest */
-/* returns error */
-int xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int y, int cx, int cy)
+int xrdp_bitmap_copy_box(xrdpBitmap* self, xrdpBitmap *dest, int x, int y, int cx, int cy)
 {
 	int i = 0;
 	int j = 0;
@@ -384,43 +214,29 @@ int xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int
 	unsigned short *s16 = (unsigned short *) NULL;
 	unsigned short *d16 = (unsigned short *) NULL;
 
-	if (self == 0)
-	{
+	if (!self)
 		return 1;
-	}
 
-	if (dest == 0)
-	{
+	if (!dest)
 		return 1;
-	}
 
-	if (self->type != WND_TYPE_BITMAP && self->type != WND_TYPE_IMAGE)
-	{
+	if (self->type != WND_TYPE_BITMAP)
 		return 1;
-	}
 
-	if (dest->type != WND_TYPE_BITMAP && dest->type != WND_TYPE_IMAGE)
-	{
+	if (dest->type != WND_TYPE_BITMAP)
 		return 1;
-	}
 
 	if (self->bpp != dest->bpp)
-	{
 		return 1;
-	}
 
 	destx = 0;
 	desty = 0;
 
 	if (!check_bounds(self, &x, &y, &cx, &cy))
-	{
 		return 1;
-	}
 
 	if (!check_bounds(dest, &destx, &desty, &cx, &cy))
-	{
 		return 1;
-	}
 
 	CRC_START(crc);
 
@@ -504,35 +320,12 @@ int xrdp_bitmap_copy_box_with_crc(xrdpBitmap *self, xrdpBitmap *dest, int x, int
 
 	CRC_END(crc);
 	dest->crc = crc;
-	return 0;
-}
-
-/* returns true if they are the same, else returns false */
-int xrdp_bitmap_compare(xrdpBitmap *self, xrdpBitmap *b)
-{
-	if (!self)
-		return 0;
-
-	if (!b)
-		return 0;
-
-	if (self->bpp != b->bpp)
-		return 0;
-
-	if (self->width != b->width)
-		return 0;
-
-	if (self->height != b->height)
-		return 0;
-
-	if (g_memcmp(self->data, b->data, b->height * b->line_size) == 0)
-		return 1;
 
 	return 0;
 }
 
 /* returns true if they are the same, else returns false */
-int xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
+int xrdp_bitmap_compare(xrdpBitmap* self, xrdpBitmap *b)
 {
 	if (!self)
 		return 0;
@@ -557,7 +350,7 @@ int xrdp_bitmap_compare_with_crc(xrdpBitmap *self, xrdpBitmap *b)
 
 /* nil for rect means the whole thing */
 /* returns error */
-int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
+int xrdp_bitmap_invalidate(xrdpBitmap* self, xrdpRect *rect)
 {
 	int w;
 	int h;
@@ -636,52 +429,7 @@ int xrdp_bitmap_invalidate(xrdpBitmap *self, xrdpRect *rect)
 	return 0;
 }
 
-/* convert the controls coords to screen coords */
-int xrdp_bitmap_to_screenx(xrdpBitmap *self, int x)
-{
-	int i;
-
-	i = x;
-
-	i = i + self->left;
-
-	return i;
-}
-
-/* convert the controls coords to screen coords */
-int xrdp_bitmap_to_screeny(xrdpBitmap *self, int y)
-{
-	int i;
-
-	i = y;
-	i = i + self->top;
-
-	return i;
-}
-
-/* convert the screen coords to controls coords */
-int xrdp_bitmap_from_screenx(xrdpBitmap *self, int x)
-{
-	int i;
-
-	i = x;
-	i = i - self->left;
-
-	return i;
-}
-
-/* convert the screen coords to controls coords */
-int xrdp_bitmap_from_screeny(xrdpBitmap *self, int y)
-{
-	int i;
-
-	i = y;
-	i = i - self->top;
-
-	return i;
-}
-
-int xrdp_bitmap_get_screen_clip(xrdpBitmap *self, xrdpPainter *painter, xrdpRect *rect, int *dx, int *dy)
+int xrdp_bitmap_get_screen_clip(xrdpBitmap* self, xrdpPainter *painter, xrdpRect *rect, int *dx, int *dy)
 {
 	int ldx;
 	int ldy;
@@ -698,22 +446,18 @@ int xrdp_bitmap_get_screen_clip(xrdpBitmap *self, xrdpPainter *painter, xrdpRect
 		rect->bottom = self->height;
 	}
 
-	ldx = xrdp_bitmap_to_screenx(self, 0);
-	ldy = xrdp_bitmap_to_screeny(self, 0);
+	ldx = 0;
+	ldy = 0;
 	rect->left += ldx;
 	rect->top += ldy;
 	rect->right += ldx;
 	rect->bottom += ldy;
 
 	if (dx != 0)
-	{
 		*dx = ldx;
-	}
 
 	if (dy != 0)
-	{
 		*dy = ldy;
-	}
 
 	return 0;
 }

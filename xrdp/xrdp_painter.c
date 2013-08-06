@@ -717,7 +717,7 @@ int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap* src, xrdpBitmap* dst, int x
 				w = MIN(64, ((srcx + cx) - i));
 				h = MIN(64, ((srcy + cy) - j));
 				b = xrdp_bitmap_create(w, h, self->wm->screen->bpp, 0, self->wm);
-				xrdp_bitmap_copy_box_with_crc(src, b, i, j, w, h);
+				xrdp_bitmap_copy_box(src, b, i, j, w, h);
 				bitmap_id = xrdp_cache_add_bitmap(self->wm->cache, b, self->wm->hints);
 				cache_id = HIWORD(bitmap_id);
 				cache_idx = LOWORD(bitmap_id);

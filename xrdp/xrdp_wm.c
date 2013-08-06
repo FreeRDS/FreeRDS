@@ -71,37 +71,6 @@ void xrdp_wm_delete(xrdpWm* self)
 	free(self);
 }
 
-static int xrdp_wm_get_pixel(unsigned char *data, int x, int y, int width, int bpp)
-{
-	int start;
-	int shift;
-
-	if (bpp == 1)
-	{
-		width = (width + 7) / 8;
-		start = (y * width) + x / 8;
-		shift = x % 8;
-		return (data[start] & (0x80 >> shift)) != 0;
-	}
-	else if (bpp == 4)
-	{
-		width = (width + 1) / 2;
-		start = y * width + x / 2;
-		shift = x % 2;
-
-		if (shift == 0)
-		{
-			return (data[start] & 0xf0) >> 4;
-		}
-		else
-		{
-			return data[start] & 0x0f;
-		}
-	}
-
-	return 0;
-}
-
 int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg)
 {
 	int bpp;
@@ -125,142 +94,8 @@ int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg)
 	return 0;
 }
 
-/* returns error */
-int xrdp_wm_load_pointer(xrdpWm* self, char* file_name, char* data, char* mask, int* x, int* y)
-{
-	int fd;
-	int bpp;
-	int w;
-	int h;
-	int i;
-	int j;
-	int pixel;
-	int palette[16];
-	wStream* fs;
-
-	if (!g_file_exist(file_name))
-	{
-		log_message(LOG_LEVEL_ERROR,"xrdp_wm_load_pointer: error pointer file [%s] does not exist",
-				file_name);
-		return 1;
-	}
-
-	fs = Stream_New(NULL, 8192);
-
-	fd = g_file_open(file_name);
-
-	if (fd < 1)
-	{
-		log_message(LOG_LEVEL_ERROR,"xrdp_wm_load_pointer: error loading pointer from file [%s]",
-				file_name);
-		return 1;
-	}
-
-	g_file_read(fd, fs->buffer, 8192);
-	g_file_close(fd);
-	Stream_Seek(fs, 6);
-	Stream_Read_UINT8(fs, w);
-	Stream_Read_UINT8(fs, h);
-	Stream_Seek(fs, 2);
-	Stream_Read_UINT16(fs, *x);
-	Stream_Read_UINT16(fs, *y);
-	Stream_Seek(fs, 22);
-	Stream_Read_UINT8(fs, bpp);
-	Stream_Seek(fs, 25);
-
-	if (w == 32 && h == 32)
-	{
-		if (bpp == 1)
-		{
-			Stream_Read(fs, palette, 8);
-
-			for (i = 0; i < 32; i++)
-			{
-				for (j = 0; j < 32; j++)
-				{
-					pixel = palette[xrdp_wm_get_pixel(fs->pointer, j, i, 32, 1)];
-					*data = pixel;
-					data++;
-					*data = pixel >> 8;
-					data++;
-					*data = pixel >> 16;
-					data++;
-				}
-			}
-
-			Stream_Seek(fs, 128);
-		}
-		else if (bpp == 4)
-		{
-			Stream_Read(fs, palette, 64);
-
-			for (i = 0; i < 32; i++)
-			{
-				for (j = 0; j < 32; j++)
-				{
-					pixel = palette[xrdp_wm_get_pixel(fs->pointer, j, i, 32, 1)];
-					*data = pixel;
-					data++;
-					*data = pixel >> 8;
-					data++;
-					*data = pixel >> 16;
-					data++;
-				}
-			}
-
-			Stream_Seek(fs, 512);
-		}
-
-		g_memcpy(mask, fs->pointer, 128); /* mask */
-	}
-
-	Stream_Free(fs, TRUE);
-
-	return 0;
-}
-
-/* convert hex string to int */
-unsigned int xrdp_wm_htoi (const char *ptr)
-{
-	unsigned int value = 0;
-	char ch = *ptr;
-
-	while (ch == ' ' || ch == '\t')
-	{
-		ch = *(++ptr);
-	}
-
-	for (;;)
-	{
-		if (ch >= '0' && ch <= '9')
-		{
-			value = (value << 4) + (ch - '0');
-		}
-		else if (ch >= 'A' && ch <= 'F')
-		{
-			value = (value << 4) + (ch - 'A' + 10);
-		}
-		else if (ch >= 'a' && ch <= 'f')
-		{
-			value = (value << 4) + (ch - 'a' + 10);
-		}
-		else
-		{
-			return value;
-		}
-
-		ch = *(++ptr);
-	}
-
-	return value;
-}
-
 int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name)
 {
-	int bindex;
-	int gindex;
-	int rindex;
-
 	int fd;
 	int index;
 	char *val;
@@ -269,20 +104,7 @@ int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name)
 	char cfg_file[256];
 
 	if (autorun_name != 0)
-	{
 		autorun_name[0] = 0;
-	}
-
-	/* initialize with defaults */
-	self->black      = HCOLOR(self->screen->bpp, 0x000000);
-	self->grey       = HCOLOR(self->screen->bpp, 0xc0c0c0);
-	self->dark_grey  = HCOLOR(self->screen->bpp, 0x808080);
-	self->blue       = HCOLOR(self->screen->bpp, 0x0000ff);
-	self->dark_blue  = HCOLOR(self->screen->bpp, 0x00007f);
-	self->white      = HCOLOR(self->screen->bpp, 0xffffff);
-	self->red        = HCOLOR(self->screen->bpp, 0xff0000);
-	self->green      = HCOLOR(self->screen->bpp, 0x00ff00);
-	self->background = HCOLOR(self->screen->bpp, 0x000000);
 
 	/* now load them from the globals in xrdp.ini if defined */
 	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
@@ -299,67 +121,20 @@ int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name)
 		{
 			for (index = 0; index < names->count; index++)
 			{
-				val = (char *)list_get_item(names, index);
+				val = (char*) list_get_item(names, index);
 
-				if (val != 0)
+				if (val)
 				{
-					if (g_strcasecmp(val, "black") == 0)
+					if (g_strcasecmp(val, "autorun") == 0)
 					{
-						val = (char *)list_get_item(values, index);
-						self->black = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "grey") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->grey = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "dark_grey") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->dark_grey = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "blue") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->blue = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "dark_blue") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->dark_blue = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "white") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->white = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "red") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->red = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "green") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->green = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "background") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->background = HCOLOR(self->screen->bpp, xrdp_wm_htoi(val));
-					}
-					else if (g_strcasecmp(val, "autorun") == 0)
-					{
-						val = (char *)list_get_item(values, index);
+						val = (char*) list_get_item(values, index);
 
-						if (autorun_name != 0)
-						{
+						if (autorun_name)
 							g_strncpy(autorun_name, val, 255);
-						}
 					}
 					else if (g_strcasecmp(val, "pamerrortxt") == 0)
 					{
-						val = (char *)list_get_item(values, index);
+						val = (char*) list_get_item(values, index);
 						g_strncpy(self->pamerrortxt,val,255);
 					}
 				}
@@ -374,48 +149,6 @@ int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name)
 	{
 		log_message(LOG_LEVEL_ERROR,"xrdp_wm_load_static_colors: Could not read xrdp.ini file %s", cfg_file);
 	}
-
-	if (self->screen->bpp == 8)
-	{
-		/* rgb332 */
-		for (bindex = 0; bindex < 4; bindex++)
-		{
-			for (gindex = 0; gindex < 8; gindex++)
-			{
-				for (rindex = 0; rindex < 8; rindex++)
-				{
-					self->palette[(bindex << 6) | (gindex << 3) | rindex] =
-							(((rindex << 5) | (rindex << 2) | (rindex >> 1)) << 16) |
-							(((gindex << 5) | (gindex << 2) | (gindex >> 1)) << 8) |
-							((bindex << 6) | (bindex << 4) | (bindex << 2) | (bindex));
-				}
-			}
-		}
-
-		libxrdp_send_palette(self->session, self->palette);
-	}
-
-	return 0;
-}
-
-int xrdp_wm_load_static_pointers(xrdpWm* self)
-{
-	xrdpPointerItem pointer_item;
-	char file_path[256];
-
-	DEBUG(("sending cursor"));
-	g_snprintf(file_path, 255, "%s/cursor1.cur", XRDP_SHARE_PATH);
-	g_memset(&pointer_item, 0, sizeof(pointer_item));
-	xrdp_wm_load_pointer(self, file_path, pointer_item.data,
-			pointer_item.mask, &pointer_item.x, &pointer_item.y);
-	xrdp_cache_add_pointer_static(self->cache, &pointer_item, 1);
-
-	DEBUG(("sending cursor"));
-	g_snprintf(file_path, 255, "%s/cursor0.cur", XRDP_SHARE_PATH);
-	g_memset(&pointer_item, 0, sizeof(pointer_item));
-	xrdp_wm_load_pointer(self, file_path, pointer_item.data,
-			pointer_item.mask, &pointer_item.x, &pointer_item.y);
-	xrdp_cache_add_pointer_static(self->cache, &pointer_item, 0);
 
 	return 0;
 }
@@ -433,8 +166,7 @@ int xrdp_wm_init(xrdpWm* self)
 	char autorun_name[256];
 
 	xrdp_wm_load_static_colors_plus(self, autorun_name);
-	xrdp_wm_load_static_pointers(self);
-	self->screen->bg_color = self->background;
+	self->screen->bg_color = 0;
 
 	if (self->session->settings->AutoLogonEnabled && (autorun_name[0] != 0))
 	{
@@ -447,8 +179,7 @@ int xrdp_wm_init(xrdpWm* self)
 			names->auto_free = 1;
 			values = list_create();
 			values->auto_free = 1;
-			/* domain names that starts with '_' are reserved for IP/DNS to
-			 * simplify for the user in a gateway setup */
+
 			if (self->session->settings->Domain)
 			{
 				strcpy(section_name, self->session->settings->Domain);
@@ -466,7 +197,7 @@ int xrdp_wm_init(xrdpWm* self)
 
 					for (index = 0; index < names->count; index++)
 					{
-						q = (char *)list_get_item(names, index);
+						q = (char*) list_get_item(names, index);
 
 						if (g_strncasecmp("globals", q, 8) != 0)
 						{
@@ -487,15 +218,11 @@ int xrdp_wm_init(xrdpWm* self)
 			{
 				for (index = 0; index < names->count; index++)
 				{
-					q = (char *)list_get_item(names, index);
-					r = (char *)list_get_item(values, index);
+					q = (char*) list_get_item(names, index);
+					r = (char*) list_get_item(values, index);
 
 					if (strcmp("password", q) == 0)
 					{
-						/* if the password has been asked for by the module, use what the
-                           client says.
-                           if the password has been manually set in the config, use that
-                           instead of what the client says. */
 						if (g_strncmp("ask", r, 3) == 0)
 						{
 							r = self->session->settings->Password;
@@ -503,10 +230,6 @@ int xrdp_wm_init(xrdpWm* self)
 					}
 					else if (strcmp("username", q) == 0)
 					{
-						/* if the username has been asked for by the module, use what the
-                           client says.
-                           if the username has been manually set in the config, use that
-                           instead of what the client says. */
 						if (strcmp("ask", r) == 0)
 						{
 							r = self->session->settings->Username;
@@ -809,12 +532,15 @@ int callback(long id, int msg, long param1, long param2, long param3, long param
 		case 0: /* RDP_INPUT_SYNCHRONIZE */
 			rv = xrdp_wm_key_sync(wm, param3, param1);
 			break;
+
 		case 4: /* RDP_INPUT_SCANCODE */
 			rv = xrdp_wm_key(wm, param3, param1);
 			break;
+
 		case 0x8001: /* RDP_INPUT_MOUSE */
 			rv = xrdp_wm_process_input_mouse(wm, param3, param1, param2);
 			break;
+
 		case 0x4444: /* invalidate, this is not from RDP_DATA_PDU_INPUT */
 			/* like the rest, its from RDP_PDU_DATA with code 33 */
 			/* its the rdp client asking for a screen update */

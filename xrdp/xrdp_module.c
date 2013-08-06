@@ -308,7 +308,6 @@ int xrdp_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
 
 	xrdp_cache_reset(wm->cache);
 	xrdp_bitmap_resize(wm->screen, settings->DesktopWidth, settings->DesktopHeight);
-	xrdp_wm_load_static_pointers(wm);
 
 	return 0;
 }

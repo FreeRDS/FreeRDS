@@ -189,12 +189,7 @@ int xrdp_cache_add_bitmap(xrdpCache* self, xrdpBitmap *bitmap, int hints)
 
 		for (j = 0; j < self->cache1_entries; j++)
 		{
-#ifdef USE_CRC
-
-			if (xrdp_bitmap_compare_with_crc(self->bitmap_items[i][j].bitmap, bitmap))
-#else
 			if (xrdp_bitmap_compare(self->bitmap_items[i][j].bitmap, bitmap))
-#endif
 			{
 				self->bitmap_items[i][j].stamp = self->bitmap_stamp;
 				DEBUG(("found bitmap at %d %d", i, j));
@@ -211,12 +206,7 @@ int xrdp_cache_add_bitmap(xrdpCache* self, xrdpBitmap *bitmap, int hints)
 
 			for (j = 0; j < self->cache2_entries; j++)
 			{
-#ifdef USE_CRC
-
-				if (xrdp_bitmap_compare_with_crc(self->bitmap_items[i][j].bitmap, bitmap))
-#else
 				if (xrdp_bitmap_compare(self->bitmap_items[i][j].bitmap, bitmap))
-#endif
 				{
 					self->bitmap_items[i][j].stamp = self->bitmap_stamp;
 					DEBUG(("found bitmap at %d %d", i, j));
@@ -233,12 +223,7 @@ int xrdp_cache_add_bitmap(xrdpCache* self, xrdpBitmap *bitmap, int hints)
 
 				for (j = 0; j < self->cache3_entries; j++)
 				{
-#ifdef USE_CRC
-
-					if (xrdp_bitmap_compare_with_crc(self->bitmap_items[i][j].bitmap, bitmap))
-#else
 					if (xrdp_bitmap_compare(self->bitmap_items[i][j].bitmap, bitmap))
-#endif
 					{
 						self->bitmap_items[i][j].stamp = self->bitmap_stamp;
 						DEBUG(("found bitmap at %d %d", i, j));

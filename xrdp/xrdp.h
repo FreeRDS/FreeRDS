@@ -231,16 +231,6 @@ struct xrdp_wm
 	xrdpPainter* painter;
 	xrdpCache* cache;
 	int palette[256];
-	/* generic colors */
-	int black;
-	int grey;
-	int dark_grey;
-	int blue;
-	int dark_blue;
-	int white;
-	int red;
-	int green;
-	int background;
 	/* focused window */
 	xrdpBitmap* focused_window;
 	/* pointer */
@@ -293,8 +283,6 @@ struct xrdp_painter
 /* window or bitmap */
 struct xrdp_bitmap
 {
-	/* 0 = bitmap 1 = window 2 = screen 3 = button 4 = image 5 = edit
-	 6 = label 7 = combo 8 = special */
 	int type;
 	int width;
 	int height;
@@ -319,21 +307,6 @@ struct xrdp_bitmap
 
 #define NUM_FONTS 0x4e00
 #define DEFAULT_FONT_NAME "sans-10.fv1"
-
-#define DEFAULT_ELEMENT_TOP   35
-#define DEFAULT_BUTTON_W      60
-#define DEFAULT_BUTTON_H      23
-#define DEFAULT_COMBO_W       210
-#define DEFAULT_COMBO_H       21
-#define DEFAULT_EDIT_W        210
-#define DEFAULT_EDIT_H        21
-#define DEFAULT_WND_LOGIN_W   500
-#define DEFAULT_WND_LOGIN_H   250
-#define DEFAULT_WND_HELP_W    340
-#define DEFAULT_WND_HELP_H    300
-#define DEFAULT_WND_LOG_W     400
-#define DEFAULT_WND_LOG_H     400
-#define DEFAULT_WND_SPECIAL_H 100
 
 /* font */
 struct xrdp_font
@@ -363,21 +336,14 @@ struct xrdp_startup_params
 };
 
 /* drawable types */
-#define WND_TYPE_BITMAP  0
-#define WND_TYPE_WND     1
-#define WND_TYPE_SCREEN  2
-#define WND_TYPE_BUTTON  3
-#define WND_TYPE_IMAGE   4
-#define WND_TYPE_EDIT    5
-#define WND_TYPE_LABEL   6
-#define WND_TYPE_COMBO   7
-#define WND_TYPE_SPECIAL 8
-#define WND_TYPE_LISTBOX 9
-#define WND_TYPE_OFFSCREEN 10
+#define WND_TYPE_BITMAP		0
+#define WND_TYPE_WND		1
+#define WND_TYPE_SCREEN		2
+#define WND_TYPE_OFFSCREEN	10
 
 /* button states */
-#define BUTTON_STATE_UP   0
-#define BUTTON_STATE_DOWN 1
+#define BUTTON_STATE_UP		0
+#define BUTTON_STATE_DOWN	1
 
 /* messages */
 #define WM_XRDP_PAINT		3
@@ -395,8 +361,6 @@ struct xrdp_startup_params
 #define WM_XRDP_BUTTON5UP	109
 #define WM_XRDP_BUTTON5DOWN	110
 #define WM_XRDP_INVALIDATE	200
-
-#define CB_ITEMCHANGE  300
 
 /* xrdp.c */
 long g_xrdp_sync(long (*sync_func)(long param1, long param2), long sync_param1, long sync_param2);
@@ -423,7 +387,6 @@ struct xrdp_os_bitmap_item* xrdp_cache_get_offscreen_bitmap(xrdpCache* self, int
 /* xrdp_wm.c */
 xrdpWm* xrdp_wm_create(xrdpProcess* owner);
 void xrdp_wm_delete(xrdpWm* self);
-int xrdp_wm_load_static_pointers(xrdpWm* self);
 int xrdp_wm_init(xrdpWm* self);
 int xrdp_wm_get_vis_region(xrdpWm* self, xrdpBitmap* bitmap,
 		int x, int y, int cx, int cy, xrdpRegion* region, int clip_children);
@@ -466,12 +429,8 @@ xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm*
 xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char* data, xrdpWm* wm);
 void xrdp_bitmap_delete(xrdpBitmap* self);
 int xrdp_bitmap_resize(xrdpBitmap* self, int width, int height);
-int xrdp_bitmap_get_pixel(xrdpBitmap* self, int x, int y);
-int xrdp_bitmap_set_pixel(xrdpBitmap* self, int x, int y, int pixel);
 int xrdp_bitmap_copy_box(xrdpBitmap* self, xrdpBitmap* dest, int x, int y, int cx, int cy);
-int xrdp_bitmap_copy_box_with_crc(xrdpBitmap* self, xrdpBitmap* dest, int x, int y, int cx, int cy);
 int xrdp_bitmap_compare(xrdpBitmap* self, xrdpBitmap* b);
-int xrdp_bitmap_compare_with_crc(xrdpBitmap* self, xrdpBitmap* b);
 int xrdp_bitmap_invalidate(xrdpBitmap* self, xrdpRect* rect);
 int xrdp_bitmap_get_screen_clip(xrdpBitmap* self, xrdpPainter* painter, xrdpRect* rect, int* dx, int* dy);
 
@@ -504,26 +463,17 @@ int xrdp_font_item_compare(xrdpFontChar* font1,
 
 /* funcs.c */
 int rect_contains_pt(xrdpRect* in, int x, int y);
-int rect_intersect(xrdpRect* in1, xrdpRect* in2,
-		xrdpRect* out);
-int rect_contained_by(xrdpRect* in1, int left, int top,
-		int right, int bottom);
+int rect_intersect(xrdpRect* in1, xrdpRect* in2, xrdpRect* out);
+int rect_contained_by(xrdpRect* in1, int left, int top, int right, int bottom);
 int check_bounds(xrdpBitmap* b, int* x, int* y, int* cx, int* cy);
-int add_char_at(char* text, int text_size, wchar_t ch, int index);
-int remove_char_at(char* text, int text_size, int index);
-int set_string(char** in_str, const char* in);
-int wchar_repeat(wchar_t* dest, int dest_size_in_wchars, wchar_t ch, int repeat);
 
 /* in lang.c */
 struct xrdp_key_info* get_key_info_from_scan_code(int device_flags, int scan_code, int* keys,
-		int caps_lock, int num_lock, int scroll_lock,
-		xrdpKeymap* keymap);
+		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap* keymap);
 int get_keysym_from_scan_code(int device_flags, int scan_code, int* keys,
-		int caps_lock, int num_lock, int scroll_lock,
-		xrdpKeymap* keymap);
+		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap* keymap);
 wchar_t get_char_from_scan_code(int device_flags, int scan_code, int* keys,
-		int caps_lock, int num_lock, int scroll_lock,
-		xrdpKeymap* keymap);
+		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap* keymap);
 int get_keymaps(int keylayout, xrdpKeymap* keymap);
 
 /* xrdp_bitmap_compress.c */
