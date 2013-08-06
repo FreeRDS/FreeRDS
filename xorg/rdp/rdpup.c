@@ -1251,7 +1251,7 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 
 	if (g_connected)
 	{
-		xrdp_prepare_msg(NULL, msg);
+		xrdp_server_message_write(NULL, msg);
 
 		if (!g_begin && (msg->type != XRDP_SERVER_BEGIN_UPDATE))
 		{
@@ -1266,7 +1266,7 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 			Stream_SetPosition(s, 0);
 			Stream_Seek(s, 8);
 
-			xrdp_prepare_msg(s, msg);
+			xrdp_server_message_write(s, msg);
 
 			g_begin = 1;
 			g_count = 1;
@@ -1275,7 +1275,7 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 		}
 		else if (msg->type == XRDP_SERVER_END_UPDATE)
 		{
-			xrdp_prepare_msg(s, msg);
+			xrdp_server_message_write(s, msg);
 			g_count++;
 
 			rdpup_send_msg(s);
@@ -1294,14 +1294,14 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 			g_count = 0;
 		}
 
-		xrdp_prepare_msg(s, msg);
+		xrdp_server_message_write(s, msg);
 		g_count++;
 
-		LLOGLN(0, ("rdpup_update: adding %s message (%d)", xrdp_get_msg_type_string(msg->type), msg->type));
+		LLOGLN(0, ("rdpup_update: adding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
 	}
 	else
 	{
-		//LLOGLN(0, ("rdpup_update: discarding %s message (%d)", xrdp_get_msg_type_string(msg->type), msg->type));
+		//LLOGLN(0, ("rdpup_update: discarding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
 	}
 
 	return 0;

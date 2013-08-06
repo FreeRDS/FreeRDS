@@ -487,11 +487,11 @@ typedef union _XRDP_MSG_SERVER XRDP_MSG_SERVER;
 extern "C" {
 #endif
 
+FREERDP_API int xrdp_server_message_size(UINT32 type);
+FREERDP_API char* xrdp_server_message_name(UINT32 type);
+
 FREERDP_API int xrdp_server_message_read(wStream* s, XRDP_MSG_COMMON* msg);
-
-FREERDP_API int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg);
-
-FREERDP_API char* xrdp_get_msg_type_string(UINT32 type);
+FREERDP_API int xrdp_server_message_write(wStream* s, XRDP_MSG_COMMON* msg);
 
 FREERDP_API void* xrdp_server_message_copy(XRDP_MSG_COMMON* msg);
 FREERDP_API void xrdp_server_message_free(XRDP_MSG_COMMON* msg);
