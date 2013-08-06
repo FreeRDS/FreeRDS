@@ -71,21 +71,6 @@ void xrdp_wm_delete(xrdpWm* self)
 	free(self);
 }
 
-int xrdp_wm_send_palette(xrdpWm* self)
-{
-	return libxrdp_send_palette(self->session, self->palette);
-}
-
-int xrdp_wm_send_bell(xrdpWm* self)
-{
-	return libxrdp_send_bell(self->session);
-}
-
-int xrdp_wm_send_bitmap(xrdpWm* self, xrdpBitmap *bitmap, int x, int y, int cx, int cy)
-{
-	return libxrdp_send_bitmap(self->session, bitmap->width, bitmap->height, bitmap->bpp, bitmap->data, x, y, cx, cy);
-}
-
 int xrdp_wm_set_focused(xrdpWm* self, xrdpBitmap *wnd)
 {
 	xrdpBitmap *focus_out_control;
@@ -267,16 +252,6 @@ int xrdp_wm_load_pointer(xrdpWm* self, char* file_name, char* data, char* mask, 
 	return 0;
 }
 
-int xrdp_wm_send_pointer(xrdpWm* self, int cache_idx, char *data, char *mask, int x, int y, int bpp)
-{
-	return libxrdp_send_pointer(self->session, cache_idx, data, mask, x, y, bpp);
-}
-
-int xrdp_wm_set_pointer(xrdpWm* self, int cache_idx)
-{
-	return libxrdp_set_pointer(self->session, cache_idx);
-}
-
 /* convert hex string to int */
 unsigned int xrdp_wm_htoi (const char *ptr)
 {
@@ -309,6 +284,8 @@ unsigned int xrdp_wm_htoi (const char *ptr)
 
 		ch = *(++ptr);
 	}
+
+	return value;
 }
 
 int xrdp_wm_load_static_colors_plus(xrdpWm* self, char *autorun_name)
@@ -450,7 +427,7 @@ int xrdp_wm_load_static_colors_plus(xrdpWm* self, char *autorun_name)
 			}
 		}
 
-		xrdp_wm_send_palette(self);
+		libxrdp_send_palette(self->session, self->palette);
 	}
 
 	return 0;
@@ -914,7 +891,7 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 	{
 		if (self->screen->pointer != self->current_pointer)
 		{
-			xrdp_wm_set_pointer(self, self->screen->pointer);
+			libxrdp_set_pointer(self->session, self->screen->pointer);
 			self->current_pointer = self->screen->pointer;
 		}
 
@@ -947,7 +924,7 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 		{
 			if (b->pointer != self->current_pointer)
 			{
-				xrdp_wm_set_pointer(self, b->pointer);
+				libxrdp_set_pointer(self->session, b->pointer);
 				self->current_pointer = b->pointer;
 			}
 

@@ -122,7 +122,6 @@ int xrdp_mm_get_value(xrdpMm* self, char *aname, char *dest, int dest_len)
 int xrdp_mm_setup_mod1(xrdpMm* self)
 {
 	char lib[256];
-	char text[256];
 	int client_module = 0;
 
 	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod1");

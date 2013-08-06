@@ -68,7 +68,7 @@ int xrdp_server_beep(xrdpModule* mod, XRDP_MSG_BEEP* msg)
 	xrdpWm* wm;
 
 	wm = (xrdpWm*) (mod->wm);
-	xrdp_wm_send_bell(wm);
+	libxrdp_send_bell(wm->session);
 
 	return 0;
 }
@@ -209,7 +209,7 @@ int xrdp_server_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
 	xrdpWm* wm = (xrdpWm*) (mod->wm);
 
 	CopyMemory(wm->palette, msg->palette, 256 * sizeof(UINT32));
-	xrdp_wm_send_palette(wm);
+	libxrdp_send_palette(wm->session, wm->palette);
 
 	return 0;
 }

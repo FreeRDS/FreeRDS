@@ -503,7 +503,7 @@ int xrdp_cache_add_pointer(xrdpCache* self, xrdpPointerItem* pointer_item)
 				&& self->pointer_items[i].bpp == pointer_item->bpp)
 		{
 			self->pointer_items[i].stamp = self->pointer_stamp;
-			xrdp_wm_set_pointer(self->wm, i);
+			libxrdp_set_pointer(self->wm->session, i);
 			self->wm->current_pointer = i;
 			DEBUG(("found pointer at %d", i));
 			return i;
@@ -530,7 +530,7 @@ int xrdp_cache_add_pointer(xrdpCache* self, xrdpPointerItem* pointer_item)
 	self->pointer_items[index].stamp = self->pointer_stamp;
 	self->pointer_items[index].bpp = pointer_item->bpp;
 
-	xrdp_wm_send_pointer(self->wm, index, self->pointer_items[index].data, self->pointer_items[index].mask,
+	libxrdp_send_pointer(self->wm->session, index, self->pointer_items[index].data, self->pointer_items[index].mask,
 			self->pointer_items[index].x, self->pointer_items[index].y, self->pointer_items[index].bpp);
 
 	self->wm->current_pointer = index;
@@ -552,7 +552,7 @@ int xrdp_cache_add_pointer_static(xrdpCache* self, xrdpPointerItem* pointer_item
 	self->pointer_items[index].stamp = self->pointer_stamp;
 	self->pointer_items[index].bpp = pointer_item->bpp;
 
-	xrdp_wm_send_pointer(self->wm, index, self->pointer_items[index].data, self->pointer_items[index].mask,
+	libxrdp_send_pointer(self->wm->session, index, self->pointer_items[index].data, self->pointer_items[index].mask,
 			self->pointer_items[index].x, self->pointer_items[index].y, self->pointer_items[index].bpp);
 
 	self->wm->current_pointer = index;

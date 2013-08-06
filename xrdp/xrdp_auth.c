@@ -163,7 +163,6 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 	int ok;
 	int display;
 	int rv;
-	char text[256];
 	char ip[256];
 
 	rv = 0;

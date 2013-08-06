@@ -467,25 +467,18 @@ struct xrdp_os_bitmap_item* xrdp_cache_get_offscreen_bitmap(xrdpCache* self, int
 /* xrdp_wm.c */
 xrdpWm* xrdp_wm_create(xrdpProcess* owner);
 void xrdp_wm_delete(xrdpWm* self);
-int xrdp_wm_send_palette(xrdpWm* self);
-int xrdp_wm_send_bell(xrdpWm* self);
 int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name);
 int xrdp_wm_load_static_pointers(xrdpWm* self);
 int xrdp_wm_init(xrdpWm* self);
-int xrdp_wm_send_bitmap(xrdpWm* self, xrdpBitmap* bitmap,
-		int x, int y, int cx, int cy);
-int xrdp_wm_set_pointer(xrdpWm* self, int cache_idx);
 int xrdp_wm_set_focused(xrdpWm* self, xrdpBitmap* wnd);
 int xrdp_wm_get_vis_region(xrdpWm* self, xrdpBitmap* bitmap,
-		int x, int y, int cx, int cy,
-		xrdpRegion* region, int clip_children);
+		int x, int y, int cx, int cy, xrdpRegion* region, int clip_children);
 int xrdp_wm_mouse_move(xrdpWm* self, int x, int y);
 int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down);
 int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y);
 int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code);
 int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
 int xrdp_wm_pu(xrdpWm* self, xrdpBitmap* control);
-int xrdp_wm_send_pointer(xrdpWm* self, int cache_idx, char* data, char* mask, int x, int y, int bpp);
 int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg);
 int callback(long id, int msg, long param1, long param2, long param3, long param4);
 int xrdp_wm_delete_all_childs(xrdpWm* self);
