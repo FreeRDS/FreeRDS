@@ -136,19 +136,11 @@ int xrdp_mm_setup_mod1(xrdpMm* self)
 
 	if (xrdp_mm_get_value(self, "lib", lib, 255) != 0)
 	{
-		g_snprintf(text, 255, "no library name specified in xrdp.ini, please add "
-			"lib=libxrdp-vnc.so or similar");
-		xrdp_wm_log_msg(self->wm, text);
-
 		return 1;
 	}
 
 	if (lib[0] == 0)
 	{
-		g_snprintf(text, 255, "empty library name specified in xrdp.ini, please "
-			"add lib=libxrdp-vnc.so or similar");
-		xrdp_wm_log_msg(self->wm, text);
-
 		return 1;
 	}
 
@@ -446,7 +438,6 @@ static int xrdp_mm_sesman_data_in(struct trans *trans)
 				break;
 
 			default:
-				xrdp_wm_log_msg(self->wm, "An undefined reply code was received from sesman");
 				log_message(LOG_LEVEL_ERROR, "Fatal xrdp_mm_sesman_data_in: unknown cmd code %d", code);
 				xrdp_mm_cleanup_sesman_connection(self);
 				break;
@@ -562,7 +553,6 @@ int xrdp_mm_connect(xrdpMm* self)
 		char replytxt[128];
 		char pam_error[128];
 		const char *additionalError;
-		xrdp_wm_log_msg(self->wm, "Please wait, we now perform access control...");
 
 		/* g_writeln("we use pam modules to check if we can approve this user"); */
 		if (!g_strncmp(pam_auth_username, "same", 255))
@@ -582,16 +572,16 @@ int xrdp_mm_connect(xrdpMm* self)
 
 		g_sprintf(replytxt, "Reply from access control: %s", getPAMError(reply, pam_error, 127));
 
-		xrdp_wm_log_msg(self->wm, replytxt);
 		log_message(LOG_LEVEL_INFO, replytxt);
 		additionalError = getPAMAdditionalErrorInfo(reply, self);
 
 		if (additionalError)
 		{
 			g_snprintf(replytxt, 127, "%s", additionalError);
+
 			if (replytxt[0])
 			{
-				xrdp_wm_log_msg(self->wm, replytxt);
+
 			}
 		}
 
@@ -610,8 +600,7 @@ int xrdp_mm_connect(xrdpMm* self)
 		trans_delete(self->sesman_trans);
 		self->sesman_trans = trans_create(TRANS_MODE_TCP, 8192, 8192);
 		xrdp_mm_get_sesman_port(port, sizeof(port));
-		g_snprintf(text, 255, "connecting to sesman ip %s port %s", ip, port);
-		xrdp_wm_log_msg(self->wm, text);
+
 		/* xrdp_mm_sesman_data_in is the callback that is called when data arrives */
 		self->sesman_trans->trans_data_in = xrdp_mm_sesman_data_in;
 		self->sesman_trans->header_size = 8;
@@ -635,14 +624,11 @@ int xrdp_mm_connect(xrdpMm* self)
 		if (ok)
 		{
 			/* fully connect */
-			xrdp_wm_log_msg(self->wm, "sesman connect ok");
 			self->connected_state = 1;
 			rv = xrdp_mm_send_login(self);
 		}
 		else
 		{
-			g_snprintf(errstr, 255, "Failure to connect to sesman: %s port: %s", ip, port);
-			xrdp_wm_log_msg(self->wm, errstr);
 			log_message(LOG_LEVEL_ERROR, errstr);
 			trans_delete(self->sesman_trans);
 			self->sesman_trans = 0;
@@ -664,7 +650,6 @@ int xrdp_mm_connect(xrdpMm* self)
 				/* connect error */
 				g_snprintf(errstr, 255, "Failure to connect to: %s", ip);
 				log_message(LOG_LEVEL_ERROR, errstr);
-				xrdp_wm_log_msg(self->wm, errstr);
 				rv = 1; /* failure */
 			}
 		}

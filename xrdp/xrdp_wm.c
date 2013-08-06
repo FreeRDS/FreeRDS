@@ -340,6 +340,8 @@ int xrdp_wm_load_static_colors_plus(xrdpWm* self, char *autorun_name)
 	self->green      = HCOLOR(self->screen->bpp, 0x00ff00);
 	self->background = HCOLOR(self->screen->bpp, 0x000000);
 
+	self->hide_log_window = 1;
+
 	/* now load them from the globals in xrdp.ini if defined */
 	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
 	fd = g_file_open(cfg_file);
@@ -412,11 +414,6 @@ int xrdp_wm_load_static_colors_plus(xrdpWm* self, char *autorun_name)
 						{
 							g_strncpy(autorun_name, val, 255);
 						}
-					}
-					else if (g_strcasecmp(val, "hidelogwindow") == 0)
-					{
-						val = (char *)list_get_item(values, index);
-						self->hide_log_window = text2bool(val);
 					}
 					else if (g_strcasecmp(val, "pamerrortxt") == 0)
 					{
@@ -1473,63 +1470,6 @@ static int xrdp_wm_login_mode_changed(xrdpWm* self)
 	return 0;
 }
 
-/* this is the log windows nofity function */
-static int xrdp_wm_log_wnd_notify(xrdpBitmap *wnd, xrdpBitmap *sender, int msg, long param1, long param2)
-{
-	xrdpPainter *painter;
-	xrdpWm *wm;
-	xrdpRect rect;
-	int index;
-	char *text;
-
-	if (!wnd)
-		return 0;
-
-	if (!sender)
-		return 0;
-
-	if (!wnd->owner)
-		return 0;
-
-	wm = wnd->wm;
-
-	if (msg == 1) /* click */
-	{
-		if (sender->id == 1) /* ok button */
-		{
-			/* close the log window */
-			MAKERECT(rect, wnd->left, wnd->top, wnd->width, wnd->height);
-			xrdp_bitmap_delete(wnd);
-			xrdp_bitmap_invalidate(wm->screen, &rect);
-
-			/* if module is gone, reset the session when ok is clicked */
-			if (wm->mm->mod_handle == 0)
-			{
-				/* make sure autologin is off */
-				wm->session->settings->AutoLogonEnabled = 0;
-				xrdp_wm_set_login_mode(wm, 0); /* reset session */
-			}
-		}
-	}
-	else if (msg == WM_XRDP_PAINT) /* 3 */
-	{
-		painter = (xrdpPainter*) param1;
-
-		if (painter != 0)
-		{
-			painter->fg_color = wnd->wm->black;
-
-			for (index = 0; index < wnd->wm->log->count; index++)
-			{
-				text = (char *)list_get_item(wnd->wm->log, index);
-				xrdp_painter_draw_text(painter, wnd, 10, 30 + index * 15, text);
-			}
-		}
-	}
-
-	return 0;
-}
-
 void add_string_to_logwindow(char *msg, xrdpList *log)
 {
 	char* new_part_message;
@@ -1545,69 +1485,6 @@ void add_string_to_logwindow(char *msg, xrdpList *log)
 		current_pointer = current_pointer + g_strlen(new_part_message) ;
 	}
 	while ((processedlen < g_strlen(msg)) && (processedlen < DEFAULT_STRING_LEN));
-}
-
-int xrdp_wm_log_msg(xrdpWm* self, char *msg)
-{
-	xrdpBitmap *but;
-	int w;
-	int h;
-	int xoffset;
-	int yoffset;
-
-	if (self->hide_log_window)
-		return 0;
-
-	add_string_to_logwindow(msg, self->log);
-
-	if (self->log_wnd == 0)
-	{
-		w = DEFAULT_WND_LOG_W;
-		h = DEFAULT_WND_LOG_H;
-		xoffset = 10;
-		yoffset = 10;
-
-		if (self->screen->width < w)
-		{
-			w = self->screen->width - 4;
-			xoffset = 2;
-		}
-
-		if (self->screen->height < h)
-		{
-			h = self->screen->height - 4;
-			yoffset = 2;
-		}
-
-		/* log window */
-		self->log_wnd = xrdp_bitmap_create(w, h, self->screen->bpp, WND_TYPE_WND, self);
-		list_add_item(self->screen->child_list, (long)self->log_wnd);
-		self->log_wnd->parent = self->screen;
-		self->log_wnd->owner = self->screen;
-		self->log_wnd->bg_color = self->grey;
-		self->log_wnd->left = xoffset;
-		self->log_wnd->top = yoffset;
-		set_string(&(self->log_wnd->caption1), "Connection Log");
-		/* ok button */
-		but = xrdp_bitmap_create(DEFAULT_BUTTON_W, DEFAULT_BUTTON_H, self->screen->bpp, WND_TYPE_BUTTON, self);
-		list_insert_item(self->log_wnd->child_list, 0, (long)but);
-		but->parent = self->log_wnd;
-		but->owner = self->log_wnd;
-		but->left = (w - DEFAULT_BUTTON_W) - xoffset;
-		but->top = (h - DEFAULT_BUTTON_H) - yoffset;
-		but->id = 1;
-		but->tab_stop = 1;
-		set_string(&but->caption1, "OK");
-		self->log_wnd->focused_control = but;
-		/* set notify function */
-		self->log_wnd->notify = xrdp_wm_log_wnd_notify;
-	}
-
-	xrdp_wm_set_focused(self, self->log_wnd);
-	xrdp_bitmap_invalidate(self->log_wnd, 0);
-	g_sleep(100);
-
-	return 0;
 }
 
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount)

@@ -43,9 +43,6 @@ int xrdp_mm_send_login(xrdpMm* self)
 	char *name;
 	char *value;
 
-	xrdp_wm_log_msg(self->wm, "sending login info to session manager, "
-		"please wait...");
-
 	username = 0;
 	password = 0;
 	self->code = 0;
@@ -87,7 +84,6 @@ int xrdp_mm_send_login(xrdpMm* self)
 
 	if ((username == 0) || (password == 0))
 	{
-		xrdp_wm_log_msg(self->wm, "Error finding username and password");
 		return 1;
 	}
 
@@ -156,7 +152,7 @@ int xrdp_mm_send_login(xrdpMm* self)
 
 	if (rv != 0)
 	{
-		xrdp_wm_log_msg(self->wm, "xrdp_mm_send_login: xrdp_mm_send_login failed");
+
 	}
 
 	return rv;
@@ -177,9 +173,6 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 	if (ok)
 	{
 		self->display = display;
-		g_snprintf(text, 255, "xrdp_mm_process_login_response: login successful "
-			"for display %d", display);
-		xrdp_wm_log_msg(self->wm, text);
 
 		if (xrdp_mm_setup_mod1(self) == 0)
 		{
@@ -193,8 +186,6 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 	}
 	else
 	{
-		xrdp_wm_log_msg(self->wm, "xrdp_mm_process_login_response: "
-			"login failed");
 		log_message(LOG_LEVEL_INFO, "xrdp_mm_process_login_response: "
 			"login failed");
 	}

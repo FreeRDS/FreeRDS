@@ -489,7 +489,6 @@ int xrdp_wm_send_pointer(xrdpWm* self, int cache_idx, char* data, char* mask, in
 int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg);
 int callback(long id, int msg, long param1, long param2, long param3, long param4);
 int xrdp_wm_delete_all_childs(xrdpWm* self);
-int xrdp_wm_log_msg(xrdpWm* self, char* msg);
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount);
 int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
