@@ -496,9 +496,6 @@ int xrdp_wm_init(xrdpWm* self)
 			{
 				if (autorun_name[0] == 0)
 				{
-					/* if no domain is passed, and no autorun in xrdp.ini,
-                       use the first item in the xrdp.ini
-                       file thats not named 'globals' */
 					file_read_sections(fd, names);
 
 					for (index = 0; index < names->count; index++)
@@ -566,14 +563,8 @@ int xrdp_wm_init(xrdpWm* self)
 			log_message(LOG_LEVEL_ERROR,"xrdp_wm_init: Could not read xrdp.ini file %s", cfg_file);
 		}
 	}
-	else
-	{
-		xrdp_login_wnd_create(self);
-		/* clear screen */
-		xrdp_bitmap_invalidate(self->screen, 0);
-		xrdp_wm_set_focused(self, self->login_window);
-		xrdp_wm_set_login_mode(self, 1);
-	}
+
+	xrdp_wm_set_login_mode(self, 2); /* force "connected" mode */
 
 	return 0;
 }
@@ -945,24 +936,6 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 	return 0;
 }
 
-static int xrdp_wm_clear_popup(xrdpWm* self)
-{
-	int i;
-	xrdpRect rect;
-
-	if (self->popup_wnd != 0)
-	{
-		i = list_index_of(self->screen->child_list, (long)self->popup_wnd);
-		list_remove_item(self->screen->child_list, i);
-		MAKERECT(rect, self->popup_wnd->left, self->popup_wnd->top,
-				self->popup_wnd->width, self->popup_wnd->height);
-		xrdp_bitmap_invalidate(self->screen, &rect);
-		xrdp_bitmap_delete(self->popup_wnd);
-	}
-
-	return 0;
-}
-
 int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down)
 {
 	xrdpBitmap *control;
@@ -1011,172 +984,7 @@ int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down)
 		self->dragging = 0;
 	}
 
-	wnd = 0;
-	control = xrdp_wm_at_pos(self->screen, x, y, &wnd);
-
-	if (control == 0)
-	{
-		if (self->mm->mod != 0) /* if screen is mod controled */
-		{
-			if (self->mm->mod->client->Event != 0)
-			{
-				if (but == 1 && down)
-				{
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_LBUTTONDOWN, x, y, 0, 0);
-				}
-				else if (but == 1 && !down)
-				{
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_LBUTTONUP, x, y, 0, 0);
-				}
-
-				if (but == 2 && down)
-				{
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_RBUTTONDOWN, x, y, 0, 0);
-				}
-				else if (but == 2 && !down)
-				{
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_RBUTTONUP, x, y, 0, 0);
-				}
-
-				if (but == 3 && down)
-				{
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON3DOWN, x, y, 0, 0);
-				}
-				else if (but == 3 && !down)
-				{
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON3UP, x, y, 0, 0);
-				}
-
-				if (but == 4)
-				{
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON4DOWN,
-							self->mouse_x, self->mouse_y, 0, 0);
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON4UP,
-							self->mouse_x, self->mouse_y, 0, 0);
-				}
-
-				if (but == 5)
-				{
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON5DOWN,
-							self->mouse_x, self->mouse_y, 0, 0);
-					self->mm->mod->client->Event(self->mm->mod, WM_XRDP_BUTTON5UP,
-							self->mouse_x, self->mouse_y, 0, 0);
-				}
-			}
-		}
-	}
-
-	if (self->popup_wnd != 0)
-	{
-		if (self->popup_wnd == control && !down)
-		{
-			xrdp_bitmap_def_proc(self->popup_wnd, WM_XRDP_LBUTTONUP, x, y);
-			xrdp_wm_clear_popup(self);
-			self->button_down = 0;
-			return 0;
-		}
-		else if (self->popup_wnd != control && down)
-		{
-			xrdp_wm_clear_popup(self);
-			self->button_down = 0;
-			return 0;
-		}
-	}
-
-	if (control != 0)
-	{
-		if (wnd != 0)
-		{
-			if (wnd->modal_dialog != 0) /* if window has a modal dialog */
-			{
-				return 0;
-			}
-
-			if (control == wnd)
-			{
-			}
-			else if (control->tab_stop)
-			{
-				focus_out_control = wnd->focused_control;
-				wnd->focused_control = control;
-				xrdp_bitmap_invalidate(focus_out_control, 0);
-				xrdp_bitmap_invalidate(control, 0);
-			}
-		}
-
-		if ((control->type == WND_TYPE_BUTTON ||
-				control->type == WND_TYPE_COMBO) &&
-				but == 1 && !down && self->button_down == control)
-		{
-			/* if clicking up on a button that was clicked down */
-			self->button_down = 0;
-			control->state = 0;
-			xrdp_bitmap_invalidate(control, 0);
-
-			if (control->parent != 0)
-			{
-				if (control->parent->notify != 0)
-				{
-					/* control can be invalid after this */
-					control->parent->notify(control->owner, control, 1, x, y);
-				}
-			}
-		}
-		else if ((control->type == WND_TYPE_BUTTON ||
-				control->type == WND_TYPE_COMBO) &&
-				but == 1 && down)
-		{
-			/* if clicking down on a button or combo */
-			self->button_down = control;
-			control->state = 1;
-			xrdp_bitmap_invalidate(control, 0);
-
-			if (control->type == WND_TYPE_COMBO)
-			{
-				xrdp_wm_pu(self, control);
-			}
-		}
-		else if (but == 1 && down)
-		{
-			if (self->popup_wnd == 0)
-			{
-				xrdp_wm_set_focused(self, wnd);
-
-				if (control->type == WND_TYPE_WND && y < (control->top + 21))
-				{
-					/* if dragging */
-					if (self->dragging) /* rarely happens */
-					{
-						newx = self->draggingx - self->draggingdx;
-						newy = self->draggingy - self->draggingdy;
-
-						if (self->draggingxorstate)
-						{
-							xrdp_wm_xor_pat(self, newx, newy,
-									self->draggingcx, self->draggingcy);
-						}
-
-						self->draggingxorstate = 0;
-					}
-
-					self->dragging = 1;
-					self->dragging_window = control;
-					self->draggingorgx = control->left;
-					self->draggingorgy = control->top;
-					self->draggingx = x;
-					self->draggingy = y;
-					self->draggingdx = x - control->left;
-					self->draggingdy = y - control->top;
-					self->draggingcx = control->width;
-					self->draggingcy = control->height;
-				}
-			}
-		}
-	}
-	else
-	{
-		xrdp_wm_set_focused(self, 0);
-	}
+	xrdp_wm_set_focused(self, 0);
 
 	/* no matter what, mouse is up, reset button_down */
 	if (but == 1 && !down && self->button_down != 0)
@@ -1194,12 +1002,6 @@ int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code)
 
 	/*g_printf("count %d\n", self->key_down_list->count);*/
 	scan_code = scan_code % 128;
-
-	if (self->popup_wnd != 0)
-	{
-		xrdp_wm_clear_popup(self);
-		return 0;
-	}
 
 	if (device_flags & KBD_FLAGS_RELEASE) /* 0x8000 */
 	{
@@ -1281,33 +1083,6 @@ int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags)
 	return 0;
 }
 
-int xrdp_wm_pu(xrdpWm* self, xrdpBitmap *control)
-{
-	int x;
-	int y;
-
-	if (!self)
-		return 0;
-
-	if (!control)
-		return 0;
-
-	self->popup_wnd = xrdp_bitmap_create(control->width, DEFAULT_WND_SPECIAL_H,
-			self->screen->bpp, WND_TYPE_SPECIAL, self);
-	self->popup_wnd->popped_from = control;
-	self->popup_wnd->parent = self->screen;
-	self->popup_wnd->owner = self->screen;
-	x = xrdp_bitmap_to_screenx(control, 0);
-	y = xrdp_bitmap_to_screeny(control, 0);
-	self->popup_wnd->left = x;
-	self->popup_wnd->top = y + control->height;
-	self->popup_wnd->item_index = control->item_index;
-	list_insert_item(self->screen->child_list, 0, (long)self->popup_wnd);
-	xrdp_bitmap_invalidate(self->popup_wnd, 0);
-
-	return 0;
-}
-
 int xrdp_wm_process_input_mouse(xrdpWm* self, int device_flags, int x, int y)
 {
 	DEBUG(("mouse event flags %4.4x x %d y %d", device_flags, x, y));
@@ -1361,6 +1136,23 @@ int xrdp_wm_process_input_mouse(xrdpWm* self, int device_flags, int x, int y)
 	if (device_flags == 0x0380 || device_flags == 0x0388)
 	{
 		xrdp_wm_mouse_click(self, 0, 0, 5, 0);
+	}
+
+	return 0;
+}
+
+int xrdp_wm_delete_all_childs(xrdpWm* self)
+{
+	int index;
+	xrdpBitmap *b;
+	xrdpRect rect;
+
+	for (index = self->screen->child_list->count - 1; index >= 0; index--)
+	{
+		b = (xrdpBitmap*) list_get_item(self->screen->child_list, index);
+		MAKERECT(rect, b->left, b->top, b->width, b->height);
+		xrdp_bitmap_delete(b);
+		xrdp_bitmap_invalidate(self->screen, &rect);
 	}
 
 	return 0;
@@ -1447,21 +1239,11 @@ static int xrdp_wm_login_mode_changed(xrdpWm* self)
 	return 0;
 }
 
-void add_string_to_logwindow(char *msg, xrdpList *log)
+int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode)
 {
-	char* new_part_message;
-	char* current_pointer = msg;
-	int processedlen = 0;
-
-	do
-	{
-		new_part_message = g_strndup(current_pointer, LOG_WINDOW_CHAR_PER_LINE) ;
-		g_writeln(new_part_message);
-		list_add_item(log, (long) new_part_message);
-		processedlen = processedlen + g_strlen(new_part_message);
-		current_pointer = current_pointer + g_strlen(new_part_message) ;
-	}
-	while ((processedlen < g_strlen(msg)) && (processedlen < DEFAULT_STRING_LEN));
+	self->login_mode = login_mode;
+	SetEvent(self->LoginModeEvent);
+	return 0;
 }
 
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount)
@@ -1498,9 +1280,3 @@ int xrdp_wm_check_wait_objs(xrdpWm* self)
 	return status;
 }
 
-int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode)
-{
-	self->login_mode = login_mode;
-	SetEvent(self->LoginModeEvent);
-	return 0;
-}

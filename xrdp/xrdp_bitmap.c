@@ -185,19 +185,9 @@ void xrdp_bitmap_delete(xrdpBitmap *self)
 			self->wm->button_down = 0;
 		}
 
-		if (self->wm->popup_wnd == self)
-		{
-			self->wm->popup_wnd = 0;
-		}
-
 		if (self->wm->login_window == self)
 		{
 			self->wm->login_window = 0;
-		}
-
-		if (self->wm->log_wnd == self)
-		{
-			self->wm->log_wnd = 0;
 		}
 	}
 

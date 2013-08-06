@@ -478,7 +478,6 @@ int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down);
 int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y);
 int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code);
 int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
-int xrdp_wm_pu(xrdpWm* self, xrdpBitmap* control);
 int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg);
 int callback(long id, int msg, long param1, long param2, long param3, long param4);
 int xrdp_wm_delete_all_childs(xrdpWm* self);
@@ -585,9 +584,6 @@ wchar_t get_char_from_scan_code(int device_flags, int scan_code, int* keys,
 		int caps_lock, int num_lock, int scroll_lock,
 		xrdpKeymap* keymap);
 int get_keymaps(int keylayout, xrdpKeymap* keymap);
-
-/* xrdp_login_wnd.c */
-int xrdp_login_wnd_create(xrdpWm* self);
 
 /* xrdp_bitmap_compress.c */
 int xrdp_bitmap_compress(char* in_data, int width, int height,
