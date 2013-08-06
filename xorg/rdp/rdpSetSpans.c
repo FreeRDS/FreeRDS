@@ -82,20 +82,10 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 		{
 			post_process = 1;
 
-			if (g_do_dirty_os)
-			{
-				LLOGLN(10, ("rdpSetSpans: getting dirty"));
-				pDstPriv->is_dirty = 1;
-				//pDirtyPriv = pDstPriv;
-				dirty_type = RDI_IMGLY;
-			}
-			else
-			{
-				rdpup_switch_os_surface(pDstPriv->rdpindex);
-				reset_surface = 1;
-				rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-				got_id = 1;
-			}
+			rdpup_switch_os_surface(pDstPriv->rdpindex);
+			reset_surface = 1;
+			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
+			got_id = 1;
 		}
 	}
 	else

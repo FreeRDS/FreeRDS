@@ -50,19 +50,16 @@ static int g_rdpindex = -1;
 
 static BYTE* pfbBackBufferMemory = NULL;
 
-extern DevPrivateKeyRec g_rdpWindowIndex; /* from rdpmain.c */
-extern ScreenPtr g_pScreen; /* from rdpmain.c */
-extern int g_Bpp; /* from rdpmain.c */
-extern int g_Bpp_mask; /* from rdpmain.c */
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
-extern int g_use_rail; /* from rdpmain.c */
-
-/* true is to use unix domain socket */
-extern int g_use_uds; /* in rdpmain.c */
-extern char g_uds_data[]; /* in rdpmain.c */
-extern int g_do_dirty_ons; /* in rdpmain.c */
-extern rdpPixmapRec g_screenPriv; /* in rdpmain.c */
-extern int g_con_number; /* in rdpmain.c */
+extern DevPrivateKeyRec g_rdpWindowIndex;
+extern ScreenPtr g_pScreen;
+extern int g_Bpp;
+extern int g_Bpp_mask;
+extern rdpScreenInfoRec g_rdpScreen;
+extern int g_use_rail;
+extern int g_use_uds;
+extern char g_uds_data[];
+extern rdpPixmapRec g_screenPriv;
+extern int g_con_number;
 
 struct rdpup_os_bitmap
 {
@@ -608,14 +605,7 @@ static CARD32 rdpDeferredUpdateCallback(OsTimerPtr timer, CARD32 now, pointer ar
 {
 	LLOGLN(10, ("rdpDeferredUpdateCallback"));
 
-	if (g_do_dirty_ons)
-	{
-		rdpup_check_dirty_screen(&g_screenPriv);
-	}
-	else
-	{
-		rdpup_send_pending();
-	}
+	rdpup_send_pending();
 
 	g_scheduled = 0;
 	return 0;
@@ -1227,19 +1217,8 @@ int rdpup_end_update(void)
 
 	if (g_connected && g_begin)
 	{
-		if (g_do_dirty_ons)
-		{
-			rdpup_send_pending();
-		}
-		else
-		{
-#if 0
-			rdpScheduleDeferredUpdate();
-#else
-			msg.type = XRDP_SERVER_END_UPDATE;
-			rdpup_update((XRDP_MSG_COMMON*) &msg);
-#endif
-		}
+		msg.type = XRDP_SERVER_END_UPDATE;
+		rdpup_update((XRDP_MSG_COMMON*) &msg);
 	}
 
 	return 0;

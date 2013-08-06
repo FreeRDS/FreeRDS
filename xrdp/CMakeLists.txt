@@ -46,15 +46,6 @@ set(${MODULE_PREFIX}_SRCS
 set(${MODULE_PREFIX}_CFG_DATA
 	xrdp.ini)
 
-set(${MODULE_PREFIX}_SHARE_DATA
-	ad24b.bmp
-	ad256.bmp
-	xrdp24b.bmp
-	xrdp256.bmp
-	sans-10.fv1
-	cursor0.cur
-	cursor1.cur)
-
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-core)
@@ -81,5 +72,4 @@ target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
 
 install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${XRDP_CFG_PATH})
-install(FILES ${${MODULE_PREFIX}_SHARE_DATA} DESTINATION ${XRDP_SHARE_PATH})
 

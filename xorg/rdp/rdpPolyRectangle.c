@@ -32,9 +32,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 extern DevPrivateKeyRec g_rdpGCIndex;
 extern DevPrivateKeyRec g_rdpPixmapIndex;
-
-extern int g_do_dirty_os;
-extern int g_do_dirty_ons;
 extern rdpPixmapRec g_screenPriv;
 
 extern GCOps g_rdpGCOps;
@@ -104,20 +101,10 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 		{
 			post_process = 1;
 
-			if (g_do_dirty_os)
-			{
-				LLOGLN(10, ("rdpPolyRectangle: getting dirty"));
-				pDstPriv->is_dirty = 1;
-				pDirtyPriv = pDstPriv;
-				dirty_type = RDI_IMGLL;
-			}
-			else
-			{
-				rdpup_switch_os_surface(pDstPriv->rdpindex);
-				reset_surface = 1;
-				rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-				got_id = 1;
-			}
+			rdpup_switch_os_surface(pDstPriv->rdpindex);
+			reset_surface = 1;
+			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
+			got_id = 1;
 		}
 	}
 	else
@@ -130,18 +117,8 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 			{
 				post_process = 1;
 
-				if (g_do_dirty_ons)
-				{
-					LLOGLN(0, ("rdpPolyRectangle: getting dirty"));
-					g_screenPriv.is_dirty = 1;
-					pDirtyPriv = &g_screenPriv;
-					dirty_type = RDI_IMGLL;
-				}
-				else
-				{
-					rdpup_get_screen_image_rect(&id);
-					got_id = 1;
-				}
+				rdpup_get_screen_image_rect(&id);
+				got_id = 1;
 			}
 		}
 	}

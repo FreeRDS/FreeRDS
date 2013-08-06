@@ -52,18 +52,16 @@ Xserver drawing ops and funcs
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpGCIndex; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpWindowIndex; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpPixmapIndex; /* from rdpmain.c */
-extern ScreenPtr g_pScreen; /* from rdpmain.c */
-extern Bool g_wrapPixmap; /* from rdpmain.c */
-extern WindowPtr g_invalidate_window; /* in rdpmain.c */
-extern int g_use_rail; /* in rdpmain.c */
-extern int g_do_dirty_os; /* in rdpmain.c */
-extern int g_do_dirty_ons; /* in rdpmain.c */
-extern rdpPixmapRec g_screenPriv; /* in rdpmain.c */
-extern int g_con_number; /* in rdpmain.c */
+extern rdpScreenInfoRec g_rdpScreen;
+extern DevPrivateKeyRec g_rdpGCIndex;
+extern DevPrivateKeyRec g_rdpWindowIndex;
+extern DevPrivateKeyRec g_rdpPixmapIndex;
+extern ScreenPtr g_pScreen;
+extern Bool g_wrapPixmap;
+extern WindowPtr g_invalidate_window;
+extern int g_use_rail;
+extern rdpPixmapRec g_screenPriv;
+extern int g_con_number;
 
 ColormapPtr g_rdpInstalledColormap;
 
@@ -728,27 +726,12 @@ int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
 				box.x2 = width;
 				box.y2 = height;
 
-				if (g_do_dirty_os)
-				{
-					if (priv->con_number != g_con_number)
-					{
-						draw_item_remove_all(priv);
-						RegionInit(&reg1, &box, 0);
-						draw_item_add_img_region(priv, &reg1, GXcopy, RDI_IMGLL);
-						RegionUninit(&reg1);
-						priv->is_dirty = 1;
-						priv->con_number = g_con_number;
-					}
-				}
-				else
-				{
-					rdpup_get_pixmap_image_rect(pix, &id);
-					rdpup_switch_os_surface(priv->rdpindex);
-					rdpup_begin_update();
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-					rdpup_end_update();
-					rdpup_switch_os_surface(-1);
-				}
+				rdpup_get_pixmap_image_rect(pix, &id);
+				rdpup_switch_os_surface(priv->rdpindex);
+				rdpup_begin_update();
+				rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdpup_end_update();
+				rdpup_switch_os_surface(-1);
 
 				return 1;
 			}
@@ -978,53 +961,45 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 	dx = pWin->drawable.x - ptOldOrg.x;
 	dy = pWin->drawable.y - ptOldOrg.y;
 
-	if (g_do_dirty_ons)
+	rdpup_begin_update();
+	num_clip_rects = REGION_NUM_RECTS(&clip);
+	num_reg_rects = REGION_NUM_RECTS(&reg);
+
+	/* should maybe sort the rects instead of checking dy < 0 */
+	/* If we can depend on the rects going from top to bottom, left to right we are ok */
+	if (dy < 0 || (dy == 0 && dx < 0))
 	{
-		LLOGLN(0, ("rdpCopyWindow: getting dirty TODO"));
-		//draw_item_add_srcblt_region
+		for (j = 0; j < num_clip_rects; j++)
+		{
+			box1 = REGION_RECTS(&clip)[j];
+			rdpup_set_clip(box1.x1, box1.y1, box1.x2 - box1.x1, box1.y2 - box1.y1);
+
+			for (i = 0; i < num_reg_rects; i++)
+			{
+				box2 = REGION_RECTS(&reg)[i];
+				rdpup_screen_blt(box2.x1 + dx, box2.y1 + dy, box2.x2 - box2.x1,
+						box2.y2 - box2.y1, box2.x1, box2.y1);
+			}
+		}
 	}
 	else
 	{
-		rdpup_begin_update();
-		num_clip_rects = REGION_NUM_RECTS(&clip);
-		num_reg_rects = REGION_NUM_RECTS(&reg);
-
-		/* should maybe sort the rects instead of checking dy < 0 */
-		/* If we can depend on the rects going from top to bottom, left to right we are ok */
-		if (dy < 0 || (dy == 0 && dx < 0))
+		for (j = num_clip_rects - 1; j >= 0; j--)
 		{
-			for (j = 0; j < num_clip_rects; j++)
-			{
-				box1 = REGION_RECTS(&clip)[j];
-				rdpup_set_clip(box1.x1, box1.y1, box1.x2 - box1.x1, box1.y2 - box1.y1);
+			box1 = REGION_RECTS(&clip)[j];
+			rdpup_set_clip(box1.x1, box1.y1, box1.x2 - box1.x1, box1.y2 - box1.y1);
 
-				for (i = 0; i < num_reg_rects; i++)
-				{
-					box2 = REGION_RECTS(&reg)[i];
-					rdpup_screen_blt(box2.x1 + dx, box2.y1 + dy, box2.x2 - box2.x1,
-							box2.y2 - box2.y1, box2.x1, box2.y1);
-				}
+			for (i = num_reg_rects - 1; i >= 0; i--)
+			{
+				box2 = REGION_RECTS(&reg)[i];
+				rdpup_screen_blt(box2.x1 + dx, box2.y1 + dy, box2.x2 - box2.x1,
+						box2.y2 - box2.y1, box2.x1, box2.y1);
 			}
 		}
-		else
-		{
-			for (j = num_clip_rects - 1; j >= 0; j--)
-			{
-				box1 = REGION_RECTS(&clip)[j];
-				rdpup_set_clip(box1.x1, box1.y1, box1.x2 - box1.x1, box1.y2 - box1.y1);
-
-				for (i = num_reg_rects - 1; i >= 0; i--)
-				{
-					box2 = REGION_RECTS(&reg)[i];
-					rdpup_screen_blt(box2.x1 + dx, box2.y1 + dy, box2.x2 - box2.x1,
-							box2.y2 - box2.y1, box2.x1, box2.y1);
-				}
-			}
-		}
-
-		rdpup_reset_clip();
-		rdpup_end_update();
 	}
+
+	rdpup_reset_clip();
+	rdpup_end_update();
 
 	RegionUninit(&reg);
 	RegionUninit(&clip);
@@ -1061,22 +1036,15 @@ void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool gener
 		RegionInit(&reg, &box, 0);
 		RegionIntersect(&reg, &reg, &pWin->clipList);
 
-		if (g_do_dirty_ons)
-		{
-			draw_item_add_img_region(&g_screenPriv, &reg, GXcopy, RDI_IMGLL);
-		}
-		else
-		{
-			rdpup_begin_update();
+		rdpup_begin_update();
 
-			for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
-			{
-				box = REGION_RECTS(&reg)[j];
-				rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-			}
-
-			rdpup_end_update();
+		for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
+		{
+			box = REGION_RECTS(&reg)[j];
+			rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 		}
+
+		rdpup_end_update();
 
 		RegionUninit(&reg);
 	}
@@ -1094,28 +1062,18 @@ RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 	LLOGLN(0, ("in rdpRestoreAreas"));
 	RegionInit(&reg, NullBox, 0);
 	RegionCopy(&reg, prgnExposed);
-	//g_pScreen->RestoreAreas = g_rdpScreen.RestoreAreas;
-	//rv = g_pScreen->RestoreAreas(pWin, prgnExposed);
 
-	if (g_do_dirty_ons)
+	rdpup_begin_update();
+
+	for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
 	{
-		draw_item_add_img_region(&g_screenPriv, &reg, GXcopy, RDI_IMGLL);
+		box = REGION_RECTS(&reg)[j];
+		rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 	}
-	else
-	{
-		rdpup_begin_update();
 
-		for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
-		{
-			box = REGION_RECTS(&reg)[j];
-			rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-		}
-
-		rdpup_end_update();
-	}
+	rdpup_end_update();
 
 	RegionUninit(&reg);
-	//g_pScreen->RestoreAreas = rdpRestoreAreas;
 
 	return rv;
 }
@@ -1220,22 +1178,11 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 		{
 			post_process = 1;
 
-			if (g_do_dirty_os)
-			{
-				LLOGLN(10, ("rdpComposite: getting dirty"));
-				pDstPriv->is_dirty = 1;
-				dirty_type = g_doing_font ? RDI_IMGLL : RDI_IMGLY;
-				pDirtyPriv = pDstPriv;
-
-			}
-			else
-			{
-				rdpup_switch_os_surface(pDstPriv->rdpindex);
-				reset_surface = 1;
-				rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-				got_id = 1;
-				LLOGLN(10, ("rdpComposite: offscreen"));
-			}
+			rdpup_switch_os_surface(pDstPriv->rdpindex);
+			reset_surface = 1;
+			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
+			got_id = 1;
+			LLOGLN(10, ("rdpComposite: offscreen"));
 		}
 	}
 	else
@@ -1248,19 +1195,9 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 			{
 				post_process = 1;
 
-				if (g_do_dirty_ons)
-				{
-					LLOGLN(0, ("rdpComposite: getting dirty"));
-					g_screenPriv.is_dirty = 1;
-					pDirtyPriv = &g_screenPriv;
-					dirty_type = RDI_IMGLL;
-				}
-				else
-				{
-					rdpup_get_screen_image_rect(&id);
-					got_id = 1;
-					LLOGLN(10, ("rdpComposite: screen"));
-				}
+				rdpup_get_screen_image_rect(&id);
+				got_id = 1;
+				LLOGLN(10, ("rdpComposite: screen"));
 			}
 		}
 	}
