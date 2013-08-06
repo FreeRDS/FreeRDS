@@ -1769,80 +1769,44 @@ int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg)
 
 char* xrdp_get_msg_type_string(UINT32 type)
 {
-	switch (type)
+	XRDP_MSG_DEFINITION* msgDef;
+
+	msgDef = XRDP_SERVER_MSG_DEFINITIONS[type];
+
+	if (msgDef)
 	{
-		case XRDP_SERVER_BEGIN_UPDATE:
-			return "BeginUpdate";
-			break;
-
-		case XRDP_SERVER_END_UPDATE:
-			return "EndUpdate";
-			break;
-
-		case XRDP_SERVER_OPAQUE_RECT:
-			return "OpaqueRect";
-			break;
-
-		case XRDP_SERVER_SCREEN_BLT:
-			return "ScreenBlt";
-			break;
-
-		case XRDP_SERVER_PATBLT:
-			return "PatBlt";
-			break;
-
-		case XRDP_SERVER_DSTBLT:
-			return "DstBlt";
-			break;
-
-		case XRDP_SERVER_PAINT_RECT:
-			return "PaintRect";
-			break;
-
-		case XRDP_SERVER_SET_CLIPPING_REGION:
-			return "SetClippingRegion";
-			break;
-
-		case XRDP_SERVER_LINE_TO:
-			return "LineTo";
-			break;
-
-		case XRDP_SERVER_SET_POINTER:
-			return "SetPointer";
-			break;
-
-		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:
-			return "CreateOffscreenSurface";
-			break;
-
-		case XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE:
-			return "SwitchOffscreenSurface";
-			break;
-
-		case XRDP_SERVER_DELETE_OFFSCREEN_SURFACE:
-			return "DeleteOffscreenSurface";
-			break;
-
-		case XRDP_SERVER_PAINT_OFFSCREEN_SURFACE:
-			return "PaintOffscreenSurface";
-			break;
-
-		case XRDP_SERVER_WINDOW_NEW_UPDATE:
-			return "WindowNewUpdate";
-			break;
-
-		case XRDP_SERVER_WINDOW_DELETE:
-			return "WindowDelete";
-			break;
-
-		case XRDP_SERVER_SHARED_FRAMEBUFFER:
-			return "SharedFrameBuffer";
-			break;
-
-		default:
-			return "Unknown";
-			break;
+		if (msgDef->name)
+			return (char*) msgDef->name;
 	}
 
 	return "Unknown";
+}
+
+void* xrdp_server_message_copy(XRDP_MSG_COMMON* msg)
+{
+	void* dup = NULL;
+	XRDP_MSG_DEFINITION* msgDef;
+
+	msgDef = XRDP_SERVER_MSG_DEFINITIONS[msg->type];
+
+	if (msgDef)
+	{
+		if (msgDef->Copy)
+			dup = msgDef->Copy(msg);
+	}
+
+	return dup;
+}
+
+void xrdp_server_message_free(XRDP_MSG_COMMON* msg)
+{
+	XRDP_MSG_DEFINITION* msgDef;
+
+	msgDef = XRDP_SERVER_MSG_DEFINITIONS[msg->type];
+
+	if (msgDef)
+	{
+		if (msgDef->Free)
+			msgDef->Free(msg);
+	}
 }

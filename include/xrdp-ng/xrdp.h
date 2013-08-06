@@ -451,6 +451,9 @@ extern "C" {
 FREERDP_API int xrdp_prepare_msg(wStream* s, XRDP_MSG_COMMON* msg);
 FREERDP_API char* xrdp_get_msg_type_string(UINT32 type);
 
+FREERDP_API void* xrdp_server_message_copy(XRDP_MSG_COMMON* msg);
+FREERDP_API void xrdp_server_message_free(XRDP_MSG_COMMON* msg);
+
 FREERDP_API int xrdp_read_begin_update(wStream* s, XRDP_MSG_BEGIN_UPDATE* msg);
 FREERDP_API int xrdp_write_begin_update(wStream* s, XRDP_MSG_BEGIN_UPDATE* msg);
 
