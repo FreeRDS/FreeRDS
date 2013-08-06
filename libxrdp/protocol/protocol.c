@@ -33,10 +33,10 @@ int xrdp_read_common_header(wStream* s, XRDP_MSG_COMMON* msg)
 
 	if (msg->msgFlags & XRDP_MSG_FLAG_RECT)
 	{
-		Stream_Read_UINT32(s, msg->rect.left);
-		Stream_Read_UINT32(s, msg->rect.top);
-		Stream_Read_UINT32(s, msg->rect.right);
-		Stream_Read_UINT32(s, msg->rect.bottom);
+		Stream_Read_UINT32(s, msg->rect.x);
+		Stream_Read_UINT32(s, msg->rect.y);
+		Stream_Read_UINT32(s, msg->rect.width);
+		Stream_Read_UINT32(s, msg->rect.height);
 	}
 
 	return 0;
@@ -56,10 +56,10 @@ int xrdp_write_common_header(wStream* s, XRDP_MSG_COMMON* msg)
 
 	if (msg->msgFlags & XRDP_MSG_FLAG_RECT)
 	{
-		Stream_Write_UINT32(s, msg->rect.left);
-		Stream_Write_UINT32(s, msg->rect.top);
-		Stream_Write_UINT32(s, msg->rect.right);
-		Stream_Write_UINT32(s, msg->rect.bottom);
+		Stream_Write_UINT32(s, msg->rect.x);
+		Stream_Write_UINT32(s, msg->rect.y);
+		Stream_Write_UINT32(s, msg->rect.width);
+		Stream_Write_UINT32(s, msg->rect.height);
 	}
 
 	return 0;
@@ -236,10 +236,10 @@ int xrdp_write_opaque_rect(wStream* s, XRDP_MSG_OPAQUE_RECT* msg)
 	if (!s)
 		return msg->length;
 
-	msg->rect.left = msg->nLeftRect;
-	msg->rect.top = msg->nTopRect;
-	msg->rect.right = msg->nLeftRect + msg->nWidth - 1;
-	msg->rect.bottom = msg->nTopRect + msg->nHeight - 1;
+	msg->rect.x = msg->nLeftRect;
+	msg->rect.y = msg->nTopRect;
+	msg->rect.width = msg->nWidth;
+	msg->rect.height = msg->nHeight;
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
@@ -272,10 +272,10 @@ int xrdp_write_screen_blt(wStream* s, XRDP_MSG_SCREEN_BLT* msg)
 	if (!s)
 		return msg->length;
 
-	msg->rect.left = msg->nLeftRect;
-	msg->rect.top = msg->nTopRect;
-	msg->rect.right = msg->nLeftRect + msg->nWidth - 1;
-	msg->rect.bottom = msg->nTopRect + msg->nHeight - 1;
+	msg->rect.x = msg->nLeftRect;
+	msg->rect.y = msg->nTopRect;
+	msg->rect.width = msg->nWidth;
+	msg->rect.height = msg->nHeight;
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
@@ -318,10 +318,10 @@ int xrdp_write_patblt(wStream* s, XRDP_MSG_PATBLT* msg)
 	if (!s)
 		return msg->length;
 
-	msg->rect.left = msg->nLeftRect;
-	msg->rect.top = msg->nTopRect;
-	msg->rect.right = msg->nLeftRect + msg->nWidth - 1;
-	msg->rect.bottom = msg->nTopRect + msg->nHeight - 1;
+	msg->rect.x = msg->nLeftRect;
+	msg->rect.y = msg->nTopRect;
+	msg->rect.width = msg->nWidth;
+	msg->rect.height = msg->nHeight;
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
@@ -363,10 +363,10 @@ int xrdp_write_dstblt(wStream* s, XRDP_MSG_DSTBLT* msg)
 	if (!s)
 		return msg->length;
 
-	msg->rect.left = msg->nLeftRect;
-	msg->rect.top = msg->nTopRect;
-	msg->rect.right = msg->nLeftRect + msg->nWidth - 1;
-	msg->rect.bottom = msg->nTopRect + msg->nHeight - 1;
+	msg->rect.x = msg->nLeftRect;
+	msg->rect.y = msg->nTopRect;
+	msg->rect.width = msg->nWidth;
+	msg->rect.height = msg->nHeight;
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 
@@ -418,10 +418,10 @@ int xrdp_write_paint_rect(wStream* s, XRDP_MSG_PAINT_RECT* msg)
 	if (!s)
 		return msg->length;
 
-	msg->rect.left = msg->nLeftRect;
-	msg->rect.top = msg->nTopRect;
-	msg->rect.right = msg->nLeftRect + msg->nWidth - 1;
-	msg->rect.bottom = msg->nTopRect + msg->nHeight - 1;
+	msg->rect.x = msg->nLeftRect;
+	msg->rect.y = msg->nTopRect;
+	msg->rect.width = msg->nWidth;
+	msg->rect.height = msg->nHeight;
 
 	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
 

@@ -33,6 +33,8 @@
 
 #include <xrdp-ng/xrdp.h>
 
+#include <pixman.h>
+
 #include "trans.h"
 #include "list.h"
 

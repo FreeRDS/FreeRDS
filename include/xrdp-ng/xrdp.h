@@ -34,10 +34,10 @@
 
 struct _XRDP_RECT
 {
-	UINT32 left;
-	UINT32 top;
-	UINT32 right;
-	UINT32 bottom;
+	INT32 x;
+	INT32 y;
+	UINT32 width;
+	UINT32 height;
 };
 typedef struct _XRDP_RECT XRDP_RECT;
 
