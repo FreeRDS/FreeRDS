@@ -157,9 +157,6 @@ struct _rdpScreenInfoRec
 	int NSCodec;
 	int RemoteFX;
 	int CodecMode;
-	int OffscreenSupportLevel;
-	int OffscreenCacheSize;
-	int OffscreenCacheEntries;
 	int RailSupportLevel;
 	int PointerFlags;
 };
@@ -212,8 +209,6 @@ typedef rdpPixmapRec* rdpPixmapPtr;
 #define GETPIXPRIV(_pPixmap) \
 		(rdpPixmapPtr)dixGetPrivateAddr(&(_pPixmap->devPrivates), &g_rdpPixmapIndex)
 
-#define XRDP_IS_OS(_priv) (_priv->status != 0)
-
 /* rdpmisc.c */
 
 #include "os_calls.h"
@@ -228,7 +223,6 @@ Bool rdpCloseScreen(int i, ScreenPtr pScreen);
 
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint);
 Bool rdpDestroyPixmap(PixmapPtr pPixmap);
-int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv);
 Bool rdpCreateWindow(WindowPtr pWindow);
 Bool rdpDestroyWindow(WindowPtr pWindow);
 Bool rdpPositionWindow(WindowPtr pWindow, int x, int y);

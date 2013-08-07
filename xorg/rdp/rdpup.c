@@ -43,8 +43,6 @@ static wStream* g_in_s = 0;
 static int g_button_mask = 0;
 static int g_cursor_x = 0;
 static int g_cursor_y = 0;
-static OsTimerPtr g_timer = 0;
-static int g_scheduled = 0;
 static int g_count = 0;
 static int g_rdpindex = -1;
 
@@ -58,7 +56,6 @@ extern rdpScreenInfoRec g_rdpScreen;
 extern int g_use_rail;
 extern int g_use_uds;
 extern char g_uds_data[];
-extern rdpPixmapRec g_screenPriv;
 extern int g_con_number;
 
 struct rdpup_os_bitmap
@@ -68,10 +65,6 @@ struct rdpup_os_bitmap
 	rdpPixmapPtr priv;
 	int stamp;
 };
-
-static struct rdpup_os_bitmap *g_os_bitmaps = 0;
-static int g_max_os_bitmaps = 0;
-static int g_os_bitmap_stamp = 0;
 
 static int g_pixmap_byte_total = 0;
 static int g_pixmap_num_used = 0;
@@ -379,8 +372,6 @@ static int get_single_color(struct image_data *id, int x, int y, int w, int h)
 
 static int rdpup_disconnect(void)
 {
-	int index;
-
 	RemoveEnabledDevice(g_sck);
 	g_connected = 0;
 	g_tcp_close(g_sck);
@@ -389,125 +380,19 @@ static int rdpup_disconnect(void)
 	g_pixmap_byte_total = 0;
 	g_pixmap_num_used = 0;
 	g_rdpindex = -1;
-
-	if (g_max_os_bitmaps > 0)
-	{
-		for (index = 0; index < g_max_os_bitmaps; index++)
-		{
-			if (g_os_bitmaps[index].used)
-			{
-				if (g_os_bitmaps[index].priv != 0)
-				{
-					g_os_bitmaps[index].priv->status = 0;
-				}
-			}
-		}
-	}
-
-	g_max_os_bitmaps = 0;
-	free(g_os_bitmaps);
-	g_os_bitmaps = 0;
 	g_use_rail = 0;
+
 	return 0;
 }
 
 int rdpup_add_os_bitmap(PixmapPtr pixmap, rdpPixmapPtr priv)
 {
-	int index;
-	int rv;
-	int oldest;
-	int oldest_index;
-
-	if (!g_connected)
-	{
-		return -1;
-	}
-
-	if (g_os_bitmaps == 0)
-	{
-		return -1;
-	}
-
-	rv = -1;
-	index = 0;
-
-	while (index < g_max_os_bitmaps)
-	{
-		if (g_os_bitmaps[index].used == 0)
-		{
-			g_os_bitmaps[index].used = 1;
-			g_os_bitmaps[index].pixmap = pixmap;
-			g_os_bitmaps[index].priv = priv;
-			g_os_bitmaps[index].stamp = g_os_bitmap_stamp;
-			g_os_bitmap_stamp++;
-			g_pixmap_num_used++;
-			rv = index;
-			break;
-		}
-
-		index++;
-	}
-
-	if (rv == -1)
-	{
-		/* find oldest */
-		oldest = 0x7fffffff;
-		oldest_index = 0;
-		index = 0;
-
-		while (index < g_max_os_bitmaps)
-		{
-			if (g_os_bitmaps[index].stamp < oldest)
-			{
-				oldest = g_os_bitmaps[index].stamp;
-				oldest_index = index;
-			}
-
-			index++;
-		}
-
-		LLOGLN(10, ("rdpup_add_os_bitmap: evicting old, oldest_index %d", oldest_index));
-		/* evict old */
-		g_os_bitmaps[oldest_index].priv->status = 0;
-		g_os_bitmaps[oldest_index].priv->con_number = 0;
-		/* set new */
-		g_os_bitmaps[oldest_index].pixmap = pixmap;
-		g_os_bitmaps[oldest_index].priv = priv;
-		g_os_bitmaps[oldest_index].stamp = g_os_bitmap_stamp;
-		g_os_bitmap_stamp++;
-		rv = oldest_index;
-	}
-
-	LLOGLN(10, ("rdpup_add_os_bitmap: new bitmap index %d", rv));
-	LLOGLN(10, ("  g_pixmap_num_used %d", g_pixmap_num_used));
-	return rv;
+	return -1;
 }
 
 int rdpup_remove_os_bitmap(int rdpindex)
 {
-	LLOGLN(10, ("rdpup_remove_os_bitmap: index %d stamp %d",
-			rdpindex, g_os_bitmaps[rdpindex].stamp));
-
-	if (g_os_bitmaps == 0)
-	{
-		return 1;
-	}
-
-	if ((rdpindex < 0) && (rdpindex >= g_max_os_bitmaps))
-	{
-		return 1;
-	}
-
-	if (g_os_bitmaps[rdpindex].used)
-	{
-		g_os_bitmaps[rdpindex].used = 0;
-		g_os_bitmaps[rdpindex].pixmap = 0;
-		g_os_bitmaps[rdpindex].priv = 0;
-		g_pixmap_num_used--;
-	}
-
-	LLOGLN(10, ("  g_pixmap_num_used %d", g_pixmap_num_used));
-	return 0;
+	return 1;
 }
 
 /* returns error */
@@ -518,9 +403,7 @@ static int rdpup_send(BYTE* data, int len)
 	LLOGLN(10, ("rdpup_send - sending %d bytes", len));
 
 	if (g_sck_closed)
-	{
 		return 1;
-	}
 
 	while (len > 0)
 	{
@@ -585,21 +468,6 @@ static int rdpup_send_msg(wStream* s)
 }
 
 int rdpup_update(XRDP_MSG_COMMON* msg);
-
-static int rdpup_send_pending(void)
-{
-	XRDP_MSG_END_UPDATE msg;
-
-	if (g_connected && g_begin)
-	{
-		LLOGLN(10, ("end %d", g_count));
-
-		msg.type = XRDP_SERVER_END_UPDATE;
-		rdpup_update((XRDP_MSG_COMMON*) &msg);
-	}
-
-	return 0;
-}
 
 /* returns error */
 static int rdpup_recv(BYTE* data, int len)
@@ -781,34 +649,11 @@ static int rdpup_process_capabilities_msg(wStream* s)
 	g_rdpScreen.RemoteFX = (msg.SupportedCodecs & XRDP_CODEC_REMOTEFX) ? TRUE : FALSE;
 	g_rdpScreen.CodecMode = msg.SupportedCodecs ? TRUE : FALSE;
 
-	g_rdpScreen.OffscreenSupportLevel = msg.OffscreenSupportLevel;
-	g_rdpScreen.OffscreenCacheSize = msg.OffscreenCacheSize;
-	g_rdpScreen.OffscreenCacheEntries = msg.OffscreenCacheEntries;
-
 	g_rdpScreen.RailSupportLevel = msg.RailSupportLevel;
 	g_rdpScreen.PointerFlags = msg.PointerFlags;
 
 	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
 			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
-
-	if (!g_rdpScreen.CodecMode)
-	{
-		if (g_rdpScreen.OffscreenSupportLevel > 0)
-		{
-			if (g_rdpScreen.OffscreenCacheEntries > 0)
-			{
-				g_max_os_bitmaps = g_rdpScreen.OffscreenCacheEntries;
-				free(g_os_bitmaps);
-				g_os_bitmaps = (struct rdpup_os_bitmap*)
-					       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
-			}
-		}
-	}
-	else
-	{
-		g_os_bitmaps = NULL;
-		g_max_os_bitmaps = 0;
-	}
 
 	if (g_rdpScreen.RailSupportLevel > 0)
 	{

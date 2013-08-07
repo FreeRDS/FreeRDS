@@ -60,7 +60,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	int down;
 	int got_id;
 	int post_process;
-	int reset_surface;
 	xRectangle *regRects;
 	xRectangle *r;
 	xRectangle *rect1;
@@ -85,23 +84,12 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	rdpPolyRectangleOrg(pDrawable, pGC, nrects, rects);
 
 	post_process = 0;
-	reset_surface = 0;
 	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
 		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
 	}
 	else
 	{
@@ -256,9 +244,4 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	RegionUninit(&clip_reg);
 	free(regRects);
 	free(rect1);
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
-	}
 }

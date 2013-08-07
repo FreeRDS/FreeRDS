@@ -56,7 +56,6 @@ void rdpPolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC,
 	int j;
 	int got_id;
 	int post_process;
-	int reset_surface;
 	BoxRec box;
 	struct image_data id;
 	WindowPtr pDstWnd;
@@ -74,23 +73,12 @@ void rdpPolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC,
 	rdpPolyGlyphBltOrg(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
 	post_process = 0;
-	reset_surface = 0;
 	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
 		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
 	}
 	else
 	{
@@ -160,11 +148,6 @@ void rdpPolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC,
 	}
 
 	RegionUninit(&reg);
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
-	}
 
 	return;
 }

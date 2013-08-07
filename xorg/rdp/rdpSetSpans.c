@@ -54,7 +54,6 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	int cd;
 	int got_id;
 	int post_process;
-	int reset_surface;
 	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
@@ -66,23 +65,12 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	rdpSetSpansOrg(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 
 	post_process = 0;
-	reset_surface = 0;
 	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
 		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
 	}
 	else
 	{
@@ -121,9 +109,4 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	}
 
 	RegionUninit(&clip_reg);
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
-	}
 }

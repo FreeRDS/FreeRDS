@@ -51,7 +51,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	RegionRec clip_reg;
 	int cd;
 	int j;
-	int reset_surface;
 	int post_process;
 	int got_id;
 	BoxRec box;
@@ -68,23 +67,12 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	rdpPutImageOrg(pDst, pGC, depth, x, y, w, h, leftPad, format, pBits);
 
 	post_process = 0;
-	reset_surface = 0;
 	got_id = 0;
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
 		pDstPixmap = (PixmapPtr) pDst;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
 	}
 	else
 	{
@@ -138,9 +126,4 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	}
 
 	RegionUninit(&clip_reg);
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
-	}
 }

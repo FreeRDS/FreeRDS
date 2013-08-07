@@ -351,6 +351,7 @@ int xrdp_message_server_align_rect(xrdpModule* mod, XRDP_RECT* rect)
 
 int xrdp_message_server_queue_pack(xrdpModule* mod)
 {
+	int CodecMode;
 	XRDP_RECT rect;
 	wLinkedList* list;
 	XRDP_MSG_COMMON* node;
@@ -358,6 +359,7 @@ int xrdp_message_server_queue_pack(xrdpModule* mod)
 	pixman_box32_t* extents;
 	pixman_region32_t region;
 
+	CodecMode = 0;
 	list = mod->ServerList;
 
 	pixman_region32_init(&region);
@@ -368,7 +370,7 @@ int xrdp_message_server_queue_pack(xrdpModule* mod)
 	{
 		node = (XRDP_MSG_COMMON*) LinkedList_Enumerator_Current(list);
 
-		if (node->msgFlags & XRDP_MSG_FLAG_RECT)
+		if (CodecMode && (node->msgFlags & XRDP_MSG_FLAG_RECT))
 		{
 			status = pixman_region32_union_rect(&region, &region,
 					node->rect.x, node->rect.y, node->rect.width, node->rect.height);
@@ -381,37 +383,40 @@ int xrdp_message_server_queue_pack(xrdpModule* mod)
 
 	LinkedList_Clear(list);
 
-	extents = pixman_region32_extents(&region);
-
-	rect.x = extents->x1;
-	rect.y = extents->y1;
-	rect.width = extents->x2 - extents->x1;
-	rect.height = extents->y2 - extents->y1;
-
-	xrdp_message_server_align_rect(mod, &rect);
-
-	if (mod->framebuffer.fbAttached && (rect.width * rect.height))
+	if (CodecMode)
 	{
-		XRDP_MSG_COMMON* msg;
-		XRDP_MSG_PAINT_RECT paintRect;
+		extents = pixman_region32_extents(&region);
 
-		paintRect.type = XRDP_SERVER_PAINT_RECT;
+		rect.x = extents->x1;
+		rect.y = extents->y1;
+		rect.width = extents->x2 - extents->x1;
+		rect.height = extents->y2 - extents->y1;
 
-		paintRect.nXSrc = 0;
-		paintRect.nYSrc = 0;
-		paintRect.bitmapData = NULL;
-		paintRect.bitmapDataLength = 0;
-		paintRect.framebuffer = &(mod->framebuffer);
-		paintRect.fbSegmentId = mod->framebuffer.fbSegmentId;
+		xrdp_message_server_align_rect(mod, &rect);
 
-		paintRect.nLeftRect = rect.x;
-		paintRect.nTopRect = rect.y;
-		paintRect.nWidth = rect.width;
-		paintRect.nHeight = rect.height;
+		if (mod->framebuffer.fbAttached && (rect.width * rect.height))
+		{
+			XRDP_MSG_COMMON* msg;
+			XRDP_MSG_PAINT_RECT paintRect;
 
-		msg = xrdp_server_message_copy((XRDP_MSG_COMMON*) &paintRect);
+			paintRect.type = XRDP_SERVER_PAINT_RECT;
 
-		MessageQueue_Post(mod->ServerQueue, (void*) mod, msg->type, (void*) msg, NULL);
+			paintRect.nXSrc = 0;
+			paintRect.nYSrc = 0;
+			paintRect.bitmapData = NULL;
+			paintRect.bitmapDataLength = 0;
+			paintRect.framebuffer = &(mod->framebuffer);
+			paintRect.fbSegmentId = mod->framebuffer.fbSegmentId;
+
+			paintRect.nLeftRect = rect.x;
+			paintRect.nTopRect = rect.y;
+			paintRect.nWidth = rect.width;
+			paintRect.nHeight = rect.height;
+
+			msg = xrdp_server_message_copy((XRDP_MSG_COMMON*) &paintRect);
+
+			MessageQueue_Post(mod->ServerQueue, (void*) mod, msg->type, (void*) msg, NULL);
+		}
 	}
 
 	pixman_region32_fini(&region);

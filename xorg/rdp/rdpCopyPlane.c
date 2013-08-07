@@ -55,14 +55,11 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	RegionPtr rv;
 	RegionRec clip_reg;
 	RegionRec box_reg;
-	RegionRec reg1;
-	RegionRec reg2;
 	int cd;
 	int num_clips;
 	int j;
 	int got_id;
 	int post_process;
-	int reset_surface;
 	BoxRec box;
 	BoxPtr pbox;
 	struct image_data id;
@@ -76,23 +73,12 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	rv = rdpCopyPlaneOrg(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, bitPlane);
 
 	post_process = 0;
-	reset_surface = 0;
 	got_id = 0;
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
 		pDstPixmap = (PixmapPtr) pDst;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
 	}
 	else
 	{
@@ -165,11 +151,6 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	}
 
 	RegionUninit(&clip_reg);
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
-	}
 
 	return rv;
 }

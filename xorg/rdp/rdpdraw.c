@@ -60,7 +60,6 @@ extern ScreenPtr g_pScreen;
 extern Bool g_wrapPixmap;
 extern WindowPtr g_invalidate_window;
 extern int g_use_rail;
-extern rdpPixmapRec g_screenPriv;
 extern int g_con_number;
 
 ColormapPtr g_rdpInstalledColormap;
@@ -434,67 +433,12 @@ Bool rdpDestroyPixmap(PixmapPtr pPixmap)
 	priv = GETPIXPRIV(pPixmap);
 	LLOGLN(10, ("status %d refcnt %d", priv->status, pPixmap->refcnt));
 
-	if (pPixmap->refcnt < 2)
-	{
-		if (XRDP_IS_OS(priv))
-		{
-			rdpup_remove_os_bitmap(priv->rdpindex);
-			rdpup_delete_os_surface(priv->rdpindex);
-		}
-	}
-
 	pScreen = pPixmap->drawable.pScreen;
 	pScreen->DestroyPixmap = g_rdpScreen.DestroyPixmap;
 	status = pScreen->DestroyPixmap(pPixmap);
 	pScreen->DestroyPixmap = rdpDestroyPixmap;
 
 	return status;
-}
-
-int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
-{
-	BoxRec box;
-	int width;
-	int height;
-	struct image_data id;
-
-	if (!XRDP_IS_OS(priv))
-	{
-		width = pix->drawable.width;
-		height = pix->drawable.height;
-
-		if ((pix->drawable.depth >= g_rdpScreen.depth) &&
-				(width > 1) && (height > 1) && (priv->kind_width > 0))
-		{
-			LLOGLN(10, ("%d %d", priv->kind_width, pix->drawable.width));
-
-			priv->rdpindex = rdpup_add_os_bitmap(pix, priv);
-
-			if (priv->rdpindex >= 0)
-			{
-				priv->status = 1;
-				rdpup_create_os_surface(priv->rdpindex, priv->kind_width, height);
-
-				box.x1 = 0;
-				box.y1 = 0;
-				box.x2 = width;
-				box.y2 = height;
-
-				rdpup_get_pixmap_image_rect(pix, &id);
-				rdpup_switch_os_surface(priv->rdpindex);
-				rdpup_begin_update();
-				rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-				rdpup_end_update();
-				rdpup_switch_os_surface(-1);
-
-				return 1;
-			}
-		}
-
-		return 0;
-	}
-
-	return 1;
 }
 
 Bool rdpCreateWindow(WindowPtr pWindow)
@@ -899,7 +843,6 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	int j;
 	int num_clips;
 	int post_process;
-	int reset_surface;
 	int got_id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
@@ -916,24 +859,12 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	p = pDst->pDrawable;
 
 	post_process = 0;
-	reset_surface = 0;
 	got_id = 0;
 
 	if (p->type == DRAWABLE_PIXMAP)
 	{
 		pDstPixmap = (PixmapPtr) p;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-			LLOGLN(10, ("rdpComposite: offscreen"));
-		}
 	}
 	else
 	{
@@ -1002,11 +933,6 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 			rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			rdpup_end_update();
 		}
-	}
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
 	}
 }
 

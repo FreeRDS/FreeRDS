@@ -56,7 +56,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 	int got_id;
 	int post_process;
-	int reset_surface;
 	UINT32 dstblt_rop;
 
 	struct image_data id;
@@ -73,22 +72,11 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	rdpPolyFillRectOrg(pDrawable, pGC, nrectFill, prectInit);
 
 	post_process = 0;
-	reset_surface = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
 		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
 	}
 	else
 	{
@@ -199,9 +187,4 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 	RegionUninit(&clip_reg);
 	RegionDestroy(fill_reg);
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
-	}
 }

@@ -65,13 +65,6 @@ void rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptIn
 	{
 		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
 	}
 	else
 	{

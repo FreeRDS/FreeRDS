@@ -48,15 +48,12 @@ void rdpPolyPointOrg(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPoi
 void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointPtr in_pts)
 {
 	RegionRec clip_reg;
-	RegionRec reg1;
-	RegionRec reg2;
 	int num_clips;
 	int cd;
 	int i;
 	int j;
 	int got_id;
 	int post_process;
-	int reset_surface;
 	BoxRec box;
 	BoxRec total_box;
 	DDXPointPtr pts;
@@ -120,23 +117,12 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	rdpPolyPointOrg(pDrawable, pGC, mode, npt, in_pts);
 
 	post_process = 0;
-	reset_surface = 0;
 	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
 		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			rdpup_switch_os_surface(pDstPriv->rdpindex);
-			reset_surface = 1;
-			rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-			got_id = 1;
-		}
 	}
 	else
 	{
@@ -227,10 +213,5 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	if (pts != stack_pts)
 	{
 		free(pts);
-	}
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
 	}
 }
