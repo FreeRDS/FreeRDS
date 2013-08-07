@@ -143,11 +143,6 @@ struct _rdpScreenInfoRec
 	CompositeProcPtr Composite;
 	GlyphsProcPtr Glyphs;
 
-	/* TODO: port old code using backing store procedures */
-
-	/* Backing store procedures */
-	//RestoreAreasProcPtr RestoreAreas;
-
 	int segmentId;
 	int sharedMemory;
 	int fbAttached;
@@ -197,8 +192,6 @@ typedef rdpWindowRec* rdpWindowPtr;
 #define XR_EXT_STYLE_TOOLTIP (0x00000080 | 0x00000008)
 
 /* for normal desktop windows */
-/* WS_TILEDWINDOW (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME |
-                   WS_MINIMIZEBOX | WS_MAXIMIZEBOX) */
 #define XR_STYLE_NORMAL (0x00C00000 | 0x00080000 | 0x00040000 | 0x00010000 | 0x00020000)
 #define XR_EXT_STYLE_NORMAL (0x00040000)
 
@@ -211,7 +204,6 @@ struct _rdpPixmapRec
 	int status;
 	int rdpindex;
 	int con_number;
-	int is_dirty;
 	int pad0;
 	int kind_width;
 };
@@ -316,8 +308,5 @@ int rdpup_delete_os_surface(int rdpindex);
 void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy);
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);
 void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec* priv);
-
 void rdpup_shared_framebuffer(XRDP_MSG_SHARED_FRAMEBUFFER* msg);
-
-void rdpScheduleDeferredUpdate(void);
 

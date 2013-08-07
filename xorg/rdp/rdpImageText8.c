@@ -60,7 +60,6 @@ void rdpImageText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, ch
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpImageText8:"));
 
@@ -72,7 +71,6 @@ void rdpImageText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, ch
 	/* do original call */
 	rdpImageText8Org(pDrawable, pGC, x, y, count, chars);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

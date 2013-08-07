@@ -66,7 +66,6 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpFillPolygon:"));
 
@@ -114,7 +113,6 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 	/* do original call */
 	rdpFillPolygonOrg(pDrawable, pGC, shape, mode, count, pPts);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

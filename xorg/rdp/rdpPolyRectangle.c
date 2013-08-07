@@ -70,7 +70,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec* pDstPriv;
-	rdpPixmapRec*pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolyRectangle:"));
 
@@ -85,7 +84,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	/* do original call */
 	rdpPolyRectangleOrg(pDrawable, pGC, nrects, rects);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

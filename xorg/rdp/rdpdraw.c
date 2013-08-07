@@ -147,7 +147,7 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 	}
 	else if (pDrawable->type == DRAWABLE_WINDOW)
 	{
-		pWindow = (WindowPtr)pDrawable;
+		pWindow = (WindowPtr) pDrawable;
 
 		if (pWindow->viewable)
 		{
@@ -453,7 +453,6 @@ Bool rdpDestroyPixmap(PixmapPtr pPixmap)
 
 int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv)
 {
-	RegionRec reg1;
 	BoxRec box;
 	int width;
 	int height;
@@ -905,7 +904,6 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 	struct image_data id;
 
 	LLOGLN(10, ("rdpComposite:"));
@@ -917,7 +915,6 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 
 	p = pDst->pDrawable;
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

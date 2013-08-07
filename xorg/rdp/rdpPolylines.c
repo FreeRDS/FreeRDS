@@ -63,7 +63,6 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolylines:"));
 	LLOGLN(10, ("  npt %d mode %d x %d y %d", npt, mode,
@@ -114,7 +113,6 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	/* do original call */
 	rdpPolylinesOrg(pDrawable, pGC, mode, npt, pptInit);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

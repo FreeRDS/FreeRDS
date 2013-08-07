@@ -69,14 +69,12 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpCopyPlane:"));
 
 	/* do original call */
 	rv = rdpCopyPlaneOrg(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, bitPlane);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

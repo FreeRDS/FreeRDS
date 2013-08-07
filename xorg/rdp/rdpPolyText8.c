@@ -64,7 +64,6 @@ int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolyText8:"));
 
@@ -76,7 +75,6 @@ int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char
 	/* do original call */
 	rv = rdpPolyText8Org(pDrawable, pGC, x, y, count, chars);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

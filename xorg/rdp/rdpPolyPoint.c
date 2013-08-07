@@ -65,7 +65,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolyPoint:"));
 	LLOGLN(10, ("rdpPolyPoint:  npt %d", npt));
@@ -120,7 +119,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	/* do original call */
 	rdpPolyPointOrg(pDrawable, pGC, mode, npt, in_pts);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

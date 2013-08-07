@@ -60,7 +60,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpPutImage:"));
 	LLOGLN(10, ("rdpPutImage: drawable id 0x%x", (int)(pDst->id)));
@@ -68,7 +67,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	/* do original call */
 	rdpPutImageOrg(pDst, pGC, depth, x, y, w, h, leftPad, format, pBits);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

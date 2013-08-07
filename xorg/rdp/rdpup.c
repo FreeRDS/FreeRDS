@@ -601,25 +601,6 @@ static int rdpup_send_pending(void)
 	return 0;
 }
 
-static CARD32 rdpDeferredUpdateCallback(OsTimerPtr timer, CARD32 now, pointer arg)
-{
-	LLOGLN(10, ("rdpDeferredUpdateCallback"));
-
-	rdpup_send_pending();
-
-	g_scheduled = 0;
-	return 0;
-}
-
-void rdpScheduleDeferredUpdate(void)
-{
-	if (!g_scheduled)
-	{
-		g_scheduled = 1;
-		g_timer = TimerSet(g_timer, 0, 40, rdpDeferredUpdateCallback, 0);
-	}
-}
-
 /* returns error */
 static int rdpup_recv(BYTE* data, int len)
 {

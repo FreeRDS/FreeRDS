@@ -60,7 +60,6 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolySegment:"));
 	LLOGLN(10, ("  nseg %d", nseg));
@@ -83,7 +82,6 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	/* do original call */
 	rdpPolySegmentOrg(pDrawable, pGC, nseg, pSegs);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

@@ -61,7 +61,6 @@ void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned i
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpImageGlyphBlt:"));
 
@@ -73,7 +72,6 @@ void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned i
 	/* do original call */
 	rdpImageGlyphBltOrg(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

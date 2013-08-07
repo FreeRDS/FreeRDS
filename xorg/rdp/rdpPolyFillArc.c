@@ -63,7 +63,6 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolyFillArc:"));
 
@@ -93,7 +92,6 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	/* do original call */
 	rdpPolyFillArcOrg(pDrawable, pGC, narcs, parcs);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

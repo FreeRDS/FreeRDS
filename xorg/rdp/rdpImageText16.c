@@ -62,7 +62,6 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpImageText16:"));
 
@@ -74,7 +73,6 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 	/* do original call */
 	rdpImageText16Org(pDrawable, pGC, x, y, count, chars);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;

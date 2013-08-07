@@ -278,7 +278,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pSrcPriv;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 	WindowPtr pDstWnd;
 	WindowPtr pSrcWnd;
 
@@ -346,7 +345,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	/* do original call */
 	rv = rdpCopyAreaOrg(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty);
 
-	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;
