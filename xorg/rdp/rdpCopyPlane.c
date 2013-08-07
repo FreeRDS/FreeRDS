@@ -61,7 +61,6 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	int num_clips;
 	int j;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	BoxRec box;
@@ -75,10 +74,8 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	LLOGLN(10, ("rdpCopyPlane:"));
 
 	/* do original call */
-	rv = rdpCopyPlaneOrg(pSrc, pDst, pGC, srcx, srcy, w, h,
-			dstx, dsty, bitPlane);
+	rv = rdpCopyPlaneOrg(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, bitPlane);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -125,17 +122,7 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-			box.x1 = pDst->x + dstx;
-			box.y1 = pDst->y + dsty;
-			box.x2 = box.x1 + w;
-			box.y2 = box.y1 + h;
-			RegionInit(&reg1, &box, 0);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 			rdpup_send_area(&id, pDst->x + dstx, pDst->y + dsty, w, h);
@@ -148,21 +135,7 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 		if (num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				box.x1 = pDst->x + dstx;
-				box.y1 = pDst->y + dsty;
-				box.x2 = box.x1 + w;
-				box.y2 = box.y1 + h;
-				RegionInit(&reg1, &box, 0);
-				RegionInit(&reg2, NullBox, 0);
-				RegionCopy(&reg2, &clip_reg);
-				RegionIntersect(&reg1, &reg1, &reg2);
-				draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-				RegionUninit(&reg1);
-				RegionUninit(&reg2);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				rdpup_begin_update();
 				box.x1 = pDst->x + dstx;

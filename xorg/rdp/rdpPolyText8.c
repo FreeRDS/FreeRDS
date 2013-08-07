@@ -57,7 +57,6 @@ int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char
 	int j;
 	int rv;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	BoxRec box;
@@ -77,7 +76,6 @@ int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char
 	/* do original call */
 	rv = rdpPolyText8Org(pDrawable, pGC, x, y, count, chars);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -132,13 +130,7 @@ int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-			RegionInit(&reg1, &box, 0);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 			rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
@@ -153,11 +145,7 @@ int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char
 
 		if (num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				draw_item_add_img_region(pDirtyPriv, &reg, GXcopy, dirty_type);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				rdpup_begin_update();
 

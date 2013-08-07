@@ -55,7 +55,6 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 	int cd;
 	int j;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	BoxRec box;
@@ -70,7 +69,6 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 	/* do original call */
 	rdpPushPixelsOrg(pGC, pBitMap, pDst, w, h, x, y);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -118,17 +116,7 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-			box.x1 = pDst->x + x;
-			box.y1 = pDst->y + y;
-			box.x2 = box.x1 + w;
-			box.y2 = box.y1 + h;
-			RegionInit(&reg1, &box, 0);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 			rdpup_send_area(0, pDst->x + x, pDst->y + y, w, h);
@@ -147,13 +135,7 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 
 		if (num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				RegionInit(&reg1, &box, 0);
-				draw_item_add_img_region(pDirtyPriv, &clip_reg, GXcopy, dirty_type);
-				RegionUninit(&reg1);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				rdpup_begin_update();
 

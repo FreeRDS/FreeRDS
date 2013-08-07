@@ -55,7 +55,6 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 	int cd;
 	int j;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	BoxRec box;
@@ -75,7 +74,6 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 	/* do original call */
 	rdpImageText16Org(pDrawable, pGC, x, y, count, chars);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -83,7 +81,7 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -130,13 +128,7 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-			RegionInit(&reg1, &box, 0);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 			rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
@@ -151,11 +143,7 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 
 		if (num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				draw_item_add_img_region(pDirtyPriv, &reg, GXcopy, dirty_type);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				rdpup_begin_update();
 

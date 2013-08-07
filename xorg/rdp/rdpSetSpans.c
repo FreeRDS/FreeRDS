@@ -53,22 +53,18 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	RegionRec clip_reg;
 	int cd;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	//rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(0, ("rdpSetSpans: todo"));
 
 	/* do original call */
 	rdpSetSpansOrg(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 
-	dirty_type = 0;
-	//pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
 	got_id = 0;
@@ -113,19 +109,13 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-		}
-		else if (got_id)
+		if (got_id)
 		{
 		}
 	}
 	else if (cd == 2)
 	{
-		if (dirty_type != 0)
-		{
-		}
-		else if (got_id)
+		if (got_id)
 		{
 		}
 	}

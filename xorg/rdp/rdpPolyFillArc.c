@@ -55,7 +55,6 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	int i;
 	int num_clips;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	xRectangle *rects;
@@ -72,7 +71,7 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 	if (narcs > 0)
 	{
-		rects = (xRectangle *)g_malloc(narcs * sizeof(xRectangle), 0);
+		rects = (xRectangle*) g_malloc(narcs * sizeof(xRectangle), 0);
 		lw = pGC->lineWidth;
 
 		if (lw == 0)
@@ -94,7 +93,6 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	/* do original call */
 	rdpPolyFillArcOrg(pDrawable, pGC, narcs, parcs);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -149,11 +147,7 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 			if (num_clips > 0)
 			{
-				if (dirty_type != 0)
-				{
-					draw_item_add_img_region(pDirtyPriv, tmpRegion, GXcopy, dirty_type);
-				}
-				else if (got_id)
+				if (got_id)
 				{
 					rdpup_begin_update();
 
@@ -181,11 +175,7 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 			if (num_clips > 0)
 			{
-				if (dirty_type != 0)
-				{
-					draw_item_add_img_region(pDirtyPriv, tmpRegion, GXcopy, dirty_type);
-				}
-				else if (got_id)
+				if (got_id)
 				{
 					rdpup_begin_update();
 

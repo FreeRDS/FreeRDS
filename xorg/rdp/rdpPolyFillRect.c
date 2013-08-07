@@ -55,7 +55,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	BoxRec box;
 
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	UINT32 dstblt_rop;
@@ -74,7 +73,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	/* do original call */
 	rdpPolyFillRectOrg(pDrawable, pGC, nrectFill, prectInit);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -122,20 +120,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 	if (cd == 1) /* no clip */
 	{
-		if (dirty_type != 0)
-		{
-			dstblt_rop = rdp_dstblt_rop(pGC->alu);
-
-			if ((pGC->fillStyle == 0) && (dstblt_rop))
-			{
-				draw_item_add_fill_region(pDirtyPriv, fill_reg, pGC->fgPixel, pGC->alu);
-			}
-			else
-			{
-				draw_item_add_img_region(pDirtyPriv, fill_reg, GXcopy, RDI_IMGLL);
-			}
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 
@@ -179,18 +164,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 		{
 			dstblt_rop = rdp_dstblt_rop(pGC->alu);
 
-			if (dirty_type != 0)
-			{
-				if ((pGC->fillStyle == 0) && (dstblt_rop))
-				{
-					draw_item_add_fill_region(pDirtyPriv, &clip_reg, pGC->fgPixel, pGC->alu);
-				}
-				else
-				{
-					draw_item_add_img_region(pDirtyPriv, &clip_reg, GXcopy, RDI_IMGLL);
-				}
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				rdpup_begin_update();
 

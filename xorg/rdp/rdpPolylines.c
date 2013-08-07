@@ -54,7 +54,6 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	int i;
 	int j;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	BoxRec box;
@@ -69,22 +68,14 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	LLOGLN(10, ("rdpPolylines:"));
 	LLOGLN(10, ("  npt %d mode %d x %d y %d", npt, mode,
 			pDrawable->x, pDrawable->y));
-#if 0
-	LLOGLN(0, ("  points"));
 
-	for (i = 0; i < npt; i++)
-	{
-		LLOGLN(0, ("    %d %d", pptInit[i].x, pptInit[i].y));
-	}
-
-#endif
 	/* convert lines to line segments */
 	nseg = npt - 1;
 	segs = 0;
 
 	if (npt > 1)
 	{
-		segs = (xSegment *)g_malloc(sizeof(xSegment) * nseg, 0);
+		segs = (xSegment*) g_malloc(sizeof(xSegment) * nseg, 0);
 		segs[0].x1 = pptInit[0].x + pDrawable->x;
 		segs[0].y1 = pptInit[0].y + pDrawable->y;
 
@@ -120,21 +111,9 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		LLOGLN(0, ("rdpPolylines: weird npt [%d]", npt));
 	}
 
-#if 0
-LLOGLN(0, ("  segments"));
-
-for (i = 0; i < nseg; i++)
-{
-	LLOGLN(0, ("    %d %d %d %d", segs[i].x1, segs[i].y1,
-			segs[i].x2, segs[i].y2));
-}
-
-#endif
-
 	/* do original call */
 	rdpPolylinesOrg(pDrawable, pGC, mode, npt, pptInit);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -142,7 +121,7 @@ for (i = 0; i < nseg; i++)
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -159,7 +138,7 @@ for (i = 0; i < nseg; i++)
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{
@@ -184,15 +163,7 @@ for (i = 0; i < nseg; i++)
 	{
 		if (segs != 0)
 		{
-			if (dirty_type != 0)
-			{
-				RegionUninit(&clip_reg);
-				RegionInit(&clip_reg, NullBox, 0);
-				RegionAroundSegs(&clip_reg, segs, nseg);
-				draw_item_add_line_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
-						pGC->alu, pGC->lineWidth, segs, nseg, 0);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				XRDP_MSG_LINE_TO msg;
 
@@ -223,12 +194,7 @@ for (i = 0; i < nseg; i++)
 
 		if (nseg != 0 && num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				draw_item_add_line_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
-						pGC->alu, pGC->lineWidth, segs, nseg, 0);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				XRDP_MSG_LINE_TO msg;
 

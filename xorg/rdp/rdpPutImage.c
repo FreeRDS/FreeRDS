@@ -54,7 +54,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	int reset_surface;
 	int post_process;
 	int got_id;
-	int dirty_type;
 	BoxRec box;
 	struct image_data id;
 
@@ -62,8 +61,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
 	rdpPixmapRec *pDirtyPriv;
-	RegionRec reg1;
-	RegionRec reg2;
 
 	LLOGLN(10, ("rdpPutImage:"));
 	LLOGLN(10, ("rdpPutImage: drawable id 0x%x", (int)(pDst->id)));
@@ -71,7 +68,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	/* do original call */
 	rdpPutImageOrg(pDst, pGC, depth, x, y, w, h, leftPad, format, pBits);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -118,17 +114,7 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-			box.x1 = pDst->x + x;
-			box.y1 = pDst->y + y;
-			box.x2 = box.x1 + w;
-			box.y2 = box.y1 + h;
-			RegionInit(&reg1, &box, 0);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 			rdpup_send_area(&id, pDst->x + x, pDst->y + y, w, h);
@@ -137,21 +123,7 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	}
 	else if (cd == 2)
 	{
-		if (dirty_type != 0)
-		{
-			box.x1 = pDst->x + x;
-			box.y1 = pDst->y + y;
-			box.x2 = box.x1 + w;
-			box.y2 = box.y1 + h;
-			RegionInit(&reg1, &box, 0);
-			RegionInit(&reg2, NullBox, 0);
-			RegionCopy(&reg2, &clip_reg);
-			RegionIntersect(&reg1, &reg1, &reg2);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-			RegionUninit(&reg2);
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 

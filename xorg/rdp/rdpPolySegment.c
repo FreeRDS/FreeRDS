@@ -52,7 +52,6 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	int i;
 	int j;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	xSegment *segs;
@@ -70,7 +69,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 
 	if (nseg) /* get the rects */
 	{
-		segs = (xSegment *)g_malloc(nseg * sizeof(xSegment), 0);
+		segs = (xSegment*) g_malloc(nseg * sizeof(xSegment), 0);
 
 		for (i = 0; i < nseg; i++)
 		{
@@ -84,7 +83,6 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	/* do original call */
 	rdpPolySegmentOrg(pDrawable, pGC, nseg, pSegs);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -92,7 +90,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -109,7 +107,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{
@@ -135,15 +133,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	{
 		if (segs != 0)
 		{
-			if (dirty_type != 0)
-			{
-				RegionUninit(&clip_reg);
-				RegionInit(&clip_reg, NullBox, 0);
-				RegionAroundSegs(&clip_reg, segs, nseg);
-				draw_item_add_line_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
-						pGC->alu, pGC->lineWidth, segs, nseg, 1);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				XRDP_MSG_LINE_TO msg;
 
@@ -171,12 +161,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	{
 		if (segs != 0)
 		{
-			if (dirty_type != 0)
-			{
-				draw_item_add_line_region(pDirtyPriv, &clip_reg, pGC->fgPixel,
-						pGC->alu, pGC->lineWidth, segs, nseg, 1);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				XRDP_MSG_LINE_TO msg;
 

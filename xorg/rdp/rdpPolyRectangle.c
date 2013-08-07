@@ -59,7 +59,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	int up;
 	int down;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	xRectangle *regRects;
@@ -86,7 +85,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	/* do original call */
 	rdpPolyRectangleOrg(pDrawable, pGC, nrects, rects);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -175,22 +173,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	{
 		if (regRects != 0)
 		{
-			if (dirty_type != 0)
-			{
-				fill_reg = RegionFromRects(nrects * 4, regRects, CT_NONE);
-
-				if (pGC->lineStyle == LineSolid)
-				{
-					draw_item_add_fill_region(pDirtyPriv, fill_reg, pGC->fgPixel, pGC->alu);
-				}
-				else
-				{
-					draw_item_add_img_region(pDirtyPriv, fill_reg, GXcopy, dirty_type);
-				}
-
-				RegionDestroy(fill_reg);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				XRDP_MSG_OPAQUE_RECT msg;
 
@@ -234,18 +217,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 			if (num_clips > 0)
 			{
-				if (dirty_type != 0)
-				{
-					if (pGC->lineStyle == LineSolid)
-					{
-						draw_item_add_fill_region(pDirtyPriv, &clip_reg, pGC->fgPixel, pGC->alu);
-					}
-					else
-					{
-						draw_item_add_img_region(pDirtyPriv, &clip_reg, GXcopy, dirty_type);
-					}
-				}
-				else if (got_id)
+				if (got_id)
 				{
 					rdpup_begin_update();
 

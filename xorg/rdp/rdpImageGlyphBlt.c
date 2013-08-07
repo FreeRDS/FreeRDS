@@ -54,7 +54,6 @@ void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned i
 	int cd;
 	int j;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	BoxRec box;
@@ -74,7 +73,6 @@ void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned i
 	/* do original call */
 	rdpImageGlyphBltOrg(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -129,13 +127,7 @@ void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned i
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-			RegionInit(&reg1, &box, 0);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 			rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
@@ -150,11 +142,7 @@ void rdpImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned i
 
 		if (num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				draw_item_add_img_region(pDirtyPriv, &reg, GXcopy, dirty_type);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				rdpup_begin_update();
 

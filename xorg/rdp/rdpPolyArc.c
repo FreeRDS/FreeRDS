@@ -56,7 +56,6 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	int i;
 	int num_clips;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	xRectangle *rects;
@@ -73,7 +72,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 	if (narcs > 0)
 	{
-		rects = (xRectangle *)g_malloc(narcs * sizeof(xRectangle), 0);
+		rects = (xRectangle*) g_malloc(narcs * sizeof(xRectangle), 0);
 		lw = pGC->lineWidth;
 
 		if (lw == 0)
@@ -95,7 +94,6 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	/* do original call */
 	rdpPolyArcOrg(pDrawable, pGC, narcs, parcs);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -103,7 +101,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -120,7 +118,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{
@@ -150,11 +148,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 			if (num_clips > 0)
 			{
-				if (dirty_type != 0)
-				{
-					draw_item_add_img_region(pDirtyPriv, tmpRegion, GXcopy, dirty_type);
-				}
-				else if (got_id)
+				if (got_id)
 				{
 					rdpup_begin_update();
 
@@ -182,11 +176,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 			if (num_clips > 0)
 			{
-				if (dirty_type != 0)
-				{
-					draw_item_add_img_region(pDirtyPriv, tmpRegion, GXcopy, dirty_type);
-				}
-				else if (got_id)
+				if (got_id)
 				{
 					rdpup_begin_update();
 

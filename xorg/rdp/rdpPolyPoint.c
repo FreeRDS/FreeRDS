@@ -55,7 +55,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	int i;
 	int j;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	BoxRec box;
@@ -73,7 +72,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 	if (npt > 32)
 	{
-		pts = (DDXPointPtr)g_malloc(sizeof(DDXPointRec) * npt, 0);
+		pts = (DDXPointPtr) g_malloc(sizeof(DDXPointRec) * npt, 0);
 	}
 	else
 	{
@@ -121,7 +120,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	/* do original call */
 	rdpPolyPointOrg(pDrawable, pGC, mode, npt, in_pts);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -129,7 +127,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
 
 		if (xrdp_is_os(pDstPixmap, pDstPriv))
@@ -146,7 +144,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{
@@ -170,25 +168,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	{
 		if (npt > 0)
 		{
-			if (dirty_type != 0)
-			{
-				RegionInit(&reg1, NullBox, 0);
-
-				for (i = 0; i < npt; i++)
-				{
-					box.x1 = pts[i].x;
-					box.y1 = pts[i].y;
-					box.x2 = box.x1 + 1;
-					box.y2 = box.y1 + 1;
-					RegionInit(&reg2, &box, 0);
-					RegionUnion(&reg1, &reg1, &reg2);
-					RegionUninit(&reg2);
-				}
-
-				draw_item_add_fill_region(pDirtyPriv, &reg1, pGC->fgPixel, pGC->alu);
-				RegionUninit(&reg1);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				XRDP_MSG_OPAQUE_RECT msg;
 
@@ -215,26 +195,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 		if (npt > 0 && num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				RegionInit(&reg1, NullBox, 0);
-
-				for (i = 0; i < npt; i++)
-				{
-					box.x1 = pts[i].x;
-					box.y1 = pts[i].y;
-					box.x2 = box.x1 + 1;
-					box.y2 = box.y1 + 1;
-					RegionInit(&reg2, &box, 0);
-					RegionUnion(&reg1, &reg1, &reg2);
-					RegionUninit(&reg2);
-				}
-
-				RegionIntersect(&reg1, &reg1, &clip_reg);
-				draw_item_add_fill_region(pDirtyPriv, &reg1, pGC->fgPixel, pGC->alu);
-				RegionUninit(&reg1);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				XRDP_MSG_OPAQUE_RECT msg;
 

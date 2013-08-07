@@ -269,7 +269,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	int j;
 	int can_do_screen_blt;
 	int got_id;
-	int dirty_type;
 	int post_process;
 	int reset_surface;
 	struct image_data id;
@@ -291,8 +290,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 		if (pSrcWnd->viewable)
 		{
-			rdpup_check_dirty_screen(&g_screenPriv);
-
 			if (pDst->type == DRAWABLE_WINDOW)
 			{
 				pDstWnd = (WindowPtr) pDst;
@@ -318,7 +315,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 					if (can_do_screen_blt)
 					{
-						rdpup_check_dirty(pDstPixmap, pDstPriv);
 						return rdpCopyAreaWndToPixmap(pSrcWnd, pDstPixmap, pDstPriv, pGC,
 								srcx, srcy, w, h, dstx, dsty);
 					}
@@ -340,8 +336,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 				if (pDstWnd->viewable)
 				{
-					rdpup_check_dirty_screen(&g_screenPriv);
-					rdpup_check_dirty(pSrcPixmap, pSrcPriv);
 					return rdpCopyAreaPixmapToWnd(pSrcPixmap, pSrcPriv, pDstWnd, pGC,
 							srcx, srcy, w, h, dstx, dsty);
 				}
@@ -352,7 +346,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 	/* do original call */
 	rv = rdpCopyAreaOrg(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty);
 
-	dirty_type = 0;
 	pDirtyPriv = 0;
 	post_process = 0;
 	reset_surface = 0;
@@ -399,17 +392,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-			box.x1 = pDst->x + dstx;
-			box.y1 = pDst->y + dsty;
-			box.x2 = box.x1 + w;
-			box.y2 = box.y1 + h;
-			RegionInit(&reg1, &box, 0);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-		}
-		else if (got_id)
+		if (got_id)
 		{
 			rdpup_begin_update();
 			rdpup_send_area(&id, pDst->x + dstx, pDst->y + dsty, w, h);
@@ -422,18 +405,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 		if (num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				box.x1 = pDst->x + dstx;
-				box.y1 = pDst->y + dsty;
-				box.x2 = box.x1 + w;
-				box.y2 = box.y1 + h;
-				RegionInit(&box_reg, &box, 0);
-				RegionIntersect(&clip_reg, &clip_reg, &box_reg);
-				draw_item_add_img_region(pDirtyPriv, &clip_reg, GXcopy, dirty_type);
-				RegionUninit(&box_reg);
-			}
-			else if (got_id)
+			if (got_id)
 			{
 				rdpup_begin_update();
 				box.x1 = pDst->x + dstx;
