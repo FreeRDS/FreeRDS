@@ -55,7 +55,6 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	int extra;
 	int i;
 	int num_clips;
-	int got_id;
 	int post_process;
 	xRectangle *rects;
 	BoxRec box;
@@ -93,7 +92,6 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	rdpPolyArcOrg(pDrawable, pGC, narcs, parcs);
 
 	post_process = 0;
-	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
@@ -109,9 +107,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
@@ -134,19 +130,16 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 			if (num_clips > 0)
 			{
-				if (got_id)
+				rdpup_begin_update();
+
+				for (i = num_clips - 1; i >= 0; i--)
 				{
-					rdpup_begin_update();
-
-					for (i = num_clips - 1; i >= 0; i--)
-					{
-						box = REGION_RECTS(tmpRegion)[i];
-						rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-								box.y2 - box.y1);
-					}
-
-					rdpup_end_update();
+					box = REGION_RECTS(tmpRegion)[i];
+					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
+							box.y2 - box.y1);
 				}
+
+				rdpup_end_update();
 			}
 
 			RegionDestroy(tmpRegion);
@@ -162,19 +155,16 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 			if (num_clips > 0)
 			{
-				if (got_id)
+				rdpup_begin_update();
+
+				for (i = num_clips - 1; i >= 0; i--)
 				{
-					rdpup_begin_update();
-
-					for (i = num_clips - 1; i >= 0; i--)
-					{
-						box = REGION_RECTS(tmpRegion)[i];
-						rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-								box.y2 - box.y1);
-					}
-
-					rdpup_end_update();
+					box = REGION_RECTS(tmpRegion)[i];
+					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
+							box.y2 - box.y1);
 				}
+
+				rdpup_end_update();
 			}
 
 			RegionDestroy(tmpRegion);

@@ -52,7 +52,6 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 {
 	RegionRec clip_reg;
 	int cd;
-	int got_id;
 	int post_process;
 	struct image_data id;
 	WindowPtr pDstWnd;
@@ -65,7 +64,6 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	rdpSetSpansOrg(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 
 	post_process = 0;
-	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
@@ -82,30 +80,23 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 			{
 				post_process = 1;
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
 
 	if (!post_process)
-	{
 		return;
-	}
 
 	RegionInit(&clip_reg, NullBox, 0);
 	cd = rdp_get_clip(&clip_reg, pDrawable, pGC);
 
 	if (cd == 1)
 	{
-		if (got_id)
-		{
-		}
+
 	}
 	else if (cd == 2)
 	{
-		if (got_id)
-		{
-		}
+
 	}
 
 	RegionUninit(&clip_reg);

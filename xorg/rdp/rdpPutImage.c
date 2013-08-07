@@ -52,7 +52,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	int cd;
 	int j;
 	int post_process;
-	int got_id;
 	BoxRec box;
 	struct image_data id;
 
@@ -67,7 +66,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	rdpPutImageOrg(pDst, pGC, depth, x, y, w, h, leftPad, format, pBits);
 
 	post_process = 0;
-	got_id = 0;
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
@@ -83,46 +81,36 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
 
 	if (!post_process)
-	{
 		return;
-	}
 
 	RegionInit(&clip_reg, NullBox, 0);
 	cd = rdp_get_clip(&clip_reg, pDst, pGC);
 
 	if (cd == 1)
 	{
-		if (got_id)
-		{
-			rdpup_begin_update();
-			rdpup_send_area(&id, pDst->x + x, pDst->y + y, w, h);
-			rdpup_end_update();
-		}
+		rdpup_begin_update();
+		rdpup_send_area(&id, pDst->x + x, pDst->y + y, w, h);
+		rdpup_end_update();
 	}
 	else if (cd == 2)
 	{
-		if (got_id)
+		rdpup_begin_update();
+
+		for (j = REGION_NUM_RECTS(&clip_reg) - 1; j >= 0; j--)
 		{
-			rdpup_begin_update();
-
-			for (j = REGION_NUM_RECTS(&clip_reg) - 1; j >= 0; j--)
-			{
-				box = REGION_RECTS(&clip_reg)[j];
-				rdpup_set_clip(box.x1, box.y1, (box.x2 - box.x1), (box.y2 - box.y1));
-				rdpup_send_area(&id, pDst->x + x, pDst->y + y, w, h);
-			}
-
-			rdpup_reset_clip();
-			rdpup_end_update();
+			box = REGION_RECTS(&clip_reg)[j];
+			rdpup_set_clip(box.x1, box.y1, (box.x2 - box.x1), (box.y2 - box.y1));
+			rdpup_send_area(&id, pDst->x + x, pDst->y + y, w, h);
 		}
+
+		rdpup_reset_clip();
+		rdpup_end_update();
 	}
 
 	RegionUninit(&clip_reg);

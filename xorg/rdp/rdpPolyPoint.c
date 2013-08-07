@@ -52,7 +52,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	int cd;
 	int i;
 	int j;
-	int got_id;
 	int post_process;
 	BoxRec box;
 	BoxRec total_box;
@@ -117,7 +116,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	rdpPolyPointOrg(pDrawable, pGC, mode, npt, in_pts);
 
 	post_process = 0;
-	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
@@ -133,17 +131,13 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
 
 	if (!post_process)
-	{
 		return;
-	}
 
 	RegionInit(&clip_reg, NullBox, 0);
 	cd = rdp_get_clip(&clip_reg, pDrawable, pGC);
@@ -152,11 +146,38 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	{
 		if (npt > 0)
 		{
-			if (got_id)
-			{
-				XRDP_MSG_OPAQUE_RECT msg;
+			XRDP_MSG_OPAQUE_RECT msg;
 
-				rdpup_begin_update();
+			rdpup_begin_update();
+
+			for (i = 0; i < npt; i++)
+			{
+				msg.nLeftRect = pts[i].x;
+				msg.nTopRect = pts[i].y;
+				msg.nWidth = 1;
+				msg.nHeight = 1;
+				msg.color = rdpup_convert_color(pGC->fgPixel);
+
+				rdpup_opaque_rect(&msg);
+			}
+
+			rdpup_end_update();
+		}
+	}
+	else if (cd == 2)
+	{
+		num_clips = REGION_NUM_RECTS(&clip_reg);
+
+		if (npt > 0 && num_clips > 0)
+		{
+			XRDP_MSG_OPAQUE_RECT msg;
+
+			rdpup_begin_update();
+
+			for (j = num_clips - 1; j >= 0; j--)
+			{
+				box = REGION_RECTS(&clip_reg)[j];
+				rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
 				for (i = 0; i < npt; i++)
 				{
@@ -168,43 +189,10 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 					rdpup_opaque_rect(&msg);
 				}
-
-				rdpup_end_update();
 			}
-		}
-	}
-	else if (cd == 2)
-	{
-		num_clips = REGION_NUM_RECTS(&clip_reg);
 
-		if (npt > 0 && num_clips > 0)
-		{
-			if (got_id)
-			{
-				XRDP_MSG_OPAQUE_RECT msg;
-
-				rdpup_begin_update();
-
-				for (j = num_clips - 1; j >= 0; j--)
-				{
-					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-
-					for (i = 0; i < npt; i++)
-					{
-						msg.nLeftRect = pts[i].x;
-						msg.nTopRect = pts[i].y;
-						msg.nWidth = 1;
-						msg.nHeight = 1;
-						msg.color = rdpup_convert_color(pGC->fgPixel);
-
-						rdpup_opaque_rect(&msg);
-					}
-				}
-
-				rdpup_reset_clip();
-				rdpup_end_update();
-			}
+			rdpup_reset_clip();
+			rdpup_end_update();
 		}
 	}
 

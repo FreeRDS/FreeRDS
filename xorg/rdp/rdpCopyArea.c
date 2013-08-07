@@ -131,7 +131,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 	int cd;
 	int j;
 	int can_do_screen_blt;
-	int got_id;
 	int post_process;
 	struct image_data id;
 	BoxRec box;
@@ -183,7 +182,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 	rv = rdpCopyAreaOrg(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty);
 
 	post_process = 0;
-	got_id = 0;
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
@@ -199,29 +197,22 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
 
 	if (!post_process)
-	{
 		return rv;
-	}
 
 	RegionInit(&clip_reg, NullBox, 0);
 	cd = rdp_get_clip(&clip_reg, pDst, pGC);
 
 	if (cd == 1)
 	{
-		if (got_id)
-		{
-			rdpup_begin_update();
-			rdpup_send_area(&id, pDst->x + dstx, pDst->y + dsty, w, h);
-			rdpup_end_update();
-		}
+		rdpup_begin_update();
+		rdpup_send_area(&id, pDst->x + dstx, pDst->y + dsty, w, h);
+		rdpup_end_update();
 	}
 	else if (cd == 2)
 	{
@@ -229,36 +220,33 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 
 		if (num_clips > 0)
 		{
-			if (got_id)
+			rdpup_begin_update();
+			box.x1 = pDst->x + dstx;
+			box.y1 = pDst->y + dsty;
+			box.x2 = box.x1 + w;
+			box.y2 = box.y1 + h;
+			RegionInit(&box_reg, &box, 0);
+			RegionIntersect(&clip_reg, &clip_reg, &box_reg);
+			num_clips = REGION_NUM_RECTS(&clip_reg);
+
+			if (num_clips < 10)
 			{
-				rdpup_begin_update();
-				box.x1 = pDst->x + dstx;
-				box.y1 = pDst->y + dsty;
-				box.x2 = box.x1 + w;
-				box.y2 = box.y1 + h;
-				RegionInit(&box_reg, &box, 0);
-				RegionIntersect(&clip_reg, &clip_reg, &box_reg);
-				num_clips = REGION_NUM_RECTS(&clip_reg);
-
-				if (num_clips < 10)
+				for (j = num_clips - 1; j >= 0; j--)
 				{
-					for (j = num_clips - 1; j >= 0; j--)
-					{
-						box = REGION_RECTS(&clip_reg)[j];
-						rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-								box.y2 - box.y1);
-					}
+					box = REGION_RECTS(&clip_reg)[j];
+					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
+							box.y2 - box.y1);
 				}
-				else
-				{
-					pbox = RegionExtents(&clip_reg);
-					rdpup_send_area(&id, pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
-							pbox->y2 - pbox->y1);
-				}
-
-				RegionUninit(&box_reg);
-				rdpup_end_update();
 			}
+			else
+			{
+				pbox = RegionExtents(&clip_reg);
+				rdpup_send_area(&id, pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
+						pbox->y2 - pbox->y1);
+			}
+
+			RegionUninit(&box_reg);
+			rdpup_end_update();
 		}
 	}
 

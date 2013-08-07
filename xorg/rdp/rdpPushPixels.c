@@ -53,7 +53,6 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 	int num_clips;
 	int cd;
 	int j;
-	int got_id;
 	int post_process;
 	BoxRec box;
 	struct image_data id;
@@ -67,7 +66,6 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 	rdpPushPixelsOrg(pGC, pBitMap, pDst, w, h, x, y);
 
 	post_process = 0;
-	got_id = 0;
 
 	if (pDst->type == DRAWABLE_PIXMAP)
 	{
@@ -83,17 +81,13 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
 
 	if (!post_process)
-	{
 		return;
-	}
 
 	memset(&box, 0, sizeof(box));
 	RegionInit(&clip_reg, NullBox, 0);
@@ -101,12 +95,9 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 
 	if (cd == 1)
 	{
-		if (got_id)
-		{
-			rdpup_begin_update();
-			rdpup_send_area(0, pDst->x + x, pDst->y + y, w, h);
-			rdpup_end_update();
-		}
+		rdpup_begin_update();
+		rdpup_send_area(0, pDst->x + x, pDst->y + y, w, h);
+		rdpup_end_update();
 	}
 	else if (cd == 2)
 	{
@@ -120,18 +111,15 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 
 		if (num_clips > 0)
 		{
-			if (got_id)
+			rdpup_begin_update();
+
+			for (j = num_clips - 1; j >= 0; j--)
 			{
-				rdpup_begin_update();
-
-				for (j = num_clips - 1; j >= 0; j--)
-				{
-					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-				}
-
-				rdpup_end_update();
+				box = REGION_RECTS(&clip_reg)[j];
+				rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
+
+			rdpup_end_update();
 		}
 
 		RegionUninit(&box_reg);

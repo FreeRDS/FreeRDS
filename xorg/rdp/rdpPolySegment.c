@@ -51,7 +51,6 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	int cd;
 	int i;
 	int j;
-	int got_id;
 	int post_process;
 	xSegment *segs;
 	BoxRec box;
@@ -82,7 +81,6 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	rdpPolySegmentOrg(pDrawable, pGC, nseg, pSegs);
 
 	post_process = 0;
-	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
@@ -98,9 +96,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
@@ -119,16 +115,44 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	{
 		if (segs != 0)
 		{
-			if (got_id)
+			XRDP_MSG_LINE_TO msg;
+
+			rdpup_begin_update();
+
+			msg.bRop2 = rdpup_convert_opcode(pGC->alu);
+			msg.penColor = rdpup_convert_color(pGC->fgPixel);
+			msg.penWidth = pGC->lineWidth;
+			msg.penStyle = 0;
+
+			for (i = 0; i < nseg; i++)
 			{
-				XRDP_MSG_LINE_TO msg;
+				msg.nXStart = segs[i].x1;
+				msg.nYStart = segs[i].y1;
+				msg.nXEnd = segs[i].x2;
+				msg.nYEnd = segs[i].y2;
+				rdpup_draw_line(&msg);
+			}
 
-				rdpup_begin_update();
+			rdpup_end_update();
+		}
+	}
+	else if (cd == 2) /* clip */
+	{
+		if (segs != 0)
+		{
+			XRDP_MSG_LINE_TO msg;
 
-				msg.bRop2 = rdpup_convert_opcode(pGC->alu);
-				msg.penColor = rdpup_convert_color(pGC->fgPixel);
-				msg.penWidth = pGC->lineWidth;
-				msg.penStyle = 0;
+			rdpup_begin_update();
+
+			msg.bRop2 = rdpup_convert_opcode(pGC->alu);
+			msg.penColor = rdpup_convert_color(pGC->fgPixel);
+			msg.penWidth = pGC->lineWidth;
+			msg.penStyle = 0;
+
+			for (j = REGION_NUM_RECTS(&clip_reg) - 1; j >= 0; j--)
+			{
+				box = REGION_RECTS(&clip_reg)[j];
+				rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
 				for (i = 0; i < nseg; i++)
 				{
@@ -138,44 +162,10 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 					msg.nYEnd = segs[i].y2;
 					rdpup_draw_line(&msg);
 				}
-
-				rdpup_end_update();
 			}
-		}
-	}
-	else if (cd == 2) /* clip */
-	{
-		if (segs != 0)
-		{
-			if (got_id)
-			{
-				XRDP_MSG_LINE_TO msg;
 
-				rdpup_begin_update();
-
-				msg.bRop2 = rdpup_convert_opcode(pGC->alu);
-				msg.penColor = rdpup_convert_color(pGC->fgPixel);
-				msg.penWidth = pGC->lineWidth;
-				msg.penStyle = 0;
-
-				for (j = REGION_NUM_RECTS(&clip_reg) - 1; j >= 0; j--)
-				{
-					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-
-					for (i = 0; i < nseg; i++)
-					{
-						msg.nXStart = segs[i].x1;
-						msg.nYStart = segs[i].y1;
-						msg.nXEnd = segs[i].x2;
-						msg.nYEnd = segs[i].y2;
-						rdpup_draw_line(&msg);
-					}
-				}
-
-				rdpup_reset_clip();
-				rdpup_end_update();
-			}
+			rdpup_reset_clip();
+			rdpup_end_update();
 		}
 	}
 

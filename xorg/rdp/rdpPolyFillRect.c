@@ -53,8 +53,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	RegionRec clip_reg;
 	RegionPtr fill_reg;
 	BoxRec box;
-
-	int got_id;
 	int post_process;
 	UINT32 dstblt_rop;
 
@@ -87,9 +85,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
@@ -106,19 +102,56 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 	if (cd == 1) /* no clip */
 	{
-		if (got_id)
-		{
-			rdpup_begin_update();
+		rdpup_begin_update();
 
+		dstblt_rop = rdp_dstblt_rop(pGC->alu);
+
+		if ((pGC->fillStyle == 0) && (dstblt_rop))
+		{
+			XRDP_MSG_DSTBLT msg;
+
+			for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
+			{
+				box = REGION_RECTS(fill_reg)[j];
+
+				msg.nLeftRect = box.x1;
+				msg.nTopRect = box.y1;
+				msg.nWidth = box.x2 - box.x1;
+				msg.nHeight = box.y2 - box.y1;
+				msg.bRop = dstblt_rop;
+
+				rdpup_dstblt(&msg);
+			}
+		}
+		else
+		{
+			for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
+			{
+				box = REGION_RECTS(fill_reg)[j];
+				rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+			}
+		}
+
+		rdpup_end_update();
+	}
+	else if (cd == 2) /* clip */
+	{
+		RegionIntersect(&clip_reg, &clip_reg, fill_reg);
+		num_clips = REGION_NUM_RECTS(&clip_reg);
+
+		if (num_clips > 0)
+		{
 			dstblt_rop = rdp_dstblt_rop(pGC->alu);
+
+			rdpup_begin_update();
 
 			if ((pGC->fillStyle == 0) && (dstblt_rop))
 			{
 				XRDP_MSG_DSTBLT msg;
 
-				for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
+				for (j = num_clips - 1; j >= 0; j--)
 				{
-					box = REGION_RECTS(fill_reg)[j];
+					box = REGION_RECTS(&clip_reg)[j];
 
 					msg.nLeftRect = box.x1;
 					msg.nTopRect = box.y1;
@@ -131,57 +164,14 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 			}
 			else
 			{
-				for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
+				for (j = num_clips - 1; j >= 0; j--)
 				{
-					box = REGION_RECTS(fill_reg)[j];
+					box = REGION_RECTS(&clip_reg)[j];
 					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 			}
 
 			rdpup_end_update();
-		}
-	}
-	else if (cd == 2) /* clip */
-	{
-		RegionIntersect(&clip_reg, &clip_reg, fill_reg);
-		num_clips = REGION_NUM_RECTS(&clip_reg);
-
-		if (num_clips > 0)
-		{
-			dstblt_rop = rdp_dstblt_rop(pGC->alu);
-
-			if (got_id)
-			{
-				rdpup_begin_update();
-
-				if ((pGC->fillStyle == 0) && (dstblt_rop))
-				{
-					XRDP_MSG_DSTBLT msg;
-
-					for (j = num_clips - 1; j >= 0; j--)
-					{
-						box = REGION_RECTS(&clip_reg)[j];
-
-						msg.nLeftRect = box.x1;
-						msg.nTopRect = box.y1;
-						msg.nWidth = box.x2 - box.x1;
-						msg.nHeight = box.y2 - box.y1;
-						msg.bRop = dstblt_rop;
-
-						rdpup_dstblt(&msg);
-					}
-				}
-				else
-				{
-					for (j = num_clips - 1; j >= 0; j--)
-					{
-						box = REGION_RECTS(&clip_reg)[j];
-						rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-					}
-				}
-
-				rdpup_end_update();
-			}
 		}
 	}
 

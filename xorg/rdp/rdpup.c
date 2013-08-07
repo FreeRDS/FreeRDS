@@ -44,7 +44,6 @@ static int g_button_mask = 0;
 static int g_cursor_x = 0;
 static int g_cursor_y = 0;
 static int g_count = 0;
-static int g_rdpindex = -1;
 
 static BYTE* pfbBackBufferMemory = NULL;
 
@@ -57,14 +56,6 @@ extern int g_use_rail;
 extern int g_use_uds;
 extern char g_uds_data[];
 extern int g_con_number;
-
-struct rdpup_os_bitmap
-{
-	int used;
-	PixmapPtr pixmap;
-	rdpPixmapPtr priv;
-	int stamp;
-};
 
 static int g_pixmap_byte_total = 0;
 static int g_pixmap_num_used = 0;
@@ -379,20 +370,9 @@ static int rdpup_disconnect(void)
 	g_sck_closed = 1;
 	g_pixmap_byte_total = 0;
 	g_pixmap_num_used = 0;
-	g_rdpindex = -1;
 	g_use_rail = 0;
 
 	return 0;
-}
-
-int rdpup_add_os_bitmap(PixmapPtr pixmap, rdpPixmapPtr priv)
-{
-	return -1;
-}
-
-int rdpup_remove_os_bitmap(int rdpindex)
-{
-	return 1;
 }
 
 /* returns error */
@@ -808,16 +788,6 @@ void rdpup_get_screen_image_rect(struct image_data *id)
 	id->pixels = g_rdpScreen.pfbMemory;
 }
 
-void rdpup_get_pixmap_image_rect(PixmapPtr pPixmap, struct image_data *id)
-{
-	id->width = pPixmap->drawable.width;
-	id->height = pPixmap->drawable.height;
-	id->bpp = g_rdpScreen.rdp_bpp;
-	id->Bpp = g_rdpScreen.rdp_Bpp;
-	id->lineBytes = pPixmap->devKind;
-	id->pixels = (char *)(pPixmap->devPrivate.ptr);
-}
-
 UINT32 rdpup_convert_color(UINT32 color)
 {
 	color = color & g_Bpp_mask;
@@ -1231,49 +1201,6 @@ int rdpup_set_pointer(XRDP_MSG_SET_POINTER* msg)
 	return 0;
 }
 
-int rdpup_create_os_surface(int rdpindex, int width, int height)
-{
-	XRDP_MSG_CREATE_OFFSCREEN_SURFACE msg;
-
-	msg.cacheIndex = rdpindex;
-	msg.nWidth = width;
-	msg.nHeight = height;
-
-	msg.type = XRDP_SERVER_CREATE_OFFSCREEN_SURFACE;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_switch_os_surface(int rdpindex)
-{
-	XRDP_MSG_SWITCH_OFFSCREEN_SURFACE msg;
-
-	if (g_rdpindex == rdpindex)
-		return 0;
-
-	g_rdpindex = rdpindex;
-
-	msg.cacheIndex = rdpindex;
-
-	msg.type = XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_delete_os_surface(int rdpindex)
-{
-	XRDP_MSG_DELETE_OFFSCREEN_SURFACE msg;
-
-	msg.cacheIndex = rdpindex;
-
-	msg.type = XRDP_SERVER_DELETE_OFFSCREEN_SURFACE;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
 void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 {
 	int i;
@@ -1497,23 +1424,6 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 
 		ly += 64;
 	}
-}
-
-void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
-{
-	XRDP_MSG_PAINT_OFFSCREEN_SURFACE msg;
-
-	msg.nLeftRect = x;
-	msg.nTopRect = y;
-	msg.nWidth = cx;
-	msg.nHeight = cy;
-	msg.cacheIndex = rdpindex;
-	msg.nXSrc = srcx;
-	msg.nYSrc = srcy;
-	msg.bRop = GDI_SRCCOPY;
-
-	msg.type = XRDP_SERVER_PAINT_OFFSCREEN_SURFACE;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
 }
 
 void rdpup_shared_framebuffer(XRDP_MSG_SHARED_FRAMEBUFFER* msg)

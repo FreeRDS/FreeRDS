@@ -46,9 +46,9 @@ static void rdpFillSpansOrg(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPoin
 
 void rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
+	int post_process;
 	RegionRec clip_reg;
 	int cd;
-	int got_id;
 	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
@@ -59,7 +59,7 @@ void rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptIn
 	/* do original call */
 	rdpFillSpansOrg(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 
-	got_id = 0;
+	post_process = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
@@ -74,27 +74,24 @@ void rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptIn
 
 			if (pDstWnd->viewable)
 			{
+				post_process = 1;
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
 			}
 		}
 	}
 
-	if (!got_id)
-	{
+	if (!post_process)
 		return;
-	}
 
 	RegionInit(&clip_reg, NullBox, 0);
 	cd = rdp_get_clip(&clip_reg, pDrawable, pGC);
 
 	if (cd == 1)
 	{
+
 	}
 	else if (cd == 2)
 	{
-	}
 
-	RegionUninit(&clip_reg);
-	rdpup_switch_os_surface(-1);
+	}
 }

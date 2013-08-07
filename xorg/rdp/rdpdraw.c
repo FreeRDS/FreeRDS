@@ -414,7 +414,6 @@ PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, u
 	pScreen->CreatePixmap = g_rdpScreen.CreatePixmap;
 	rv = pScreen->CreatePixmap(pScreen, width, height, depth, usage_hint);
 	priv = GETPIXPRIV(rv);
-	priv->rdpindex = -1;
 	priv->con_number = g_con_number;
 	priv->kind_width = width;
 	pScreen->ModifyPixmapHeader(rv, org_width, height, depth, 0, 0, 0);
@@ -843,7 +842,6 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	int j;
 	int num_clips;
 	int post_process;
-	int got_id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
@@ -859,7 +857,6 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 	p = pDst->pDrawable;
 
 	post_process = 0;
-	got_id = 0;
 
 	if (p->type == DRAWABLE_PIXMAP)
 	{
@@ -875,18 +872,13 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
 				rdpup_get_screen_image_rect(&id);
-				got_id = 1;
-				LLOGLN(10, ("rdpComposite: screen"));
 			}
 		}
 	}
 
 	if (!post_process)
-	{
 		return;
-	}
 
 	if (pDst->pCompositeClip != 0)
 	{
@@ -899,22 +891,19 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 		RegionCopy(&reg2, pDst->pCompositeClip);
 		RegionIntersect(&reg1, &reg1, &reg2);
 
-		if (got_id)
+		num_clips = REGION_NUM_RECTS(&reg1);
+
+		if (num_clips > 0)
 		{
-			num_clips = REGION_NUM_RECTS(&reg1);
+			rdpup_begin_update();
 
-			if (num_clips > 0)
+			for (j = num_clips - 1; j >= 0; j--)
 			{
-				rdpup_begin_update();
-
-				for (j = num_clips - 1; j >= 0; j--)
-				{
-					box = REGION_RECTS(&reg1)[j];
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-				}
-
-				rdpup_end_update();
+				box = REGION_RECTS(&reg1)[j];
+				rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
+
+			rdpup_end_update();
 		}
 
 		RegionUninit(&reg1);
@@ -927,12 +916,9 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 		box.x2 = box.x1 + width;
 		box.y2 = box.y1 + height;
 
-		if (got_id)
-		{
-			rdpup_begin_update();
-			rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-			rdpup_end_update();
-		}
+		rdpup_begin_update();
+		rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+		rdpup_end_update();
 	}
 }
 

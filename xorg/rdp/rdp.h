@@ -199,7 +199,6 @@ typedef rdpWindowRec* rdpWindowPtr;
 struct _rdpPixmapRec
 {
 	int status;
-	int rdpindex;
 	int con_number;
 	int pad0;
 	int kind_width;
@@ -274,10 +273,7 @@ void KbdAddEvent(int down, int param1, int param2, int param3, int param4);
 void KbdSync(int param1);
 
 /* rdpup.c */
-int rdpup_add_os_bitmap(PixmapPtr pixmap, rdpPixmapPtr priv);
-int rdpup_remove_os_bitmap(int rdpindex);
 void rdpup_get_screen_image_rect(struct image_data* id);
-void rdpup_get_pixmap_image_rect(PixmapPtr pPixmap, struct image_data* id);
 UINT32 rdpup_convert_color(UINT32 color);
 UINT32 rdpup_convert_opcode(int opcode);
 UINT32 rdp_dstblt_rop(int opcode);
@@ -296,10 +292,6 @@ int rdpup_draw_line(XRDP_MSG_LINE_TO* msg);
 void rdpup_send_area(struct image_data* id, int x, int y, int w, int h);
 void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h);
 int rdpup_set_pointer(XRDP_MSG_SET_POINTER* msg);
-int rdpup_create_os_surface(int rdpindexd, int width, int height);
-int rdpup_switch_os_surface(int rdpindex);
-int rdpup_delete_os_surface(int rdpindex);
-void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy);
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);
 void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec* priv);
 void rdpup_shared_framebuffer(XRDP_MSG_SHARED_FRAMEBUFFER* msg);
