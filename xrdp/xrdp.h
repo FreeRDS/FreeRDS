@@ -630,7 +630,6 @@ struct xrdp_mod
 	struct brush_item brush_cache[64];
 	struct pointer_item pointer_cache[32];
 
-	pixman_image_t* fbImage;
 	XRDP_FRAMEBUFFER framebuffer;
 
 	HANDLE StopEvent;

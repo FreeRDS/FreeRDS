@@ -512,7 +512,6 @@ int callback(long id, int msg, long param1, long param2, long param3, long param
 {
 	int rv;
 	xrdpWm *wm;
-	xrdpRect rect;
 
 	if (!id)
 	{

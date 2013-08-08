@@ -73,6 +73,7 @@ struct _XRDP_FRAMEBUFFER
 	int fbBitsPerPixel;
 	int fbBytesPerPixel;
 	BYTE* fbSharedMemory;
+	void* image;
 };
 typedef struct _XRDP_FRAMEBUFFER XRDP_FRAMEBUFFER;
 

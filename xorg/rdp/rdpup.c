@@ -1213,108 +1213,12 @@ void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 
 void rdpup_send_area(struct image_data* id, int x, int y, int w, int h)
 {
-	char* s;
-	int i;
-	int lx;
-	int ly;
-	int lh;
-	int lw;
-	char* dstp;
-	int bitmapLength;
 	struct image_data lid;
 
 	rdpup_get_screen_image_rect(&lid);
 	id = &lid;
 
-	if (g_rdpScreen.CodecMode)
-	{
-		rdpup_send_area_codec(id, x, y, w, h);
-		return;
-	}
-
-	if (x >= id->width)
-	{
-		return;
-	}
-
-	if (y >= id->height)
-	{
-		return;
-	}
-
-	if (x < 0)
-	{
-		w += x;
-		x = 0;
-	}
-
-	if (y < 0)
-	{
-		h += y;
-		y = 0;
-	}
-
-	if (w <= 0)
-	{
-		return;
-	}
-
-	if (h <= 0)
-	{
-		return;
-	}
-
-	if (x + w > id->width)
-	{
-		w = id->width - x;
-	}
-
-	if (y + h > id->height)
-	{
-		h = id->height - y;
-	}
-
-	ly = y;
-
-	while (ly < y + h)
-	{
-		lx = x;
-
-		while (lx < x + w)
-		{
-			lw = MIN(64, (x + w) - lx);
-			lh = MIN(64, (y + h) - ly);
-
-			XRDP_MSG_PAINT_RECT msg;
-
-			bitmapLength = lw * lh * id->Bpp;
-
-			for (i = 0; i < lh; i++)
-			{
-				dstp = (char*) &pfbBackBufferMemory[lw * id->Bpp * i];
-				s = (id->pixels + ((ly + i) * id->lineBytes) + (lx * g_Bpp));
-				convert_pixels(s, dstp, lw);
-			}
-
-			msg.nLeftRect = lx;
-			msg.nTopRect = ly;
-			msg.nWidth = lw;
-			msg.nHeight = lh;
-			msg.nXSrc = 0;
-			msg.nYSrc = 0;
-
-			msg.fbSegmentId = 0;
-			msg.bitmapData = (BYTE*) pfbBackBufferMemory;
-			msg.bitmapDataLength = bitmapLength;
-
-			msg.type = XRDP_SERVER_PAINT_RECT;
-			rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-			lx += 64;
-		}
-
-		ly += 64;
-	}
+	rdpup_send_area_codec(id, x, y, w, h);
 }
 
 void rdpup_shared_framebuffer(XRDP_MSG_SHARED_FRAMEBUFFER* msg)

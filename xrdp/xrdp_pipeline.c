@@ -359,7 +359,7 @@ int xrdp_message_server_queue_pack(xrdpModule* mod)
 	pixman_box32_t* extents;
 	pixman_region32_t region;
 
-	CodecMode = 0;
+	CodecMode = 1;
 	list = mod->ServerList;
 
 	pixman_region32_init(&region);

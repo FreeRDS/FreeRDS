@@ -26,6 +26,8 @@
 
 #include "core.h"
 
+#include <pixman.h>
+
 /**
  * Custom helpers
  */
@@ -130,7 +132,6 @@ int libxrdp_send_bell(xrdpSession* session)
 
 int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT* msg)
 {
-	int y;
 	BYTE* data;
 	BYTE* tile;
 	BYTE* buffer;
@@ -140,14 +141,55 @@ int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_REC
 	int e, lines;
 	int scanline;
 	int rows, cols;
+	int MaxRegionWidth;
+	int MaxRegionHeight;
 	INT32 nWidth, nHeight;
+	pixman_image_t* image;
+	pixman_image_t* fbImage;
 	BITMAP_DATA* bitmapData;
 	BITMAP_UPDATE bitmapUpdate;
 	rdpUpdate* update = session->client->update;
 
 	printf("%s\n", __FUNCTION__);
 
+	MaxRegionWidth = 64 * 4;
+	MaxRegionHeight = 64 * 1;
+
+	if ((msg->nWidth * msg->nHeight) > (MaxRegionWidth * MaxRegionHeight))
+	{
+		XRDP_MSG_PAINT_RECT subMsg;
+
+		rows = (msg->nWidth + (MaxRegionWidth - (msg->nWidth % MaxRegionWidth))) / MaxRegionWidth;
+		cols = (msg->nHeight + (MaxRegionHeight - (msg->nHeight % MaxRegionHeight))) / MaxRegionHeight;
+
+		//printf("Partitioning x: %d y: %d width: %d height: %d in %d partitions (%d rows, %d cols)\n",
+		//		msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight, rows * cols, rows, cols);
+
+		for (i = 0; i < rows; i++)
+		{
+			for (j = 0; j < cols; j++)
+			{
+				CopyMemory(&subMsg, msg, sizeof(XRDP_MSG_PAINT_RECT));
+
+				subMsg.nLeftRect = msg->nLeftRect + (i * MaxRegionWidth);
+				subMsg.nTopRect = msg->nTopRect + (j * MaxRegionHeight);
+
+				subMsg.nWidth = (i < (rows - 1)) ? MaxRegionWidth : msg->nWidth - (i * MaxRegionWidth);
+				subMsg.nHeight = (j < (cols - 1)) ? MaxRegionHeight : msg->nHeight - (j * MaxRegionHeight);
+
+				//printf("\t[%d, %d]: x: %d y: %d width: %d height; %d\n",
+				//		i, j, subMsg.nLeftRect, subMsg.nTopRect, subMsg.nWidth, subMsg.nHeight);
+
+				if ((subMsg.nWidth * subMsg.nHeight) > 0)
+					libxrdp_send_bitmap_update(session, bpp, &subMsg);
+			}
+		}
+
+		return 0;
+	}
+
 	tile = (BYTE*) malloc(64 * 64 * 4);
+	fbImage = (pixman_image_t*) msg->framebuffer->image;
 
 	rows = (msg->nWidth + (64 - (msg->nWidth % 64))) / 64;
 	cols = (msg->nHeight + (64 - (msg->nHeight % 64))) / 64;
@@ -164,7 +206,7 @@ int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_REC
 			nWidth = (i < (rows - 1)) ? 64 : msg->nWidth - (i * 64);
 			nHeight = (j < (cols - 1)) ? 64 : msg->nHeight - (j * 64);
 
-			bitmapData[k].bitsPerPixel = bpp;
+			bitmapData[k].bitsPerPixel = 16;
 			bitmapData[k].width = nWidth;
 			bitmapData[k].height = nHeight;
 			bitmapData[k].destLeft = msg->nLeftRect + (i * 64);
@@ -173,16 +215,16 @@ int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_REC
 			bitmapData[k].destBottom = bitmapData[k].destTop + nHeight - 1;
 			bitmapData[k].compressed = TRUE;
 
-			printf("k: %d destLeft: %d destTop: %d destRight: %d destBottom: %d nWidth: %d nHeight: %d\n",
-					k, bitmapData[k].destLeft, bitmapData[k].destTop,
-					bitmapData[k].destRight, bitmapData[k].destBottom, nWidth, nHeight);
-
-			if ((nWidth * nHeight) > 0)
+			if (((nWidth * nHeight) > 0) && (nWidth >= 4) && (nHeight >= 4))
 			{
 				e = nWidth % 4;
 
 				if (e != 0)
 					e = 4 - e;
+
+				//printf("k: %d destLeft: %d destTop: %d destRight: %d destBottom: %d nWidth: %d nHeight: %d\n",
+				//		k, bitmapData[k].destLeft, bitmapData[k].destTop,
+				//		bitmapData[k].destRight, bitmapData[k].destBottom, nWidth, nHeight);
 
 				s = session->bs;
 				ts = session->bts;
@@ -196,13 +238,13 @@ int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_REC
 
 				scanline = msg->framebuffer->fbScanline;
 
-				for (y = 0; y < nHeight; y++)
-				{
-					CopyMemory(&tile[nWidth * y * 4], data, nWidth * 4);
-					data += scanline;
-				}
+				image = pixman_image_create_bits(PIXMAN_r5g6b5, nWidth, nHeight, (uint32_t*) tile, nWidth * 2);
 
-				lines = freerdp_bitmap_compress((char*) tile, nWidth, nHeight, s, 24, 16384, nHeight - 1, ts, e);
+				pixman_image_composite(PIXMAN_OP_OVER, fbImage, NULL, image,
+						bitmapData[k].destLeft, bitmapData[k].destTop, 0, 0, 0, 0, nWidth, nHeight);
+
+				lines = freerdp_bitmap_compress((char*) pixman_image_get_data(image),
+						nWidth, nHeight, s, 16, 16384, nHeight - 1, ts, e);
 				Stream_SealLength(s);
 
 				bitmapData[k].bitmapDataStream = Stream_Buffer(s);
@@ -213,10 +255,12 @@ int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_REC
 
 				bitmapData[k].bitmapDataStream = buffer;
 
-				bitmapData[k].cbCompFirstRowSize = nWidth * 4;
+				bitmapData[k].cbCompFirstRowSize = 0;
 				bitmapData[k].cbCompMainBodySize = bitmapData[k].bitmapLength;
-				bitmapData[k].cbScanWidth = nWidth * 4;
-				bitmapData[k].cbUncompressedSize = nWidth * nHeight * 4;
+				bitmapData[k].cbScanWidth = nWidth * 2;
+				bitmapData[k].cbUncompressedSize = nWidth * nHeight * 2;
+
+				pixman_image_unref(image);
 
 				k++;
 			}
@@ -233,6 +277,7 @@ int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_REC
 	}
 
 	free(bitmapData);
+	free(tile);
 
 	return 0;
 }

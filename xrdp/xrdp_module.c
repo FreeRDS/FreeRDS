@@ -135,21 +135,7 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	}
 	else
 	{
-#if 0
 		libxrdp_send_bitmap_update(wm->session, bpp, msg);
-#else
-		p = (xrdpPainter*) (mod->painter);
-
-		if (!p)
-			return 0;
-
-		b = xrdp_bitmap_create_with_data(msg->nWidth, msg->nHeight, bpp, (char*) msg->bitmapData, wm);
-
-		xrdp_painter_copy(p, b, wm->target_surface, msg->nLeftRect, msg->nTopRect,
-				msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
-
-		xrdp_bitmap_delete(b);
-#endif
 	}
 
 	return 0;
@@ -287,6 +273,10 @@ int xrdp_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER*
 
 		printf("attached segment %d to %p\n",
 				mod->framebuffer.fbSegmentId, mod->framebuffer.fbSharedMemory);
+
+		mod->framebuffer.image = (void*) pixman_image_create_bits(PIXMAN_x8r8g8b8,
+				mod->framebuffer.fbWidth, mod->framebuffer.fbHeight,
+				(uint32_t*) mod->framebuffer.fbSharedMemory, mod->framebuffer.fbScanline);
 	}
 
 	if (mod->framebuffer.fbAttached && !msg->attach)
