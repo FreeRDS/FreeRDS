@@ -94,7 +94,7 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 	if (cd == 1)
 	{
 		rdpup_begin_update();
-		rdpup_send_area(0, pDst->x + x, pDst->y + y, w, h);
+		rdpup_send_area(pDst->x + x, pDst->y + y, w, h);
 		rdpup_end_update();
 	}
 	else if (cd == 2)
@@ -114,7 +114,7 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 			for (j = num_clips - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&clip_reg)[j];
-				rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
 
 			rdpup_end_update();

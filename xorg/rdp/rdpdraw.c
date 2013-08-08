@@ -738,7 +738,7 @@ void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool gener
 		for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
 		{
 			box = REGION_RECTS(&reg)[j];
-			rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+			rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 		}
 
 		rdpup_end_update();
@@ -765,7 +765,7 @@ RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 	for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
 	{
 		box = REGION_RECTS(&reg)[j];
-		rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 	}
 
 	rdpup_end_update();
@@ -898,7 +898,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 			for (j = num_clips - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&reg1)[j];
-				rdpup_send_area(NULL, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
 
 			rdpup_end_update();
@@ -915,7 +915,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 		box.y2 = box.y1 + height;
 
 		rdpup_begin_update();
-		rdpup_send_area(NULL, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 		rdpup_end_update();
 	}
 }
@@ -1019,7 +1019,7 @@ void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFor
 	GlyphExtents(nlists, lists, glyphs, &box);
 
 	rdpup_begin_update();
-	rdpup_send_area(0, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+	rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 	rdpup_end_update();
 
 	LLOGLN(10, ("rdpGlyphs: out"));

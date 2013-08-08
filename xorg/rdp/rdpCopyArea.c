@@ -209,7 +209,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 	if (cd == 1)
 	{
 		rdpup_begin_update();
-		rdpup_send_area(NULL, pDst->x + dstx, pDst->y + dsty, w, h);
+		rdpup_send_area(pDst->x + dstx, pDst->y + dsty, w, h);
 		rdpup_end_update();
 	}
 	else if (cd == 2)
@@ -232,14 +232,14 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 				for (j = num_clips - 1; j >= 0; j--)
 				{
 					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_send_area(NULL, box.x1, box.y1, box.x2 - box.x1,
+					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1,
 							box.y2 - box.y1);
 				}
 			}
 			else
 			{
 				pbox = RegionExtents(&clip_reg);
-				rdpup_send_area(NULL, pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
+				rdpup_send_area(pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
 						pbox->y2 - pbox->y1);
 			}
 
