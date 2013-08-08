@@ -128,9 +128,112 @@ int libxrdp_send_bell(xrdpSession* session)
 	return 0;
 }
 
-int libxrdp_send_bitmap(xrdpSession* session, int width, int height, int bpp, char* data, int x, int y, int cx, int cy)
+int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT* msg)
 {
+	int y;
+	BYTE* data;
+	BYTE* tile;
+	BYTE* buffer;
+	int i, j, k;
+	wStream* s;
+	wStream* ts;
+	int e, lines;
+	int scanline;
+	int rows, cols;
+	INT32 nWidth, nHeight;
+	BITMAP_DATA* bitmapData;
+	BITMAP_UPDATE bitmapUpdate;
+	rdpUpdate* update = session->client->update;
+
 	printf("%s\n", __FUNCTION__);
+
+	tile = (BYTE*) malloc(64 * 64 * 4);
+
+	rows = (msg->nWidth + (64 - (msg->nWidth % 64))) / 64;
+	cols = (msg->nHeight + (64 - (msg->nHeight % 64))) / 64;
+
+	k = 0;
+	bitmapUpdate.count = bitmapUpdate.number = rows * cols;
+	bitmapData = (BITMAP_DATA*) malloc(sizeof(BITMAP_DATA) * bitmapUpdate.number);
+	bitmapUpdate.rectangles = bitmapData;
+
+	for (i = 0; i < rows; i++)
+	{
+		for (j = 0; j < cols; j++)
+		{
+			nWidth = (i < (rows - 1)) ? 64 : msg->nWidth - (i * 64);
+			nHeight = (j < (cols - 1)) ? 64 : msg->nHeight - (j * 64);
+
+			bitmapData[k].bitsPerPixel = bpp;
+			bitmapData[k].width = nWidth;
+			bitmapData[k].height = nHeight;
+			bitmapData[k].destLeft = msg->nLeftRect + (i * 64);
+			bitmapData[k].destTop = msg->nTopRect + (j * 64);
+			bitmapData[k].destRight = bitmapData[k].destLeft + nWidth - 1;
+			bitmapData[k].destBottom = bitmapData[k].destTop + nHeight - 1;
+			bitmapData[k].compressed = TRUE;
+
+			printf("k: %d destLeft: %d destTop: %d destRight: %d destBottom: %d nWidth: %d nHeight: %d\n",
+					k, bitmapData[k].destLeft, bitmapData[k].destTop,
+					bitmapData[k].destRight, bitmapData[k].destBottom, nWidth, nHeight);
+
+			if ((nWidth * nHeight) > 0)
+			{
+				e = nWidth % 4;
+
+				if (e != 0)
+					e = 4 - e;
+
+				s = session->bs;
+				ts = session->bts;
+
+				Stream_SetPosition(s, 0);
+				Stream_SetPosition(ts, 0);
+
+				data = msg->framebuffer->fbSharedMemory;
+				data = &data[(bitmapData[k].destTop * msg->framebuffer->fbScanline) +
+				             (bitmapData[k].destLeft * msg->framebuffer->fbBytesPerPixel)];
+
+				scanline = msg->framebuffer->fbScanline;
+
+				for (y = 0; y < nHeight; y++)
+				{
+					CopyMemory(&tile[nWidth * y * 4], data, nWidth * 4);
+					data += scanline;
+				}
+
+				lines = freerdp_bitmap_compress((char*) tile, nWidth, nHeight, s, 24, 16384, nHeight - 1, ts, e);
+				Stream_SealLength(s);
+
+				bitmapData[k].bitmapDataStream = Stream_Buffer(s);
+				bitmapData[k].bitmapLength = Stream_Length(s);
+
+				buffer = (BYTE*) malloc(bitmapData[k].bitmapLength);
+				CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
+
+				bitmapData[k].bitmapDataStream = buffer;
+
+				bitmapData[k].cbCompFirstRowSize = nWidth * 4;
+				bitmapData[k].cbCompMainBodySize = bitmapData[k].bitmapLength;
+				bitmapData[k].cbScanWidth = nWidth * 4;
+				bitmapData[k].cbUncompressedSize = nWidth * nHeight * 4;
+
+				k++;
+			}
+		}
+	}
+
+	bitmapUpdate.count = bitmapUpdate.number = k;
+
+	IFCALL(update->BitmapUpdate, session->context, &bitmapUpdate);
+
+	for (k = 0; k < bitmapUpdate.number; k++)
+	{
+		free(bitmapData[k].bitmapDataStream);
+	}
+
+	free(bitmapData);
+
 	return 0;
 }
 

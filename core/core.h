@@ -151,7 +151,7 @@ FREERDP_API int libxrdp_send_palette(xrdpSession* session, int* palette);
 
 FREERDP_API int libxrdp_send_bell(xrdpSession* session);
 
-FREERDP_API int libxrdp_send_bitmap(xrdpSession* session, int width, int height, int bpp, char* data, int x, int y, int cx, int cy);
+FREERDP_API int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT* msg);
 
 FREERDP_API int libxrdp_send_pointer(xrdpSession* session, int cache_idx, char* data, char* mask, int x, int y, int bpp);
 

@@ -275,92 +275,6 @@ int convert_pixels(void *src, void *dst, int num_pixels)
 	return 0;
 }
 
-static int get_single_color(struct image_data *id, int x, int y, int w, int h)
-{
-	int rv;
-	int i;
-	int j;
-	int p;
-	unsigned char *i8;
-	unsigned short *i16;
-	unsigned int *i32;
-
-	p = 0;
-	rv = -1;
-
-	if (g_Bpp == 1)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i8 = (unsigned char *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i8;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i8[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-	else if (g_Bpp == 2)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i16 = (unsigned short *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i16;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i16[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-	else if (g_Bpp == 4)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i32 = (unsigned int *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i32;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i32[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-
-	return rv;
-}
-
 static int rdpup_disconnect(void)
 {
 	RemoveEnabledDevice(g_sck);
@@ -1297,7 +1211,6 @@ void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 }
 
-/* split the bitmap up into 64 x 64 pixel areas */
 void rdpup_send_area(struct image_data* id, int x, int y, int w, int h)
 {
 	char* s;
@@ -1307,7 +1220,6 @@ void rdpup_send_area(struct image_data* id, int x, int y, int w, int h)
 	int lh;
 	int lw;
 	char* dstp;
-	int single_color;
 	int bitmapLength;
 	struct image_data lid;
 
@@ -1372,49 +1284,31 @@ void rdpup_send_area(struct image_data* id, int x, int y, int w, int h)
 		{
 			lw = MIN(64, (x + w) - lx);
 			lh = MIN(64, (y + h) - ly);
-			single_color = get_single_color(id, lx, ly, lw, lh);
 
-			if (single_color != -1)
+			XRDP_MSG_PAINT_RECT msg;
+
+			bitmapLength = lw * lh * id->Bpp;
+
+			for (i = 0; i < lh; i++)
 			{
-				XRDP_MSG_OPAQUE_RECT msg;
-
-				LLOGLN(10, ("%d sending single color", g_count));
-
-				msg.nLeftRect = lx;
-				msg.nTopRect = ly;
-				msg.nWidth = lw;
-				msg.nHeight = lh;
-				msg.color = rdpup_convert_color(single_color);
-
-				rdpup_opaque_rect(&msg);
+				dstp = (char*) &pfbBackBufferMemory[lw * id->Bpp * i];
+				s = (id->pixels + ((ly + i) * id->lineBytes) + (lx * g_Bpp));
+				convert_pixels(s, dstp, lw);
 			}
-			else
-			{
-				XRDP_MSG_PAINT_RECT msg;
 
-				bitmapLength = lw * lh * id->Bpp;
+			msg.nLeftRect = lx;
+			msg.nTopRect = ly;
+			msg.nWidth = lw;
+			msg.nHeight = lh;
+			msg.nXSrc = 0;
+			msg.nYSrc = 0;
 
-				for (i = 0; i < lh; i++)
-				{
-					dstp = (char*) &pfbBackBufferMemory[lw * id->Bpp * i];
-					s = (id->pixels + ((ly + i) * id->lineBytes) + (lx * g_Bpp));
-					convert_pixels(s, dstp, lw);
-				}
+			msg.fbSegmentId = 0;
+			msg.bitmapData = (BYTE*) pfbBackBufferMemory;
+			msg.bitmapDataLength = bitmapLength;
 
-				msg.nLeftRect = lx;
-				msg.nTopRect = ly;
-				msg.nWidth = lw;
-				msg.nHeight = lh;
-				msg.nXSrc = 0;
-				msg.nYSrc = 0;
-
-				msg.fbSegmentId = 0;
-				msg.bitmapData = (BYTE*) pfbBackBufferMemory;
-				msg.bitmapDataLength = bitmapLength;
-
-				msg.type = XRDP_SERVER_PAINT_RECT;
-				rdpup_update((XRDP_MSG_COMMON*) &msg);
-			}
+			msg.type = XRDP_SERVER_PAINT_RECT;
+			rdpup_update((XRDP_MSG_COMMON*) &msg);
 
 			lx += 64;
 		}

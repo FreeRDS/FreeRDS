@@ -135,6 +135,9 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	}
 	else
 	{
+#if 0
+		libxrdp_send_bitmap_update(wm->session, bpp, msg);
+#else
 		p = (xrdpPainter*) (mod->painter);
 
 		if (!p)
@@ -146,6 +149,7 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 				msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
 
 		xrdp_bitmap_delete(b);
+#endif
 	}
 
 	return 0;
