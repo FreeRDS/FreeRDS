@@ -152,13 +152,6 @@ struct _rdpScreenInfoRec
 	int rdp_bpp;
 	int rdp_Bpp;
 	int rdp_Bpp_mask;
-
-	int Jpeg;
-	int NSCodec;
-	int RemoteFX;
-	int CodecMode;
-	int RailSupportLevel;
-	int PointerFlags;
 };
 typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
 typedef rdpScreenInfoRec* rdpScreenInfoPtr;
@@ -281,6 +274,7 @@ int rdpup_init(void);
 int rdpup_check(void);
 int rdpup_begin_update(void);
 int rdpup_end_update(void);
+int rdpup_check_attach_framebuffer();
 int rdpup_opaque_rect(XRDP_MSG_OPAQUE_RECT* msg);
 int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy);
 int rdpup_patblt(XRDP_MSG_PATBLT* msg);

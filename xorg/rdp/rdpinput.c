@@ -615,7 +615,7 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 	w = pCurs->bits->width;
 	h = pCurs->bits->height;
 
-	if ((pCurs->bits->argb != 0) && (g_rdpScreen.PointerFlags & 1))
+	if (pCurs->bits->argb)
 	{
 		bpp = 32;
 		paddedRowBytes = PixmapBytePad(w, 32);
@@ -631,39 +631,6 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 			{
 				p = get_pixel_safe(data, i, j, paddedRowBytes / 4, h, 32);
 				set_pixel_safe(cur_data, i, 31 - j, 32, 32, 32, p);
-			}
-		}
-	}
-	else
-	{
-		bpp = 0;
-		paddedRowBytes = PixmapBytePad(w, 1);
-		msg.xPos = pCurs->bits->xhot;
-		msg.yPos = pCurs->bits->yhot;
-		data = (char*)(pCurs->bits->source);
-		mask = (char*)(pCurs->bits->mask);
-		fgcolor = (((pCurs->foreRed >> 8) & 0xff) << 16) |
-				(((pCurs->foreGreen >> 8) & 0xff) << 8) |
-				((pCurs->foreBlue >> 8) & 0xff);
-		bgcolor = (((pCurs->backRed >> 8) & 0xff) << 16) |
-				(((pCurs->backGreen >> 8) & 0xff) << 8) |
-				((pCurs->backBlue >> 8) & 0xff);
-		ZeroMemory(cur_data, sizeof(cur_data));
-		ZeroMemory(cur_mask, sizeof(cur_mask));
-
-		for (j = 0; j < 32; j++)
-		{
-			for (i = 0; i < 32; i++)
-			{
-				p = get_pixel_safe(mask, i, j, paddedRowBytes * 8, h, 1);
-				set_pixel_safe(cur_mask, i, 31 - j, 32, 32, 1, !p);
-
-				if (p != 0)
-				{
-					p = get_pixel_safe(data, i, j, paddedRowBytes * 8, h, 1);
-					p = p ? fgcolor : bgcolor;
-					set_pixel_safe(cur_data, i, 31 - j, 32, 32, 24, p);
-				}
 			}
 		}
 	}

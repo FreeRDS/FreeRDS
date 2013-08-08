@@ -436,23 +436,6 @@ static int rdpup_process_capabilities_msg(wStream* s)
 
 	xrdp_read_capabilities(s, &msg);
 
-	g_rdpScreen.Jpeg = (msg.SupportedCodecs & XRDP_CODEC_JPEG) ? TRUE : FALSE;
-	g_rdpScreen.NSCodec = (msg.SupportedCodecs & XRDP_CODEC_NSCODEC) ? TRUE : FALSE;
-	g_rdpScreen.RemoteFX = (msg.SupportedCodecs & XRDP_CODEC_REMOTEFX) ? TRUE : FALSE;
-	g_rdpScreen.CodecMode = msg.SupportedCodecs ? TRUE : FALSE;
-
-	g_rdpScreen.RailSupportLevel = msg.RailSupportLevel;
-	g_rdpScreen.PointerFlags = msg.PointerFlags;
-
-	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
-			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
-
-	if (g_rdpScreen.RailSupportLevel > 0)
-	{
-		g_use_rail = 1;
-		rdpup_send_rail();
-	}
-
 	process_screen_parameters(msg.DesktopWidth, msg.DesktopHeight, msg.ColorDepth);
 
 	return 0;
@@ -894,13 +877,32 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 	return 0;
 }
 
+int rdpup_check_attach_framebuffer()
+{
+	if (g_rdpScreen.sharedMemory && !g_rdpScreen.fbAttached)
+	{
+		XRDP_MSG_SHARED_FRAMEBUFFER msg;
+
+		msg.attach = 1;
+		msg.width = g_rdpScreen.width;
+		msg.height = g_rdpScreen.height;
+		msg.scanline = g_rdpScreen.paddedWidthInBytes;
+		msg.segmentId = g_rdpScreen.segmentId;
+		msg.bitsPerPixel = g_rdpScreen.depth;
+		msg.bytesPerPixel = g_Bpp;
+
+		msg.type = XRDP_SERVER_SHARED_FRAMEBUFFER;
+		rdpup_update((XRDP_MSG_COMMON*) &msg);
+
+		g_rdpScreen.fbAttached = 1;
+	}
+
+	return 0;
+}
+
 int rdpup_opaque_rect(XRDP_MSG_OPAQUE_RECT* msg)
 {
-	if (g_rdpScreen.CodecMode)
-	{
-		rdpup_send_area(msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
-		return 0;
-	}
+	rdpup_check_attach_framebuffer();
 
 	msg->type = XRDP_SERVER_OPAQUE_RECT;
 	rdpup_update((XRDP_MSG_COMMON*) msg);
@@ -912,11 +914,7 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 {
 	XRDP_MSG_SCREEN_BLT msg;
 
-	if (g_rdpScreen.CodecMode)
-	{
-		rdpup_send_area(x, y, cx, cy);
-		return 0;
-	}
+	rdpup_check_attach_framebuffer();
 
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
@@ -933,11 +931,7 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 
 int rdpup_patblt(XRDP_MSG_PATBLT* msg)
 {
-	if (g_rdpScreen.CodecMode)
-	{
-		rdpup_send_area(msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
-		return 0;
-	}
+	rdpup_check_attach_framebuffer();
 
 	msg->type = XRDP_SERVER_PATBLT;
 	rdpup_update((XRDP_MSG_COMMON*) msg);
@@ -947,11 +941,7 @@ int rdpup_patblt(XRDP_MSG_PATBLT* msg)
 
 int rdpup_dstblt(XRDP_MSG_DSTBLT* msg)
 {
-	if (g_rdpScreen.CodecMode)
-	{
-		rdpup_send_area(msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
-		return 0;
-	}
+	rdpup_check_attach_framebuffer();
 
 	msg->type = XRDP_SERVER_DSTBLT;
 	rdpup_update((XRDP_MSG_COMMON*) msg);
