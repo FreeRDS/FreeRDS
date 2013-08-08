@@ -677,11 +677,6 @@ int x11rdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
 	{
 		g_strncpy(mod->port, value, 255);
 	}
-	else if (g_strcasecmp(name, "rfx") == 0)
-	{
-		mod->rfx = g_atoi(value);
-		g_writeln("mod->rfx = %d",mod->rfx);
-	}
 	else if (g_strcasecmp(name, "settings") == 0)
 	{
 		mod->settings = (rdpSettings*) value;

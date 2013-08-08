@@ -351,15 +351,18 @@ int xrdp_message_server_align_rect(xrdpModule* mod, XRDP_RECT* rect)
 
 int xrdp_message_server_queue_pack(xrdpModule* mod)
 {
-	int CodecMode;
 	XRDP_RECT rect;
+	int ChainedMode;
 	wLinkedList* list;
+	xrdpSession* session;
 	XRDP_MSG_COMMON* node;
 	pixman_bool_t status;
 	pixman_box32_t* extents;
 	pixman_region32_t region;
 
-	CodecMode = 1;
+	ChainedMode = 0;
+	session = ((xrdpWm*) (mod->wm))->session;
+
 	list = mod->ServerList;
 
 	pixman_region32_init(&region);
@@ -370,7 +373,7 @@ int xrdp_message_server_queue_pack(xrdpModule* mod)
 	{
 		node = (XRDP_MSG_COMMON*) LinkedList_Enumerator_Current(list);
 
-		if (CodecMode && (node->msgFlags & XRDP_MSG_FLAG_RECT))
+		if ((!ChainedMode) && (node->msgFlags & XRDP_MSG_FLAG_RECT))
 		{
 			status = pixman_region32_union_rect(&region, &region,
 					node->rect.x, node->rect.y, node->rect.width, node->rect.height);
@@ -383,7 +386,7 @@ int xrdp_message_server_queue_pack(xrdpModule* mod)
 
 	LinkedList_Clear(list);
 
-	if (CodecMode)
+	if (!ChainedMode)
 	{
 		extents = pixman_region32_extents(&region);
 
