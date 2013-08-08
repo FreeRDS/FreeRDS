@@ -12,12 +12,20 @@ set(MODULE_PREFIX "X11RDP")
 
 set(XSRCBASE_RELATIVE "../xorg-server")
 set(XOBJBASE_RELATIVE "../xorg-server")
-#set(XOBJBASE_RELATIVE "../xorg-server/build-main")
+
+# include local settings to overwrite/set some build options
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/LocalConfigSettings.cmake)
+message(STATUS "Using local settings")
+include(${CMAKE_CURRENT_SOURCE_DIR}/LocalConfigSettings.cmake)
+else()
+endif()
+
 
 set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
 set(XOBJBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XOBJBASE_RELATIVE}")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -fno-strength-reduce")
+
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 
@@ -249,6 +257,10 @@ list(APPEND ${MODULE_PREFIX}_STATIC_LIBS avro-static)
 merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
 target_link_libraries(${MODULE_NAME} combined ${${MODULE_PREFIX}_STATIC_LIBS} ${${MODULE_PREFIX}_LIBS})
+if (ADDITIONAL_REQUIRED_LIBS)
+message(STATUS "Linking in additional libs")
+	target_link_libraries(${MODULE_NAME} ${ADDITIONAL_REQUIRED_LIBS})
+endif()
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
