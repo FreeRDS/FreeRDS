@@ -53,7 +53,6 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 	RegionRec clip_reg;
 	int cd;
 	int post_process;
-	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
@@ -79,7 +78,6 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-				rdpup_get_screen_image_rect(&id);
 			}
 		}
 	}

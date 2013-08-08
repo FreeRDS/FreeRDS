@@ -54,7 +54,6 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	int post_process;
 	xSegment *segs;
 	BoxRec box;
-	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
@@ -96,7 +95,6 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-				rdpup_get_screen_image_rect(&id);
 			}
 		}
 	}

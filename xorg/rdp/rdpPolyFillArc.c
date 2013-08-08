@@ -57,7 +57,6 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	int post_process;
 	xRectangle *rects;
 	BoxRec box;
-	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
@@ -106,7 +105,6 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-				rdpup_get_screen_image_rect(&id);
 			}
 		}
 	}
@@ -134,7 +132,7 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 				for (i = num_clips - 1; i >= 0; i--)
 				{
 					box = REGION_RECTS(tmpRegion)[i];
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
+					rdpup_send_area(NULL, box.x1, box.y1, box.x2 - box.x1,
 							box.y2 - box.y1);
 				}
 
@@ -159,7 +157,7 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 				for (i = num_clips - 1; i >= 0; i--)
 				{
 					box = REGION_RECTS(tmpRegion)[i];
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
+					rdpup_send_area(NULL, box.x1, box.y1, box.x2 - box.x1,
 							box.y2 - box.y1);
 				}
 

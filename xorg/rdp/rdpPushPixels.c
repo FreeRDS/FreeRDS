@@ -55,7 +55,6 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 	int j;
 	int post_process;
 	BoxRec box;
-	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
@@ -81,7 +80,6 @@ void rdpPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h,
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-				rdpup_get_screen_image_rect(&id);
 			}
 		}
 	}

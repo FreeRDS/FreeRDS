@@ -49,7 +49,6 @@ void rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptIn
 	int post_process;
 	RegionRec clip_reg;
 	int cd;
-	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
@@ -75,7 +74,6 @@ void rdpFillSpans(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptIn
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-				rdpup_get_screen_image_rect(&id);
 			}
 		}
 	}

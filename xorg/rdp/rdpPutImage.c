@@ -53,8 +53,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	int j;
 	int post_process;
 	BoxRec box;
-	struct image_data id;
-
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
@@ -81,7 +79,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-				rdpup_get_screen_image_rect(&id);
 			}
 		}
 	}
@@ -95,7 +92,7 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 	if (cd == 1)
 	{
 		rdpup_begin_update();
-		rdpup_send_area(&id, pDst->x + x, pDst->y + y, w, h);
+		rdpup_send_area(NULL, pDst->x + x, pDst->y + y, w, h);
 		rdpup_end_update();
 	}
 	else if (cd == 2)
@@ -106,7 +103,7 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 		{
 			box = REGION_RECTS(&clip_reg)[j];
 			rdpup_set_clip(box.x1, box.y1, (box.x2 - box.x1), (box.y2 - box.y1));
-			rdpup_send_area(&id, pDst->x + x, pDst->y + y, w, h);
+			rdpup_send_area(NULL, pDst->x + x, pDst->y + y, w, h);
 		}
 
 		rdpup_reset_clip();

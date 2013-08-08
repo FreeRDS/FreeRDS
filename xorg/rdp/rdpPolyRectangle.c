@@ -63,8 +63,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	xRectangle *r;
 	xRectangle *rect1;
 	BoxRec box;
-	struct image_data id;
-
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec* pDstPriv;
@@ -98,7 +96,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-				rdpup_get_screen_image_rect(&id);
 			}
 		}
 	}
@@ -179,7 +176,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 				for (i = 0; i < nrects * 4; i++)
 				{
 					r = regRects + i;
-					rdpup_send_area(&id, r->x, r->y, r->width, r->height);
+					rdpup_send_area(NULL, r->x, r->y, r->width, r->height);
 				}
 			}
 
@@ -220,7 +217,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 					for (j = num_clips - 1; j >= 0; j--)
 					{
 						box = REGION_RECTS(&clip_reg)[j];
-						rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+						rdpup_send_area(NULL, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 					}
 				}
 

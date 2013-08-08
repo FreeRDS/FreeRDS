@@ -1298,7 +1298,7 @@ void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 }
 
 /* split the bitmap up into 64 x 64 pixel areas */
-void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
+void rdpup_send_area(struct image_data* id, int x, int y, int w, int h)
 {
 	char* s;
 	int i;
@@ -1311,11 +1311,8 @@ void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
 	int bitmapLength;
 	struct image_data lid;
 
-	if (id == 0)
-	{
-		rdpup_get_screen_image_rect(&lid);
-		id = &lid;
-	}
+	rdpup_get_screen_image_rect(&lid);
+	id = &lid;
 
 	if (g_rdpScreen.CodecMode)
 	{
