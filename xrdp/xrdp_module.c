@@ -34,13 +34,13 @@
 
 int xrdp_server_begin_update(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
 {
-	libxrdp_orders_init(mod->session);
+	libxrdp_orders_begin_paint(mod->session);
 	return 0;
 }
 
 int xrdp_server_end_update(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg)
 {
-	libxrdp_orders_send(mod->session);
+	libxrdp_orders_end_paint(mod->session);
 	return 0;
 }
 

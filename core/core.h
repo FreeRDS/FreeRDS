@@ -120,11 +120,15 @@ typedef struct xrdp_session xrdpSession;
 
 struct xrdp_session
 {
+	rdpContext context;
+
+	void* wm;
+	HANDLE Thread;
+	HANDLE TermEvent;
+
 	long id;
 	int (*callback)(long id, int msg, long param1, long param2, long param3, long param4);
 
-	/* FreeRDP */
-	rdpContext* context;
 	freerdp_peer* client;
 	rdpSettings* settings;
 
@@ -144,8 +148,8 @@ struct xrdp_session
 	NSC_CONTEXT* nsc_context;
 };
 
-FREERDP_API xrdpSession* libxrdp_session_new(rdpSettings* settings);
-FREERDP_API void libxrdp_session_free(xrdpSession* session);
+FREERDP_API int libxrdp_session_init(xrdpSession* session, rdpSettings* settings);
+FREERDP_API void libxrdp_session_uninit(xrdpSession* session);
 
 FREERDP_API int libxrdp_send_palette(xrdpSession* session, int* palette);
 
@@ -155,11 +159,9 @@ FREERDP_API int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_M
 
 FREERDP_API int libxrdp_set_pointer(xrdpSession* session, XRDP_MSG_SET_POINTER* msg);
 
-FREERDP_API int libxrdp_orders_init(xrdpSession* session);
+FREERDP_API int libxrdp_orders_begin_paint(xrdpSession* session);
 
-FREERDP_API int libxrdp_orders_send(xrdpSession* session);
-
-FREERDP_API int libxrdp_orders_force_send(xrdpSession* session);
+FREERDP_API int libxrdp_orders_end_paint(xrdpSession* session);
 
 FREERDP_API int libxrdp_orders_rect(xrdpSession* session, int x, int y,
 		int cx, int cy, int color, xrdpRect* rect);

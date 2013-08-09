@@ -46,7 +46,6 @@
 #include "file.h"
 
 typedef struct xrdp_listener xrdpListener;
-typedef struct xrdp_process xrdpProcess;
 typedef struct xrdp_mod xrdpModule;
 typedef struct xrdp_palette_item xrdpPaletteItem;
 typedef struct xrdp_bitmap_item xrdpBitmapItem;
@@ -159,7 +158,7 @@ struct xrdp_keymap
 
 struct xrdp_wm
 {
-	xrdpProcess* pro_layer; /* owner */
+	xrdpSession* pro_layer; /* owner */
 	xrdpBitmap* screen;
 	xrdpSession* session;
 	/* keyboard info */
@@ -258,7 +257,7 @@ HANDLE g_get_sync_event(void);
 void g_process_waiting_function(void);
 
 /* xrdp_wm.c */
-xrdpWm* xrdp_wm_create(xrdpProcess* owner);
+xrdpWm* xrdp_wm_create(xrdpSession* owner);
 void xrdp_wm_delete(xrdpWm* self);
 int xrdp_wm_init(xrdpWm* self);
 int xrdp_wm_mouse_move(xrdpWm* self, int x, int y);
@@ -273,11 +272,11 @@ int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
 
 /* xrdp_process.c */
-xrdpProcess* xrdp_process_create(freerdp_peer* client);
-void xrdp_process_delete(xrdpProcess* self);
-HANDLE xrdp_process_get_term_event(xrdpProcess* self);
-xrdpSession* xrdp_process_get_session(xrdpProcess* self);
-xrdpWm* xrdp_process_get_wm(xrdpProcess* self);
+xrdpSession* xrdp_process_create(freerdp_peer* client);
+void xrdp_process_delete(xrdpSession* self);
+HANDLE xrdp_process_get_term_event(xrdpSession* self);
+xrdpSession* xrdp_process_get_session(xrdpSession* self);
+xrdpWm* xrdp_process_get_wm(xrdpSession* self);
 void* xrdp_process_main_thread(void* arg);
 
 /* xrdp_listen.c */

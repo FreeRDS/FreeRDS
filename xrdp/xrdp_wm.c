@@ -21,7 +21,7 @@
 #include "xrdp.h"
 #include "log.h"
 
-xrdpWm* xrdp_wm_create(xrdpProcess* owner)
+xrdpWm* xrdp_wm_create(xrdpSession* owner)
 {
 	int pid = 0;
 	rdpSettings* settings;
@@ -449,11 +449,11 @@ int callback(long id, int msg, long param1, long param2, long param3, long param
 
 	if (!id)
 	{
-		/* "id" should be "xrdpProcess*" as long */
+		/* "id" should be "xrdpSession*" as long */
 		return 0;
 	}
 
-	wm = xrdp_process_get_wm((xrdpProcess*) id);
+	wm = xrdp_process_get_wm((xrdpSession*) id);
 
 	if (!wm)
 		return 0;
