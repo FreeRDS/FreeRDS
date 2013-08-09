@@ -588,12 +588,10 @@ void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp,
 	}
 }
 
-void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
-		int x, int y)
+void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int x, int y)
 {
 	char cur_data[32 * (32 * 4)];
 	char cur_mask[32 * (32 / 8)];
-	char* mask;
 	char* data;
 	int i;
 	int j;
@@ -601,8 +599,6 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 	int h;
 	int p;
 	int paddedRowBytes;
-	int fgcolor;
-	int bgcolor;
 	int bpp;
 	XRDP_MSG_SET_POINTER msg;
 

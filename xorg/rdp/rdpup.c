@@ -355,33 +355,6 @@ static int l_bound_by(int val, int low, int high)
 	return val;
 }
 
-static int rdpup_send_rail(void)
-{
-	WindowPtr wnd;
-	rdpWindowRec *priv;
-
-	wnd = g_pScreen->root;
-
-	if (wnd != 0)
-	{
-		wnd = wnd->lastChild;
-
-		while (wnd != 0)
-		{
-			if (wnd->realized)
-			{
-				priv = GETWINPRIV(wnd);
-				priv->status = 1;
-				rdpup_create_window(wnd, priv);
-			}
-
-			wnd = wnd->prevSib;
-		}
-	}
-
-	return 0;
-}
-
 static int process_screen_parameters(int DesktopWidth, int DesktopHeight, int ColorDepth)
 {
 	Bool ok;

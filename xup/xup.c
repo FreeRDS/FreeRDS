@@ -687,18 +687,28 @@ int x11rdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
 
 void* x11rdp_xrdp_client_thread(void* arg)
 {
+	int fps;
 	DWORD status;
 	DWORD nCount;
 	HANDLE events[8];
+	HANDLE PackTimer;
+	LARGE_INTEGER due;
 	xrdpModule* mod = (xrdpModule*) arg;
 
+	fps = 25;
+	PackTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+
+	due.QuadPart = 0;
+	SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+
 	nCount = 0;
+	events[nCount++] = PackTimer;
 	events[nCount++] = mod->StopEvent;
 	events[nCount++] = mod->SocketEvent;
 
 	while (1)
 	{
-		status = WaitForMultipleObjects(nCount, events, FALSE, 1000 / 25);
+		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
 		if (WaitForSingleObject(mod->StopEvent, 0) == WAIT_OBJECT_0)
 		{
@@ -709,7 +719,14 @@ void* x11rdp_xrdp_client_thread(void* arg)
 		{
 			xup_recv(mod);
 		}
+
+		if (status == WAIT_OBJECT_0)
+		{
+			xrdp_message_server_queue_pack(mod);
+		}
 	}
+
+	CloseHandle(PackTimer);
 
 	return NULL;
 }
@@ -734,8 +751,6 @@ int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 
 	if (!mod)
 		return 0;
-
-	xrdp_message_server_queue_pack(mod);
 
 	while (WaitForSingleObject(MessageQueue_Event(mod->ServerQueue), 0) == WAIT_OBJECT_0)
 	{
