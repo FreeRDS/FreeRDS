@@ -32,7 +32,6 @@ set(${MODULE_PREFIX}_SRCS
 	xrdp.c
 	xrdp_auth.c
 	xrdp_bitmap.c
-	xrdp_cache.c
 	xrdp_listener.c
 	xrdp_mm.c
 	xrdp_module.c

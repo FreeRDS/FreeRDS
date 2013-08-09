@@ -180,6 +180,7 @@ int xrdp_mm_setup_mod1(xrdpMm* self)
 	}
 
 	self->mod->wm = (long) (self->wm);
+	self->mod->session = self->wm->session;
 
 	return 0;
 }

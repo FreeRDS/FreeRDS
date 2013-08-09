@@ -52,7 +52,6 @@ typedef struct xrdp_palette_item xrdpPaletteItem;
 typedef struct xrdp_bitmap_item xrdpBitmapItem;
 typedef struct xrdp_pointer_item xrdpPointerItem;
 typedef struct xrdp_brush_item xrdpBrushItem;
-typedef struct xrdp_cache xrdpCache;
 typedef struct xrdp_mm xrdpMm;
 typedef struct xrdp_key_info xrdpKeyInfo;
 typedef struct xrdp_keymap xrdpKeymap;
@@ -122,34 +121,6 @@ struct xrdp_brush_item
 	char pattern[8];
 };
 
-/* difference caches */
-struct xrdp_cache
-{
-	xrdpWm* wm; /* owner */
-	xrdpSession* session;
-	/* palette */
-	int palette_stamp;
-	xrdpPaletteItem palette_items[6];
-	/* bitmap */
-	int bitmap_stamp;
-	xrdpBitmapItem bitmap_items[3][2000];
-	int BitmapCompressionDisabled;
-	int cache1_entries;
-	int cache1_size;
-	int cache2_entries;
-	int cache2_size;
-	int cache3_entries;
-	int cache3_size;
-	int bitmap_cache_persist_enable;
-	int bitmap_cache_version;
-	/* pointer */
-	int pointer_stamp;
-	xrdpPointerItem pointer_items[32];
-	int pointer_cache_entries;
-	int brush_stamp;
-	xrdpBrushItem brush_items[64];
-};
-
 struct xrdp_mm
 {
 	xrdpWm* wm; /* owner */
@@ -191,8 +162,6 @@ struct xrdp_wm
 	xrdpProcess* pro_layer; /* owner */
 	xrdpBitmap* screen;
 	xrdpSession* session;
-	xrdpCache* cache;
-	int palette[256];
 	/* pointer */
 	int current_pointer;
 	int mouse_x;
@@ -293,15 +262,6 @@ void g_set_term(int in_val);
 HANDLE g_get_term_event(void);
 HANDLE g_get_sync_event(void);
 void g_process_waiting_function(void);
-
-/* xrdp_cache.c */
-xrdpCache* xrdp_cache_create(xrdpWm* owner, xrdpSession* session);
-void xrdp_cache_delete(xrdpCache* self);
-int xrdp_cache_reset(xrdpCache* self);
-int xrdp_cache_add_bitmap(xrdpCache* self, xrdpBitmap* bitmap, int hints);
-int xrdp_cache_add_pointer(xrdpCache* self, xrdpPointerItem* pointer_item);
-int xrdp_cache_add_pointer_static(xrdpCache* self, xrdpPointerItem* pointer_item, int index);
-int xrdp_cache_add_brush(xrdpCache* self, char* brush_item_data);
 
 /* xrdp_wm.c */
 xrdpWm* xrdp_wm_create(xrdpProcess* owner);
@@ -510,6 +470,9 @@ struct xrdp_mod
 	char port[256];
 	long sck_obj;
 	int shift_state;
+
+	xrdpSession* session;
+
 	rdpSettings* settings;
 
 	UINT32 TotalLength;

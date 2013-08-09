@@ -38,7 +38,6 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner)
 
 	self->LoginModeEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	self->cache = xrdp_cache_create(self, self->session);
 	self->log = list_create();
 	self->log->auto_free = 1;
 	self->mm = xrdp_mm_create(self);
@@ -54,35 +53,11 @@ void xrdp_wm_delete(xrdpWm* self)
 		return;
 
 	xrdp_mm_delete(self->mm);
-	xrdp_cache_delete(self->cache);
 	xrdp_bitmap_delete(self->screen);
 	list_delete(self->log);
 	CloseHandle(self->LoginModeEvent);
 
 	free(self);
-}
-
-int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg)
-{
-	int bpp;
-	xrdpPointerItem pointer_item;
-
-	bpp = msg->xorBpp;
-
-	if (!bpp)
-		bpp = 24;
-
-	ZeroMemory(&pointer_item, sizeof(xrdpPointerItem));
-
-	pointer_item.x = msg->xPos;
-	pointer_item.y = msg->yPos;
-	pointer_item.bpp = bpp;
-	CopyMemory(pointer_item.data, msg->xorMaskData, msg->lengthXorMask);
-	CopyMemory(pointer_item.mask, msg->andMaskData, msg->lengthAndMask);
-
-	self->screen->pointer = xrdp_cache_add_pointer(self->cache, &pointer_item);
-
-	return 0;
 }
 
 int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name)
