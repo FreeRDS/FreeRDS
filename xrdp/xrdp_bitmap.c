@@ -300,36 +300,3 @@ int xrdp_bitmap_compare(xrdpBitmap* self, xrdpBitmap *b)
 
 	return 0;
 }
-
-int xrdp_bitmap_get_screen_clip(xrdpBitmap* self, xrdpPainter *painter, xrdpRect *rect, int *dx, int *dy)
-{
-	int ldx;
-	int ldy;
-
-	if (painter->use_clip)
-	{
-		*rect = painter->clip;
-	}
-	else
-	{
-		rect->left = 0;
-		rect->top = 0;
-		rect->right = self->width;
-		rect->bottom = self->height;
-	}
-
-	ldx = 0;
-	ldy = 0;
-	rect->left += ldx;
-	rect->top += ldy;
-	rect->right += ldx;
-	rect->bottom += ldy;
-
-	if (dx != 0)
-		*dx = ldx;
-
-	if (dy != 0)
-		*dy = ldy;
-
-	return 0;
-}

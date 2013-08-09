@@ -43,7 +43,6 @@ int xrdp_mm_send_login(xrdpMm* self)
 
 	username = 0;
 	password = 0;
-	self->code = 0;
 	xserverbpp = 0;
 	count = self->login_names->count;
 
@@ -56,27 +55,13 @@ int xrdp_mm_send_login(xrdpMm* self)
 		{
 			username = value;
 		}
-		else
+		else if (g_strcasecmp(name, "password") == 0)
 		{
-			if (g_strcasecmp(name, "password") == 0)
-			{
-				password = value;
-			}
-			else
-			{
-				if (g_strcasecmp(name, "code") == 0)
-				{
-					/* this code is either 0 for Xvnc or 10 for X11rdp */
-					self->code = g_atoi(value);
-				}
-				else
-				{
-					if (g_strcasecmp(name, "xserverbpp") == 0)
-					{
-						xserverbpp = g_atoi(value);
-					}
-				}
-			}
+			password = value;
+		}
+		else if (g_strcasecmp(name, "xserverbpp") == 0)
+		{
+			xserverbpp = g_atoi(value);
 		}
 	}
 
@@ -88,8 +73,7 @@ int xrdp_mm_send_login(xrdpMm* self)
 	s = trans_get_out_s(self->sesman_trans, 8192);
 	Stream_Seek(s, 8);
 
-	/* this code is either 0 for Xvnc or 10 for X11rdp */
-	Stream_Write_UINT16(s, self->code);
+	Stream_Write_UINT16(s, 0);
 	index = g_strlen(username);
 	Stream_Write_UINT16(s, index);
 	Stream_Write(s, username, index);
@@ -119,7 +103,6 @@ int xrdp_mm_send_login(xrdpMm* self)
 	else
 	{
 		Stream_Write_UINT16(s, 0);
-		/* Stream_Write(s, "", 0); */
 	}
 
 	/* send program / shell */
@@ -147,11 +130,6 @@ int xrdp_mm_send_login(xrdpMm* self)
 	s->pointer = s->buffer + index;
 
 	rv = trans_force_write(self->sesman_trans);
-
-	if (rv != 0)
-	{
-
-	}
 
 	return rv;
 }

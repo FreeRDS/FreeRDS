@@ -36,38 +36,26 @@
 
 int xrdp_server_begin_update(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
+	xrdpWm* wm = (xrdpWm*) (mod->wm);
 
-	wm = (xrdpWm*) (mod->wm);
-	p = xrdp_painter_create(wm, wm->session);
-	xrdp_painter_begin_update(p);
-	mod->painter = (long) p;
+	libxrdp_orders_init(wm->session);
 
 	return 0;
 }
 
 int xrdp_server_end_update(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg)
 {
-	xrdpPainter* p;
+	xrdpWm* wm = (xrdpWm*) (mod->wm);
 
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	xrdp_painter_end_update(p);
-	xrdp_painter_delete(p);
-	mod->painter = 0;
+	libxrdp_orders_send(wm->session);
 
 	return 0;
 }
 
 int xrdp_server_beep(xrdpModule* mod, XRDP_MSG_BEEP* msg)
 {
-	xrdpWm* wm;
+	xrdpWm* wm = (xrdpWm*) (mod->wm);
 
-	wm = (xrdpWm*) (mod->wm);
 	libxrdp_send_bell(wm->session);
 
 	return 0;
@@ -150,17 +138,9 @@ int xrdp_server_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
 
 int xrdp_server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
-	xrdpPainter* p;
+	/* TODO */
 
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	if (!msg->bNullRegion)
-		return xrdp_painter_set_clip(p, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
-	else
-		return xrdp_painter_clr_clip(p);
+	return 0;
 }
 
 int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
@@ -172,7 +152,9 @@ int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 
 int xrdp_server_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 {
-	return libxrdp_orders_send_font(((xrdpWm*) mod->wm)->session, msg);
+	xrdpWm* wm = (xrdpWm*) (mod->wm);
+
+	return libxrdp_orders_send_font(wm->session, msg);
 }
 
 int xrdp_server_glyph_index(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)

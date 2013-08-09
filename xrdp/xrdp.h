@@ -58,7 +58,6 @@ typedef struct xrdp_key_info xrdpKeyInfo;
 typedef struct xrdp_keymap xrdpKeymap;
 typedef struct xrdp_wm xrdpWm;
 typedef struct xrdp_region xrdpRegion;
-typedef struct xrdp_painter xrdpPainter;
 typedef struct xrdp_bitmap xrdpBitmap;
 typedef struct xrdp_mod_data xrdpModuleData;
 typedef struct xrdp_startup_params xrdpStartupParams;
@@ -192,7 +191,6 @@ struct xrdp_wm
 	xrdpProcess* pro_layer; /* owner */
 	xrdpBitmap* screen;
 	xrdpSession* session;
-	xrdpPainter* painter;
 	xrdpCache* cache;
 	int palette[256];
 	/* pointer */
@@ -218,21 +216,6 @@ struct xrdp_region
 {
 	xrdpWm* wm; /* owner */
 	xrdpList* rects;
-};
-
-/* painter */
-struct xrdp_painter
-{
-	int rop;
-	xrdpRect* use_clip;
-	xrdpRect clip;
-	int clip_children;
-	int bg_color;
-	int fg_color;
-	xrdpBrush brush;
-	xrdpPen pen;
-	xrdpSession* session;
-	xrdpWm* wm;
 };
 
 /* window or bitmap */
@@ -364,15 +347,6 @@ xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char* d
 void xrdp_bitmap_delete(xrdpBitmap* self);
 int xrdp_bitmap_copy_box(xrdpBitmap* self, xrdpBitmap* dest, int x, int y, int cx, int cy);
 int xrdp_bitmap_compare(xrdpBitmap* self, xrdpBitmap* b);
-int xrdp_bitmap_get_screen_clip(xrdpBitmap* self, xrdpPainter* painter, xrdpRect* rect, int* dx, int* dy);
-
-/* xrdp_painter.c */
-xrdpPainter* xrdp_painter_create(xrdpWm* wm, xrdpSession* session);
-void xrdp_painter_delete(xrdpPainter* self);
-int xrdp_painter_begin_update(xrdpPainter* self);
-int xrdp_painter_end_update(xrdpPainter* self);
-int xrdp_painter_set_clip(xrdpPainter* self, int x, int y, int cx, int cy);
-int xrdp_painter_clr_clip(xrdpPainter* self);
 
 /* funcs.c */
 int rect_contains_pt(xrdpRect* in, int x, int y);

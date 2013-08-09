@@ -423,7 +423,6 @@ static void cleanup_states(xrdpMm* self)
 		self->sesman_trans_up = 0; /* true once connected to sesman */
 		self->delete_sesman_trans = 0; /* boolean set when done with sesman connection */
 		self->display = 0; /* 10 for :10.0, 11 for :11.0, etc */
-		self->code = 0; /* 0 Xvnc session 10 X11rdp session */
 		self->sesman_controlled = 0; /* true if this is a sesman session */
 	}
 }

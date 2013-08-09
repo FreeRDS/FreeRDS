@@ -38,7 +38,6 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner)
 
 	self->LoginModeEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	self->painter = xrdp_painter_create(self, self->session);
 	self->cache = xrdp_cache_create(self, self->session);
 	self->log = list_create();
 	self->log->auto_free = 1;
@@ -56,7 +55,6 @@ void xrdp_wm_delete(xrdpWm* self)
 
 	xrdp_mm_delete(self->mm);
 	xrdp_cache_delete(self->cache);
-	xrdp_painter_delete(self->painter);
 	xrdp_bitmap_delete(self->screen);
 	list_delete(self->log);
 	CloseHandle(self->LoginModeEvent);
