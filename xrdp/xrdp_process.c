@@ -20,8 +20,6 @@
 
 #include "xrdp.h"
 
-static int g_session_id = 0;
-
 #include <winpr/crt.h>
 #include <winpr/file.h>
 #include <winpr/path.h>
@@ -42,8 +40,7 @@ struct xrdp_process
 	rdpContext context;
 
 	int status;
-	int session_id;
-	HANDLE DoneEvent;
+	HANDLE Thread;
 	HANDLE TermEvent;
 
 	xrdpWm* wm;
@@ -75,12 +72,9 @@ void xrdp_peer_context_free(freerdp_peer* client, xrdpProcess* context)
 
 }
 
-xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, HANDLE DoneEvent, void* transport)
+xrdpProcess* xrdp_process_create(freerdp_peer* client)
 {
 	xrdpProcess* xfp;
-	freerdp_peer* client;
-
-	client = (freerdp_peer*) transport;
 
 	client->ContextSize = sizeof(xrdpProcess);
 	client->ContextNew = (psPeerContextNew) xrdp_peer_context_new;
@@ -89,24 +83,16 @@ xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, HANDLE DoneEvent, void*
 
 	xfp = (xrdpProcess*) client->context;
 
-	xfp->DoneEvent = DoneEvent;
-
-	g_session_id++;
-	xfp->session_id = g_session_id;
-
 	xfp->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	xfp->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) xrdp_process_main_thread, client, 0, NULL);
 
 	return xfp;
 }
 
 void xrdp_process_delete(xrdpProcess* self)
 {
-
-}
-
-int xrdp_process_get_status(xrdpProcess* self)
-{
-	return self->status;
+	CloseHandle(self->TermEvent);
 }
 
 HANDLE xrdp_process_get_term_event(xrdpProcess* self)
@@ -117,11 +103,6 @@ HANDLE xrdp_process_get_term_event(xrdpProcess* self)
 xrdpSession* xrdp_process_get_session(xrdpProcess* self)
 {
 	return self->session;
-}
-
-int xrdp_process_get_session_id(xrdpProcess* self)
-{
-	return self->session_id;
 }
 
 xrdpWm* xrdp_process_get_wm(xrdpProcess* self)

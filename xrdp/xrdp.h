@@ -30,6 +30,7 @@
 #include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
+#include <freerdp/listener.h>
 
 #include <xrdp-ng/xrdp.h>
 
@@ -47,11 +48,8 @@
 typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_process xrdpProcess;
 typedef struct xrdp_mod xrdpModule;
-typedef struct xrdp_bmp_header xrdpBmpHeader;
 typedef struct xrdp_palette_item xrdpPaletteItem;
 typedef struct xrdp_bitmap_item xrdpBitmapItem;
-typedef struct xrdp_os_bitmap_item xrdpOffscreenBitmapItem;
-typedef struct xrdp_char_item xrdpCharItem;
 typedef struct xrdp_pointer_item xrdpPointerItem;
 typedef struct xrdp_brush_item xrdpBrushItem;
 typedef struct xrdp_cache xrdpCache;
@@ -62,7 +60,6 @@ typedef struct xrdp_wm xrdpWm;
 typedef struct xrdp_region xrdpRegion;
 typedef struct xrdp_painter xrdpPainter;
 typedef struct xrdp_bitmap xrdpBitmap;
-typedef struct xrdp_font xrdpFont;
 typedef struct xrdp_mod_data xrdpModuleData;
 typedef struct xrdp_startup_params xrdpStartupParams;
 
@@ -96,22 +93,6 @@ struct pointer_item
 	char mask[32 * 32 / 8];
 };
 
-/* header for bmp file */
-struct xrdp_bmp_header
-{
-	int size;
-	int image_width;
-	int image_height;
-	short planes;
-	short bit_count;
-	int compression;
-	int image_size;
-	int x_pels_per_meter;
-	int y_pels_per_meter;
-	int clr_used;
-	int clr_important;
-};
-
 struct xrdp_palette_item
 {
 	int stamp;
@@ -122,18 +103,6 @@ struct xrdp_bitmap_item
 {
 	int stamp;
 	xrdpBitmap* bitmap;
-};
-
-struct xrdp_os_bitmap_item
-{
-	int id;
-	xrdpBitmap* bitmap;
-};
-
-struct xrdp_char_item
-{
-	int stamp;
-	xrdpFontChar font_item;
 };
 
 struct xrdp_pointer_item
@@ -174,17 +143,12 @@ struct xrdp_cache
 	int cache3_size;
 	int bitmap_cache_persist_enable;
 	int bitmap_cache_version;
-	/* font */
-	int char_stamp;
-	xrdpCharItem char_items[12][256];
 	/* pointer */
 	int pointer_stamp;
 	xrdpPointerItem pointer_items[32];
 	int pointer_cache_entries;
 	int brush_stamp;
 	xrdpBrushItem brush_items[64];
-	xrdpOffscreenBitmapItem os_bitmap_items[2000];
-	xrdpList* xrdp_os_del_list;
 };
 
 struct xrdp_mm
@@ -231,8 +195,6 @@ struct xrdp_wm
 	xrdpPainter* painter;
 	xrdpCache* cache;
 	int palette[256];
-	/* focused window */
-	xrdpBitmap* focused_window;
 	/* pointer */
 	int current_pointer;
 	int mouse_x;
@@ -247,13 +209,7 @@ struct xrdp_wm
 	int login_mode;
 	HANDLE LoginModeEvent;
 	xrdpMm* mm;
-	xrdpFont* default_font;
 	xrdpKeymap keymap;
-	xrdpBitmap* target_surface; /* either screen or os surface */
-	int current_surface_index;
-	int hints;
-	int allowedchannels[MAX_NR_CHANNELS];
-	int allowedinitialized;
 	char pamerrortxt[256];
 };
 
@@ -268,7 +224,7 @@ struct xrdp_region
 struct xrdp_painter
 {
 	int rop;
-	xrdpRect* use_clip; /* nil if not using clip */
+	xrdpRect* use_clip;
 	xrdpRect clip;
 	int clip_children;
 	int bg_color;
@@ -276,8 +232,7 @@ struct xrdp_painter
 	xrdpBrush brush;
 	xrdpPen pen;
 	xrdpSession* session;
-	xrdpWm* wm; /* owner */
-	xrdpFont* font;
+	xrdpWm* wm;
 };
 
 /* window or bitmap */
@@ -301,21 +256,7 @@ struct xrdp_bitmap
 	int id;
 	int item_index;
 	int item_height;
-	/* crc */
 	int crc;
-};
-
-#define NUM_FONTS 0x4e00
-#define DEFAULT_FONT_NAME "sans-10.fv1"
-
-/* font */
-struct xrdp_font
-{
-	xrdpWm* wm;
-	xrdpFontChar font_items[NUM_FONTS];
-	char name[32];
-	int size;
-	int style;
 };
 
 /* module */
@@ -375,14 +316,9 @@ xrdpCache* xrdp_cache_create(xrdpWm* owner, xrdpSession* session);
 void xrdp_cache_delete(xrdpCache* self);
 int xrdp_cache_reset(xrdpCache* self);
 int xrdp_cache_add_bitmap(xrdpCache* self, xrdpBitmap* bitmap, int hints);
-int xrdp_cache_add_palette(xrdpCache* self, int* palette);
-int xrdp_cache_add_char(xrdpCache* self, xrdpFontChar* font_item);
 int xrdp_cache_add_pointer(xrdpCache* self, xrdpPointerItem* pointer_item);
 int xrdp_cache_add_pointer_static(xrdpCache* self, xrdpPointerItem* pointer_item, int index);
 int xrdp_cache_add_brush(xrdpCache* self, char* brush_item_data);
-int xrdp_cache_add_offscreen_bitmap(xrdpCache* self, xrdpBitmap* bitmap, int rdpindex);
-int xrdp_cache_remove_offscreen_bitmap(xrdpCache* self, int rdpindex);
-struct xrdp_os_bitmap_item* xrdp_cache_get_offscreen_bitmap(xrdpCache* self, int rdpindex);
 
 /* xrdp_wm.c */
 xrdpWm* xrdp_wm_create(xrdpProcess* owner);
@@ -402,12 +338,10 @@ int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
 
 /* xrdp_process.c */
-xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, HANDLE DoneEvent, void* transport);
+xrdpProcess* xrdp_process_create(freerdp_peer* client);
 void xrdp_process_delete(xrdpProcess* self);
-int xrdp_process_get_status(xrdpProcess* self);
 HANDLE xrdp_process_get_term_event(xrdpProcess* self);
 xrdpSession* xrdp_process_get_session(xrdpProcess* self);
-int xrdp_process_get_session_id(xrdpProcess* self);
 xrdpWm* xrdp_process_get_wm(xrdpProcess* self);
 void* xrdp_process_main_thread(void* arg);
 
@@ -435,24 +369,10 @@ int xrdp_bitmap_get_screen_clip(xrdpBitmap* self, xrdpPainter* painter, xrdpRect
 /* xrdp_painter.c */
 xrdpPainter* xrdp_painter_create(xrdpWm* wm, xrdpSession* session);
 void xrdp_painter_delete(xrdpPainter* self);
-int wm_painter_set_target(xrdpPainter* self);
 int xrdp_painter_begin_update(xrdpPainter* self);
 int xrdp_painter_end_update(xrdpPainter* self);
-int xrdp_painter_font_needed(xrdpPainter* self);
 int xrdp_painter_set_clip(xrdpPainter* self, int x, int y, int cx, int cy);
 int xrdp_painter_clr_clip(xrdpPainter* self);
-int xrdp_painter_fill_rect(xrdpPainter* self, xrdpBitmap* bitmap, int x, int y, int cx, int cy);
-int xrdp_painter_patblt(xrdpPainter *self, xrdpBitmap* dst, int x, int y, int cx, int cy);
-int xrdp_painter_dstblt(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_DSTBLT* msg);
-int xrdp_painter_draw_text(xrdpPainter *self, xrdpBitmap* dst, XRDP_MSG_GLYPH_INDEX* msg);
-int xrdp_painter_copy(xrdpPainter* self, xrdpBitmap* src, xrdpBitmap* dst,
-		int x, int y, int cx, int cy, int srcx, int srcy);
-int xrdp_painter_line(xrdpPainter* self, xrdpBitmap* dst, XRDP_MSG_LINE_TO* msg);
-
-/* xrdp_font.c */
-xrdpFont* xrdp_font_create(xrdpWm* wm);
-void xrdp_font_delete(xrdpFont* self);
-int xrdp_font_item_compare(xrdpFontChar* font1, xrdpFontChar* font2);
 
 /* funcs.c */
 int rect_contains_pt(xrdpRect* in, int x, int y);

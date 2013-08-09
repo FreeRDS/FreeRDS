@@ -784,9 +784,12 @@ int xup_module_exit(xrdpModule* mod)
 	SetEvent(mod->StopEvent);
 
 	WaitForSingleObject(mod->ServerThread, INFINITE);
+	CloseHandle(mod->ServerThread);
 
 	Stream_Free(mod->SendStream, TRUE);
 	Stream_Free(mod->ReceiveStream, TRUE);
+
+	CloseHandle(mod->StopEvent);
 
 	g_tcp_close(mod->sck);
 

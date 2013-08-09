@@ -80,37 +80,14 @@ int xrdp_server_is_terminated(xrdpModule* mod)
 
 int xrdp_server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	p->fg_color = msg->color;
-	xrdp_painter_fill_rect(p, wm->target_surface, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+	/* TODO */
 
 	return 0;
 }
 
 int xrdp_server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	p->rop = 0xCC;
-	xrdp_painter_copy(p, wm->screen, wm->target_surface, msg->nLeftRect, msg->nTopRect,
-			msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
+	/* TODO */
 
 	return 0;
 }
@@ -119,8 +96,6 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
 	int bpp;
 	xrdpWm* wm;
-	xrdpBitmap* b;
-	xrdpPainter* p;
 
 	wm = (xrdpWm*) (mod->wm);
 
@@ -143,44 +118,14 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 
 int xrdp_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	wm = (xrdpWm*) (mod->wm);
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	p->rop = msg->bRop;
-	p->fg_color = msg->foreColor;
-	p->pen.color = p->fg_color;
-	p->bg_color = msg->backColor;
-
-	p->brush.x_orgin = msg->brush.x;
-	p->brush.y_orgin = msg->brush.y;
-	p->brush.style = msg->brush.style;
-	CopyMemory(p->brush.pattern, msg->brush.p8x8, 8);
-
-	xrdp_painter_patblt(p, wm->target_surface, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
-
-	p->rop = 0xCC;
+	/* TODO */
 
 	return 0;
 }
 
 int xrdp_server_dstblt(xrdpModule* mod, XRDP_MSG_DSTBLT* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	wm = (xrdpWm*) (mod->wm);
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	xrdp_painter_dstblt(p, wm->target_surface, msg);
+	/* TODO */
 
 	return 0;
 }
@@ -198,7 +143,6 @@ int xrdp_server_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
 {
 	xrdpWm* wm = (xrdpWm*) (mod->wm);
 
-	CopyMemory(wm->palette, msg->palette, 256 * sizeof(UINT32));
 	libxrdp_send_palette(wm->session, wm->palette);
 
 	return 0;
@@ -221,17 +165,9 @@ int xrdp_server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGIO
 
 int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
+	/* TODO */
 
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	return xrdp_painter_line(p, wm->target_surface, msg);
+	return 0;
 }
 
 int xrdp_server_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
@@ -241,17 +177,9 @@ int xrdp_server_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 
 int xrdp_server_glyph_index(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
+	/* TODO */
 
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	return xrdp_painter_draw_text(p, wm->target_surface, msg);
+	return 0;
 }
 
 int xrdp_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
@@ -307,122 +235,21 @@ int xrdp_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
 
 int xrdp_server_create_offscreen_surface(xrdpModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
-	int status;
-	xrdpWm* wm;
-	xrdpBitmap *bitmap;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	bitmap = xrdp_bitmap_create(msg->nWidth, msg->nHeight, wm->screen->bpp, WND_TYPE_OFFSCREEN, wm);
-	status = xrdp_cache_add_offscreen_bitmap(wm->cache, bitmap, msg->cacheIndex);
-
-	if (status != 0)
-	{
-		log_message(LOG_LEVEL_ERROR, "server_create_os_surface: xrdp_cache_add_os_bitmap failed");
-		return 1;
-	}
-
-	bitmap->item_index = msg->cacheIndex;
-	bitmap->id = msg->cacheIndex;
-
 	return 0;
 }
 
 int xrdp_server_switch_offscreen_surface(xrdpModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
-	xrdpWm* wm;
-	xrdpOffscreenBitmapItem* bi;
-	xrdpPainter* p;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	if (msg->cacheIndex == -1)
-	{
-		wm->target_surface = wm->screen;
-		p = (xrdpPainter*) (mod->painter);
-
-		if (p != 0)
-		{
-			wm_painter_set_target(p);
-		}
-
-		return 0;
-	}
-
-	bi = xrdp_cache_get_offscreen_bitmap(wm->cache, msg->cacheIndex);
-
-	if (bi != 0)
-	{
-		wm->target_surface = bi->bitmap;
-		p = (xrdpPainter*) (mod->painter);
-
-		if (p != 0)
-		{
-			wm_painter_set_target(p);
-		}
-	}
-	else
-	{
-		log_message(LOG_LEVEL_ERROR, "server_switch_os_surface: error finding id %d", msg->cacheIndex);
-	}
-
 	return 0;
 }
 
 int xrdp_server_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	if (wm->target_surface->type == WND_TYPE_OFFSCREEN)
-	{
-		if (wm->target_surface->id == msg->cacheIndex)
-		{
-			g_writeln("server_delete_os_surface: setting target_surface to screen");
-
-			wm->target_surface = wm->screen;
-			p = (xrdpPainter*) (mod->painter);
-
-			if (p != 0)
-			{
-				wm_painter_set_target(p);
-			}
-		}
-	}
-
-	xrdp_cache_remove_offscreen_bitmap(wm->cache, msg->cacheIndex);
-
 	return 0;
 }
 
 int xrdp_server_paint_offscreen_surface(xrdpModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
-	xrdpWm* wm;
-	xrdpBitmap* b;
-	xrdpPainter* p;
-	xrdpOffscreenBitmapItem* bi;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-	bi = xrdp_cache_get_offscreen_bitmap(wm->cache, msg->cacheIndex);
-
-	if (bi)
-	{
-		b = bi->bitmap;
-		xrdp_painter_copy(p, b, wm->target_surface, msg->nLeftRect, msg->nTopRect,
-				msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
-	}
-	else
-	{
-		log_message(LOG_LEVEL_ERROR, "server_paint_rect_os: error finding id %d", msg->cacheIndex);
-	}
-
 	return 0;
 }
 

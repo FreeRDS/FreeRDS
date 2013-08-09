@@ -43,12 +43,8 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner)
 	self->log = list_create();
 	self->log->auto_free = 1;
 	self->mm = xrdp_mm_create(self);
-	self->default_font = xrdp_font_create(self);
-	/* this will use built in keymap or load from file */
 	get_keymaps(settings->KeyboardLayout, &(self->keymap));
 	xrdp_wm_set_login_mode(self, 0);
-	self->target_surface = self->screen;
-	self->current_surface_index = 0xFFFF; /* screen */
 
 	return self;
 }
@@ -62,12 +58,9 @@ void xrdp_wm_delete(xrdpWm* self)
 	xrdp_cache_delete(self->cache);
 	xrdp_painter_delete(self->painter);
 	xrdp_bitmap_delete(self->screen);
-	/* free the log */
 	list_delete(self->log);
-	/* free default font */
-	xrdp_font_delete(self->default_font);
 	CloseHandle(self->LoginModeEvent);
-	/* free self */
+
 	free(self);
 }
 
