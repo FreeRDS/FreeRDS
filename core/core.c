@@ -282,53 +282,42 @@ int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_REC
 	return 0;
 }
 
-int libxrdp_send_pointer(xrdpSession* session, int cache_idx, char* data, char* mask, int x, int y, int bpp)
+int libxrdp_set_pointer(xrdpSession* session, XRDP_MSG_SET_POINTER* msg)
 {
-	POINTER_NEW_UPDATE pointer_new;
-	POINTER_COLOR_UPDATE* pointer_color;
+	POINTER_NEW_UPDATE pointerNew;
+	POINTER_COLOR_UPDATE* pointerColor;
+	POINTER_CACHED_UPDATE pointerCached;
 	rdpPointerUpdate* pointer = session->client->update->pointer;
 
 	printf("%s\n", __FUNCTION__);
 
-	pointer_color = &(pointer_new.colorPtrAttr);
+	pointerColor = &(pointerNew.colorPtrAttr);
 
-	pointer_color->cacheIndex = cache_idx;
-	pointer_color->xPos = x;
-	pointer_color->yPos = y;
-	pointer_color->width = 32;
-	pointer_color->height = 32;
-	pointer_color->lengthAndMask = 128;
-	pointer_color->lengthXorMask = 0;
-	pointer_color->xorMaskData = (BYTE*) data;
-	pointer_color->andMaskData = (BYTE*) mask;
+	pointerColor->cacheIndex = 0;
+	pointerColor->xPos = msg->xPos;
+	pointerColor->yPos = msg->yPos;
+	pointerColor->width = 32;
+	pointerColor->height = 32;
+	pointerColor->lengthAndMask = 128;
+	pointerColor->lengthXorMask = 0;
+	pointerColor->xorMaskData = msg->xorMaskData;
+	pointerColor->andMaskData = msg->andMaskData;
 
-	if (bpp == 0)
+	if (!msg->xorBpp)
 	{
-		pointer_color->lengthXorMask = 3072;
-
-		IFCALL(pointer->PointerColor, session->context, pointer_color);
+		pointerColor->lengthXorMask = 3072;
+		IFCALL(pointer->PointerColor, session->context, pointerColor);
 	}
 	else
 	{
-		pointer_new.xorBpp = bpp;
-		pointer_color->lengthXorMask = ((bpp + 7) / 8) * 32 * 32;
-
-		IFCALL(pointer->PointerNew, session->context, &pointer_new);
+		pointerNew.xorBpp = msg->xorBpp;
+		pointerColor->lengthXorMask = ((msg->xorBpp + 7) / 8) * 32 * 32;
+		IFCALL(pointer->PointerNew, session->context, &pointerNew);
 	}
 
-	return 0;
-}
+	pointerCached.cacheIndex = pointerColor->cacheIndex;
 
-int libxrdp_set_pointer(xrdpSession* session, int cache_idx)
-{
-	POINTER_CACHED_UPDATE pointer_cached;
-	rdpPointerUpdate* pointer = session->client->update->pointer;
-
-	printf("%s\n", __FUNCTION__);
-
-	pointer_cached.cacheIndex = cache_idx;
-
-	IFCALL(pointer->PointerCached, session->context, &pointer_cached);
+	IFCALL(pointer->PointerCached, session->context, &pointerCached);
 
 	return 0;
 }

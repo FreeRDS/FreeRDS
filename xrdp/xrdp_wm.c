@@ -53,7 +53,6 @@ void xrdp_wm_delete(xrdpWm* self)
 	xrdp_mm_delete(self->mm);
 	xrdp_bitmap_delete(self->screen);
 	list_delete(self->log);
-	CloseHandle(self->LoginModeEvent);
 
 	free(self);
 }

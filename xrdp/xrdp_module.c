@@ -103,8 +103,7 @@ int xrdp_server_dstblt(xrdpModule* mod, XRDP_MSG_DSTBLT* msg)
 
 int xrdp_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
-	/* TODO */
-
+	libxrdp_set_pointer(mod->session, msg);
 	return 0;
 }
 
