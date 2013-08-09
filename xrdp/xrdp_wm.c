@@ -36,13 +36,11 @@ xrdpWm* xrdp_wm_create(xrdpProcess* owner)
 	self->screen->wm = self;
 	pid = g_getpid();
 
-	self->LoginModeEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-
 	self->log = list_create();
 	self->log->auto_free = 1;
 	self->mm = xrdp_mm_create(self);
 	get_keymaps(settings->KeyboardLayout, &(self->keymap));
-	xrdp_wm_set_login_mode(self, 0);
+	xrdp_wm_init(self);
 
 	return self;
 }
@@ -205,8 +203,6 @@ int xrdp_wm_init(xrdpWm* self)
 					list_add_item(self->mm->login_names, (long) g_strdup(q));
 					list_add_item(self->mm->login_values, (long) g_strdup(r));
 				}
-
-				xrdp_wm_set_login_mode(self, 2);
 			}
 
 			list_delete(names);
@@ -219,25 +215,7 @@ int xrdp_wm_init(xrdpWm* self)
 		}
 	}
 
-	xrdp_wm_set_login_mode(self, 2); /* force "connected" mode */
-
-	return 0;
-}
-
-/* returns the number for rects visible for an area relative to a drawable */
-/* putting the rects in region */
-int xrdp_wm_get_vis_region(xrdpWm* self, xrdpBitmap* bitmap, int x, int y, int cx, int cy, xrdpRegion *region, int clip_children)
-{
-	xrdpRect a;
-
-	/* area we are drawing */
-	MAKERECT(a, bitmap->left + x, bitmap->top + y, cx, cy);
-
-	a.left = MAX(self->screen->left, a.left);
-	a.top = MAX(self->screen->top, a.top);
-	a.right = MIN(self->screen->left + self->screen->width, a.right);
-	a.bottom = MIN(self->screen->top + self->screen->height, a.bottom);
-	xrdp_region_add_rect(region, &a);
+	xrdp_mm_connect(self->mm);
 
 	return 0;
 }
@@ -258,15 +236,6 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 
 	if (y >= self->screen->height)
 		y = self->screen->height;
-
-	self->mouse_x = x;
-	self->mouse_y = y;
-
-	if (self->screen->pointer != self->current_pointer)
-	{
-		libxrdp_set_pointer(self->session, self->screen->pointer);
-		self->current_pointer = self->screen->pointer;
-	}
 
 	if (self->mm->mod)
 	{
@@ -510,53 +479,10 @@ int callback(long id, int msg, long param1, long param2, long param3, long param
 	return rv;
 }
 
-/* returns error */
-/* this gets called when there is nothing on any socket */
-static int xrdp_wm_login_mode_changed(xrdpWm* self)
-{
-	if (!self)
-		return 0;
-
-	if (self->login_mode == 0)
-	{
-		/* this is the initial state of the login window */
-		xrdp_wm_set_login_mode(self, 1); /* put the wm in login mode */
-		list_clear(self->log);
-		xrdp_wm_init(self);
-	}
-	else if (self->login_mode == 2)
-	{
-		if (xrdp_mm_connect(self->mm) == 0)
-		{
-			xrdp_wm_set_login_mode(self, 3); /* put the wm in connected mode */
-		}
-		else
-		{
-			/* we do nothing on connect error so far */
-		}
-	}
-	else if (self->login_mode == 10)
-	{
-		xrdp_wm_set_login_mode(self, 11);
-	}
-
-	return 0;
-}
-
-int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode)
-{
-	self->login_mode = login_mode;
-	SetEvent(self->LoginModeEvent);
-	return 0;
-}
-
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount)
 {
 	if (!self)
 		return 0;
-
-	events[*nCount] = self->LoginModeEvent;
-	(*nCount)++;
 
 	return xrdp_mm_get_event_handles(self->mm, events, nCount);
 }
@@ -568,18 +494,7 @@ int xrdp_wm_check_wait_objs(xrdpWm* self)
 	if (!self)
 		return 0;
 
-	status = 0;
-
-	if (WaitForSingleObject(self->LoginModeEvent, 0) == WAIT_OBJECT_0)
-	{
-		ResetEvent(self->LoginModeEvent);
-		xrdp_wm_login_mode_changed(self);
-	}
-
-	if (status == 0)
-	{
-		status = xrdp_mm_check_wait_objs(self->mm);
-	}
+	status = xrdp_mm_check_wait_objs(self->mm);
 
 	return status;
 }

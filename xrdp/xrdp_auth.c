@@ -154,7 +154,6 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 			if (xrdp_mm_setup_mod2(self) == 0)
 			{
 				xrdp_mm_get_value(self, "ip", ip, 255);
-				xrdp_wm_set_login_mode(self->wm, 10);
 			}
 		}
 	}
@@ -162,9 +161,9 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 	{
 		log_message(LOG_LEVEL_INFO, "xrdp_mm_process_login_response: "
 			"login failed");
-	}
 
-	xrdp_mm_cleanup_sesman_connection(self);
+		xrdp_mm_cleanup_sesman_connection(self);
+	}
 
 	return rv;
 }

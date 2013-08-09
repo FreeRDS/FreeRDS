@@ -162,10 +162,6 @@ struct xrdp_wm
 	xrdpProcess* pro_layer; /* owner */
 	xrdpBitmap* screen;
 	xrdpSession* session;
-	/* pointer */
-	int current_pointer;
-	int mouse_x;
-	int mouse_y;
 	/* keyboard info */
 	int keys[256]; /* key states 0 up 1 down*/
 	int caps_lock;
@@ -173,8 +169,6 @@ struct xrdp_wm
 	int num_lock;
 	/* session log */
 	xrdpList* log;
-	int login_mode;
-	HANDLE LoginModeEvent;
 	xrdpMm* mm;
 	xrdpKeymap keymap;
 	char pamerrortxt[256];
@@ -267,8 +261,6 @@ void g_process_waiting_function(void);
 xrdpWm* xrdp_wm_create(xrdpProcess* owner);
 void xrdp_wm_delete(xrdpWm* self);
 int xrdp_wm_init(xrdpWm* self);
-int xrdp_wm_get_vis_region(xrdpWm* self, xrdpBitmap* bitmap,
-		int x, int y, int cx, int cy, xrdpRegion* region, int clip_children);
 int xrdp_wm_mouse_move(xrdpWm* self, int x, int y);
 int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down);
 int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y);

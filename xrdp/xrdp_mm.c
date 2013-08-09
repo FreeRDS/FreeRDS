@@ -303,12 +303,7 @@ void xrdp_mm_cleanup_sesman_connection(xrdpMm* self)
 {
 	self->delete_sesman_trans = 1;
 	self->connected_state = 0;
-
-	if (self->wm->login_mode != 10)
-	{
-		xrdp_wm_set_login_mode(self->wm, 11);
-		xrdp_mm_module_cleanup(self);
-	}
+	xrdp_mm_module_cleanup(self);
 }
 
 static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
@@ -339,13 +334,13 @@ static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
 		{
 			for (index = 0; index < names->count; index++)
 			{
-				val = (char *) list_get_item(names, index);
+				val = (char*) list_get_item(names, index);
 
 				if (val != 0)
 				{
 					if (g_strcasecmp(val, "ListenPort") == 0)
 					{
-						val = (char *) list_get_item(values, index);
+						val = (char*) list_get_item(values, index);
 						error = g_atoi(val);
 
 						if ((error > 0) && (error < 65000))
@@ -601,8 +596,7 @@ int xrdp_mm_connect(xrdpMm* self)
 		{
 			if (xrdp_mm_setup_mod2(self) == 0)
 			{
-				xrdp_wm_set_login_mode(self->wm, 10);
-				rv = 0; /*sucess*/
+				rv = 0;
 			}
 			else
 			{
@@ -615,13 +609,6 @@ int xrdp_mm_connect(xrdpMm* self)
 		else
 		{
 			log_message(LOG_LEVEL_ERROR, "Failure setting up module");
-		}
-
-		if (self->wm->login_mode != 10)
-		{
-			xrdp_wm_set_login_mode(self->wm, 11);
-			xrdp_mm_module_cleanup(self);
-			rv = 1; /* failure */
 		}
 	}
 
