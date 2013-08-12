@@ -72,12 +72,31 @@ int xrdp_server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
 int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
 	int bpp;
+	int inFlightFrames;
+	SURFACE_FRAME* frame;
 
 	bpp = msg->framebuffer->fbBitsPerPixel;
 
 	if (mod->session->codecMode)
 	{
+		inFlightFrames = ListDictionary_Count(mod->session->FrameList);
+
+		if (inFlightFrames > mod->session->settings->FrameAcknowledge)
+			mod->fps = (100 / (inFlightFrames + 1) * mod->MaxFps) / 100;
+		else
+			mod->fps = mod->MaxFps;
+
+		if (mod->fps < 1)
+			mod->fps = 1;
+
+		frame = (SURFACE_FRAME*) malloc(sizeof(SURFACE_FRAME));
+
+		frame->frameId = ++mod->session->frameId;
+		ListDictionary_Add(mod->session->FrameList, (void*) (size_t) frame->frameId, frame);
+
+		libxrdp_orders_send_frame_marker(mod->session, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
 		libxrdp_send_surface_bits(mod->session, bpp, msg);
+		libxrdp_orders_send_frame_marker(mod->session, SURFACECMD_FRAMEACTION_END, frame->frameId);
 	}
 	else
 	{

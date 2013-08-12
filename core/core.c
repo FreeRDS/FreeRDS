@@ -85,6 +85,8 @@ int libxrdp_session_init(xrdpSession* session, rdpSettings* settings)
 		nsc_context_set_pixel_format(session->nsc_context, RDP_PIXEL_FORMAT_B8G8R8);
 	}
 
+	session->FrameList = ListDictionary_New(TRUE);
+
 	return 0;
 }
 
@@ -98,6 +100,8 @@ void libxrdp_session_uninit(xrdpSession* session)
 
 	Stream_Free(session->nsc_s, TRUE);
 	nsc_context_free(session->nsc_context);
+
+	ListDictionary_Free(session->FrameList);
 }
 
 /**
@@ -312,7 +316,7 @@ int libxrdp_orders_begin_paint(xrdpSession* session)
 {
 	rdpUpdate* update = ((rdpContext*) session)->update;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	update->BeginPaint((rdpContext*) session);
 
@@ -323,7 +327,7 @@ int libxrdp_orders_end_paint(xrdpSession* session)
 {
 	rdpUpdate* update = ((rdpContext*) session)->update;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	update->EndPaint((rdpContext*) session);
 
@@ -854,9 +858,6 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		int rows, cols;
 		XRDP_MSG_PAINT_RECT subMsg;
 
-		session->frameContext = TRUE;
-		libxrdp_orders_send_frame_marker(session, 0, session->frameId);
-
 		rows = (msg->nWidth + (MaxRegionWidth - (msg->nWidth % MaxRegionWidth))) / MaxRegionWidth;
 		cols = (msg->nHeight + (MaxRegionHeight - (msg->nHeight % MaxRegionHeight))) / MaxRegionHeight;
 
@@ -882,9 +883,6 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 					libxrdp_send_surface_bits(session, bpp, &subMsg);
 			}
 		}
-
-		libxrdp_orders_send_frame_marker(session, 1, session->frameId++);
-		session->frameContext = FALSE;
 
 		return 0;
 	}
@@ -923,13 +921,9 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	rect.width = msg->nWidth;
 	rect.height = msg->nHeight;
 
-	if (!session->frameContext)
-		libxrdp_orders_send_frame_marker(session, 0, session->frameId);
-
 	if (session->settings->RemoteFxCodec)
 	{
 		s = session->rfx_s;
-		Stream_Clear(s);
 		Stream_SetPosition(s, 0);
 
 		rfx_compose_message(session->rfx_context, s, &rect, 1, data,
@@ -967,23 +961,20 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 
 	IFCALL(update->SurfaceBits, update->context, &cmd);
 
-	if (!session->frameContext)
-		libxrdp_orders_send_frame_marker(session, 1, session->frameId++);
-
 	return 0;
 }
 
 int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32 id)
 {
-	SURFACE_FRAME_MARKER surface_frame_marker;
+	SURFACE_FRAME_MARKER surfaceFrameMarker;
 	rdpUpdate* update = session->client->update;
 
 	printf("%s: action: %d id: %d\n", __FUNCTION__, action, id);
 
-	surface_frame_marker.frameAction = action;
-	surface_frame_marker.frameId = id;
+	surfaceFrameMarker.frameAction = action;
+	surfaceFrameMarker.frameId = id;
 
-	IFCALL(update->SurfaceFrameMarker, (rdpContext*) session, &surface_frame_marker);
+	IFCALL(update->SurfaceFrameMarker, (rdpContext*) session, &surfaceFrameMarker);
 
 	return 0;
 }

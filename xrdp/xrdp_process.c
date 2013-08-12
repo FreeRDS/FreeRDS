@@ -245,6 +245,17 @@ void xrdp_input_register_callbacks(rdpInput* input)
 
 void xrdp_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
 {
+	SURFACE_FRAME* frame;
+	xrdpSession* session = (xrdpSession*) context;
+
+	frame = (SURFACE_FRAME*) ListDictionary_GetItemValue(session->FrameList, (void*) (size_t) frameId);
+
+	if (frame)
+	{
+		ListDictionary_Remove(session->FrameList, (void*) (size_t) frameId);
+		free(frame);
+	}
+
 	printf("FrameAck: %d\n", frameId);
 }
 

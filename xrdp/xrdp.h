@@ -480,6 +480,8 @@ struct xrdp_mod
 
 	XRDP_FRAMEBUFFER framebuffer;
 
+	int fps;
+	int MaxFps;
 	HANDLE StopEvent;
 	HANDLE ServerTimer;
 	HANDLE ServerThread;

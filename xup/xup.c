@@ -695,7 +695,7 @@ void* x11rdp_xrdp_client_thread(void* arg)
 	LARGE_INTEGER due;
 	xrdpModule* mod = (xrdpModule*) arg;
 
-	fps = 25;
+	fps = mod->fps;
 	PackTimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
 	due.QuadPart = 0;
@@ -723,6 +723,13 @@ void* x11rdp_xrdp_client_thread(void* arg)
 		if (status == WAIT_OBJECT_0)
 		{
 			xrdp_message_server_queue_pack(mod);
+		}
+
+		if (mod->fps != fps)
+		{
+			fps = mod->fps;
+			due.QuadPart = 0;
+			SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
 		}
 	}
 

@@ -453,8 +453,6 @@ int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod)
 
 int xrdp_message_server_module_init(xrdpModule* mod)
 {
-	LARGE_INTEGER due;
-
 	mod->ServerProxy = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
 
 	//mod->ServerProxy = NULL; /* disable */
@@ -493,12 +491,9 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->MonitoredDesktop = xrdp_message_server_monitored_desktop;
 	}
 
+	mod->MaxFps = mod->fps = 60;
 	mod->ServerList = LinkedList_New();
 	mod->ServerQueue = MessageQueue_New();
-
-	due.QuadPart = 0;
-	mod->ServerTimer = CreateWaitableTimer(NULL, TRUE, NULL);
-	SetWaitableTimer(mod->ServerTimer, &due, 1000 / 25, NULL, NULL, 0);
 
 	return 0;
 }

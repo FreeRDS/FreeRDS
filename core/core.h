@@ -135,9 +135,6 @@ struct xrdp_session
 	BOOL codecMode;
 	int bytesPerPixel;
 
-	UINT32 frameId;
-	BOOL frameContext;
-
 	wStream* bs;
 	wStream* bts;
 
@@ -146,6 +143,9 @@ struct xrdp_session
 
 	wStream* nsc_s;
 	NSC_CONTEXT* nsc_context;
+
+	UINT32 frameId;
+	wListDictionary* FrameList;
 };
 
 FREERDP_API int libxrdp_session_init(xrdpSession* session, rdpSettings* settings);
