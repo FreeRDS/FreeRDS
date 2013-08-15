@@ -837,52 +837,12 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	BYTE* data;
 	wStream* s;
 	int scanline;
-	RFX_RECT rect;
 	int numMessages;
 	int bytesPerPixel;
 	int MaxRegionWidth;
 	int MaxRegionHeight;
-	RFX_MESSAGE* messages;
 	SURFACE_BITS_COMMAND cmd;
 	rdpUpdate* update = ((rdpContext*) session)->update;
-
-	MaxRegionWidth = 64 * 5;
-	MaxRegionHeight = 64 * 2;
-
-	if (((msg->nWidth * msg->nHeight) > (MaxRegionWidth * MaxRegionHeight)) && (session->settings->NSCodec))
-	{
-		int i, j;
-		int rows, cols;
-		XRDP_MSG_PAINT_RECT subMsg;
-
-		rows = (msg->nWidth + (MaxRegionWidth - (msg->nWidth % MaxRegionWidth))) / MaxRegionWidth;
-		cols = (msg->nHeight + (MaxRegionHeight - (msg->nHeight % MaxRegionHeight))) / MaxRegionHeight;
-
-		//printf("Partitioning x: %d y: %d width: %d height: %d in %d partitions (%d rows, %d cols)\n",
-		//		msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight, rows * cols, rows, cols);
-
-		for (i = 0; i < rows; i++)
-		{
-			for (j = 0; j < cols; j++)
-			{
-				CopyMemory(&subMsg, msg, sizeof(XRDP_MSG_PAINT_RECT));
-
-				subMsg.nLeftRect = msg->nLeftRect + (i * MaxRegionWidth);
-				subMsg.nTopRect = msg->nTopRect + (j * MaxRegionHeight);
-
-				subMsg.nWidth = (i < (rows - 1)) ? MaxRegionWidth : msg->nWidth - (i * MaxRegionWidth);
-				subMsg.nHeight = (j < (cols - 1)) ? MaxRegionHeight : msg->nHeight - (j * MaxRegionHeight);
-
-				//printf("\t[%d, %d]: x: %d y: %d width: %d height; %d\n",
-				//		i, j, subMsg.nLeftRect, subMsg.nTopRect, subMsg.nWidth, subMsg.nHeight);
-
-				if ((subMsg.nWidth * subMsg.nHeight) > 0)
-					libxrdp_send_surface_bits(session, bpp, &subMsg);
-			}
-		}
-
-		return 0;
-	}
 
 	if ((bpp == 24) || (bpp == 32))
 	{
@@ -899,12 +859,6 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		bpp = msg->framebuffer->fbBitsPerPixel;
 		data = msg->framebuffer->fbSharedMemory;
 		scanline = msg->framebuffer->fbScanline;
-
-		if (!session->settings->RemoteFxCodec)
-		{
-			data = &data[(msg->nTopRect * msg->framebuffer->fbScanline) +
-		             (msg->nLeftRect * msg->framebuffer->fbBytesPerPixel)];
-		}
 	}
 	else
 	{
@@ -915,8 +869,11 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
 			bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
-	if (session->settings->RemoteFxCodec)
+	if (session->settings->RemoteFxCodec && 0)
 	{
+		RFX_RECT rect;
+		RFX_MESSAGE* messages;
+
 		s = session->rfx_s;
 
 		rect.x = msg->nLeftRect;
@@ -925,8 +882,7 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		rect.height = msg->nHeight;
 
 		messages = rfx_encode_messages(session->rfx_context, &rect, 1, data,
-				msg->nWidth, msg->nHeight, scanline, &numMessages,
-				session->settings->MultifragMaxRequestSize);
+				msg->nWidth, msg->nHeight, scanline, &numMessages, 0xFFFFFFFF);
 
 		cmd.codecID = session->settings->RemoteFxCodecId;
 
@@ -957,32 +913,38 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	}
 	else if (session->settings->NSCodec)
 	{
+		NSC_MESSAGE* messages;
+
 		s = session->nsc_s;
-		Stream_Clear(s);
-		Stream_SetPosition(s, 0);
 
-		rect.x = 0;
-		rect.y = 0;
-		rect.width = msg->nWidth;
-		rect.height = msg->nHeight;
-
-		nsc_compose_message(session->nsc_context, s, data,
-				msg->nWidth, msg->nHeight, scanline);
-
-		cmd.codecID = session->settings->NSCodecId;
-
-		cmd.destLeft = msg->nLeftRect;
-		cmd.destTop = msg->nTopRect;
-		cmd.destRight = msg->nLeftRect + msg->nWidth;
-		cmd.destBottom = msg->nTopRect + msg->nHeight;
+		messages = nsc_encode_messages(session->nsc_context, data,
+				msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight,
+				scanline, &numMessages, session->settings->MultifragMaxRequestSize);
 
 		cmd.bpp = 32;
-		cmd.width = msg->nWidth;
-		cmd.height = msg->nHeight;
-		cmd.bitmapDataLength = Stream_GetPosition(s);
-		cmd.bitmapData = Stream_Buffer(s);
+		cmd.codecID = session->settings->NSCodecId;
 
-		IFCALL(update->SurfaceBits, update->context, &cmd);
+		for (i = 0; i < numMessages; i++)
+		{
+			Stream_SetPosition(s, 0);
+
+			nsc_write_message(session->nsc_context, s, &messages[i]);
+			nsc_message_free(session->nsc_context, &messages[i]);
+
+			cmd.destLeft = messages[i].x;
+			cmd.destTop = messages[i].y;
+			cmd.destRight = messages[i].x + messages[i].width;
+			cmd.destBottom = messages[i].y + messages[i].height;
+			cmd.width = messages[i].width;
+			cmd.height = messages[i].height;
+
+			cmd.bitmapDataLength = Stream_GetPosition(s);
+			cmd.bitmapData = Stream_Buffer(s);
+
+			IFCALL(update->SurfaceBits, update->context, &cmd);
+		}
+
+		free(messages);
 
 		return 0;
 	}
