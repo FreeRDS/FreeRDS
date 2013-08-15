@@ -100,7 +100,12 @@ BOOL xrdp_peer_capabilities(freerdp_peer* client)
 BOOL xrdp_peer_post_connect(freerdp_peer* client)
 {
 	xrdpSession* xfp;
+	UINT32 ColorDepth;
+	UINT32 DesktopWidth;
+	UINT32 DesktopHeight;
+	rdpSettings* settings;
 
+	settings = client->settings;
 	xfp = (xrdpSession*) client->context;
 
 	fprintf(stderr, "Client %s is connected", client->hostname);
@@ -113,10 +118,32 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 	}
 	fprintf(stderr, "\n");
 
-	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
-		client->settings->DesktopWidth, client->settings->DesktopHeight, client->settings->ColorDepth);
+	DesktopWidth = settings->DesktopWidth;
+	DesktopHeight = settings->DesktopHeight;
+	ColorDepth = settings->ColorDepth;
 
-	/* do not reactivate, just accept client desktop size and color depth */
+	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
+		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
+
+	if ((DesktopWidth % 4) != 0)
+		DesktopWidth += (DesktopWidth % 4);
+
+	if ((DesktopHeight % 4) != 0)
+		DesktopHeight += (DesktopHeight % 4);
+
+	if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight)
+			|| (ColorDepth != settings->ColorDepth))
+	{
+		fprintf(stderr, "Resizing desktop to %dx%dx%d\n", DesktopWidth, DesktopHeight, ColorDepth);
+
+		settings->DesktopWidth = DesktopWidth;
+		settings->DesktopHeight = DesktopHeight;
+		settings->ColorDepth = ColorDepth;
+
+		client->update->DesktopResize(client->update->context);
+
+		return TRUE;
+	}
 
 	return TRUE;
 }
