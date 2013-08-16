@@ -839,8 +839,6 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	int scanline;
 	int numMessages;
 	int bytesPerPixel;
-	int MaxRegionWidth;
-	int MaxRegionHeight;
 	SURFACE_BITS_COMMAND cmd;
 	rdpUpdate* update = ((rdpContext*) session)->update;
 
@@ -869,7 +867,7 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
 			bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
-	if (session->settings->RemoteFxCodec && 0)
+	if (session->settings->RemoteFxCodec)
 	{
 		RFX_RECT rect;
 		RFX_MESSAGE* messages;
@@ -882,7 +880,8 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		rect.height = msg->nHeight;
 
 		messages = rfx_encode_messages(session->rfx_context, &rect, 1, data,
-				msg->nWidth, msg->nHeight, scanline, &numMessages, 0xFFFFFFFF);
+				msg->nWidth, msg->nHeight, scanline, &numMessages,
+				session->settings->MultifragMaxRequestSize);
 
 		cmd.codecID = session->settings->RemoteFxCodecId;
 

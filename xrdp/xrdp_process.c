@@ -99,6 +99,7 @@ BOOL xrdp_peer_capabilities(freerdp_peer* client)
 
 BOOL xrdp_peer_post_connect(freerdp_peer* client)
 {
+	int i;
 	xrdpSession* xfp;
 	UINT32 ColorDepth;
 	UINT32 DesktopWidth;
@@ -143,6 +144,14 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 		client->update->DesktopResize(client->update->context);
 
 		return TRUE;
+	}
+
+	for (i = 0; i < settings->ChannelCount; i++)
+	{
+		if (settings->ChannelDefArray[i].joined)
+		{
+			printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
+		}
 	}
 
 	return TRUE;
