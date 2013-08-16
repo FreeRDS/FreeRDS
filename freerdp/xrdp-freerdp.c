@@ -67,11 +67,11 @@ void verifyColorMap(xrdpModule* mod)
 	LLOGLN(0, ("The colormap is all NULL\n"));
 }
 
-static int lxrdp_start(xrdpModule* mod, int w, int h, int bpp)
+static int freerdp_xrdp_client_start(xrdpModule* mod, int w, int h, int bpp)
 {
 	rdpSettings* settings;
 
-	LLOGLN(10, ("lxrdp_start: w %d h %d bpp %d", w, h, bpp));
+	LLOGLN(10, ("freerdp_xrdp_client_start: w %d h %d bpp %d", w, h, bpp));
 
 	settings = mod->instance->settings;
 	settings->DesktopWidth = w;
@@ -88,14 +88,14 @@ static int lxrdp_start(xrdpModule* mod, int w, int h, int bpp)
 	return 0;
 }
 
-static int lxrdp_connect(xrdpModule* mod)
+static int freerdp_xrdp_client_connect(xrdpModule* mod)
 {
 	BOOL ok;
 
-	LLOGLN(10, ("lxrdp_connect:"));
+	LLOGLN(10, ("freerdp_xrdp_client_connect:"));
 
 	ok = freerdp_connect(mod->instance);
-	LLOGLN(0, ("lxrdp_connect: freerdp_connect returned %d", ok));
+	LLOGLN(0, ("freerdp_xrdp_client_connect: freerdp_connect returned %d", ok));
 
 	if (!ok)
 	{
@@ -157,7 +157,6 @@ static int lxrdp_connect(xrdpModule* mod)
 				}
 			}
 			log_message(LOG_LEVEL_INFO, buf);
-			server_msg(mod, buf, 0);
 		}
 
 #endif
@@ -174,13 +173,13 @@ static int lxrdp_connect(xrdpModule* mod)
 	return 0;
 }
 
-static int lxrdp_event(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4)
+static int freerdp_xrdp_client_event(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4)
 {
 	int x;
 	int y;
 	int flags;
 
-	LLOGLN(12, ("lxrdp_event: msg %d", msg));
+	LLOGLN(12, ("freerdp_xrdp_client_event: msg %d", msg));
 
 	switch (msg)
 	{
@@ -319,7 +318,7 @@ static int lxrdp_event(xrdpModule* mod, int msg, long param1, long param2, long 
 	return 0;
 }
 
-static int lxrdp_end(xrdpModule* mod)
+static int freerdp_xrdp_client_end(xrdpModule* mod)
 {
 	int i;
 	int j;
@@ -340,15 +339,15 @@ static int lxrdp_end(xrdpModule* mod)
 		}
 	}
 
-	LLOGLN(10, ("lxrdp_end:"));
+	LLOGLN(10, ("freerdp_xrdp_client_end:"));
 	return 0;
 }
 
-static int lxrdp_set_param(xrdpModule* mod, char *name, char *value)
+static int freerdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
 {
 	rdpSettings* settings;
 
-	LLOGLN(10, ("lxrdp_set_param: name [%s] value [%s]", name, value));
+	LLOGLN(10, ("freerdp_xrdp_client_set_param: name [%s] value [%s]", name, value));
 	settings = mod->instance->settings;
 
 	LLOGLN(10, ("%p %d", settings->ServerHostname, settings->DisableEncryption));
@@ -387,24 +386,18 @@ static int lxrdp_set_param(xrdpModule* mod, char *name, char *value)
 	}
 	else
 	{
-		LLOGLN(0, ("lxrdp_set_param: unknown name [%s] value [%s]", name, value));
+		LLOGLN(0, ("freerdp_xrdp_client_set_param: unknown name [%s] value [%s]", name, value));
 	}
 
 	return 0;
 }
 
-static int lxrdp_session_change(xrdpModule* mod, int a, int b)
-{
-	LLOGLN(0, ("lxrdp_session_change: - no code here"));
-	return 0;
-}
-
-int lxrdp_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
+int freerdp_xrdp_client_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
 	return 0;
 }
 
-static int lxrdp_check_wait_objs(xrdpModule* mod)
+int freerdp_xrdp_client_check_event_handles(xrdpModule* mod)
 {
 	BOOL status;
 
@@ -419,41 +412,54 @@ static int lxrdp_check_wait_objs(xrdpModule* mod)
 static void xrdp_freerdp_begin_paint(rdpContext* context)
 {
 	xrdpModule* mod;
+	XRDP_MSG_BEGIN_UPDATE msg;
 
 	LLOGLN(10, ("xrdp_freerdp_begin_paint:"));
+
 	mod = ((modContext*) context)->modi;
-	server_begin_update(mod);
+
+	msg.type = XRDP_SERVER_BEGIN_UPDATE;
+	mod->server->BeginUpdate(mod, &msg);
 }
 
 static void xrdp_freerdp_end_paint(rdpContext* context)
 {
 	xrdpModule* mod;
+	XRDP_MSG_END_UPDATE msg;
 
 	LLOGLN(10, ("xrdp_freerdp_end_paint:"));
+
 	mod = ((modContext*) context)->modi;
-	server_end_update(mod);
+
+	msg.type = XRDP_SERVER_END_UPDATE;
+	mod->server->EndUpdate(mod, &msg);
 }
 
 static void xrdp_freerdp_set_bounds(rdpContext* context, rdpBounds *bounds)
 {
 	xrdpModule* mod;
-	XRDP_MSG_SET_CLIP msg;
+	XRDP_MSG_SET_CLIPPING_REGION msg;
 
 	LLOGLN(10, ("xrdp_freerdp_set_bounds: %p", bounds));
 	mod = ((modContext*) context)->modi;
 
 	if (bounds != 0)
 	{
+		msg.bNullRegion = FALSE;
 		msg.nLeftRect = bounds->left;
 		msg.nTopRect = bounds->top;
 		msg.nWidth = (bounds->right - bounds->left) + 1;
 		msg.nHeight = (bounds->bottom - bounds->top) + 1;
 
-		server_set_clip(mod, &msg);
+		mod->server->SetClippingRegion(mod, &msg);
 	}
 	else
 	{
-		server_reset_clip(mod);
+		msg.bNullRegion = TRUE;
+		msg.nLeftRect = msg.nTopRect = 0;
+		msg.nWidth = msg.nHeight = 0;
+
+		mod->server->SetClippingRegion(mod, &msg);
 	}
 }
 
@@ -525,7 +531,7 @@ static void xrdp_freerdp_bitmap_update(rdpContext* context, BITMAP_UPDATE *bitma
 		msg.nXSrc = 0;
 		msg.nYSrc = 0;
 
-		server_paint_rect(mod, &msg);
+		mod->server->PaintRect(mod, &msg);
 
 		if (dst_data1 != dst_data)
 		{
@@ -539,7 +545,7 @@ static void xrdp_freerdp_bitmap_update(rdpContext* context, BITMAP_UPDATE *bitma
 static void xrdp_freerdp_dst_blt(rdpContext* context, DSTBLT_ORDER* dstblt)
 {
 	xrdpModule* mod;
-	XRDP_MSG_OPAQUE_RECT msg;
+	XRDP_MSG_DSTBLT msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_dst_blt:"));
@@ -548,10 +554,9 @@ static void xrdp_freerdp_dst_blt(rdpContext* context, DSTBLT_ORDER* dstblt)
 	msg.nTopRect = dstblt->nTopRect;
 	msg.nWidth = dstblt->nWidth;
 	msg.nHeight = dstblt->nHeight;
+	msg.bRop = dstblt->bRop;
 
-	server_set_opcode(mod, dstblt->bRop);
-	server_opaque_rect(mod, &msg);
-	server_set_opcode(mod, 0xcc);
+	mod->server->DstBlt(mod, &msg);
 }
 
 static void xrdp_freerdp_pat_blt(rdpContext* context, PATBLT_ORDER* patblt)
@@ -562,8 +567,8 @@ static void xrdp_freerdp_pat_blt(rdpContext* context, PATBLT_ORDER* patblt)
 	int bgcolor;
 	int server_bpp;
 	int client_bpp;
-	struct brush_item *bi;
-	XRDP_MSG_OPAQUE_RECT msg;
+	struct brush_item* bi;
+	XRDP_MSG_PATBLT msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_pat_blt:"));
@@ -580,38 +585,29 @@ static void xrdp_freerdp_pat_blt(rdpContext* context, PATBLT_ORDER* patblt)
 	fgcolor = convert_color(server_bpp, client_bpp, patblt->foreColor, mod->colormap);
 	bgcolor = convert_color(server_bpp, client_bpp, patblt->backColor, mod->colormap);
 
-	if (fgcolor == bgcolor)
-	{
-		LLOGLN(0, ("Warning same color on both bg and fg"));
-	}
+	msg.bRop = patblt->bRop;
+	msg.foreColor = fgcolor;
+	msg.backColor = bgcolor;
 
-	server_set_mixmode(mod, 1);
-	server_set_opcode(mod, patblt->bRop);
-	server_set_fgcolor(mod, fgcolor);
-	server_set_bgcolor(mod, bgcolor);
+	msg.brush.x = patblt->brush.x;
+	msg.brush.y = patblt->brush.y;
 
 	if (patblt->brush.style & 0x80)
 	{
 		idx = patblt->brush.hatch;
-
-		if ((idx < 0) || (idx >= 64))
-		{
-			LLOGLN(0, ("xrdp_freerdp_pat_blt: error"));
-			return;
-		}
-
 		bi = mod->brush_cache + idx;
-		server_set_brush(mod, patblt->brush.x, patblt->brush.y, 3, bi->b8x8);
+
+		msg.brush.style = 3;
+		msg.brush.data = (BYTE*) msg.brush.p8x8;
+		CopyMemory(msg.brush.data, bi->b8x8, 8);
 	}
 	else
 	{
-		server_set_brush(mod, patblt->brush.x, patblt->brush.y, patblt->brush.style,
-				(char *) (patblt->brush.p8x8));
+		msg.brush.style = patblt->brush.style;
+		msg.brush.data = (BYTE*) patblt->brush.p8x8;
 	}
 
-	server_opaque_rect(mod, &msg);
-	server_set_opcode(mod, 0xCC);
-	server_set_mixmode(mod, 0);
+	mod->server->PatBlt(mod, &msg);
 }
 
 static void xrdp_freerdp_scr_blt(rdpContext* context, SCRBLT_ORDER* scrblt)
@@ -631,10 +627,7 @@ static void xrdp_freerdp_scr_blt(rdpContext* context, SCRBLT_ORDER* scrblt)
 	msg.nXSrc = scrblt->nXSrc;
 	msg.nYSrc = scrblt->nYSrc;
 
-	server_set_opcode(mod, msg.bRop);
-	server_screen_blt(mod, &msg);
-
-	server_set_opcode(mod, 0xcc);
+	mod->server->ScreenBlt(mod, &msg);
 }
 
 static void xrdp_freerdp_opaque_rect(rdpContext* context, OPAQUE_RECT_ORDER* opaqueRect)
@@ -648,21 +641,21 @@ static void xrdp_freerdp_opaque_rect(rdpContext* context, OPAQUE_RECT_ORDER* opa
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_opaque_rect:"));
 
-	msg.nLeftRect = opaqueRect->nLeftRect;
-	msg.nTopRect = opaqueRect->nTopRect;
-	msg.nWidth = opaqueRect->nWidth;
-	msg.nHeight = opaqueRect->nHeight;
-
 	server_bpp = mod->instance->settings->ColorDepth;
 	client_bpp = mod->bpp;
 
 	fgcolor = convert_color(server_bpp, client_bpp, opaqueRect->color, mod->colormap);
 
-	server_set_fgcolor(mod, fgcolor);
-	server_opaque_rect(mod, &msg);
+	msg.nLeftRect = opaqueRect->nLeftRect;
+	msg.nTopRect = opaqueRect->nTopRect;
+	msg.nWidth = opaqueRect->nWidth;
+	msg.nHeight = opaqueRect->nHeight;
+	msg.color = fgcolor;
+
+	mod->server->OpaqueRect(mod, &msg);
 }
 
-static void xrdp_freerdp_mem_blt(rdpContext* context, MEMBLT_ORDER *memblt)
+static void xrdp_freerdp_mem_blt(rdpContext* context, MEMBLT_ORDER* memblt)
 {
 	int id;
 	int idx;
@@ -704,62 +697,89 @@ static void xrdp_freerdp_mem_blt(rdpContext* context, MEMBLT_ORDER *memblt)
 	msg.nXSrc = memblt->nXSrc;
 	msg.nYSrc = memblt->nYSrc;
 
-	server_set_opcode(mod, memblt->bRop);
-	server_paint_rect(mod, &msg);
-	server_set_opcode(mod, 0xCC);
+	mod->server->PaintRect(mod, &msg);
 }
 
-static void xrdp_freerdp_glyph_index(rdpContext* context, GLYPH_INDEX_ORDER *glyph_index)
+static void xrdp_freerdp_glyph_index(rdpContext* context, GLYPH_INDEX_ORDER* glyphIndex)
 {
 	xrdpModule* mod;
 	int server_bpp;
 	int client_bpp;
 	int fgcolor;
 	int bgcolor;
+	XRDP_MSG_GLYPH_INDEX msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_glyph_index:"));
 	server_bpp = mod->instance->settings->ColorDepth;
 	client_bpp = mod->bpp;
-	fgcolor = convert_color(server_bpp, client_bpp, glyph_index->foreColor, mod->colormap);
-	bgcolor = convert_color(server_bpp, client_bpp, glyph_index->backColor, mod->colormap);
-	server_set_bgcolor(mod, fgcolor);
-	server_set_fgcolor(mod, bgcolor);
-	server_draw_text(mod, glyph_index->cacheId, glyph_index->flAccel, glyph_index->fOpRedundant,
-			glyph_index->bkLeft, glyph_index->bkTop, glyph_index->bkRight, glyph_index->bkBottom,
-			glyph_index->opLeft, glyph_index->opTop, glyph_index->opRight, glyph_index->opBottom,
-			glyph_index->x, glyph_index->y, (char *) (glyph_index->data), glyph_index->cbData);
+
+	fgcolor = convert_color(server_bpp, client_bpp, glyphIndex->foreColor, mod->colormap);
+	bgcolor = convert_color(server_bpp, client_bpp, glyphIndex->backColor, mod->colormap);
+
+	msg.backColor = fgcolor;
+	msg.foreColor = bgcolor;
+	msg.cacheId = glyphIndex->cacheId;
+	msg.flAccel = glyphIndex->flAccel;
+	msg.ulCharInc = glyphIndex->ulCharInc;
+	msg.fOpRedundant = glyphIndex->fOpRedundant;
+	msg.bkLeft = glyphIndex->bkLeft;
+	msg.bkTop = glyphIndex->bkTop;
+	msg.bkRight = glyphIndex->bkRight;
+	msg.bkBottom = glyphIndex->bkBottom;
+	msg.opLeft = glyphIndex->opLeft;
+	msg.opTop = glyphIndex->opTop;
+	msg.opRight = glyphIndex->opRight;
+	msg.opBottom = glyphIndex->opBottom;
+	CopyMemory(&msg.brush, &glyphIndex->brush, sizeof(rdpBrush));
+	msg.brush.data = msg.brush.p8x8;
+	msg.x = glyphIndex->x;
+	msg.y = glyphIndex->y;
+	msg.cbData = glyphIndex->cbData;
+	msg.data = (BYTE*) malloc(msg.cbData);
+	CopyMemory(msg.data, glyphIndex->data, msg.cbData);
+
+	mod->server->GlyphIndex(mod, &msg);
 }
 
-static void xrdp_freerdp_line_to(rdpContext* context, LINE_TO_ORDER *line_to)
+static void xrdp_freerdp_line_to(rdpContext* context, LINE_TO_ORDER* lineTo)
 {
 	xrdpModule* mod;
 	int server_bpp;
 	int client_bpp;
 	int fgcolor;
 	int bgcolor;
+	XRDP_MSG_LINE_TO msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_line_to:"));
-	server_set_opcode(mod, line_to->bRop2);
+
 	server_bpp = mod->instance->settings->ColorDepth;
 	client_bpp = mod->bpp;
-	fgcolor = convert_color(server_bpp, client_bpp, line_to->penColor, mod->colormap);
-	bgcolor = convert_color(server_bpp, client_bpp, line_to->backColor, mod->colormap);
-	server_set_fgcolor(mod, fgcolor);
-	server_set_bgcolor(mod, bgcolor);
-	server_set_pen(mod, line_to->penStyle, line_to->penWidth);
-	server_draw_line(mod, line_to->nXStart, line_to->nYStart, line_to->nXEnd, line_to->nYEnd);
-	server_set_opcode(mod, 0xcc);
+	fgcolor = convert_color(server_bpp, client_bpp, lineTo->penColor, mod->colormap);
+	bgcolor = convert_color(server_bpp, client_bpp, lineTo->backColor, mod->colormap);
+
+	msg.bRop2 = lineTo->bRop2;
+	msg.penColor = fgcolor;
+	msg.backColor = bgcolor;
+	msg.penColor = lineTo->penColor;
+	msg.penStyle = lineTo->penStyle;
+	msg.penWidth = lineTo->penWidth;
+	msg.nXStart = lineTo->nXStart;
+	msg.nYStart = lineTo->nYStart;
+	msg.nXEnd = lineTo->nXEnd;
+	msg.nYEnd = lineTo->nYEnd;
+
+	mod->server->LineTo(mod, &msg);
 }
 
-static void xrdp_freerdp_cache_bitmap(rdpContext* context, CACHE_BITMAP_ORDER *cache_bitmap_order)
+static void xrdp_freerdp_cache_bitmap(rdpContext* context, CACHE_BITMAP_ORDER* cache_bitmap_order)
 {
 	LLOGLN(0, ("xrdp_freerdp_cache_bitmap: - no code here"));
 }
 
 /* Turn the bitmap upside down*/
-static void xrdp_freerdp_upsidedown(UINT8 *destination, CACHE_BITMAP_V2_ORDER *cache_bitmap_v2_order, int server_Bpp)
+static void xrdp_freerdp_upsidedown(UINT8 *destination, CACHE_BITMAP_V2_ORDER* cache_bitmap_v2_order, int server_Bpp)
 {
 	BYTE *src;
 	BYTE *dst;
@@ -784,7 +804,7 @@ static void xrdp_freerdp_upsidedown(UINT8 *destination, CACHE_BITMAP_V2_ORDER *c
 	}
 }
 
-static void xrdp_freerdp_cache_bitmapV2(rdpContext* context, CACHE_BITMAP_V2_ORDER *cache_bitmap_v2_order)
+static void xrdp_freerdp_cache_bitmapV2(rdpContext* context, CACHE_BITMAP_V2_ORDER* cache_bitmap_v2_order)
 {
 	char *dst_data;
 	char *dst_data1;
@@ -860,11 +880,12 @@ static void xrdp_freerdp_cache_bitmapV2(rdpContext* context, CACHE_BITMAP_V2_ORD
 	}
 }
 
-static void xrdp_freerdp_cache_glyph(rdpContext* context, CACHE_GLYPH_ORDER *cache_glyph_order)
+static void xrdp_freerdp_cache_glyph(rdpContext* context, CACHE_GLYPH_ORDER* cache_glyph_order)
 {
 	int index;
 	GLYPH_DATA *gd;
 	xrdpModule* mod;
+	XRDP_MSG_CACHE_GLYPH msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(10, ("xrdp_freerdp_cache_glyph: %d", cache_glyph_order->cGlyphs));
@@ -872,10 +893,21 @@ static void xrdp_freerdp_cache_glyph(rdpContext* context, CACHE_GLYPH_ORDER *cac
 	for (index = 0; index < cache_glyph_order->cGlyphs; index++)
 	{
 		gd = &cache_glyph_order->glyphData[index];
-		LLOGLN(10, ("  %d %d %d %d %d", gd->cacheIndex, gd->x, gd->y,
-						gd->cx, gd->cy));
-		server_add_char(mod, cache_glyph_order->cacheId, gd->cacheIndex, gd->x, gd->y, gd->cx, gd->cy,
-				(char *) (gd->aj));
+		LLOGLN(10, ("  %d %d %d %d %d", gd->cacheIndex, gd->x, gd->y, gd->cx, gd->cy));
+
+		msg.flags = 0;
+		msg.cGlyphs = 1;
+		msg.cacheId = cache_glyph_order->cacheId;
+		msg.glyphData[0].cacheIndex = gd->cacheIndex;
+		msg.glyphData[0].x = gd->x;
+		msg.glyphData[0].y = gd->y;
+		msg.glyphData[0].cx = gd->cx;
+		msg.glyphData[0].cy = gd->cy;
+		msg.glyphData[0].aj = gd->aj;
+		msg.glyphData[0].cb = gd->cb;
+
+		mod->server->CacheGlyph(mod, &msg);
+
 		free(gd->aj);
 		gd->aj = NULL;
 	}
@@ -884,7 +916,7 @@ static void xrdp_freerdp_cache_glyph(rdpContext* context, CACHE_GLYPH_ORDER *cac
 	cache_glyph_order->unicodeCharacters = 0;
 }
 
-static void xrdp_freerdp_cache_brush(rdpContext* context, CACHE_BRUSH_ORDER *cache_brush_order)
+static void xrdp_freerdp_cache_brush(rdpContext* context, CACHE_BRUSH_ORDER* cache_brush_order)
 {
 	int idx;
 	int bytes;
@@ -1036,12 +1068,13 @@ static int xrdp_freerdp_convert_color_image(void *dst, int dst_width, int dst_he
 	return 0;
 }
 
-static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *pointer_new)
+static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE* pointer_new)
 {
 	xrdpModule* mod;
 	int index;
 	BYTE *dst;
 	BYTE *src;
+	XRDP_MSG_SET_POINTER msg;
 
 	mod = ((modContext*) context)->modi;
 	LLOGLN(20, ("xrdp_freerdp_pointer_new:"));
@@ -1079,11 +1112,13 @@ static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *po
 		src = pointer_new->colorPtrAttr.andMaskData;
 		xrdp_freerdp_convert_color_image(dst, 32, 32, 1, 32 / -8, src, 32, 32, 1, 32 / 8);
 
-		//memcpy(mod->pointer_cache[index].mask,
-		//    pointer_new->colorPtrAttr.andMaskData, 32 * 32 / 8);
+		msg.xorBpp = 0;
+		msg.xPos = mod->pointer_cache[index].hotx;
+		msg.yPos = mod->pointer_cache[index].hoty;
+		msg.xorMaskData = (BYTE*) mod->pointer_cache[index].data;
+		msg.andMaskData = (BYTE*) mod->pointer_cache[index].mask;
 
-		server_set_pointer(mod, mod->pointer_cache[index].hotx, mod->pointer_cache[index].hoty,
-				mod->pointer_cache[index].data, mod->pointer_cache[index].mask);
+		mod->server->SetPointer(mod, &msg);
 	}
 	else
 	{
@@ -1101,61 +1136,31 @@ static void xrdp_freerdp_pointer_new(rdpContext* context, POINTER_NEW_UPDATE *po
 
 static void xrdp_freerdp_pointer_cached(rdpContext* context, POINTER_CACHED_UPDATE *pointer_cached)
 {
-	xrdpModule* mod;
 	int index;
+	xrdpModule* mod;
+	XRDP_MSG_SET_POINTER msg;
 
 	mod = ((modContext*) context)->modi;
 	index = pointer_cached->cacheIndex;
+
 	LLOGLN(10, ("xrdp_freerdp_pointer_cached:%d", index));
-	server_set_pointer(mod, mod->pointer_cache[index].hotx, mod->pointer_cache[index].hoty,
-			mod->pointer_cache[index].data, mod->pointer_cache[index].mask);
+
+	msg.xPos = mod->pointer_cache[index].hotx;
+	msg.yPos = mod->pointer_cache[index].hoty;
+	msg.xorMaskData = (BYTE*) mod->pointer_cache[index].data;
+	msg.andMaskData = (BYTE*) mod->pointer_cache[index].mask;
+
+	mod->server->SetPointer(mod, &msg);
 }
 
 static void xrdp_freerdp_polygon_cb(rdpContext* context, POLYGON_CB_ORDER* polygon_cb)
 {
-	LLOGLN(0, ("xrdp_freerdp_polygon_cb called:- not supported!!!!!!!!!!!!!!!!!!!!"));
+
 }
 
 static void xrdp_freerdp_polygon_sc(rdpContext* context, POLYGON_SC_ORDER* polygon_sc)
 {
-	int i;
-	xrdpModule* mod;
-	XPoint points[4];
-	int fgcolor;
-	int server_bpp, client_bpp;
 
-	mod = ((modContext*) context)->modi;
-	LLOGLN(10, ("xrdp_freerdp_polygon_sc :%d(points) %d(color) %d(fillmode) %d(bRop) %d(cbData) %d(x) %d(y)", polygon_sc->numPoints,polygon_sc->brushColor,polygon_sc->fillMode,polygon_sc->bRop2,polygon_sc->cbData,polygon_sc->xStart,polygon_sc->yStart));
-
-	if (polygon_sc->numPoints == 3)
-	{
-		server_bpp = mod->instance->settings->ColorDepth;
-		client_bpp = mod->bpp;
-
-		points[0].x = polygon_sc->xStart;
-		points[0].y = polygon_sc->yStart;
-
-		for (i = 0; i < polygon_sc->numPoints; i++)
-		{
-			points[i + 1].x = polygon_sc->points[i].x;
-			points[i + 1].y = polygon_sc->points[i].y;
-		}
-		fgcolor = convert_color(server_bpp, client_bpp, polygon_sc->brushColor, mod->colormap);
-
-		server_set_opcode(mod, polygon_sc->bRop2);
-		server_set_bgcolor(mod, 255);
-		server_set_fgcolor(mod, fgcolor);
-		server_set_pen(mod, 1, 1); // style, width
-		// TODO replace with correct brush; this is a workaround
-		// This workaround handles the text cursor in microsoft word.
-		server_draw_line(mod, polygon_sc->xStart, polygon_sc->yStart, polygon_sc->xStart,
-				polygon_sc->yStart + points[2].y);
-		server_set_opcode(mod, 0xcc);
-	}
-	else
-	{
-		LLOGLN(0, ("Not handled number of points in xrdp_freerdp_polygon_sc"));
-	}
 }
 
 static void xrdp_freerdp_synchronize(rdpContext* context)
@@ -1290,7 +1295,7 @@ void lrail_WindowCreate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, WINDO
 	msg.numVisibilityRects = windowState->numVisibilityRects;
 	msg.visibilityRects = windowState->visibilityRects;
 
-	server_window_new_update(mod, &msg);
+	mod->server->WindowNewUpdate(mod, &msg);
 }
 
 void lrail_WindowUpdate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, WINDOW_STATE_ORDER* windowState)
@@ -1309,17 +1314,18 @@ void lrail_WindowDelete(rdpContext* context, WINDOW_ORDER_INFO* orderInfo)
 
 	msg.windowId = orderInfo->windowId;
 
-	server_window_delete(mod, &msg);
+	mod->server->WindowDelete(mod, &msg);
 }
 
-void lrail_WindowIcon(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, WINDOW_ICON_ORDER *window_icon)
+void lrail_WindowIcon(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, WINDOW_ICON_ORDER* window_icon)
 {
 	xrdpModule* mod;
 	xrdpRailIconInfo rii;
 
 	LLOGLN(0, ("lrail_WindowIcon:"));
 	mod = ((modContext*) context)->modi;
-	memset(&rii, 0, sizeof(rii));
+	ZeroMemory(&rii, sizeof(rii));
+
 	rii.bpp = window_icon->iconInfo->bpp;
 	rii.width = window_icon->iconInfo->width;
 	rii.height = window_icon->iconInfo->height;
@@ -1329,21 +1335,23 @@ void lrail_WindowIcon(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, WINDOW_
 	rii.mask = (char *) (window_icon->iconInfo->bitsMask);
 	rii.cmap = (char *) (window_icon->iconInfo->colorTable);
 	rii.data = (char *) (window_icon->iconInfo->bitsColor);
-	server_window_icon(mod, orderInfo->windowId, window_icon->iconInfo->cacheEntry,
+
+	mod->server->WindowIcon(mod, orderInfo->windowId, window_icon->iconInfo->cacheEntry,
 			window_icon->iconInfo->cacheId, &rii, orderInfo->fieldFlags);
 }
 
-void lrail_WindowCachedIcon(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, WINDOW_CACHED_ICON_ORDER *window_cached_icon)
+void lrail_WindowCachedIcon(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, WINDOW_CACHED_ICON_ORDER* window_cached_icon)
 {
 	xrdpModule* mod;
 
 	LLOGLN(0, ("lrail_WindowCachedIcon:"));
 	mod = ((modContext*) context)->modi;
-	server_window_cached_icon(mod, orderInfo->windowId, window_cached_icon->cachedIcon.cacheEntry,
+
+	mod->server->WindowCachedIcon(mod, orderInfo->windowId, window_cached_icon->cachedIcon.cacheEntry,
 			window_cached_icon->cachedIcon.cacheId, orderInfo->fieldFlags);
 }
 
-void lrail_NotifyIconCreate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, NOTIFY_ICON_STATE_ORDER *notify_icon_state)
+void lrail_NotifyIconCreate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, NOTIFY_ICON_STATE_ORDER* notify_icon_state)
 {
 	xrdpModule* mod;
 	xrdpRailNotifyStateOrder rnso;
@@ -1352,7 +1360,7 @@ void lrail_NotifyIconCreate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, N
 
 	mod = ((modContext*) context)->modi;
 
-	memset(&rnso, 0, sizeof(rnso));
+	ZeroMemory(&rnso, sizeof(rnso));
 	rnso.version = notify_icon_state->version;
 
 	if (orderInfo->fieldFlags & WINDOW_ORDER_FIELD_NOTIFY_TIP)
@@ -1387,14 +1395,14 @@ void lrail_NotifyIconCreate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, N
 	rnso.icon_info.cmap = (char*) (notify_icon_state->icon.colorTable);
 	rnso.icon_info.data = (char*) (notify_icon_state->icon.bitsColor);
 
-	server_notify_new_update(mod, orderInfo->windowId, orderInfo->notifyIconId, &rnso, orderInfo->fieldFlags);
+	mod->server->NotifyNewUpdate(mod, orderInfo->windowId, orderInfo->notifyIconId, &rnso, orderInfo->fieldFlags);
 
 	free(rnso.tool_tip);
 	free(rnso.infotip.text);
 	free(rnso.infotip.title);
 }
 
-void lrail_NotifyIconUpdate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, NOTIFY_ICON_STATE_ORDER *notify_icon_state)
+void lrail_NotifyIconUpdate(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, NOTIFY_ICON_STATE_ORDER* notify_icon_state)
 {
 	LLOGLN(0, ("lrail_NotifyIconUpdate:"));
 	lrail_NotifyIconCreate(context, orderInfo, notify_icon_state);
@@ -1406,10 +1414,11 @@ void lrail_NotifyIconDelete(rdpContext* context, WINDOW_ORDER_INFO* orderInfo)
 
 	LLOGLN(0, ("lrail_NotifyIconDelete:"));
 	mod = ((modContext*) context)->modi;
-	server_notify_delete(mod, orderInfo->windowId, orderInfo->notifyIconId);
+
+	mod->server->NotifyDelete(mod, orderInfo->windowId, orderInfo->notifyIconId);
 }
 
-void lrail_MonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, MONITORED_DESKTOP_ORDER *monitored_desktop)
+void lrail_MonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, MONITORED_DESKTOP_ORDER* monitored_desktop)
 {
 	int index;
 	xrdpModule* mod;
@@ -1417,7 +1426,8 @@ void lrail_MonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, M
 
 	LLOGLN(0, ("lrail_MonitoredDesktop:"));
 	mod = ((modContext*) context)->modi;
-	memset(&rmdo, 0, sizeof(rmdo));
+
+	ZeroMemory(&rmdo, sizeof(rmdo));
 	rmdo.active_window_id = monitored_desktop->activeWindowId;
 	rmdo.num_window_ids = monitored_desktop->numWindowIds;
 
@@ -1434,7 +1444,8 @@ void lrail_MonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo, M
 		}
 	}
 
-	server_monitored_desktop(mod, &rmdo, orderInfo->fieldFlags);
+	mod->server->MonitoredDesktop(mod, &rmdo, orderInfo->fieldFlags);
+
 	free(rmdo.window_ids);
 }
 
@@ -1445,8 +1456,9 @@ void lrail_NonMonitoredDesktop(rdpContext* context, WINDOW_ORDER_INFO* orderInfo
 
 	LLOGLN(0, ("lrail_NonMonitoredDesktop:"));
 	mod = ((modContext*) context)->modi;
-	memset(&rmdo, 0, sizeof(rmdo));
-	server_monitored_desktop(mod, &rmdo, orderInfo->fieldFlags);
+	ZeroMemory(&rmdo, sizeof(rmdo));
+
+	mod->server->MonitoredDesktop(mod, &rmdo, orderInfo->fieldFlags);
 }
 
 static BOOL xrdp_freerdp_post_connect(freerdp* instance)
@@ -1499,26 +1511,27 @@ static BOOL xrdp_freerdp_verify_certificate(freerdp* instance, char *subject, ch
 	return TRUE;
 }
 
-xrdpModule* freerdp_client_module_init(void)
+int freerdp_client_module_init(xrdpModule* mod)
 {
-	xrdpModule* mod;
-	modContext *lcon;
+	modContext* lcon;
 	freerdp* instance;
+	xrdpClientModule* client;
 
-	LLOGLN(0, ("mod_init:"));
-	mod = (xrdpModule*) g_malloc(sizeof(xrdpModule), 1);
+	client = (xrdpClientModule*) malloc(sizeof(xrdpClientModule));
+	mod->client = client;
 
-	mod->size = sizeof(xrdpModule);
-	mod->version = 2;
-	mod->handle = (long) mod;
-	mod->mod_connect = lxrdp_connect;
-	mod->mod_start = lxrdp_start;
-	mod->mod_event = lxrdp_event;
-	mod->mod_end = lxrdp_end;
-	mod->mod_set_param = lxrdp_set_param;
-	mod->mod_session_change = lxrdp_session_change;
-	mod->mod_get_event_handles = lxrdp_get_event_handles;
-	mod->mod_check_wait_objs = lxrdp_check_wait_objs;
+	if (client)
+	{
+		ZeroMemory(client, sizeof(xrdpClientModule));
+
+		client->Connect = freerdp_xrdp_client_connect;
+		client->Start = freerdp_xrdp_client_start;
+		client->Event = freerdp_xrdp_client_event;
+		client->End = freerdp_xrdp_client_end;
+		client->SetParam = freerdp_xrdp_client_set_param;
+		client->GetEventHandles = freerdp_xrdp_client_get_event_handles;
+		client->CheckEventHandles = freerdp_xrdp_client_check_event_handles;
+	}
 
 	instance = freerdp_new();
 	mod->instance = instance;
@@ -1538,13 +1551,11 @@ xrdpModule* freerdp_client_module_init(void)
 	lcon = (modContext*) (instance->context);
 	lcon->modi = mod;
 
-	return mod;
+	return 0;
 }
 
 int freerdp_client_module_exit(xrdpModule* mod)
 {
-	LLOGLN(0, ("mod_exit:"));
-
 	if (!mod)
 		return 0;
 

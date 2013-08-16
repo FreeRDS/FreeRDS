@@ -50,10 +50,9 @@ keyboard and mouse stuff
 #define DEBUG_OUT_INPUT(arg) ErrorF arg
 #endif
 
-extern ScreenPtr g_pScreen; /* in rdpmain.c */
-extern DeviceIntPtr g_pointer; /* in rdpmain.c */
-extern DeviceIntPtr g_keyboard; /* in rdpmain.c */
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
+extern DeviceIntPtr g_pointer;
+extern DeviceIntPtr g_keyboard;
+extern rdpScreenInfoRec g_rdpScreen;
 
 static int g_old_button_mask = 0;
 static int g_pause_spe = 0;
@@ -589,47 +588,38 @@ void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp,
 	}
 }
 
-void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
-		int x, int y)
+void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int x, int y)
 {
 	char cur_data[32 * (32 * 4)];
 	char cur_mask[32 * (32 / 8)];
-	char *mask;
-	char *data;
+	char* data;
 	int i;
 	int j;
 	int w;
 	int h;
 	int p;
-	int xhot;
-	int yhot;
 	int paddedRowBytes;
-	int fgcolor;
-	int bgcolor;
 	int bpp;
+	XRDP_MSG_SET_POINTER msg;
 
-	if (pCurs == 0)
-	{
+	if (!pCurs)
 		return;
-	}
 
-	if (pCurs->bits == 0)
-	{
+	if (!pCurs->bits)
 		return;
-	}
 
 	w = pCurs->bits->width;
 	h = pCurs->bits->height;
 
-	if ((pCurs->bits->argb != 0) && (g_rdpScreen.PointerFlags & 1))
+	if (pCurs->bits->argb)
 	{
 		bpp = 32;
 		paddedRowBytes = PixmapBytePad(w, 32);
-		xhot = pCurs->bits->xhot;
-		yhot = pCurs->bits->yhot;
-		data = (char *)(pCurs->bits->argb);
-		memset(cur_data, 0, sizeof(cur_data));
-		memset(cur_mask, 0, sizeof(cur_mask));
+		msg.xPos = pCurs->bits->xhot;
+		msg.yPos = pCurs->bits->yhot;
+		data = (char*)(pCurs->bits->argb);
+		ZeroMemory(cur_data, sizeof(cur_data));
+		ZeroMemory(cur_mask, sizeof(cur_mask));
 
 		for (j = 0; j < 32; j++)
 		{
@@ -640,42 +630,17 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs,
 			}
 		}
 	}
-	else
-	{
-		bpp = 0;
-		paddedRowBytes = PixmapBytePad(w, 1);
-		xhot = pCurs->bits->xhot;
-		yhot = pCurs->bits->yhot;
-		data = (char *)(pCurs->bits->source);
-		mask = (char *)(pCurs->bits->mask);
-		fgcolor = (((pCurs->foreRed >> 8) & 0xff) << 16) |
-				(((pCurs->foreGreen >> 8) & 0xff) << 8) |
-				((pCurs->foreBlue >> 8) & 0xff);
-		bgcolor = (((pCurs->backRed >> 8) & 0xff) << 16) |
-				(((pCurs->backGreen >> 8) & 0xff) << 8) |
-				((pCurs->backBlue >> 8) & 0xff);
-		memset(cur_data, 0, sizeof(cur_data));
-		memset(cur_mask, 0, sizeof(cur_mask));
-
-		for (j = 0; j < 32; j++)
-		{
-			for (i = 0; i < 32; i++)
-			{
-				p = get_pixel_safe(mask, i, j, paddedRowBytes * 8, h, 1);
-				set_pixel_safe(cur_mask, i, 31 - j, 32, 32, 1, !p);
-
-				if (p != 0)
-				{
-					p = get_pixel_safe(data, i, j, paddedRowBytes * 8, h, 1);
-					p = p ? fgcolor : bgcolor;
-					set_pixel_safe(cur_data, i, 31 - j, 32, 32, 24, p);
-				}
-			}
-		}
-	}
 
 	rdpup_begin_update();
-	rdpup_set_cursor_ex(xhot, yhot, cur_data, cur_mask, bpp);
+
+	msg.xorBpp = bpp;
+	msg.xorMaskData = (BYTE*) cur_data;
+	msg.lengthXorMask = 0;
+	msg.andMaskData = (BYTE*) cur_mask;
+	msg.lengthAndMask = 0;
+
+	rdpup_set_pointer(&msg);
+
 	rdpup_end_update();
 }
 

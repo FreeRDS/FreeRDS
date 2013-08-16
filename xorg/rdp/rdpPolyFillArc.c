@@ -30,20 +30,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpGCIndex; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpWindowIndex; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpPixmapIndex; /* from rdpmain.c */
-extern int g_Bpp; /* from rdpmain.c */
-extern ScreenPtr g_pScreen; /* from rdpmain.c */
-extern Bool g_wrapPixmap; /* from rdpmain.c */
-extern int g_do_dirty_os; /* in rdpmain.c */
-extern int g_do_dirty_ons; /* in rdpmain.c */
-extern rdpPixmapRec g_screenPriv; /* in rdpmain.c */
+extern DevPrivateKeyRec g_rdpGCIndex;
+extern DevPrivateKeyRec g_rdpPixmapIndex;
 
-extern GCOps g_rdpGCOps; /* from rdpdraw.c */
-
-extern int g_con_number; /* in rdpup.c */
+extern GCOps g_rdpGCOps;
 
 void rdpPolyFillArcOrg(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
@@ -64,17 +54,12 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	int extra;
 	int i;
 	int num_clips;
-	int got_id;
-	int dirty_type;
 	int post_process;
-	int reset_surface;
 	xRectangle *rects;
 	BoxRec box;
-	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpPolyFillArc:"));
 
@@ -82,7 +67,7 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 	if (narcs > 0)
 	{
-		rects = (xRectangle *)g_malloc(narcs * sizeof(xRectangle), 0);
+		rects = (xRectangle*) g_malloc(narcs * sizeof(xRectangle), 0);
 		lw = pGC->lineWidth;
 
 		if (lw == 0)
@@ -104,59 +89,22 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 	/* do original call */
 	rdpPolyFillArcOrg(pDrawable, pGC, narcs, parcs);
 
-	dirty_type = 0;
-	pDirtyPriv = 0;
 	post_process = 0;
-	reset_surface = 0;
-	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			if (g_do_dirty_os)
-			{
-				LLOGLN(10, ("rdpPolyFillArc: getting dirty"));
-				pDstPriv->is_dirty = 1;
-				pDirtyPriv = pDstPriv;
-				dirty_type = RDI_IMGLY;
-			}
-			else
-			{
-				rdpup_switch_os_surface(pDstPriv->rdpindex);
-				reset_surface = 1;
-				rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-				got_id = 1;
-			}
-		}
 	}
 	else
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
-				if (g_do_dirty_ons)
-				{
-					LLOGLN(0, ("rdpPolyFillArc: getting dirty"));
-					g_screenPriv.is_dirty = 1;
-					pDirtyPriv = &g_screenPriv;
-					dirty_type = RDI_IMGLL;
-				}
-				else
-				{
-					rdpup_get_screen_image_rect(&id);
-					got_id = 1;
-				}
 			}
 		}
 	}
@@ -179,23 +127,16 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 			if (num_clips > 0)
 			{
-				if (dirty_type != 0)
-				{
-					draw_item_add_img_region(pDirtyPriv, tmpRegion, GXcopy, dirty_type);
-				}
-				else if (got_id)
-				{
-					rdpup_begin_update();
+				rdpup_begin_update();
 
-					for (i = num_clips - 1; i >= 0; i--)
-					{
-						box = REGION_RECTS(tmpRegion)[i];
-						rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-								box.y2 - box.y1);
-					}
-
-					rdpup_end_update();
+				for (i = num_clips - 1; i >= 0; i--)
+				{
+					box = REGION_RECTS(tmpRegion)[i];
+					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1,
+							box.y2 - box.y1);
 				}
+
+				rdpup_end_update();
 			}
 
 			RegionDestroy(tmpRegion);
@@ -211,23 +152,16 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 			if (num_clips > 0)
 			{
-				if (dirty_type != 0)
-				{
-					draw_item_add_img_region(pDirtyPriv, tmpRegion, GXcopy, dirty_type);
-				}
-				else if (got_id)
-				{
-					rdpup_begin_update();
+				rdpup_begin_update();
 
-					for (i = num_clips - 1; i >= 0; i--)
-					{
-						box = REGION_RECTS(tmpRegion)[i];
-						rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-								box.y2 - box.y1);
-					}
-
-					rdpup_end_update();
+				for (i = num_clips - 1; i >= 0; i--)
+				{
+					box = REGION_RECTS(tmpRegion)[i];
+					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1,
+							box.y2 - box.y1);
 				}
+
+				rdpup_end_update();
 			}
 
 			RegionDestroy(tmpRegion);
@@ -236,9 +170,4 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 	RegionUninit(&clip_reg);
 	free(rects);
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
-	}
 }

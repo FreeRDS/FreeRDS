@@ -22,5 +22,5 @@
 
 #include <xrdp-ng/xrdp.h>
 
-xrdpModule* xup_module_init(void);
+int xup_module_init(xrdpModule* mod);
 int xup_module_exit(xrdpModule* mod);

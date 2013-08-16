@@ -30,20 +30,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpGCIndex; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpWindowIndex; /* from rdpmain.c */
-extern DevPrivateKeyRec g_rdpPixmapIndex; /* from rdpmain.c */
-extern int g_Bpp; /* from rdpmain.c */
-extern ScreenPtr g_pScreen; /* from rdpmain.c */
-extern Bool g_wrapPixmap; /* from rdpmain.c */
-extern int g_do_dirty_os; /* in rdpmain.c */
-extern int g_do_dirty_ons; /* in rdpmain.c */
-extern rdpPixmapRec g_screenPriv; /* in rdpmain.c */
+extern DevPrivateKeyRec g_rdpGCIndex;
+extern DevPrivateKeyRec g_rdpPixmapIndex;
 
-extern GCOps g_rdpGCOps; /* from rdpdraw.c */
-
-extern int g_con_number; /* in rdpup.c */
+extern GCOps g_rdpGCOps;
 
 void rdpFillPolygonOrg(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int count, DDXPointPtr pPts)
 {
@@ -59,7 +49,6 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 {
 	RegionRec clip_reg;
 	RegionRec box_reg;
-	RegionRec reg1;
 	int num_clips;
 	int cd;
 	int maxx;
@@ -68,16 +57,11 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 	int miny;
 	int i;
 	int j;
-	int got_id;
-	int dirty_type;
 	int post_process;
-	int reset_surface;
 	BoxRec box;
-	struct image_data id;
 	WindowPtr pDstWnd;
 	PixmapPtr pDstPixmap;
 	rdpPixmapRec *pDstPriv;
-	rdpPixmapRec *pDirtyPriv;
 
 	LLOGLN(10, ("rdpFillPolygon:"));
 
@@ -125,85 +109,37 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 	/* do original call */
 	rdpFillPolygonOrg(pDrawable, pGC, shape, mode, count, pPts);
 
-	dirty_type = 0;
-	pDirtyPriv = 0;
 	post_process = 0;
-	reset_surface = 0;
-	got_id = 0;
 
 	if (pDrawable->type == DRAWABLE_PIXMAP)
 	{
-		pDstPixmap = (PixmapPtr)pDrawable;
+		pDstPixmap = (PixmapPtr) pDrawable;
 		pDstPriv = GETPIXPRIV(pDstPixmap);
-
-		if (xrdp_is_os(pDstPixmap, pDstPriv))
-		{
-			post_process = 1;
-
-			if (g_do_dirty_os)
-			{
-				LLOGLN(10, ("rdpFillPolygon: getting dirty"));
-				pDstPriv->is_dirty = 1;
-				pDirtyPriv = pDstPriv;
-				dirty_type = RDI_IMGLL;
-			}
-			else
-			{
-				rdpup_switch_os_surface(pDstPriv->rdpindex);
-				reset_surface = 1;
-				rdpup_get_pixmap_image_rect(pDstPixmap, &id);
-				got_id = 1;
-			}
-		}
 	}
 	else
 	{
 		if (pDrawable->type == DRAWABLE_WINDOW)
 		{
-			pDstWnd = (WindowPtr)pDrawable;
+			pDstWnd = (WindowPtr) pDrawable;
 
 			if (pDstWnd->viewable)
 			{
 				post_process = 1;
-
-				if (g_do_dirty_ons)
-				{
-					LLOGLN(0, ("rdpFillPolygon: getting dirty"));
-					g_screenPriv.is_dirty = 1;
-					pDirtyPriv = &g_screenPriv;
-					dirty_type = RDI_IMGLL;
-				}
-				else
-				{
-					rdpup_get_screen_image_rect(&id);
-					got_id = 1;
-				}
 			}
 		}
 	}
 
 	if (!post_process)
-	{
 		return;
-	}
 
 	RegionInit(&clip_reg, NullBox, 0);
 	cd = rdp_get_clip(&clip_reg, pDrawable, pGC);
 
 	if (cd == 1)
 	{
-		if (dirty_type != 0)
-		{
-			RegionInit(&reg1, &box, 0);
-			draw_item_add_img_region(pDirtyPriv, &reg1, GXcopy, dirty_type);
-			RegionUninit(&reg1);
-		}
-		else if (got_id)
-		{
-			rdpup_begin_update();
-			rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-			rdpup_end_update();
-		}
+		rdpup_begin_update();
+		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+		rdpup_end_update();
 	}
 	else if (cd == 2)
 	{
@@ -213,31 +149,19 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 
 		if (num_clips > 0)
 		{
-			if (dirty_type != 0)
-			{
-				draw_item_add_img_region(pDirtyPriv, &clip_reg, GXcopy, dirty_type);
-			}
-			else if (got_id)
-			{
-				rdpup_begin_update();
+			rdpup_begin_update();
 
-				for (j = num_clips - 1; j >= 0; j--)
-				{
-					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-				}
-
-				rdpup_end_update();
+			for (j = num_clips - 1; j >= 0; j--)
+			{
+				box = REGION_RECTS(&clip_reg)[j];
+				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
+
+			rdpup_end_update();
 		}
 
 		RegionUninit(&box_reg);
 	}
 
 	RegionUninit(&clip_reg);
-
-	if (reset_surface)
-	{
-		rdpup_switch_os_surface(-1);
-	}
 }

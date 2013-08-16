@@ -43,48 +43,22 @@ static wStream* g_in_s = 0;
 static int g_button_mask = 0;
 static int g_cursor_x = 0;
 static int g_cursor_y = 0;
-static OsTimerPtr g_timer = 0;
-static int g_scheduled = 0;
 static int g_count = 0;
-static int g_rdpindex = -1;
 
 static BYTE* pfbBackBufferMemory = NULL;
 
-extern DevPrivateKeyRec g_rdpWindowIndex; /* from rdpmain.c */
-extern ScreenPtr g_pScreen; /* from rdpmain.c */
-extern int g_Bpp; /* from rdpmain.c */
-extern int g_Bpp_mask; /* from rdpmain.c */
-extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
-extern int g_can_do_pix_to_pix; /* from rdpmain.c */
-extern int g_use_rail; /* from rdpmain.c */
-
-/* true is to use unix domain socket */
-extern int g_use_uds; /* in rdpmain.c */
-extern char g_uds_data[]; /* in rdpmain.c */
-extern int g_do_dirty_ons; /* in rdpmain.c */
-extern rdpPixmapRec g_screenPriv; /* in rdpmain.c */
-extern int g_con_number; /* in rdpmain.c */
-
-struct rdpup_os_bitmap
-{
-	int used;
-	PixmapPtr pixmap;
-	rdpPixmapPtr priv;
-	int stamp;
-};
-
-static struct rdpup_os_bitmap *g_os_bitmaps = 0;
-static int g_max_os_bitmaps = 0;
-static int g_os_bitmap_stamp = 0;
+extern DevPrivateKeyRec g_rdpWindowIndex;
+extern ScreenPtr g_pScreen;
+extern int g_Bpp;
+extern int g_Bpp_mask;
+extern rdpScreenInfoRec g_rdpScreen;
+extern int g_use_rail;
+extern int g_use_uds;
+extern char g_uds_data[];
+extern int g_con_number;
 
 static int g_pixmap_byte_total = 0;
 static int g_pixmap_num_used = 0;
-
-struct rdpup_top_window
-{
-	WindowPtr wnd;
-	struct rdpup_top_window *next;
-};
 
 /*
 0 GXclear,        0
@@ -103,6 +77,15 @@ c GXcopy,         P
 d GXorReverse,   PDno
 e GXor,          DPo
 f GXset          1
+ */
+
+/**
+ * DstBlt:
+ *
+ * GXclear	BLACKNESS 	0x00000042
+ * GXnoop	D		0x00AA0029
+ * GXinvert	DSTINVERT	0x00550009
+ * GXset	WHITENESS	0x00FF0062
  */
 
 static int g_rdp_opcodes[16] =
@@ -190,192 +173,8 @@ int convert_pixel(int in_pixel)
 	return rv;
 }
 
-int convert_pixels(void *src, void *dst, int num_pixels)
-{
-	unsigned int pixel;
-	unsigned int red;
-	unsigned int green;
-	unsigned int blue;
-	unsigned int *src32;
-	unsigned int *dst32;
-	unsigned short *dst16;
-	unsigned char *dst8;
-	int index;
-
-	LLOGLN(10, ("convert_pixels: g_rdpScreen.depth: %d g_rdpScreen.rdp_bpp: %d num_pixels: %d",
-			g_rdpScreen.depth, g_rdpScreen.rdp_bpp, num_pixels));
-
-	if (g_rdpScreen.depth == g_rdpScreen.rdp_bpp)
-	{
-		memcpy(dst, src, num_pixels * g_Bpp);
-		return 0;
-	}
-
-	if (g_rdpScreen.depth == 24)
-	{
-		src32 = (unsigned int *)src;
-
-		if (g_rdpScreen.rdp_bpp == 32)
-		{
-			dst32 = (unsigned int*) dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				*dst32 = pixel;
-				dst32++;
-				src32++;
-			}
-		}
-		else if (g_rdpScreen.rdp_bpp == 24)
-		{
-			dst32 = (unsigned int *)dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				*dst32 = pixel;
-				dst32++;
-				src32++;
-			}
-		}
-		else if (g_rdpScreen.rdp_bpp == 16)
-		{
-			dst16 = (unsigned short *)dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				SPLITCOLOR32(red, green, blue, pixel);
-				pixel = COLOR16(red, green, blue);
-				*dst16 = pixel;
-				dst16++;
-				src32++;
-			}
-		}
-		else if (g_rdpScreen.rdp_bpp == 15)
-		{
-			dst16 = (unsigned short *)dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				SPLITCOLOR32(red, green, blue, pixel);
-				pixel = COLOR15(red, green, blue);
-				*dst16 = pixel;
-				dst16++;
-				src32++;
-			}
-		}
-		else if (g_rdpScreen.rdp_bpp == 8)
-		{
-			dst8 = (unsigned char *)dst;
-
-			for (index = 0; index < num_pixels; index++)
-			{
-				pixel = *src32;
-				SPLITCOLOR32(red, green, blue, pixel);
-				pixel = COLOR8(red, green, blue);
-				*dst8 = pixel;
-				dst8++;
-				src32++;
-			}
-		}
-	}
-
-	return 0;
-}
-
-static int get_single_color(struct image_data *id, int x, int y, int w, int h)
-{
-	int rv;
-	int i;
-	int j;
-	int p;
-	unsigned char *i8;
-	unsigned short *i16;
-	unsigned int *i32;
-
-	p = 0;
-	rv = -1;
-
-	if (g_Bpp == 1)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i8 = (unsigned char *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i8;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i8[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-	else if (g_Bpp == 2)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i16 = (unsigned short *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i16;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i16[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-	else if (g_Bpp == 4)
-	{
-		for (i = 0; i < h; i++)
-		{
-			i32 = (unsigned int *)(id->pixels +
-					((y + i) * id->lineBytes) + (x * g_Bpp));
-
-			if (i == 0)
-			{
-				p = *i32;
-			}
-
-			for (j = 0; j < w; j++)
-			{
-				if (i32[j] != p)
-				{
-					return -1;
-				}
-			}
-		}
-
-		rv = p;
-	}
-
-	return rv;
-}
-
 static int rdpup_disconnect(void)
 {
-	int index;
-
 	RemoveEnabledDevice(g_sck);
 	g_connected = 0;
 	g_tcp_close(g_sck);
@@ -383,125 +182,8 @@ static int rdpup_disconnect(void)
 	g_sck_closed = 1;
 	g_pixmap_byte_total = 0;
 	g_pixmap_num_used = 0;
-	g_rdpindex = -1;
-
-	if (g_max_os_bitmaps > 0)
-	{
-		for (index = 0; index < g_max_os_bitmaps; index++)
-		{
-			if (g_os_bitmaps[index].used)
-			{
-				if (g_os_bitmaps[index].priv != 0)
-				{
-					g_os_bitmaps[index].priv->status = 0;
-				}
-			}
-		}
-	}
-
-	g_max_os_bitmaps = 0;
-	free(g_os_bitmaps);
-	g_os_bitmaps = 0;
 	g_use_rail = 0;
-	return 0;
-}
 
-int rdpup_add_os_bitmap(PixmapPtr pixmap, rdpPixmapPtr priv)
-{
-	int index;
-	int rv;
-	int oldest;
-	int oldest_index;
-
-	if (!g_connected)
-	{
-		return -1;
-	}
-
-	if (g_os_bitmaps == 0)
-	{
-		return -1;
-	}
-
-	rv = -1;
-	index = 0;
-
-	while (index < g_max_os_bitmaps)
-	{
-		if (g_os_bitmaps[index].used == 0)
-		{
-			g_os_bitmaps[index].used = 1;
-			g_os_bitmaps[index].pixmap = pixmap;
-			g_os_bitmaps[index].priv = priv;
-			g_os_bitmaps[index].stamp = g_os_bitmap_stamp;
-			g_os_bitmap_stamp++;
-			g_pixmap_num_used++;
-			rv = index;
-			break;
-		}
-
-		index++;
-	}
-
-	if (rv == -1)
-	{
-		/* find oldest */
-		oldest = 0x7fffffff;
-		oldest_index = 0;
-		index = 0;
-
-		while (index < g_max_os_bitmaps)
-		{
-			if (g_os_bitmaps[index].stamp < oldest)
-			{
-				oldest = g_os_bitmaps[index].stamp;
-				oldest_index = index;
-			}
-
-			index++;
-		}
-
-		LLOGLN(10, ("rdpup_add_os_bitmap: evicting old, oldest_index %d", oldest_index));
-		/* evict old */
-		g_os_bitmaps[oldest_index].priv->status = 0;
-		g_os_bitmaps[oldest_index].priv->con_number = 0;
-		/* set new */
-		g_os_bitmaps[oldest_index].pixmap = pixmap;
-		g_os_bitmaps[oldest_index].priv = priv;
-		g_os_bitmaps[oldest_index].stamp = g_os_bitmap_stamp;
-		g_os_bitmap_stamp++;
-		rv = oldest_index;
-	}
-
-	LLOGLN(10, ("rdpup_add_os_bitmap: new bitmap index %d", rv));
-	LLOGLN(10, ("  g_pixmap_num_used %d", g_pixmap_num_used));
-	return rv;
-}
-
-int rdpup_remove_os_bitmap(int rdpindex)
-{
-	LLOGLN(10, ("rdpup_remove_os_bitmap: index %d stamp %d",
-			rdpindex, g_os_bitmaps[rdpindex].stamp));
-
-	if (g_os_bitmaps == 0)
-	{
-		return 1;
-	}
-
-	if ((rdpindex < 0) && (rdpindex >= g_max_os_bitmaps))
-	{
-		return 1;
-	}
-
-	if (g_os_bitmaps[rdpindex].used)
-	{
-		g_os_bitmaps[rdpindex].used = 0;
-		g_os_bitmaps[rdpindex].pixmap = 0;
-		g_os_bitmaps[rdpindex].priv = 0;
-		g_pixmap_num_used--;
-	}
-
-	LLOGLN(10, ("  g_pixmap_num_used %d", g_pixmap_num_used));
 	return 0;
 }
 
@@ -513,9 +195,7 @@ static int rdpup_send(BYTE* data, int len)
 	LLOGLN(10, ("rdpup_send - sending %d bytes", len));
 
 	if (g_sck_closed)
-	{
 		return 1;
-	}
 
 	while (len > 0)
 	{
@@ -580,47 +260,6 @@ static int rdpup_send_msg(wStream* s)
 }
 
 int rdpup_update(XRDP_MSG_COMMON* msg);
-
-static int rdpup_send_pending(void)
-{
-	XRDP_MSG_END_UPDATE msg;
-
-	if (g_connected && g_begin)
-	{
-		LLOGLN(10, ("end %d", g_count));
-
-		msg.type = XRDP_SERVER_END_UPDATE;
-		rdpup_update((XRDP_MSG_COMMON*) &msg);
-	}
-
-	return 0;
-}
-
-static CARD32 rdpDeferredUpdateCallback(OsTimerPtr timer, CARD32 now, pointer arg)
-{
-	LLOGLN(10, ("rdpDeferredUpdateCallback"));
-
-	if (g_do_dirty_ons)
-	{
-		rdpup_check_dirty_screen(&g_screenPriv);
-	}
-	else
-	{
-		rdpup_send_pending();
-	}
-
-	g_scheduled = 0;
-	return 0;
-}
-
-void rdpScheduleDeferredUpdate(void)
-{
-	if (!g_scheduled)
-	{
-		g_scheduled = 1;
-		g_timer = TimerSet(g_timer, 0, 40, rdpDeferredUpdateCallback, 0);
-	}
-}
 
 /* returns error */
 static int rdpup_recv(BYTE* data, int len)
@@ -716,33 +355,6 @@ static int l_bound_by(int val, int low, int high)
 	return val;
 }
 
-static int rdpup_send_rail(void)
-{
-	WindowPtr wnd;
-	rdpWindowRec *priv;
-
-	wnd = g_pScreen->root;
-
-	if (wnd != 0)
-	{
-		wnd = wnd->lastChild;
-
-		while (wnd != 0)
-		{
-			if (wnd->realized)
-			{
-				priv = GETWINPRIV(wnd);
-				priv->status = 1;
-				rdpup_create_window(wnd, priv);
-			}
-
-			wnd = wnd->prevSib;
-		}
-	}
-
-	return 0;
-}
-
 static int process_screen_parameters(int DesktopWidth, int DesktopHeight, int ColorDepth)
 {
 	Bool ok;
@@ -796,51 +408,6 @@ static int rdpup_process_capabilities_msg(wStream* s)
 	XRDP_MSG_CAPABILITIES msg;
 
 	xrdp_read_capabilities(s, &msg);
-
-	g_rdpScreen.Jpeg = (msg.SupportedCodecs & XRDP_CODEC_JPEG) ? TRUE : FALSE;
-	g_rdpScreen.NSCodec = (msg.SupportedCodecs & XRDP_CODEC_NSCODEC) ? TRUE : FALSE;
-	g_rdpScreen.RemoteFX = (msg.SupportedCodecs & XRDP_CODEC_REMOTEFX) ? TRUE : FALSE;
-	g_rdpScreen.CodecMode = msg.SupportedCodecs ? TRUE : FALSE;
-
-	g_rdpScreen.OffscreenSupportLevel = msg.OffscreenSupportLevel;
-	g_rdpScreen.OffscreenCacheSize = msg.OffscreenCacheSize;
-	g_rdpScreen.OffscreenCacheEntries = msg.OffscreenCacheEntries;
-
-	g_rdpScreen.RailSupportLevel = msg.RailSupportLevel;
-	g_rdpScreen.PointerFlags = msg.PointerFlags;
-
-	LLOGLN(0, ("rdpup_process_capabilities_msg: JPEG %d NSCodec: %d RemoteFX: %d",
-			g_rdpScreen.Jpeg, g_rdpScreen.NSCodec, g_rdpScreen.RemoteFX));
-
-	if (!g_rdpScreen.CodecMode)
-	{
-		if (g_rdpScreen.OffscreenSupportLevel > 0)
-		{
-			if (g_rdpScreen.OffscreenCacheEntries > 0)
-			{
-				g_max_os_bitmaps = g_rdpScreen.OffscreenCacheEntries;
-				free(g_os_bitmaps);
-				g_os_bitmaps = (struct rdpup_os_bitmap*)
-					       g_malloc(sizeof(struct rdpup_os_bitmap) * g_max_os_bitmaps, 1);
-			}
-		}
-	}
-	else
-	{
-		g_os_bitmaps = NULL;
-		g_max_os_bitmaps = 0;
-	}
-
-	if (g_rdpScreen.RailSupportLevel > 0)
-	{
-		g_use_rail = 1;
-		rdpup_send_rail();
-	}
-
-	g_can_do_pix_to_pix = 0;
-
-	if (g_rdpScreen.OffscreenCacheEntries == 2000)
-		g_can_do_pix_to_pix = 1;
 
 	process_screen_parameters(msg.DesktopWidth, msg.DesktopHeight, msg.ColorDepth);
 
@@ -964,7 +531,7 @@ static int rdpup_process_msg(wStream* s, int type)
 
 		for (index = 0; index < msg.numberOfAreas; index++)
 		{
-			rdpup_send_area(NULL, msg.areasToRefresh[index].left, msg.areasToRefresh[index].top,
+			rdpup_send_area(msg.areasToRefresh[index].left, msg.areasToRefresh[index].top,
 					msg.areasToRefresh[index].right - msg.areasToRefresh[index].left + 1,
 					msg.areasToRefresh[index].bottom - msg.areasToRefresh[index].top + 1);
 		}
@@ -989,14 +556,46 @@ void rdpup_get_screen_image_rect(struct image_data *id)
 	id->pixels = g_rdpScreen.pfbMemory;
 }
 
-void rdpup_get_pixmap_image_rect(PixmapPtr pPixmap, struct image_data *id)
+UINT32 rdpup_convert_color(UINT32 color)
 {
-	id->width = pPixmap->drawable.width;
-	id->height = pPixmap->drawable.height;
-	id->bpp = g_rdpScreen.rdp_bpp;
-	id->Bpp = g_rdpScreen.rdp_Bpp;
-	id->lineBytes = pPixmap->devKind;
-	id->pixels = (char *)(pPixmap->devPrivate.ptr);
+	color = color & g_Bpp_mask;
+	color = convert_pixel(color) & g_rdpScreen.rdp_Bpp_mask;
+	return color;
+}
+
+UINT32 rdpup_convert_opcode(int opcode)
+{
+	return g_rdp_opcodes[opcode & 0xF];
+}
+
+UINT32 rdp_dstblt_rop(int opcode)
+{
+	UINT32 rop = 0;
+
+	switch (opcode)
+	{
+		case GXclear:
+			rop = GDI_BLACKNESS;
+			break;
+
+		case GXset:
+			rop = GDI_WHITENESS;
+			break;
+
+		case GXnoop:
+			rop = GDI_D;
+			break;
+
+		case GXinvert:
+			rop = GDI_DSTINVERT;
+			break;
+
+		default:
+			rop = 0;
+			break;
+	}
+
+	return rop;
 }
 
 int rdpup_init(void)
@@ -1182,19 +781,8 @@ int rdpup_end_update(void)
 
 	if (g_connected && g_begin)
 	{
-		if (g_do_dirty_ons)
-		{
-			rdpup_send_pending();
-		}
-		else
-		{
-#if 0
-			rdpScheduleDeferredUpdate();
-#else
-			msg.type = XRDP_SERVER_END_UPDATE;
-			rdpup_update((XRDP_MSG_COMMON*) &msg);
-#endif
-		}
+		msg.type = XRDP_SERVER_END_UPDATE;
+		rdpup_update((XRDP_MSG_COMMON*) &msg);
 	}
 
 	return 0;
@@ -1206,7 +794,7 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 
 	if (g_connected)
 	{
-		xrdp_prepare_msg(NULL, msg);
+		xrdp_server_message_write(NULL, msg);
 
 		if (!g_begin && (msg->type != XRDP_SERVER_BEGIN_UPDATE))
 		{
@@ -1221,7 +809,7 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 			Stream_SetPosition(s, 0);
 			Stream_Seek(s, 8);
 
-			xrdp_prepare_msg(s, msg);
+			xrdp_server_message_write(s, msg);
 
 			g_begin = 1;
 			g_count = 1;
@@ -1230,7 +818,7 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 		}
 		else if (msg->type == XRDP_SERVER_END_UPDATE)
 		{
-			xrdp_prepare_msg(s, msg);
+			xrdp_server_message_write(s, msg);
 			g_count++;
 
 			rdpup_send_msg(s);
@@ -1249,34 +837,48 @@ int rdpup_update(XRDP_MSG_COMMON* msg)
 			g_count = 0;
 		}
 
-		xrdp_prepare_msg(s, msg);
+		xrdp_server_message_write(s, msg);
 		g_count++;
+
+		LLOGLN(0, ("rdpup_update: adding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
 	}
 	else
 	{
-		LLOGLN(0, ("rdpup_update: discarding %s message", xrdp_get_msg_type_string(msg->type)));
+		//LLOGLN(0, ("rdpup_update: discarding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
 	}
 
 	return 0;
 }
 
-int rdpup_fill_rect(short x, short y, int cx, int cy)
+int rdpup_check_attach_framebuffer()
 {
-	XRDP_MSG_OPAQUE_RECT msg;
-
-	if (g_rdpScreen.CodecMode)
+	if (g_rdpScreen.sharedMemory && !g_rdpScreen.fbAttached)
 	{
-		rdpup_send_area(NULL, x, y, cx, cy);
-		return 0;
+		XRDP_MSG_SHARED_FRAMEBUFFER msg;
+
+		msg.attach = 1;
+		msg.width = g_rdpScreen.width;
+		msg.height = g_rdpScreen.height;
+		msg.scanline = g_rdpScreen.paddedWidthInBytes;
+		msg.segmentId = g_rdpScreen.segmentId;
+		msg.bitsPerPixel = g_rdpScreen.depth;
+		msg.bytesPerPixel = g_Bpp;
+
+		msg.type = XRDP_SERVER_SHARED_FRAMEBUFFER;
+		rdpup_update((XRDP_MSG_COMMON*) &msg);
+
+		g_rdpScreen.fbAttached = 1;
 	}
 
-	msg.nLeftRect = x;
-	msg.nTopRect = y;
-	msg.nWidth = cx;
-	msg.nHeight = cy;
+	return 0;
+}
 
-	msg.type = XRDP_SERVER_OPAQUE_RECT;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+int rdpup_opaque_rect(XRDP_MSG_OPAQUE_RECT* msg)
+{
+	rdpup_check_attach_framebuffer();
+
+	msg->type = XRDP_SERVER_OPAQUE_RECT;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
 
 	return 0;
 }
@@ -1285,11 +887,7 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 {
 	XRDP_MSG_SCREEN_BLT msg;
 
-	if (g_rdpScreen.CodecMode)
-	{
-		rdpup_send_area(NULL, x, y, cx, cy);
-		return 0;
-	}
+	rdpup_check_attach_framebuffer();
 
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
@@ -1304,179 +902,82 @@ int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
 	return 0;
 }
 
+int rdpup_patblt(XRDP_MSG_PATBLT* msg)
+{
+	rdpup_check_attach_framebuffer();
+
+	msg->type = XRDP_SERVER_PATBLT;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
+
+	return 0;
+}
+
+int rdpup_dstblt(XRDP_MSG_DSTBLT* msg)
+{
+	rdpup_check_attach_framebuffer();
+
+	msg->type = XRDP_SERVER_DSTBLT;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
+
+	return 0;
+}
+
+int rdpup_set_clipping_region(XRDP_MSG_SET_CLIPPING_REGION* msg)
+{
+	msg->type = XRDP_SERVER_SET_CLIPPING_REGION;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
+
+	return 0;
+}
+
 int rdpup_set_clip(short x, short y, int cx, int cy)
 {
-	XRDP_MSG_SET_CLIP msg;
+	XRDP_MSG_SET_CLIPPING_REGION msg;
 
+	msg.bNullRegion = 0;
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
 	msg.nWidth = cx;
 	msg.nHeight = cy;
 
-	msg.type = XRDP_SERVER_SET_CLIP;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+	rdpup_set_clipping_region(&msg);
 
 	return 0;
 }
 
 int rdpup_reset_clip(void)
 {
-	XRDP_MSG_RESET_CLIP msg;
+	XRDP_MSG_SET_CLIPPING_REGION msg;
 
-	msg.type = XRDP_SERVER_RESET_CLIP;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+	msg.bNullRegion = 1;
+	msg.nLeftRect = 0;
+	msg.nTopRect = 0;
+	msg.nWidth = 0;
+	msg.nHeight = 0;
 
-	return 0;
-}
-
-int rdpup_set_fgcolor(int fgcolor)
-{
-	XRDP_MSG_SET_FORECOLOR msg;
-
-	fgcolor = fgcolor & g_Bpp_mask;
-	fgcolor = convert_pixel(fgcolor) & g_rdpScreen.rdp_Bpp_mask;
-	msg.ForeColor = fgcolor;
-
-	msg.type = XRDP_SERVER_SET_FORECOLOR;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+	rdpup_set_clipping_region(&msg);
 
 	return 0;
 }
 
-int rdpup_set_bgcolor(int bgcolor)
+int rdpup_draw_line(XRDP_MSG_LINE_TO* msg)
 {
-	XRDP_MSG_SET_BACKCOLOR msg;
-
-	bgcolor = bgcolor & g_Bpp_mask;
-	bgcolor = convert_pixel(bgcolor) & g_rdpScreen.rdp_Bpp_mask;
-
-	msg.BackColor = bgcolor;
-
-	msg.type = XRDP_SERVER_SET_BACKCOLOR;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+	msg->type = XRDP_SERVER_LINE_TO;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
 
 	return 0;
 }
 
-int rdpup_set_opcode(int opcode)
+int rdpup_set_pointer(XRDP_MSG_SET_POINTER* msg)
 {
-	XRDP_MSG_SET_ROP2 msg;
-
-	msg.bRop2 = g_rdp_opcodes[opcode & 0xF];
-
-	msg.type = XRDP_SERVER_SET_ROP2;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
+	msg->type = XRDP_SERVER_SET_POINTER;
+	rdpup_update((XRDP_MSG_COMMON*) msg);
 
 	return 0;
 }
 
-int rdpup_set_pen(int style, int width)
+void rdpup_send_area(int x, int y, int w, int h)
 {
-	XRDP_MSG_SET_PEN msg;
-
-	msg.PenStyle = style;
-	msg.PenWidth = width;
-
-	msg.type = XRDP_SERVER_SET_PEN;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_draw_line(short x1, short y1, short x2, short y2)
-{
-	XRDP_MSG_LINE_TO msg;
-
-	msg.nXStart = x1;
-	msg.nYStart = y1;
-	msg.nXEnd = x2;
-	msg.nYEnd = y2;
-
-	msg.type = XRDP_SERVER_LINE_TO;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_set_cursor(short x, short y, char *cur_data, char *cur_mask)
-{
-	XRDP_MSG_SET_POINTER msg;
-
-	msg.xPos = x;
-	msg.yPos = y;
-	msg.xorMaskData = (BYTE*) cur_data;
-	msg.andMaskData = (BYTE*) cur_mask;
-
-	msg.type = XRDP_SERVER_SET_POINTER;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bpp)
-{
-	XRDP_MSG_SET_POINTER_EX msg;
-
-	msg.xPos = x;
-	msg.yPos = y;
-	msg.xorBpp = bpp;
-	msg.xorMaskData = (BYTE*) cur_data;
-	msg.andMaskData = (BYTE*) cur_mask;
-
-	msg.type = XRDP_SERVER_SET_POINTER_EX;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_create_os_surface(int rdpindex, int width, int height)
-{
-	XRDP_MSG_CREATE_OS_SURFACE msg;
-
-	msg.index = rdpindex;
-	msg.width = width;
-	msg.height = height;
-
-	msg.type = XRDP_SERVER_CREATE_OS_SURFACE;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_switch_os_surface(int rdpindex)
-{
-	XRDP_MSG_SWITCH_OS_SURFACE msg;
-
-	if (g_rdpindex == rdpindex)
-		return 0;
-
-	g_rdpindex = rdpindex;
-
-	msg.index = rdpindex;
-
-	msg.type = XRDP_SERVER_SWITCH_OS_SURFACE;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_delete_os_surface(int rdpindex)
-{
-	XRDP_MSG_DELETE_OS_SURFACE msg;
-
-	msg.index = rdpindex;
-
-	msg.type = XRDP_SERVER_DELETE_OS_SURFACE;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
-{
-	int i;
-	char* s;
-	char* dstp;
 	int bitmapLength;
 	XRDP_MSG_PAINT_RECT msg;
 
@@ -1534,16 +1035,6 @@ void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 		g_rdpScreen.fbAttached = 1;
 	}
 
-	if (!g_rdpScreen.sharedMemory)
-	{
-		for (i = 0; i < h; i++)
-		{
-			dstp = (char*) &pfbBackBufferMemory[w * g_Bpp * i];
-			s = (g_rdpScreen.pfbMemory + ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
-			convert_pixels(s, dstp, w);
-		}
-	}
-
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
 	msg.nWidth = w;
@@ -1551,168 +1042,11 @@ void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h)
 	msg.nXSrc = 0;
 	msg.nYSrc = 0;
 
-	if (g_rdpScreen.sharedMemory)
-	{
-		msg.fbSegmentId = g_rdpScreen.segmentId;
-		msg.bitmapData = NULL;
-		msg.bitmapDataLength = 0;
-	}
-	else
-	{
-		msg.fbSegmentId = 0;
-		msg.bitmapData = (BYTE*) pfbBackBufferMemory;
-		msg.bitmapDataLength = bitmapLength;
-	}
+	msg.fbSegmentId = g_rdpScreen.segmentId;
+	msg.bitmapData = NULL;
+	msg.bitmapDataLength = 0;
 
 	msg.type = XRDP_SERVER_PAINT_RECT;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-}
-
-/* split the bitmap up into 64 x 64 pixel areas */
-void rdpup_send_area(struct image_data *id, int x, int y, int w, int h)
-{
-	char* s;
-	int i;
-	int lx;
-	int ly;
-	int lh;
-	int lw;
-	char* dstp;
-	int single_color;
-	int bitmapLength;
-	struct image_data lid;
-
-	if (id == 0)
-	{
-		rdpup_get_screen_image_rect(&lid);
-		id = &lid;
-	}
-
-	if (g_rdpScreen.CodecMode)
-	{
-		rdpup_send_area_codec(id, x, y, w, h);
-		return;
-	}
-
-	if (x >= id->width)
-	{
-		return;
-	}
-
-	if (y >= id->height)
-	{
-		return;
-	}
-
-	if (x < 0)
-	{
-		w += x;
-		x = 0;
-	}
-
-	if (y < 0)
-	{
-		h += y;
-		y = 0;
-	}
-
-	if (w <= 0)
-	{
-		return;
-	}
-
-	if (h <= 0)
-	{
-		return;
-	}
-
-	if (x + w > id->width)
-	{
-		w = id->width - x;
-	}
-
-	if (y + h > id->height)
-	{
-		h = id->height - y;
-	}
-
-	ly = y;
-
-	while (ly < y + h)
-	{
-		lx = x;
-
-		while (lx < x + w)
-		{
-			lw = MIN(64, (x + w) - lx);
-			lh = MIN(64, (y + h) - ly);
-			single_color = get_single_color(id, lx, ly, lw, lh);
-
-			if (single_color != -1)
-			{
-				LLOGLN(10, ("%d sending single color", g_count));
-				rdpup_set_fgcolor(single_color);
-				rdpup_fill_rect(lx, ly, lw, lh);
-			}
-			else
-			{
-				XRDP_MSG_PAINT_RECT msg;
-
-				bitmapLength = lw * lh * id->Bpp;
-
-				for (i = 0; i < lh; i++)
-				{
-					dstp = (char*) &pfbBackBufferMemory[lw * id->Bpp * i];
-					s = (id->pixels + ((ly + i) * id->lineBytes) + (lx * g_Bpp));
-					convert_pixels(s, dstp, lw);
-				}
-
-				msg.nLeftRect = lx;
-				msg.nTopRect = ly;
-				msg.nWidth = lw;
-				msg.nHeight = lh;
-				msg.nXSrc = 0;
-				msg.nYSrc = 0;
-
-				msg.fbSegmentId = 0;
-				msg.bitmapData = (BYTE*) pfbBackBufferMemory;
-				msg.bitmapDataLength = bitmapLength;
-
-				msg.type = XRDP_SERVER_PAINT_RECT;
-				rdpup_update((XRDP_MSG_COMMON*) &msg);
-			}
-
-			lx += 64;
-		}
-
-		ly += 64;
-	}
-}
-
-void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
-{
-	XRDP_MSG_MEMBLT msg;
-
-	msg.nLeftRect = x;
-	msg.nTopRect = y;
-	msg.nWidth = cx;
-	msg.nHeight = cy;
-	msg.index = rdpindex;
-	msg.nXSrc = srcx;
-	msg.nYSrc = srcy;
-
-	msg.type = XRDP_SERVER_MEMBLT;
-	rdpup_update((XRDP_MSG_COMMON*) &msg);
-}
-
-void rdpup_set_hints(int hints, int mask)
-{
-	XRDP_MSG_SET_HINTS msg;
-
-	msg.hints = hints;
-	msg.mask = mask;
-
-	msg.type = XRDP_SERVER_SET_HINTS;
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 }
 
@@ -1799,256 +1133,3 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 }
 
-int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec *pDirtyPriv)
-{
-	int index;
-	int clip_index;
-	int count;
-	int num_clips;
-	BoxRec box;
-	xSegment *seg;
-	struct image_data id;
-	struct rdp_draw_item *di;
-
-	if (pDirtyPriv == 0)
-	{
-		return 0;
-	}
-
-	if (pDirtyPriv->is_dirty == 0)
-	{
-		return 0;
-	}
-
-	/* update use time / count */
-	g_os_bitmaps[pDirtyPriv->rdpindex].stamp = g_os_bitmap_stamp;
-	g_os_bitmap_stamp++;
-
-	LLOGLN(10, ("-----------------got dirty"));
-	rdpup_switch_os_surface(pDirtyPriv->rdpindex);
-	rdpup_get_pixmap_image_rect(pDirtyPixmap, &id);
-	rdpup_begin_update();
-	draw_item_pack(pDirtyPixmap, pDirtyPriv);
-	di = pDirtyPriv->draw_item_head;
-
-	while (di != 0)
-	{
-		LLOGLN(10, ("rdpup_check_dirty: type %d", di->type));
-
-		switch (di->type)
-		{
-			case RDI_FILL:
-				rdpup_set_fgcolor(di->u.fill.fg_color);
-				rdpup_set_opcode(di->u.fill.opcode);
-				count = REGION_NUM_RECTS(di->reg);
-
-				for (index = 0; index < count; index++)
-				{
-					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_FILL %d %d %d %d", box.x1, box.y1, box.x2, box.y2));
-					rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-				}
-
-				rdpup_set_opcode(GXcopy);
-				break;
-
-			case RDI_IMGLL:
-				rdpup_set_hints(1, 1);
-				rdpup_set_opcode(di->u.img.opcode);
-				count = REGION_NUM_RECTS(di->reg);
-
-				for (index = 0; index < count; index++)
-				{
-					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_IMGLL %d %d %d %d", box.x1, box.y1,
-							box.x2, box.y2));
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-							box.y2 - box.y1);
-				}
-
-				rdpup_set_opcode(GXcopy);
-				rdpup_set_hints(0, 1);
-				break;
-
-			case RDI_IMGLY:
-				rdpup_set_opcode(di->u.img.opcode);
-				count = REGION_NUM_RECTS(di->reg);
-
-				for (index = 0; index < count; index++)
-				{
-					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_IMGLY %d %d %d %d", box.x1, box.y1,
-							box.x2, box.y2));
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-							box.y2 - box.y1);
-				}
-
-				rdpup_set_opcode(GXcopy);
-				break;
-
-			case RDI_LINE:
-				LLOGLN(10, ("  RDI_LINE"));
-				num_clips = REGION_NUM_RECTS(di->reg);
-
-				if (num_clips > 0)
-				{
-					rdpup_set_fgcolor(di->u.line.fg_color);
-					rdpup_set_opcode(di->u.line.opcode);
-					rdpup_set_pen(0, di->u.line.width);
-
-					for (clip_index = num_clips - 1; clip_index >= 0; clip_index--)
-					{
-						box = REGION_RECTS(di->reg)[clip_index];
-						rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-
-						for (index = 0; index < di->u.line.nseg; index++)
-						{
-							seg = di->u.line.segs + index;
-							LLOGLN(10, ("  RDI_LINE %d %d %d %d", seg->x1, seg->y1,
-									seg->x2, seg->y2));
-							rdpup_draw_line(seg->x1, seg->y1, seg->x2, seg->y2);
-						}
-					}
-				}
-
-				rdpup_reset_clip();
-				rdpup_set_opcode(GXcopy);
-				break;
-
-			case RDI_SCRBLT:
-				LLOGLN(10, ("  RDI_SCRBLT"));
-				break;
-		}
-
-		di = di->next;
-	}
-
-	draw_item_remove_all(pDirtyPriv);
-	rdpup_end_update();
-	pDirtyPriv->is_dirty = 0;
-	rdpup_switch_os_surface(-1);
-	return 0;
-}
-
-int rdpup_check_dirty_screen(rdpPixmapRec *pDirtyPriv)
-{
-	int index;
-	int clip_index;
-	int count;
-	int num_clips;
-	BoxRec box;
-	xSegment *seg;
-	struct image_data id;
-	struct rdp_draw_item *di;
-
-	if (pDirtyPriv == 0)
-	{
-		return 0;
-	}
-
-	if (pDirtyPriv->is_dirty == 0)
-	{
-		return 0;
-	}
-
-	LLOGLN(10, ("-----------------got dirty"));
-	rdpup_get_screen_image_rect(&id);
-	rdpup_begin_update();
-	draw_item_pack(0, pDirtyPriv);
-	di = pDirtyPriv->draw_item_head;
-
-	while (di != 0)
-	{
-		LLOGLN(10, ("rdpup_check_dirty_screen: type %d", di->type));
-
-		switch (di->type)
-		{
-			case RDI_FILL:
-				rdpup_set_fgcolor(di->u.fill.fg_color);
-				rdpup_set_opcode(di->u.fill.opcode);
-				count = REGION_NUM_RECTS(di->reg);
-
-				for (index = 0; index < count; index++)
-				{
-					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_FILL %d %d %d %d", box.x1, box.y1, box.x2, box.y2));
-					rdpup_fill_rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-				}
-
-				rdpup_set_opcode(GXcopy);
-				break;
-
-			case RDI_IMGLL:
-				rdpup_set_hints(1, 1);
-				rdpup_set_opcode(di->u.img.opcode);
-				count = REGION_NUM_RECTS(di->reg);
-
-				for (index = 0; index < count; index++)
-				{
-					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_IMGLL %d %d %d %d", box.x1, box.y1, box.x2, box.y2));
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-				}
-
-				rdpup_set_opcode(GXcopy);
-				rdpup_set_hints(0, 1);
-				break;
-
-			case RDI_IMGLY:
-				rdpup_set_opcode(di->u.img.opcode);
-				count = REGION_NUM_RECTS(di->reg);
-
-				for (index = 0; index < count; index++)
-				{
-					box = REGION_RECTS(di->reg)[index];
-					LLOGLN(10, ("  RDI_IMGLY %d %d %d %d", box.x1, box.y1,
-							box.x2, box.y2));
-					rdpup_send_area(&id, box.x1, box.y1, box.x2 - box.x1,
-							box.y2 - box.y1);
-				}
-
-				rdpup_set_opcode(GXcopy);
-				break;
-
-			case RDI_LINE:
-				LLOGLN(10, ("  RDI_LINE"));
-				num_clips = REGION_NUM_RECTS(di->reg);
-
-				if (num_clips > 0)
-				{
-					rdpup_set_fgcolor(di->u.line.fg_color);
-					rdpup_set_opcode(di->u.line.opcode);
-					rdpup_set_pen(0, di->u.line.width);
-
-					for (clip_index = num_clips - 1; clip_index >= 0; clip_index--)
-					{
-						box = REGION_RECTS(di->reg)[clip_index];
-						rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-
-						for (index = 0; index < di->u.line.nseg; index++)
-						{
-							seg = di->u.line.segs + index;
-							LLOGLN(10, ("  RDI_LINE %d %d %d %d", seg->x1, seg->y1,
-									seg->x2, seg->y2));
-							rdpup_draw_line(seg->x1, seg->y1, seg->x2, seg->y2);
-						}
-					}
-				}
-
-				rdpup_reset_clip();
-				rdpup_set_opcode(GXcopy);
-				break;
-
-			case RDI_SCRBLT:
-				LLOGLN(10, ("  RDI_SCRBLT"));
-				break;
-		}
-
-		di = di->next;
-	}
-
-	draw_item_remove_all(pDirtyPriv);
-	rdpup_end_update();
-	pDirtyPriv->is_dirty = 0;
-	return 0;
-}

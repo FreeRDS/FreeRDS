@@ -272,9 +272,11 @@ int main(int argc, char **argv)
 			case LOG_ERROR_MALLOC:
 				g_writeln("error on malloc. cannot start logging. quitting.");
 				break;
+
 			case LOG_ERROR_FILE_OPEN:
 				g_writeln("error opening log file [%s]. quitting.", getLogFile(text, 255));
 				break;
+
 			default:
 				g_writeln("log_start error");
 				break;

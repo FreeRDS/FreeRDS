@@ -98,7 +98,8 @@
 /* font macros */
 #define FONT_DATASIZE(f) \
   ((((f)->height * (((f)->width + 7) / 8)) + 3) & ~3);
-/* use crc for bitmap cache lookups */
+
 #define USE_CRC
+#define WITH_PAM
 
 #endif

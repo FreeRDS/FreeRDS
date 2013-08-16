@@ -30,29 +30,18 @@ set(${MODULE_PREFIX}_SRCS
 	funcs.c
 	lang.c
 	xrdp.c
+	xrdp_auth.c
 	xrdp_bitmap.c
-	xrdp_cache.c
-	xrdp_font.c
-	xrdp_listen.c
-	xrdp_login_wnd.c
+	xrdp_listener.c
 	xrdp_mm.c
 	xrdp_module.c
-	xrdp_painter.c
+	xrdp_pipeline.c
 	xrdp_process.c
 	xrdp_region.c
 	xrdp_wm.c)
 
 set(${MODULE_PREFIX}_CFG_DATA
 	xrdp.ini)
-
-set(${MODULE_PREFIX}_SHARE_DATA
-	ad24b.bmp
-	ad256.bmp
-	xrdp24b.bmp
-	xrdp256.bmp
-	sans-10.fv1
-	cursor0.cur
-	cursor1.cur)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
@@ -71,12 +60,13 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MODULE freerdp
 	MODULES freerdp-core)
 
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} winpr-makecert-tool)
+list(APPEND ${MODULE_PREFIX}_LIBS ${PIXMAN_LIBRARIES})
+
+list(APPEND ${MODULE_PREFIX}_LIBS winpr-makecert-tool)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
 
 install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${XRDP_CFG_PATH})
-install(FILES ${${MODULE_PREFIX}_SHARE_DATA} DESTINATION ${XRDP_SHARE_PATH})
 

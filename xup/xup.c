@@ -38,6 +38,7 @@
 
 #include <winpr/crt.h>
 #include <winpr/synch.h>
+#include <winpr/thread.h>
 #include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
@@ -54,7 +55,7 @@ static int lib_send_capabilities(xrdpModule* mod)
 	s = mod->SendStream;
 	Stream_SetPosition(s, 0);
 
-	msg.flags = 0;
+	msg.msgFlags = 0;
 	msg.type = XRDP_CLIENT_CAPABILITIES;
 
 	settings = mod->settings;
@@ -102,7 +103,7 @@ int lib_recv(xrdpModule* mod, BYTE* data, int length)
 	{
 		if (g_tcp_last_error_would_block(mod->sck))
 		{
-			if (server_is_term(mod))
+			if (mod->server->IsTerminated(mod))
 			{
 				return -1;
 			}
@@ -138,7 +139,7 @@ int lib_send_all(xrdpModule* mod, unsigned char *data, int len)
 		{
 			if (g_tcp_last_error_would_block(mod->sck))
 			{
-				if (server_is_term(mod))
+				if (mod->server->IsTerminated(mod))
 				{
 					return 1;
 				}
@@ -165,7 +166,7 @@ int lib_send_all(xrdpModule* mod, unsigned char *data, int len)
 	return 0;
 }
 
-int lib_mod_start(xrdpModule* mod, int w, int h, int bpp)
+int x11rdp_xrdp_client_start(xrdpModule* mod, int w, int h, int bpp)
 {
 	mod->width = w;
 	mod->height = h;
@@ -173,7 +174,7 @@ int lib_mod_start(xrdpModule* mod, int w, int h, int bpp)
 	return 0;
 }
 
-int lib_mod_connect(xrdpModule* mod)
+int x11rdp_xrdp_client_connect(xrdpModule* mod)
 {
 	int i;
 	int index;
@@ -183,34 +184,35 @@ int lib_mod_connect(xrdpModule* mod)
 	wStream* s;
 	char con_port[256];
 	XRDP_MSG_OPAQUE_RECT opaqueRect;
+	XRDP_MSG_BEGIN_UPDATE beginUpdate;
+	XRDP_MSG_END_UPDATE endUpdate;
 
-	LIB_DEBUG(mod, "in lib_mod_connect");
+	beginUpdate.type = XRDP_SERVER_BEGIN_UPDATE;
+	endUpdate.type = XRDP_SERVER_END_UPDATE;
 
+	opaqueRect.type = XRDP_SERVER_OPAQUE_RECT;
 	opaqueRect.nTopRect = 0;
 	opaqueRect.nLeftRect = 0;
 	opaqueRect.nWidth = mod->width;
 	opaqueRect.nHeight = mod->height;
+	opaqueRect.color = 0;
 
 	/* clear screen */
-	server_begin_update(mod);
-	server_set_fgcolor(mod, 0);
-	server_opaque_rect(mod, &opaqueRect);
-	server_end_update(mod);
 
-	server_msg(mod, "started connecting", 0);
+	mod->server->BeginUpdate(mod, &beginUpdate);
+	mod->server->OpaqueRect(mod, &opaqueRect);
+	mod->server->EndUpdate(mod, &endUpdate);
 
 	/* only support 8, 15, 16, and 24 bpp connections from rdp client */
 	if (mod->bpp != 8 && mod->bpp != 15 && mod->bpp != 16 && mod->bpp != 24 && mod->bpp != 32)
 	{
-		server_msg(mod, "error - only supporting 8, 15, 16, 24 and 32 bpp rdp connections", 0);
-		LIB_DEBUG(mod, "out lib_mod_connect error");
+		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 
 	if (g_strcmp(mod->ip, "") == 0)
 	{
-		server_msg(mod, "error - no ip set", 0);
-		LIB_DEBUG(mod, "out lib_mod_connect error");
+		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 
@@ -238,8 +240,6 @@ int lib_mod_connect(xrdpModule* mod)
 			g_tcp_set_no_delay(mod->sck);
 		}
 
-		server_msg(mod, "connecting...", 0);
-
 		if (use_uds)
 		{
 			status = g_tcp_local_connect(mod->sck, con_port);
@@ -260,9 +260,8 @@ int lib_mod_connect(xrdpModule* mod)
 				{
 					index++;
 
-					if ((index >= 30) || server_is_term(mod))
+					if ((index >= 30) || mod->server->IsTerminated(mod))
 					{
-						server_msg(mod, "connect timeout", 0);
 						status = 1;
 						break;
 					}
@@ -270,7 +269,7 @@ int lib_mod_connect(xrdpModule* mod)
 			}
 			else
 			{
-				server_msg(mod, "connect error", 0);
+
 			}
 		}
 
@@ -285,7 +284,7 @@ int lib_mod_connect(xrdpModule* mod)
 
 		if (i >= 4)
 		{
-			server_msg(mod, "connection problem, giving up", 0);
+
 			break;
 		}
 
@@ -299,7 +298,9 @@ int lib_mod_connect(xrdpModule* mod)
 		RECTANGLE_16 rect;
 		XRDP_MSG_REFRESH_RECT msg;
 
-		msg.flags = 0;
+		msg.msgFlags = 0;
+		msg.type = XRDP_CLIENT_REFRESH_RECT;
+
 		msg.numberOfAreas = 1;
 		msg.areasToRefresh = &rect;
 
@@ -320,21 +321,19 @@ int lib_mod_connect(xrdpModule* mod)
 
 	if (status != 0)
 	{
-		server_msg(mod, "some problem", 0);
-		LIB_DEBUG(mod, "out lib_mod_connect error");
+		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
 		return 1;
 	}
 	else
 	{
-		server_msg(mod, "connected ok", 0);
 		mod->SocketEvent = CreateFileDescriptorEvent(NULL, TRUE, FALSE, mod->sck);
+		ResumeThread(mod->ServerThread);
 	}
 
-	LIB_DEBUG(mod, "out lib_mod_connect");
 	return 0;
 }
 
-int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long param3, long param4)
+int x11rdp_xrdp_client_event(xrdpModule* mod, int subtype, long param1, long param2, long param3, long param4)
 {
 	wStream* s;
 	int length;
@@ -364,7 +363,7 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 					 15  0      65507  29     0
 					 16  0      65507  29     49152 */
 
-					msg.flags = 0;
+					msg.msgFlags = 0;
 					msg.type = XRDP_CLIENT_EVENT;
 
 					msg.subType = 16; /* key up */
@@ -389,7 +388,7 @@ int lib_mod_event(xrdpModule* mod, int subtype, long param1, long param2, long p
 		}
 	}
 
-	msg.flags = 0;
+	msg.msgFlags = 0;
 	msg.type = XRDP_CLIENT_EVENT;
 
 	msg.subType = subtype;
@@ -418,8 +417,8 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_BEGIN_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_begin_update(s, &msg);
-				status = server_begin_update(mod);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->BeginUpdate(mod, &msg);
 			}
 			break;
 
@@ -427,8 +426,8 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_END_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_end_update(s, &msg);
-				status = server_end_update(mod);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->EndUpdate(mod, &msg);
 			}
 			break;
 
@@ -436,8 +435,8 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_OPAQUE_RECT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_opaque_rect(s, &msg);
-				status = server_opaque_rect(mod, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->OpaqueRect(mod, &msg);
 			}
 			break;
 
@@ -445,8 +444,26 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_SCREEN_BLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_screen_blt(s, &msg);
-				status = server_screen_blt(mod, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->ScreenBlt(mod, &msg);
+			}
+			break;
+
+		case XRDP_SERVER_PATBLT:
+			{
+				XRDP_MSG_PATBLT msg;
+				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->PatBlt(mod, &msg);
+			}
+			break;
+
+		case XRDP_SERVER_DSTBLT:
+			{
+				XRDP_MSG_DSTBLT msg;
+				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->DstBlt(mod, &msg);
 			}
 			break;
 
@@ -459,66 +476,21 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 				msg.fbSegmentId = 0;
 				msg.framebuffer = NULL;
 
-				xrdp_read_paint_rect(s, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 
 				if (msg.fbSegmentId)
 					msg.framebuffer = &(mod->framebuffer);
 
-				status = server_paint_rect(mod, &msg);
+				status = mod->server->PaintRect(mod, &msg);
 			}
 			break;
 
-		case XRDP_SERVER_SET_CLIP:
+		case XRDP_SERVER_SET_CLIPPING_REGION:
 			{
-				XRDP_MSG_SET_CLIP msg;
+				XRDP_MSG_SET_CLIPPING_REGION msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_clip(s, &msg);
-				status = server_set_clip(mod, &msg);
-			}
-			break;
-
-		case XRDP_SERVER_RESET_CLIP:
-			{
-				XRDP_MSG_RESET_CLIP msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_reset_clip(s, &msg);
-				status = server_reset_clip(mod);
-			}
-			break;
-
-		case XRDP_SERVER_SET_FORECOLOR:
-			{
-				XRDP_MSG_SET_FORECOLOR msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_forecolor(s, &msg);
-				status = server_set_fgcolor(mod, msg.ForeColor);
-			}
-			break;
-
-		case XRDP_SERVER_SET_BACKCOLOR:
-			{
-				XRDP_MSG_SET_BACKCOLOR msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_backcolor(s, &msg);
-				status = server_set_bgcolor(mod, msg.BackColor);
-			}
-			break;
-
-		case XRDP_SERVER_SET_ROP2:
-			{
-				XRDP_MSG_SET_ROP2 msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_rop2(s, &msg);
-				status = server_set_opcode(mod, msg.bRop2);
-			}
-			break;
-
-		case XRDP_SERVER_SET_PEN:
-			{
-				XRDP_MSG_SET_PEN msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_pen(s, &msg);
-				status = server_set_pen(mod, msg.PenStyle, msg.PenWidth);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->SetClippingRegion(mod, &msg);
 			}
 			break;
 
@@ -526,8 +498,8 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_LINE_TO msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_line_to(s, &msg);
-				status = server_draw_line(mod, msg.nXStart, msg.nYStart, msg.nXEnd, msg.nYStart);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->LineTo(mod, &msg);
 			}
 			break;
 
@@ -535,63 +507,44 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_SET_POINTER msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_pointer(s, &msg);
-				status = server_set_pointer(mod, msg.xPos, msg.yPos, (char*) msg.xorMaskData, (char*) msg.andMaskData);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->SetPointer(mod, &msg);
 			}
 			break;
 
-		case XRDP_SERVER_SET_POINTER_EX:
+		case XRDP_SERVER_CREATE_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_SET_POINTER_EX msg;
+				XRDP_MSG_CREATE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_pointer_ex(s, &msg);
-				status = server_set_pointer_ex(mod, msg.xPos, msg.yPos, (char*) msg.xorMaskData, (char*) msg.andMaskData, msg.xorBpp);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->CreateOffscreenSurface(mod, &msg);
 			}
 			break;
 
-		case XRDP_SERVER_CREATE_OS_SURFACE:
+		case XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_CREATE_OS_SURFACE msg;
+				XRDP_MSG_SWITCH_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_create_os_surface(s, &msg);
-				status = server_create_os_surface(mod, msg.index, msg.width, msg.height);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->SwitchOffscreenSurface(mod, &msg);
 			}
 			break;
 
-		case XRDP_SERVER_SWITCH_OS_SURFACE:
+		case XRDP_SERVER_DELETE_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_SWITCH_OS_SURFACE msg;
+				XRDP_MSG_DELETE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_switch_os_surface(s, &msg);
-				status = server_switch_os_surface(mod, msg.index);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->DeleteOffscreenSurface(mod, &msg);
 			}
 			break;
 
-		case XRDP_SERVER_DELETE_OS_SURFACE:
+		case XRDP_SERVER_PAINT_OFFSCREEN_SURFACE:
 			{
-				XRDP_MSG_DELETE_OS_SURFACE msg;
+				XRDP_MSG_PAINT_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_delete_os_surface(s, &msg);
-				status = server_delete_os_surface(mod, msg.index);
-			}
-			break;
-
-		case XRDP_SERVER_MEMBLT:
-			{
-				XRDP_MSG_MEMBLT msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_memblt(s, &msg);
-				status = server_paint_rect_os(mod, msg.nLeftRect, msg.nTopRect,
-						msg.nWidth, msg.nHeight, msg.index, msg.nXSrc, msg.nYSrc);
-			}
-			break;
-
-		case XRDP_SERVER_SET_HINTS:
-			{
-				XRDP_MSG_SET_HINTS msg;
-				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				xrdp_read_set_hints(s, &msg);
-				status = server_set_hints(mod, msg.hints, msg.mask);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->PaintOffscreenSurface(mod, &msg);
 			}
 			break;
 
@@ -599,8 +552,8 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_WINDOW_NEW_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				status = xrdp_read_window_new_update(s, &msg);
-				server_window_new_update(mod, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->WindowNewUpdate(mod, &msg);
 			}
 			break;
 
@@ -608,8 +561,8 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_WINDOW_DELETE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-				status = xrdp_read_window_delete(s, &msg);
-				server_window_delete(mod, &msg);
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->WindowDelete(mod, &msg);
 			}
 			break;
 
@@ -617,34 +570,8 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			{
 				XRDP_MSG_SHARED_FRAMEBUFFER msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
-
-				status = xrdp_read_shared_framebuffer(s, &msg);
-
-				mod->framebuffer.fbWidth = msg.width;
-				mod->framebuffer.fbHeight = msg.height;
-				mod->framebuffer.fbScanline = msg.scanline;
-				mod->framebuffer.fbSegmentId = msg.segmentId;
-				mod->framebuffer.fbBitsPerPixel = msg.bitsPerPixel;
-				mod->framebuffer.fbBytesPerPixel = msg.bytesPerPixel;
-
-				printf("received shared framebuffer message: mod->framebuffer.fbAttached: %d msg.attach: %d\n",
-						mod->framebuffer.fbAttached, msg.attach);
-
-				if (!mod->framebuffer.fbAttached && msg.attach)
-				{
-					mod->framebuffer.fbSharedMemory = (BYTE*) shmat(mod->framebuffer.fbSegmentId, 0, 0);
-					mod->framebuffer.fbAttached = TRUE;
-
-					printf("attached segment %d to %p\n",
-							mod->framebuffer.fbSegmentId, mod->framebuffer.fbSharedMemory);
-				}
-
-				if (mod->framebuffer.fbAttached && !msg.attach)
-				{
-					shmdt(mod->framebuffer.fbSharedMemory);
-					mod->framebuffer.fbAttached = FALSE;
-					mod->framebuffer.fbSharedMemory = 0;
-				}
+				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
+				status = mod->server->SharedFramebuffer(mod, &msg);
 			}
 			break;
 
@@ -725,12 +652,14 @@ int xup_recv(xrdpModule* mod)
 	return 0;
 }
 
-int lib_mod_end(xrdpModule* mod)
+int x11rdp_xrdp_client_end(xrdpModule* mod)
 {
+	SetEvent(mod->StopEvent);
+
 	return 0;
 }
 
-int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
+int x11rdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
 {
 	if (g_strcasecmp(name, "username") == 0)
 	{
@@ -748,11 +677,6 @@ int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 	{
 		g_strncpy(mod->port, value, 255);
 	}
-	else if (g_strcasecmp(name, "rfx") == 0)
-	{
-		mod->rfx = g_atoi(value);
-		g_writeln("mod->rfx = %d",mod->rfx);
-	}
 	else if (g_strcasecmp(name, "settings") == 0)
 	{
 		mod->settings = (rdpSettings*) value;
@@ -761,13 +685,66 @@ int lib_mod_set_param(xrdpModule* mod, char *name, char *value)
 	return 0;
 }
 
-int lib_mod_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
+void* x11rdp_xrdp_client_thread(void* arg)
+{
+	int fps;
+	DWORD status;
+	DWORD nCount;
+	HANDLE events[8];
+	HANDLE PackTimer;
+	LARGE_INTEGER due;
+	xrdpModule* mod = (xrdpModule*) arg;
+
+	fps = mod->fps;
+	PackTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+
+	due.QuadPart = 0;
+	SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+
+	nCount = 0;
+	events[nCount++] = PackTimer;
+	events[nCount++] = mod->StopEvent;
+	events[nCount++] = mod->SocketEvent;
+
+	while (1)
+	{
+		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
+
+		if (WaitForSingleObject(mod->StopEvent, 0) == WAIT_OBJECT_0)
+		{
+			break;
+		}
+
+		if (WaitForSingleObject(mod->SocketEvent, 0) == WAIT_OBJECT_0)
+		{
+			xup_recv(mod);
+		}
+
+		if (status == WAIT_OBJECT_0)
+		{
+			xrdp_message_server_queue_pack(mod);
+		}
+
+		if (mod->fps != fps)
+		{
+			fps = mod->fps;
+			due.QuadPart = 0;
+			SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+		}
+	}
+
+	CloseHandle(PackTimer);
+
+	return NULL;
+}
+
+int x11rdp_xrdp_client_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 {
 	if (mod)
 	{
-		if (mod->SocketEvent)
+		if (mod->ServerQueue)
 		{
-			events[*nCount] = mod->SocketEvent;
+			events[*nCount] = MessageQueue_Event(mod->ServerQueue);
 			(*nCount)++;
 		}
 	}
@@ -775,65 +752,68 @@ int lib_mod_get_event_handles(xrdpModule* mod, HANDLE* events, DWORD* nCount)
 	return 0;
 }
 
-int lib_mod_check_wait_objs(xrdpModule* mod)
+int x11rdp_xrdp_client_check_event_handles(xrdpModule* mod)
 {
 	int status = 0;
 
 	if (!mod)
 		return 0;
 
-	if (!mod->SocketEvent)
-		return 0;
-
-	if (WaitForSingleObject(mod->SocketEvent, 0) == WAIT_OBJECT_0)
+	while (WaitForSingleObject(MessageQueue_Event(mod->ServerQueue), 0) == WAIT_OBJECT_0)
 	{
-		status = xup_recv(mod);
+		status = xrdp_message_server_queue_process_pending_messages(mod);
 	}
 
 	return status;
 }
 
-xrdpModule* xup_module_init(void)
+int xup_module_init(xrdpModule* mod)
 {
-	xrdpModule* mod;
+	xrdpClientModule* client;
 
-	mod = (xrdpModule*) malloc(sizeof(xrdpModule));
+	client = (xrdpClientModule*) malloc(sizeof(xrdpClientModule));
+	mod->client = client;
 
-	if (mod)
+	if (client)
 	{
-		ZeroMemory(mod, sizeof(xrdpModule));
+		ZeroMemory(client, sizeof(xrdpClientModule));
 
-		mod->size = sizeof(xrdpModule);
-		mod->version = 2;
-		mod->handle = (long) mod;
-		mod->mod_connect = lib_mod_connect;
-		mod->mod_start = lib_mod_start;
-		mod->mod_event = lib_mod_event;
-		mod->mod_end = lib_mod_end;
-		mod->mod_set_param = lib_mod_set_param;
-		mod->mod_get_event_handles = lib_mod_get_event_handles;
-		mod->mod_check_wait_objs = lib_mod_check_wait_objs;
-
-		mod->SendStream = Stream_New(NULL, 8192);
-		mod->ReceiveStream = Stream_New(NULL, 8192);
-
-		mod->TotalLength = 0;
-		mod->TotalCount = 0;
+		client->Connect = x11rdp_xrdp_client_connect;
+		client->Start = x11rdp_xrdp_client_start;
+		client->Event = x11rdp_xrdp_client_event;
+		client->End = x11rdp_xrdp_client_end;
+		client->SetParam = x11rdp_xrdp_client_set_param;
+		client->GetEventHandles = x11rdp_xrdp_client_get_event_handles;
+		client->CheckEventHandles = x11rdp_xrdp_client_check_event_handles;
 	}
 
-	return mod;
+	mod->SendStream = Stream_New(NULL, 8192);
+	mod->ReceiveStream = Stream_New(NULL, 8192);
+
+	mod->TotalLength = 0;
+	mod->TotalCount = 0;
+
+	mod->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	mod->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) x11rdp_xrdp_client_thread,
+			(void*) mod, CREATE_SUSPENDED, NULL);
+
+	return 0;
 }
 
 int xup_module_exit(xrdpModule* mod)
 {
-	if (mod)
-	{
-		Stream_Free(mod->SendStream, TRUE);
-		Stream_Free(mod->ReceiveStream, TRUE);
+	SetEvent(mod->StopEvent);
 
-		g_tcp_close(mod->sck);
-		free(mod);
-	}
+	WaitForSingleObject(mod->ServerThread, INFINITE);
+	CloseHandle(mod->ServerThread);
+
+	Stream_Free(mod->SendStream, TRUE);
+	Stream_Free(mod->ReceiveStream, TRUE);
+
+	CloseHandle(mod->StopEvent);
+
+	g_tcp_close(mod->sck);
 
 	return 0;
 }

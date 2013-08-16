@@ -19,5 +19,5 @@
 
 #include "xrdp.h"
 
-xrdpModule* freerdp_client_module_init(void);
+int freerdp_client_module_init(xrdpModule* mod);
 int freerdp_client_module_exit(xrdpModule* mod);

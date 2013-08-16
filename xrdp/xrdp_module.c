@@ -22,549 +22,282 @@
 #include "config.h"
 #endif
 
-#include "log.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/shm.h>
+#include <sys/stat.h>
 
 #include "xrdp.h"
 
-int server_begin_update(xrdpModule* mod)
+int xrdp_server_begin_update(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
 {
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	wm = (xrdpWm*) (mod->wm);
-	p = xrdp_painter_create(wm, wm->session);
-	xrdp_painter_begin_update(p);
-	mod->painter = (long) p;
-
+	libxrdp_orders_begin_paint(mod->session);
 	return 0;
 }
 
-int server_end_update(xrdpModule* mod)
+int xrdp_server_end_update(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg)
 {
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	xrdp_painter_end_update(p);
-	xrdp_painter_delete(p);
-	mod->painter = 0;
-
+	libxrdp_orders_end_paint(mod->session);
 	return 0;
 }
 
-int server_bell_trigger(xrdpModule* mod)
+int xrdp_server_beep(xrdpModule* mod, XRDP_MSG_BEEP* msg)
 {
-	xrdpWm* wm;
-
-	wm = (xrdpWm*) (mod->wm);
-	xrdp_wm_send_bell(wm);
-
+	libxrdp_send_bell(mod->session);
 	return 0;
 }
 
-int server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
-{
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-	xrdp_painter_fill_rect(p, wm->target_surface, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
-
-	return 0;
-}
-
-int server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
-{
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	p->rop = 0xCC;
-	xrdp_painter_copy(p, wm->screen, wm->target_surface, msg->nLeftRect, msg->nTopRect,
-			msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
-
-	return 0;
-}
-
-int server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
-{
-	int bpp;
-	xrdpWm* wm;
-	xrdpBitmap* b;
-	xrdpPainter* p;
-
-	wm = (xrdpWm*) (mod->wm);
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	if (msg->fbSegmentId)
-		bpp = msg->framebuffer->fbBitsPerPixel;
-	else
-		bpp = wm->screen->bpp;
-
-	if (wm->session->codecMode)
-	{
-		libxrdp_send_surface_bits(wm->session, bpp, msg);
-	}
-	else
-	{
-		b = xrdp_bitmap_create_with_data(msg->nWidth, msg->nHeight, bpp, (char*) msg->bitmapData, wm);
-
-		xrdp_painter_copy(p, b, wm->target_surface, msg->nLeftRect, msg->nTopRect,
-				msg->nWidth, msg->nHeight, msg->nXSrc, msg->nYSrc);
-
-		xrdp_bitmap_delete(b);
-	}
-
-	return 0;
-}
-
-int server_set_pointer(xrdpModule* mod, int x, int y, char *data, char *mask)
-{
-	xrdpWm* wm;
-
-	wm = (xrdpWm*) (mod->wm);
-	xrdp_wm_pointer(wm, data, mask, x, y, 0);
-
-	return 0;
-}
-
-int server_set_pointer_ex(xrdpModule* mod, int x, int y, char *data, char *mask, int bpp)
-{
-	xrdpWm* wm;
-
-	wm = (xrdpWm*) (mod->wm);
-	xrdp_wm_pointer(wm, data, mask, x, y, bpp);
-
-	return 0;
-}
-
-int server_palette(xrdpModule* mod, int *palette)
-{
-	xrdpWm* wm;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	if (g_memcmp(wm->palette, palette, 255 * sizeof(int)) != 0)
-	{
-		g_memcpy(wm->palette, palette, 256 * sizeof(int));
-		xrdp_wm_send_palette(wm);
-	}
-
-	return 0;
-}
-
-int server_msg(xrdpModule* mod, char *msg, int code)
-{
-	xrdpWm* wm;
-
-	if (code == 1)
-	{
-		g_writeln(msg);
-		return 0;
-	}
-
-	wm = (xrdpWm*) (mod->wm);
-
-	return xrdp_wm_log_msg(wm, msg);
-}
-
-int server_is_term(xrdpModule* mod)
+int xrdp_server_is_terminated(xrdpModule* mod)
 {
 	return g_is_term();
 }
 
-int server_set_clip(xrdpModule* mod, XRDP_MSG_SET_CLIP* msg)
+int xrdp_server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 {
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	return xrdp_painter_set_clip(p, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
-}
-
-int server_reset_clip(xrdpModule* mod)
-{
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	return xrdp_painter_clr_clip(p);
-}
-
-int server_set_fgcolor(xrdpModule* mod, int fgcolor)
-{
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	p->fg_color = fgcolor;
-	p->pen.color = p->fg_color;
+	/* TODO */
 
 	return 0;
 }
 
-int server_set_bgcolor(xrdpModule* mod, int bgcolor)
+int xrdp_server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
 {
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	p->bg_color = bgcolor;
+	/* TODO */
 
 	return 0;
 }
 
-int server_set_opcode(xrdpModule* mod, int opcode)
+int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
-	xrdpPainter* p;
+	int bpp;
+	int inFlightFrames;
+	SURFACE_FRAME* frame;
 
-	p = (xrdpPainter*) (mod->painter);
+	bpp = msg->framebuffer->fbBitsPerPixel;
 
-	if (!p)
-		return 0;
-
-	p->rop = opcode;
-
-	return 0;
-}
-
-int server_set_mixmode(xrdpModule* mod, int mixmode)
-{
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	p->mix_mode = mixmode;
-
-	return 0;
-}
-
-int server_set_brush(xrdpModule* mod, int x_orgin, int y_orgin, int style, char *pattern)
-{
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	p->brush.x_orgin = x_orgin;
-	p->brush.y_orgin = y_orgin;
-	p->brush.style = style;
-	g_memcpy(p->brush.pattern, pattern, 8);
-
-	return 0;
-}
-
-int server_set_pen(xrdpModule* mod, int style, int width)
-{
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	p->pen.style = style;
-	p->pen.width = width;
-
-	return 0;
-}
-
-int server_draw_line(xrdpModule* mod, int x1, int y1, int x2, int y2)
-{
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	return xrdp_painter_line(p, wm->target_surface, x1, y1, x2, y2);
-}
-
-int server_add_char(xrdpModule* mod, int font, int charactor, int offset, int baseline, int width, int height, char *data)
-{
-	xrdpFontChar fi;
-
-	fi.offset = offset;
-	fi.baseline = baseline;
-	fi.width = width;
-	fi.height = height;
-	fi.incby = 0;
-	fi.data = data;
-
-	return libxrdp_orders_send_font(((xrdpWm*) mod->wm)->session, &fi, font, charactor);
-}
-
-int server_draw_text(xrdpModule* mod, int font, int flags, int mixmode, int clip_left, int clip_top, int clip_right,
-		int clip_bottom, int box_left, int box_top, int box_right, int box_bottom, int x, int y, char *data,
-		int data_len)
-{
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	return xrdp_painter_draw_text2(p, wm->target_surface, font, flags, mixmode, clip_left, clip_top, clip_right,
-			clip_bottom, box_left, box_top, box_right, box_bottom, x, y, data, data_len);
-}
-
-int server_reset(xrdpModule* mod, int width, int height, int bpp)
-{
-	xrdpWm* wm;
-	rdpSettings* settings;
-
-	wm = (xrdpWm*) (mod->wm);
-	settings = wm->session->settings;
-
-	/* older client can't resize */
-	if (settings->ClientBuild <= 419)
+	if (mod->session->codecMode)
 	{
-		return 0;
-	}
+		inFlightFrames = ListDictionary_Count(mod->session->FrameList);
 
-	/* if same, don't need to do anything */
-	if ((settings->DesktopWidth == width) && (settings->DesktopHeight == height) && (settings->ColorDepth == bpp))
-	{
-		return 0;
-	}
-
-	if (libxrdp_reset(wm->session, width, height, bpp) != 0)
-	{
-		return 1;
-	}
-
-	/* reset cache */
-	xrdp_cache_reset(wm->cache);
-	/* resize the main window */
-	xrdp_bitmap_resize(wm->screen, settings->DesktopWidth, settings->DesktopHeight);
-	/* load some stuff */
-	xrdp_wm_load_static_colors_plus(wm, 0);
-	xrdp_wm_load_static_pointers(wm);
-
-	return 0;
-}
-
-int server_create_os_surface(xrdpModule* mod, int rdpindex, int width, int height)
-{
-	xrdpWm* wm;
-	xrdpBitmap *bitmap;
-	int error;
-
-	wm = (xrdpWm*) (mod->wm);
-	bitmap = xrdp_bitmap_create(width, height, wm->screen->bpp, WND_TYPE_OFFSCREEN, wm);
-	error = xrdp_cache_add_os_bitmap(wm->cache, bitmap, rdpindex);
-
-	if (error != 0)
-	{
-		log_message(LOG_LEVEL_ERROR, "server_create_os_surface: xrdp_cache_add_os_bitmap failed");
-		return 1;
-	}
-
-	bitmap->item_index = rdpindex;
-	bitmap->id = rdpindex;
-
-	return 0;
-}
-
-int server_switch_os_surface(xrdpModule* mod, int rdpindex)
-{
-	xrdpWm* wm;
-	xrdpOffscreenBitmapItem *bi;
-	xrdpPainter* p;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	if (rdpindex == -1)
-	{
-		wm->target_surface = wm->screen;
-		p = (xrdpPainter*) (mod->painter);
-
-		if (p != 0)
-		{
-			wm_painter_set_target(p);
-		}
-
-		return 0;
-	}
-
-	bi = xrdp_cache_get_os_bitmap(wm->cache, rdpindex);
-
-	if (bi != 0)
-	{
-		wm->target_surface = bi->bitmap;
-		p = (xrdpPainter*) (mod->painter);
-
-		if (p != 0)
-		{
-			wm_painter_set_target(p);
-		}
-	}
-	else
-	{
-		log_message(LOG_LEVEL_ERROR, "server_switch_os_surface: error finding id %d", rdpindex);
-	}
-
-	return 0;
-}
-
-int server_delete_os_surface(xrdpModule* mod, int rdpindex)
-{
-	xrdpWm* wm;
-	xrdpPainter* p;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	if (wm->target_surface->type == WND_TYPE_OFFSCREEN)
-	{
-		if (wm->target_surface->id == rdpindex)
-		{
-			g_writeln("server_delete_os_surface: setting target_surface to screen");
-			wm->target_surface = wm->screen;
-			p = (xrdpPainter*) (mod->painter);
-
-			if (p != 0)
-			{
-				wm_painter_set_target(p);
-			}
-		}
-	}
-
-	xrdp_cache_remove_os_bitmap(wm->cache, rdpindex);
-
-	return 0;
-}
-
-int server_paint_rect_os(xrdpModule* mod, int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy)
-{
-	xrdpWm* wm;
-	xrdpBitmap *b;
-	xrdpPainter* p;
-	xrdpOffscreenBitmapItem *bi;
-
-	p = (xrdpPainter*) (mod->painter);
-
-	if (!p)
-		return 0;
-
-	wm = (xrdpWm*) (mod->wm);
-	bi = xrdp_cache_get_os_bitmap(wm->cache, rdpindex);
-
-	if (bi != 0)
-	{
-		b = bi->bitmap;
-		xrdp_painter_copy(p, b, wm->target_surface, x, y, cx, cy, srcx, srcy);
-	}
-	else
-	{
-		log_message(LOG_LEVEL_ERROR, "server_paint_rect_os: error finding id %d", rdpindex);
-	}
-
-	return 0;
-}
-
-int server_set_hints(xrdpModule* mod, int hints, int mask)
-{
-	xrdpWm* wm;
-
-	wm = (xrdpWm*) (mod->wm);
-
-	if (mask & 1)
-	{
-		if (hints & 1)
-		{
-			wm->hints |= 1;
-		}
+		if (inFlightFrames > mod->session->settings->FrameAcknowledge)
+			mod->fps = (100 / (inFlightFrames + 1) * mod->MaxFps) / 100;
 		else
-		{
-			wm->hints &= ~1;
-		}
+			mod->fps = mod->MaxFps;
+
+		if (mod->fps < 1)
+			mod->fps = 1;
+
+		frame = (SURFACE_FRAME*) malloc(sizeof(SURFACE_FRAME));
+
+		frame->frameId = ++mod->session->frameId;
+		ListDictionary_Add(mod->session->FrameList, (void*) (size_t) frame->frameId, frame);
+
+		libxrdp_orders_send_frame_marker(mod->session, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
+		libxrdp_send_surface_bits(mod->session, bpp, msg);
+		libxrdp_orders_send_frame_marker(mod->session, SURFACECMD_FRAMEACTION_END, frame->frameId);
+	}
+	else
+	{
+		libxrdp_send_bitmap_update(mod->session, bpp, msg);
 	}
 
 	return 0;
 }
 
-int server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
+int xrdp_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 {
-	xrdpWm* wm = (xrdpWm*) (mod->wm);
-	return libxrdp_window_new_update(wm->session, msg);
+	/* TODO */
+
+	return 0;
 }
 
-int server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
+int xrdp_server_dstblt(xrdpModule* mod, XRDP_MSG_DSTBLT* msg)
 {
-	xrdpWm* wm = (xrdpWm*) (mod->wm);
-	return libxrdp_window_delete(wm->session, msg);
+	/* TODO */
+
+	return 0;
 }
 
-int server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id,
+int xrdp_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
+{
+	libxrdp_set_pointer(mod->session, msg);
+	return 0;
+}
+
+int xrdp_server_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
+{
+	/* TODO */
+
+	return 0;
+}
+
+int xrdp_server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
+{
+	/* TODO */
+
+	return 0;
+}
+
+int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
+{
+	/* TODO */
+
+	return 0;
+}
+
+int xrdp_server_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
+{
+	return libxrdp_orders_send_font(mod->session, msg);
+}
+
+int xrdp_server_glyph_index(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
+{
+	/* TODO */
+
+	return 0;
+}
+
+int xrdp_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
+{
+	mod->framebuffer.fbWidth = msg->width;
+	mod->framebuffer.fbHeight = msg->height;
+	mod->framebuffer.fbScanline = msg->scanline;
+	mod->framebuffer.fbSegmentId = msg->segmentId;
+	mod->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
+	mod->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
+
+	printf("received shared framebuffer message: mod->framebuffer.fbAttached: %d msg->attach: %d\n",
+			mod->framebuffer.fbAttached, msg->attach);
+
+	if (!mod->framebuffer.fbAttached && msg->attach)
+	{
+		mod->framebuffer.fbSharedMemory = (BYTE*) shmat(mod->framebuffer.fbSegmentId, 0, 0);
+		mod->framebuffer.fbAttached = TRUE;
+
+		printf("attached segment %d to %p\n",
+				mod->framebuffer.fbSegmentId, mod->framebuffer.fbSharedMemory);
+
+		mod->framebuffer.image = (void*) pixman_image_create_bits(PIXMAN_x8r8g8b8,
+				mod->framebuffer.fbWidth, mod->framebuffer.fbHeight,
+				(uint32_t*) mod->framebuffer.fbSharedMemory, mod->framebuffer.fbScanline);
+	}
+
+	if (mod->framebuffer.fbAttached && !msg->attach)
+	{
+		shmdt(mod->framebuffer.fbSharedMemory);
+		mod->framebuffer.fbAttached = FALSE;
+		mod->framebuffer.fbSharedMemory = 0;
+	}
+
+	return 0;
+}
+
+int xrdp_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
+{
+	if (libxrdp_reset(mod->session, msg) != 0)
+		return 0;
+
+	return 0;
+}
+
+int xrdp_server_create_offscreen_surface(xrdpModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
+{
+	return 0;
+}
+
+int xrdp_server_switch_offscreen_surface(xrdpModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
+{
+	return 0;
+}
+
+int xrdp_server_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
+{
+	return 0;
+}
+
+int xrdp_server_paint_offscreen_surface(xrdpModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
+{
+	return 0;
+}
+
+int xrdp_server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
+{
+	return libxrdp_window_new_update(mod->session, msg);
+}
+
+int xrdp_server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
+{
+	return libxrdp_window_delete(mod->session, msg);
+}
+
+int xrdp_server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id,
 		xrdpRailIconInfo* icon_info, int flags)
 {
-	xrdpWm* wm = (xrdpWm*) (mod->wm);
-	return libxrdp_window_icon(wm->session, window_id, cache_entry, cache_id, icon_info, flags);
+	return libxrdp_window_icon(mod->session, window_id, cache_entry, cache_id, icon_info, flags);
 }
 
-int server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags)
+int xrdp_server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags)
 {
-	xrdpWm* wm = (xrdpWm*) (mod->wm);
-	return libxrdp_window_cached_icon(wm->session, window_id, cache_entry, cache_id, flags);
+	return libxrdp_window_cached_icon(mod->session, window_id, cache_entry, cache_id, flags);
 }
 
-int server_notify_new_update(xrdpModule* mod, int window_id, int notify_id,
+int xrdp_server_notify_new_update(xrdpModule* mod, int window_id, int notify_id,
 		xrdpRailNotifyStateOrder* notify_state, int flags)
 {
-	xrdpWm* wm = (xrdpWm*) (mod->wm);
-	return libxrdp_notify_new_update(wm->session, window_id, notify_id, notify_state, flags);
+	return libxrdp_notify_new_update(mod->session, window_id, notify_id, notify_state, flags);
 }
 
-int server_notify_delete(xrdpModule* mod, int window_id, int notify_id)
+int xrdp_server_notify_delete(xrdpModule* mod, int window_id, int notify_id)
 {
-	xrdpWm* wm = (xrdpWm*) (mod->wm);
-	return libxrdp_notify_delete(wm->session, window_id, notify_id);
+	return libxrdp_notify_delete(mod->session, window_id, notify_id);
 }
 
-int server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags)
+int xrdp_server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags)
 {
-	xrdpWm* wm = (xrdpWm*) (mod->wm);
-	return libxrdp_monitored_desktop(wm->session, mdo, flags);
+	return libxrdp_monitored_desktop(mod->session, mdo, flags);
+}
+
+int xrdp_server_module_init(xrdpModule* mod)
+{
+	mod->server = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
+
+	if (mod->server)
+	{
+		ZeroMemory(mod->server, sizeof(xrdpServerModule));
+
+		mod->server->BeginUpdate = xrdp_server_begin_update;
+		mod->server->EndUpdate = xrdp_server_end_update;
+		mod->server->Beep = xrdp_server_beep;
+		mod->server->IsTerminated = xrdp_server_is_terminated;
+		mod->server->OpaqueRect = xrdp_server_opaque_rect;
+		mod->server->ScreenBlt = xrdp_server_screen_blt;
+		mod->server->PaintRect = xrdp_server_paint_rect;
+		mod->server->PatBlt = xrdp_server_patblt;
+		mod->server->DstBlt = xrdp_server_dstblt;
+		mod->server->SetPointer = xrdp_server_set_pointer;
+		mod->server->SetPalette = xrdp_server_set_palette;
+		mod->server->SetClippingRegion = xrdp_server_set_clipping_region;
+		mod->server->LineTo = xrdp_server_line_to;
+		mod->server->CacheGlyph = xrdp_server_cache_glyph;
+		mod->server->GlyphIndex = xrdp_server_glyph_index;
+		mod->server->SharedFramebuffer = xrdp_server_shared_framebuffer;
+		mod->server->Reset = xrdp_server_reset;
+		mod->server->CreateOffscreenSurface = xrdp_server_create_offscreen_surface;
+		mod->server->SwitchOffscreenSurface = xrdp_server_switch_offscreen_surface;
+		mod->server->DeleteOffscreenSurface = xrdp_server_delete_offscreen_surface;
+		mod->server->PaintOffscreenSurface = xrdp_server_paint_offscreen_surface;
+		mod->server->WindowNewUpdate = xrdp_server_window_new_update;
+		mod->server->WindowDelete = xrdp_server_window_delete;
+		mod->server->WindowIcon = xrdp_server_window_icon;
+		mod->server->WindowCachedIcon = xrdp_server_window_cached_icon;
+		mod->server->NotifyNewUpdate = xrdp_server_notify_new_update;
+		mod->server->NotifyDelete = xrdp_server_notify_delete;
+		mod->server->MonitoredDesktop = xrdp_server_monitored_desktop;
+	}
+
+	xrdp_message_server_module_init(mod);
+
+	return 0;
 }

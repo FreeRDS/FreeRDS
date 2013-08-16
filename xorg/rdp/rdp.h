@@ -143,11 +143,6 @@ struct _rdpScreenInfoRec
 	CompositeProcPtr Composite;
 	GlyphsProcPtr Glyphs;
 
-	/* TODO: port old code using backing store procedures */
-
-	/* Backing store procedures */
-	//RestoreAreasProcPtr RestoreAreas;
-
 	int segmentId;
 	int sharedMemory;
 	int fbAttached;
@@ -157,16 +152,6 @@ struct _rdpScreenInfoRec
 	int rdp_bpp;
 	int rdp_Bpp;
 	int rdp_Bpp_mask;
-
-	int Jpeg;
-	int NSCodec;
-	int RemoteFX;
-	int CodecMode;
-	int OffscreenSupportLevel;
-	int OffscreenCacheSize;
-	int OffscreenCacheEntries;
-	int RailSupportLevel;
-	int PointerFlags;
 };
 typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
 typedef rdpScreenInfoRec* rdpScreenInfoPtr;
@@ -197,8 +182,6 @@ typedef rdpWindowRec* rdpWindowPtr;
 #define XR_EXT_STYLE_TOOLTIP (0x00000080 | 0x00000008)
 
 /* for normal desktop windows */
-/* WS_TILEDWINDOW (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME |
-                   WS_MINIMIZEBOX | WS_MAXIMIZEBOX) */
 #define XR_STYLE_NORMAL (0x00C00000 | 0x00080000 | 0x00040000 | 0x00010000 | 0x00020000)
 #define XR_EXT_STYLE_NORMAL (0x00040000)
 
@@ -206,82 +189,17 @@ typedef rdpWindowRec* rdpWindowPtr;
 #define XR_STYLE_DIALOG (0x80000000)
 #define XR_EXT_STYLE_DIALOG (0x00040000)
 
-#define RDI_FILL 1
-#define RDI_IMGLL 2 /* lossless */
-#define RDI_IMGLY 3 /* lossy */
-#define RDI_LINE 4
-#define RDI_SCRBLT 5
-
-struct urdp_draw_item_fill
-{
-	int opcode;
-	int fg_color;
-	int bg_color;
-	int pad0;
-};
-
-struct urdp_draw_item_img
-{
-	int opcode;
-	int pad0;
-};
-
-struct urdp_draw_item_line
-{
-	int opcode;
-	int fg_color;
-	int bg_color;
-	int width;
-	xSegment* segs;
-	int nseg;
-	int flags;
-};
-
-struct urdp_draw_item_scrblt
-{
-	int srcx;
-	int srcy;
-	int dstx;
-	int dsty;
-	int cx;
-	int cy;
-};
-
-union urdp_draw_item
-{
-	struct urdp_draw_item_fill fill;
-	struct urdp_draw_item_img img;
-	struct urdp_draw_item_line line;
-	struct urdp_draw_item_scrblt scrblt;
-};
-
-struct rdp_draw_item
-{
-	int type;
-	int flags;
-	struct rdp_draw_item* prev;
-	struct rdp_draw_item* next;
-	RegionPtr reg;
-	union urdp_draw_item u;
-};
-
 struct _rdpPixmapRec
 {
 	int status;
-	int rdpindex;
 	int con_number;
-	int is_dirty;
 	int pad0;
 	int kind_width;
-	struct rdp_draw_item* draw_item_head;
-	struct rdp_draw_item* draw_item_tail;
 };
 typedef struct _rdpPixmapRec rdpPixmapRec;
 typedef rdpPixmapRec* rdpPixmapPtr;
 #define GETPIXPRIV(_pPixmap) \
 		(rdpPixmapPtr)dixGetPrivateAddr(&(_pPixmap->devPrivates), &g_rdpPixmapIndex)
-
-#define XRDP_IS_OS(_priv) (_priv->status != 0)
 
 /* rdpmisc.c */
 
@@ -295,22 +213,8 @@ void RegionAroundSegs(RegionPtr reg, xSegment* segs, int nseg);
 /* rdpdraw.c */
 Bool rdpCloseScreen(int i, ScreenPtr pScreen);
 
-int draw_item_add(rdpPixmapRec* priv, struct rdp_draw_item* di);
-int draw_item_remove(rdpPixmapRec* priv, struct rdp_draw_item* di);
-int draw_item_remove_all(rdpPixmapRec* priv);
-int draw_item_pack(PixmapPtr pix, rdpPixmapRec* priv);
-int draw_item_add_img_region(rdpPixmapRec* priv, RegionPtr reg, int opcode, int type);
-int draw_item_add_fill_region(rdpPixmapRec* priv, RegionPtr reg, int color, int opcode);
-int draw_item_add_line_region(rdpPixmapRec* priv, RegionPtr reg, int color,
-		int opcode, int width, xSegment* segs, int nsegs,
-		int is_segment);
-int draw_item_add_srcblt_region(rdpPixmapRec* priv, RegionPtr reg,
-		int srcx, int srcy, int dstx, int dsty,
-		int cx, int cy);
-
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint);
 Bool rdpDestroyPixmap(PixmapPtr pPixmap);
-int xrdp_is_os(PixmapPtr pix, rdpPixmapPtr priv);
 Bool rdpCreateWindow(WindowPtr pWindow);
 Bool rdpDestroyWindow(WindowPtr pWindow);
 Bool rdpPositionWindow(WindowPtr pWindow, int x, int y);
@@ -362,40 +266,26 @@ void KbdAddEvent(int down, int param1, int param2, int param3, int param4);
 void KbdSync(int param1);
 
 /* rdpup.c */
-int rdpup_add_os_bitmap(PixmapPtr pixmap, rdpPixmapPtr priv);
-int rdpup_remove_os_bitmap(int rdpindex);
 void rdpup_get_screen_image_rect(struct image_data* id);
-void rdpup_get_pixmap_image_rect(PixmapPtr pPixmap, struct image_data* id);
+UINT32 rdpup_convert_color(UINT32 color);
+UINT32 rdpup_convert_opcode(int opcode);
+UINT32 rdp_dstblt_rop(int opcode);
 int rdpup_init(void);
 int rdpup_check(void);
 int rdpup_begin_update(void);
 int rdpup_end_update(void);
-int rdpup_fill_rect(short x, short y, int cx, int cy);
+int rdpup_check_attach_framebuffer();
+int rdpup_opaque_rect(XRDP_MSG_OPAQUE_RECT* msg);
 int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy);
+int rdpup_patblt(XRDP_MSG_PATBLT* msg);
+int rdpup_dstblt(XRDP_MSG_DSTBLT* msg);
+int rdpup_set_clipping_region(XRDP_MSG_SET_CLIPPING_REGION* msg);
 int rdpup_set_clip(short x, short y, int cx, int cy);
 int rdpup_reset_clip(void);
-int rdpup_set_fgcolor(int fgcolor);
-int rdpup_set_bgcolor(int bgcolor);
-int rdpup_set_opcode(int opcode);
-int rdpup_paint_rect(short x, short y, int cx, int cy,
-		char* bmpdata, int width, int height, short srcx, short srcy);
-int rdpup_set_pen(int style, int width);
-int rdpup_draw_line(short x1, short y1, short x2, short y2);
-void rdpup_send_area(struct image_data* id, int x, int y, int w, int h);
-void rdpup_send_area_codec(struct image_data* id, int x, int y, int w, int h);
-int rdpup_set_cursor(short x, short y, char* cur_data, char* cur_mask);
-int rdpup_set_cursor_ex(short x, short y, char *cur_data, char *cur_mask, int bpp);
-int rdpup_create_os_surface(int rdpindexd, int width, int height);
-int rdpup_switch_os_surface(int rdpindex);
-int rdpup_delete_os_surface(int rdpindex);
-void rdpup_paint_rect_os(int x, int y, int cx, int cy, int rdpindex, int srcx, int srcy);
-void rdpup_set_hints(int hints, int mask);
+int rdpup_draw_line(XRDP_MSG_LINE_TO* msg);
+void rdpup_send_area(int x, int y, int w, int h);
+int rdpup_set_pointer(XRDP_MSG_SET_POINTER* msg);
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);
 void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec* priv);
-int rdpup_check_dirty(PixmapPtr pDirtyPixmap, rdpPixmapRec* pDirtyPriv);
-int rdpup_check_dirty_screen(rdpPixmapRec* pDirtyPriv);
-
 void rdpup_shared_framebuffer(XRDP_MSG_SHARED_FRAMEBUFFER* msg);
-
-void rdpScheduleDeferredUpdate(void);
 

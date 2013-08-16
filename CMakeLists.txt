@@ -93,6 +93,14 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 	set(BUILD_SHARED_LIBS ON)
 endif()
 
+set(PIXMAN_FEATURE_TYPE "REQUIRED")
+set(PIXMAN_FEATURE_PURPOSE "Pixel Manipulation")
+set(PIXMAN_FEATURE_DESCRIPTION "Pixel Manipulation Library")
+
+find_feature(Pixman ${PIXMAN_FEATURE_TYPE} ${PIXMAN_FEATURE_PURPOSE} ${PIXMAN_FEATURE_DESCRIPTION})
+
+include_directories(${PIXMAN_INCLUDE_DIRS})
+
 add_subdirectory(avro)
 
 add_subdirectory(libxrdp)

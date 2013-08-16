@@ -20,8 +20,6 @@
 
 #include "xrdp.h"
 
-static int g_session_id = 0;
-
 #include <winpr/crt.h>
 #include <winpr/file.h>
 #include <winpr/path.h>
@@ -37,20 +35,7 @@ static int g_session_id = 0;
 
 #include "makecert.h"
 
-struct xrdp_process
-{
-	rdpContext context;
-
-	int status;
-	int session_id;
-	HANDLE DoneEvent;
-	HANDLE TermEvent;
-
-	xrdpWm* wm;
-	xrdpSession* session;
-};
-
-void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
+void xrdp_peer_context_new(freerdp_peer* client, xrdpSession* context)
 {
 	rdpSettings* settings = client->settings;
 
@@ -59,74 +44,52 @@ void xrdp_peer_context_new(freerdp_peer* client, xrdpProcess* context)
 	settings->BitmapCacheV3Enabled = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
 
-	context->session = libxrdp_session_new(settings);
+	libxrdp_session_init(context, settings);
 
-	if (context->session)
-	{
-		context->session->context = (rdpContext*) context;
-		context->session->client = client;
-	}
-
-	context->status = 1;
+	context->client = client;
 }
 
-void xrdp_peer_context_free(freerdp_peer* client, xrdpProcess* context)
+void xrdp_peer_context_free(freerdp_peer* client, xrdpSession* context)
 {
 
 }
 
-xrdpProcess* xrdp_process_create_ex(xrdpListener* owner, HANDLE DoneEvent, void* transport)
+xrdpSession* xrdp_process_create(freerdp_peer* client)
 {
-	xrdpProcess* xfp;
-	freerdp_peer* client;
+	xrdpSession* xfp;
 
-	client = (freerdp_peer*) transport;
-
-	client->ContextSize = sizeof(xrdpProcess);
+	client->ContextSize = sizeof(xrdpSession);
 	client->ContextNew = (psPeerContextNew) xrdp_peer_context_new;
 	client->ContextFree = (psPeerContextFree) xrdp_peer_context_free;
 	freerdp_peer_context_new(client);
 
-	xfp = (xrdpProcess*) client->context;
-
-	xfp->DoneEvent = DoneEvent;
-
-	g_session_id++;
-	xfp->session_id = g_session_id;
+	xfp = (xrdpSession*) client->context;
 
 	xfp->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	xfp->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) xrdp_process_main_thread, client, 0, NULL);
 
 	return xfp;
 }
 
-void xrdp_process_delete(xrdpProcess* self)
+void xrdp_process_delete(xrdpSession* self)
 {
-
+	CloseHandle(self->TermEvent);
 }
 
-int xrdp_process_get_status(xrdpProcess* self)
-{
-	return self->status;
-}
-
-HANDLE xrdp_process_get_term_event(xrdpProcess* self)
+HANDLE xrdp_process_get_term_event(xrdpSession* self)
 {
 	return self->TermEvent;
 }
 
-xrdpSession* xrdp_process_get_session(xrdpProcess* self)
+xrdpSession* xrdp_process_get_session(xrdpSession* self)
 {
-	return self->session;
+	return self;
 }
 
-int xrdp_process_get_session_id(xrdpProcess* self)
+xrdpWm* xrdp_process_get_wm(xrdpSession* self)
 {
-	return self->session_id;
-}
-
-xrdpWm* xrdp_process_get_wm(xrdpProcess* self)
-{
-	return self->wm;
+	return (xrdpWm*) self->wm;
 }
 
 BOOL xrdp_peer_capabilities(freerdp_peer* client)
@@ -136,9 +99,15 @@ BOOL xrdp_peer_capabilities(freerdp_peer* client)
 
 BOOL xrdp_peer_post_connect(freerdp_peer* client)
 {
-	xrdpProcess* xfp;
+	int i;
+	xrdpSession* xfp;
+	UINT32 ColorDepth;
+	UINT32 DesktopWidth;
+	UINT32 DesktopHeight;
+	rdpSettings* settings;
 
-	xfp = (xrdpProcess*) client->context;
+	settings = client->settings;
+	xfp = (xrdpSession*) client->context;
 
 	fprintf(stderr, "Client %s is connected", client->hostname);
 
@@ -150,10 +119,40 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 	}
 	fprintf(stderr, "\n");
 
-	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
-		client->settings->DesktopWidth, client->settings->DesktopHeight, client->settings->ColorDepth);
+	DesktopWidth = settings->DesktopWidth;
+	DesktopHeight = settings->DesktopHeight;
+	ColorDepth = settings->ColorDepth;
 
-	/* do not reactivate, just accept client desktop size and color depth */
+	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
+		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
+
+	if ((DesktopWidth % 4) != 0)
+		DesktopWidth += (DesktopWidth % 4);
+
+	if ((DesktopHeight % 4) != 0)
+		DesktopHeight += (DesktopHeight % 4);
+
+	if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight)
+			|| (ColorDepth != settings->ColorDepth))
+	{
+		fprintf(stderr, "Resizing desktop to %dx%dx%d\n", DesktopWidth, DesktopHeight, ColorDepth);
+
+		settings->DesktopWidth = DesktopWidth;
+		settings->DesktopHeight = DesktopHeight;
+		settings->ColorDepth = ColorDepth;
+
+		client->update->DesktopResize(client->update->context);
+
+		return TRUE;
+	}
+
+	for (i = 0; i < settings->ChannelCount; i++)
+	{
+		if (settings->ChannelDefArray[i].joined)
+		{
+			printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
+		}
+	}
 
 	return TRUE;
 }
@@ -161,7 +160,7 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 BOOL xrdp_peer_activate(freerdp_peer* client)
 {
 	rdpSettings* settings;
-	xrdpProcess* xfp = (xrdpProcess*) client->context;
+	xrdpSession* session = (xrdpSession*) client->context;
 
 	settings = client->settings;
 	settings->BitmapCacheVersion = 2;
@@ -170,10 +169,10 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 		settings->AutoLogonEnabled = 1;
 
 	if (settings->RemoteFxCodec || settings->NSCodec)
-		xfp->session->codecMode = TRUE;
+		session->codecMode = TRUE;
 
-	if (!xfp->wm)
-		xfp->wm = xrdp_wm_create(xfp);
+	if (!session->wm)
+		session->wm = xrdp_wm_create(session);
 
 	printf("Client Activated\n");
 
@@ -192,8 +191,16 @@ int makecert_argc = (sizeof(makecert_argv) / sizeof(char*));
 
 int xrdp_generate_certificate(rdpSettings* settings)
 {
+	char* config_home;
 	char* server_file_path;
 	MAKECERT_CONTEXT* context;
+
+	config_home = GetKnownPath(KNOWN_PATH_XDG_CONFIG_HOME);
+
+	if (!PathFileExistsA(config_home))
+		CreateDirectoryA(config_home, 0);
+
+	free(config_home);
 
 	if (!PathFileExistsA(settings->ConfigPath))
 		CreateDirectoryA(settings->ConfigPath, 0);
@@ -236,10 +243,10 @@ void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
-	xrdpProcess* xfp = (xrdpProcess*) input->context;
+	xrdpSession* session = (xrdpSession*) input->context;
 
-	if (xfp->wm)
-		xrdp_wm_key(xfp->wm, flags, code);
+	if (session->wm)
+		xrdp_wm_key(session->wm, flags, code);
 }
 
 void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
@@ -249,18 +256,18 @@ void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 cod
 
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
-	xrdpProcess* xfp = (xrdpProcess*) input->context;
+	xrdpSession* session = (xrdpSession*) input->context;
 
-	if (xfp->wm)
-		xrdp_wm_process_input_mouse(xfp->wm, flags, x, y);
+	if (session->wm)
+		xrdp_wm_process_input_mouse(session->wm, flags, x, y);
 }
 
 void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
-	xrdpProcess* xfp = (xrdpProcess*) input->context;
+	xrdpSession* session = (xrdpSession*) input->context;
 
-	if (xfp->wm)
-		xrdp_wm_process_input_mouse(xfp->wm, flags, x, y);
+	if (session->wm)
+		xrdp_wm_process_input_mouse(session->wm, flags, x, y);
 }
 
 void xrdp_input_register_callbacks(rdpInput* input)
@@ -272,21 +279,37 @@ void xrdp_input_register_callbacks(rdpInput* input)
 	input->ExtendedMouseEvent = xrdp_input_extended_mouse_event;
 }
 
+void xrdp_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
+{
+	SURFACE_FRAME* frame;
+	xrdpSession* session = (xrdpSession*) context;
+
+	frame = (SURFACE_FRAME*) ListDictionary_GetItemValue(session->FrameList, (void*) (size_t) frameId);
+
+	if (frame)
+	{
+		ListDictionary_Remove(session->FrameList, (void*) (size_t) frameId);
+		free(frame);
+	}
+
+	printf("FrameAck: %d\n", frameId);
+}
+
 void* xrdp_process_main_thread(void* arg)
 {
 	DWORD status;
 	DWORD nCount;
 	HANDLE events[32];
-	xrdpProcess* xfp;
 	HANDLE ClientEvent;
 	HANDLE LocalTermEvent;
 	HANDLE GlobalTermEvent;
+	xrdpSession* session;
 	rdpSettings* settings;
 	freerdp_peer* client = (freerdp_peer*) arg;
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
 
-	xfp = (xrdpProcess*) client->context;
+	session = (xrdpSession*) client->context;
 	settings = client->settings;
 
 	xrdp_generate_certificate(settings);
@@ -301,12 +324,14 @@ void* xrdp_process_main_thread(void* arg)
 
 	client->Initialize(client);
 
-	xfp->session->callback = callback;
+	session->callback = callback;
 	xrdp_input_register_callbacks(client->input);
+
+	client->update->SurfaceFrameAcknowledge = xrdp_update_frame_acknowledge;
 
 	ClientEvent = client->GetEventHandle(client);
 	GlobalTermEvent = g_get_term_event();
-	LocalTermEvent = xfp->TermEvent;
+	LocalTermEvent = session->TermEvent;
 
 	while (1)
 	{
@@ -317,7 +342,7 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			xrdp_wm_get_event_handles(xfp->wm, events, &nCount);
+			xrdp_wm_get_event_handles(session->wm, events, &nCount);
 		}
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
@@ -343,7 +368,7 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			if (xrdp_wm_check_wait_objs(xfp->wm) != 0)
+			if (xrdp_wm_check_wait_objs(session->wm) != 0)
 			{
 				break;
 			}
