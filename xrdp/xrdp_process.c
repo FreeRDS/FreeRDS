@@ -35,6 +35,8 @@
 
 #include "makecert.h"
 
+#include "xrdp_channels.h"
+
 void xrdp_peer_context_new(freerdp_peer* client, xrdpSession* context)
 {
 	rdpSettings* settings = client->settings;
@@ -45,13 +47,15 @@ void xrdp_peer_context_new(freerdp_peer* client, xrdpSession* context)
 	settings->FrameMarkerCommandEnabled = TRUE;
 
 	libxrdp_session_init(context, settings);
-
 	context->client = client;
+
+	context->vcm = WTSCreateVirtualChannelManager(client);
 }
 
 void xrdp_peer_context_free(freerdp_peer* client, xrdpSession* context)
 {
-
+	libxrdp_session_uninit(context);
+	WTSDestroyVirtualChannelManager(context->vcm);
 }
 
 xrdpSession* xrdp_process_create(freerdp_peer* client)
@@ -99,15 +103,14 @@ BOOL xrdp_peer_capabilities(freerdp_peer* client)
 
 BOOL xrdp_peer_post_connect(freerdp_peer* client)
 {
-	int i;
-	xrdpSession* xfp;
 	UINT32 ColorDepth;
 	UINT32 DesktopWidth;
 	UINT32 DesktopHeight;
 	rdpSettings* settings;
+	xrdpSession* session;
 
 	settings = client->settings;
-	xfp = (xrdpSession*) client->context;
+	session = (xrdpSession*) client->context;
 
 	fprintf(stderr, "Client %s is connected", client->hostname);
 
@@ -146,13 +149,7 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 		return TRUE;
 	}
 
-	for (i = 0; i < settings->ChannelCount; i++)
-	{
-		if (settings->ChannelDefArray[i].joined)
-		{
-			printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
-		}
-	}
+	xrdp_channels_post_connect(session);
 
 	return TRUE;
 }
@@ -291,8 +288,6 @@ void xrdp_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
 		ListDictionary_Remove(session->FrameList, (void*) (size_t) frameId);
 		free(frame);
 	}
-
-	printf("FrameAck: %d\n", frameId);
 }
 
 void* xrdp_process_main_thread(void* arg)

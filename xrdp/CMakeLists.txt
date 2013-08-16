@@ -30,6 +30,8 @@ set(${MODULE_PREFIX}_SRCS
 	funcs.c
 	lang.c
 	xrdp.c
+	xrdp_channels.c
+	xrdp_channels.h
 	xrdp_auth.c
 	xrdp_bitmap.c
 	xrdp_listener.c
@@ -59,6 +61,8 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE freerdp
 	MODULES freerdp-core)
+	
+list(APPEND ${MODULE_PREFIX}_LIBS freerdp-server)
 
 list(APPEND ${MODULE_PREFIX}_LIBS ${PIXMAN_LIBRARIES})
 

@@ -25,6 +25,9 @@
 #include <freerdp/codec/rfx.h>
 #include <freerdp/codec/nsc.h>
 
+#include <freerdp/channels/wtsvc.h>
+#include <freerdp/server/cliprdr.h>
+
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
@@ -146,6 +149,9 @@ struct xrdp_session
 
 	UINT32 frameId;
 	wListDictionary* FrameList;
+
+	WTSVirtualChannelManager* vcm;
+	CliprdrServerContext* cliprdr;
 };
 
 FREERDP_API int libxrdp_session_init(xrdpSession* session, rdpSettings* settings);

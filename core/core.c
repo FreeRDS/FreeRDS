@@ -65,7 +65,7 @@ int libxrdp_session_init(xrdpSession* session, rdpSettings* settings)
 	session->bts = Stream_New(NULL, 16384);
 
 	session->rfx_s = Stream_New(NULL, 16384);
-	session->rfx_context = rfx_context_new();
+	session->rfx_context = rfx_context_new(TRUE);
 
 	session->rfx_context->mode = RLGR3;
 	session->rfx_context->width = settings->DesktopWidth;
@@ -110,13 +110,13 @@ void libxrdp_session_uninit(xrdpSession* session)
 
 int libxrdp_send_palette(xrdpSession* session, int* palette)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
 int libxrdp_send_bell(xrdpSession* session)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
@@ -140,7 +140,7 @@ int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_REC
 	BITMAP_UPDATE bitmapUpdate;
 	rdpUpdate* update = session->client->update;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	MaxRegionWidth = 64 * 4;
 	MaxRegionHeight = 64 * 1;
@@ -279,7 +279,7 @@ int libxrdp_set_pointer(xrdpSession* session, XRDP_MSG_SET_POINTER* msg)
 	POINTER_CACHED_UPDATE pointerCached;
 	rdpPointerUpdate* pointer = session->client->update->pointer;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	pointerColor = &(pointerNew.colorPtrAttr);
 
@@ -361,7 +361,7 @@ int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
 	SCRBLT_ORDER scrblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	scrblt.nLeftRect = x;
 	scrblt.nTopRect = y;
@@ -385,7 +385,7 @@ int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 	PATBLT_ORDER patblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	patblt.nLeftRect = x;
 	patblt.nTopRect = y;
@@ -415,7 +415,7 @@ int libxrdp_orders_dest_blt(xrdpSession* session,
 	DSTBLT_ORDER dstblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	dstblt.nLeftRect = x;
 	dstblt.nTopRect = y;
@@ -435,7 +435,7 @@ int libxrdp_orders_line(xrdpSession* session, XRDP_MSG_LINE_TO* msg, xrdpRect* r
 	LINE_TO_ORDER lineTo;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	lineTo.backMode = 1;
 	lineTo.nXStart = msg->nXStart;
@@ -462,8 +462,8 @@ int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
 	MEMBLT_ORDER memblt;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s id: %d index: %d width: %d height: %d\n",
-			__FUNCTION__, cache_id, cache_idx, cx, cy);
+	//printf("%s id: %d index: %d width: %d height: %d\n",
+	//		__FUNCTION__, cache_id, cache_idx, cx, cy);
 
 	memblt.nLeftRect = x;
 	memblt.nTopRect = y;
@@ -488,7 +488,7 @@ int libxrdp_orders_text(xrdpSession* session, XRDP_MSG_GLYPH_INDEX* msg, xrdpRec
 	GLYPH_INDEX_ORDER glyphIndex;
 	rdpPrimaryUpdate* primary = session->client->update->primary;
 
-	printf("%s: cacheId: %d\n", __FUNCTION__, msg->cacheId);
+	//printf("%s: cacheId: %d\n", __FUNCTION__, msg->cacheId);
 
 	glyphIndex.backColor = msg->backColor;
 	glyphIndex.foreColor = msg->foreColor;
@@ -523,7 +523,7 @@ int libxrdp_orders_send_palette(xrdpSession* session, int* palette, int cache_id
 	CACHE_COLOR_TABLE_ORDER cache_color_table;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	cache_color_table.cacheIndex = cache_id;
 	cache_color_table.numberColors = 256;
@@ -542,7 +542,7 @@ int libxrdp_orders_send_raw_bitmap(xrdpSession* session,
 	CACHE_BITMAP_ORDER cache_bitmap;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
+	//printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
 	cache_bitmap.bitmapBpp = bpp;
 	cache_bitmap.bitmapWidth = width;
@@ -570,7 +570,7 @@ int libxrdp_orders_send_bitmap(xrdpSession* session,
 	CACHE_BITMAP_ORDER cache_bitmap;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
+	//printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
 	e = width % 4;
 
@@ -605,8 +605,8 @@ int libxrdp_orders_send_font(xrdpSession* session, XRDP_MSG_CACHE_GLYPH* msg)
 {
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s: cacheId: %d cacheIndex: %d\n", __FUNCTION__,
-			msg->cacheId, msg->glyphData[0].cacheIndex);
+	//printf("%s: cacheId: %d cacheIndex: %d\n", __FUNCTION__,
+	//		msg->cacheId, msg->glyphData[0].cacheIndex);
 
 	if (secondary->glyph_v2)
 	{
@@ -647,7 +647,7 @@ int libxrdp_orders_send_font(xrdpSession* session, XRDP_MSG_CACHE_GLYPH* msg)
 
 int libxrdp_reset(xrdpSession* session, XRDP_MSG_RESET* msg)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	session->settings->DesktopWidth = msg->DesktopWidth;
 	session->settings->DesktopHeight = msg->DesktopHeight;
@@ -663,7 +663,7 @@ int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
+	//printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
 	cache_bitmap_v2.bitmapBpp = bpp;
 	cache_bitmap_v2.bitmapWidth = width;
@@ -693,8 +693,8 @@ int libxrdp_orders_send_bitmap2(xrdpSession* session,
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s id: %d index: %d width: %d height: %d\n",
-			__FUNCTION__, cache_id, cache_idx, width, height);
+	//printf("%s id: %d index: %d width: %d height: %d\n",
+	//		__FUNCTION__, cache_id, cache_idx, width, height);
 
 	e = width % 4;
 
@@ -737,7 +737,7 @@ int libxrdp_orders_send_bitmap3(xrdpSession* session,
 	CACHE_BITMAP_V3_ORDER cache_bitmap_v3;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	bitmapData = &(cache_bitmap_v3.bitmapData);
 
@@ -766,7 +766,7 @@ int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
 	CACHE_BRUSH_ORDER cache_brush;
 	rdpSecondaryUpdate* secondary = session->client->update->secondary;
 
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 
 	cache_brush.index = cache_id;
 	cache_brush.bpp = bpp;
@@ -789,7 +789,7 @@ int libxrdp_orders_send_create_os_surface(xrdpSession* session, int id,
 	CREATE_OFFSCREEN_BITMAP_ORDER create_offscreen_bitmap;
 	rdpAltSecUpdate* altsec = session->client->update->altsec;
 
-	printf("%s: id: %d width: %d height: %d\n", __FUNCTION__, id, width, height);
+	//printf("%s: id: %d width: %d height: %d\n", __FUNCTION__, id, width, height);
 
 	create_offscreen_bitmap.id = id & 0x7FFF;
 	create_offscreen_bitmap.cx = width;
@@ -822,7 +822,7 @@ int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id)
 	SWITCH_SURFACE_ORDER switch_surface;
 	rdpAltSecUpdate* altsec = session->client->update->altsec;
 
-	printf("%s: id: %d\n", __FUNCTION__, id);
+	//printf("%s: id: %d\n", __FUNCTION__, id);
 
 	switch_surface.bitmapId = id & 0xFFFF;
 
@@ -864,8 +864,8 @@ int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT
 		scanline = bytesPerPixel * msg->nWidth;
 	}
 
-	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
-			bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+	//printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
+	//		bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
 	if (session->settings->RemoteFxCodec)
 	{
@@ -961,7 +961,7 @@ int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32
 	SURFACE_FRAME_MARKER surfaceFrameMarker;
 	rdpUpdate* update = session->client->update;
 
-	printf("%s: action: %d id: %d\n", __FUNCTION__, action, id);
+	//printf("%s: action: %d id: %d\n", __FUNCTION__, action, id);
 
 	surfaceFrameMarker.frameAction = action;
 	surfaceFrameMarker.frameId = id;
@@ -973,45 +973,45 @@ int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32
 
 int libxrdp_window_new_update(xrdpSession* session, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
 int libxrdp_window_delete(xrdpSession* session, XRDP_MSG_WINDOW_DELETE* msg)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
 int libxrdp_window_icon(xrdpSession* session, int window_id,
 		int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
 int libxrdp_window_cached_icon(xrdpSession* session, int window_id,
 		int cache_entry, int cache_id, int flags)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
 int libxrdp_notify_new_update(xrdpSession* session,
 		int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
 int libxrdp_notify_delete(xrdpSession* session, int window_id, int notify_id)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
 int libxrdp_monitored_desktop(xrdpSession* session, xrdpRailMonitoredDesktopOrder* mdo, int flags)
 {
-	printf("%s\n", __FUNCTION__);
+	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
