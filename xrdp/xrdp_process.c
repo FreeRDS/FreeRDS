@@ -296,6 +296,7 @@ void* xrdp_process_main_thread(void* arg)
 	DWORD nCount;
 	HANDLE events[32];
 	HANDLE ClientEvent;
+	HANDLE ChannelEvent;
 	HANDLE LocalTermEvent;
 	HANDLE GlobalTermEvent;
 	xrdpSession* session;
@@ -325,6 +326,8 @@ void* xrdp_process_main_thread(void* arg)
 	client->update->SurfaceFrameAcknowledge = xrdp_update_frame_acknowledge;
 
 	ClientEvent = client->GetEventHandle(client);
+	ChannelEvent = WTSVirtualChannelManagerGetEventHandle(session->vcm);
+
 	GlobalTermEvent = g_get_term_event();
 	LocalTermEvent = session->TermEvent;
 
@@ -332,6 +335,7 @@ void* xrdp_process_main_thread(void* arg)
 	{
 		nCount = 0;
 		events[nCount++] = ClientEvent;
+		events[nCount++] = ChannelEvent;
 		events[nCount++] = GlobalTermEvent;
 		events[nCount++] = LocalTermEvent;
 
@@ -357,6 +361,15 @@ void* xrdp_process_main_thread(void* arg)
 			if (client->CheckFileDescriptor(client) != TRUE)
 			{
 				fprintf(stderr, "Failed to check freerdp file descriptor\n");
+				break;
+			}
+		}
+
+		if (WaitForSingleObject(ChannelEvent, 0) == WAIT_OBJECT_0)
+		{
+			if (WTSVirtualChannelManagerCheckFileDescriptor(session->vcm) != TRUE)
+			{
+				fprintf(stderr, "WTSVirtualChannelManagerCheckFileDescriptor failure\n");
 				break;
 			}
 		}
