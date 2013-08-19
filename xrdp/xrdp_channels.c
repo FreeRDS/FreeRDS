@@ -44,6 +44,18 @@ int xrdp_channels_post_connect(xrdpSession* session)
 				session->rdpdr = rdpdr_server_context_new(session->vcm);
 				session->rdpdr->Start(session->rdpdr);
 			}
+			else if (strncmp(settings->ChannelDefArray[i].Name, "rdpsnd", 6) == 0)
+			{
+				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
+				session->rdpsnd = rdpsnd_server_context_new(session->vcm);
+				session->rdpsnd->Start(session->rdpsnd);
+			}
+			else if (strncmp(settings->ChannelDefArray[i].Name, "drdynvc", 7) == 0)
+			{
+				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
+				session->drdynvc = drdynvc_server_context_new(session->vcm);
+				session->drdynvc->Start(session->drdynvc);
+			}
 			else
 			{
 				printf("Channel %s not registered\n", settings->ChannelDefArray[i].Name);
