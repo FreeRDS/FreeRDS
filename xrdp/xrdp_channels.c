@@ -35,9 +35,14 @@ int xrdp_channels_post_connect(xrdpSession* session)
 			if (strncmp(settings->ChannelDefArray[i].Name, "cliprdr", 7) == 0)
 			{
 				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
-
 				session->cliprdr = cliprdr_server_context_new(session->vcm);
 				session->cliprdr->Start(session->cliprdr);
+			}
+			else if (strncmp(settings->ChannelDefArray[i].Name, "rdpdr", 5) == 0)
+			{
+				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
+				session->rdpdr = rdpdr_server_context_new(session->vcm);
+				session->rdpdr->Start(session->rdpdr);
 			}
 			else
 			{

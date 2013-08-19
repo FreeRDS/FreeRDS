@@ -27,6 +27,7 @@
 
 #include <freerdp/channels/wtsvc.h>
 #include <freerdp/server/cliprdr.h>
+#include <freerdp/server/rdpdr.h>
 
 #include <winpr/crt.h>
 #include <winpr/stream.h>
@@ -152,6 +153,7 @@ struct xrdp_session
 
 	WTSVirtualChannelManager* vcm;
 	CliprdrServerContext* cliprdr;
+	RdpdrServerContext* rdpdr;
 };
 
 FREERDP_API int libxrdp_session_init(xrdpSession* session, rdpSettings* settings);
