@@ -32,6 +32,7 @@ int xrdp_channels_post_connect(xrdpSession* session)
 	{
 		if (settings->ChannelDefArray[i].joined)
 		{
+#if 0
 			if (strncmp(settings->ChannelDefArray[i].Name, "cliprdr", 7) == 0)
 			{
 				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
@@ -57,6 +58,7 @@ int xrdp_channels_post_connect(xrdpSession* session)
 				session->drdynvc->Start(session->drdynvc);
 			}
 			else
+#endif
 			{
 				printf("Channel %s not registered\n", settings->ChannelDefArray[i].Name);
 			}
