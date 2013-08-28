@@ -19,12 +19,12 @@ set(MODULE_NAME "${XRDP_NG_MODULE}")
 set(MODULE_PREFIX "FREERDP_XRDP")
 
 include_directories(".")
-include_directories("../xup")
-include_directories("../freerdp")
-include_directories("../common")
-include_directories("../../../winpr/tools/makecert")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../xup")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../freerdp")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common")
+include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
-include_directories("../core")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../core")
 
 set(${MODULE_PREFIX}_SRCS
 	funcs.c
