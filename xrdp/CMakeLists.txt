@@ -27,7 +27,6 @@ include_directories("../../../winpr/tools/makecert")
 include_directories("../core")
 
 set(${MODULE_PREFIX}_SRCS
-	funcs.c
 	lang.c
 	xrdp.c
 	xrdp_channels.c

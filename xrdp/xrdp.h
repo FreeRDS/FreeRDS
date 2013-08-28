@@ -294,16 +294,7 @@ int xrdp_region_get_rect(xrdpRegion* self, int index, xrdpRect* rect);
 
 /* xrdp_bitmap.c */
 xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm* wm);
-xrdpBitmap* xrdp_bitmap_create_with_data(int width, int height, int bpp, char* data, xrdpWm* wm);
 void xrdp_bitmap_delete(xrdpBitmap* self);
-int xrdp_bitmap_copy_box(xrdpBitmap* self, xrdpBitmap* dest, int x, int y, int cx, int cy);
-int xrdp_bitmap_compare(xrdpBitmap* self, xrdpBitmap* b);
-
-/* funcs.c */
-int rect_contains_pt(xrdpRect* in, int x, int y);
-int rect_intersect(xrdpRect* in1, xrdpRect* in2, xrdpRect* out);
-int rect_contained_by(xrdpRect* in1, int left, int top, int right, int bottom);
-int check_bounds(xrdpBitmap* b, int* x, int* y, int* cx, int* cy);
 
 /* in lang.c */
 struct xrdp_key_info* get_key_info_from_scan_code(int device_flags, int scan_code, int* keys,
