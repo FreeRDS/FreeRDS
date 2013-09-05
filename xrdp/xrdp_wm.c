@@ -39,7 +39,6 @@ xrdpWm* xrdp_wm_create(xrdpSession* owner)
 	self->log = list_create();
 	self->log->auto_free = 1;
 	self->mm = xrdp_mm_create(self);
-	get_keymaps(settings->KeyboardLayout, &(self->keymap));
 	xrdp_wm_init(self);
 
 	return self;

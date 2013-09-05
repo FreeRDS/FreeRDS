@@ -294,11 +294,6 @@ int xrdp_region_get_rect(xrdpRegion* self, int index, xrdpRect* rect);
 xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm* wm);
 void xrdp_bitmap_delete(xrdpBitmap* self);
 
-/* in lang.c */
-struct xrdp_key_info* get_key_info_from_scan_code(int device_flags, int scan_code, int* keys,
-		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap* keymap);
-int get_keymaps(int keylayout, xrdpKeymap* keymap);
-
 /* xrdp_bitmap_compress.c */
 int xrdp_bitmap_compress(char* in_data, int width, int height,
 		wStream* s, int bpp, int byte_limit,

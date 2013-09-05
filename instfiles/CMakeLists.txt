@@ -20,15 +20,5 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp.sh.in ${CMAKE_CURRENT_SOURCE_DIR
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng.service.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng.service)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng-sesman.service.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng-sesman.service)
 
-set(${MODULE_PREFIX}_CFG_DATA
-	km-0407.ini
-	km-0409.ini
-	km-040c.ini
-	km-0410.ini
-	km-0419.ini
-	km-041d.ini
-	km-0816.ini)
-
-install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${XRDP_CFG_PATH})
 install(PROGRAMS "xrdp.sh" DESTINATION ${XRDP_CFG_PATH})
 

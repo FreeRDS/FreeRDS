@@ -27,7 +27,6 @@ include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../core")
 
 set(${MODULE_PREFIX}_SRCS
-	lang.c
 	xrdp.c
 	xrdp_channels.c
 	xrdp_channels.h
