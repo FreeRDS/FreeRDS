@@ -516,6 +516,22 @@ static int rdpup_process_msg(wStream* s, int type)
 				break;
 		}
 	}
+	else if (type == XRDP_CLIENT_SCANCODE_KEYBOARD_EVENT)
+	{
+		XRDP_MSG_SCANCODE_KEYBOARD_EVENT msg;
+
+		xrdp_read_scancode_keyboard_event(s, &msg);
+
+		KbdAddScancodeEvent(msg.flags, msg.code);
+	}
+	else if (type == XRDP_CLIENT_UNICODE_KEYBOARD_EVENT)
+	{
+		XRDP_MSG_UNICODE_KEYBOARD_EVENT msg;
+
+		xrdp_read_unicode_keyboard_event(s, &msg);
+
+		KbdAddUnicodeEvent(msg.flags, msg.code);
+	}
 	else if (type == XRDP_CLIENT_CAPABILITIES)
 	{
 		rdpup_process_capabilities_msg(s);

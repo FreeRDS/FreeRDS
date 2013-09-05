@@ -113,6 +113,54 @@ int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg)
 	return 0;
 }
 
+int xrdp_read_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg)
+{
+	Stream_Read_UINT32(s, msg->flags);
+	Stream_Read_UINT32(s, msg->code);
+
+	return 0;
+}
+
+int xrdp_write_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 8;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->flags);
+	Stream_Write_UINT32(s, msg->code);
+
+	return 0;
+}
+
+int xrdp_read_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVENT* msg)
+{
+	Stream_Read_UINT32(s, msg->flags);
+	Stream_Read_UINT32(s, msg->code);
+
+	return 0;
+}
+
+int xrdp_write_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVENT* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 8;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->flags);
+	Stream_Write_UINT32(s, msg->code);
+
+	return 0;
+}
+
 int xrdp_read_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg)
 {
 	Stream_Read_UINT32(s, msg->DesktopWidth);

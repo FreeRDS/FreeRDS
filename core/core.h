@@ -128,13 +128,10 @@ struct xrdp_session
 {
 	rdpContext context;
 
+	long id;
 	void* wm;
 	HANDLE Thread;
 	HANDLE TermEvent;
-
-	long id;
-	int (*callback)(long id, int msg, long param1, long param2, long param3, long param4);
-
 	freerdp_peer* client;
 	rdpSettings* settings;
 

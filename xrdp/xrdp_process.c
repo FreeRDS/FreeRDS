@@ -241,14 +241,35 @@ void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
+	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
 
 	if (session->wm)
-		xrdp_wm_key(session->wm, flags, code);
+	{
+		if (mod)
+		{
+			if (mod->client->ScancodeKeyboardEvent)
+			{
+				mod->client->ScancodeKeyboardEvent(mod, flags, code);
+			}
+		}
+	}
 }
 
 void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
+	xrdpSession* session = (xrdpSession*) input->context;
+	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
 
+	if (session->wm)
+	{
+		if (mod)
+		{
+			if (mod->client->UnicodeKeyboardEvent)
+			{
+				mod->client->UnicodeKeyboardEvent(mod, flags, code);
+			}
+		}
+	}
 }
 
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
@@ -320,7 +341,6 @@ void* xrdp_process_main_thread(void* arg)
 
 	client->Initialize(client);
 
-	session->callback = callback;
 	xrdp_input_register_callbacks(client->input);
 
 	client->update->SurfaceFrameAcknowledge = xrdp_update_frame_acknowledge;

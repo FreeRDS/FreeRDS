@@ -89,6 +89,8 @@ int xrdp_write_common_header(wStream* s, XRDP_MSG_COMMON* msg);
 #define XRDP_CLIENT_EVENT			101
 #define XRDP_CLIENT_CAPABILITIES		102
 #define XRDP_CLIENT_REFRESH_RECT		103
+#define XRDP_CLIENT_SCANCODE_KEYBOARD_EVENT	104
+#define XRDP_CLIENT_UNICODE_KEYBOARD_EVENT	105
 
 struct _XRDP_MSG_EVENT
 {
@@ -101,6 +103,24 @@ struct _XRDP_MSG_EVENT
 	UINT32 param4;
 };
 typedef struct _XRDP_MSG_EVENT XRDP_MSG_EVENT;
+
+struct _XRDP_MSG_SCANCODE_KEYBOARD_EVENT
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 flags;
+	UINT32 code;
+};
+typedef struct _XRDP_MSG_SCANCODE_KEYBOARD_EVENT XRDP_MSG_SCANCODE_KEYBOARD_EVENT;
+
+struct _XRDP_MSG_UNICODE_KEYBOARD_EVENT
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 flags;
+	UINT32 code;
+};
+typedef struct _XRDP_MSG_UNICODE_KEYBOARD_EVENT XRDP_MSG_UNICODE_KEYBOARD_EVENT;
 
 struct _XRDP_MSG_CAPABILITIES
 {
@@ -129,6 +149,12 @@ typedef struct _XRDP_MSG_REFRESH_RECT XRDP_MSG_REFRESH_RECT;
 
 int xrdp_read_event(wStream* s, XRDP_MSG_EVENT* msg);
 int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg);
+
+int xrdp_read_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg);
+int xrdp_write_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg);
+
+int xrdp_read_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVENT* msg);
+int xrdp_write_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVENT* msg);
 
 int xrdp_read_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg);
 int xrdp_write_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg);

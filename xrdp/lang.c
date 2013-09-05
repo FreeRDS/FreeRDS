@@ -115,40 +115,6 @@ xrdpKeyInfo* get_key_info_from_scan_code(int device_flags, int scan_code, int *k
 	return rv;
 }
 
-int get_keysym_from_scan_code(int device_flags, int scan_code, int *keys,
-		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap *keymap)
-{
-	xrdpKeyInfo *ki;
-
-	ki = get_key_info_from_scan_code(device_flags, scan_code, keys,
-			caps_lock, num_lock, scroll_lock,
-			keymap);
-
-	if (ki == 0)
-	{
-		return 0;
-	}
-
-	return ki->sym;
-}
-
-wchar_t get_char_from_scan_code(int device_flags, int scan_code, int *keys,
-		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap *keymap)
-{
-	xrdpKeyInfo *ki;
-
-	ki = get_key_info_from_scan_code(device_flags, scan_code, keys,
-			caps_lock, num_lock, scroll_lock,
-			keymap);
-
-	if (ki == 0)
-	{
-		return 0;
-	}
-
-	return (wchar_t)(ki->chr);
-}
-
 static int km_read_section(int fd, const char *section_name, xrdpKeyInfo *keymap)
 {
 	xrdpList *names;

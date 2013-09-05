@@ -44,6 +44,8 @@ keyboard and mouse stuff
 #include "input.h"
 #include "inpututils.h"
 
+#include <winpr/input.h>
+
 #if 1
 #define DEBUG_OUT_INPUT(arg)
 #else
@@ -793,6 +795,25 @@ void sendDownUpKeyEvent(int type, int x_scancode)
 	{
 		rdpEnqueueKey(KeyRelease, x_scancode);
 	}
+}
+
+void KbdAddScancodeEvent(DWORD flags, DWORD scancode)
+{
+	int type;
+	int keycode;
+	DWORD vkcode;
+
+	type = (flags & KBD_FLAGS_DOWN) ? KeyPress : KeyRelease;
+
+	vkcode = GetVirtualKeyCodeFromVirtualScanCode(scancode, 4);
+	keycode = GetKeycodeFromVirtualKeyCode(vkcode, KEYCODE_TYPE_EVDEV);
+
+	rdpEnqueueKey(type, keycode);
+}
+
+void KbdAddUnicodeEvent(DWORD flags, DWORD code)
+{
+	/* TODO: unicode input */
 }
 
 /**

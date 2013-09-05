@@ -263,10 +263,8 @@ int xrdp_wm_init(xrdpWm* self);
 int xrdp_wm_mouse_move(xrdpWm* self, int x, int y);
 int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int but, int down);
 int xrdp_wm_process_input_mouse(xrdpWm *self, int device_flags, int x, int y);
-int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code);
 int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
 int xrdp_wm_pointer(xrdpWm* self, XRDP_MSG_SET_POINTER* msg);
-int callback(long id, int msg, long param1, long param2, long param3, long param4);
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount);
 int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
@@ -298,10 +296,6 @@ void xrdp_bitmap_delete(xrdpBitmap* self);
 
 /* in lang.c */
 struct xrdp_key_info* get_key_info_from_scan_code(int device_flags, int scan_code, int* keys,
-		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap* keymap);
-int get_keysym_from_scan_code(int device_flags, int scan_code, int* keys,
-		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap* keymap);
-wchar_t get_char_from_scan_code(int device_flags, int scan_code, int* keys,
 		int caps_lock, int num_lock, int scroll_lock, xrdpKeymap* keymap);
 int get_keymaps(int keylayout, xrdpKeymap* keymap);
 
@@ -344,6 +338,8 @@ int xrdp_message_server_module_init(xrdpModule* mod);
 typedef int (*pXrdpClientStart)(xrdpModule* mod, int width, int height, int bpp);
 typedef int (*pXrdpClientConnect)(xrdpModule* mod);
 typedef int (*pXrdpClientEvent)(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4);
+typedef int (*pXrdpClientScancodeKeyboardEvent)(xrdpModule* mod, DWORD flags, DWORD code);
+typedef int (*pXrdpClientUnicodeKeyboardEvent)(xrdpModule* mod, DWORD flags, DWORD code);
 typedef int (*pXrdpClientEnd)(xrdpModule* mod);
 typedef int (*pXrdpClientSetParam)(xrdpModule* mod, char* name, char* value);
 typedef int (*pXrdpClientSessionChange)(xrdpModule* mod, int width, int height);
@@ -355,6 +351,8 @@ struct xrdp_client_module
 	pXrdpClientStart Start;
 	pXrdpClientConnect Connect;
 	pXrdpClientEvent Event;
+	pXrdpClientScancodeKeyboardEvent ScancodeKeyboardEvent;
+	pXrdpClientUnicodeKeyboardEvent UnicodeKeyboardEvent;
 	pXrdpClientEnd End;
 	pXrdpClientSetParam SetParam;
 	pXrdpClientSessionChange SessionChange;

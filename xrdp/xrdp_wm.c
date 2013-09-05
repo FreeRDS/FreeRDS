@@ -299,56 +299,6 @@ int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int button, int down)
 	return 0;
 }
 
-int xrdp_wm_key(xrdpWm* self, int device_flags, int scan_code)
-{
-	int msg;
-	xrdpKeyInfo *ki;
-
-	/*g_printf("count %d\n", self->key_down_list->count);*/
-	scan_code = scan_code % 128;
-
-	if (device_flags & KBD_FLAGS_RELEASE) /* 0x8000 */
-	{
-		self->keys[scan_code] = 0;
-		msg = WM_XRDP_KEYUP;
-	}
-	else /* key down */
-	{
-		self->keys[scan_code] = 1 | device_flags;
-		msg = WM_XRDP_KEYDOWN;
-
-		switch (scan_code)
-		{
-			case 58:
-				self->caps_lock = !self->caps_lock;
-				break; /* caps lock */
-			case 69:
-				self->num_lock = !self->num_lock;
-				break; /* num lock */
-			case 70:
-				self->scroll_lock = !self->scroll_lock;
-				break; /* scroll lock */
-		}
-	}
-
-	if (self->mm->mod != 0)
-	{
-		if (self->mm->mod->client->Event != 0)
-		{
-			ki = get_key_info_from_scan_code(device_flags, scan_code, self->keys, self->caps_lock,
-							self->num_lock, self->scroll_lock, &(self->keymap));
-
-			if (ki != 0)
-			{
-				self->mm->mod->client->Event(self->mm->mod, msg, ki->chr, ki->sym,
-						scan_code, device_flags);
-			}
-		}
-	}
-
-	return 0;
-}
-
 /* happens when client gets focus and sends key modifier info */
 int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags)
 {
@@ -439,43 +389,6 @@ int xrdp_wm_process_input_mouse(xrdpWm* self, int device_flags, int x, int y)
 	}
 
 	return 0;
-}
-
-/* this is the callbacks coming from libxrdp.so */
-int callback(long id, int msg, long param1, long param2, long param3, long param4)
-{
-	int rv;
-	xrdpWm *wm;
-
-	if (!id)
-	{
-		/* "id" should be "xrdpSession*" as long */
-		return 0;
-	}
-
-	wm = xrdp_process_get_wm((xrdpSession*) id);
-
-	if (!wm)
-		return 0;
-
-	rv = 0;
-
-	switch (msg)
-	{
-		case 0: /* RDP_INPUT_SYNCHRONIZE */
-			rv = xrdp_wm_key_sync(wm, param3, param1);
-			break;
-
-		case 4: /* RDP_INPUT_SCANCODE */
-			rv = xrdp_wm_key(wm, param3, param1);
-			break;
-
-		case 0x8001: /* RDP_INPUT_MOUSE */
-			rv = xrdp_wm_process_input_mouse(wm, param3, param1, param2);
-			break;
-	}
-
-	return rv;
 }
 
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount)

@@ -407,6 +407,54 @@ int x11rdp_xrdp_client_event(xrdpModule* mod, int subtype, long param1, long par
 	return status;
 }
 
+int x11rdp_xrdp_client_scancode_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code)
+{
+	int length;
+	int status;
+	wStream* s;
+	XRDP_MSG_SCANCODE_KEYBOARD_EVENT msg;
+
+	msg.msgFlags = 0;
+	msg.type = XRDP_CLIENT_SCANCODE_KEYBOARD_EVENT;
+
+	msg.flags = flags;
+	msg.code = code;
+
+	s = mod->SendStream;
+	Stream_SetPosition(s, 0);
+
+	length = xrdp_write_scancode_keyboard_event(NULL, &msg);
+	xrdp_write_scancode_keyboard_event(s, &msg);
+
+	status = lib_send_all(mod, Stream_Buffer(s), length);
+
+	return status;
+}
+
+int x11rdp_xrdp_client_unicode_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code)
+{
+	int length;
+	int status;
+	wStream* s;
+	XRDP_MSG_UNICODE_KEYBOARD_EVENT msg;
+
+	msg.msgFlags = 0;
+	msg.type = XRDP_CLIENT_UNICODE_KEYBOARD_EVENT;
+
+	msg.flags = flags;
+	msg.code = code;
+
+	s = mod->SendStream;
+	Stream_SetPosition(s, 0);
+
+	length = xrdp_write_unicode_keyboard_event(NULL, &msg);
+	xrdp_write_unicode_keyboard_event(s, &msg);
+
+	status = lib_send_all(mod, Stream_Buffer(s), length);
+
+	return status;
+}
+
 int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 {
 	int status = 0;
@@ -781,6 +829,8 @@ int xup_module_init(xrdpModule* mod)
 		client->Connect = x11rdp_xrdp_client_connect;
 		client->Start = x11rdp_xrdp_client_start;
 		client->Event = x11rdp_xrdp_client_event;
+		client->ScancodeKeyboardEvent = x11rdp_xrdp_client_scancode_keyboard_event;
+		client->UnicodeKeyboardEvent = x11rdp_xrdp_client_unicode_keyboard_event;
 		client->End = x11rdp_xrdp_client_end;
 		client->SetParam = x11rdp_xrdp_client_set_param;
 		client->GetEventHandles = x11rdp_xrdp_client_get_event_handles;
