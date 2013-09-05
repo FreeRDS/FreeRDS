@@ -20,7 +20,6 @@ set(MODULE_PREFIX "FREERDP_XRDP")
 
 include_directories(".")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../xup")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../freerdp")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common")
 include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
@@ -47,7 +46,6 @@ add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-core)
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-xup)
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-freerdp)
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS

@@ -30,7 +30,6 @@
 #endif
 
 #include "xup.h"
-#include "xrdp-freerdp.h"
 
 xrdpMm* xrdp_mm_create(xrdpWm *owner)
 {
@@ -119,8 +118,6 @@ int xrdp_mm_get_value(xrdpMm* self, char *aname, char *dest, int dest_len)
 
 int xrdp_mm_setup_mod1(xrdpMm* self)
 {
-	int client_module = 0;
-
 	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod1");
 
 	if (!self)
@@ -128,18 +125,9 @@ int xrdp_mm_setup_mod1(xrdpMm* self)
 
 	if (self->mod_handle == 0)
 	{
-		if (!client_module)
-		{
-			self->ModuleInit = xup_module_init;
-			self->ModuleExit = xup_module_exit;
-			self->mod_handle = 1;
-		}
-		else
-		{
-			self->ModuleInit = freerdp_client_module_init;
-			self->ModuleExit = freerdp_client_module_exit;
-			self->mod_handle = 1;
-		}
+		self->ModuleInit = xup_module_init;
+		self->ModuleExit = xup_module_exit;
+		self->mod_handle = 1;
 
 		if ((self->ModuleInit != 0) && (self->ModuleExit != 0))
 		{

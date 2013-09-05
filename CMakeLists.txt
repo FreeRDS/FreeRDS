@@ -107,7 +107,6 @@ add_subdirectory(libxrdp)
 
 add_subdirectory(common)
 add_subdirectory(core)
-add_subdirectory(freerdp)
 add_subdirectory(sesman)
 add_subdirectory(xup)
 add_subdirectory(xrdp)
