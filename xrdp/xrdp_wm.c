@@ -23,7 +23,6 @@
 
 xrdpWm* xrdp_wm_create(xrdpSession* owner)
 {
-	int pid = 0;
 	rdpSettings* settings;
 	xrdpWm* self = (xrdpWm*) NULL;
 
@@ -31,10 +30,6 @@ xrdpWm* xrdp_wm_create(xrdpSession* owner)
 	self->pro_layer = owner;
 	self->session = xrdp_process_get_session(owner);
 	settings = self->session->settings;
-
-	self->screen = xrdp_bitmap_create(settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth, WND_TYPE_SCREEN, self);
-	self->screen->wm = self;
-	pid = g_getpid();
 
 	self->log = list_create();
 	self->log->auto_free = 1;
@@ -50,7 +45,6 @@ void xrdp_wm_delete(xrdpWm* self)
 		return;
 
 	xrdp_mm_delete(self->mm);
-	xrdp_bitmap_delete(self->screen);
 	list_delete(self->log);
 
 	free(self);
@@ -128,7 +122,6 @@ int xrdp_wm_init(xrdpWm* self)
 	char autorun_name[256];
 
 	xrdp_wm_load_static_colors_plus(self, autorun_name);
-	self->screen->bg_color = 0;
 
 	if (self->session->settings->AutoLogonEnabled && (autorun_name[0] != 0))
 	{
@@ -220,8 +213,12 @@ int xrdp_wm_init(xrdpWm* self)
 
 int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 {
+	rdpSettings* settings;
+
 	if (!self)
 		return 0;
+
+	settings = self->session->settings;
 
 	if (x < 0)
 		x = 0;
@@ -229,11 +226,11 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 	if (y < 0)
 		y = 0;
 
-	if (x >= self->screen->width)
-		x = self->screen->width;
+	if (x >= settings->DesktopWidth)
+		x = settings->DesktopWidth;
 
-	if (y >= self->screen->height)
-		y = self->screen->height;
+	if (y >= settings->DesktopHeight)
+		y = settings->DesktopHeight;
 
 	if (self->mm->mod)
 	{
@@ -248,10 +245,13 @@ int xrdp_wm_mouse_move(xrdpWm* self, int x, int y)
 
 int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int button, int down)
 {
+	rdpSettings* settings;
 	pXrdpClientEvent ClientEvent = NULL;
 
 	if (!self)
 		return 0;
+
+	settings = self->session->settings;
 
 	if (x < 0)
 		x = 0;
@@ -259,11 +259,11 @@ int xrdp_wm_mouse_click(xrdpWm* self, int x, int y, int button, int down)
 	if (y < 0)
 		y = 0;
 
-	if (x >= self->screen->width)
-		x = self->screen->width;
+	if (x >= settings->DesktopWidth)
+		x = settings->DesktopWidth;
 
-	if (y >= self->screen->height)
-		y = self->screen->height;
+	if (y >= settings->DesktopHeight)
+		y = settings->DesktopHeight;
 
 	if (self->mm->mod)
 	{

@@ -40,11 +40,13 @@ int xrdp_mm_send_login(xrdpMm* self)
 	char *password;
 	char *name;
 	char *value;
+	rdpSettings* settings;
 
 	username = 0;
 	password = 0;
 	xserverbpp = 0;
 	count = self->login_names->count;
+	settings = self->wm->session->settings;
 
 	for (index = 0; index < count; index++)
 	{
@@ -81,8 +83,8 @@ int xrdp_mm_send_login(xrdpMm* self)
 
 	Stream_Write_UINT16(s, index);
 	Stream_Write(s, password, index);
-	Stream_Write_UINT16(s, self->wm->screen->width);
-	Stream_Write_UINT16(s, self->wm->screen->height);
+	Stream_Write_UINT16(s, settings->DesktopWidth);
+	Stream_Write_UINT16(s, settings->DesktopHeight);
 
 	if (xserverbpp > 0)
 	{
@@ -90,15 +92,15 @@ int xrdp_mm_send_login(xrdpMm* self)
 	}
 	else
 	{
-		Stream_Write_UINT16(s, self->wm->screen->bpp);
+		Stream_Write_UINT16(s, settings->ColorDepth);
 	}
 
 	/* send domain */
-	if (self->wm->session->settings->Domain)
+	if (settings->Domain)
 	{
-		index = g_strlen(self->wm->session->settings->Domain);
+		index = g_strlen(settings->Domain);
 		Stream_Write_UINT16(s, index);
-		Stream_Write(s, self->wm->session->settings->Domain, index);
+		Stream_Write(s, settings->Domain, index);
 	}
 	else
 	{
@@ -106,19 +108,19 @@ int xrdp_mm_send_login(xrdpMm* self)
 	}
 
 	/* send program / shell */
-	index = g_strlen(self->wm->session->settings->AlternateShell);
+	index = g_strlen(settings->AlternateShell);
 	Stream_Write_UINT16(s, index);
-	Stream_Write(s, self->wm->session->settings->AlternateShell, index);
+	Stream_Write(s, settings->AlternateShell, index);
 
 	/* send directory */
-	index = g_strlen(self->wm->session->settings->ShellWorkingDirectory);
+	index = g_strlen(settings->ShellWorkingDirectory);
 	Stream_Write_UINT16(s, index);
-	Stream_Write(s, self->wm->session->settings->ShellWorkingDirectory, index);
+	Stream_Write(s, settings->ShellWorkingDirectory, index);
 
 	/* send client ip */
-	index = g_strlen(self->wm->session->settings->ClientAddress);
+	index = g_strlen(settings->ClientAddress);
 	Stream_Write_UINT16(s, index);
-	Stream_Write(s, self->wm->session->settings->ClientAddress, index);
+	Stream_Write(s, settings->ClientAddress, index);
 
 	index = (int) (s->pointer - s->buffer);
 	Stream_SetPosition(s, 0);

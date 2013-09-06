@@ -183,16 +183,19 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 	int key_flags;
 	int device_flags;
 	int use_uds;
+	rdpSettings* settings;
 
 	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod2");
 
 	rv = 1; /* failure */
 	g_memset(text, 0, sizeof(text));
 
+	settings = self->wm->session->settings;
+
 	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
 	{
-		if (self->mod->client->Start(self->mod, self->wm->screen->width,
-				self->wm->screen->height, self->wm->screen->bpp) != 0)
+		if (self->mod->client->Start(self->mod, settings->DesktopWidth,
+				settings->DesktopHeight, settings->ColorDepth) != 0)
 		{
 			SetEvent(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
 		}

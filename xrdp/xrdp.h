@@ -159,7 +159,6 @@ struct xrdp_keymap
 struct xrdp_wm
 {
 	xrdpSession* pro_layer; /* owner */
-	xrdpBitmap* screen;
 	xrdpSession* session;
 	/* keyboard info */
 	int keys[256]; /* key states 0 up 1 down*/
@@ -289,15 +288,6 @@ int xrdp_region_add_rect(xrdpRegion* self, xrdpRect* rect);
 int xrdp_region_insert_rect(xrdpRegion* self, int i, int left, int top, int right, int bottom);
 int xrdp_region_subtract_rect(xrdpRegion* self, xrdpRect* rect);
 int xrdp_region_get_rect(xrdpRegion* self, int index, xrdpRect* rect);
-
-/* xrdp_bitmap.c */
-xrdpBitmap* xrdp_bitmap_create(int width, int height, int bpp, int type, xrdpWm* wm);
-void xrdp_bitmap_delete(xrdpBitmap* self);
-
-/* xrdp_bitmap_compress.c */
-int xrdp_bitmap_compress(char* in_data, int width, int height,
-		wStream* s, int bpp, int byte_limit,
-		int start_line, wStream* temp, int e);
 
 /* xrdp_mm.c */
 xrdpMm* xrdp_mm_create(xrdpWm* owner);
