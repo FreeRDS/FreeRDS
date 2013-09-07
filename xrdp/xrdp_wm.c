@@ -211,40 +211,6 @@ int xrdp_wm_init(xrdpWm* self)
 	return 0;
 }
 
-/* happens when client gets focus and sends key modifier info */
-int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags)
-{
-	self->num_lock = 0;
-	self->scroll_lock = 0;
-	self->caps_lock = 0;
-
-	if (key_flags & 1)
-	{
-		self->scroll_lock = 1;
-	}
-
-	if (key_flags & 2)
-	{
-		self->num_lock = 1;
-	}
-
-	if (key_flags & 4)
-	{
-		self->caps_lock = 1;
-	}
-
-	if (self->mm->mod != 0)
-	{
-		if (self->mm->mod->client->Event != 0)
-		{
-			self->mm->mod->client->Event(self->mm->mod, 17, key_flags, device_flags,
-					key_flags, device_flags);
-		}
-	}
-
-	return 0;
-}
-
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount)
 {
 	if (!self)

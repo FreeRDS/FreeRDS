@@ -180,8 +180,6 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 	char *value;
 	int i;
 	int rv;
-	int key_flags;
-	int device_flags;
 	int use_uds;
 	rdpSettings* settings;
 
@@ -254,36 +252,6 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 		if (self->mod->client->Connect(self->mod) == 0)
 		{
 			rv = 0; /* connect success */
-		}
-	}
-
-	if (rv == 0)
-	{
-		/* sync modifiers */
-		key_flags = 0;
-		device_flags = 0;
-
-		if (self->wm->scroll_lock)
-		{
-			key_flags |= 1;
-		}
-
-		if (self->wm->num_lock)
-		{
-			key_flags |= 2;
-		}
-
-		if (self->wm->caps_lock)
-		{
-			key_flags |= 4;
-		}
-
-		if (self->mod != 0)
-		{
-			if (self->mod->client->Event)
-			{
-				self->mod->client->Event(self->mod, 17, key_flags, device_flags, key_flags, device_flags);
-			}
 		}
 	}
 

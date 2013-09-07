@@ -47,78 +47,13 @@
 
 typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_mod xrdpModule;
-typedef struct xrdp_palette_item xrdpPaletteItem;
-typedef struct xrdp_bitmap_item xrdpBitmapItem;
-typedef struct xrdp_pointer_item xrdpPointerItem;
-typedef struct xrdp_brush_item xrdpBrushItem;
 typedef struct xrdp_mm xrdpMm;
-typedef struct xrdp_key_info xrdpKeyInfo;
-typedef struct xrdp_keymap xrdpKeymap;
 typedef struct xrdp_wm xrdpWm;
 typedef struct xrdp_region xrdpRegion;
-typedef struct xrdp_bitmap xrdpBitmap;
-typedef struct xrdp_mod_data xrdpModuleData;
 typedef struct xrdp_startup_params xrdpStartupParams;
 
 #define DEFAULT_STRING_LEN 255
 #define LOG_WINDOW_CHAR_PER_LINE 60
-
-#define MAX_NR_CHANNELS 16
-#define MAX_CHANNEL_NAME 16
-
-struct bitmap_item
-{
-	int width;
-	int height;
-	char* data;
-};
-
-struct brush_item
-{
-	int bpp;
-	int width;
-	int height;
-	char* data;
-	char b8x8[8];
-};
-
-struct pointer_item
-{
-	int hotx;
-	int hoty;
-	char data[32 * 32 * 3];
-	char mask[32 * 32 / 8];
-};
-
-struct xrdp_palette_item
-{
-	int stamp;
-	int palette[256];
-};
-
-struct xrdp_bitmap_item
-{
-	int stamp;
-	xrdpBitmap* bitmap;
-};
-
-struct xrdp_pointer_item
-{
-	int stamp;
-	int x; /* hotspot */
-	int y;
-	char data[32 * 32 * 4];
-	char mask[32 * 32 / 8];
-	int bpp;
-};
-
-struct xrdp_brush_item
-{
-	int stamp;
-	/* expand this to a structure to handle more complicated brushes
-	 for now its 8x8 1bpp brushes only */
-	char pattern[8];
-};
 
 struct xrdp_mm
 {
@@ -139,19 +74,11 @@ struct xrdp_mm
 	int sesman_controlled; /* true if this is a sesman session */
 };
 
-struct xrdp_key_info
+/* region */
+struct xrdp_region
 {
-	int sym;
-	int chr;
-};
-
-struct xrdp_keymap
-{
-	xrdpKeyInfo keys_noshift[256];
-	xrdpKeyInfo keys_shift[256];
-	xrdpKeyInfo keys_altgr[256];
-	xrdpKeyInfo keys_capslock[256];
-	xrdpKeyInfo keys_shiftcapslock[256];
+	xrdpWm* wm; /* owner */
+	xrdpList* rects;
 };
 
 /* the window manager */
@@ -160,54 +87,9 @@ struct xrdp_wm
 {
 	xrdpSession* pro_layer; /* owner */
 	xrdpSession* session;
-	/* keyboard info */
-	int keys[256]; /* key states 0 up 1 down*/
-	int caps_lock;
-	int scroll_lock;
-	int num_lock;
-	/* session log */
 	xrdpList* log;
 	xrdpMm* mm;
-	xrdpKeymap keymap;
 	char pamerrortxt[256];
-};
-
-/* region */
-struct xrdp_region
-{
-	xrdpWm* wm; /* owner */
-	xrdpList* rects;
-};
-
-/* window or bitmap */
-struct xrdp_bitmap
-{
-	int type;
-	int width;
-	int height;
-	xrdpWm* wm;
-	/* for bitmap */
-	int bpp;
-	int line_size; /* in bytes */
-	int do_not_free_data;
-	char* data;
-	/* for all but bitmap */
-	int left;
-	int top;
-	int pointer;
-	int bg_color;
-	int tab_stop;
-	int id;
-	int item_index;
-	int item_height;
-	int crc;
-};
-
-/* module */
-struct xrdp_mod_data
-{
-	xrdpList* names;
-	xrdpList* values;
 };
 
 struct xrdp_startup_params
@@ -219,33 +101,6 @@ struct xrdp_startup_params
 	int version;
 	int fork;
 };
-
-/* drawable types */
-#define WND_TYPE_BITMAP		0
-#define WND_TYPE_WND		1
-#define WND_TYPE_SCREEN		2
-#define WND_TYPE_OFFSCREEN	10
-
-/* button states */
-#define BUTTON_STATE_UP		0
-#define BUTTON_STATE_DOWN	1
-
-/* messages */
-#define WM_XRDP_PAINT		3
-#define WM_XRDP_KEYDOWN		15
-#define WM_XRDP_KEYUP		16
-#define WM_XRDP_MOUSEMOVE	100
-#define WM_XRDP_LBUTTONUP	101
-#define WM_XRDP_LBUTTONDOWN	102
-#define WM_XRDP_RBUTTONUP	103
-#define WM_XRDP_RBUTTONDOWN	104
-#define WM_XRDP_BUTTON3UP	105
-#define WM_XRDP_BUTTON3DOWN	106
-#define WM_XRDP_BUTTON4UP	107
-#define WM_XRDP_BUTTON4DOWN	108
-#define WM_XRDP_BUTTON5UP	109
-#define WM_XRDP_BUTTON5DOWN	110
-#define WM_XRDP_INVALIDATE	200
 
 /* xrdp.c */
 long g_xrdp_sync(long (*sync_func)(long param1, long param2), long sync_param1, long sync_param2);
@@ -259,7 +114,6 @@ void g_process_waiting_function(void);
 xrdpWm* xrdp_wm_create(xrdpSession* owner);
 void xrdp_wm_delete(xrdpWm* self);
 int xrdp_wm_init(xrdpWm* self);
-int xrdp_wm_key_sync(xrdpWm* self, int device_flags, int key_flags);
 int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount);
 int xrdp_wm_check_wait_objs(xrdpWm* self);
 int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
@@ -442,6 +296,7 @@ struct xrdp_mod
 
 	xrdpSession* session;
 
+	freerdp* instance;
 	rdpSettings* settings;
 
 	UINT32 TotalLength;
@@ -449,12 +304,6 @@ struct xrdp_mod
 	HANDLE SocketEvent;
 	wStream* SendStream;
 	wStream* ReceiveStream;
-
-	int colormap[256];
-	freerdp* instance;
-	struct bitmap_item bitmap_cache[4][4096];
-	struct brush_item brush_cache[64];
-	struct pointer_item pointer_cache[32];
 
 	XRDP_FRAMEBUFFER framebuffer;
 
