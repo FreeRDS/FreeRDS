@@ -49,7 +49,6 @@ typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_mod xrdpModule;
 typedef struct xrdp_mm xrdpMm;
 typedef struct xrdp_wm xrdpWm;
-typedef struct xrdp_region xrdpRegion;
 typedef struct xrdp_startup_params xrdpStartupParams;
 
 #define DEFAULT_STRING_LEN 255
@@ -72,13 +71,6 @@ struct xrdp_mm
 	int display; /* 10 for :10.0, 11 for :11.0, etc */
 	int code; /* 0 Xvnc session 10 X11rdp session */
 	int sesman_controlled; /* true if this is a sesman session */
-};
-
-/* region */
-struct xrdp_region
-{
-	xrdpWm* wm; /* owner */
-	xrdpList* rects;
 };
 
 /* the window manager */
@@ -130,14 +122,6 @@ void* xrdp_process_main_thread(void* arg);
 xrdpListener* xrdp_listen_create(void);
 void xrdp_listen_delete(xrdpListener* self);
 int xrdp_listen_main_loop(xrdpListener* self);
-
-/* xrdp_region.c */
-xrdpRegion* xrdp_region_create(xrdpWm* wm);
-void xrdp_region_delete(xrdpRegion* self);
-int xrdp_region_add_rect(xrdpRegion* self, xrdpRect* rect);
-int xrdp_region_insert_rect(xrdpRegion* self, int i, int left, int top, int right, int bottom);
-int xrdp_region_subtract_rect(xrdpRegion* self, xrdpRect* rect);
-int xrdp_region_get_rect(xrdpRegion* self, int index, xrdpRect* rect);
 
 /* xrdp_mm.c */
 xrdpMm* xrdp_mm_create(xrdpWm* owner);
