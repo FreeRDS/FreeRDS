@@ -235,7 +235,19 @@ int xrdp_generate_certificate(rdpSettings* settings)
 
 void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 {
+	xrdpSession* session = (xrdpSession*) input->context;
+	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
 
+	if (session->wm)
+	{
+		if (mod)
+		{
+			if (mod->client->SynchronizeKeyboardEvent)
+			{
+				mod->client->SynchronizeKeyboardEvent(mod, flags);
+			}
+		}
+	}
 }
 
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
@@ -249,7 +261,7 @@ void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 		{
 			if (mod->client->ScancodeKeyboardEvent)
 			{
-				mod->client->ScancodeKeyboardEvent(mod, flags, code);
+				mod->client->ScancodeKeyboardEvent(mod, flags, code, session->settings->KeyboardType);
 			}
 		}
 	}
@@ -275,17 +287,35 @@ void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 cod
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
+	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
 
 	if (session->wm)
-		xrdp_wm_process_input_mouse(session->wm, flags, x, y);
+	{
+		if (mod)
+		{
+			if (mod->client->MouseEvent)
+			{
+				mod->client->MouseEvent(mod, flags, x, y);
+			}
+		}
+	}
 }
 
 void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
+	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
 
 	if (session->wm)
-		xrdp_wm_process_input_mouse(session->wm, flags, x, y);
+	{
+		if (mod)
+		{
+			if (mod->client->ExtendedMouseEvent)
+			{
+				mod->client->ExtendedMouseEvent(mod, flags, x, y);
+			}
+		}
+	}
 }
 
 void xrdp_input_register_callbacks(rdpInput* input)

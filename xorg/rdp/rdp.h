@@ -265,7 +265,8 @@ void PtrAddEvent(int buttonMask, int x, int y);
 void KbdAddEvent(int down, int param1, int param2, int param3, int param4);
 void KbdSync(int param1);
 
-void KbdAddScancodeEvent(DWORD flags, DWORD scancode);
+void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType);
+void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode);
 void KbdAddUnicodeEvent(DWORD flags, DWORD code);
 
 /* rdpup.c */

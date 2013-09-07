@@ -47,7 +47,6 @@ static int g_count = 0;
 
 static BYTE* pfbBackBufferMemory = NULL;
 
-extern DevPrivateKeyRec g_rdpWindowIndex;
 extern ScreenPtr g_pScreen;
 extern int g_Bpp;
 extern int g_Bpp_mask;
@@ -457,7 +456,7 @@ static int rdpup_process_msg(wStream* s, int type)
 				KbdSync(msg.param1);
 				break;
 
-			case 100:
+			case 100: /* WM_XRDP_MOUSEMOVE */
 				/* without the minus 2, strange things happen when dragging
                    	   	   past the width or height */
 				g_cursor_x = l_bound_by(msg.param1, 0, g_rdpScreen.width - 2);
@@ -465,56 +464,62 @@ static int rdpup_process_msg(wStream* s, int type)
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 101:
+			case 101: /* WM_XRDP_LBUTTONUP */
 				g_button_mask = g_button_mask & (~1);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 102:
+			case 102: /* WM_XRDP_LBUTTONDOWN */
 				g_button_mask = g_button_mask | 1;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 103:
+			case 103: /* WM_XRDP_RBUTTONUP */
 				g_button_mask = g_button_mask & (~4);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 104:
+			case 104: /* WM_XRDP_RBUTTONDOWN */
 				g_button_mask = g_button_mask | 4;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 105:
+			case 105: /* WM_XRDP_BUTTON3UP */
 				g_button_mask = g_button_mask & (~2);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 106:
+			case 106: /* WM_XRDP_BUTTON3DOWN */
 				g_button_mask = g_button_mask | 2;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 107:
+			case 107: /* WM_XRDP_BUTTON4UP */
 				g_button_mask = g_button_mask & (~8);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 108:
+			case 108: /* WM_XRDP_BUTTON4DOWN */
 				g_button_mask = g_button_mask | 8;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 109:
+			case 109: /* WM_XRDP_BUTTON5UP */
 				g_button_mask = g_button_mask & (~16);
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 
-			case 110:
+			case 110: /* WM_XRDP_BUTTON5DOWN */
 				g_button_mask = g_button_mask | 16;
 				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
 				break;
 		}
+	}
+	else if (type == XRDP_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT)
+	{
+		XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT msg;
+
+		xrdp_read_synchronize_keyboard_event(s, &msg);
 	}
 	else if (type == XRDP_CLIENT_SCANCODE_KEYBOARD_EVENT)
 	{
@@ -522,7 +527,15 @@ static int rdpup_process_msg(wStream* s, int type)
 
 		xrdp_read_scancode_keyboard_event(s, &msg);
 
-		KbdAddScancodeEvent(msg.flags, msg.code);
+		KbdAddScancodeEvent(msg.flags, msg.code, msg.keyboardType);
+	}
+	else if (type == XRDP_CLIENT_VIRTUAL_KEYBOARD_EVENT)
+	{
+		XRDP_MSG_VIRTUAL_KEYBOARD_EVENT msg;
+
+		xrdp_read_virtual_keyboard_event(s, &msg);
+
+		KbdAddVirtualKeyCodeEvent(msg.flags, msg.code);
 	}
 	else if (type == XRDP_CLIENT_UNICODE_KEYBOARD_EVENT)
 	{
@@ -531,6 +544,126 @@ static int rdpup_process_msg(wStream* s, int type)
 		xrdp_read_unicode_keyboard_event(s, &msg);
 
 		KbdAddUnicodeEvent(msg.flags, msg.code);
+	}
+	else if (type == XRDP_CLIENT_MOUSE_EVENT)
+	{
+		XRDP_MSG_MOUSE_EVENT msg;
+
+		xrdp_read_mouse_event(s, &msg);
+
+		if (msg.x > g_rdpScreen.width - 2)
+			msg.x = g_rdpScreen.width - 2;
+
+		if (msg.y > g_rdpScreen.height - 2)
+			msg.y = g_rdpScreen.height - 2;
+
+		if (msg.flags & PTR_FLAGS_MOVE)
+		{
+			PtrAddEvent(g_button_mask, msg.x, msg.y);
+		}
+
+		if (msg.flags & PTR_FLAGS_WHEEL)
+		{
+			if (msg.flags & PTR_FLAGS_WHEEL_NEGATIVE)
+			{
+				g_button_mask = g_button_mask | 16;
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+
+				g_button_mask = g_button_mask & (~16);
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+			else
+			{
+				g_button_mask = g_button_mask | 8;
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+
+				g_button_mask = g_button_mask & (~8);
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+		}
+		else if (msg.flags & PTR_FLAGS_BUTTON1)
+		{
+			if (msg.flags & PTR_FLAGS_DOWN)
+			{
+				g_button_mask = g_button_mask | 1;
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+			else
+			{
+				g_button_mask = g_button_mask & (~1);
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+		}
+		else if (msg.flags & PTR_FLAGS_BUTTON2)
+		{
+			if (msg.flags & PTR_FLAGS_DOWN)
+			{
+				g_button_mask = g_button_mask | 4;
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+			else
+			{
+				g_button_mask = g_button_mask & (~4);
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+		}
+		else if (msg.flags & PTR_FLAGS_BUTTON3)
+		{
+			if (msg.flags & PTR_FLAGS_DOWN)
+			{
+				g_button_mask = g_button_mask | 2;
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+			else
+			{
+				g_button_mask = g_button_mask & (~2);
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+		}
+	}
+	else if (type == XRDP_CLIENT_EXTENDED_MOUSE_EVENT)
+	{
+		XRDP_MSG_EXTENDED_MOUSE_EVENT msg;
+
+		xrdp_read_extended_mouse_event(s, &msg);
+
+		if (msg.x > g_rdpScreen.width - 2)
+			msg.x = g_rdpScreen.width - 2;
+
+		if (msg.y > g_rdpScreen.height - 2)
+			msg.y = g_rdpScreen.height - 2;
+
+		if (msg.flags & PTR_FLAGS_MOVE)
+		{
+			PtrAddEvent(g_button_mask, msg.x, msg.y);
+		}
+
+		if (msg.flags & PTR_XFLAGS_BUTTON1)
+		{
+			if (msg.flags & PTR_XFLAGS_DOWN)
+			{
+				g_button_mask = g_button_mask | 8;
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+			else
+			{
+				g_button_mask = g_button_mask & (~8);
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+		}
+		else if (msg.flags & PTR_XFLAGS_BUTTON2)
+		{
+			if (msg.flags & PTR_XFLAGS_DOWN)
+			{
+				g_button_mask = g_button_mask | 16;
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+			else
+			{
+				g_button_mask = g_button_mask & (~16);
+				PtrAddEvent(g_button_mask, msg.x, msg.y);
+			}
+		}
 	}
 	else if (type == XRDP_CLIENT_CAPABILITIES)
 	{

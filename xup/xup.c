@@ -64,23 +64,6 @@ static int lib_send_capabilities(xrdpModule* mod)
 	msg.DesktopHeight= settings->DesktopHeight;
 	msg.ColorDepth = settings->ColorDepth;
 
-	msg.SupportedCodecs = 0;
-
-	if (settings->JpegCodec)
-		msg.SupportedCodecs |= XRDP_CODEC_JPEG;
-
-	if (settings->NSCodec)
-		msg.SupportedCodecs |= XRDP_CODEC_NSCODEC;
-
-	if (settings->RemoteFxCodec)
-		msg.SupportedCodecs |= XRDP_CODEC_REMOTEFX;
-
-	msg.OffscreenSupportLevel = settings->OffscreenSupportLevel;
-	msg.OffscreenCacheSize = settings->OffscreenCacheSize;
-	msg.OffscreenCacheEntries = settings->OffscreenCacheEntries;
-	msg.RailSupportLevel = settings->RemoteApplicationMode;
-	msg.PointerFlags = settings->ColorPointerFlag;
-
 	length = xrdp_write_capabilities(NULL, &msg);
 
 	xrdp_write_capabilities(s, &msg);
@@ -407,7 +390,30 @@ int x11rdp_xrdp_client_event(xrdpModule* mod, int subtype, long param1, long par
 	return status;
 }
 
-int x11rdp_xrdp_client_scancode_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code)
+int x11rdp_xrdp_client_synchronize_keyboard_event(xrdpModule* mod, DWORD flags)
+{
+	int length;
+	int status;
+	wStream* s;
+	XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT msg;
+
+	msg.msgFlags = 0;
+	msg.type = XRDP_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT;
+
+	msg.flags = flags;
+
+	s = mod->SendStream;
+	Stream_SetPosition(s, 0);
+
+	length = xrdp_write_synchronize_keyboard_event(NULL, &msg);
+	xrdp_write_synchronize_keyboard_event(s, &msg);
+
+	status = lib_send_all(mod, Stream_Buffer(s), length);
+
+	return status;
+}
+
+int x11rdp_xrdp_client_scancode_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code, DWORD keyboardType)
 {
 	int length;
 	int status;
@@ -419,12 +425,37 @@ int x11rdp_xrdp_client_scancode_keyboard_event(xrdpModule* mod, DWORD flags, DWO
 
 	msg.flags = flags;
 	msg.code = code;
+	msg.keyboardType = keyboardType;
 
 	s = mod->SendStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_scancode_keyboard_event(NULL, &msg);
 	xrdp_write_scancode_keyboard_event(s, &msg);
+
+	status = lib_send_all(mod, Stream_Buffer(s), length);
+
+	return status;
+}
+
+int x11rdp_xrdp_client_virtual_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code)
+{
+	int length;
+	int status;
+	wStream* s;
+	XRDP_MSG_VIRTUAL_KEYBOARD_EVENT msg;
+
+	msg.msgFlags = 0;
+	msg.type = XRDP_CLIENT_VIRTUAL_KEYBOARD_EVENT;
+
+	msg.flags = flags;
+	msg.code = code;
+
+	s = mod->SendStream;
+	Stream_SetPosition(s, 0);
+
+	length = xrdp_write_virtual_keyboard_event(NULL, &msg);
+	xrdp_write_virtual_keyboard_event(s, &msg);
 
 	status = lib_send_all(mod, Stream_Buffer(s), length);
 
@@ -449,6 +480,56 @@ int x11rdp_xrdp_client_unicode_keyboard_event(xrdpModule* mod, DWORD flags, DWOR
 
 	length = xrdp_write_unicode_keyboard_event(NULL, &msg);
 	xrdp_write_unicode_keyboard_event(s, &msg);
+
+	status = lib_send_all(mod, Stream_Buffer(s), length);
+
+	return status;
+}
+
+int x11rdp_xrdp_client_mouse_event(xrdpModule* mod, DWORD flags, DWORD x, DWORD y)
+{
+	int length;
+	int status;
+	wStream* s;
+	XRDP_MSG_MOUSE_EVENT msg;
+
+	msg.msgFlags = 0;
+	msg.type = XRDP_CLIENT_MOUSE_EVENT;
+
+	msg.flags = flags;
+	msg.x = x;
+	msg.y = y;
+
+	s = mod->SendStream;
+	Stream_SetPosition(s, 0);
+
+	length = xrdp_write_mouse_event(NULL, &msg);
+	xrdp_write_mouse_event(s, &msg);
+
+	status = lib_send_all(mod, Stream_Buffer(s), length);
+
+	return status;
+}
+
+int x11rdp_xrdp_client_extended_mouse_event(xrdpModule* mod, DWORD flags, DWORD x, DWORD y)
+{
+	int length;
+	int status;
+	wStream* s;
+	XRDP_MSG_EXTENDED_MOUSE_EVENT msg;
+
+	msg.msgFlags = 0;
+	msg.type = XRDP_CLIENT_EXTENDED_MOUSE_EVENT;
+
+	msg.flags = flags;
+	msg.x = x;
+	msg.y = y;
+
+	s = mod->SendStream;
+	Stream_SetPosition(s, 0);
+
+	length = xrdp_write_extended_mouse_event(NULL, &msg);
+	xrdp_write_extended_mouse_event(s, &msg);
 
 	status = lib_send_all(mod, Stream_Buffer(s), length);
 
@@ -829,8 +910,12 @@ int xup_module_init(xrdpModule* mod)
 		client->Connect = x11rdp_xrdp_client_connect;
 		client->Start = x11rdp_xrdp_client_start;
 		client->Event = x11rdp_xrdp_client_event;
+		client->SynchronizeKeyboardEvent = x11rdp_xrdp_client_synchronize_keyboard_event;
 		client->ScancodeKeyboardEvent = x11rdp_xrdp_client_scancode_keyboard_event;
+		client->VirtualKeyboardEvent = x11rdp_xrdp_client_virtual_keyboard_event;
 		client->UnicodeKeyboardEvent = x11rdp_xrdp_client_unicode_keyboard_event;
+		client->MouseEvent = x11rdp_xrdp_client_mouse_event;
+		client->ExtendedMouseEvent = x11rdp_xrdp_client_extended_mouse_event;
 		client->End = x11rdp_xrdp_client_end;
 		client->SetParam = x11rdp_xrdp_client_set_param;
 		client->GetEventHandles = x11rdp_xrdp_client_get_event_handles;

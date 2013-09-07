@@ -535,8 +535,7 @@ int get_pixel_safe(char *data, int x, int y, int width, int height, int bpp)
 	return 0;
 }
 
-void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp,
-		int pixel)
+void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp, int pixel)
 {
 	int start;
 	int shift;
@@ -797,7 +796,7 @@ void sendDownUpKeyEvent(int type, int x_scancode)
 	}
 }
 
-void KbdAddScancodeEvent(DWORD flags, DWORD scancode)
+void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType)
 {
 	int type;
 	int keycode;
@@ -805,7 +804,18 @@ void KbdAddScancodeEvent(DWORD flags, DWORD scancode)
 
 	type = (flags & KBD_FLAGS_DOWN) ? KeyPress : KeyRelease;
 
-	vkcode = GetVirtualKeyCodeFromVirtualScanCode(scancode, 4);
+	vkcode = GetVirtualKeyCodeFromVirtualScanCode(scancode, keyboardType);
+	keycode = GetKeycodeFromVirtualKeyCode(vkcode, KEYCODE_TYPE_EVDEV);
+
+	rdpEnqueueKey(type, keycode);
+}
+
+void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode)
+{
+	int type;
+	int keycode;
+
+	type = (flags & KBD_FLAGS_DOWN) ? KeyPress : KeyRelease;
 	keycode = GetKeycodeFromVirtualKeyCode(vkcode, KEYCODE_TYPE_EVDEV);
 
 	rdpEnqueueKey(type, keycode);

@@ -89,8 +89,12 @@ int xrdp_write_common_header(wStream* s, XRDP_MSG_COMMON* msg);
 #define XRDP_CLIENT_EVENT			101
 #define XRDP_CLIENT_CAPABILITIES		102
 #define XRDP_CLIENT_REFRESH_RECT		103
-#define XRDP_CLIENT_SCANCODE_KEYBOARD_EVENT	104
-#define XRDP_CLIENT_UNICODE_KEYBOARD_EVENT	105
+#define XRDP_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT	104
+#define XRDP_CLIENT_SCANCODE_KEYBOARD_EVENT	105
+#define XRDP_CLIENT_VIRTUAL_KEYBOARD_EVENT	106
+#define XRDP_CLIENT_UNICODE_KEYBOARD_EVENT	107
+#define XRDP_CLIENT_MOUSE_EVENT			108
+#define XRDP_CLIENT_EXTENDED_MOUSE_EVENT	109
 
 struct _XRDP_MSG_EVENT
 {
@@ -104,14 +108,32 @@ struct _XRDP_MSG_EVENT
 };
 typedef struct _XRDP_MSG_EVENT XRDP_MSG_EVENT;
 
+struct _XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 flags;
+};
+typedef struct _XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT;
+
 struct _XRDP_MSG_SCANCODE_KEYBOARD_EVENT
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 flags;
 	UINT32 code;
+	UINT32 keyboardType;
 };
 typedef struct _XRDP_MSG_SCANCODE_KEYBOARD_EVENT XRDP_MSG_SCANCODE_KEYBOARD_EVENT;
+
+struct _XRDP_MSG_VIRTUAL_KEYBOARD_EVENT
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 flags;
+	UINT32 code;
+};
+typedef struct _XRDP_MSG_VIRTUAL_KEYBOARD_EVENT XRDP_MSG_VIRTUAL_KEYBOARD_EVENT;
 
 struct _XRDP_MSG_UNICODE_KEYBOARD_EVENT
 {
@@ -122,6 +144,26 @@ struct _XRDP_MSG_UNICODE_KEYBOARD_EVENT
 };
 typedef struct _XRDP_MSG_UNICODE_KEYBOARD_EVENT XRDP_MSG_UNICODE_KEYBOARD_EVENT;
 
+struct _XRDP_MSG_MOUSE_EVENT
+{
+	DEFINE_MSG_COMMON();
+
+	DWORD flags;
+	DWORD x;
+	DWORD y;
+};
+typedef struct _XRDP_MSG_MOUSE_EVENT XRDP_MSG_MOUSE_EVENT;
+
+struct _XRDP_MSG_EXTENDED_MOUSE_EVENT
+{
+	DEFINE_MSG_COMMON();
+
+	DWORD flags;
+	DWORD x;
+	DWORD y;
+};
+typedef struct _XRDP_MSG_EXTENDED_MOUSE_EVENT XRDP_MSG_EXTENDED_MOUSE_EVENT;
+
 struct _XRDP_MSG_CAPABILITIES
 {
 	DEFINE_MSG_COMMON();
@@ -129,12 +171,6 @@ struct _XRDP_MSG_CAPABILITIES
 	UINT32 DesktopWidth;
 	UINT32 DesktopHeight;
 	UINT32 ColorDepth;
-	UINT32 SupportedCodecs;
-	UINT32 OffscreenSupportLevel;
-	UINT32 OffscreenCacheSize;
-	UINT32 OffscreenCacheEntries;
-	UINT32 RailSupportLevel;
-	UINT32 PointerFlags;
 };
 typedef struct _XRDP_MSG_CAPABILITIES XRDP_MSG_CAPABILITIES;
 
@@ -150,11 +186,23 @@ typedef struct _XRDP_MSG_REFRESH_RECT XRDP_MSG_REFRESH_RECT;
 int xrdp_read_event(wStream* s, XRDP_MSG_EVENT* msg);
 int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg);
 
+int xrdp_read_synchronize_keyboard_event(wStream* s, XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
+int xrdp_write_synchronize_keyboard_event(wStream* s, XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
+
+int xrdp_read_virtual_keyboard_event(wStream* s, XRDP_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
+int xrdp_write_virtual_keyboard_event(wStream* s, XRDP_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
+
 int xrdp_read_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg);
 int xrdp_write_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg);
 
 int xrdp_read_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVENT* msg);
 int xrdp_write_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVENT* msg);
+
+int xrdp_read_mouse_event(wStream* s, XRDP_MSG_MOUSE_EVENT* msg);
+int xrdp_write_mouse_event(wStream* s, XRDP_MSG_MOUSE_EVENT* msg);
+
+int xrdp_read_extended_mouse_event(wStream* s, XRDP_MSG_EXTENDED_MOUSE_EVENT* msg);
+int xrdp_write_extended_mouse_event(wStream* s, XRDP_MSG_EXTENDED_MOUSE_EVENT* msg);
 
 int xrdp_read_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg);
 int xrdp_write_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg);

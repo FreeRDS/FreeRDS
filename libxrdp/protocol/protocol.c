@@ -113,7 +113,55 @@ int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg)
 	return 0;
 }
 
+int xrdp_read_synchronize_keyboard_event(wStream* s, XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg)
+{
+	Stream_Read_UINT32(s, msg->flags);
+
+	return 0;
+}
+
+int xrdp_write_synchronize_keyboard_event(wStream* s, XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 4;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->flags);
+
+	return 0;
+}
+
 int xrdp_read_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg)
+{
+	Stream_Read_UINT32(s, msg->flags);
+	Stream_Read_UINT32(s, msg->code);
+	Stream_Read_UINT32(s, msg->keyboardType);
+
+	return 0;
+}
+
+int xrdp_write_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 12;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->flags);
+	Stream_Write_UINT32(s, msg->code);
+	Stream_Write_UINT32(s, msg->keyboardType);
+
+	return 0;
+}
+
+int xrdp_read_virtual_keyboard_event(wStream* s, XRDP_MSG_VIRTUAL_KEYBOARD_EVENT* msg)
 {
 	Stream_Read_UINT32(s, msg->flags);
 	Stream_Read_UINT32(s, msg->code);
@@ -121,7 +169,7 @@ int xrdp_read_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVE
 	return 0;
 }
 
-int xrdp_write_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg)
+int xrdp_write_virtual_keyboard_event(wStream* s, XRDP_MSG_VIRTUAL_KEYBOARD_EVENT* msg)
 {
 	msg->msgFlags = 0;
 	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 8;
@@ -161,17 +209,63 @@ int xrdp_write_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVEN
 	return 0;
 }
 
+int xrdp_read_mouse_event(wStream* s, XRDP_MSG_MOUSE_EVENT* msg)
+{
+	Stream_Read_UINT32(s, msg->flags);
+	Stream_Read_UINT32(s, msg->x);
+	Stream_Read_UINT32(s, msg->y);
+
+	return 0;
+}
+
+int xrdp_write_mouse_event(wStream* s, XRDP_MSG_MOUSE_EVENT* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 12;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->flags);
+	Stream_Write_UINT32(s, msg->x);
+	Stream_Write_UINT32(s, msg->y);
+
+	return 0;
+}
+
+int xrdp_read_extended_mouse_event(wStream* s, XRDP_MSG_EXTENDED_MOUSE_EVENT* msg)
+{
+	Stream_Read_UINT32(s, msg->flags);
+	Stream_Read_UINT32(s, msg->x);
+	Stream_Read_UINT32(s, msg->y);
+
+	return 0;
+}
+
+int xrdp_write_extended_mouse_event(wStream* s, XRDP_MSG_EXTENDED_MOUSE_EVENT* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 12;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (XRDP_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->flags);
+	Stream_Write_UINT32(s, msg->x);
+	Stream_Write_UINT32(s, msg->y);
+
+	return 0;
+}
+
 int xrdp_read_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg)
 {
 	Stream_Read_UINT32(s, msg->DesktopWidth);
 	Stream_Read_UINT32(s, msg->DesktopHeight);
 	Stream_Read_UINT32(s, msg->ColorDepth);
-	Stream_Read_UINT32(s, msg->SupportedCodecs);
-	Stream_Read_UINT32(s, msg->OffscreenSupportLevel);
-	Stream_Read_UINT32(s, msg->OffscreenCacheSize);
-	Stream_Read_UINT32(s, msg->OffscreenCacheEntries);
-	Stream_Read_UINT32(s, msg->RailSupportLevel);
-	Stream_Read_UINT32(s, msg->PointerFlags);
 
 	return 0;
 }
@@ -179,7 +273,7 @@ int xrdp_read_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg)
 int xrdp_write_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg)
 {
 	msg->msgFlags = 0;
-	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 36;
+	msg->length = xrdp_write_common_header(NULL, (XRDP_MSG_COMMON*) msg) + 12;
 
 	if (!s)
 		return msg->length;
@@ -189,12 +283,6 @@ int xrdp_write_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg)
 	Stream_Write_UINT32(s, msg->DesktopWidth);
 	Stream_Write_UINT32(s, msg->DesktopHeight);
 	Stream_Write_UINT32(s, msg->ColorDepth);
-	Stream_Write_UINT32(s, msg->SupportedCodecs);
-	Stream_Write_UINT32(s, msg->OffscreenSupportLevel);
-	Stream_Write_UINT32(s, msg->OffscreenCacheSize);
-	Stream_Write_UINT32(s, msg->OffscreenCacheEntries);
-	Stream_Write_UINT32(s, msg->RailSupportLevel);
-	Stream_Write_UINT32(s, msg->PointerFlags);
 
 	return 0;
 }
