@@ -178,11 +178,6 @@ typedef int (*pXrdpServerPaintOffscreenSurface)(xrdpModule* mod, XRDP_MSG_PAINT_
 
 typedef int (*pXrdpServerWindowNewUpdate)(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 typedef int (*pXrdpServerWindowDelete)(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg);
-typedef int (*pXrdpServerWindowIcon)(xrdpModule* mod, int window_id, int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags);
-typedef int (*pXrdpServerWindowCachedIcon)(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags);
-typedef int (*pXrdpServerNotifyNewUpdate)(xrdpModule* mod, int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
-typedef int (*pXrdpServerNotifyDelete)(xrdpModule* mod, int window_id, int notify_id);
-typedef int (*pXrdpServerMonitoredDesktop)(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags);
 
 struct xrdp_server_module
 {
@@ -209,11 +204,6 @@ struct xrdp_server_module
 	pXrdpServerPaintOffscreenSurface PaintOffscreenSurface;
 	pXrdpServerWindowNewUpdate WindowNewUpdate;
 	pXrdpServerWindowDelete WindowDelete;
-	pXrdpServerWindowIcon WindowIcon;
-	pXrdpServerWindowCachedIcon WindowCachedIcon;
-	pXrdpServerNotifyNewUpdate NotifyNewUpdate;
-	pXrdpServerNotifyDelete NotifyDelete;
-	pXrdpServerMonitoredDesktop MonitoredDesktop;
 };
 typedef struct xrdp_server_module xrdpServerModule;
 
@@ -225,23 +215,17 @@ struct xrdp_mod
 	xrdpClientModule* client;
 	xrdpServerModule* server;
 
-	/* common */
 	long handle;
-	long painter;
+
 	int sck;
-	/* mod data */
+	int sck_closed;
+	char ip[256];
+	char port[256];
+	int shift_state;
+
 	int width;
 	int height;
 	int bpp;
-	int rfx;
-	int sck_closed;
-	char username[256];
-	char password[256];
-	char ip[256];
-	char port[256];
-	long sck_obj;
-	int shift_state;
-
 	xrdpSession* session;
 
 	freerdp* instance;

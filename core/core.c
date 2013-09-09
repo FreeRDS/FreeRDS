@@ -982,36 +982,3 @@ int libxrdp_window_delete(xrdpSession* session, XRDP_MSG_WINDOW_DELETE* msg)
 	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
-
-int libxrdp_window_icon(xrdpSession* session, int window_id,
-		int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags)
-{
-	//printf("%s\n", __FUNCTION__);
-	return 0;
-}
-
-int libxrdp_window_cached_icon(xrdpSession* session, int window_id,
-		int cache_entry, int cache_id, int flags)
-{
-	//printf("%s\n", __FUNCTION__);
-	return 0;
-}
-
-int libxrdp_notify_new_update(xrdpSession* session,
-		int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags)
-{
-	//printf("%s\n", __FUNCTION__);
-	return 0;
-}
-
-int libxrdp_notify_delete(xrdpSession* session, int window_id, int notify_id)
-{
-	//printf("%s\n", __FUNCTION__);
-	return 0;
-}
-
-int libxrdp_monitored_desktop(xrdpSession* session, xrdpRailMonitoredDesktopOrder* mdo, int flags)
-{
-	//printf("%s\n", __FUNCTION__);
-	return 0;
-}

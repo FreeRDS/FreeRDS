@@ -36,49 +36,6 @@
 
 #include <xrdp-ng/xrdp.h>
 
-struct rail_icon_info
-{
-	int bpp;
-	int width;
-	int height;
-	int cmap_bytes;
-	int mask_bytes;
-	int data_bytes;
-	char* mask;
-	char* cmap;
-	char* data;
-};
-typedef struct rail_icon_info xrdpRailIconInfo;
-
-struct rail_notify_icon_info_tip
-{
-	int timeout;
-	int flags;
-	char* text;
-	char* title;
-};
-typedef struct rail_notify_icon_info_tip xrdpRailNotifyIconInfoTip;
-
-struct rail_notify_state_order
-{
-	int version;
-	char* tool_tip;
-	xrdpRailNotifyIconInfoTip infotip;
-	int state;
-	int icon_cache_entry;
-	int icon_cache_id;
-	xrdpRailIconInfo icon_info;
-};
-typedef struct rail_notify_state_order xrdpRailNotifyStateOrder;
-
-struct rail_monitored_desktop_order
-{
-	int active_window_id;
-	int num_window_ids;
-	int* window_ids;
-};
-typedef struct rail_monitored_desktop_order xrdpRailMonitoredDesktopOrder;
-
 struct xrdp_brush
 {
 	int x_orgin;
@@ -95,17 +52,6 @@ struct xrdp_pen
 	int color;
 };
 typedef struct xrdp_pen xrdpPen;
-
-struct xrdp_font_char
-{
-	int offset;
-	int baseline;
-	int width;
-	int height;
-	int incby;
-	char* data;
-};
-typedef struct xrdp_font_char xrdpFontChar;
 
 struct xrdp_rect
 {
@@ -231,20 +177,5 @@ FREERDP_API int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 ac
 FREERDP_API int libxrdp_window_new_update(xrdpSession* session, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
 
 FREERDP_API int libxrdp_window_delete(xrdpSession* session, XRDP_MSG_WINDOW_DELETE* msg);
-
-FREERDP_API int libxrdp_window_icon(xrdpSession* session, int window_id,
-		int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags);
-
-FREERDP_API int libxrdp_window_cached_icon(xrdpSession* session, int window_id,
-		int cache_entry, int cache_id, int flags);
-
-FREERDP_API int libxrdp_notify_new_update(xrdpSession* session,
-		int window_id, int notify_id, xrdpRailNotifyStateOrder* notify_state, int flags);
-
-FREERDP_API int libxrdp_notify_delete(xrdpSession* session,
-		int window_id, int notify_id);
-
-FREERDP_API int libxrdp_monitored_desktop(xrdpSession* session, xrdpRailMonitoredDesktopOrder* mdo, int flags);
-
 
 #endif /* FREERDP_XRDP_NG_CORE_H */

@@ -232,33 +232,6 @@ int xrdp_server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
 	return libxrdp_window_delete(mod->session, msg);
 }
 
-int xrdp_server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id,
-		xrdpRailIconInfo* icon_info, int flags)
-{
-	return libxrdp_window_icon(mod->session, window_id, cache_entry, cache_id, icon_info, flags);
-}
-
-int xrdp_server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags)
-{
-	return libxrdp_window_cached_icon(mod->session, window_id, cache_entry, cache_id, flags);
-}
-
-int xrdp_server_notify_new_update(xrdpModule* mod, int window_id, int notify_id,
-		xrdpRailNotifyStateOrder* notify_state, int flags)
-{
-	return libxrdp_notify_new_update(mod->session, window_id, notify_id, notify_state, flags);
-}
-
-int xrdp_server_notify_delete(xrdpModule* mod, int window_id, int notify_id)
-{
-	return libxrdp_notify_delete(mod->session, window_id, notify_id);
-}
-
-int xrdp_server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags)
-{
-	return libxrdp_monitored_desktop(mod->session, mdo, flags);
-}
-
 int xrdp_server_module_init(xrdpModule* mod)
 {
 	mod->server = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
@@ -290,11 +263,6 @@ int xrdp_server_module_init(xrdpModule* mod)
 		mod->server->PaintOffscreenSurface = xrdp_server_paint_offscreen_surface;
 		mod->server->WindowNewUpdate = xrdp_server_window_new_update;
 		mod->server->WindowDelete = xrdp_server_window_delete;
-		mod->server->WindowIcon = xrdp_server_window_icon;
-		mod->server->WindowCachedIcon = xrdp_server_window_cached_icon;
-		mod->server->NotifyNewUpdate = xrdp_server_notify_new_update;
-		mod->server->NotifyDelete = xrdp_server_notify_delete;
-		mod->server->MonitoredDesktop = xrdp_server_monitored_desktop;
 	}
 
 	xrdp_message_server_module_init(mod);

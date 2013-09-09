@@ -177,37 +177,6 @@ int xrdp_message_server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* m
 	return 0;
 }
 
-int xrdp_message_server_window_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, xrdpRailIconInfo* icon_info, int flags)
-{
-	//mod->ServerProxy->WindowIcon(mod, window_id, cache_entry, cache_id, icon_info, flags);
-	return 0;
-}
-
-int xrdp_message_server_window_cached_icon(xrdpModule* mod, int window_id, int cache_entry, int cache_id, int flags)
-{
-	//mod->ServerProxy->WindowCachedIcon(mod, window_id, cache_entry, cache_id, flags);
-	return 0;
-}
-
-int xrdp_message_server_notify_new_update(xrdpModule* mod, int window_id, int notify_id,
-		xrdpRailNotifyStateOrder* notify_state, int flags)
-{
-	//mod->ServerProxy->NotifyNewUpdate(mod, window_id, notify_id, notify_state, flags);
-	return 0;
-}
-
-int xrdp_message_server_notify_delete(xrdpModule* mod, int window_id, int notify_id)
-{
-	//mod->ServerProxy->NotifyDelete(mod, window_id, notify_id);
-	return 0;
-}
-
-int xrdp_message_server_monitored_desktop(xrdpModule* mod, xrdpRailMonitoredDesktopOrder* mdo, int flags)
-{
-	//mod->ServerProxy->MonitoredDesktop(mod, mdo, flags);
-	return 0;
-}
-
 int xrdp_message_server_queue_process_message(xrdpModule* mod, wMessage* message)
 {
 	int status;
@@ -484,11 +453,6 @@ int xrdp_message_server_module_init(xrdpModule* mod)
 		mod->server->PaintOffscreenSurface = xrdp_message_server_paint_offscreen_surface;
 		mod->server->WindowNewUpdate = xrdp_message_server_window_new_update;
 		mod->server->WindowDelete = xrdp_message_server_window_delete;
-		mod->server->WindowIcon = xrdp_message_server_window_icon;
-		mod->server->WindowCachedIcon = xrdp_message_server_window_cached_icon;
-		mod->server->NotifyNewUpdate = xrdp_message_server_notify_new_update;
-		mod->server->NotifyDelete = xrdp_message_server_notify_delete;
-		mod->server->MonitoredDesktop = xrdp_message_server_monitored_desktop;
 	}
 
 	mod->MaxFps = mod->fps = 60;
