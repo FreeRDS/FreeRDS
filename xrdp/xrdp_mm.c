@@ -109,6 +109,8 @@ int xrdp_mm_setup_mod1(xrdpMm* self)
 
 				xrdp_server_module_init(mod);
 
+				mod->settings = self->wm->session->settings;
+
 				self->ModuleInit(mod);
 			}
 

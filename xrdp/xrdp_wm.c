@@ -51,65 +51,6 @@ void xrdp_wm_delete(xrdpWm* self)
 	free(self);
 }
 
-int xrdp_wm_load_static_colors_plus(xrdpWm* self, char* autorun_name)
-{
-	int fd;
-	int index;
-	char *val;
-	xrdpList *names;
-	xrdpList *values;
-	char cfg_file[256];
-
-	if (autorun_name != 0)
-		autorun_name[0] = 0;
-
-	/* now load them from the globals in xrdp.ini if defined */
-	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
-	fd = g_file_open(cfg_file);
-
-	if (fd > 0)
-	{
-		names = list_create();
-		names->auto_free = 1;
-		values = list_create();
-		values->auto_free = 1;
-
-		if (file_read_section(fd, "globals", names, values) == 0)
-		{
-			for (index = 0; index < names->count; index++)
-			{
-				val = (char*) list_get_item(names, index);
-
-				if (val)
-				{
-					if (g_strcasecmp(val, "autorun") == 0)
-					{
-						val = (char*) list_get_item(values, index);
-
-						if (autorun_name)
-							g_strncpy(autorun_name, val, 255);
-					}
-					else if (g_strcasecmp(val, "pamerrortxt") == 0)
-					{
-						val = (char*) list_get_item(values, index);
-						g_strncpy(self->pamerrortxt,val,255);
-					}
-				}
-			}
-		}
-
-		list_delete(names);
-		list_delete(values);
-		g_file_close(fd);
-	}
-	else
-	{
-		log_message(LOG_LEVEL_ERROR,"xrdp_wm_load_static_colors: Could not read xrdp.ini file %s", cfg_file);
-	}
-
-	return 0;
-}
-
 int xrdp_wm_init(xrdpWm* self)
 {
 	int fd;
@@ -120,11 +61,8 @@ int xrdp_wm_init(xrdpWm* self)
 	char *r;
 	char section_name[256];
 	char cfg_file[256];
-	char autorun_name[256];
 
-	xrdp_wm_load_static_colors_plus(self, autorun_name);
-
-	if (self->session->settings->AutoLogonEnabled && (autorun_name[0] != 0))
+	if (self->session->settings->AutoLogonEnabled)
 	{
 		g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
 		fd = g_file_open(cfg_file); /* xrdp.ini */
@@ -136,37 +74,7 @@ int xrdp_wm_init(xrdpWm* self)
 			values = list_create();
 			values->auto_free = 1;
 
-			if (self->session->settings->Domain)
-			{
-				strcpy(section_name, self->session->settings->Domain);
-			}
-			else
-			{
-				section_name[0] = 0;
-			}
-
-			if (section_name[0] == 0)
-			{
-				if (autorun_name[0] == 0)
-				{
-					file_read_sections(fd, names);
-
-					for (index = 0; index < names->count; index++)
-					{
-						q = (char*) list_get_item(names, index);
-
-						if (g_strncasecmp("globals", q, 8) != 0)
-						{
-							g_strncpy(section_name, q, 255);
-							break;
-						}
-					}
-				}
-				else
-				{
-					g_strncpy(section_name, autorun_name, 255);
-				}
-			}
+			strcpy(section_name, "xrdp1");
 
 			list_clear(names);
 

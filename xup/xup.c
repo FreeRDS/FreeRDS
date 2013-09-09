@@ -790,25 +790,9 @@ int x11rdp_xrdp_client_end(xrdpModule* mod)
 
 int x11rdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
 {
-	if (g_strcasecmp(name, "username") == 0)
-	{
-		g_strncpy(mod->username, value, 255);
-	}
-	else if (g_strcasecmp(name, "password") == 0)
-	{
-		g_strncpy(mod->password, value, 255);
-	}
-	else if (g_strcasecmp(name, "ip") == 0)
-	{
-		g_strncpy(mod->ip, value, 255);
-	}
-	else if (g_strcasecmp(name, "port") == 0)
+	if (g_strcasecmp(name, "port") == 0)
 	{
 		g_strncpy(mod->port, value, 255);
-	}
-	else if (g_strcasecmp(name, "settings") == 0)
-	{
-		mod->settings = (rdpSettings*) value;
 	}
 
 	return 0;
@@ -932,6 +916,8 @@ int xup_module_init(xrdpModule* mod)
 
 	mod->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) x11rdp_xrdp_client_thread,
 			(void*) mod, CREATE_SUSPENDED, NULL);
+
+	g_strncpy(mod->ip, "127.0.0.1", 255);
 
 	return 0;
 }
