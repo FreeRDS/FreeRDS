@@ -25,121 +25,77 @@
 #include "xrdp.h"
 #include "log.h"
 
+int xrdp_auth_write_string(wStream* s, char* str)
+{
+	int length = 0;
+
+	if (str)
+		length = strlen(str);
+
+	if (length < 0)
+		length = 0;
+
+	Stream_Write_UINT16(s, length);
+
+	if (length)
+		Stream_Write(s, str, length);
+
+	return 0;
+}
+
 int xrdp_mm_send_login(xrdpMm* self)
 {
+	int status;
+	int length;
 	wStream* s;
-	int rv;
-	int index;
-	int count;
-	int xserverbpp;
-	char *username;
-	char *password;
-	char *name;
-	char *value;
+	int ColorDepth;
 	rdpSettings* settings;
 
-	username = 0;
-	password = 0;
-	xserverbpp = 0;
-	count = self->login_names->count;
 	settings = self->wm->session->settings;
 
-	for (index = 0; index < count; index++)
-	{
-		name = (char*) list_get_item(self->login_names, index);
-		value = (char*) list_get_item(self->login_values, index);
-
-		if (g_strcasecmp(name, "username") == 0)
-		{
-			username = value;
-		}
-		else if (g_strcasecmp(name, "password") == 0)
-		{
-			password = value;
-		}
-		else if (g_strcasecmp(name, "xserverbpp") == 0)
-		{
-			xserverbpp = g_atoi(value);
-		}
-	}
-
-	if ((username == 0) || (password == 0))
-	{
+	if (!settings->Username || !settings->Password)
 		return 1;
-	}
 
 	s = trans_get_out_s(self->sesman_trans, 8192);
 	Stream_Seek(s, 8);
 
-	Stream_Write_UINT16(s, 0);
-	index = g_strlen(username);
-	Stream_Write_UINT16(s, index);
-	Stream_Write(s, username, index);
-	index = g_strlen(password);
+	ColorDepth = 24;
 
-	Stream_Write_UINT16(s, index);
-	Stream_Write(s, password, index);
+	Stream_Write_UINT16(s, 0);
+
+	xrdp_auth_write_string(s, settings->Username);
+	xrdp_auth_write_string(s, settings->Password);
+
 	Stream_Write_UINT16(s, settings->DesktopWidth);
 	Stream_Write_UINT16(s, settings->DesktopHeight);
+	Stream_Write_UINT16(s, ColorDepth);
 
-	if (xserverbpp > 0)
-	{
-		Stream_Write_UINT16(s, xserverbpp);
-	}
-	else
-	{
-		Stream_Write_UINT16(s, settings->ColorDepth);
-	}
+	xrdp_auth_write_string(s, settings->Domain);
+	xrdp_auth_write_string(s, settings->AlternateShell);
+	xrdp_auth_write_string(s, settings->ShellWorkingDirectory);
+	xrdp_auth_write_string(s, settings->ClientAddress);
 
-	/* send domain */
-	if (settings->Domain)
-	{
-		index = g_strlen(settings->Domain);
-		Stream_Write_UINT16(s, index);
-		Stream_Write(s, settings->Domain, index);
-	}
-	else
-	{
-		Stream_Write_UINT16(s, 0);
-	}
-
-	/* send program / shell */
-	index = g_strlen(settings->AlternateShell);
-	Stream_Write_UINT16(s, index);
-	Stream_Write(s, settings->AlternateShell, index);
-
-	/* send directory */
-	index = g_strlen(settings->ShellWorkingDirectory);
-	Stream_Write_UINT16(s, index);
-	Stream_Write(s, settings->ShellWorkingDirectory, index);
-
-	/* send client ip */
-	index = g_strlen(settings->ClientAddress);
-	Stream_Write_UINT16(s, index);
-	Stream_Write(s, settings->ClientAddress, index);
-
-	index = (int) (s->pointer - s->buffer);
+	length = (int) (Stream_Pointer(s) - Stream_Buffer(s));
 	Stream_SetPosition(s, 0);
 
-	/* Version 0 of the protocol to sesman is currently used by XRDP */
 	Stream_Write_UINT32(s, 0); /* version */
-	Stream_Write_UINT32(s, index); /* size */
+	Stream_Write_UINT32(s, length); /* size */
 
-	s->pointer = s->buffer + index;
+	Stream_SetPosition(s, length);
 
-	rv = trans_force_write(self->sesman_trans);
+	status = trans_force_write(self->sesman_trans);
 
-	return rv;
+	return status;
 }
 
 int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 {
 	int ok;
 	int display;
-	int rv;
+	int status;
 	char ip[256];
 
-	rv = 0;
+	status = 0;
 	Stream_Read_UINT16(s, ok);
 	Stream_Read_UINT16(s, display);
 
@@ -163,6 +119,6 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 		xrdp_mm_cleanup_sesman_connection(self);
 	}
 
-	return rv;
+	return status;
 }
 
