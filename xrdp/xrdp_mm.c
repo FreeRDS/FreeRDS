@@ -396,12 +396,6 @@ int xrdp_mm_connect(xrdpMm* self)
 	char errstr[256];
 	char text[256];
 	char port[8];
-#ifdef WITH_PAM
-	int use_pam_auth = 0;
-	char pam_auth_sessionIP[256];
-	char pam_auth_password[256];
-	char pam_auth_username[256];
-#endif
 	char username[256];
 	char password[256];
 	username[0] = 0;
@@ -427,29 +421,6 @@ int xrdp_mm_connect(xrdpMm* self)
 		{
 			g_strncpy(ip, value, 255);
 		}
-		else if (g_strcasecmp(name, "port") == 0)
-		{
-			if (g_strcasecmp(value, "-1") == 0)
-			{
-				self->sesman_controlled = 1;
-			}
-		}
-
-#ifdef WITH_PAM
-		else if (g_strcasecmp(name, "pamusername") == 0)
-		{
-			use_pam_auth = 1;
-			g_strncpy(pam_auth_username, value, 255);
-		}
-		else if (g_strcasecmp(name, "pamsessionmng") == 0)
-		{
-			g_strncpy(pam_auth_sessionIP, value, 255);
-		}
-		else if (g_strcasecmp(name, "pampassword") == 0)
-		{
-			g_strncpy(pam_auth_password, value, 255);
-		}
-#endif
 		else if (g_strcasecmp(name, "password") == 0)
 		{
 			g_strncpy(password, value, 255);
@@ -460,52 +431,7 @@ int xrdp_mm_connect(xrdpMm* self)
 		}
 	}
 
-#ifdef WITH_PAM
-	if (use_pam_auth)
-	{
-		int reply;
-		char replytxt[128];
-		char pam_error[128];
-		const char *additionalError;
-
-		/* g_writeln("we use pam modules to check if we can approve this user"); */
-		if (!g_strncmp(pam_auth_username, "same", 255))
-		{
-			log_message(LOG_LEVEL_DEBUG, "pamusername copied from username - same: %s", username);
-			g_strncpy(pam_auth_username, username, 255);
-		}
-
-		if (!g_strncmp(pam_auth_password, "same", 255))
-		{
-			log_message(LOG_LEVEL_DEBUG, "pam_auth_password copied from username - same: %s", password);
-			g_strncpy(pam_auth_password, password, 255);
-		}
-
-		/* access_control return 0 on success */
-		reply = xrdp_mm_access_control(pam_auth_username, pam_auth_password, pam_auth_sessionIP);
-
-		g_sprintf(replytxt, "Reply from access control: %s", getPAMError(reply, pam_error, 127));
-
-		log_message(LOG_LEVEL_INFO, replytxt);
-		additionalError = getPAMAdditionalErrorInfo(reply, self);
-
-		if (additionalError)
-		{
-			g_snprintf(replytxt, 127, "%s", additionalError);
-
-			if (replytxt[0])
-			{
-
-			}
-		}
-
-		if (reply != 0)
-		{
-			rv = 1;
-			return rv;
-		}
-	}
-#endif
+	self->sesman_controlled = 1;
 
 	if (self->sesman_controlled)
 	{
@@ -547,27 +473,6 @@ int xrdp_mm_connect(xrdpMm* self)
 			self->sesman_trans = 0;
 			self->sesman_trans_up = 0;
 			rv = 1;
-		}
-	}
-	else /* no sesman */
-	{
-		if (xrdp_mm_setup_mod1(self) == 0)
-		{
-			if (xrdp_mm_setup_mod2(self) == 0)
-			{
-				rv = 0;
-			}
-			else
-			{
-				/* connect error */
-				g_snprintf(errstr, 255, "Failure to connect to: %s", ip);
-				log_message(LOG_LEVEL_ERROR, errstr);
-				rv = 1; /* failure */
-			}
-		}
-		else
-		{
-			log_message(LOG_LEVEL_ERROR, "Failure setting up module");
 		}
 	}
 

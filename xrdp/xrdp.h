@@ -125,9 +125,6 @@ int xrdp_child_fork(void);
 /* xrdp_auth.c */
 int xrdp_mm_send_login(xrdpMm* self);
 int xrdp_mm_process_login_response(xrdpMm* self, wStream* s);
-int xrdp_mm_access_control(char *username, char *password, char *srv);
-const char* getPAMError(const int pamError, char *text, int text_bytes);
-const char* getPAMAdditionalErrorInfo(const int pamError, xrdpMm* self);
 
 int xrdp_server_module_init(xrdpModule* mod);
 int xrdp_message_server_module_init(xrdpModule* mod);
