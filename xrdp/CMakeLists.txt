@@ -34,8 +34,7 @@ set(${MODULE_PREFIX}_SRCS
 	xrdp_mm.c
 	xrdp_module.c
 	xrdp_pipeline.c
-	xrdp_process.c
-	xrdp_wm.c)
+	xrdp_process.c)
 
 set(${MODULE_PREFIX}_CFG_DATA
 	xrdp.ini)

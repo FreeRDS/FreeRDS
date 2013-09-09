@@ -34,6 +34,8 @@ xrdpMm* xrdp_mm_create(xrdpSession* session)
 	self = (xrdpMm*) g_malloc(sizeof(xrdpMm), 1);
 	self->session = session;
 
+	xrdp_mm_connect(self);
+
 	return self;
 }
 

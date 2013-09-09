@@ -129,7 +129,7 @@ struct xrdp_session
 	rdpContext context;
 
 	long id;
-	void* wm;
+	void* mm;
 	HANDLE Thread;
 	HANDLE TermEvent;
 	freerdp_peer* client;

@@ -158,8 +158,8 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (settings->RemoteFxCodec || settings->NSCodec)
 		session->codecMode = TRUE;
 
-	if (!session->wm)
-		session->wm = xrdp_wm_create(session);
+	if (!session->mm)
+		session->mm = xrdp_mm_create(session);
 
 	printf("Client Activated\n");
 
@@ -226,9 +226,9 @@ int xrdp_generate_certificate(rdpSettings* settings)
 void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
+	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
 
-	if (session->wm)
+	if (session->mm)
 	{
 		if (mod)
 		{
@@ -243,9 +243,9 @@ void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
+	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
 
-	if (session->wm)
+	if (session->mm)
 	{
 		if (mod)
 		{
@@ -260,9 +260,9 @@ void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
+	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
 
-	if (session->wm)
+	if (session->mm)
 	{
 		if (mod)
 		{
@@ -277,9 +277,9 @@ void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 cod
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
+	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
 
-	if (session->wm)
+	if (session->mm)
 	{
 		if (mod)
 		{
@@ -294,9 +294,9 @@ void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpWm*) session->wm)->mm->mod;
+	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
 
-	if (session->wm)
+	if (session->mm)
 	{
 		if (mod)
 		{
@@ -381,7 +381,7 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			xrdp_wm_get_event_handles(session->wm, events, &nCount);
+			xrdp_mm_get_event_handles(session->mm, events, &nCount);
 		}
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
@@ -416,7 +416,7 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			if (xrdp_wm_check_wait_objs(session->wm) != 0)
+			if (xrdp_mm_check_wait_objs(session->mm) != 0)
 			{
 				break;
 			}

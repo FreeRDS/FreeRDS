@@ -84,14 +84,6 @@ HANDLE g_get_term_event(void);
 HANDLE g_get_sync_event(void);
 void g_process_waiting_function(void);
 
-/* xrdp_wm.c */
-xrdpWm* xrdp_wm_create(xrdpSession* owner);
-void xrdp_wm_delete(xrdpWm* self);
-int xrdp_wm_init(xrdpWm* self);
-int xrdp_wm_get_event_handles(xrdpWm* self, HANDLE* events, DWORD* nCount);
-int xrdp_wm_check_wait_objs(xrdpWm* self);
-int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
-
 /* xrdp_process.c */
 xrdpSession* xrdp_process_create(freerdp_peer* client);
 void xrdp_process_delete(xrdpSession* self);
