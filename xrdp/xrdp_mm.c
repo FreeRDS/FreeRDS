@@ -25,22 +25,14 @@
 #include "xrdp.h"
 #include "log.h"
 
-#ifdef WITH_PAM
-#include "security/_pam_types.h"
-#endif
-
 #include "xup.h"
 
-xrdpMm* xrdp_mm_create(xrdpWm *owner)
+xrdpMm* xrdp_mm_create(xrdpSession* session)
 {
 	xrdpMm* self;
 
 	self = (xrdpMm*) g_malloc(sizeof(xrdpMm), 1);
-	self->wm = owner;
-	self->login_names = list_create();
-	self->login_names->auto_free = 1;
-	self->login_values = list_create();
-	self->login_values->auto_free = 1;
+	self->session = session;
 
 	return self;
 }
@@ -74,8 +66,6 @@ void xrdp_mm_delete(xrdpMm* self)
 	trans_delete(self->sesman_trans);
 	self->sesman_trans = 0;
 	self->sesman_trans_up = 0;
-	list_delete(self->login_names);
-	list_delete(self->login_values);
 	free(self);
 }
 
@@ -109,7 +99,7 @@ int xrdp_mm_setup_mod1(xrdpMm* self)
 
 				xrdp_server_module_init(mod);
 
-				mod->settings = self->wm->session->settings;
+				mod->settings = self->session->settings;
 
 				self->ModuleInit(mod);
 			}
@@ -132,77 +122,49 @@ int xrdp_mm_setup_mod1(xrdpMm* self)
 		return 1;
 	}
 
-	self->mod->wm = (long) (self->wm);
-	self->mod->session = self->wm->session;
+	self->mod->session = self->session;
 
 	return 0;
 }
 
 int xrdp_mm_setup_mod2(xrdpMm* self)
 {
-	char text[256];
-	char *name;
-	char *value;
-	int i;
-	int rv;
+	int status;
 	rdpSettings* settings;
 
 	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod2");
 
-	rv = 1; /* failure */
-	g_memset(text, 0, sizeof(text));
+	status = 1; /* failure */
 
-	settings = self->wm->session->settings;
+	settings = self->session->settings;
 
-	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
+	if (WaitForSingleObject(xrdp_process_get_term_event(self->session), 0) != WAIT_OBJECT_0)
 	{
 		if (self->mod->client->Start(self->mod, settings->DesktopWidth,
 				settings->DesktopHeight, settings->ColorDepth) != 0)
 		{
-			SetEvent(xrdp_process_get_term_event(self->wm->pro_layer)); /* kill session */
+			SetEvent(xrdp_process_get_term_event(self->session)); /* kill session */
 		}
 	}
 
-	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
+	if (WaitForSingleObject(xrdp_process_get_term_event(self->session), 0) != WAIT_OBJECT_0)
 	{
 		if (self->display > 0)
 		{
-			g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
+			g_snprintf(self->mod->port, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
+			self->mod->settings = self->session->settings;
 		}
 	}
 
-	if (WaitForSingleObject(xrdp_process_get_term_event(self->wm->pro_layer), 0) != WAIT_OBJECT_0)
+	if (WaitForSingleObject(xrdp_process_get_term_event(self->session), 0) != WAIT_OBJECT_0)
 	{
-		/* this adds the port to the end of the list, it will already be in
-		 the list as -1 the module should use the last one */
-		if (g_strlen(text) > 0)
-		{
-			list_add_item(self->login_names, (long) g_strdup("port"));
-			list_add_item(self->login_values, (long) g_strdup(text));
-		}
-
-		/* always set these */
-		self->mod->client->SetParam(self->mod, "settings", (char*) self->wm->session->settings);
-		name = self->wm->session->settings->ServerHostname;
-		self->mod->client->SetParam(self->mod, "hostname", name);
-		g_snprintf(text, 255, "%d", self->wm->session->settings->KeyboardLayout);
-		self->mod->client->SetParam(self->mod, "keylayout", text);
-
-		for (i = 0; i < self->login_names->count; i++)
-		{
-			name = (char*) list_get_item(self->login_names, i);
-			value = (char*) list_get_item(self->login_values, i);
-			self->mod->client->SetParam(self->mod, name, value);
-		}
-
-		/* connect */
 		if (self->mod->client->Connect(self->mod) == 0)
 		{
-			rv = 0; /* connect success */
+			status = 0; /* connect success */
 		}
 	}
 
-	return rv;
+	return status;
 }
 
 void xrdp_mm_cleanup_sesman_connection(xrdpMm* self)

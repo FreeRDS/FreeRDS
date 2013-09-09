@@ -51,7 +51,7 @@ int xrdp_mm_send_login(xrdpMm* self)
 	int ColorDepth;
 	rdpSettings* settings;
 
-	settings = self->wm->session->settings;
+	settings = self->session->settings;
 
 	if (!settings->Username || !settings->Password)
 		return 1;

@@ -21,20 +21,14 @@
 #include "xrdp.h"
 #include "log.h"
 
-xrdpWm* xrdp_wm_create(xrdpSession* owner)
+xrdpWm* xrdp_wm_create(xrdpSession* session)
 {
-	rdpSettings* settings;
 	xrdpWm* self = (xrdpWm*) NULL;
 
 	self = (xrdpWm*) g_malloc(sizeof(xrdpWm), 1);
-	self->pro_layer = owner;
-	self->session = xrdp_process_get_session(owner);
-	settings = self->session->settings;
+	self->session = session;
 
-	self->log = list_create();
-	self->log->auto_free = 1;
-
-	self->mm = xrdp_mm_create(self);
+	self->mm = xrdp_mm_create(session);
 	xrdp_mm_connect(self->mm);
 
 	return self;
@@ -46,7 +40,6 @@ void xrdp_wm_delete(xrdpWm* self)
 		return;
 
 	xrdp_mm_delete(self->mm);
-	list_delete(self->log);
 
 	free(self);
 }

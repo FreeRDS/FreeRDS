@@ -788,16 +788,6 @@ int x11rdp_xrdp_client_end(xrdpModule* mod)
 	return 0;
 }
 
-int x11rdp_xrdp_client_set_param(xrdpModule* mod, char *name, char *value)
-{
-	if (g_strcasecmp(name, "port") == 0)
-	{
-		g_strncpy(mod->port, value, 255);
-	}
-
-	return 0;
-}
-
 void* x11rdp_xrdp_client_thread(void* arg)
 {
 	int fps;
@@ -901,7 +891,6 @@ int xup_module_init(xrdpModule* mod)
 		client->MouseEvent = x11rdp_xrdp_client_mouse_event;
 		client->ExtendedMouseEvent = x11rdp_xrdp_client_extended_mouse_event;
 		client->End = x11rdp_xrdp_client_end;
-		client->SetParam = x11rdp_xrdp_client_set_param;
 		client->GetEventHandles = x11rdp_xrdp_client_get_event_handles;
 		client->CheckEventHandles = x11rdp_xrdp_client_check_event_handles;
 	}

@@ -52,13 +52,12 @@ typedef struct xrdp_wm xrdpWm;
 
 struct xrdp_mm
 {
-	xrdpWm* wm; /* owner */
+	xrdpWm* wm;
+	xrdpSession* session;
 	int connected_state; /* true if connected to sesman else false */
 	struct trans* sesman_trans; /* connection to sesman */
 	int sesman_trans_up; /* true once connected to sesman */
 	int delete_sesman_trans; /* boolean set when done with sesman connection */
-	xrdpList* login_names;
-	xrdpList* login_values;
 	/* mod vars */
 	long mod_handle;
 	int (*ModuleInit)(xrdpModule*);
@@ -73,11 +72,8 @@ struct xrdp_mm
 
 struct xrdp_wm
 {
-	xrdpSession* pro_layer; /* owner */
 	xrdpSession* session;
-	xrdpList* log;
 	xrdpMm* mm;
-	char pamerrortxt[256];
 };
 
 /* xrdp.c */
@@ -100,8 +96,6 @@ int xrdp_wm_set_login_mode(xrdpWm* self, int login_mode);
 xrdpSession* xrdp_process_create(freerdp_peer* client);
 void xrdp_process_delete(xrdpSession* self);
 HANDLE xrdp_process_get_term_event(xrdpSession* self);
-xrdpSession* xrdp_process_get_session(xrdpSession* self);
-xrdpWm* xrdp_process_get_wm(xrdpSession* self);
 void* xrdp_process_main_thread(void* arg);
 
 /* xrdp_listen.c */
@@ -110,7 +104,7 @@ void xrdp_listen_delete(xrdpListener* self);
 int xrdp_listen_main_loop(xrdpListener* self);
 
 /* xrdp_mm.c */
-xrdpMm* xrdp_mm_create(xrdpWm* owner);
+xrdpMm* xrdp_mm_create(xrdpSession* session);
 void xrdp_mm_delete(xrdpMm* self);
 int xrdp_mm_connect(xrdpMm* self);
 int xrdp_mm_setup_mod1(xrdpMm* self);
@@ -145,7 +139,6 @@ typedef int (*pXrdpClientUnicodeKeyboardEvent)(xrdpModule* mod, DWORD flags, DWO
 typedef int (*pXrdpClientMouseEvent)(xrdpModule* mod, DWORD flags, DWORD x, DWORD y);
 typedef int (*pXrdpClientExtendedMouseEvent)(xrdpModule* mod, DWORD flags, DWORD x, DWORD y);
 typedef int (*pXrdpClientEnd)(xrdpModule* mod);
-typedef int (*pXrdpClientSetParam)(xrdpModule* mod, char* name, char* value);
 typedef int (*pXrdpClientSessionChange)(xrdpModule* mod, int width, int height);
 typedef int (*pXrdpClientGetEventHandles)(xrdpModule* mod, HANDLE* events, DWORD* nCount);
 typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod);
@@ -162,7 +155,6 @@ struct xrdp_client_module
 	pXrdpClientMouseEvent MouseEvent;
 	pXrdpClientExtendedMouseEvent ExtendedMouseEvent;
 	pXrdpClientEnd End;
-	pXrdpClientSetParam SetParam;
 	pXrdpClientSessionChange SessionChange;
 	pXrdpClientGetEventHandles GetEventHandles;
 	pXrdpClientCheckEventHandles CheckEventHandles;
@@ -242,8 +234,7 @@ struct xrdp_mod
 	xrdpServerModule* server;
 
 	/* common */
-	long handle; /* pointer to self as int */
-	long wm; /* xrdpWm* */
+	long handle;
 	long painter;
 	int sck;
 	/* mod data */

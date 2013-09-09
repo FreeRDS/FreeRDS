@@ -86,16 +86,6 @@ HANDLE xrdp_process_get_term_event(xrdpSession* self)
 	return self->TermEvent;
 }
 
-xrdpSession* xrdp_process_get_session(xrdpSession* self)
-{
-	return self;
-}
-
-xrdpWm* xrdp_process_get_wm(xrdpSession* self)
-{
-	return (xrdpWm*) self->wm;
-}
-
 BOOL xrdp_peer_capabilities(freerdp_peer* client)
 {
 	return TRUE;

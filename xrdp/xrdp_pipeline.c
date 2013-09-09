@@ -361,7 +361,7 @@ int xrdp_message_server_queue_pack(xrdpModule* mod)
 	pixman_region32_t region;
 
 	ChainedMode = 0;
-	session = ((xrdpWm*) (mod->wm))->session;
+	session = mod->session;
 
 	list = mod->ServerList;
 
