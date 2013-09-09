@@ -30,6 +30,8 @@ static long g_threadid = 0; /* main threadid */
 
 static long g_sync_mutex = 0;
 static long g_sync1_mutex = 0;
+static HANDLE g_TermEvent = NULL;
+static HANDLE g_SyncEvent = NULL;
 /* synchronize stuff */
 static int g_sync_command = 0;
 static long g_sync_result = 0;
@@ -195,6 +197,8 @@ int main(int argc, char** argv)
 
 	g_init("xrdp");
 
+	no_daemon = kill = 0;
+
 	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
 
 	/* starting logging subsystem */
@@ -221,8 +225,8 @@ int main(int argc, char** argv)
 		g_exit(1);
 	}
 
-	flags = COMMAND_LINE_SEPARATOR_COLON;
-	flags |= COMMAND_LINE_SIGIL_SLASH | COMMAND_LINE_SIGIL_PLUS_MINUS;
+	flags = COMMAND_LINE_SEPARATOR_SPACE;
+	flags |= COMMAND_LINE_SIGIL_DASH | COMMAND_LINE_SIGIL_DOUBLE_DASH;
 
 	status = CommandLineParseArgumentsA(argc, (const char**) argv,
 			xrdp_ng_args, flags, NULL, NULL, NULL);
@@ -250,7 +254,6 @@ int main(int argc, char** argv)
 	while ((arg = CommandLineFindNextArgumentA(arg)) != NULL);
 
 	g_snprintf(pid_file, 255, "%s/xrdp-ng.pid", XRDP_PID_PATH);
-	no_daemon = 0;
 
 	if (kill)
 	{
