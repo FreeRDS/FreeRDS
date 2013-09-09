@@ -331,101 +331,57 @@ static void cleanup_states(xrdpMm* self)
 
 int xrdp_mm_connect(xrdpMm* self)
 {
-	xrdpList *names;
-	xrdpList *values;
-	int index;
-	int count;
 	int ok;
-	int rv;
-	char *name;
-	char *value;
+	int status;
 	char ip[256];
-	char errstr[256];
-	char text[256];
 	char port[8];
-	char username[256];
-	char password[256];
-	username[0] = 0;
-	password[0] = 0;
+	char errstr[256];
 
 	/* make sure we start in correct state */
 	cleanup_states(self);
 	g_memset(ip, 0, sizeof(ip));
 	g_memset(errstr, 0, sizeof(errstr));
-	g_memset(text, 0, sizeof(text));
 	g_memset(port, 0, sizeof(port));
-	rv = 0; /* success */
-	names = self->login_names;
-	values = self->login_values;
-	count = names->count;
+	status = 0; /* success */
 
-	for (index = 0; index < count; index++)
-	{
-		name = (char*) list_get_item(names, index);
-		value = (char*) list_get_item(values, index);
-
-		if (g_strcasecmp(name, "ip") == 0)
-		{
-			g_strncpy(ip, value, 255);
-		}
-		else if (g_strcasecmp(name, "password") == 0)
-		{
-			g_strncpy(password, value, 255);
-		}
-		else if (g_strcasecmp(name, "username") == 0)
-		{
-			g_strncpy(username, value, 255);
-		}
-	}
+	g_strncpy(ip, "127.0.0.1", 255);
 
 	self->sesman_controlled = 1;
 
-	if (self->sesman_controlled)
+	ok = 0;
+	trans_delete(self->sesman_trans);
+	self->sesman_trans = trans_create(TRANS_MODE_TCP, 8192, 8192);
+	xrdp_mm_get_sesman_port(port, sizeof(port));
+
+	/* xrdp_mm_sesman_data_in is the callback that is called when data arrives */
+	self->sesman_trans->trans_data_in = xrdp_mm_sesman_data_in;
+	self->sesman_trans->header_size = 8;
+	self->sesman_trans->callback_data = self;
+
+	if (trans_connect(self->sesman_trans, ip, port, 3000) == 0)
 	{
-		ok = 0;
-		trans_delete(self->sesman_trans);
-		self->sesman_trans = trans_create(TRANS_MODE_TCP, 8192, 8192);
-		xrdp_mm_get_sesman_port(port, sizeof(port));
-
-		/* xrdp_mm_sesman_data_in is the callback that is called when data arrives */
-		self->sesman_trans->trans_data_in = xrdp_mm_sesman_data_in;
-		self->sesman_trans->header_size = 8;
-		self->sesman_trans->callback_data = self;
-
-		/* try to connect up to 4 times */
-		for (index = 0; index < 4; index++)
-		{
-			if (trans_connect(self->sesman_trans, ip, port, 3000) == 0)
-			{
-				self->sesman_trans_up = 1;
-				ok = 1;
-				break;
-			}
-
-			g_sleep(1000);
-			g_writeln("xrdp_mm_connect: connect failed "
-				"trying again...");
-		}
-
-		if (ok)
-		{
-			/* fully connect */
-			self->connected_state = 1;
-			rv = xrdp_mm_send_login(self);
-		}
-		else
-		{
-			log_message(LOG_LEVEL_ERROR, errstr);
-			trans_delete(self->sesman_trans);
-			self->sesman_trans = 0;
-			self->sesman_trans_up = 0;
-			rv = 1;
-		}
+		self->sesman_trans_up = 1;
+		ok = 1;
 	}
 
-	log_message(LOG_LEVEL_DEBUG, "returnvalue from xrdp_mm_connect %d", rv);
+	if (ok)
+	{
+		/* fully connect */
+		self->connected_state = 1;
+		status = xrdp_mm_send_login(self);
+	}
+	else
+	{
+		log_message(LOG_LEVEL_ERROR, errstr);
+		trans_delete(self->sesman_trans);
+		self->sesman_trans = 0;
+		self->sesman_trans_up = 0;
+		status = 1;
+	}
 
-	return rv;
+	log_message(LOG_LEVEL_DEBUG, "returnvalue from xrdp_mm_connect %d", status);
+
+	return status;
 }
 
 int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount)
