@@ -117,19 +117,6 @@ void xrdp_child(int sig)
 	g_waitchild();
 }
 
-/* called in child just after fork */
-int xrdp_child_fork(void)
-{
-	/* close, don't delete these */
-	//CloseHandle(g_TermEvent);
-	//CloseHandle(g_SyncEvent);
-
-	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	g_SyncEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-
-	return 0;
-}
-
 int g_is_term(void)
 {
 	return (WaitForSingleObject(g_TermEvent, 0) == WAIT_OBJECT_0) ? 1 : 0;

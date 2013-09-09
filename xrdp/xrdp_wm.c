@@ -35,6 +35,7 @@ xrdpWm* xrdp_wm_create(xrdpSession* owner)
 	self->log->auto_free = 1;
 	self->mm = xrdp_mm_create(self);
 	xrdp_wm_init(self);
+	xrdp_mm_connect(self->mm);
 
 	return self;
 }
@@ -205,8 +206,6 @@ int xrdp_wm_init(xrdpWm* self)
 			log_message(LOG_LEVEL_ERROR,"xrdp_wm_init: Could not read xrdp.ini file %s", cfg_file);
 		}
 	}
-
-	xrdp_mm_connect(self->mm);
 
 	return 0;
 }

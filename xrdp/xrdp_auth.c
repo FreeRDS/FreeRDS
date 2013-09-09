@@ -93,7 +93,6 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 	int ok;
 	int display;
 	int status;
-	char ip[256];
 
 	status = 0;
 	Stream_Read_UINT16(s, ok);
@@ -107,7 +106,7 @@ int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
 		{
 			if (xrdp_mm_setup_mod2(self) == 0)
 			{
-				xrdp_mm_get_value(self, "ip", ip, 255);
+
 			}
 		}
 	}

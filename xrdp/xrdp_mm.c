@@ -79,43 +79,6 @@ void xrdp_mm_delete(xrdpMm* self)
 	free(self);
 }
 
-/* returns error */
-/* this goes through the login_names looking for one called 'aname'
- then it copies the corresponding login_values item into 'dest'
- 'dest' must be at least 'dest_len' + 1 bytes in size */
-int xrdp_mm_get_value(xrdpMm* self, char *aname, char *dest, int dest_len)
-{
-	char *name;
-	char *value;
-	int index;
-	int count;
-	int rv;
-
-	rv = 1;
-	/* find the library name */
-	dest[0] = 0;
-	count = self->login_names->count;
-
-	for (index = 0; index < count; index++)
-	{
-		name = (char*) list_get_item(self->login_names, index);
-		value = (char*) list_get_item(self->login_values, index);
-
-		if ((name == 0) || (value == 0))
-		{
-			break;
-		}
-
-		if (g_strcasecmp(name, aname) == 0)
-		{
-			g_strncpy(dest, value, dest_len);
-			rv = 0;
-		}
-	}
-
-	return rv;
-}
-
 int xrdp_mm_setup_mod1(xrdpMm* self)
 {
 	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod1");
@@ -180,7 +143,6 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 	char *value;
 	int i;
 	int rv;
-	int use_uds;
 	rdpSettings* settings;
 
 	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod2");
@@ -203,24 +165,7 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 	{
 		if (self->display > 0)
 		{
-			use_uds = 1;
-
-			if (xrdp_mm_get_value(self, "ip", text, 255) == 0)
-			{
-				if (g_strcmp(text, "127.0.0.1") != 0)
-				{
-					use_uds = 0;
-				}
-			}
-
-			if (use_uds)
-			{
-				g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
-			}
-			else
-			{
-				g_snprintf(text, 255, "%d", 6200 + self->display);
-			}
+			g_snprintf(text, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
 		}
 	}
 
