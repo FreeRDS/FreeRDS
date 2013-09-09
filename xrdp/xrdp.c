@@ -21,6 +21,8 @@
 #include "xrdp.h"
 #include "log.h"
 
+#include <winpr/cmdline.h>
+
 #define THREAD_WAITING 100
 
 static xrdpListener *g_listen = 0;
@@ -28,14 +30,19 @@ static long g_threadid = 0; /* main threadid */
 
 static long g_sync_mutex = 0;
 static long g_sync1_mutex = 0;
-static HANDLE g_TermEvent = NULL;
-static HANDLE g_SyncEvent = NULL;
 /* synchronize stuff */
 static int g_sync_command = 0;
 static long g_sync_result = 0;
 static long g_sync_param1 = 0;
 static long g_sync_param2 = 0;
 static long (*g_sync_func)(long param1, long param2);
+
+COMMAND_LINE_ARGUMENT_A xrdp_ng_args[] =
+{
+	{ "kill", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "kill daemon" },
+	{ "nodaemon", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "no daemon" },
+	{ NULL, 0, NULL, NULL, NULL, -1, NULL, NULL }
+};
 
 /* This function is used to run a function from the main thread.
  Sync_func is the function pointer that will run from main thread
@@ -172,91 +179,19 @@ void g_process_waiting_function(void)
 	tc_mutex_unlock(g_sync_mutex);
 }
 
-int xrdp_process_params(int argc, char **argv, xrdpStartupParams *startup_params)
-{
-	int index;
-	char option[128];
-	char value[128];
-
-	index = 1;
-
-	while (index < argc)
-	{
-		g_strncpy(option, argv[index], 127);
-
-		if (index + 1 < argc)
-		{
-			g_strncpy(value, argv[index + 1], 127);
-		}
-		else
-		{
-			value[0] = 0;
-		}
-
-		if ((g_strncasecmp(option, "-help", 255)) == 0 || (g_strncasecmp(option, "--help", 255)) == 0
-				|| (g_strncasecmp(option, "-h", 255)) == 0)
-		{
-			startup_params->help = 1;
-		}
-		else if ((g_strncasecmp(option, "-kill", 255) == 0) || (g_strncasecmp(option, "--kill", 255) == 0)
-					|| (g_strncasecmp(option, "-k", 255) == 0))
-		{
-			startup_params->kill = 1;
-		}
-		else if ((g_strncasecmp(option, "-nodaemon", 255) == 0) || (g_strncasecmp(option,
-						"--nodaemon", 255) == 0) || (g_strncasecmp(option, "-nd", 255) == 0)
-						|| (g_strncasecmp(option, "--nd", 255) == 0) || (g_strncasecmp(option,
-						"-ns", 255) == 0) || (g_strncasecmp(option, "--ns", 255) == 0))
-		{
-			startup_params->no_daemon = 1;
-		}
-		else if ((g_strncasecmp(option, "-v", 255) == 0) || (g_strncasecmp(option,
-							"--version", 255) == 0))
-		{
-			startup_params->version = 1;
-		}
-		else if ((g_strncasecmp(option, "-p", 255) == 0) || (g_strncasecmp(option,
-								"--port", 255) == 0))
-		{
-			index++;
-			g_strncpy(startup_params->port, value, 127);
-
-			if (g_strlen(startup_params->port) < 1)
-			{
-				g_writeln("error processing params, port [%s]", startup_params->port);
-				return 1;
-			}
-			else
-			{
-				g_writeln("--port parameter found, ini override [%s]", startup_params->port);
-			}
-		}
-		else if ((g_strncasecmp(option, "-f", 255) == 0) || (g_strncasecmp(option, "--fork", 255) == 0))
-		{
-			startup_params->fork = 1;
-			g_writeln("--fork parameter found, ini override");
-		}
-		else
-		{
-			return 1;
-		}
-
-		index++;
-	}
-
-	return 0;
-}
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	int fd;
 	int pid;
+	int kill;
+	int status;
+	DWORD flags;
 	int no_daemon;
 	char text[256];
 	char pid_file[256];
 	char cfg_file[256];
 	enum logReturns error;
-	xrdpStartupParams* startup_params;
+	COMMAND_LINE_ARGUMENT_A* arg;
 
 	g_init("xrdp");
 
@@ -286,21 +221,38 @@ int main(int argc, char **argv)
 		g_exit(1);
 	}
 
-	startup_params = (xrdpStartupParams *) g_malloc(sizeof(xrdpStartupParams), 1);
+	flags = COMMAND_LINE_SEPARATOR_COLON;
+	flags |= COMMAND_LINE_SIGIL_SLASH | COMMAND_LINE_SIGIL_PLUS_MINUS;
 
-	if (xrdp_process_params(argc, argv, startup_params) != 0)
+	status = CommandLineParseArgumentsA(argc, (const char**) argv,
+			xrdp_ng_args, flags, NULL, NULL, NULL);
+
+	arg = xrdp_ng_args;
+
+	do
 	{
-		g_writeln("Unknown Parameter");
-		g_writeln("xrdp -h for help");
-		g_writeln("");
-		g_deinit();
-		g_exit(0);
+		if (!(arg->Flags & COMMAND_LINE_VALUE_PRESENT))
+			continue;
+
+		CommandLineSwitchStart(arg)
+
+		CommandLineSwitchCase(arg, "kill")
+		{
+			kill = 1;
+		}
+		CommandLineSwitchCase(arg, "nodaemon")
+		{
+			no_daemon = 1;
+		}
+
+		CommandLineSwitchEnd(arg)
 	}
+	while ((arg = CommandLineFindNextArgumentA(arg)) != NULL);
 
 	g_snprintf(pid_file, 255, "%s/xrdp-ng.pid", XRDP_PID_PATH);
 	no_daemon = 0;
 
-	if (startup_params->kill)
+	if (kill)
 	{
 		g_writeln("stopping xrdp");
 		/* read the xrdp.pid file */
@@ -331,41 +283,6 @@ int main(int argc, char **argv)
 			g_file_close(fd);
 		}
 
-		g_deinit();
-		g_exit(0);
-	}
-
-	if (startup_params->no_daemon)
-	{
-		no_daemon = 1;
-	}
-
-	if (startup_params->help)
-	{
-		g_writeln("");
-		g_writeln("xrdp: A Remote Desktop Protocol server.");
-		g_writeln("Copyright (C) Jay Sorg 2004-2011");
-		g_writeln("See http://xrdp.sourceforge.net for more information.");
-		g_writeln("");
-		g_writeln("Usage: xrdp [options]");
-		g_writeln("   --help: show help");
-		g_writeln("   --nodaemon: don't fork into background");
-		g_writeln("   --kill: shut down xrdp");
-		g_writeln("   --port: tcp listen port");
-		g_writeln("   --fork: fork on new connection");
-		g_writeln("");
-		g_deinit();
-		g_exit(0);
-	}
-
-	if (startup_params->version)
-	{
-		g_writeln("");
-		g_writeln("xrdp: A Remote Desktop Protocol server.");
-		g_writeln("Copyright (C) Jay Sorg 2004-2011");
-		g_writeln("See http://xrdp.sourceforge.net for more information.");
-		g_writeln("Version %s", XRDP_NG_VERSION_FULL);
-		g_writeln("");
 		g_deinit();
 		g_exit(0);
 	}
@@ -483,7 +400,6 @@ int main(int argc, char **argv)
 		g_file_delete(pid_file);
 	}
 
-	free(startup_params);
 	g_deinit();
 
 	return 0;

@@ -49,10 +49,6 @@ typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_mod xrdpModule;
 typedef struct xrdp_mm xrdpMm;
 typedef struct xrdp_wm xrdpWm;
-typedef struct xrdp_startup_params xrdpStartupParams;
-
-#define DEFAULT_STRING_LEN 255
-#define LOG_WINDOW_CHAR_PER_LINE 60
 
 struct xrdp_mm
 {
@@ -82,16 +78,6 @@ struct xrdp_wm
 	xrdpList* log;
 	xrdpMm* mm;
 	char pamerrortxt[256];
-};
-
-struct xrdp_startup_params
-{
-	char port[128];
-	int kill;
-	int no_daemon;
-	int help;
-	int version;
-	int fork;
 };
 
 /* xrdp.c */
