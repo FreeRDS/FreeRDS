@@ -101,14 +101,11 @@ find_feature(Pixman ${PIXMAN_FEATURE_TYPE} ${PIXMAN_FEATURE_PURPOSE} ${PIXMAN_FE
 
 include_directories(${PIXMAN_INCLUDE_DIRS})
 
-add_subdirectory(avro)
-
 add_subdirectory(libxrdp)
 
 add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(sesman)
-add_subdirectory(xup)
 add_subdirectory(xrdp)
 add_subdirectory(instfiles)
 

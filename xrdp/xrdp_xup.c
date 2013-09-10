@@ -18,7 +18,7 @@
  * libxup main file
  */
 
-#include "xup.h"
+#include "xrdp_xup.h"
 
 #include "os_calls.h"
 #include "defines.h"
@@ -33,8 +33,6 @@
 
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-
-#include <avro.h>
 
 #include <winpr/crt.h>
 #include <winpr/synch.h>

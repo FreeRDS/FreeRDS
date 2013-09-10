@@ -25,7 +25,7 @@
 #include "xrdp.h"
 #include "log.h"
 
-#include "xup.h"
+#include "xrdp_xup.h"
 
 xrdpMm* xrdp_mm_create(xrdpSession* session)
 {

@@ -19,7 +19,6 @@ set(MODULE_NAME "${XRDP_NG_MODULE}")
 set(MODULE_PREFIX "FREERDP_XRDP")
 
 include_directories(".")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../xup")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common")
 include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
@@ -32,6 +31,8 @@ set(${MODULE_PREFIX}_SRCS
 	xrdp_auth.c
 	xrdp_listener.c
 	xrdp_mm.c
+	xrdp_xup.c
+	xrdp_xup.h
 	xrdp_module.c
 	xrdp_pipeline.c
 	xrdp_process.c)
@@ -42,8 +43,8 @@ set(${MODULE_PREFIX}_CFG_DATA
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-core)
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-xup)
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
+set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-protocol)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}

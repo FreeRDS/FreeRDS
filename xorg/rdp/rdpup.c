@@ -21,8 +21,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "rdp.h"
 
-#include <avro.h>
-
 #include <xrdp-ng/xrdp.h>
 
 #define LOG_LEVEL 1
