@@ -22,10 +22,10 @@ include_directories(".")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common")
 include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../core")
-
 set(${MODULE_PREFIX}_SRCS
 	xrdp.c
+	xrdp_core.c
+	xrdp_core.h
 	xrdp_channels.c
 	xrdp_channels.h
 	xrdp_auth.c
@@ -42,7 +42,6 @@ set(${MODULE_PREFIX}_CFG_DATA
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-core)
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-protocol)
 

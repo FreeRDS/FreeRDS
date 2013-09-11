@@ -24,7 +24,7 @@
 #include <freerdp/codec/rfx.h>
 #include <freerdp/codec/bitmap.h>
 
-#include "core.h"
+#include "xrdp_core.h"
 
 #include <pixman.h>
 

@@ -39,7 +39,8 @@
 #include "trans.h"
 #include "list.h"
 
-#include "core.h"
+#include "xrdp_core.h"
+
 #include "defines.h"
 #include "os_calls.h"
 #include "thread_calls.h"
