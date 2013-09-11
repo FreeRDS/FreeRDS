@@ -48,7 +48,7 @@ set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-protocol)
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr
-	MODULES winpr-thread winpr-synch winpr-file winpr-path winpr-sysinfo winpr-utils winpr-crt)
+	MODULES winpr-thread winpr-synch winpr-file winpr-path winpr-sysinfo winpr-pipe winpr-utils winpr-crt)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}

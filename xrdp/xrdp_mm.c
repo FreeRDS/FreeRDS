@@ -153,7 +153,7 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 	{
 		if (self->display > 0)
 		{
-			g_snprintf(self->mod->port, 255, "/tmp/.xrdp/xrdp_display_%d", self->display);
+			g_snprintf(self->mod->port, 255, "/tmp/.pipe/FreeRDS_%d_X11rdp", self->display);
 			self->mod->settings = self->session->settings;
 		}
 	}

@@ -35,6 +35,7 @@
 #include <sys/socket.h>
 
 #include <winpr/crt.h>
+#include <winpr/pipe.h>
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/stream.h>
@@ -157,13 +158,9 @@ int x11rdp_xrdp_client_start(xrdpModule* mod, int w, int h, int bpp)
 
 int x11rdp_xrdp_client_connect(xrdpModule* mod)
 {
-	int i;
-	int index;
 	int status;
 	int length;
-	int use_uds;
 	wStream* s;
-	char con_port[256];
 	XRDP_MSG_OPAQUE_RECT opaqueRect;
 	XRDP_MSG_BEGIN_UPDATE beginUpdate;
 	XRDP_MSG_END_UPDATE endUpdate;
@@ -191,85 +188,15 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 		return 1;
 	}
 
-	if (g_strcmp(mod->ip, "") == 0)
-	{
-		LIB_DEBUG(mod, "x11rdp_xrdp_client_connect error");
-		return 1;
-	}
-
-	g_sprintf(con_port, "%s", mod->port);
-	use_uds = 0;
-
-	if (con_port[0] == '/')
-	{
-		use_uds = 1;
-	}
-
 	mod->sck_closed = 0;
-	i = 0;
+	mod->sck = g_tcp_local_socket();
 
-	while (1)
+	status = g_tcp_local_connect(mod->sck, mod->port);
+
+	if (status < 0)
 	{
-		if (use_uds)
-		{
-			mod->sck = g_tcp_local_socket();
-		}
-		else
-		{
-			mod->sck = g_tcp_socket();
-			g_tcp_set_non_blocking(mod->sck);
-			g_tcp_set_no_delay(mod->sck);
-		}
-
-		if (use_uds)
-		{
-			status = g_tcp_local_connect(mod->sck, con_port);
-		}
-		else
-		{
-			status = g_tcp_connect(mod->sck, mod->ip, con_port);
-		}
-
-		if (status == -1)
-		{
-			if (g_tcp_last_error_would_block(mod->sck))
-			{
-				status = 0;
-				index = 0;
-
-				while (!g_tcp_can_send(mod->sck, 100))
-				{
-					index++;
-
-					if ((index >= 30) || mod->server->IsTerminated(mod))
-					{
-						status = 1;
-						break;
-					}
-				}
-			}
-			else
-			{
-
-			}
-		}
-
-		if (status == 0)
-		{
-			break;
-		}
-
 		g_tcp_close(mod->sck);
 		mod->sck = 0;
-		i++;
-
-		if (i >= 4)
-		{
-
-			break;
-		}
-
-		g_sleep(250);
 	}
 
 	lib_send_capabilities(mod);
@@ -312,80 +239,6 @@ int x11rdp_xrdp_client_connect(xrdpModule* mod)
 	}
 
 	return 0;
-}
-
-int x11rdp_xrdp_client_event(xrdpModule* mod, int subtype, long param1, long param2, long param3, long param4)
-{
-	wStream* s;
-	int length;
-	int key;
-	int status;
-	XRDP_MSG_EVENT msg;
-
-	LIB_DEBUG(mod, "in lib_mod_event");
-
-	s = mod->SendStream;
-	Stream_SetPosition(s, 0);
-
-	if ((subtype >= 15) && (subtype <= 16)) /* key events */
-	{
-		key = param2;
-
-		if (key > 0)
-		{
-			if (key == 65027) /* altgr */
-			{
-				if (mod->shift_state)
-				{
-					g_writeln("special");
-					/* fix for mstsc sending left control down with altgr */
-					/* control down / up
-					 msg param1 param2 param3 param4
-					 15  0      65507  29     0
-					 16  0      65507  29     49152 */
-
-					msg.msgFlags = 0;
-					msg.type = XRDP_CLIENT_EVENT;
-
-					msg.subType = 16; /* key up */
-					msg.param1 = 0;
-					msg.param2 = 65507; /* left control */
-					msg.param3 = 29; /* RDP scan code */
-					msg.param4 = 0xc000; /* flags */
-
-					Stream_SetPosition(s, 0);
-
-					length = xrdp_write_event(NULL, &msg);
-					xrdp_write_event(s, &msg);
-
-					status = lib_send_all(mod, Stream_Buffer(s), length);
-				}
-			}
-
-			if (key == 65507) /* left control */
-			{
-				mod->shift_state = subtype == 15;
-			}
-		}
-	}
-
-	msg.msgFlags = 0;
-	msg.type = XRDP_CLIENT_EVENT;
-
-	msg.subType = subtype;
-	msg.param1 = param1;
-	msg.param2 = param2;
-	msg.param3 = param3;
-	msg.param4 = param4;
-
-	Stream_SetPosition(s, 0);
-
-	length = xrdp_write_event(NULL, &msg);
-	xrdp_write_event(s, &msg);
-
-	status = lib_send_all(mod, Stream_Buffer(s), length);
-
-	return status;
 }
 
 int x11rdp_xrdp_client_synchronize_keyboard_event(xrdpModule* mod, DWORD flags)
@@ -881,7 +734,6 @@ int xup_module_init(xrdpModule* mod)
 
 		client->Connect = x11rdp_xrdp_client_connect;
 		client->Start = x11rdp_xrdp_client_start;
-		client->Event = x11rdp_xrdp_client_event;
 		client->SynchronizeKeyboardEvent = x11rdp_xrdp_client_synchronize_keyboard_event;
 		client->ScancodeKeyboardEvent = x11rdp_xrdp_client_scancode_keyboard_event;
 		client->VirtualKeyboardEvent = x11rdp_xrdp_client_virtual_keyboard_event;

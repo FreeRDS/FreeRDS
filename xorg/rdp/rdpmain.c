@@ -31,6 +31,9 @@ Sets up the  functions
 #include <sys/shm.h>
 #include <sys/stat.h>
 
+#include <winpr/crt.h>
+#include <winpr/pipe.h>
+
 #if 1
 #define DEBUG_OUT(arg)
 #else
@@ -61,7 +64,6 @@ int g_con_number = 0; /* increments for each connection */
 WindowPtr g_invalidate_window = 0;
 
 /* if true, use a unix domain socket instead of a tcp socket */
-int g_use_uds = 0;
 char g_uds_data[256] = ""; /* data */
 char g_uds_cont[256] = ""; /* control */
 
@@ -552,7 +554,7 @@ int ddxProcessArgument(int argc, char **argv, int i)
 {
 	if (g_firstTime)
 	{
-		memset(&g_rdpScreen, 0, sizeof(g_rdpScreen));
+		ZeroMemory(&g_rdpScreen, sizeof(g_rdpScreen));
 		g_rdpScreen.width  = 1024;
 		g_rdpScreen.height = 768;
 		g_rdpScreen.depth = 24;
@@ -599,8 +601,7 @@ int ddxProcessArgument(int argc, char **argv, int i)
 
 	if (strcmp(argv[i], "-uds") == 0)
 	{
-		g_use_uds = 1;
-		return 1;
+		return 2;
 	}
 
 	return 0;
@@ -732,7 +733,7 @@ void ddxGiveUp(enum ExitCode error)
 	{
 		sprintf(unixSocketName, "/tmp/.X11-unix/X%s", display);
 		unlink(unixSocketName);
-		sprintf(unixSocketName, "/tmp/.xrdp/xrdp_disconnect_display_%s", display);
+		sprintf(unixSocketName, "/tmp/.pipe/xrdp_disconnect_display_%s", display);
 		unlink(unixSocketName);
 
 		if (g_uds_data[0] != 0)
@@ -774,7 +775,6 @@ void ddxUseMsg(void)
 	ErrorF("X11rdp specific options\n");
 	ErrorF("-geometry WxH          set framebuffer width & height\n");
 	ErrorF("-depth D               set framebuffer depth\n");
-	ErrorF("-uds                   create and listen on /tmp/.xrdp/xrdp_display_x\n");
 	ErrorF("\n");
 	exit(1);
 }

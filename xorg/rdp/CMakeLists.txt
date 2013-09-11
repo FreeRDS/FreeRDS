@@ -235,7 +235,7 @@ set(${MODULE_PREFIX}_LIBS z m freetype rt crypto dl ${CMAKE_THREAD_LIBS_INIT})
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr
-	MODULES winpr-input winpr-utils)
+	MODULES winpr-thread winpr-synch winpr-pipe winpr-input winpr-utils)
 
 list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-common)
 list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-protocol)

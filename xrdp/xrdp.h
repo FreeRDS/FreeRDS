@@ -124,7 +124,6 @@ int xrdp_message_server_module_init(xrdpModule* mod);
 
 typedef int (*pXrdpClientStart)(xrdpModule* mod, int width, int height, int bpp);
 typedef int (*pXrdpClientConnect)(xrdpModule* mod);
-typedef int (*pXrdpClientEvent)(xrdpModule* mod, int msg, long param1, long param2, long param3, long param4);
 typedef int (*pXrdpClientSynchronizeKeyboardEvent)(xrdpModule* mod, DWORD flags);
 typedef int (*pXrdpClientScancodeKeyboardEvent)(xrdpModule* mod, DWORD flags, DWORD code, DWORD keyboardType);
 typedef int (*pXrdpClientVirtualKeyboardEvent)(xrdpModule* mod, DWORD flags, DWORD code);
@@ -140,7 +139,6 @@ struct xrdp_client_module
 {
 	pXrdpClientStart Start;
 	pXrdpClientConnect Connect;
-	pXrdpClientEvent Event;
 	pXrdpClientSynchronizeKeyboardEvent SynchronizeKeyboardEvent;
 	pXrdpClientScancodeKeyboardEvent ScancodeKeyboardEvent;
 	pXrdpClientVirtualKeyboardEvent VirtualKeyboardEvent;

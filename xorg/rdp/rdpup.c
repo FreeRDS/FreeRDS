@@ -750,15 +750,15 @@ int rdpup_init(void)
 	int i;
 	char text[256];
 
-	if (!g_directory_exist("/tmp/.xrdp"))
+	if (!g_directory_exist("/tmp/.pipe"))
 	{
-		if (!g_create_dir("/tmp/.xrdp"))
+		if (!g_create_dir("/tmp/.pipe"))
 		{
 			LLOGLN(0, ("rdpup_init: g_create_dir failed"));
 			return 0;
 		}
 
-		g_chmod_hex("/tmp/.xrdp", 0x1777);
+		g_chmod_hex("/tmp/.pipe", 0x1777);
 	}
 
 	i = atoi(display);
@@ -780,47 +780,27 @@ int rdpup_init(void)
 
 	pfbBackBufferMemory = (BYTE*) malloc(g_rdpScreen.sizeInBytes);
 
-	if (g_use_uds)
+	g_sprintf(g_uds_data, "/tmp/.pipe/FreeRDS_%s_X11rdp", display);
+
+	if (g_listen_sck == 0)
 	{
-		g_sprintf(g_uds_data, "/tmp/.xrdp/xrdp_display_%s", display);
+		g_listen_sck = g_tcp_local_socket_stream();
 
-		if (g_listen_sck == 0)
+		if (g_tcp_local_bind(g_listen_sck, g_uds_data) != 0)
 		{
-			g_listen_sck = g_tcp_local_socket_stream();
-
-			if (g_tcp_local_bind(g_listen_sck, g_uds_data) != 0)
-			{
-				LLOGLN(0, ("rdpup_init: g_tcp_local_bind failed"));
-				return 0;
-			}
-
-			g_tcp_listen(g_listen_sck);
-			AddEnabledDevice(g_listen_sck);
+			LLOGLN(0, ("rdpup_init: g_tcp_local_bind failed"));
+			return 0;
 		}
-	}
-	else
-	{
-		g_sprintf(text, "62%2.2d", i);
 
-		if (g_listen_sck == 0)
-		{
-			g_listen_sck = g_tcp_socket();
-
-			if (g_tcp_bind(g_listen_sck, text) != 0)
-			{
-				return 0;
-			}
-
-			g_tcp_listen(g_listen_sck);
-			AddEnabledDevice(g_listen_sck);
-		}
+		g_tcp_listen(g_listen_sck);
+		AddEnabledDevice(g_listen_sck);
 	}
 
 	g_dis_listen_sck = g_tcp_local_socket_dgram();
 
 	if (g_dis_listen_sck != 0)
 	{
-		g_sprintf(text, "/tmp/.xrdp/xrdp_disconnect_display_%s", display);
+		g_sprintf(text, "/tmp/.pipe/xrdp_disconnect_display_%s", display);
 
 		if (g_tcp_local_bind(g_dis_listen_sck, text) == 0)
 		{
