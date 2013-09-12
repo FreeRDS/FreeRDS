@@ -112,30 +112,6 @@ int xrdp_mm_send_login(xrdpMm* self)
 	return status;
 }
 
-int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
-{
-	int ok;
-	int display;
-	int status;
-
-	status = 0;
-	Stream_Read_UINT16(s, ok);
-	Stream_Read_UINT16(s, display);
-
-	if (ok)
-	{
-		self->display = display;
-		xrdp_mm_setup_mod(self);
-	}
-	else
-	{
-		log_message(LOG_LEVEL_INFO, "xrdp_mm_process_login_response: "
-			"login failed");
-	}
-
-	return status;
-}
-
 int xrdp_mm_setup_mod(xrdpMm* self)
 {
 	int status;
@@ -194,6 +170,30 @@ int xrdp_mm_setup_mod(xrdpMm* self)
 	return status;
 }
 
+int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
+{
+	int ok;
+	int display;
+	int status;
+
+	status = 0;
+	Stream_Read_UINT16(s, ok);
+	Stream_Read_UINT16(s, display);
+
+	if (ok)
+	{
+		self->display = display;
+		xrdp_mm_setup_mod(self);
+	}
+	else
+	{
+		log_message(LOG_LEVEL_INFO, "xrdp_mm_process_login_response: "
+			"login failed");
+	}
+
+	return status;
+}
+
 /* This is the callback registered for sesman communication replies. */
 static int xrdp_mm_sesman_data_in(struct trans *trans)
 {
@@ -247,6 +247,11 @@ int xrdp_mm_connect(xrdpMm* self)
 	char ip[256];
 	char port[8];
 	char errstr[256];
+	int auth_status;
+	int error_code = 0;
+	rdpSettings* settings;
+
+	settings = self->session->settings;
 
 	self->connected_state = 0; /* true if connected to sesman else false */
 	self->sesman_trans = NULL; /* connection to sesman */
@@ -276,6 +281,9 @@ int xrdp_mm_connect(xrdpMm* self)
 		self->sesman_trans_up = 1;
 		ok = 1;
 	}
+
+	/* authenticate first without sesman (and get rid of sesman later) */
+	auth_status = xrdp_authenticate(settings->Username, settings->Password, &error_code);
 
 	if (ok)
 	{

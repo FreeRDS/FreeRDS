@@ -54,10 +54,6 @@ int scp_session_set_type(SCP_SESSION* s, BYTE type)
 			s->type = SCP_SESSION_TYPE_XRDP;
 			break;
 
-		case SCP_GW_AUTHENTICATION:
-			s->type = SCP_GW_AUTHENTICATION;
-			break;
-
 		default:
 			return 1;
 	}

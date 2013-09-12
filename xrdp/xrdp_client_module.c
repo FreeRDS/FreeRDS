@@ -695,7 +695,7 @@ int xrdp_client_module_init(xrdpModule* mod)
 	return 0;
 }
 
-int xrdp_client_module_exit(xrdpModule* mod)
+int xrdp_client_module_uninit(xrdpModule* mod)
 {
 	SetEvent(mod->StopEvent);
 

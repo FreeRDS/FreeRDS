@@ -41,37 +41,7 @@ void scp_server_process(SCP_CONNECTION *c, SCP_SESSION *s)
 
 	data = auth_userpass(s->username, s->password, &errorcode);
 
-	if (s->type == SCP_GW_AUTHENTICATION)
-	{
-		/* this is just authentication in a gateway situation */
-		/* g_writeln("SCP_GW_AUTHENTICATION message received"); */
-		if (data)
-		{
-			if (1 == access_login_allowed(s->username))
-			{
-				/* the user is member of the correct groups. */
-				scp_server_replyauthentication(c, errorcode);
-				log_message(LOG_LEVEL_INFO, "Access permitted for user: %s", s->username);
-				/* g_writeln("Connection allowed"); */
-			}
-			else
-			{
-				scp_server_replyauthentication(c, 32 + 3); /* all first 32 are reserved for PAM errors */
-				log_message(LOG_LEVEL_INFO, "Username okey but group problem for "
-					"user: %s", s->username);
-				/* g_writeln("user password ok, but group problem"); */
-			}
-		}
-		else
-		{
-			/* g_writeln("username or password error"); */
-			log_message(LOG_LEVEL_INFO, "Username or password error for user: %s", s->username);
-			scp_server_replyauthentication(c, errorcode);
-		}
-
-		auth_end(data);
-	}
-	else if (data)
+	if (data)
 	{
 		s_item = session_get_bydata(s->username, s->width, s->height, s->bpp, s->type);
 

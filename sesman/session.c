@@ -471,10 +471,7 @@ static int session_start_fork(int width, int height, int bpp, char *username, ch
 					list_add_item(xserver_params, (long) g_strdup(depth));
 
 					/* additional parameters from sesman.ini file */
-					//config_read_xserver_params(SESMAN_SESSION_TYPE_XRDP,
-					//                           xserver_params);
-					list_append_list_strdup(g_cfg->rdp_params,
-							xserver_params, 0);
+					list_append_list_strdup(g_cfg->rdp_params, xserver_params, 0);
 
 					/* make sure it ends with a zero */
 					list_add_item(xserver_params, 0);

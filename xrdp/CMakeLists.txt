@@ -18,12 +18,21 @@
 set(MODULE_NAME "${XRDP_NG_MODULE}")
 set(MODULE_PREFIX "FREERDP_XRDP")
 
+set(PAM_FEATURE_TYPE "REQUIRED")
+set(PAM_FEATURE_PURPOSE "authentication")
+set(PAM_FEATURE_DESCRIPTION "user authentication")
+
+find_feature(PAM ${PAM_FEATURE_TYPE} ${PAM_FEATURE_PURPOSE} ${PAM_FEATURE_DESCRIPTION})
+
+include_directories(${PAM_INCLUDE_DIR})
+
 include_directories(".")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common")
 include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
 set(${MODULE_PREFIX}_SRCS
 	xrdp.c
+	xrdp_auth.c
 	xrdp_core.c
 	xrdp_core.h
 	xrdp_channels.c
@@ -39,6 +48,8 @@ set(${MODULE_PREFIX}_CFG_DATA
 	xrdp.ini)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+
+set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
 
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-common)
 set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${XRDP_NG_MODULE}-protocol)

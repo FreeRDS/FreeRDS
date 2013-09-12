@@ -61,42 +61,31 @@ struct xrdp_mm
 	int display; /* 10 for :10.0, 11 for :11.0, etc */
 };
 
-/* xrdp.c */
-long g_xrdp_sync(long (*sync_func)(long param1, long param2), long sync_param1, long sync_param2);
 int g_is_term(void);
 void g_set_term(int in_val);
 HANDLE g_get_term_event(void);
-HANDLE g_get_sync_event(void);
-void g_process_waiting_function(void);
 
-/* xrdp_process.c */
 xrdpSession* xrdp_process_create(freerdp_peer* client);
 void xrdp_process_delete(xrdpSession* self);
 HANDLE xrdp_process_get_term_event(xrdpSession* self);
 void* xrdp_process_main_thread(void* arg);
 
-/* xrdp_listen.c */
 xrdpListener* xrdp_listen_create(void);
 void xrdp_listen_delete(xrdpListener* self);
 int xrdp_listen_main_loop(xrdpListener* self);
 
-/* xrdp_mm.c */
 xrdpMm* xrdp_mm_create(xrdpSession* session);
 void xrdp_mm_delete(xrdpMm* self);
 int xrdp_mm_connect(xrdpMm* self);
-int xrdp_mm_setup_mod1(xrdpMm* self);
-int xrdp_mm_setup_mod2(xrdpMm* self);
 void xrdp_mm_cleanup_sesman_connection(xrdpMm* self);
 int xrdp_mm_process_channel_data(xrdpMm* self, LONG_PTR param1, LONG_PTR param2, LONG_PTR param3, LONG_PTR param4);
 int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount);
 int xrdp_mm_check_wait_objs(xrdpMm* self);
 
-/* xrdp_auth.c */
-int xrdp_mm_send_login(xrdpMm* self);
-int xrdp_mm_process_login_response(xrdpMm* self, wStream* s);
+long xrdp_authenticate(char* username, char* password, int* errorcode);
 
 int xrdp_client_module_init(xrdpModule* mod);
-int xrdp_client_module_exit(xrdpModule* mod);
+int xrdp_client_module_uninit(xrdpModule* mod);
 
 int xrdp_server_module_init(xrdpModule* mod);
 int xrdp_message_server_module_init(xrdpModule* mod);
