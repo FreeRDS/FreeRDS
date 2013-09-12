@@ -28,14 +28,12 @@ set(${MODULE_PREFIX}_SRCS
 	xrdp_core.h
 	xrdp_channels.c
 	xrdp_channels.h
-	xrdp_auth.c
 	xrdp_listener.c
 	xrdp_mm.c
-	xrdp_xup.c
-	xrdp_xup.h
-	xrdp_module.c
 	xrdp_pipeline.c
-	xrdp_process.c)
+	xrdp_process.c
+	xrdp_client_module.c
+	xrdp_server_module.c)
 
 set(${MODULE_PREFIX}_CFG_DATA
 	xrdp.ini)

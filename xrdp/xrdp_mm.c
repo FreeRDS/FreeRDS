@@ -25,8 +25,6 @@
 #include "xrdp.h"
 #include "log.h"
 
-#include "xrdp_xup.h"
-
 xrdpMm* xrdp_mm_create(xrdpSession* session)
 {
 	xrdpMm* self;
@@ -39,105 +37,132 @@ xrdpMm* xrdp_mm_create(xrdpSession* session)
 	return self;
 }
 
-static void xrdp_mm_module_cleanup(xrdpMm* self)
-{
-	log_message(LOG_LEVEL_DEBUG, "xrdp_mm_module_cleanup");
-
-	if (self->mod != 0)
-	{
-		if (self->ModuleExit)
-		{
-			/* let the module cleanup */
-			self->ModuleExit(self->mod);
-		}
-	}
-
-	self->ModuleInit = 0;
-	self->ModuleExit = 0;
-	self->mod = 0;
-	self->mod_handle = 0;
-}
-
 void xrdp_mm_delete(xrdpMm* self)
 {
 	if (!self)
 		return;
 
-	/* free any module stuff */
-	xrdp_mm_module_cleanup(self);
+	self->mod = NULL;
 	trans_delete(self->sesman_trans);
 	self->sesman_trans = 0;
 	self->sesman_trans_up = 0;
 	free(self);
 }
 
-int xrdp_mm_setup_mod1(xrdpMm* self)
+int xrdp_auth_write_string(wStream* s, char* str)
 {
-	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod1");
+	int length = 0;
 
-	if (!self)
-		return 1;
+	if (str)
+		length = strlen(str);
 
-	if (self->mod_handle == 0)
-	{
-		self->ModuleInit = xup_module_init;
-		self->ModuleExit = xup_module_exit;
-		self->mod_handle = 1;
+	if (length < 0)
+		length = 0;
 
-		if ((self->ModuleInit != 0) && (self->ModuleExit != 0))
-		{
-			xrdpModule* mod;
+	Stream_Write_UINT16(s, length);
 
-			mod = (xrdpModule*) malloc(sizeof(xrdpModule));
-			self->mod = mod;
-
-			if (self->mod)
-			{
-				ZeroMemory(mod, sizeof(xrdpModule));
-
-				mod->size = sizeof(xrdpModule);
-				mod->version = 2;
-				mod->handle = (long) mod;
-
-				xrdp_server_module_init(mod);
-
-				mod->settings = self->session->settings;
-
-				self->ModuleInit(mod);
-			}
-
-			if (self->mod)
-			{
-				g_writeln("loaded module ok, interface size %d, version %d",
-						self->mod->size, self->mod->version);
-			}
-		}
-		else
-		{
-			log_message(LOG_LEVEL_ERROR, "no ModuleInit or ModuleExit address found");
-		}
-	}
-
-	if (!self->mod)
-	{
-		DEBUG(("problem loading lib in xrdp_mm_setup_mod1"));
-		return 1;
-	}
-
-	self->mod->session = self->session;
+	if (length)
+		Stream_Write(s, str, length);
 
 	return 0;
 }
 
-int xrdp_mm_setup_mod2(xrdpMm* self)
+int xrdp_mm_send_login(xrdpMm* self)
 {
 	int status;
+	int length;
+	wStream* s;
+	int ColorDepth;
 	rdpSettings* settings;
 
-	log_message(LOG_LEVEL_INFO, "xrdp_mm_setup_mod2");
+	settings = self->session->settings;
 
-	status = 1; /* failure */
+	if (!settings->Username || !settings->Password)
+		return 1;
 
+	s = trans_get_out_s(self->sesman_trans, 8192);
+	Stream_Seek(s, 8);
+
+	ColorDepth = 24;
+
+	Stream_Write_UINT16(s, 0);
+
+	xrdp_auth_write_string(s, settings->Username);
+	xrdp_auth_write_string(s, settings->Password);
+
+	Stream_Write_UINT16(s, settings->DesktopWidth);
+	Stream_Write_UINT16(s, settings->DesktopHeight);
+	Stream_Write_UINT16(s, ColorDepth);
+
+	xrdp_auth_write_string(s, settings->Domain);
+	xrdp_auth_write_string(s, settings->AlternateShell);
+	xrdp_auth_write_string(s, settings->ShellWorkingDirectory);
+	xrdp_auth_write_string(s, settings->ClientAddress);
+
+	length = (int) (Stream_Pointer(s) - Stream_Buffer(s));
+	Stream_SetPosition(s, 0);
+
+	Stream_Write_UINT32(s, 0); /* version */
+	Stream_Write_UINT32(s, length); /* size */
+
+	Stream_SetPosition(s, length);
+
+	status = trans_force_write(self->sesman_trans);
+
+	return status;
+}
+
+int xrdp_mm_process_login_response(xrdpMm* self, wStream* s)
+{
+	int ok;
+	int display;
+	int status;
+
+	status = 0;
+	Stream_Read_UINT16(s, ok);
+	Stream_Read_UINT16(s, display);
+
+	if (ok)
+	{
+		self->display = display;
+		xrdp_mm_setup_mod(self);
+	}
+	else
+	{
+		log_message(LOG_LEVEL_INFO, "xrdp_mm_process_login_response: "
+			"login failed");
+	}
+
+	return status;
+}
+
+int xrdp_mm_setup_mod(xrdpMm* self)
+{
+	int status;
+	xrdpModule* mod;
+	rdpSettings* settings;
+
+	if (!self)
+		return 1;
+
+	mod = (xrdpModule*) malloc(sizeof(xrdpModule));
+	self->mod = mod;
+
+	if (!mod)
+		return 1;
+
+	ZeroMemory(mod, sizeof(xrdpModule));
+
+	mod->size = sizeof(xrdpModule);
+	mod->version = 2;
+	mod->handle = (long) mod;
+	self->mod->session = self->session;
+	mod->settings = self->session->settings;
+
+	xrdp_client_module_init(mod);
+	xrdp_server_module_init(mod);
+
+	status = 1;
 	settings = self->session->settings;
 
 	if (WaitForSingleObject(xrdp_process_get_term_event(self->session), 0) != WAIT_OBJECT_0)
@@ -153,8 +178,8 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 	{
 		if (self->display > 0)
 		{
-			g_snprintf(self->mod->port, 255, "/tmp/.pipe/FreeRDS_%d_X11rdp", self->display);
 			self->mod->settings = self->session->settings;
+			self->mod->SessionId = self->display;
 		}
 	}
 
@@ -167,69 +192,6 @@ int xrdp_mm_setup_mod2(xrdpMm* self)
 	}
 
 	return status;
-}
-
-void xrdp_mm_cleanup_sesman_connection(xrdpMm* self)
-{
-	self->delete_sesman_trans = 1;
-	self->connected_state = 0;
-	xrdp_mm_module_cleanup(self);
-}
-
-static int xrdp_mm_get_sesman_port(char *port, int port_bytes)
-{
-	int fd;
-	int error;
-	int index;
-	char *val;
-	char cfg_file[256];
-	xrdpList* names;
-	xrdpList* values;
-
-	g_memset(cfg_file, 0, sizeof(char) * 256);
-	/* default to port 3350 */
-	g_strncpy(port, "3350", port_bytes - 1);
-	/* see if port is in xrdp.ini file */
-	g_snprintf(cfg_file, 255, "%s/sesman.ini", XRDP_CFG_PATH);
-	fd = g_file_open(cfg_file);
-
-	if (fd > 0)
-	{
-		names = list_create();
-		names->auto_free = 1;
-		values = list_create();
-		values->auto_free = 1;
-
-		if (file_read_section(fd, "Globals", names, values) == 0)
-		{
-			for (index = 0; index < names->count; index++)
-			{
-				val = (char*) list_get_item(names, index);
-
-				if (val != 0)
-				{
-					if (g_strcasecmp(val, "ListenPort") == 0)
-					{
-						val = (char*) list_get_item(values, index);
-						error = g_atoi(val);
-
-						if ((error > 0) && (error < 65000))
-						{
-							g_strncpy(port, val, port_bytes - 1);
-						}
-
-						break;
-					}
-				}
-			}
-		}
-
-		list_delete(names);
-		list_delete(values);
-		g_file_close(fd);
-	}
-
-	return 0;
 }
 
 /* This is the callback registered for sesman communication replies. */
@@ -269,28 +231,13 @@ static int xrdp_mm_sesman_data_in(struct trans *trans)
 
 			default:
 				log_message(LOG_LEVEL_ERROR, "Fatal xrdp_mm_sesman_data_in: unknown cmd code %d", code);
-				xrdp_mm_cleanup_sesman_connection(self);
+				self->delete_sesman_trans = 1;
+				self->connected_state = 0;
 				break;
 		}
 	}
 
 	return error;
-}
-
-/* This routine clears all states to make sure that our next login will be
- * as expected. If the user does not press ok on the log window and try to
- * connect again we must make sure that no previous information is stored.*/
-static void cleanup_states(xrdpMm* self)
-{
-	if (self != NULL)
-	{
-		self->connected_state = 0; /* true if connected to sesman else false */
-		self->sesman_trans = NULL; /* connection to sesman */
-		self->sesman_trans_up = 0; /* true once connected to sesman */
-		self->delete_sesman_trans = 0; /* boolean set when done with sesman connection */
-		self->display = 0; /* 10 for :10.0, 11 for :11.0, etc */
-		self->sesman_controlled = 0; /* true if this is a sesman session */
-	}
 }
 
 int xrdp_mm_connect(xrdpMm* self)
@@ -301,8 +248,12 @@ int xrdp_mm_connect(xrdpMm* self)
 	char port[8];
 	char errstr[256];
 
-	/* make sure we start in correct state */
-	cleanup_states(self);
+	self->connected_state = 0; /* true if connected to sesman else false */
+	self->sesman_trans = NULL; /* connection to sesman */
+	self->sesman_trans_up = 0; /* true once connected to sesman */
+	self->delete_sesman_trans = 0; /* boolean set when done with sesman connection */
+	self->display = 0; /* 10 for :10.0, 11 for :11.0, etc */
+
 	g_memset(ip, 0, sizeof(ip));
 	g_memset(errstr, 0, sizeof(errstr));
 	g_memset(port, 0, sizeof(port));
@@ -310,12 +261,10 @@ int xrdp_mm_connect(xrdpMm* self)
 
 	g_strncpy(ip, "127.0.0.1", 255);
 
-	self->sesman_controlled = 1;
-
 	ok = 0;
 	trans_delete(self->sesman_trans);
 	self->sesman_trans = trans_create(TRANS_MODE_TCP, 8192, 8192);
-	xrdp_mm_get_sesman_port(port, sizeof(port));
+	strcpy(port, "3350");
 
 	/* xrdp_mm_sesman_data_in is the callback that is called when data arrives */
 	self->sesman_trans->trans_data_in = xrdp_mm_sesman_data_in;

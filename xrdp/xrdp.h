@@ -49,32 +49,16 @@
 typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_mod xrdpModule;
 typedef struct xrdp_mm xrdpMm;
-typedef struct xrdp_wm xrdpWm;
 
 struct xrdp_mm
 {
-	xrdpWm* wm;
 	xrdpSession* session;
 	int connected_state; /* true if connected to sesman else false */
 	struct trans* sesman_trans; /* connection to sesman */
 	int sesman_trans_up; /* true once connected to sesman */
 	int delete_sesman_trans; /* boolean set when done with sesman connection */
-	/* mod vars */
-	long mod_handle;
-	int (*ModuleInit)(xrdpModule*);
-	int (*ModuleExit)(xrdpModule*);
 	xrdpModule* mod; /* module interface */
 	int display; /* 10 for :10.0, 11 for :11.0, etc */
-	int code; /* 0 Xvnc session 10 X11rdp session */
-	int sesman_controlled; /* true if this is a sesman session */
-};
-
-/* the window manager */
-
-struct xrdp_wm
-{
-	xrdpSession* session;
-	xrdpMm* mm;
 };
 
 /* xrdp.c */
@@ -110,6 +94,9 @@ int xrdp_mm_check_wait_objs(xrdpMm* self);
 /* xrdp_auth.c */
 int xrdp_mm_send_login(xrdpMm* self);
 int xrdp_mm_process_login_response(xrdpMm* self, wStream* s);
+
+int xrdp_client_module_init(xrdpModule* mod);
+int xrdp_client_module_exit(xrdpModule* mod);
 
 int xrdp_server_module_init(xrdpModule* mod);
 int xrdp_message_server_module_init(xrdpModule* mod);
@@ -216,19 +203,17 @@ struct xrdp_mod
 
 	long handle;
 
-	int sck;
-	int sck_closed;
-	char ip[256];
-	char port[256];
-	int shift_state;
-
 	int width;
 	int height;
 	int bpp;
+
+	DWORD SessionId;
 	xrdpSession* session;
 
 	freerdp* instance;
 	rdpSettings* settings;
+
+	HANDLE hClientPipe;
 
 	UINT32 TotalLength;
 	UINT32 TotalCount;
