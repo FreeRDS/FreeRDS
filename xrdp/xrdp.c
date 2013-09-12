@@ -23,21 +23,8 @@
 
 #include <winpr/cmdline.h>
 
-#define THREAD_WAITING 100
-
-static xrdpListener *g_listen = 0;
-static long g_threadid = 0; /* main threadid */
-
-static long g_sync_mutex = 0;
-static long g_sync1_mutex = 0;
 static HANDLE g_TermEvent = NULL;
-static HANDLE g_SyncEvent = NULL;
-/* synchronize stuff */
-static int g_sync_command = 0;
-static long g_sync_result = 0;
-static long g_sync_param1 = 0;
-static long g_sync_param2 = 0;
-static long (*g_sync_func)(long param1, long param2);
+static xrdpListener* g_listen = NULL;
 
 COMMAND_LINE_ARGUMENT_A xrdp_ng_args[] =
 {
@@ -46,75 +33,16 @@ COMMAND_LINE_ARGUMENT_A xrdp_ng_args[] =
 	{ NULL, 0, NULL, NULL, NULL, -1, NULL, NULL }
 };
 
-/* This function is used to run a function from the main thread.
- Sync_func is the function pointer that will run from main thread
- The function can have two long in parameters and must return long */
-long g_xrdp_sync(long(*sync_func)(long param1, long param2), long sync_param1, long sync_param2)
-{
-	long sync_result;
-	int sync_command;
-
-	/* If the function is called from the main thread, the function can
-	 * be called directly. g_threadid= main thread ID*/
-	if (tc_threadid_equal(tc_get_threadid(), g_threadid))
-	{
-		/* this is the main thread, call the function directly */
-		/* in fork mode, this always happens too */
-		sync_result = sync_func(sync_param1, sync_param2);
-		/*g_writeln("g_xrdp_sync processed IN main thread -> continue");*/
-	}
-	else
-	{
-		/* All threads have to wait here until the main thread
-		 * process the function. g_process_waiting_function() is called
-		 * from the listening thread. g_process_waiting_function() process the function*/
-		tc_mutex_lock(g_sync1_mutex);
-		tc_mutex_lock(g_sync_mutex);
-		g_sync_param1 = sync_param1;
-		g_sync_param2 = sync_param2;
-		g_sync_func = sync_func;
-		/* set a value THREAD_WAITING so the g_process_waiting_function function
-		 * know if any function must be processed */
-		g_sync_command = THREAD_WAITING;
-		tc_mutex_unlock(g_sync_mutex);
-		/* set this event so that the main thread know if
-		 * g_process_waiting_function() must be called */
-		SetEvent(g_SyncEvent);
-
-		do
-		{
-			g_sleep(100);
-			tc_mutex_lock(g_sync_mutex);
-			/* load new value from global to see if the g_process_waiting_function()
-			 * function has processed the function */
-			sync_command = g_sync_command;
-			sync_result = g_sync_result;
-			tc_mutex_unlock(g_sync_mutex);
-		} while (sync_command != 0); /* loop until g_process_waiting_function()
-
-		 * has processed the request */
-		tc_mutex_unlock(g_sync1_mutex);
-		/*g_writeln("g_xrdp_sync processed BY main thread -> continue");*/
-	}
-
-	return sync_result;
-}
-
 void xrdp_shutdown(int sig)
 {
-	LONG_PTR threadid;
+	DWORD threadId;
 
-	threadid = tc_get_threadid();
+	threadId = GetCurrentThreadId();
 	g_writeln("shutting down");
-	g_writeln("signal %d threadid %p", sig, threadid);
+	g_writeln("signal %d threadId %p", sig, threadId);
 
 	if (WaitForSingleObject(g_TermEvent, 0) != WAIT_OBJECT_0)
 		SetEvent(g_TermEvent);
-}
-
-void xrdp_child(int sig)
-{
-	g_waitchild();
 }
 
 int g_is_term(void)
@@ -135,37 +63,10 @@ HANDLE g_get_term_event(void)
 	return g_TermEvent;
 }
 
-HANDLE g_get_sync_event(void)
-{
-	return g_SyncEvent;
-}
-
 void pipe_sig(int sig_num)
 {
 	/* do nothing */
 	g_writeln("got XRDP SIGPIPE(%d)", sig_num);
-}
-
-/*Some function must be called from the main thread.
- if g_sync_command==THREAD_WAITING a function is waiting to be processed*/
-void g_process_waiting_function(void)
-{
-	tc_mutex_lock(g_sync_mutex);
-
-	if (g_sync_command != 0)
-	{
-		if (g_sync_func != 0)
-		{
-			if (g_sync_command == THREAD_WAITING)
-			{
-				g_sync_result = g_sync_func(g_sync_param1, g_sync_param2);
-			}
-		}
-
-		g_sync_command = 0;
-	}
-
-	tc_mutex_unlock(g_sync_mutex);
 }
 
 int main(int argc, char** argv)
@@ -360,28 +261,19 @@ int main(int argc, char** argv)
 		/* end of daemonizing code */
 	}
 
-	g_threadid = tc_get_threadid();
 	g_listen = xrdp_listen_create();
 	g_signal_user_interrupt(xrdp_shutdown); /* SIGINT */
 	g_signal_kill(xrdp_shutdown); /* SIGKILL */
 	g_signal_pipe(pipe_sig); /* SIGPIPE */
 	g_signal_terminate(xrdp_shutdown); /* SIGTERM */
-	g_signal_child_stop(xrdp_child); /* SIGCHLD */
-	g_sync_mutex = tc_mutex_create();
-	g_sync1_mutex = tc_mutex_create();
 	pid = g_getpid();
 
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	g_SyncEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	xrdp_listen_main_loop(g_listen);
 	xrdp_listen_delete(g_listen);
 
-	tc_mutex_delete(g_sync_mutex);
-	tc_mutex_delete(g_sync1_mutex);
-
 	CloseHandle(g_TermEvent);
-	CloseHandle(g_SyncEvent);
 
 	/* only main process should delete pid file */
 	if ((!no_daemon) && (pid == g_getpid()))

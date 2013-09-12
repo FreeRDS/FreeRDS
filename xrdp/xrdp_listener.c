@@ -54,7 +54,6 @@ int xrdp_listen_main_loop(xrdpListener* self)
 	DWORD nCount;
 	HANDLE events[32];
 	HANDLE TermEvent;
-	HANDLE SyncEvent;
 	freerdp_listener* listener;
 
 	listener = (freerdp_listener*) self;
@@ -62,13 +61,11 @@ int xrdp_listen_main_loop(xrdpListener* self)
 	listener->Open(listener, NULL, 3389);
 
 	TermEvent = g_get_term_event();
-	SyncEvent = g_get_sync_event();
 
 	while (1)
 	{
 		nCount = 0;
 		events[nCount++] = TermEvent;
-		events[nCount++] = SyncEvent;
 
 		if (listener->GetEventHandles(listener, events, &nCount) < 0)
 		{
@@ -81,12 +78,6 @@ int xrdp_listen_main_loop(xrdpListener* self)
 		if (WaitForSingleObject(TermEvent, 0) == WAIT_OBJECT_0)
 		{
 			break;
-		}
-
-		if (WaitForSingleObject(SyncEvent, 0) == WAIT_OBJECT_0)
-		{
-			ResetEvent(SyncEvent);
-			g_process_waiting_function();
 		}
 
 		if (listener->CheckFileDescriptor(listener) != TRUE)
