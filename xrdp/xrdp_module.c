@@ -23,7 +23,6 @@
 #endif
 
 #include "xrdp.h"
-#include "log.h"
 
 xrdpModule* xrdp_module_new(xrdpSession* session)
 {

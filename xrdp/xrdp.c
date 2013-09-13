@@ -19,7 +19,8 @@
  */
 
 #include "xrdp.h"
-#include "log.h"
+
+#include "os_calls.h"
 
 #include <winpr/cmdline.h>
 
@@ -80,7 +81,6 @@ int main(int argc, char** argv)
 	char text[256];
 	char pid_file[256];
 	char cfg_file[256];
-	enum logReturns error;
 	COMMAND_LINE_ARGUMENT_A* arg;
 
 	g_init("xrdp");
@@ -88,30 +88,6 @@ int main(int argc, char** argv)
 	no_daemon = kill = 0;
 
 	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
-
-	/* starting logging subsystem */
-	error = log_start(cfg_file, "XRDP");
-
-	if (error != LOG_STARTUP_OK)
-	{
-		switch (error)
-		{
-			case LOG_ERROR_MALLOC:
-				g_writeln("error on malloc. cannot start logging. quitting.");
-				break;
-
-			case LOG_ERROR_FILE_OPEN:
-				g_writeln("error opening log file [%s]. quitting.", getLogFile(text, 255));
-				break;
-
-			default:
-				g_writeln("log_start error");
-				break;
-		}
-
-		g_deinit();
-		g_exit(1);
-	}
 
 	flags = COMMAND_LINE_SEPARATOR_SPACE;
 	flags |= COMMAND_LINE_SIGIL_DASH | COMMAND_LINE_SIGIL_DOUBLE_DASH;

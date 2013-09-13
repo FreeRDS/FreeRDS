@@ -18,9 +18,6 @@
 
 #include "xrdp.h"
 
-#include "os_calls.h"
-#include "defines.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -492,7 +489,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 			break;
 
 		default:
-			g_writeln("lib_mod_process_orders: unknown order type %d", common->type);
+			printf("xup_recv_msg: unknown order type %d\n", common->type);
 			status = 0;
 			break;
 	}

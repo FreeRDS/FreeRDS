@@ -33,24 +33,10 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 set(${MODULE_PREFIX}_HEADERS
-	d3des.h
-	os_calls.h
-	list.h
-	file.h
-	defines.h
-	log.h
-	os_calls.h
-	thread_calls.h
-	trans.h)
+	os_calls.h)
 
 set(${MODULE_PREFIX}_SRCS
-	d3des.c
-	file.c
-	list.c
-	log.c
 	os_calls.c
-	thread_calls.c
-	trans.c
 	${${MODULE_PREFIX}_HEADERS})
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})

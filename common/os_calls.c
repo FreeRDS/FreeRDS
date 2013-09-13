@@ -60,7 +60,6 @@
 #include <locale.h>
 
 #include "os_calls.h"
-#include "log.h"
 
 /* for clearenv() */
 #if defined(_WIN32)
@@ -456,8 +455,6 @@ void g_tcp_close(int sck)
 	closesocket(sck);
 #else
 	g_write_ip_address(sck, ip, 255);
-	log_message(LOG_LEVEL_INFO, "An established connection closed to "
-		"endpoint: %s", ip);
 	close(sck);
 #endif
 }
@@ -693,7 +690,6 @@ int g_tcp_accept(int sck)
 	{
 		snprintf(ipAddr, 255, "A connection received from: %s port %d", inet_ntoa(s.sin_addr),
 				ntohs(s.sin_port));
-		log_message(LOG_LEVEL_INFO, ipAddr);
 	}
 	return ret;
 }

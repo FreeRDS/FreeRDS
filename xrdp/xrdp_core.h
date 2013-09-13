@@ -49,14 +49,6 @@ struct xrdp_brush
 };
 typedef struct xrdp_brush xrdpBrush;
 
-struct xrdp_pen
-{
-	int style;
-	int width;
-	int color;
-};
-typedef struct xrdp_pen xrdpPen;
-
 struct xrdp_rect
 {
 	int left;
@@ -65,12 +57,6 @@ struct xrdp_rect
 	int bottom;
 };
 typedef struct xrdp_rect xrdpRect;
-
-#include "trans.h"
-#include "defines.h"
-#include "os_calls.h"
-#include "list.h"
-#include "file.h"
 
 struct xrdp_session
 {
@@ -128,7 +114,7 @@ FREERDP_API int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
 
 FREERDP_API int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
-		struct xrdp_brush* brush, xrdpRect* rect);
+		xrdpBrush* brush, xrdpRect* rect);
 
 FREERDP_API int libxrdp_orders_dest_blt(xrdpSession* session,
 		int x, int y, int cx, int cy, int rop, xrdpRect* rect);
@@ -167,8 +153,8 @@ FREERDP_API int libxrdp_orders_send_bitmap3(xrdpSession* session,
 FREERDP_API int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
 		int bpp, int type, int size, char* data, int cache_id);
 
-FREERDP_API int libxrdp_orders_send_create_os_surface(xrdpSession* session, int id,
-		int width, int height, struct list* del_list);
+FREERDP_API int libxrdp_orders_send_create_os_surface(xrdpSession* session,
+		CREATE_OFFSCREEN_BITMAP_ORDER* createOffscreenBitmap);
 
 FREERDP_API int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id);
 

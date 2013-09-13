@@ -19,7 +19,6 @@
  */
 
 #include "xrdp.h"
-#include "log.h"
 
 #include <winpr/crt.h>
 #include <winpr/thread.h>

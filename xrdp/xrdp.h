@@ -36,25 +36,10 @@
 
 #include <pixman.h>
 
-#include "trans.h"
-#include "list.h"
-#include "defines.h"
-#include "os_calls.h"
-#include "thread_calls.h"
-#include "file.h"
-
 typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_mod xrdpModule;
-typedef struct xrdp_mm xrdpMm;
 
 #include "xrdp_core.h"
-
-struct xrdp_mm
-{
-	xrdpSession* session;
-	xrdpModule* mod;
-	int display;
-};
 
 int g_is_term(void);
 void g_set_term(int in_val);
