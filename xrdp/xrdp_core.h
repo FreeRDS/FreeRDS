@@ -36,6 +36,10 @@
 
 #include <xrdp-ng/xrdp.h>
 
+typedef struct xrdp_session xrdpSession;
+
+#include "xrdp.h"
+
 struct xrdp_brush
 {
 	int x_orgin;
@@ -68,14 +72,12 @@ typedef struct xrdp_rect xrdpRect;
 #include "list.h"
 #include "file.h"
 
-typedef struct xrdp_session xrdpSession;
-
 struct xrdp_session
 {
 	rdpContext context;
 
 	long id;
-	void* mm;
+	xrdpModule* mod;
 	HANDLE Thread;
 	HANDLE TermEvent;
 	freerdp_peer* client;

@@ -158,8 +158,8 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (settings->RemoteFxCodec || settings->NSCodec)
 		session->codecMode = TRUE;
 
-	if (!session->mm)
-		session->mm = xrdp_mm_create(session);
+	if (!session->mod)
+		session->mod = xrdp_module_new(session);
 
 	printf("Client Activated\n");
 
@@ -226,16 +226,13 @@ int xrdp_generate_certificate(rdpSettings* settings)
 void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
+	xrdpModule* mod = session->mod;
 
-	if (session->mm)
+	if (mod)
 	{
-		if (mod)
+		if (mod->client->SynchronizeKeyboardEvent)
 		{
-			if (mod->client->SynchronizeKeyboardEvent)
-			{
-				mod->client->SynchronizeKeyboardEvent(mod, flags);
-			}
+			mod->client->SynchronizeKeyboardEvent(mod, flags);
 		}
 	}
 }
@@ -243,16 +240,13 @@ void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
+	xrdpModule* mod = session->mod;
 
-	if (session->mm)
+	if (mod)
 	{
-		if (mod)
+		if (mod->client->ScancodeKeyboardEvent)
 		{
-			if (mod->client->ScancodeKeyboardEvent)
-			{
-				mod->client->ScancodeKeyboardEvent(mod, flags, code, session->settings->KeyboardType);
-			}
+			mod->client->ScancodeKeyboardEvent(mod, flags, code, session->settings->KeyboardType);
 		}
 	}
 }
@@ -260,16 +254,13 @@ void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
+	xrdpModule* mod = session->mod;
 
-	if (session->mm)
+	if (mod)
 	{
-		if (mod)
+		if (mod->client->UnicodeKeyboardEvent)
 		{
-			if (mod->client->UnicodeKeyboardEvent)
-			{
-				mod->client->UnicodeKeyboardEvent(mod, flags, code);
-			}
+			mod->client->UnicodeKeyboardEvent(mod, flags, code);
 		}
 	}
 }
@@ -277,16 +268,13 @@ void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 cod
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
+	xrdpModule* mod = session->mod;
 
-	if (session->mm)
+	if (mod)
 	{
-		if (mod)
+		if (mod->client->MouseEvent)
 		{
-			if (mod->client->MouseEvent)
-			{
-				mod->client->MouseEvent(mod, flags, x, y);
-			}
+			mod->client->MouseEvent(mod, flags, x, y);
 		}
 	}
 }
@@ -294,16 +282,13 @@ void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	xrdpSession* session = (xrdpSession*) input->context;
-	xrdpModule* mod = ((xrdpMm*) session->mm)->mod;
+	xrdpModule* mod = session->mod;
 
-	if (session->mm)
+	if (mod)
 	{
-		if (mod)
+		if (mod->client->ExtendedMouseEvent)
 		{
-			if (mod->client->ExtendedMouseEvent)
-			{
-				mod->client->ExtendedMouseEvent(mod, flags, x, y);
-			}
+			mod->client->ExtendedMouseEvent(mod, flags, x, y);
 		}
 	}
 }
@@ -381,7 +366,8 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			xrdp_mm_get_event_handles(session->mm, events, &nCount);
+			if (session->mod)
+				session->mod->client->GetEventHandles(session->mod, events, &nCount);
 		}
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
@@ -416,9 +402,13 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			if (xrdp_mm_check_wait_objs(session->mm) != 0)
+			if (session->mod)
 			{
-				break;
+				if (session->mod->client->CheckEventHandles(session->mod) < 0)
+				{
+					fprintf(stderr, "ModuleClient->CheckEventHandles failure\n");
+					break;
+				}
 			}
 		}
 	}

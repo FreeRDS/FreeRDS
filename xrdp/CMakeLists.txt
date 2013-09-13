@@ -38,7 +38,7 @@ set(${MODULE_PREFIX}_SRCS
 	xrdp_channels.c
 	xrdp_channels.h
 	xrdp_listener.c
-	xrdp_mm.c
+	xrdp_module.c
 	xrdp_pipeline.c
 	xrdp_process.c
 	xrdp_client_module.c

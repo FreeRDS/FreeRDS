@@ -38,9 +38,6 @@
 
 #include "trans.h"
 #include "list.h"
-
-#include "xrdp_core.h"
-
 #include "defines.h"
 #include "os_calls.h"
 #include "thread_calls.h"
@@ -50,15 +47,13 @@ typedef struct xrdp_listener xrdpListener;
 typedef struct xrdp_mod xrdpModule;
 typedef struct xrdp_mm xrdpMm;
 
+#include "xrdp_core.h"
+
 struct xrdp_mm
 {
 	xrdpSession* session;
-	int connected_state; /* true if connected to sesman else false */
-	struct trans* sesman_trans; /* connection to sesman */
-	int sesman_trans_up; /* true once connected to sesman */
-	int delete_sesman_trans; /* boolean set when done with sesman connection */
-	xrdpModule* mod; /* module interface */
-	int display; /* 10 for :10.0, 11 for :11.0, etc */
+	xrdpModule* mod;
+	int display;
 };
 
 int g_is_term(void);
@@ -74,13 +69,8 @@ xrdpListener* xrdp_listen_create(void);
 void xrdp_listen_delete(xrdpListener* self);
 int xrdp_listen_main_loop(xrdpListener* self);
 
-xrdpMm* xrdp_mm_create(xrdpSession* session);
-void xrdp_mm_delete(xrdpMm* self);
-int xrdp_mm_connect(xrdpMm* self);
-void xrdp_mm_cleanup_sesman_connection(xrdpMm* self);
-int xrdp_mm_process_channel_data(xrdpMm* self, LONG_PTR param1, LONG_PTR param2, LONG_PTR param3, LONG_PTR param4);
-int xrdp_mm_get_event_handles(xrdpMm* self, HANDLE* events, DWORD* nCount);
-int xrdp_mm_check_wait_objs(xrdpMm* self);
+xrdpModule* xrdp_module_new(xrdpSession* session);
+void xrdp_module_free(xrdpModule* mod);
 
 long xrdp_authenticate(char* username, char* password, int* errorcode);
 
