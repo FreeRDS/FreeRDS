@@ -18,6 +18,10 @@
  * main program
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "xrdp.h"
 
 #include "os_calls.h"

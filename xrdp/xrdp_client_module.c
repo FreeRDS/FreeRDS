@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "xrdp.h"
 
 #include <stdio.h>
@@ -34,6 +38,7 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/stream.h>
+#include <winpr/environment.h>
 
 #include <freerdp/freerdp.h>
 
@@ -105,8 +110,11 @@ int xrdp_client_capabilities(xrdpModule* mod)
 int xrdp_client_start(xrdpModule* mod)
 {
 	BOOL status;
+	char pipeName[256];
 	STARTUPINFO StartupInfo;
 	PROCESS_INFORMATION ProcessInformation;
+
+	SetEnvironmentVariableA("DISPLAY", ":10");
 
 	ZeroMemory(&StartupInfo, sizeof(STARTUPINFO));
 	StartupInfo.cb = sizeof(STARTUPINFO);
@@ -114,6 +122,34 @@ int xrdp_client_start(xrdpModule* mod)
 
 	status = CreateProcessA(NULL,
 			"X11rdp :10 -geometry 1024x768 -depth 24 -uds",
+			NULL, NULL, FALSE, 0, NULL, NULL,
+			&StartupInfo, &ProcessInformation);
+
+	printf("Process started: %d\n", status);
+
+	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) mod->SessionId, "X11rdp");
+
+	if (!WaitNamedPipeA(pipeName, 5 * 1000))
+	{
+		printf("WaitNamedPipe failure: %s\n", pipeName);
+		return 1;
+	}
+
+	mod->hClientPipe = CreateFileA(pipeName,
+			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+	if ((!mod->hClientPipe) || (mod->hClientPipe == INVALID_HANDLE_VALUE))
+	{
+		printf("Failed to create named pipe %s\n", pipeName);
+		return 1;
+	}
+
+	ZeroMemory(&StartupInfo, sizeof(STARTUPINFO));
+	StartupInfo.cb = sizeof(STARTUPINFO);
+	ZeroMemory(&ProcessInformation, sizeof(PROCESS_INFORMATION));
+
+	status = CreateProcessA(NULL,
+			"startwm.sh",
 			NULL, NULL, FALSE, 0, NULL, NULL,
 			&StartupInfo, &ProcessInformation);
 
@@ -143,7 +179,6 @@ int xrdp_client_connect(xrdpModule* mod)
 	int length;
 	wStream* s;
 	RECTANGLE_16 rect;
-	char pipeName[256];
 	XRDP_MSG_OPAQUE_RECT opaqueRect;
 	XRDP_MSG_BEGIN_UPDATE beginUpdate;
 	XRDP_MSG_END_UPDATE endUpdate;
@@ -164,23 +199,6 @@ int xrdp_client_connect(xrdpModule* mod)
 	mod->server->BeginUpdate(mod, &beginUpdate);
 	mod->server->OpaqueRect(mod, &opaqueRect);
 	mod->server->EndUpdate(mod, &endUpdate);
-
-	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) mod->SessionId, "X11rdp");
-
-	if (!WaitNamedPipeA(pipeName, 5 * 1000))
-	{
-		printf("WaitNamedPipe failure: %s\n", pipeName);
-		return 1;
-	}
-
-	mod->hClientPipe = CreateFileA(pipeName,
-			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-
-	if ((!mod->hClientPipe) || (mod->hClientPipe == INVALID_HANDLE_VALUE))
-	{
-		printf("Failed to create named pipe %s\n", pipeName);
-		return 1;
-	}
 
 	xrdp_client_capabilities(mod);
 

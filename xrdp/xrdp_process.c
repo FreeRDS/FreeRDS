@@ -18,6 +18,10 @@
  * main rdp process
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "xrdp.h"
 
 #include <winpr/crt.h>
