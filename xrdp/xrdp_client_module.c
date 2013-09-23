@@ -37,7 +37,7 @@
 
 #include <freerdp/freerdp.h>
 
-int xrdp_module_recv(xrdpModule* mod, BYTE* data, int length)
+int xrdp_client_read(xrdpModule* mod, BYTE* data, int length)
 {
 	BOOL fSuccess = FALSE;
 	DWORD lpNumberOfBytesRead = 0;
@@ -52,7 +52,7 @@ int xrdp_module_recv(xrdpModule* mod, BYTE* data, int length)
 	return lpNumberOfBytesRead;
 }
 
-int xrdp_module_send(xrdpModule* mod, BYTE* data, int length)
+int xrdp_client_write(xrdpModule* mod, BYTE* data, int length)
 {
 	BOOL fSuccess = FALSE;
 	DWORD lpNumberOfBytesWritten = 0;
@@ -74,7 +74,7 @@ int xrdp_module_send(xrdpModule* mod, BYTE* data, int length)
 	return 0;
 }
 
-static int lib_send_capabilities(xrdpModule* mod)
+int xrdp_client_capabilities(xrdpModule* mod)
 {
 	wStream* s;
 	int length;
@@ -97,16 +97,20 @@ static int lib_send_capabilities(xrdpModule* mod)
 
 	xrdp_write_capabilities(s, &msg);
 
-	xrdp_module_send(mod, Stream_Buffer(s), length);
+	xrdp_client_write(mod, Stream_Buffer(s), length);
 
 	return 0;
 }
 
-int xrdp_client_start(xrdpModule* mod, int w, int h, int bpp)
+int xrdp_client_start(xrdpModule* mod)
 {
-	mod->width = w;
-	mod->height = h;
-	mod->bpp = bpp;
+	return 0;
+}
+
+int xrdp_client_stop(xrdpModule* mod)
+{
+	SetEvent(mod->StopEvent);
+
 	return 0;
 }
 
@@ -127,8 +131,8 @@ int xrdp_client_connect(xrdpModule* mod)
 	opaqueRect.type = XRDP_SERVER_OPAQUE_RECT;
 	opaqueRect.nTopRect = 0;
 	opaqueRect.nLeftRect = 0;
-	opaqueRect.nWidth = mod->width;
-	opaqueRect.nHeight = mod->height;
+	opaqueRect.nWidth = mod->settings->DesktopWidth;
+	opaqueRect.nHeight = mod->settings->DesktopHeight;
 	opaqueRect.color = 0;
 
 	/* clear screen */
@@ -137,7 +141,7 @@ int xrdp_client_connect(xrdpModule* mod)
 	mod->server->OpaqueRect(mod, &opaqueRect);
 	mod->server->EndUpdate(mod, &endUpdate);
 
-	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", mod->SessionId, "X11rdp");
+	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) mod->SessionId, "X11rdp");
 
 	mod->hClientPipe = CreateFileA(pipeName,
 			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -148,7 +152,7 @@ int xrdp_client_connect(xrdpModule* mod)
 		return 1;
 	}
 
-	lib_send_capabilities(mod);
+	xrdp_client_capabilities(mod);
 
 	refreshRect.msgFlags = 0;
 	refreshRect.type = XRDP_CLIENT_REFRESH_RECT;
@@ -167,7 +171,7 @@ int xrdp_client_connect(xrdpModule* mod)
 	length = xrdp_write_refresh_rect(NULL, &refreshRect);
 
 	xrdp_write_refresh_rect(s, &refreshRect);
-	xrdp_module_send(mod, Stream_Buffer(s), length);
+	xrdp_client_write(mod, Stream_Buffer(s), length);
 
 	ResumeThread(mod->ServerThread);
 
@@ -192,7 +196,7 @@ int xrdp_client_synchronize_keyboard_event(xrdpModule* mod, DWORD flags)
 	length = xrdp_write_synchronize_keyboard_event(NULL, &msg);
 	xrdp_write_synchronize_keyboard_event(s, &msg);
 
-	status = xrdp_module_send(mod, Stream_Buffer(s), length);
+	status = xrdp_client_write(mod, Stream_Buffer(s), length);
 
 	return status;
 }
@@ -217,7 +221,7 @@ int xrdp_client_scancode_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code
 	length = xrdp_write_scancode_keyboard_event(NULL, &msg);
 	xrdp_write_scancode_keyboard_event(s, &msg);
 
-	status = xrdp_module_send(mod, Stream_Buffer(s), length);
+	status = xrdp_client_write(mod, Stream_Buffer(s), length);
 
 	return status;
 }
@@ -241,7 +245,7 @@ int xrdp_client_virtual_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code)
 	length = xrdp_write_virtual_keyboard_event(NULL, &msg);
 	xrdp_write_virtual_keyboard_event(s, &msg);
 
-	status = xrdp_module_send(mod, Stream_Buffer(s), length);
+	status = xrdp_client_write(mod, Stream_Buffer(s), length);
 
 	return status;
 }
@@ -265,7 +269,7 @@ int xrdp_client_unicode_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code)
 	length = xrdp_write_unicode_keyboard_event(NULL, &msg);
 	xrdp_write_unicode_keyboard_event(s, &msg);
 
-	status = xrdp_module_send(mod, Stream_Buffer(s), length);
+	status = xrdp_client_write(mod, Stream_Buffer(s), length);
 
 	return status;
 }
@@ -290,7 +294,7 @@ int xrdp_client_mouse_event(xrdpModule* mod, DWORD flags, DWORD x, DWORD y)
 	length = xrdp_write_mouse_event(NULL, &msg);
 	xrdp_write_mouse_event(s, &msg);
 
-	status = xrdp_module_send(mod, Stream_Buffer(s), length);
+	status = xrdp_client_write(mod, Stream_Buffer(s), length);
 
 	return status;
 }
@@ -315,12 +319,12 @@ int xrdp_client_extended_mouse_event(xrdpModule* mod, DWORD flags, DWORD x, DWOR
 	length = xrdp_write_extended_mouse_event(NULL, &msg);
 	xrdp_write_extended_mouse_event(s, &msg);
 
-	status = xrdp_module_send(mod, Stream_Buffer(s), length);
+	status = xrdp_client_write(mod, Stream_Buffer(s), length);
 
 	return status;
 }
 
-int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
+int xrdp_client_receive_message(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 {
 	int status = 0;
 
@@ -497,7 +501,7 @@ int xup_recv_msg(xrdpModule* mod, wStream* s, XRDP_MSG_COMMON* common)
 	return status;
 }
 
-int xup_recv(xrdpModule* mod)
+int xrdp_client_receive(xrdpModule* mod)
 {
 	wStream* s;
 	int index;
@@ -508,7 +512,7 @@ int xup_recv(xrdpModule* mod)
 
 	if (Stream_GetPosition(s) < 8)
 	{
-		status = xrdp_module_recv(mod, Stream_Pointer(s), 8 - Stream_GetPosition(s));
+		status = xrdp_client_read(mod, Stream_Pointer(s), 8 - Stream_GetPosition(s));
 
 		if (status > 0)
 			Stream_Seek(s, status);
@@ -529,7 +533,7 @@ int xup_recv(xrdpModule* mod)
 
 	if (Stream_GetPosition(s) >= 8)
 	{
-		status = xrdp_module_recv(mod, Stream_Pointer(s), mod->TotalLength - Stream_GetPosition(s));
+		status = xrdp_client_read(mod, Stream_Pointer(s), mod->TotalLength - Stream_GetPosition(s));
 
 		if (status > 0)
 			Stream_Seek(s, status);
@@ -547,7 +551,7 @@ int xup_recv(xrdpModule* mod)
 
 			xrdp_read_common_header(s, &common);
 
-			status = xup_recv_msg(mod, s, &common);
+			status = xrdp_client_receive_message(mod, s, &common);
 
 			if (status != 0)
 			{
@@ -561,13 +565,6 @@ int xup_recv(xrdpModule* mod)
 		mod->TotalLength = 0;
 		mod->TotalCount = 0;
 	}
-
-	return 0;
-}
-
-int xrdp_client_end(xrdpModule* mod)
-{
-	SetEvent(mod->StopEvent);
 
 	return 0;
 }
@@ -604,7 +601,7 @@ void* xrdp_client_thread(void* arg)
 
 		if (WaitForSingleObject(mod->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			xup_recv(mod);
+			xrdp_client_receive(mod);
 		}
 
 		if (status == WAIT_OBJECT_0)
@@ -665,15 +662,15 @@ int xrdp_client_module_init(xrdpModule* mod)
 	{
 		ZeroMemory(client, sizeof(xrdpClientModule));
 
-		client->Connect = xrdp_client_connect;
 		client->Start = xrdp_client_start;
+		client->Stop = xrdp_client_stop;
+		client->Connect = xrdp_client_connect;
 		client->SynchronizeKeyboardEvent = xrdp_client_synchronize_keyboard_event;
 		client->ScancodeKeyboardEvent = xrdp_client_scancode_keyboard_event;
 		client->VirtualKeyboardEvent = xrdp_client_virtual_keyboard_event;
 		client->UnicodeKeyboardEvent = xrdp_client_unicode_keyboard_event;
 		client->MouseEvent = xrdp_client_mouse_event;
 		client->ExtendedMouseEvent = xrdp_client_extended_mouse_event;
-		client->End = xrdp_client_end;
 		client->GetEventHandles = xrdp_client_get_event_handles;
 		client->CheckEventHandles = xrdp_client_check_event_handles;
 	}

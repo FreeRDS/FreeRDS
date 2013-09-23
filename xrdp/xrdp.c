@@ -39,8 +39,8 @@ void xrdp_shutdown(int sig)
 	DWORD threadId;
 
 	threadId = GetCurrentThreadId();
-	g_writeln("shutting down");
-	g_writeln("signal %d threadId %p", sig, threadId);
+	printf("shutting down\n");
+	printf("signal %d threadId %p\n", sig, threadId);
 
 	if (WaitForSingleObject(g_TermEvent, 0) != WAIT_OBJECT_0)
 		SetEvent(g_TermEvent);
@@ -67,7 +67,7 @@ HANDLE g_get_term_event(void)
 void pipe_sig(int sig_num)
 {
 	/* do nothing */
-	g_writeln("got XRDP SIGPIPE(%d)", sig_num);
+	printf("got XRDP SIGPIPE(%d)\n", sig_num);
 }
 
 int main(int argc, char** argv)
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 
 	if (kill)
 	{
-		g_writeln("stopping xrdp");
+		printf("stopping xrdp\n");
 		/* read the xrdp.pid file */
 		fd = -1;
 
@@ -132,15 +132,15 @@ int main(int argc, char** argv)
 
 		if (fd == -1)
 		{
-			g_writeln("problem opening to xrdp-ng.pid [%s]", pid_file);
-			g_writeln("maybe its not running");
+			printf("problem opening to xrdp-ng.pid [%s]\n", pid_file);
+			printf("maybe its not running\n");
 		}
 		else
 		{
-			g_memset(text, 0, 32);
+			memset(text, 0, 32);
 			g_file_read(fd, (unsigned char*) text, 31);
-			pid = g_atoi(text);
-			g_writeln("stopping process id %d", pid);
+			pid = atoi(text);
+			printf("stopping process id %d\n", pid);
 
 			if (pid > 0)
 			{
@@ -156,8 +156,8 @@ int main(int argc, char** argv)
 
 	if (g_file_exist(pid_file)) /* xrdp-ng.pid */
 	{
-		g_writeln("It looks like xrdp is already running,");
-		g_writeln("if not delete the xrdp-ng.pid file and try again");
+		printf("It looks like xrdp is already running,\n");
+		printf("if not delete the xrdp-ng.pid file and try again\n");
 		g_deinit();
 		g_exit(0);
 	}
@@ -173,14 +173,14 @@ int main(int argc, char** argv)
 
 		if (fd == -1)
 		{
-			g_writeln("running in daemon mode with no access to pid files, quitting");
+			printf("running in daemon mode with no access to pid files, quitting\n");
 			g_deinit();
 			g_exit(0);
 		}
 
 		if (g_file_write(fd, (unsigned char*) "0", 1) == -1)
 		{
-			g_writeln("running in daemon mode with no access to pid files, quitting");
+			printf("running in daemon mode with no access to pid files, quitting\n");
 			g_deinit();
 			g_exit(0);
 		}
@@ -196,14 +196,14 @@ int main(int argc, char** argv)
 
 		if (pid == -1)
 		{
-			g_writeln("problem forking");
+			printf("problem forking\n");
 			g_deinit();
 			g_exit(1);
 		}
 
 		if (0 != pid)
 		{
-			g_writeln("process %d started ok", pid);
+			printf("process %d started ok\n", pid);
 			/* exit, this is the main process */
 			g_deinit();
 			g_exit(0);
@@ -216,14 +216,13 @@ int main(int argc, char** argv)
 
 		if (fd == -1)
 		{
-			g_writeln("trying to write process id to xrdp-ng.pid");
-			g_writeln("problem opening xrdp-ng.pid");
-			g_writeln("maybe no rights");
+			printf("trying to write process id to xrdp-ng.pid\n");
+			printf("problem opening xrdp-ng.pid\n");
 		}
 		else
 		{
 			g_sprintf(text, "%d", pid);
-			g_file_write(fd, (unsigned char*) text, g_strlen(text));
+			g_file_write(fd, (unsigned char*) text, strlen(text));
 			g_file_close(fd);
 		}
 

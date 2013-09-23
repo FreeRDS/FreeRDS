@@ -73,7 +73,8 @@ int xrdp_message_server_module_init(xrdpModule* mod);
  * Module Interface
  */
 
-typedef int (*pXrdpClientStart)(xrdpModule* mod, int width, int height, int bpp);
+typedef int (*pXrdpClientStart)(xrdpModule* mod);
+typedef int (*pXrdpClientStop)(xrdpModule* mod);
 typedef int (*pXrdpClientConnect)(xrdpModule* mod);
 typedef int (*pXrdpClientSynchronizeKeyboardEvent)(xrdpModule* mod, DWORD flags);
 typedef int (*pXrdpClientScancodeKeyboardEvent)(xrdpModule* mod, DWORD flags, DWORD code, DWORD keyboardType);
@@ -81,7 +82,6 @@ typedef int (*pXrdpClientVirtualKeyboardEvent)(xrdpModule* mod, DWORD flags, DWO
 typedef int (*pXrdpClientUnicodeKeyboardEvent)(xrdpModule* mod, DWORD flags, DWORD code);
 typedef int (*pXrdpClientMouseEvent)(xrdpModule* mod, DWORD flags, DWORD x, DWORD y);
 typedef int (*pXrdpClientExtendedMouseEvent)(xrdpModule* mod, DWORD flags, DWORD x, DWORD y);
-typedef int (*pXrdpClientEnd)(xrdpModule* mod);
 typedef int (*pXrdpClientSessionChange)(xrdpModule* mod, int width, int height);
 typedef int (*pXrdpClientGetEventHandles)(xrdpModule* mod, HANDLE* events, DWORD* nCount);
 typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod);
@@ -89,6 +89,7 @@ typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod);
 struct xrdp_client_module
 {
 	pXrdpClientStart Start;
+	pXrdpClientStop Stop;
 	pXrdpClientConnect Connect;
 	pXrdpClientSynchronizeKeyboardEvent SynchronizeKeyboardEvent;
 	pXrdpClientScancodeKeyboardEvent ScancodeKeyboardEvent;
@@ -96,7 +97,6 @@ struct xrdp_client_module
 	pXrdpClientUnicodeKeyboardEvent UnicodeKeyboardEvent;
 	pXrdpClientMouseEvent MouseEvent;
 	pXrdpClientExtendedMouseEvent ExtendedMouseEvent;
-	pXrdpClientEnd End;
 	pXrdpClientSessionChange SessionChange;
 	pXrdpClientGetEventHandles GetEventHandles;
 	pXrdpClientCheckEventHandles CheckEventHandles;
@@ -160,16 +160,9 @@ typedef struct xrdp_server_module xrdpServerModule;
 struct xrdp_mod
 {
 	int size;
-	int version;
 
 	xrdpClientModule* client;
 	xrdpServerModule* server;
-
-	long handle;
-
-	int width;
-	int height;
-	int bpp;
 
 	DWORD SessionId;
 	xrdpSession* session;

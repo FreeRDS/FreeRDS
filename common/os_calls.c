@@ -137,7 +137,7 @@ int g_mk_temp_dir(const char *app_name)
 			return 1;
 		}
 
-		g_strncpy(g_temp_base, g_temp_base_org, 127);
+		strncpy(g_temp_base, g_temp_base_org, 127);
 
 		if (mkdtemp(g_temp_base) == 0)
 		{
@@ -186,17 +186,6 @@ void* g_malloc(int size, int zero)
 	return rv;
 }
 
-/* output text to stdout, try to use g_write / g_writeln instead to avoid
- linux / windows EOL problems */
-void g_printf(const char *format, ...)
-{
-	va_list ap;
-
-	va_start(ap, format);
-	vfprintf(stdout, format, ap);
-	va_end(ap);
-}
-
 void g_sprintf(char *dest, const char *format, ...)
 {
 	va_list ap;
@@ -213,86 +202,6 @@ void g_snprintf(char *dest, int len, const char *format, ...)
 	va_start(ap, format);
 	vsnprintf(dest, len, format, ap);
 	va_end(ap);
-}
-
-void g_writeln(const char *format, ...)
-{
-	va_list ap;
-
-	va_start(ap, format);
-	vfprintf(stdout, format, ap);
-	va_end(ap);
-#if defined(_WIN32)
-	g_printf("\r\n");
-#else
-	g_printf("\n");
-#endif
-}
-
-void g_write(const char *format, ...)
-{
-	va_list ap;
-
-	va_start(ap, format);
-	vfprintf(stdout, format, ap);
-	va_end(ap);
-}
-
-/* produce a hex dump */
-void g_hexdump(char *p, int len)
-{
-	unsigned char *line;
-	int i;
-	int thisline;
-	int offset;
-
-	line = (unsigned char *) p;
-	offset = 0;
-
-	while (offset < len)
-	{
-		g_printf("%04x ", offset);
-		thisline = len - offset;
-
-		if (thisline > 16)
-		{
-			thisline = 16;
-		}
-
-		for (i = 0; i < thisline; i++)
-		{
-			g_printf("%02x ", line[i]);
-		}
-
-		for (; i < 16; i++)
-		{
-			g_printf("   ");
-		}
-
-		for (i = 0; i < thisline; i++)
-		{
-			g_printf("%c", (line[i] >= 0x20 && line[i] < 0x7f) ? line[i] : '.');
-		}
-
-		g_writeln("");
-		offset += thisline;
-		line += thisline;
-	}
-}
-
-void g_memset(void *ptr, int val, int size)
-{
-	memset(ptr, val, size);
-}
-
-void g_memcpy(void *d_ptr, const void *s_ptr, int size)
-{
-	memcpy(d_ptr, s_ptr, size);
-}
-
-int g_getchar(void)
-{
-	return getchar();
 }
 
 /*Returns 0 on success*/
@@ -323,13 +232,13 @@ int g_tcp_set_no_delay(int sck)
 			}
 			else
 			{
-				g_writeln("Error setting tcp_nodelay");
+				printf("Error setting tcp_nodelay\n");
 			}
 		}
 	}
 	else
 	{
-		g_writeln("Error getting tcp_nodelay");
+		printf("Error getting tcp_nodelay\n");
 	}
 
 	return ret;
@@ -363,13 +272,13 @@ int g_tcp_set_keepalive(int sck)
 			}
 			else
 			{
-				g_writeln("Error setting tcp_keepalive");
+				printf("Error setting tcp_keepalive\n");
 			}
 		}
 	}
 	else
 	{
-		g_writeln("Error getting tcp_keepalive");
+		printf("Error getting tcp_keepalive\n");
 	}
 
 	return ret;
@@ -468,7 +377,7 @@ int g_tcp_connect(int sck, const char *address, const char *port)
 	struct addrinfo *rp = (struct addrinfo *) NULL;
 
 	/* initialize (zero out) local variables: */
-	g_memset(&p, 0, sizeof(struct addrinfo));
+	memset(&p, 0, sizeof(struct addrinfo));
 
 	/* in IPv6-enabled environments, set the AI_V4MAPPED
 	 * flag in ai_flags and specify ai_family=AF_INET6 in
@@ -481,7 +390,7 @@ int g_tcp_connect(int sck, const char *address, const char *port)
 #if !defined(NO_ARPA_INET_H_IP6)
 	p.ai_flags = AI_ADDRCONFIG | AI_V4MAPPED;
 	p.ai_family = AF_INET6;
-	if (g_strcmp(address, "127.0.0.1") == 0)
+	if (strcmp(address, "127.0.0.1") == 0)
 	{
 		res = getaddrinfo("::1", port, &p, &h);
 	} else
@@ -553,11 +462,11 @@ static int address_match(const char *address, struct addrinfo *j)
 	if (strlen(address) < 1)
 		return 1;
 
-	if (g_strcmp(address, "0.0.0.0") == 0)
+	if (strcmp(address, "0.0.0.0") == 0)
 		return 1;
 
-	if ((g_strcmp(address, "127.0.0.1") == 0) ||
-			(g_strcmp(address, "::1") == 0) || (g_strcmp(address, "localhost") == 0))
+	if ((strcmp(address, "127.0.0.1") == 0) ||
+			(strcmp(address, "::1") == 0) || (strcmp(address, "localhost") == 0))
 	{
 		if (j->ai_addr != 0)
 		{
@@ -610,7 +519,7 @@ static int  g_tcp_bind_flags(int sck, const char* port, const char* address, int
 	struct addrinfo hints = { 0 };
 
 	status = -1;
-	g_memset(&hints, 0, sizeof(struct addrinfo));
+	memset(&hints, 0, sizeof(struct addrinfo));
 
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_flags = flags;
@@ -848,8 +757,8 @@ int g_tcp_select(int sck1, int sck2)
 	int max = 0;
 	int rv = 0;
 
-	g_memset(&rfds, 0, sizeof(fd_set));
-	g_memset(&time, 0, sizeof(struct timeval));
+	memset(&rfds, 0, sizeof(fd_set));
+	memset(&time, 0, sizeof(struct timeval));
 
 	time.tv_sec = 0;
 	time.tv_usec = 0;
@@ -893,52 +802,6 @@ int g_tcp_select(int sck1, int sck2)
 	}
 
 	return rv;
-}
-
-void g_random(char *data, int len)
-{
-#if defined(_WIN32)
-	int index;
-
-	srand(g_time1());
-
-	for (index = 0; index < len; index++)
-	{
-		data[index] = (char)rand(); /* rand returns a number between 0 and
-		 RAND_MAX */
-	}
-
-#else
-	int fd;
-
-	memset(data, 0x44, len);
-	fd = open("/dev/urandom", O_RDONLY);
-
-	if (fd == -1)
-	{
-		fd = open("/dev/random", O_RDONLY);
-	}
-
-	if (fd != -1)
-	{
-		if (read(fd, data, len) != len)
-		{
-		}
-
-		close(fd);
-	}
-
-#endif
-}
-
-int g_abs(int i)
-{
-	return abs(i);
-}
-
-int g_memcmp(const void *s1, const void *s2, int len)
-{
-	return memcmp(s1, s2, len);
 }
 
 /* returns -1 on error, else return handle or file descriptor */
@@ -1121,12 +984,6 @@ int g_chmod_hex(const char *filename, int flags)
 #endif
 }
 
-/* returns error, zero is ok */
-int g_chown(const char *name, int uid, int gid)
-{
-	return chown(name, uid, gid);
-}
-
 /* returns error, always zero */
 int g_mkdir(const char *dirname)
 {
@@ -1227,7 +1084,7 @@ int g_create_path(const char *path)
 	int status;
 
 	status = 1;
-	copypath = g_strdup(path);
+	copypath = _strdup(path);
 	pp = copypath;
 	sp = strchr(pp, '/');
 
@@ -1297,479 +1154,6 @@ int g_file_get_size(const char *filename)
 #endif
 }
 
-/* returns length of text */
-int g_strlen(const char *text)
-{
-	if (text == NULL)
-	{
-		return 0;
-	}
-
-	return strlen(text);
-}
-
-/* locates char in text */
-char* g_strchr(const char* text, int c)
-{
-	if (text == NULL)
-	{
-		return 0;
-	}
-
-	return strchr(text, c);
-}
-
-/* returns dest */
-char* g_strcpy(char *dest, const char *src)
-{
-	if (src == 0 && dest != 0)
-	{
-		dest[0] = 0;
-		return dest;
-	}
-
-	if (dest == 0 || src == 0)
-	{
-		return 0;
-	}
-
-	return strcpy(dest, src);
-}
-
-/* returns dest */
-char* g_strncpy(char *dest, const char *src, int len)
-{
-	char *rv;
-
-	if (src == 0 && dest != 0)
-	{
-		dest[0] = 0;
-		return dest;
-	}
-
-	if (dest == 0 || src == 0)
-	{
-		return 0;
-	}
-
-	rv = strncpy(dest, src, len);
-	dest[len] = 0;
-	return rv;
-}
-
-/* returns dest */
-char* g_strcat(char *dest, const char *src)
-{
-	if (dest == 0 || src == 0)
-	{
-		return dest;
-	}
-
-	return strcat(dest, src);
-}
-
-/* if in = 0, return 0 else return newly alloced copy of in */
-char* g_strdup(const char *in)
-{
-	int len;
-	char *p;
-
-	if (in == 0)
-	{
-		return 0;
-	}
-
-	len = g_strlen(in);
-	p = (char *) g_malloc(len + 1, 0);
-
-	if (p != NULL)
-	{
-		g_strcpy(p, in);
-	}
-
-	return p;
-}
-/* if in = 0, return 0 else return newly alloced copy of input string
- * if the input string is larger than maxlen the returned string will be
- * truncated. All strings returned will include null termination*/
-char* g_strndup(const char *in, const unsigned int maxlen)
-{
-	int len;
-	char *p;
-
-	if (in == 0)
-	{
-		return 0;
-	}
-
-	len = g_strlen(in);
-
-	if (len > maxlen)
-	{
-		len = maxlen - 1;
-	}
-
-	p = (char *) g_malloc(len + 2, 0);
-
-	if (p != NULL)
-	{
-		g_strncpy(p, in, len + 1);
-	}
-
-	return p;
-}
-int g_strcmp(const char *c1, const char *c2)
-{
-	return strcmp(c1, c2);
-}
-
-int g_strncmp(const char *c1, const char *c2, int len)
-{
-	return strncmp(c1, c2, len);
-}
-
-int g_strcasecmp(const char *c1, const char *c2)
-{
-#if defined(_WIN32)
-	return stricmp(c1, c2);
-#else
-	return strcasecmp(c1, c2);
-#endif
-}
-
-int g_strncasecmp(const char *c1, const char *c2, int len)
-{
-#if defined(_WIN32)
-	return strnicmp(c1, c2, len);
-#else
-	return strncasecmp(c1, c2, len);
-#endif
-}
-
-int g_atoi(const char *str)
-{
-	if (str == 0)
-	{
-		return 0;
-	}
-
-	return atoi(str);
-}
-
-int g_htoi(char *str)
-{
-	int len;
-	int index;
-	int rv;
-	int val;
-	int shift;
-
-	rv = 0;
-	len = strlen(str);
-	index = len - 1;
-	shift = 0;
-
-	while (index >= 0)
-	{
-		val = 0;
-
-		switch (str[index])
-		{
-			case '1':
-				val = 1;
-				break;
-			case '2':
-				val = 2;
-				break;
-			case '3':
-				val = 3;
-				break;
-			case '4':
-				val = 4;
-				break;
-			case '5':
-				val = 5;
-				break;
-			case '6':
-				val = 6;
-				break;
-			case '7':
-				val = 7;
-				break;
-			case '8':
-				val = 8;
-				break;
-			case '9':
-				val = 9;
-				break;
-			case 'a':
-			case 'A':
-				val = 10;
-				break;
-			case 'b':
-			case 'B':
-				val = 11;
-				break;
-			case 'c':
-			case 'C':
-				val = 12;
-				break;
-			case 'd':
-			case 'D':
-				val = 13;
-				break;
-			case 'e':
-			case 'E':
-				val = 14;
-				break;
-			case 'f':
-			case 'F':
-				val = 15;
-				break;
-		}
-
-		rv = rv | (val << shift);
-		index--;
-		shift += 4;
-	}
-
-	return rv;
-}
-
-int g_pos(const char *str, const char *to_find)
-{
-	char *pp;
-
-	pp = strstr(str, to_find);
-
-	if (pp == 0)
-	{
-		return -1;
-	}
-
-	return (pp - str);
-}
-
-int g_mbstowcs(wchar_t *dest, const char *src, int n)
-{
-	wchar_t *ldest;
-	int rv;
-
-	ldest = (wchar_t *) dest;
-	rv = mbstowcs(ldest, src, n);
-	return rv;
-}
-
-int g_wcstombs(char *dest, const wchar_t *src, int n)
-{
-	const wchar_t *lsrc;
-	int rv;
-
-	lsrc = (const wchar_t *) src;
-	rv = wcstombs(dest, lsrc, n);
-	return rv;
-}
-
-/* returns error */
-/* trim spaces and tabs, anything <= space */
-/* trim_flags 1 trim left, 2 trim right, 3 trim both, 4 trim through */
-/* this will always shorten the string or not change it */
-int g_strtrim(char *str, int trim_flags)
-{
-	int index;
-	int len;
-	int text1_index;
-	int got_char;
-	wchar_t *text;
-	wchar_t *text1;
-
-	len = mbstowcs(0, str, 0);
-
-	if (len < 1)
-	{
-		return 0;
-	}
-
-	if ((trim_flags < 1) || (trim_flags > 4))
-	{
-		return 1;
-	}
-
-	text = (wchar_t *) malloc(len * sizeof(wchar_t) + 8);
-	text1 = (wchar_t *) malloc(len * sizeof(wchar_t) + 8);
-	text1_index = 0;
-	mbstowcs(text, str, len + 1);
-
-	switch (trim_flags)
-	{
-		case 4: /* trim through */
-
-			for (index = 0; index < len; index++)
-			{
-				if (text[index] > 32)
-				{
-					text1[text1_index] = text[index];
-					text1_index++;
-				}
-			}
-
-			text1[text1_index] = 0;
-			break;
-		case 3: /* trim both */
-			got_char = 0;
-
-			for (index = 0; index < len; index++)
-			{
-				if (got_char)
-				{
-					text1[text1_index] = text[index];
-					text1_index++;
-				} else
-				{
-					if (text[index] > 32)
-					{
-						text1[text1_index] = text[index];
-						text1_index++;
-						got_char = 1;
-					}
-				}
-			}
-
-			text1[text1_index] = 0;
-			len = text1_index;
-
-			/* trim right */
-			for (index = len - 1; index >= 0; index--)
-			{
-				if (text1[index] > 32)
-				{
-					break;
-				}
-			}
-
-			text1_index = index + 1;
-			text1[text1_index] = 0;
-			break;
-		case 2: /* trim right */
-
-			/* copy it */
-			for (index = 0; index < len; index++)
-			{
-				text1[text1_index] = text[index];
-				text1_index++;
-			}
-
-			/* trim right */
-			for (index = len - 1; index >= 0; index--)
-			{
-				if (text1[index] > 32)
-				{
-					break;
-				}
-			}
-
-			text1_index = index + 1;
-			text1[text1_index] = 0;
-			break;
-		case 1: /* trim left */
-			got_char = 0;
-
-			for (index = 0; index < len; index++)
-			{
-				if (got_char)
-				{
-					text1[text1_index] = text[index];
-					text1_index++;
-				} else
-				{
-					if (text[index] > 32)
-					{
-						text1[text1_index] = text[index];
-						text1_index++;
-						got_char = 1;
-					}
-				}
-			}
-
-			text1[text1_index] = 0;
-			break;
-	}
-
-	wcstombs(str, text1, text1_index + 1);
-	free(text);
-	free(text1);
-	return 0;
-}
-
-/* does not work in win32 */
-char* g_get_strerror(void)
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	return strerror(errno);
-#endif
-}
-
-int 
-g_get_errno(void)
-{
-#if defined(_WIN32)
-	return GetLastError();
-#else
-	return errno;
-#endif
-}
-
-/* does not work in win32 */
-int g_execvp(const char *p1, char *args[])
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	int rv;
-
-	g_rm_temp_dir();
-	rv = execvp(p1, args);
-	g_mk_temp_dir(0);
-	return rv;
-#endif
-}
-
-/* does not work in win32 */
-int g_execlp3(const char *a1, const char *a2, const char *a3)
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	int rv;
-
-	g_rm_temp_dir();
-	rv = execlp(a1, a2, a3, (void *) 0);
-	g_mk_temp_dir(0);
-	return rv;
-#endif
-}
-
-/* does not work in win32 */
-void g_signal_child_stop(void(*func)(int))
-{
-#if defined(_WIN32)
-#else
-	signal(SIGCHLD, func);
-#endif
-}
-
-/* does not work in win32 */
-void 
-g_signal_hang_up(void(*func)(int))
-{
-#if defined(_WIN32)
-#else
-	signal(SIGHUP, func);
-#endif
-}
-
 /* does not work in win32 */
 void g_signal_user_interrupt(void(*func)(int))
 {
@@ -1803,15 +1187,6 @@ void g_signal_pipe(void(*func)(int))
 #if defined(_WIN32)
 #else
 	signal(SIGPIPE, func);
-#endif
-}
-
-/* does not work in win32 */
-void g_signal_usr1(void(*func)(int))
-{
-#if defined(_WIN32)
-#else
-	signal(SIGUSR1, func);
 #endif
 }
 
@@ -1888,89 +1263,6 @@ int g_setuid(int pid)
 #endif
 }
 
-/* does not work in win32
- returns pid of process that exits or zero if signal occurred */
-int g_waitchild(void)
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	int wstat;
-	int rv;
-
-	rv = waitpid(0, &wstat, WNOHANG);
-
-	if (rv == -1)
-	{
-		if (errno == EINTR) /* signal occurred */
-		{
-			rv = 0;
-		}
-	}
-
-	return rv;
-#endif
-}
-
-/* does not work in win32
- returns pid of process that exits or zero if signal occurred */
-int g_waitpid(int pid)
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	int rv = 0;
-
-	if (pid < 0)
-	{
-		rv = -1;
-	}
-	else
-	{
-		rv = waitpid(pid, 0, 0);
-
-		if (rv == -1)
-		{
-			if (errno == EINTR) /* signal occurred */
-			{
-				rv = 0;
-			}
-		}
-	}
-
-	return rv;
-#endif
-}
-
-/* does not work in win32 */
-void g_clearenv(void)
-{
-#if defined(_WIN32)
-#else
-	environ = 0;
-#endif
-}
-
-/* does not work in win32 */
-int g_setenv(const char *name, const char *value, int rewrite)
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	return setenv(name, value, rewrite);
-#endif
-}
-
-/* does not work in win32 */
-char* g_getenv(const char *name)
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	return getenv(name);
-#endif
-}
-
 int g_exit(int exit_code)
 {
 	_exit(exit_code);
@@ -2021,17 +1313,17 @@ int g_getuser_info(const char *username, int *gid, int *uid, char *shell, char *
 
 		if (dir != 0)
 		{
-			g_strcpy(dir, pwd_1->pw_dir);
+			strcpy(dir, pwd_1->pw_dir);
 		}
 
 		if (shell != 0)
 		{
-			g_strcpy(shell, pwd_1->pw_shell);
+			strcpy(shell, pwd_1->pw_shell);
 		}
 
 		if (gecos != 0)
 		{
-			g_strcpy(gecos, pwd_1->pw_gecos);
+			strcpy(gecos, pwd_1->pw_gecos);
 		}
 
 		return 0;
@@ -2089,7 +1381,7 @@ int g_check_user_in_group(const char *username, int gid, int *ok)
 
 	while (0 != groups->gr_mem[i])
 	{
-		if (0 == g_strcmp(groups->gr_mem[i], username))
+		if (0 == strcmp(groups->gr_mem[i], username))
 		{
 			*ok = 1;
 			break;
@@ -2099,48 +1391,6 @@ int g_check_user_in_group(const char *username, int gid, int *ok)
 	}
 
 	return 0;
-#endif
-}
-
-/* returns the time since the Epoch (00:00:00 UTC, January 1, 1970),
- measured in seconds.
- for windows, returns the number of seconds since the machine was
- started. */
-int g_time1(void)
-{
-#if defined(_WIN32)
-	return GetTickCount() / 1000;
-#else
-	return time(0);
-#endif
-}
-
-/* returns the number of milliseconds since the machine was
- started. */
-int g_time2(void)
-{
-#if defined(_WIN32)
-	return (int)GetTickCount();
-#else
-	struct tms tm;
-	clock_t num_ticks = 0;
-	g_memset(&tm, 0, sizeof(struct tms));
-	num_ticks = times(&tm);
-	return (int) (num_ticks * 10);
-#endif
-}
-
-/* returns time in milliseconds, uses gettimeofday
- does not work in win32 */
-int g_time3(void)
-{
-#if defined(_WIN32)
-	return 0;
-#else
-	struct timeval tp;
-
-	gettimeofday(&tp, 0);
-	return (tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 #endif
 }
 

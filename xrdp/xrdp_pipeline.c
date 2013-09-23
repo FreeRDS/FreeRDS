@@ -287,33 +287,33 @@ int xrdp_message_server_align_rect(xrdpModule* mod, XRDP_RECT* rect)
 	if (rect->x < 0)
 		rect->x = 0;
 
-	if (rect->x > mod->width - 1)
-		rect->x = mod->width - 1;
+	if (rect->x > mod->settings->DesktopWidth - 1)
+		rect->x = mod->settings->DesktopWidth - 1;
 
 	rect->width += rect->x % 16;
 	rect->x -= rect->x % 16;
 
 	rect->width += rect->width % 16;
 
-	if (rect->x + rect->width > mod->width)
-		rect->width = mod->width - rect->x;
+	if (rect->x + rect->width > mod->settings->DesktopWidth)
+		rect->width = mod->settings->DesktopWidth - rect->x;
 
 	if (rect->y < 0)
 		rect->y = 0;
 
-	if (rect->y > mod->height - 1)
-		rect->y = mod->height - 1;
+	if (rect->y > mod->settings->DesktopHeight - 1)
+		rect->y = mod->settings->DesktopHeight - 1;
 
 	rect->height += rect->y % 16;
 	rect->y -= rect->y % 16;
 
 	rect->height += rect->height % 16;
 
-	if (rect->height > mod->height)
-		rect->height = mod->height;
+	if (rect->height > mod->settings->DesktopHeight)
+		rect->height = mod->settings->DesktopHeight;
 
-	if (rect->y + rect->height > mod->height)
-		rect->height = mod->height - rect->y;
+	if (rect->y + rect->height > mod->settings->DesktopHeight)
+		rect->height = mod->settings->DesktopHeight - rect->y;
 
 	return 0;
 }

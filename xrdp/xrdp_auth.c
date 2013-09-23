@@ -51,11 +51,11 @@ static void get_service_name(char* service_name)
 
 	if (g_file_exist("/etc/pam.d/xrdp-ng-sesman"))
 	{
-		g_strncpy(service_name, "xrdp-ng-sesman", 255);
+		strncpy(service_name, "xrdp-ng-sesman", 255);
 	}
 	else
 	{
-		g_strncpy(service_name, "gdm", 255);
+		strncpy(service_name, "gdm", 255);
 	}
 }
 
@@ -73,18 +73,18 @@ static int verify_pam_conv(int num_msg, const struct pam_message **msg, struct p
 		{
 			case PAM_PROMPT_ECHO_ON: /* username */
 				user_pass = appdata_ptr;
-				reply[i].resp = g_strdup(user_pass->user);
+				reply[i].resp = _strdup(user_pass->user);
 				reply[i].resp_retcode = PAM_SUCCESS;
 				break;
 
 			case PAM_PROMPT_ECHO_OFF: /* password */
 				user_pass = appdata_ptr;
-				reply[i].resp = g_strdup(user_pass->pass);
+				reply[i].resp = _strdup(user_pass->pass);
 				reply[i].resp_retcode = PAM_SUCCESS;
 				break;
 
 			default:
-				g_printf("unknown in verify_pam_conv\r\n");
+				printf("unknown in verify_pam_conv\r\n");
 				free(reply);
 				return PAM_CONV_ERR;
 		}

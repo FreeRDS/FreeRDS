@@ -39,8 +39,6 @@ xrdpModule* xrdp_module_new(xrdpSession* session)
 	ZeroMemory(mod, sizeof(xrdpModule));
 
 	mod->size = sizeof(xrdpModule);
-	mod->version = 2;
-	mod->handle = (long) mod;
 	mod->session = session;
 	mod->settings = session->settings;
 	mod->SessionId = 10;
@@ -48,8 +46,7 @@ xrdpModule* xrdp_module_new(xrdpSession* session)
 	xrdp_client_module_init(mod);
 	xrdp_server_module_init(mod);
 
-	mod->client->Start(mod, settings->DesktopWidth,
-			settings->DesktopHeight, settings->ColorDepth);
+	mod->client->Start(mod);
 
 	if (mod->client->Connect(mod) != 0)
 		return NULL;
