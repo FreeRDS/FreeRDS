@@ -763,6 +763,8 @@ int rdpup_init(void)
 
 	i = atoi(display);
 
+	LLOGLN(0, ("rdpup_init: display: %d", i));
+
 	if (i < 1)
 	{
 		return 0;
@@ -781,6 +783,8 @@ int rdpup_init(void)
 	pfbBackBufferMemory = (BYTE*) malloc(g_rdpScreen.sizeInBytes);
 
 	g_sprintf(g_uds_data, "/tmp/.pipe/FreeRDS_%s_X11rdp", display);
+
+	LLOGLN(0, ("rdpup_init: %s", g_uds_data));
 
 	if (g_listen_sck == 0)
 	{

@@ -226,7 +226,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	rrScrPrivPtr pRRScrPriv;
 
 	g_pScreen = pScreen;
-	memset(&g_screenPriv, 0, sizeof(g_screenPriv));
+	ZeroMemory(&g_screenPriv, sizeof(g_screenPriv));
 
 	dpix = PixelDPI;
 	dpiy = PixelDPI;

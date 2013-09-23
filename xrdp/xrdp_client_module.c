@@ -104,12 +104,36 @@ int xrdp_client_capabilities(xrdpModule* mod)
 
 int xrdp_client_start(xrdpModule* mod)
 {
+	BOOL status;
+	STARTUPINFO StartupInfo;
+	PROCESS_INFORMATION ProcessInformation;
+
+	ZeroMemory(&StartupInfo, sizeof(STARTUPINFO));
+	StartupInfo.cb = sizeof(STARTUPINFO);
+	ZeroMemory(&ProcessInformation, sizeof(PROCESS_INFORMATION));
+
+	status = CreateProcessA(NULL,
+			"X11rdp :10 -geometry 1024x768 -depth 24 -uds",
+			NULL, NULL, FALSE, 0, NULL, NULL,
+			&StartupInfo, &ProcessInformation);
+
+	printf("Process started: %d\n", status);
+
 	return 0;
 }
 
 int xrdp_client_stop(xrdpModule* mod)
 {
 	SetEvent(mod->StopEvent);
+
+#if 0
+	WaitForSingleObject(ProcessInformation.hProcess, INFINITE);
+
+	status = GetExitCodeProcess(ProcessInformation.hProcess, &exitCode);
+
+	CloseHandle(ProcessInformation.hProcess);
+	CloseHandle(ProcessInformation.hThread);
+#endif
 
 	return 0;
 }
@@ -142,6 +166,12 @@ int xrdp_client_connect(xrdpModule* mod)
 	mod->server->EndUpdate(mod, &endUpdate);
 
 	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) mod->SessionId, "X11rdp");
+
+	if (!WaitNamedPipeA(pipeName, 5 * 1000))
+	{
+		printf("WaitNamedPipe failure: %s\n", pipeName);
+		return 1;
+	}
 
 	mod->hClientPipe = CreateFileA(pipeName,
 			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
