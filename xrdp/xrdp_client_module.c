@@ -22,6 +22,9 @@
 
 #include "xrdp.h"
 
+#include <pwd.h>
+#include <grp.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -110,18 +113,40 @@ int xrdp_client_capabilities(xrdpModule* mod)
 int xrdp_client_start(xrdpModule* mod)
 {
 	BOOL status;
+	char envstr[256];
 	char pipeName[256];
+	struct passwd* pwnam;
+	rdpSettings* settings;
+	char lpCommandLine[256];
 	STARTUPINFO StartupInfo;
 	PROCESS_INFORMATION ProcessInformation;
 
-	SetEnvironmentVariableA("DISPLAY", ":10");
+	settings = mod->settings;
+
+	pwnam = getpwnam(settings->Username);
+
+	//setgid(pwnam->pw_gid);
+	//initgroups(pwnam->pw_name, pwnam->pw_gid);
+	//setuid(pwnam->pw_uid);
+
+	sprintf_s(envstr, sizeof(envstr), ":%d", (int) mod->SessionId);
+	SetEnvironmentVariableA("DISPLAY", envstr);
+
+	SetEnvironmentVariableA("SHELL", pwnam->pw_shell);
+	SetEnvironmentVariableA("USER", pwnam->pw_name);
+	SetEnvironmentVariableA("HOME", pwnam->pw_dir);
+
+	sprintf_s(envstr, sizeof(envstr), "%d", (int) pwnam->pw_uid);
+	SetEnvironmentVariableA("UID", envstr);
 
 	ZeroMemory(&StartupInfo, sizeof(STARTUPINFO));
 	StartupInfo.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&ProcessInformation, sizeof(PROCESS_INFORMATION));
 
-	status = CreateProcessA(NULL,
-			"X11rdp :10 -geometry 1024x768 -depth 24 -uds",
+	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds",
+			"X11rdp", (int) mod->SessionId, settings->DesktopWidth, settings->DesktopHeight, 24);
+
+	status = CreateProcessA(NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, NULL, NULL,
 			&StartupInfo, &ProcessInformation);
 
