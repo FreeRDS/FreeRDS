@@ -41,6 +41,7 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/stream.h>
+#include <winpr/sspicli.h>
 #include <winpr/environment.h>
 
 #include <freerdp/freerdp.h>
@@ -113,6 +114,7 @@ int xrdp_client_capabilities(xrdpModule* mod)
 int xrdp_client_start(xrdpModule* mod)
 {
 	BOOL status;
+	HANDLE token;
 	char envstr[256];
 	char pipeName[256];
 	struct passwd* pwnam;
@@ -123,11 +125,12 @@ int xrdp_client_start(xrdpModule* mod)
 
 	settings = mod->settings;
 
-	pwnam = getpwnam(settings->Username);
+	token = NULL;
 
-	//setgid(pwnam->pw_gid);
-	//initgroups(pwnam->pw_name, pwnam->pw_gid);
-	//setuid(pwnam->pw_uid);
+	LogonUserA(settings->Username, settings->Domain, settings->Password,
+			LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &token);
+
+	pwnam = getpwnam(settings->Username);
 
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) mod->SessionId);
 	SetEnvironmentVariableA("DISPLAY", envstr);
@@ -173,8 +176,8 @@ int xrdp_client_start(xrdpModule* mod)
 	StartupInfo.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&ProcessInformation, sizeof(PROCESS_INFORMATION));
 
-	status = CreateProcessA(NULL,
-			"startwm.sh",
+	status = CreateProcessAsUserA(token,
+			NULL, "startwm.sh",
 			NULL, NULL, FALSE, 0, NULL, NULL,
 			&StartupInfo, &ProcessInformation);
 
