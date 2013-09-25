@@ -17,11 +17,17 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(xrdp-ng C)
+project(freerds-session-manager CXX)
 
 if(FREERDP_VERSION)
 	set(FREERDP_BUILD ON)
 endif()
+
+set(FRDSSM_NG_VERSION_MAJOR "0")
+set(FRDSSM_NG_VERSION_MINOR "1")
+set(FRDSSM_NG_VERSION_REVISION "0")
+set(FRDSSM_NG_VERSION "${FRDSSM_NG_VERSION_MAJOR}.${FRDSSM_NG_VERSION_MINOR}")
+set(FRDSSM_NG_VERSION_FULL "${FRDSSM_NG_VERSION}.${FRDSSM_NG_VERSION_REVISION}")
 
 set(CMAKE_COLOR_MAKEFILE ON)
 
@@ -45,15 +51,6 @@ include(FeatureSummary)
 include(CheckCCompilerFlag)
 include(GNUInstallDirsWrapper)
 
-if(NOT DEFINED XRDP_NG_MODULE)
-	set(XRDP_NG_MODULE "xrdp-ng")
-endif()
-
-set(XRDP_NG_VERSION_MAJOR "0")
-set(XRDP_NG_VERSION_MINOR "1")
-set(XRDP_NG_VERSION_REVISION "0")
-set(XRDP_NG_VERSION "${XRDP_NG_VERSION_MAJOR}.${XRDP_NG_VERSION_MINOR}")
-set(XRDP_NG_VERSION_FULL "${XRDP_NG_VERSION}.${XRDP_NG_VERSION_REVISION}")
 
 get_directory_property(INCLUDE_DIRECTORIES INCLUDE_DIRECTORIES)
 list(REMOVE_ITEM INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}")
@@ -61,18 +58,6 @@ set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES "${INCLUDE_DIRECTORIES}"
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-set(SBINDIR "${CMAKE_INSTALL_PREFIX}/sbin")
-set(SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc")
-set(DATADIR "${CMAKE_INSTALL_PREFIX}/share")
-set(LOCALSTATEDIR "${CMAKE_INSTALL_PREFIX}/var")
-
-set(XRDP_CFG_PATH "${SYSCONFDIR}/xrdp")
-set(XRDP_SBIN_PATH "${SBINDIR}")
-set(XRDP_SHARE_PATH "${DATADIR}/xrdp")
-set(XRDP_PID_PATH "${LOCALSTATEDIR}/run")
-set(XRDP_LOG_PATH "${LOCALSTATEDIR}/log")
-set(XRDP_LIB_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
@@ -89,28 +74,4 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-if(NOT DEFINED BUILD_SHARED_LIBS)
-	set(BUILD_SHARED_LIBS ON)
-endif()
-
-set(PIXMAN_FEATURE_TYPE "REQUIRED")
-set(PIXMAN_FEATURE_PURPOSE "Pixel Manipulation")
-set(PIXMAN_FEATURE_DESCRIPTION "Pixel Manipulation Library")
-
-find_feature(Pixman ${PIXMAN_FEATURE_TYPE} ${PIXMAN_FEATURE_PURPOSE} ${PIXMAN_FEATURE_DESCRIPTION})
-
-include_directories(${PIXMAN_INCLUDE_DIRS})
-
-add_subdirectory(libxrdp)
-
-add_subdirectory(common)
-add_subdirectory(xrdp)
-add_subdirectory(instfiles)
-
-add_subdirectory(module)
-
-if(WITH_X11RDP)
-	add_subdirectory(xorg/rdp)
-endif()
-
-add_subdirectory(session-manager)
+add_executable(session-manager main.cc)

@@ -1,0 +1,24 @@
+#ifndef __CONFIG_H
+#define __CONFIG_H
+
+#define XRDP_NG_VERSION_MAJOR ${XRDP_NG_VERSION_MAJOR}
+#define XRDP_NG_VERSION_MINOR ${XRDP_NG_VERSION_MINOR}
+#define XRDP_NG_VERSION_REVISION ${XRDP_NG_VERSION_REVISION}
+#define XRDP_NG_VERSION_SUFFIX "${XRDP_NG_VERSION_SUFFIX}"
+#define XRDP_NG_VERSION "${XRDP_NG_VERSION}"
+#define XRDP_NG_VERSION_FULL "${XRDP_NG_VERSION_FULL}"
+#define GIT_REVISION "${GIT_REVISION}"
+
+/* Include files */
+#cmakedefine HAVE_FCNTL_H
+#cmakedefine HAVE_UNISTD_H
+#cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_INTTYPES_H
+#cmakedefine HAVE_SYS_MODEM_H
+#cmakedefine HAVE_SYS_FILIO_H
+#cmakedefine HAVE_SYS_STRTIO_H
+#cmakedefine HAVE_EVENTFD_H
+#cmakedefine HAVE_TM_GMTOFF
+
+#endif
+
