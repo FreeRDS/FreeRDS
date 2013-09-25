@@ -1,7 +1,9 @@
-# FreeRDP X11 Server Next Generation
-# xrdp-ng cmake build script
+# FreeRemoteDesktopService Session Manager
+# cmake script
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+# Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.com>
+# Copyright 2013 Thinstuff Technologies GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,11 +25,11 @@ if(FREERDP_VERSION)
 	set(FREERDP_BUILD ON)
 endif()
 
-set(FRDSSM_NG_VERSION_MAJOR "0")
-set(FRDSSM_NG_VERSION_MINOR "1")
-set(FRDSSM_NG_VERSION_REVISION "0")
-set(FRDSSM_NG_VERSION "${FRDSSM_NG_VERSION_MAJOR}.${FRDSSM_NG_VERSION_MINOR}")
-set(FRDSSM_NG_VERSION_FULL "${FRDSSM_NG_VERSION}.${FRDSSM_NG_VERSION_REVISION}")
+set(FRDS_SM_VERSION_MAJOR "0")
+set(FRDS_SM_VERSION_MINOR "1")
+set(FRDS_SM_VERSION_REVISION "0")
+set(FRDS_SM_VERSION "${FRDS_SM_VERSION_MAJOR}.${FRDS_SM_VERSION_MINOR}")
+set(FRDS_SM_VERSION_FULL "${FRDS_SM_VERSION}.${FRDS_SM_VERSION_REVISION}")
 
 set(CMAKE_COLOR_MAKEFILE ON)
 
@@ -63,7 +65,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 
 add_definitions("-DHAVE_CONFIG_H")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
