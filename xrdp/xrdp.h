@@ -60,7 +60,7 @@ long xrdp_authenticate(char* username, char* password, int* errorcode);
 
 void* xrdp_client_thread(void* arg);
 
-int xrdp_server_module_init(xrdpModule* mod);
+int freerds_client_inbound_module_init(xrdpModule* mod);
 int xrdp_message_server_module_init(xrdpModule* mod);
 
 int xrdp_message_server_queue_pack(xrdpModule* mod);

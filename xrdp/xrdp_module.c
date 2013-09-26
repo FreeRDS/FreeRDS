@@ -81,29 +81,17 @@ int xrdp_client_start(xrdpModule* mod)
 {
 	BOOL status;
 	HANDLE token;
-	char* filename;
 	char envstr[256];
-	char pipeName[256];
 	struct passwd* pwnam;
 	rdpSettings* settings;
 	char lpCommandLine[256];
 	STARTUPINFO StartupInfo;
 	PROCESS_INFORMATION ProcessInformation;
 
+	token = NULL;
 	settings = mod->settings;
 
-	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) mod->SessionId, "X11rdp");
-
-	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
-
-	if (PathFileExistsA(filename))
-	{
-		DeleteFileA(filename);
-	}
-
-	free(filename);
-
-	token = NULL;
+	freerds_named_pipe_clean(mod->SessionId, "X11rdp");
 
 	LogonUserA(settings->Username, settings->Domain, settings->Password,
 			LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &token);
@@ -133,20 +121,7 @@ int xrdp_client_start(xrdpModule* mod)
 
 	fprintf(stderr, "Process started: %d\n", status);
 
-	if (!WaitNamedPipeA(pipeName, 5 * 1000))
-	{
-		printf("WaitNamedPipe failure: %s\n", pipeName);
-		return 1;
-	}
-
-	mod->hClientPipe = CreateFileA(pipeName,
-			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-
-	if ((!mod->hClientPipe) || (mod->hClientPipe == INVALID_HANDLE_VALUE))
-	{
-		printf("Failed to create named pipe %s\n", pipeName);
-		return 1;
-	}
+	mod->hClientPipe = freerds_named_pipe_connect(mod->SessionId, "X11rdp", 5 * 1000);
 
 	ZeroMemory(&StartupInfo, sizeof(STARTUPINFO));
 	StartupInfo.cb = sizeof(STARTUPINFO);
@@ -285,6 +260,7 @@ xrdpModule* xrdp_module_new(xrdpSession* session)
 	mod->CheckEventHandles = xrdp_client_check_event_handles;
 
 	mod->client = freerds_client_outbound_interface_new();
+	mod->server = freerds_server_outbound_interface_new();
 
 	mod->SendStream = Stream_New(NULL, 8192);
 	mod->ReceiveStream = Stream_New(NULL, 8192);
@@ -297,7 +273,7 @@ xrdpModule* xrdp_module_new(xrdpSession* session)
 	mod->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) xrdp_client_thread,
 			(void*) mod, CREATE_SUSPENDED, NULL);
 
-	xrdp_server_module_init(mod);
+	freerds_client_inbound_module_init(mod);
 
 	mod->Start(mod);
 

@@ -707,9 +707,13 @@ FREERDP_API void xrdp_server_message_free(XRDP_MSG_COMMON* msg);
  */
 
 FREERDP_API xrdpClientModule* freerds_client_outbound_interface_new();
+FREERDP_API xrdpServerModule* freerds_server_outbound_interface_new();
 
 FREERDP_API int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length);
 FREERDP_API int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length);
+
+FREERDP_API int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint);
+FREERDP_API HANDLE freerds_named_pipe_connect(DWORD SessionId, const char* endpoint, DWORD nTimeOut);
 
 #ifdef __cplusplus
 }

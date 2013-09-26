@@ -23,6 +23,11 @@
 
 #include <xrdp-ng/xrdp.h>
 
+#include <winpr/crt.h>
+#include <winpr/file.h>
+#include <winpr/pipe.h>
+#include <winpr/path.h>
+
 #include "transport.h"
 
 int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length)
@@ -70,4 +75,51 @@ int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length)
 	}
 
 	return NumberOfBytesWritten;
+}
+
+int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint)
+{
+	int status = 0;
+	char* filename;
+	HANDLE hNamedPipe;
+	char pipeName[256];
+
+	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
+
+	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
+
+	if (PathFileExistsA(filename))
+	{
+		DeleteFileA(filename);
+		status = 1;
+	}
+
+	free(filename);
+
+	return status;
+}
+
+HANDLE freerds_named_pipe_connect(DWORD SessionId, const char* endpoint, DWORD nTimeOut)
+{
+	HANDLE hNamedPipe;
+	char pipeName[256];
+
+	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
+
+	if (!WaitNamedPipeA(pipeName, nTimeOut))
+	{
+		fprintf(stderr, "WaitNamedPipe failure: %s\n", pipeName);
+		return NULL;
+	}
+
+	hNamedPipe = CreateFileA(pipeName,
+			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+	if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
+	{
+		fprintf(stderr, "Failed to create named pipe %s\n", pipeName);
+		return NULL;
+	}
+
+	return hNamedPipe;
 }

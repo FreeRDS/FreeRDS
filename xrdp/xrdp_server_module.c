@@ -32,44 +32,44 @@
 
 #include "xrdp.h"
 
-int xrdp_server_begin_update(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
+int freerds_client_inbound_begin_update(xrdpModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
 {
 	libxrdp_orders_begin_paint(mod->session);
 	return 0;
 }
 
-int xrdp_server_end_update(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg)
+int freerds_client_inbound_end_update(xrdpModule* mod, XRDP_MSG_END_UPDATE* msg)
 {
 	libxrdp_orders_end_paint(mod->session);
 	return 0;
 }
 
-int xrdp_server_beep(xrdpModule* mod, XRDP_MSG_BEEP* msg)
+int freerds_client_inbound_beep(xrdpModule* mod, XRDP_MSG_BEEP* msg)
 {
 	libxrdp_send_bell(mod->session);
 	return 0;
 }
 
-int xrdp_server_is_terminated(xrdpModule* mod)
+int freerds_client_inbound_is_terminated(xrdpModule* mod)
 {
 	return g_is_term();
 }
 
-int xrdp_server_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
+int freerds_client_inbound_opaque_rect(xrdpModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int xrdp_server_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
+int freerds_client_inbound_screen_blt(xrdpModule* mod, XRDP_MSG_SCREEN_BLT* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
+int freerds_client_inbound_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
 	int bpp;
 	int inFlightFrames;
@@ -106,60 +106,60 @@ int xrdp_server_paint_rect(xrdpModule* mod, XRDP_MSG_PAINT_RECT* msg)
 	return 0;
 }
 
-int xrdp_server_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
+int freerds_client_inbound_patblt(xrdpModule* mod, XRDP_MSG_PATBLT* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int xrdp_server_dstblt(xrdpModule* mod, XRDP_MSG_DSTBLT* msg)
+int freerds_client_inbound_dstblt(xrdpModule* mod, XRDP_MSG_DSTBLT* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int xrdp_server_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
+int freerds_client_inbound_set_pointer(xrdpModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
 	libxrdp_set_pointer(mod->session, msg);
 	return 0;
 }
 
-int xrdp_server_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
+int freerds_client_inbound_set_palette(xrdpModule* mod, XRDP_MSG_SET_PALETTE* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int xrdp_server_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
+int freerds_client_inbound_set_clipping_region(xrdpModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int xrdp_server_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
+int freerds_client_inbound_line_to(xrdpModule* mod, XRDP_MSG_LINE_TO* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int xrdp_server_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
+int freerds_client_inbound_cache_glyph(xrdpModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 {
 	return libxrdp_orders_send_font(mod->session, msg);
 }
 
-int xrdp_server_glyph_index(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
+int freerds_client_inbound_glyph_index(xrdpModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int xrdp_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
+int freerds_client_inbound_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	mod->framebuffer.fbWidth = msg->width;
 	mod->framebuffer.fbHeight = msg->height;
@@ -194,7 +194,7 @@ int xrdp_server_shared_framebuffer(xrdpModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER*
 	return 0;
 }
 
-int xrdp_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
+int freerds_client_inbound_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
 {
 	if (libxrdp_reset(mod->session, msg) != 0)
 		return 0;
@@ -202,67 +202,63 @@ int xrdp_server_reset(xrdpModule* mod, XRDP_MSG_RESET* msg)
 	return 0;
 }
 
-int xrdp_server_create_offscreen_surface(xrdpModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
+int freerds_client_inbound_create_offscreen_surface(xrdpModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
 	return 0;
 }
 
-int xrdp_server_switch_offscreen_surface(xrdpModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
+int freerds_client_inbound_switch_offscreen_surface(xrdpModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
 	return 0;
 }
 
-int xrdp_server_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
+int freerds_client_inbound_delete_offscreen_surface(xrdpModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
 	return 0;
 }
 
-int xrdp_server_paint_offscreen_surface(xrdpModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
+int freerds_client_inbound_paint_offscreen_surface(xrdpModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
 	return 0;
 }
 
-int xrdp_server_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
+int freerds_client_inbound_window_new_update(xrdpModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	return libxrdp_window_new_update(mod->session, msg);
 }
 
-int xrdp_server_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
+int freerds_client_inbound_window_delete(xrdpModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
 {
 	return libxrdp_window_delete(mod->session, msg);
 }
 
-int xrdp_server_module_init(xrdpModule* mod)
+int freerds_client_inbound_module_init(xrdpModule* mod)
 {
-	mod->server = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
-
 	if (mod->server)
 	{
-		ZeroMemory(mod->server, sizeof(xrdpServerModule));
-
-		mod->server->BeginUpdate = xrdp_server_begin_update;
-		mod->server->EndUpdate = xrdp_server_end_update;
-		mod->server->Beep = xrdp_server_beep;
-		mod->server->IsTerminated = xrdp_server_is_terminated;
-		mod->server->OpaqueRect = xrdp_server_opaque_rect;
-		mod->server->ScreenBlt = xrdp_server_screen_blt;
-		mod->server->PaintRect = xrdp_server_paint_rect;
-		mod->server->PatBlt = xrdp_server_patblt;
-		mod->server->DstBlt = xrdp_server_dstblt;
-		mod->server->SetPointer = xrdp_server_set_pointer;
-		mod->server->SetPalette = xrdp_server_set_palette;
-		mod->server->SetClippingRegion = xrdp_server_set_clipping_region;
-		mod->server->LineTo = xrdp_server_line_to;
-		mod->server->CacheGlyph = xrdp_server_cache_glyph;
-		mod->server->GlyphIndex = xrdp_server_glyph_index;
-		mod->server->SharedFramebuffer = xrdp_server_shared_framebuffer;
-		mod->server->Reset = xrdp_server_reset;
-		mod->server->CreateOffscreenSurface = xrdp_server_create_offscreen_surface;
-		mod->server->SwitchOffscreenSurface = xrdp_server_switch_offscreen_surface;
-		mod->server->DeleteOffscreenSurface = xrdp_server_delete_offscreen_surface;
-		mod->server->PaintOffscreenSurface = xrdp_server_paint_offscreen_surface;
-		mod->server->WindowNewUpdate = xrdp_server_window_new_update;
-		mod->server->WindowDelete = xrdp_server_window_delete;
+		mod->server->BeginUpdate = freerds_client_inbound_begin_update;
+		mod->server->EndUpdate = freerds_client_inbound_end_update;
+		mod->server->Beep = freerds_client_inbound_beep;
+		mod->server->IsTerminated = freerds_client_inbound_is_terminated;
+		mod->server->OpaqueRect = freerds_client_inbound_opaque_rect;
+		mod->server->ScreenBlt = freerds_client_inbound_screen_blt;
+		mod->server->PaintRect = freerds_client_inbound_paint_rect;
+		mod->server->PatBlt = freerds_client_inbound_patblt;
+		mod->server->DstBlt = freerds_client_inbound_dstblt;
+		mod->server->SetPointer = freerds_client_inbound_set_pointer;
+		mod->server->SetPalette = freerds_client_inbound_set_palette;
+		mod->server->SetClippingRegion = freerds_client_inbound_set_clipping_region;
+		mod->server->LineTo = freerds_client_inbound_line_to;
+		mod->server->CacheGlyph = freerds_client_inbound_cache_glyph;
+		mod->server->GlyphIndex = freerds_client_inbound_glyph_index;
+		mod->server->SharedFramebuffer = freerds_client_inbound_shared_framebuffer;
+		mod->server->Reset = freerds_client_inbound_reset;
+		mod->server->CreateOffscreenSurface = freerds_client_inbound_create_offscreen_surface;
+		mod->server->SwitchOffscreenSurface = freerds_client_inbound_switch_offscreen_surface;
+		mod->server->DeleteOffscreenSurface = freerds_client_inbound_delete_offscreen_surface;
+		mod->server->PaintOffscreenSurface = freerds_client_inbound_paint_offscreen_surface;
+		mod->server->WindowNewUpdate = freerds_client_inbound_window_new_update;
+		mod->server->WindowDelete = freerds_client_inbound_window_delete;
 	}
 
 	xrdp_message_server_module_init(mod);
