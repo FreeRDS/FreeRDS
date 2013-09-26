@@ -38,6 +38,7 @@
 
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
+#include <winpr/path.h>
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/stream.h>
@@ -115,6 +116,7 @@ int xrdp_client_start(xrdpModule* mod)
 {
 	BOOL status;
 	HANDLE token;
+	char* filename;
 	char envstr[256];
 	char pipeName[256];
 	struct passwd* pwnam;
@@ -124,6 +126,15 @@ int xrdp_client_start(xrdpModule* mod)
 	PROCESS_INFORMATION ProcessInformation;
 
 	settings = mod->settings;
+
+	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) mod->SessionId, "X11rdp");
+
+	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
+
+	if (PathFileExistsA(filename))
+		DeleteFileA(filename);
+
+	free(filename);
 
 	token = NULL;
 
@@ -155,8 +166,6 @@ int xrdp_client_start(xrdpModule* mod)
 
 	printf("Process started: %d\n", status);
 
-	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) mod->SessionId, "X11rdp");
-
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
 		printf("WaitNamedPipe failure: %s\n", pipeName);
@@ -181,7 +190,7 @@ int xrdp_client_start(xrdpModule* mod)
 			NULL, NULL, FALSE, 0, NULL, NULL,
 			&StartupInfo, &ProcessInformation);
 
-	printf("Process started: %d\n", status);
+	printf("User process started: %d\n", status);
 
 	return 0;
 }
