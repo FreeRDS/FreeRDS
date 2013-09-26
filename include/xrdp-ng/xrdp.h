@@ -567,9 +567,12 @@ typedef union _XRDP_MSG_SERVER XRDP_MSG_SERVER;
 
 typedef struct xrdp_mod xrdpModule;
 
-typedef int (*pXrdpClientStart)(xrdpModule* mod);
-typedef int (*pXrdpClientStop)(xrdpModule* mod);
-typedef int (*pXrdpClientConnect)(xrdpModule* mod);
+typedef int (*pXrdpModuleStart)(xrdpModule* mod);
+typedef int (*pXrdpModuleStop)(xrdpModule* mod);
+typedef int (*pXrdpModuleConnect)(xrdpModule* mod);
+typedef int (*pXrdpModuleGetEventHandles)(xrdpModule* mod, HANDLE* events, DWORD* nCount);
+typedef int (*pXrdpModuleCheckEventHandles)(xrdpModule* mod);
+
 typedef int (*pXrdpClientSynchronizeKeyboardEvent)(xrdpModule* mod, DWORD flags);
 typedef int (*pXrdpClientScancodeKeyboardEvent)(xrdpModule* mod, DWORD flags, DWORD code, DWORD keyboardType);
 typedef int (*pXrdpClientVirtualKeyboardEvent)(xrdpModule* mod, DWORD flags, DWORD code);
@@ -577,14 +580,9 @@ typedef int (*pXrdpClientUnicodeKeyboardEvent)(xrdpModule* mod, DWORD flags, DWO
 typedef int (*pXrdpClientMouseEvent)(xrdpModule* mod, DWORD flags, DWORD x, DWORD y);
 typedef int (*pXrdpClientExtendedMouseEvent)(xrdpModule* mod, DWORD flags, DWORD x, DWORD y);
 typedef int (*pXrdpClientSessionChange)(xrdpModule* mod, int width, int height);
-typedef int (*pXrdpClientGetEventHandles)(xrdpModule* mod, HANDLE* events, DWORD* nCount);
-typedef int (*pXrdpClientCheckEventHandles)(xrdpModule* mod);
 
 struct xrdp_client_module
 {
-	pXrdpClientStart Start;
-	pXrdpClientStop Stop;
-	pXrdpClientConnect Connect;
 	pXrdpClientSynchronizeKeyboardEvent SynchronizeKeyboardEvent;
 	pXrdpClientScancodeKeyboardEvent ScancodeKeyboardEvent;
 	pXrdpClientVirtualKeyboardEvent VirtualKeyboardEvent;
@@ -592,8 +590,6 @@ struct xrdp_client_module
 	pXrdpClientMouseEvent MouseEvent;
 	pXrdpClientExtendedMouseEvent ExtendedMouseEvent;
 	pXrdpClientSessionChange SessionChange;
-	pXrdpClientGetEventHandles GetEventHandles;
-	pXrdpClientCheckEventHandles CheckEventHandles;
 };
 typedef struct xrdp_client_module xrdpClientModule;
 
@@ -657,6 +653,12 @@ struct xrdp_mod
 
 	xrdpClientModule* client;
 	xrdpServerModule* server;
+
+	pXrdpModuleStart Start;
+	pXrdpModuleStop Stop;
+	pXrdpModuleConnect Connect;
+	pXrdpModuleGetEventHandles GetEventHandles;
+	pXrdpModuleCheckEventHandles CheckEventHandles;
 
 	DWORD SessionId;
 	xrdpSession* session;

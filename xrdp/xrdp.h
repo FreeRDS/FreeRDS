@@ -58,8 +58,7 @@ void xrdp_module_free(xrdpModule* mod);
 
 long xrdp_authenticate(char* username, char* password, int* errorcode);
 
-int xrdp_client_module_init(xrdpModule* mod);
-int xrdp_client_module_uninit(xrdpModule* mod);
+void* xrdp_client_thread(void* arg);
 
 int xrdp_server_module_init(xrdpModule* mod);
 int xrdp_message_server_module_init(xrdpModule* mod);

@@ -371,7 +371,7 @@ void* xrdp_process_main_thread(void* arg)
 		if (client->activated)
 		{
 			if (session->mod)
-				session->mod->client->GetEventHandles(session->mod, events, &nCount);
+				session->mod->GetEventHandles(session->mod, events, &nCount);
 		}
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
@@ -408,7 +408,7 @@ void* xrdp_process_main_thread(void* arg)
 		{
 			if (session->mod)
 			{
-				if (session->mod->client->CheckEventHandles(session->mod) < 0)
+				if (session->mod->CheckEventHandles(session->mod) < 0)
 				{
 					fprintf(stderr, "ModuleClient->CheckEventHandles failure\n");
 					break;
