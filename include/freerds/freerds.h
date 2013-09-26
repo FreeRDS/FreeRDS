@@ -49,6 +49,32 @@ struct rds_module_entry_points_v1
 
 typedef int (*pRdsModuleEntry)(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
 
+/**
+ * Service Interface
+ */
+
+typedef struct rds_service rdsService;
+
+typedef int (*pRdsServiceAccept)(rdsService* service);
+
+struct rds_service
+{
+	RDS_MODULE_SERVICE_COMMON();
+
+	HANDLE StopEvent;
+
+	HANDLE ClientThread;
+	HANDLE ServerThread;
+
+	pRdsServiceAccept Accept;
+};
+
+int freerds_service_start(rdsService* service);
+int freerds_service_stop(rdsService* service);
+
+rdsService* freerds_service_new(DWORD SessionId, const char* endpoint);
+void freerds_service_free(rdsService* service);
+
 #ifdef __cplusplus
 extern "C" {
 #endif

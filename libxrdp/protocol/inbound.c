@@ -25,25 +25,25 @@
 
 #include "inbound.h"
 
-xrdpServerModule* freerds_client_inbound_interface_new()
+rdsServerInterface* freerds_client_inbound_interface_new()
 {
-	xrdpServerModule* server = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
+	rdsServerInterface* server = (rdsServerInterface*) malloc(sizeof(rdsServerInterface));
 
 	if (server)
 	{
-		ZeroMemory(server, sizeof(xrdpServerModule));
+		ZeroMemory(server, sizeof(rdsServerInterface));
 	}
 
 	return server;
 }
 
-xrdpClientModule* freerds_server_inbound_interface_new()
+rdsClientInterface* freerds_server_inbound_interface_new()
 {
-	xrdpClientModule* client = (xrdpClientModule*) malloc(sizeof(xrdpClientModule));
+	rdsClientInterface* client = (rdsClientInterface*) malloc(sizeof(rdsClientInterface));
 
 	if (client)
 	{
-		ZeroMemory(client, sizeof(xrdpClientModule));
+		ZeroMemory(client, sizeof(rdsClientInterface));
 	}
 
 	return client;

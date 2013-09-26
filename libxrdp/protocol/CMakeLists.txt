@@ -21,6 +21,8 @@ set(MODULE_PREFIX "FREERDP_XRDP_NG_PROTOCOL")
 set(${MODULE_PREFIX}_SRCS
 	protocol.c
 	protocol.h
+	service.c
+	service.h
 	interface.c
 	interface.h
 	inbound.c

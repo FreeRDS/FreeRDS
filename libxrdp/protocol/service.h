@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef XRDP_NG_TRANSPORT_H
-#define XRDP_NG_TRANSPORT_H
+#ifndef FREERDS_SERVICE_H
+#define FREERDS_SERVICE_H
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
-#define PIPE_BUFFER_SIZE	0xFFFF
 
-#endif /* XRDP_NG_TRANSPORT_H */
+
+#endif /* FREERDS_SERVICE_H */

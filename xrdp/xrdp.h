@@ -53,18 +53,18 @@ xrdpListener* xrdp_listen_create(void);
 void xrdp_listen_delete(xrdpListener* self);
 int xrdp_listen_main_loop(xrdpListener* self);
 
-xrdpModule* xrdp_module_new(xrdpSession* session);
-void xrdp_module_free(xrdpModule* mod);
+rdsModule* xrdp_module_new(xrdpSession* session);
+void xrdp_module_free(rdsModule* mod);
 
 long xrdp_authenticate(char* username, char* password, int* errorcode);
 
 void* xrdp_client_thread(void* arg);
 
-int freerds_client_inbound_module_init(xrdpModule* mod);
-int xrdp_message_server_module_init(xrdpModule* mod);
+int freerds_client_inbound_module_init(rdsModule* mod);
+int xrdp_message_server_module_init(rdsModule* mod);
 
-int xrdp_message_server_queue_pack(xrdpModule* mod);
-int xrdp_message_server_queue_process_pending_messages(xrdpModule* mod);
-int xrdp_message_server_module_init(xrdpModule* mod);
+int xrdp_message_server_queue_pack(rdsModule* mod);
+int xrdp_message_server_queue_process_pending_messages(rdsModule* mod);
+int xrdp_message_server_module_init(rdsModule* mod);
 
 #endif /* XRDP_H */

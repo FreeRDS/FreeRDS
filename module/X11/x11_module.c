@@ -50,7 +50,7 @@
 
 struct rds_module_x11
 {
-	xrdpModule module;
+	rdsModule module;
 
 	STARTUPINFO X11StartupInfo;
 	PROCESS_INFORMATION X11ProcessInformation;

@@ -27,7 +27,7 @@
 
 #include "outbound.h"
 
-int freerds_client_outbound_synchronize_keyboard_event(xrdpModule* mod, DWORD flags)
+int freerds_client_outbound_synchronize_keyboard_event(rdsModule* mod, DWORD flags)
 {
 	int length;
 	int status;
@@ -39,7 +39,7 @@ int freerds_client_outbound_synchronize_keyboard_event(xrdpModule* mod, DWORD fl
 
 	msg.flags = flags;
 
-	s = mod->SendStream;
+	s = mod->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_synchronize_keyboard_event(NULL, &msg);
@@ -50,7 +50,7 @@ int freerds_client_outbound_synchronize_keyboard_event(xrdpModule* mod, DWORD fl
 	return status;
 }
 
-int freerds_client_outbound_scancode_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code, DWORD keyboardType)
+int freerds_client_outbound_scancode_keyboard_event(rdsModule* mod, DWORD flags, DWORD code, DWORD keyboardType)
 {
 	int length;
 	int status;
@@ -64,7 +64,7 @@ int freerds_client_outbound_scancode_keyboard_event(xrdpModule* mod, DWORD flags
 	msg.code = code;
 	msg.keyboardType = keyboardType;
 
-	s = mod->SendStream;
+	s = mod->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_scancode_keyboard_event(NULL, &msg);
@@ -75,7 +75,7 @@ int freerds_client_outbound_scancode_keyboard_event(xrdpModule* mod, DWORD flags
 	return status;
 }
 
-int freerds_client_outbound_virtual_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code)
+int freerds_client_outbound_virtual_keyboard_event(rdsModule* mod, DWORD flags, DWORD code)
 {
 	int length;
 	int status;
@@ -88,7 +88,7 @@ int freerds_client_outbound_virtual_keyboard_event(xrdpModule* mod, DWORD flags,
 	msg.flags = flags;
 	msg.code = code;
 
-	s = mod->SendStream;
+	s = mod->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_virtual_keyboard_event(NULL, &msg);
@@ -99,7 +99,7 @@ int freerds_client_outbound_virtual_keyboard_event(xrdpModule* mod, DWORD flags,
 	return status;
 }
 
-int freerds_client_outbound_unicode_keyboard_event(xrdpModule* mod, DWORD flags, DWORD code)
+int freerds_client_outbound_unicode_keyboard_event(rdsModule* mod, DWORD flags, DWORD code)
 {
 	int length;
 	int status;
@@ -112,7 +112,7 @@ int freerds_client_outbound_unicode_keyboard_event(xrdpModule* mod, DWORD flags,
 	msg.flags = flags;
 	msg.code = code;
 
-	s = mod->SendStream;
+	s = mod->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_unicode_keyboard_event(NULL, &msg);
@@ -123,7 +123,7 @@ int freerds_client_outbound_unicode_keyboard_event(xrdpModule* mod, DWORD flags,
 	return status;
 }
 
-int freerds_client_outbound_mouse_event(xrdpModule* mod, DWORD flags, DWORD x, DWORD y)
+int freerds_client_outbound_mouse_event(rdsModule* mod, DWORD flags, DWORD x, DWORD y)
 {
 	int length;
 	int status;
@@ -137,7 +137,7 @@ int freerds_client_outbound_mouse_event(xrdpModule* mod, DWORD flags, DWORD x, D
 	msg.x = x;
 	msg.y = y;
 
-	s = mod->SendStream;
+	s = mod->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_mouse_event(NULL, &msg);
@@ -148,7 +148,7 @@ int freerds_client_outbound_mouse_event(xrdpModule* mod, DWORD flags, DWORD x, D
 	return status;
 }
 
-int freerds_client_outbound_extended_mouse_event(xrdpModule* mod, DWORD flags, DWORD x, DWORD y)
+int freerds_client_outbound_extended_mouse_event(rdsModule* mod, DWORD flags, DWORD x, DWORD y)
 {
 	int length;
 	int status;
@@ -162,7 +162,7 @@ int freerds_client_outbound_extended_mouse_event(xrdpModule* mod, DWORD flags, D
 	msg.x = x;
 	msg.y = y;
 
-	s = mod->SendStream;
+	s = mod->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_extended_mouse_event(NULL, &msg);
@@ -173,15 +173,15 @@ int freerds_client_outbound_extended_mouse_event(xrdpModule* mod, DWORD flags, D
 	return status;
 }
 
-xrdpClientModule* freerds_client_outbound_interface_new()
+rdsClientInterface* freerds_client_outbound_interface_new()
 {
-	xrdpClientModule* client;
+	rdsClientInterface* client;
 
-	client = (xrdpClientModule*) malloc(sizeof(xrdpClientModule));
+	client = (rdsClientInterface*) malloc(sizeof(rdsClientInterface));
 
 	if (client)
 	{
-		ZeroMemory(client, sizeof(xrdpClientModule));
+		ZeroMemory(client, sizeof(rdsClientInterface));
 
 		client->SynchronizeKeyboardEvent = freerds_client_outbound_synchronize_keyboard_event;
 		client->ScancodeKeyboardEvent = freerds_client_outbound_scancode_keyboard_event;
@@ -194,15 +194,193 @@ xrdpClientModule* freerds_client_outbound_interface_new()
 	return client;
 }
 
-xrdpServerModule* freerds_server_outbound_interface_new()
+int freerds_server_outbound_write_message(rdsModule* mod, XRDP_MSG_COMMON* msg)
 {
-	xrdpServerModule* server;
+	int status;
+	wStream* s;
 
-	server = (xrdpServerModule*) malloc(sizeof(xrdpServerModule));
+	s = mod->OutboundStream;
+	Stream_SetPosition(s, 0);
+
+	xrdp_server_message_write(NULL, msg);
+	Stream_EnsureRemainingCapacity(s, msg->length);
+	xrdp_server_message_write(s, msg);
+
+	status = freerds_named_pipe_write(mod->hClientPipe, Stream_Buffer(s), msg->length);
+
+	return status;
+}
+
+int freerds_server_outbound_begin_update(rdsModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
+{
+	msg->type = XRDP_SERVER_BEGIN_UPDATE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_end_update(rdsModule* mod, XRDP_MSG_END_UPDATE* msg)
+{
+	msg->type = XRDP_SERVER_END_UPDATE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_beep(rdsModule* mod, XRDP_MSG_BEEP* msg)
+{
+	msg->type = XRDP_SERVER_BEEP;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_is_terminated(rdsModule* mod)
+{
+	return 0;
+}
+
+int freerds_server_outbound_opaque_rect(rdsModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
+{
+	msg->type = XRDP_SERVER_OPAQUE_RECT;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_screen_blt(rdsModule* mod, XRDP_MSG_SCREEN_BLT* msg)
+{
+	msg->type = XRDP_SERVER_SCREEN_BLT;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_paint_rect(rdsModule* mod, XRDP_MSG_PAINT_RECT* msg)
+{
+	msg->type = XRDP_SERVER_PAINT_RECT;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_patblt(rdsModule* mod, XRDP_MSG_PATBLT* msg)
+{
+	msg->type = XRDP_SERVER_PATBLT;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_dstblt(rdsModule* mod, XRDP_MSG_DSTBLT* msg)
+{
+	msg->type = XRDP_SERVER_DSTBLT;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_set_pointer(rdsModule* mod, XRDP_MSG_SET_POINTER* msg)
+{
+	msg->type = XRDP_SERVER_SET_POINTER;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_set_palette(rdsModule* mod, XRDP_MSG_SET_PALETTE* msg)
+{
+	msg->type = XRDP_SERVER_SET_PALETTE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_set_clipping_region(rdsModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
+{
+	msg->type = XRDP_SERVER_SET_CLIPPING_REGION;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_line_to(rdsModule* mod, XRDP_MSG_LINE_TO* msg)
+{
+	msg->type = XRDP_SERVER_LINE_TO;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_cache_glyph(rdsModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
+{
+	msg->type = XRDP_SERVER_CACHE_GLYPH;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_glyph_index(rdsModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
+{
+	msg->type = XRDP_SERVER_GLYPH_INDEX;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_shared_framebuffer(rdsModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
+{
+	msg->type = XRDP_SERVER_SHARED_FRAMEBUFFER;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_reset(rdsModule* mod, XRDP_MSG_RESET* msg)
+{
+	msg->type = XRDP_SERVER_RESET;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_create_offscreen_surface(rdsModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
+{
+	msg->type = XRDP_SERVER_CREATE_OFFSCREEN_SURFACE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_switch_offscreen_surface(rdsModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
+{
+	msg->type = XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_delete_offscreen_surface(rdsModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
+{
+	msg->type = XRDP_SERVER_DELETE_OFFSCREEN_SURFACE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_paint_offscreen_surface(rdsModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
+{
+	msg->type = XRDP_SERVER_PAINT_OFFSCREEN_SURFACE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_window_new_update(rdsModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
+{
+	msg->type = XRDP_SERVER_WINDOW_NEW_UPDATE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+int freerds_server_outbound_window_delete(rdsModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
+{
+	msg->type = XRDP_SERVER_WINDOW_DELETE;
+	return freerds_server_outbound_write_message(mod, msg);
+}
+
+rdsServerInterface* freerds_server_outbound_interface_new()
+{
+	rdsServerInterface* server;
+
+	server = (rdsServerInterface*) malloc(sizeof(rdsServerInterface));
 
 	if (server)
 	{
-		ZeroMemory(server, sizeof(xrdpServerModule));
+		ZeroMemory(server, sizeof(rdsServerInterface));
+
+		server->BeginUpdate = freerds_server_outbound_begin_update;
+		server->EndUpdate = freerds_server_outbound_end_update;
+		server->Beep = freerds_server_outbound_beep;
+		server->IsTerminated = freerds_server_outbound_is_terminated;
+		server->OpaqueRect = freerds_server_outbound_opaque_rect;
+		server->ScreenBlt = freerds_server_outbound_screen_blt;
+		server->PaintRect = freerds_server_outbound_paint_rect;
+		server->PatBlt = freerds_server_outbound_patblt;
+		server->DstBlt = freerds_server_outbound_dstblt;
+		server->SetPointer = freerds_server_outbound_set_pointer;
+		server->SetPalette = freerds_server_outbound_set_palette;
+		server->SetClippingRegion = freerds_server_outbound_set_clipping_region;
+		server->LineTo = freerds_server_outbound_line_to;
+		server->CacheGlyph = freerds_server_outbound_cache_glyph;
+		server->GlyphIndex = freerds_server_outbound_glyph_index;
+		server->SharedFramebuffer = freerds_server_outbound_shared_framebuffer;
+		server->Reset = freerds_server_outbound_reset;
+		server->CreateOffscreenSurface = freerds_server_outbound_create_offscreen_surface;
+		server->SwitchOffscreenSurface = freerds_server_outbound_switch_offscreen_surface;
+		server->DeleteOffscreenSurface = freerds_server_outbound_delete_offscreen_surface;
+		server->PaintOffscreenSurface = freerds_server_outbound_paint_offscreen_surface;
+		server->WindowNewUpdate = freerds_server_outbound_window_new_update;
+		server->WindowDelete = freerds_server_outbound_window_delete;
 	}
 
 	return server;
