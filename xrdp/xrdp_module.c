@@ -49,6 +49,8 @@
 
 #include <freerdp/freerdp.h>
 
+#include "../module/X11/x11_module.h"
+
 int xrdp_client_capabilities(xrdpModule* mod)
 {
 	wStream* s;
@@ -73,82 +75,6 @@ int xrdp_client_capabilities(xrdpModule* mod)
 	xrdp_write_capabilities(s, &msg);
 
 	freerds_named_pipe_write(mod->hClientPipe, Stream_Buffer(s), length);
-
-	return 0;
-}
-
-int xrdp_client_start(xrdpModule* mod)
-{
-	BOOL status;
-	HANDLE token;
-	char envstr[256];
-	struct passwd* pwnam;
-	rdpSettings* settings;
-	char lpCommandLine[256];
-	STARTUPINFO StartupInfo;
-	PROCESS_INFORMATION ProcessInformation;
-
-	token = NULL;
-	settings = mod->settings;
-
-	freerds_named_pipe_clean(mod->SessionId, "X11rdp");
-
-	LogonUserA(settings->Username, settings->Domain, settings->Password,
-			LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &token);
-
-	pwnam = getpwnam(settings->Username);
-
-	sprintf_s(envstr, sizeof(envstr), ":%d", (int) mod->SessionId);
-	SetEnvironmentVariableA("DISPLAY", envstr);
-
-	SetEnvironmentVariableA("SHELL", pwnam->pw_shell);
-	SetEnvironmentVariableA("USER", pwnam->pw_name);
-	SetEnvironmentVariableA("HOME", pwnam->pw_dir);
-
-	sprintf_s(envstr, sizeof(envstr), "%d", (int) pwnam->pw_uid);
-	SetEnvironmentVariableA("UID", envstr);
-
-	ZeroMemory(&StartupInfo, sizeof(STARTUPINFO));
-	StartupInfo.cb = sizeof(STARTUPINFO);
-	ZeroMemory(&ProcessInformation, sizeof(PROCESS_INFORMATION));
-
-	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds",
-			"X11rdp", (int) mod->SessionId, settings->DesktopWidth, settings->DesktopHeight, 24);
-
-	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, NULL, NULL,
-			&StartupInfo, &ProcessInformation);
-
-	fprintf(stderr, "Process started: %d\n", status);
-
-	mod->hClientPipe = freerds_named_pipe_connect(mod->SessionId, "X11rdp", 5 * 1000);
-
-	ZeroMemory(&StartupInfo, sizeof(STARTUPINFO));
-	StartupInfo.cb = sizeof(STARTUPINFO);
-	ZeroMemory(&ProcessInformation, sizeof(PROCESS_INFORMATION));
-
-	status = CreateProcessAsUserA(token,
-			NULL, "startwm.sh",
-			NULL, NULL, FALSE, 0, NULL, NULL,
-			&StartupInfo, &ProcessInformation);
-
-	fprintf(stderr, "User process started: %d\n", status);
-
-	return 0;
-}
-
-int xrdp_client_stop(xrdpModule* mod)
-{
-	SetEvent(mod->StopEvent);
-
-#if 0
-	WaitForSingleObject(ProcessInformation.hProcess, INFINITE);
-
-	status = GetExitCodeProcess(ProcessInformation.hProcess, &exitCode);
-
-	CloseHandle(ProcessInformation.hProcess);
-	CloseHandle(ProcessInformation.hThread);
-#endif
 
 	return 0;
 }
@@ -240,21 +166,29 @@ xrdpModule* xrdp_module_new(xrdpSession* session)
 	int auth_status;
 	xrdpModule* mod;
 	rdpSettings* settings;
+	RDS_MODULE_ENTRY_POINTS EntryPoints;
+
+	ZeroMemory(&EntryPoints, sizeof(EntryPoints));
+	EntryPoints.Version = RDS_MODULE_INTERFACE_VERSION;
+	EntryPoints.Size = sizeof(EntryPoints);
+
+	X11_RdsModuleEntry(&EntryPoints);
 
 	settings = session->settings;
 
 	auth_status = xrdp_authenticate(settings->Username, settings->Password, &error_code);
 
-	mod = (xrdpModule*) malloc(sizeof(xrdpModule));
-	ZeroMemory(mod, sizeof(xrdpModule));
+	mod = (xrdpModule*) malloc(EntryPoints.ContextSize);
+	ZeroMemory(mod, EntryPoints.ContextSize);
 
-	mod->size = sizeof(xrdpModule);
+	mod->size = EntryPoints.ContextSize;
 	mod->session = session;
 	mod->settings = session->settings;
 	mod->SessionId = 10;
 
-	mod->Start = xrdp_client_start;
-	mod->Stop = xrdp_client_stop;
+	mod->pEntryPoints = (RDS_MODULE_ENTRY_POINTS*) malloc(sizeof(RDS_MODULE_ENTRY_POINTS));
+	CopyMemory(mod->pEntryPoints, &EntryPoints, sizeof(RDS_MODULE_ENTRY_POINTS));
+
 	mod->Connect = xrdp_client_connect;
 	mod->GetEventHandles = xrdp_client_get_event_handles;
 	mod->CheckEventHandles = xrdp_client_check_event_handles;
@@ -270,12 +204,14 @@ xrdpModule* xrdp_module_new(xrdpSession* session)
 
 	mod->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
+	mod->pEntryPoints->New((rdsModule*) mod);
+
 	mod->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) xrdp_client_thread,
 			(void*) mod, CREATE_SUSPENDED, NULL);
 
 	freerds_client_inbound_module_init(mod);
 
-	mod->Start(mod);
+	mod->pEntryPoints->Start((rdsModule*) mod);
 
 	if (mod->Connect(mod) != 0)
 		return NULL;

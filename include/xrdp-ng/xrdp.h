@@ -29,6 +29,12 @@
 #include <winpr/synch.h>
 #include <winpr/stream.h>
 
+typedef struct xrdp_mod xrdpModule;
+typedef xrdpModule rdsModule;
+
+typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;
+typedef RDS_MODULE_ENTRY_POINTS_V1 RDS_MODULE_ENTRY_POINTS;
+
 typedef struct xrdp_session xrdpSession;
 
 /* Common Data Types */
@@ -565,8 +571,6 @@ typedef union _XRDP_MSG_SERVER XRDP_MSG_SERVER;
  * Module Interface
  */
 
-typedef struct xrdp_mod xrdpModule;
-
 typedef int (*pXrdpModuleStart)(xrdpModule* mod);
 typedef int (*pXrdpModuleStop)(xrdpModule* mod);
 typedef int (*pXrdpModuleConnect)(xrdpModule* mod);
@@ -687,6 +691,8 @@ struct xrdp_mod
 
 	HANDLE hClientPipe;
 	HANDLE hServerPipe;
+
+	RDS_MODULE_ENTRY_POINTS* pEntryPoints;
 };
 
 #ifdef __cplusplus

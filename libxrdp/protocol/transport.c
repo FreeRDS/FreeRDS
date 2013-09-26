@@ -81,7 +81,6 @@ int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint)
 {
 	int status = 0;
 	char* filename;
-	HANDLE hNamedPipe;
 	char pipeName[256];
 
 	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
