@@ -92,6 +92,7 @@ int g_getgroup_info(const char* groupname, int* gid);
 int g_check_user_in_group(const char* username, int gid, int* ok);
 int g_tcp_local_socket_dgram(void);
 int g_tcp_local_socket_stream(void);
+int g_tcp_select2(int sck1, int sck2);
 int g_tcp_select3(int sck1, int sck2, int sck3);
 
 #endif

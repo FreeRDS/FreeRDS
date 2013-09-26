@@ -1404,6 +1404,58 @@ int g_tcp_local_socket_stream(void)
 	return socket(AF_UNIX, SOCK_STREAM, 0);
 }
 
+int g_tcp_select2(int sck1, int sck2)
+{
+	fd_set rfds;
+	struct timeval time;
+	int max;
+	int rv;
+
+	time.tv_sec = 0;
+	time.tv_usec = 0;
+	FD_ZERO(&rfds);
+
+	if (sck1 > 0)
+	{
+		FD_SET(((unsigned int)sck1), &rfds);
+	}
+
+	if (sck2 > 0)
+	{
+		FD_SET(((unsigned int)sck2), &rfds);
+	}
+
+	max = sck1;
+
+	if (sck2 > max)
+	{
+		max = sck2;
+	}
+
+	rv = select(max + 1, &rfds, 0, 0, &time);
+
+	if (rv > 0)
+	{
+		rv = 0;
+
+		if (FD_ISSET(((unsigned int)sck1), &rfds))
+		{
+			rv = rv | 1;
+		}
+
+		if (FD_ISSET(((unsigned int)sck2), &rfds))
+		{
+			rv = rv | 2;
+		}
+	}
+	else
+	{
+		rv = 0;
+	}
+
+	return rv;
+}
+
 int g_tcp_select3(int sck1, int sck2, int sck3)
 {
 	fd_set rfds;

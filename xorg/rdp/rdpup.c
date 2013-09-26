@@ -33,14 +33,11 @@ static int g_listen_sck = 0;
 static int g_sck = 0;
 static int g_sck_closed = 0;
 static int g_connected = 0;
-static int g_dis_listen_sck = 0;
 
 static int g_begin = 0;
 static wStream* g_out_s = 0;
 static wStream* g_in_s = 0;
 static int g_button_mask = 0;
-static int g_cursor_x = 0;
-static int g_cursor_y = 0;
 static int g_count = 0;
 
 static BYTE* pfbBackBufferMemory = NULL;
@@ -50,7 +47,6 @@ extern int g_Bpp;
 extern int g_Bpp_mask;
 extern rdpScreenInfoRec g_rdpScreen;
 extern int g_use_rail;
-extern int g_use_uds;
 extern char g_uds_data[];
 extern int g_con_number;
 
@@ -434,86 +430,7 @@ static int rdpup_process_msg(wStream* s, int type)
 {
 	LLOGLN(10, ("rdpup_process_msg - msg %d", type));
 
-	if (type == XRDP_CLIENT_EVENT)
-	{
-		XRDP_MSG_EVENT msg;
-
-		xrdp_read_event(s, &msg);
-
-		LLOGLN(10, ("rdpup_process_msg - subtype %d param1 %d param2 %d param3 %d "
-				"param4 %d", msg.subType, msg.param1, msg.param2, msg.param3, msg.param4));
-
-		switch (msg.subType)
-		{
-			case 15: /* key down */
-			case 16: /* key up */
-				KbdAddEvent(msg.subType == 15, msg.param1, msg.param2, msg.param3, msg.param4);
-				break;
-
-			case 17: /* from RDP_INPUT_SYNCHRONIZE */
-				KbdSync(msg.param1);
-				break;
-
-			case 100: /* WM_XRDP_MOUSEMOVE */
-				/* without the minus 2, strange things happen when dragging
-                   	   	   past the width or height */
-				g_cursor_x = l_bound_by(msg.param1, 0, g_rdpScreen.width - 2);
-				g_cursor_y = l_bound_by(msg.param2, 0, g_rdpScreen.height - 2);
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 101: /* WM_XRDP_LBUTTONUP */
-				g_button_mask = g_button_mask & (~1);
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 102: /* WM_XRDP_LBUTTONDOWN */
-				g_button_mask = g_button_mask | 1;
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 103: /* WM_XRDP_RBUTTONUP */
-				g_button_mask = g_button_mask & (~4);
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 104: /* WM_XRDP_RBUTTONDOWN */
-				g_button_mask = g_button_mask | 4;
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 105: /* WM_XRDP_BUTTON3UP */
-				g_button_mask = g_button_mask & (~2);
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 106: /* WM_XRDP_BUTTON3DOWN */
-				g_button_mask = g_button_mask | 2;
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 107: /* WM_XRDP_BUTTON4UP */
-				g_button_mask = g_button_mask & (~8);
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 108: /* WM_XRDP_BUTTON4DOWN */
-				g_button_mask = g_button_mask | 8;
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 109: /* WM_XRDP_BUTTON5UP */
-				g_button_mask = g_button_mask & (~16);
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-
-			case 110: /* WM_XRDP_BUTTON5DOWN */
-				g_button_mask = g_button_mask | 16;
-				PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
-				break;
-		}
-	}
-	else if (type == XRDP_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT)
+	if (type == XRDP_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT)
 	{
 		XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT msg;
 
@@ -743,142 +660,6 @@ UINT32 rdp_dstblt_rop(int opcode)
 	}
 
 	return rop;
-}
-
-int rdpup_init(void)
-{
-	int i;
-	char text[256];
-
-	if (!g_directory_exist("/tmp/.pipe"))
-	{
-		if (!g_create_dir("/tmp/.pipe"))
-		{
-			LLOGLN(0, ("rdpup_init: g_create_dir failed"));
-			return 0;
-		}
-
-		g_chmod_hex("/tmp/.pipe", 0x1777);
-	}
-
-	i = atoi(display);
-
-	LLOGLN(0, ("rdpup_init: display: %d", i));
-
-	if (i < 1)
-	{
-		return 0;
-	}
-
-	if (g_in_s == 0)
-	{
-		g_in_s = Stream_New(NULL, 8192);
-	}
-
-	if (g_out_s == 0)
-	{
-		g_out_s = Stream_New(NULL, 1920 * 1088 * g_Bpp + 100);
-	}
-
-	pfbBackBufferMemory = (BYTE*) malloc(g_rdpScreen.sizeInBytes);
-
-	g_sprintf(g_uds_data, "/tmp/.pipe/FreeRDS_%s_X11rdp", display);
-
-	LLOGLN(0, ("rdpup_init: %s", g_uds_data));
-
-	if (g_listen_sck == 0)
-	{
-		g_listen_sck = g_tcp_local_socket_stream();
-
-		if (g_tcp_local_bind(g_listen_sck, g_uds_data) != 0)
-		{
-			LLOGLN(0, ("rdpup_init: g_tcp_local_bind failed"));
-			return 0;
-		}
-
-		g_tcp_listen(g_listen_sck);
-		AddEnabledDevice(g_listen_sck);
-	}
-
-	g_dis_listen_sck = g_tcp_local_socket_dgram();
-
-	if (g_dis_listen_sck != 0)
-	{
-		g_sprintf(text, "/tmp/.pipe/xrdp_disconnect_display_%s", display);
-
-		if (g_tcp_local_bind(g_dis_listen_sck, text) == 0)
-		{
-			AddEnabledDevice(g_dis_listen_sck);
-		}
-		else
-		{
-			rdpLog("g_tcp_local_bind failed [%s]\n", text);
-		}
-	}
-
-	return 1;
-}
-
-int rdpup_check(void)
-{
-	int sel;
-	int new_sck;
-	char buf[8];
-
-	sel = g_tcp_select3(g_listen_sck, g_sck, g_dis_listen_sck);
-
-	if (sel & 1)
-	{
-		new_sck = g_tcp_accept(g_listen_sck);
-
-		if (new_sck == -1)
-		{
-		}
-		else
-		{
-			if (g_sck != 0)
-			{
-				/* should maybe ask is user wants to allow here with timeout */
-				rdpLog("replacing connection, already got a connection\n");
-				rdpup_disconnect();
-			}
-
-			rdpLog("got a connection\n");
-			g_sck = new_sck;
-			g_tcp_set_non_blocking(g_sck);
-			g_tcp_set_no_delay(g_sck);
-			g_connected = 1;
-			g_sck_closed = 0;
-			g_begin = 0;
-			g_con_number++;
-			g_rdpScreen.fbAttached = 0;
-			AddEnabledDevice(g_sck);
-		}
-	}
-
-	if (sel & 2)
-	{
-		int type = 0;
-
-		if (rdpup_recv_msg(g_in_s, &type) == 0)
-		{
-			rdpup_process_msg(g_in_s, type);
-		}
-	}
-
-	if (sel & 4)
-	{
-		if (g_tcp_recv(g_dis_listen_sck, buf, 4, 0) > 0)
-		{
-			if (g_sck != 0)
-			{
-				rdpLog("disconnecting session via user request\n");
-				rdpup_disconnect();
-			}
-		}
-	}
-
-	return 0;
 }
 
 int rdpup_begin_update(void)
@@ -1264,3 +1045,109 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	rdpup_update((XRDP_MSG_COMMON*) &msg);
 }
 
+int rdpup_init(void)
+{
+	int i;
+	char text[256];
+
+	if (!g_directory_exist("/tmp/.pipe"))
+	{
+		if (!g_create_dir("/tmp/.pipe"))
+		{
+			LLOGLN(0, ("rdpup_init: g_create_dir failed"));
+			return 0;
+		}
+
+		g_chmod_hex("/tmp/.pipe", 0x1777);
+	}
+
+	i = atoi(display);
+
+	LLOGLN(0, ("rdpup_init: display: %d", i));
+
+	if (i < 1)
+	{
+		return 0;
+	}
+
+	if (g_in_s == 0)
+	{
+		g_in_s = Stream_New(NULL, 8192);
+	}
+
+	if (g_out_s == 0)
+	{
+		g_out_s = Stream_New(NULL, 1920 * 1088 * g_Bpp + 100);
+	}
+
+	pfbBackBufferMemory = (BYTE*) malloc(g_rdpScreen.sizeInBytes);
+
+	g_sprintf(g_uds_data, "/tmp/.pipe/FreeRDS_%s_X11rdp", display);
+
+	LLOGLN(0, ("rdpup_init: %s", g_uds_data));
+
+	if (g_listen_sck == 0)
+	{
+		g_listen_sck = g_tcp_local_socket_stream();
+
+		if (g_tcp_local_bind(g_listen_sck, g_uds_data) != 0)
+		{
+			LLOGLN(0, ("rdpup_init: g_tcp_local_bind failed"));
+			return 0;
+		}
+
+		g_tcp_listen(g_listen_sck);
+		AddEnabledDevice(g_listen_sck);
+	}
+
+	return 1;
+}
+
+int rdpup_check(void)
+{
+	int sel;
+	int new_sck;
+
+	sel = g_tcp_select2(g_listen_sck, g_sck);
+
+	if (sel & 1)
+	{
+		new_sck = g_tcp_accept(g_listen_sck);
+
+		if (new_sck == -1)
+		{
+		}
+		else
+		{
+			if (g_sck != 0)
+			{
+				/* should maybe ask is user wants to allow here with timeout */
+				rdpLog("replacing connection, already got a connection\n");
+				rdpup_disconnect();
+			}
+
+			rdpLog("got a connection\n");
+			g_sck = new_sck;
+			g_tcp_set_non_blocking(g_sck);
+			g_tcp_set_no_delay(g_sck);
+			g_connected = 1;
+			g_sck_closed = 0;
+			g_begin = 0;
+			g_con_number++;
+			g_rdpScreen.fbAttached = 0;
+			AddEnabledDevice(g_sck);
+		}
+	}
+
+	if (sel & 2)
+	{
+		int type = 0;
+
+		if (rdpup_recv_msg(g_in_s, &type) == 0)
+		{
+			rdpup_process_msg(g_in_s, type);
+		}
+	}
+
+	return 0;
+}
