@@ -36,8 +36,6 @@
 
 #include <xrdp-ng/xrdp.h>
 
-typedef struct xrdp_session xrdpSession;
-
 #include "xrdp.h"
 
 struct xrdp_brush

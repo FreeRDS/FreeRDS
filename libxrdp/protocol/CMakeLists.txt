@@ -19,7 +19,16 @@ set(MODULE_NAME "xrdp-ng-protocol")
 set(MODULE_PREFIX "FREERDP_XRDP_NG_PROTOCOL")
 
 set(${MODULE_PREFIX}_SRCS
-	protocol.c)
+	protocol.c
+	protocol.h
+	interface.c
+	interface.h
+	inbound.c
+	inbound.h
+	outbound.c
+	outbound.h
+	transport.c
+	transport.h)
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 

@@ -23,6 +23,8 @@
 
 #include <xrdp-ng/xrdp.h>
 
+#include "protocol.h"
+
 typedef int (*pXrdpMessageRead)(wStream* s, XRDP_MSG_COMMON* msg);
 typedef int (*pXrdpMessageWrite)(wStream* s, XRDP_MSG_COMMON* msg);
 typedef void* (*pXrdpMessageCopy)(XRDP_MSG_COMMON* msg);

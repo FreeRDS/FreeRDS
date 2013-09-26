@@ -43,8 +43,9 @@ void xrdp_shutdown(int sig)
 	DWORD threadId;
 
 	threadId = GetCurrentThreadId();
+
 	printf("shutting down\n");
-	printf("signal %d threadId %p\n", sig, threadId);
+	printf("signal %d threadId %d\n", sig, (int) threadId);
 
 	if (WaitForSingleObject(g_TermEvent, 0) != WAIT_OBJECT_0)
 		SetEvent(g_TermEvent);
