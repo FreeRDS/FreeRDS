@@ -1,6 +1,6 @@
 /**
- * FreeRDP: A Remote Desktop Protocol Implementation
- * xrdp-ng interface
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ * RDP Server Module
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef XRDP_NG_TRANSPORT_H
-#define XRDP_NG_TRANSPORT_H
+#ifndef FREERDS_MODULE_RDP_H
+#define FREERDS_MODULE_RDP_H
 
 #include <freerds/freerds.h>
 
-#define PIPE_BUFFER_SIZE	0xFFFF
+int RDP_RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
 
-#endif /* XRDP_NG_TRANSPORT_H */
+#endif /* FREERDS_MODULE_RDP_H */

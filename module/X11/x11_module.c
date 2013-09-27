@@ -44,7 +44,7 @@
 #include <winpr/sspicli.h>
 #include <winpr/environment.h>
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 #include "x11_module.h"
 

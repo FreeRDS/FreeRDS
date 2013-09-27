@@ -32,7 +32,7 @@
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 #include <pixman.h>
 

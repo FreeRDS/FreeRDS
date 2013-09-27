@@ -20,6 +20,6 @@
 #ifndef XRDP_NG_OUTBOUND_H
 #define XRDP_NG_OUTBOUND_H
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 #endif /* XRDP_NG_OUTBOUND_H */

@@ -15,5 +15,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(X11)
-add_subdirectory(RDP)
+set(MODULE_NAME "freerds-rdp")
+set(MODULE_PREFIX "FREERDS_RDP")
+
+set(${MODULE_PREFIX}_SRCS
+	rdp_module.c
+	rdp_module.h)
+
+add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+
+set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
+
+list(APPEND ${MODULE_PREFIX}_LIBS ${XRDP_NG_MODULE}-protocol)
+
+set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
+	MONOLITHIC ${MONOLITHIC_BUILD}
+	MODULE winpr
+	MODULES winpr-crt winpr-synch winpr-thread winpr-environment winpr-sspicli winpr-utils)
+
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
+
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})

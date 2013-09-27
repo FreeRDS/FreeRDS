@@ -21,7 +21,7 @@
 #include "config.h"
 #endif
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 #include "transport.h"
 
@@ -214,19 +214,19 @@ int freerds_server_outbound_write_message(rdsModule* mod, XRDP_MSG_COMMON* msg)
 int freerds_server_outbound_begin_update(rdsModule* mod, XRDP_MSG_BEGIN_UPDATE* msg)
 {
 	msg->type = XRDP_SERVER_BEGIN_UPDATE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_end_update(rdsModule* mod, XRDP_MSG_END_UPDATE* msg)
 {
 	msg->type = XRDP_SERVER_END_UPDATE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_beep(rdsModule* mod, XRDP_MSG_BEEP* msg)
 {
 	msg->type = XRDP_SERVER_BEEP;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_is_terminated(rdsModule* mod)
@@ -237,115 +237,115 @@ int freerds_server_outbound_is_terminated(rdsModule* mod)
 int freerds_server_outbound_opaque_rect(rdsModule* mod, XRDP_MSG_OPAQUE_RECT* msg)
 {
 	msg->type = XRDP_SERVER_OPAQUE_RECT;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_screen_blt(rdsModule* mod, XRDP_MSG_SCREEN_BLT* msg)
 {
 	msg->type = XRDP_SERVER_SCREEN_BLT;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_paint_rect(rdsModule* mod, XRDP_MSG_PAINT_RECT* msg)
 {
 	msg->type = XRDP_SERVER_PAINT_RECT;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_patblt(rdsModule* mod, XRDP_MSG_PATBLT* msg)
 {
 	msg->type = XRDP_SERVER_PATBLT;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_dstblt(rdsModule* mod, XRDP_MSG_DSTBLT* msg)
 {
 	msg->type = XRDP_SERVER_DSTBLT;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_set_pointer(rdsModule* mod, XRDP_MSG_SET_POINTER* msg)
 {
 	msg->type = XRDP_SERVER_SET_POINTER;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_set_palette(rdsModule* mod, XRDP_MSG_SET_PALETTE* msg)
 {
 	msg->type = XRDP_SERVER_SET_PALETTE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_set_clipping_region(rdsModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg)
 {
 	msg->type = XRDP_SERVER_SET_CLIPPING_REGION;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_line_to(rdsModule* mod, XRDP_MSG_LINE_TO* msg)
 {
 	msg->type = XRDP_SERVER_LINE_TO;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_cache_glyph(rdsModule* mod, XRDP_MSG_CACHE_GLYPH* msg)
 {
 	msg->type = XRDP_SERVER_CACHE_GLYPH;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_glyph_index(rdsModule* mod, XRDP_MSG_GLYPH_INDEX* msg)
 {
 	msg->type = XRDP_SERVER_GLYPH_INDEX;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_shared_framebuffer(rdsModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	msg->type = XRDP_SERVER_SHARED_FRAMEBUFFER;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_reset(rdsModule* mod, XRDP_MSG_RESET* msg)
 {
 	msg->type = XRDP_SERVER_RESET;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_create_offscreen_surface(rdsModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = XRDP_SERVER_CREATE_OFFSCREEN_SURFACE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_switch_offscreen_surface(rdsModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_delete_offscreen_surface(rdsModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = XRDP_SERVER_DELETE_OFFSCREEN_SURFACE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_paint_offscreen_surface(rdsModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = XRDP_SERVER_PAINT_OFFSCREEN_SURFACE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_window_new_update(rdsModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	msg->type = XRDP_SERVER_WINDOW_NEW_UPDATE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 int freerds_server_outbound_window_delete(rdsModule* mod, XRDP_MSG_WINDOW_DELETE* msg)
 {
 	msg->type = XRDP_SERVER_WINDOW_DELETE;
-	return freerds_server_outbound_write_message(mod, msg);
+	return freerds_server_outbound_write_message(mod, (XRDP_MSG_COMMON*) msg);
 }
 
 rdsServerInterface* freerds_server_outbound_interface_new()

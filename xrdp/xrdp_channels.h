@@ -22,7 +22,7 @@
 
 #include "xrdp.h"
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 int xrdp_channels_post_connect(xrdpSession* session);
 

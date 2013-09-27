@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "rdp.h"
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 #define LOG_LEVEL 1
 #define LLOG(_level, _args) \
@@ -331,21 +331,6 @@ static int rdpup_recv_msg(wStream* s, int* type)
 	*type = common.type;
 
 	return status;
-}
-
-static int l_bound_by(int val, int low, int high)
-{
-	if (val > high)
-	{
-		val = high;
-	}
-
-	if (val < low)
-	{
-		val = low;
-	}
-
-	return val;
 }
 
 static int process_screen_parameters(int DesktopWidth, int DesktopHeight, int ColorDepth)
@@ -1048,7 +1033,6 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 int rdpup_init(void)
 {
 	int i;
-	char text[256];
 
 	if (!g_directory_exist("/tmp/.pipe"))
 	{

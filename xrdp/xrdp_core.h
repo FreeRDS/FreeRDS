@@ -34,7 +34,7 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 #include "xrdp.h"
 

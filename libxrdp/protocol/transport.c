@@ -21,7 +21,7 @@
 #include "config.h"
 #endif
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 #include <winpr/crt.h>
 #include <winpr/file.h>
