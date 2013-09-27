@@ -20,5 +20,5 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp.sh.in ${CMAKE_CURRENT_SOURCE_DIR
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng.service.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng.service)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng-sesman.service.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng-sesman.service)
 
-install(PROGRAMS "xrdp.sh" DESTINATION ${XRDP_CFG_PATH})
-install(PROGRAMS "startwm.sh" DESTINATION ${XRDP_CFG_PATH})
+install(PROGRAMS "xrdp.sh" DESTINATION ${RDS_CFG_PATH})
+install(PROGRAMS "startwm.sh" DESTINATION ${RDS_CFG_PATH})

@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 
 	no_daemon = kill = 0;
 
-	g_snprintf(cfg_file, 255, "%s/xrdp.ini", XRDP_CFG_PATH);
+	g_snprintf(cfg_file, 255, "%s/xrdp.ini", RDS_CFG_PATH);
 
 	flags = COMMAND_LINE_SEPARATOR_SPACE;
 	flags |= COMMAND_LINE_SIGIL_DASH | COMMAND_LINE_SIGIL_DOUBLE_DASH;
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 	}
 	while ((arg = CommandLineFindNextArgumentA(arg)) != NULL);
 
-	g_snprintf(pid_file, 255, "%s/xrdp-ng.pid", XRDP_PID_PATH);
+	g_snprintf(pid_file, 255, "%s/xrdp-ng.pid", RDS_PID_PATH);
 
 	if (kill)
 	{

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#ifndef XRDP_NG_INBOUND_H
-#define XRDP_NG_INBOUND_H
+#ifndef RDS_NG_INBOUND_H
+#define RDS_NG_INBOUND_H
 
 
 
-#endif /* XRDP_NG_INBOUND_H */
+#endif /* RDS_NG_INBOUND_H */

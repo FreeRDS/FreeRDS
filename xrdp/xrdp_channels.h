@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef XRDP_NG_CHANNELS_H
-#define XRDP_NG_CHANNELS_H
+#ifndef RDS_NG_CHANNELS_H
+#define RDS_NG_CHANNELS_H
 
 #include "xrdp.h"
 
 #include <freerds/freerds.h>
 
-int xrdp_channels_post_connect(xrdpSession* session);
+int xrdp_channels_post_connect(rdsSession* session);
 
-#endif /* XRDP_NG_CHANNELS_H */
+#endif /* RDS_NG_CHANNELS_H */

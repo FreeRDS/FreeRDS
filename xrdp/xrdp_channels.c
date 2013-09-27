@@ -23,7 +23,7 @@
 
 #include "xrdp_channels.h"
 
-int xrdp_channels_post_connect(xrdpSession* session)
+int xrdp_channels_post_connect(rdsSession* session)
 {
 	int i;
 	rdpSettings* settings = session->settings;

@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "${XRDP_NG_MODULE}")
+set(MODULE_NAME "${RDS_NG_MODULE}")
 set(MODULE_PREFIX "FREERDP_XRDP")
 
 set(PAM_FEATURE_TYPE "REQUIRED")
@@ -55,7 +55,7 @@ list(APPEND ${MODULE_PREFIX}_LIBS freerds-x11)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-rdp)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
 
-list(APPEND ${MODULE_PREFIX}_LIBS ${XRDP_NG_MODULE}-common)
+list(APPEND ${MODULE_PREFIX}_LIBS ${RDS_NG_MODULE}-common)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
@@ -77,5 +77,5 @@ target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
 
-install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${XRDP_CFG_PATH})
+install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${RDS_CFG_PATH})
 

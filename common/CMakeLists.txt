@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "${XRDP_NG_MODULE}-common")
-set(MODULE_PREFIX "FREERDP_XRDP_COMMON")
+set(MODULE_NAME "${RDS_NG_MODULE}-common")
+set(MODULE_PREFIX "FREERDP_RDS_COMMON")
 
 set(ZLIB_FEATURE_TYPE "REQUIRED")
 set(ZLIB_FEATURE_PURPOSE "compression")

@@ -143,7 +143,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	{
 		if (segs != 0)
 		{
-			XRDP_MSG_LINE_TO msg;
+			RDS_MSG_LINE_TO msg;
 
 			rdpup_begin_update();
 
@@ -171,7 +171,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 		if (nseg != 0 && num_clips > 0)
 		{
-			XRDP_MSG_LINE_TO msg;
+			RDS_MSG_LINE_TO msg;
 
 			rdpup_begin_update();
 

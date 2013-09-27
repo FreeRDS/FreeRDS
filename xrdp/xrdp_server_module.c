@@ -32,21 +32,21 @@
 
 #include "xrdp.h"
 
-int freerds_client_inbound_begin_update(rdsModule* module, XRDP_MSG_BEGIN_UPDATE* msg)
+int freerds_client_inbound_begin_update(rdsModule* module, RDS_MSG_BEGIN_UPDATE* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 	libxrdp_orders_begin_paint(connector->session);
 	return 0;
 }
 
-int freerds_client_inbound_end_update(rdsModule* module, XRDP_MSG_END_UPDATE* msg)
+int freerds_client_inbound_end_update(rdsModule* module, RDS_MSG_END_UPDATE* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 	libxrdp_orders_end_paint(connector->session);
 	return 0;
 }
 
-int freerds_client_inbound_beep(rdsModule* module, XRDP_MSG_BEEP* msg)
+int freerds_client_inbound_beep(rdsModule* module, RDS_MSG_BEEP* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 	libxrdp_send_bell(connector->session);
@@ -58,26 +58,26 @@ int freerds_client_inbound_is_terminated(rdsModule* module)
 	return g_is_term();
 }
 
-int freerds_client_inbound_opaque_rect(rdsModule* module, XRDP_MSG_OPAQUE_RECT* msg)
+int freerds_client_inbound_opaque_rect(rdsModule* module, RDS_MSG_OPAQUE_RECT* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int freerds_client_inbound_screen_blt(rdsModule* module, XRDP_MSG_SCREEN_BLT* msg)
+int freerds_client_inbound_screen_blt(rdsModule* module, RDS_MSG_SCREEN_BLT* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int freerds_client_inbound_paint_rect(rdsModule* module, XRDP_MSG_PAINT_RECT* msg)
+int freerds_client_inbound_paint_rect(rdsModule* module, RDS_MSG_PAINT_RECT* msg)
 {
 	int bpp;
 	int inFlightFrames;
 	SURFACE_FRAME* frame;
-	xrdpSession* session;
+	rdsSession* session;
 	rdpSettings* settings;
 	rdsConnector* connector = (rdsConnector*) module;
 
@@ -115,62 +115,62 @@ int freerds_client_inbound_paint_rect(rdsModule* module, XRDP_MSG_PAINT_RECT* ms
 	return 0;
 }
 
-int freerds_client_inbound_patblt(rdsModule* module, XRDP_MSG_PATBLT* msg)
+int freerds_client_inbound_patblt(rdsModule* module, RDS_MSG_PATBLT* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int freerds_client_inbound_dstblt(rdsModule* module, XRDP_MSG_DSTBLT* msg)
+int freerds_client_inbound_dstblt(rdsModule* module, RDS_MSG_DSTBLT* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int freerds_client_inbound_set_pointer(rdsModule* module, XRDP_MSG_SET_POINTER* msg)
+int freerds_client_inbound_set_pointer(rdsModule* module, RDS_MSG_SET_POINTER* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 	libxrdp_set_pointer(connector->session, msg);
 	return 0;
 }
 
-int freerds_client_inbound_set_palette(rdsModule* module, XRDP_MSG_SET_PALETTE* msg)
+int freerds_client_inbound_set_palette(rdsModule* module, RDS_MSG_SET_PALETTE* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int freerds_client_inbound_set_clipping_region(rdsModule* module, XRDP_MSG_SET_CLIPPING_REGION* msg)
+int freerds_client_inbound_set_clipping_region(rdsModule* module, RDS_MSG_SET_CLIPPING_REGION* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int freerds_client_inbound_line_to(rdsModule* module, XRDP_MSG_LINE_TO* msg)
+int freerds_client_inbound_line_to(rdsModule* module, RDS_MSG_LINE_TO* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int freerds_client_inbound_cache_glyph(rdsModule* module, XRDP_MSG_CACHE_GLYPH* msg)
+int freerds_client_inbound_cache_glyph(rdsModule* module, RDS_MSG_CACHE_GLYPH* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 	return libxrdp_orders_send_font(connector->session, msg);
 }
 
-int freerds_client_inbound_glyph_index(rdsModule* module, XRDP_MSG_GLYPH_INDEX* msg)
+int freerds_client_inbound_glyph_index(rdsModule* module, RDS_MSG_GLYPH_INDEX* msg)
 {
 	/* TODO */
 
 	return 0;
 }
 
-int freerds_client_inbound_shared_framebuffer(rdsModule* module, XRDP_MSG_SHARED_FRAMEBUFFER* msg)
+int freerds_client_inbound_shared_framebuffer(rdsModule* module, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 
@@ -207,7 +207,7 @@ int freerds_client_inbound_shared_framebuffer(rdsModule* module, XRDP_MSG_SHARED
 	return 0;
 }
 
-int freerds_client_inbound_reset(rdsModule* module, XRDP_MSG_RESET* msg)
+int freerds_client_inbound_reset(rdsModule* module, RDS_MSG_RESET* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 
@@ -217,33 +217,33 @@ int freerds_client_inbound_reset(rdsModule* module, XRDP_MSG_RESET* msg)
 	return 0;
 }
 
-int freerds_client_inbound_create_offscreen_surface(rdsModule* module, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg)
+int freerds_client_inbound_create_offscreen_surface(rdsModule* module, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
 	return 0;
 }
 
-int freerds_client_inbound_switch_offscreen_surface(rdsModule* module, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
+int freerds_client_inbound_switch_offscreen_surface(rdsModule* module, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
 	return 0;
 }
 
-int freerds_client_inbound_delete_offscreen_surface(rdsModule* module, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg)
+int freerds_client_inbound_delete_offscreen_surface(rdsModule* module, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
 	return 0;
 }
 
-int freerds_client_inbound_paint_offscreen_surface(rdsModule* module, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg)
+int freerds_client_inbound_paint_offscreen_surface(rdsModule* module, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
 	return 0;
 }
 
-int freerds_client_inbound_window_new_update(rdsModule* module, XRDP_MSG_WINDOW_NEW_UPDATE* msg)
+int freerds_client_inbound_window_new_update(rdsModule* module, RDS_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 	return libxrdp_window_new_update(connector->session, msg);
 }
 
-int freerds_client_inbound_window_delete(rdsModule* module, XRDP_MSG_WINDOW_DELETE* msg)
+int freerds_client_inbound_window_delete(rdsModule* module, RDS_MSG_WINDOW_DELETE* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 	return libxrdp_window_delete(connector->session, msg);

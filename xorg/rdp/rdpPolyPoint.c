@@ -144,7 +144,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 	{
 		if (npt > 0)
 		{
-			XRDP_MSG_OPAQUE_RECT msg;
+			RDS_MSG_OPAQUE_RECT msg;
 
 			rdpup_begin_update();
 
@@ -168,7 +168,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 		if (npt > 0 && num_clips > 0)
 		{
-			XRDP_MSG_OPAQUE_RECT msg;
+			RDS_MSG_OPAQUE_RECT msg;
 
 			rdpup_begin_update();
 

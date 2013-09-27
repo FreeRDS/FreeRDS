@@ -1,17 +1,17 @@
 EXTRA_DIST = xrdp.ini ad24b.bmp ad256.bmp xrdp24b.bmp xrdp256.bmp sans-10.fv1 cursor0.cur cursor1.cur xrdp.h xrdp_types.h
 
-if XRDP_DEBUG
-EXTRA_DEFINES = -DXRDP_DEBUG
+if RDS_DEBUG
+EXTRA_DEFINES = -DRDS_DEBUG
 else
-EXTRA_DEFINES = -DXRDP_NODEBUG
+EXTRA_DEFINES = -DRDS_NODEBUG
 endif
 
 AM_CFLAGS = \
-  -DXRDP_CFG_PATH=\"${sysconfdir}/xrdp\" \
-  -DXRDP_SBIN_PATH=\"${sbindir}\" \
-  -DXRDP_SHARE_PATH=\"${datadir}/xrdp\" \
-  -DXRDP_PID_PATH=\"${localstatedir}/run\" \
-  -DXRDP_LIB_PATH=\"${libdir}\" \
+  -DRDS_CFG_PATH=\"${sysconfdir}/xrdp\" \
+  -DRDS_SBIN_PATH=\"${sbindir}\" \
+  -DRDS_SHARE_PATH=\"${datadir}/xrdp\" \
+  -DRDS_PID_PATH=\"${localstatedir}/run\" \
+  -DRDS_LIB_PATH=\"${libdir}\" \
   $(EXTRA_DEFINES)
 
 INCLUDES = \

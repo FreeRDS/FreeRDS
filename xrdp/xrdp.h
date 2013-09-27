@@ -22,8 +22,8 @@
 #include "config.h"
 #endif
 
-#ifndef XRDP_H
-#define XRDP_H
+#ifndef RDS_H
+#define RDS_H
 
 #include <winpr/crt.h>
 #include <winpr/synch.h>
@@ -44,16 +44,16 @@ int g_is_term(void);
 void g_set_term(int in_val);
 HANDLE g_get_term_event(void);
 
-xrdpSession* xrdp_process_create(freerdp_peer* client);
-void xrdp_process_delete(xrdpSession* self);
-HANDLE xrdp_process_get_term_event(xrdpSession* self);
+rdsSession* xrdp_process_create(freerdp_peer* client);
+void xrdp_process_delete(rdsSession* self);
+HANDLE xrdp_process_get_term_event(rdsSession* self);
 void* xrdp_process_main_thread(void* arg);
 
 xrdpListener* xrdp_listen_create(void);
 void xrdp_listen_delete(xrdpListener* self);
 int xrdp_listen_main_loop(xrdpListener* self);
 
-rdsModule* xrdp_module_new(xrdpSession* session);
+rdsModule* xrdp_module_new(rdsSession* session);
 void xrdp_module_free(rdsModule* mod);
 
 long xrdp_authenticate(char* username, char* password, int* errorcode);
@@ -67,4 +67,4 @@ int xrdp_message_server_queue_pack(rdsModule* mod);
 int xrdp_message_server_queue_process_pending_messages(rdsModule* mod);
 int xrdp_message_server_module_init(rdsModule* mod);
 
-#endif /* XRDP_H */
+#endif /* RDS_H */

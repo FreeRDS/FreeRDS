@@ -87,7 +87,7 @@ int xrdp_client_check_event_handles(rdsModule* module)
 	return status;
 }
 
-rdsModule* xrdp_module_new(xrdpSession* session)
+rdsModule* xrdp_module_new(rdsSession* session)
 {
 	int error_code;
 	int auth_status;

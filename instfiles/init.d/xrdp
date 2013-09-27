@@ -110,7 +110,7 @@ case "$1" in
 	;;
   stop)
         check_root
-	[ -n "$XRDP_UPGRADE" -a "$RESTART_ON_UPGRADE" = "no" ] && {
+	[ -n "$RDS_UPGRADE" -a "$RESTART_ON_UPGRADE" = "no" ] && {
 	    echo "Upgrade in progress, no restart of xrdp."
 	    exit 0
 	}

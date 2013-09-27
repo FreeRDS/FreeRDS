@@ -61,6 +61,8 @@
 
 #include "os_calls.h"
 
+#include <winpr/crt.h>
+
 /* for clearenv() */
 #if defined(_WIN32)
 #else

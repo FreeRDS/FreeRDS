@@ -33,14 +33,14 @@ typedef struct rds_module rdsModule;
 typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;
 typedef RDS_MODULE_ENTRY_POINTS_V1 RDS_MODULE_ENTRY_POINTS;
 
-typedef struct xrdp_session xrdpSession;
+typedef struct rds_session rdsSession;
 
 /* Common Data Types */
 
-#define XRDP_MSG_FLAG_RECT		0x00000001
+#define RDS_MSG_FLAG_RECT		0x00000001
 
 /**
- * XRDP_RECT matches the memory layout of pixman_rectangle32_t:
+ * RDS_RECT matches the memory layout of pixman_rectangle32_t:
  *
  * struct pixman_rectangle32
  * {
@@ -49,28 +49,28 @@ typedef struct xrdp_session xrdpSession;
  * };
  */
 
-struct _XRDP_RECT
+struct _RDS_RECT
 {
 	INT32 x;
 	INT32 y;
 	UINT32 width;
 	UINT32 height;
 };
-typedef struct _XRDP_RECT XRDP_RECT;
+typedef struct _RDS_RECT RDS_RECT;
 
 #define DEFINE_MSG_COMMON() \
 	UINT32 type; \
 	UINT32 length; \
 	UINT32 msgFlags; \
-	XRDP_RECT rect
+	RDS_RECT rect
 
-struct _XRDP_MSG_COMMON
+struct _RDS_MSG_COMMON
 {
 	DEFINE_MSG_COMMON();
 };
-typedef struct _XRDP_MSG_COMMON XRDP_MSG_COMMON;
+typedef struct _RDS_MSG_COMMON RDS_MSG_COMMON;
 
-struct _XRDP_FRAMEBUFFER
+struct _RDS_FRAMEBUFFER
 {
 	int fbWidth;
 	int fbHeight;
@@ -82,48 +82,35 @@ struct _XRDP_FRAMEBUFFER
 	BYTE* fbSharedMemory;
 	void* image;
 };
-typedef struct _XRDP_FRAMEBUFFER XRDP_FRAMEBUFFER;
+typedef struct _RDS_FRAMEBUFFER RDS_FRAMEBUFFER;
 
-#define XRDP_CODEC_JPEG			0x00000001
-#define XRDP_CODEC_NSCODEC		0x00000002
-#define XRDP_CODEC_REMOTEFX		0x00000004
+#define RDS_CODEC_JPEG			0x00000001
+#define RDS_CODEC_NSCODEC		0x00000002
+#define RDS_CODEC_REMOTEFX		0x00000004
 
-int xrdp_read_common_header(wStream* s, XRDP_MSG_COMMON* msg);
-int xrdp_write_common_header(wStream* s, XRDP_MSG_COMMON* msg);
+int xrdp_read_common_header(wStream* s, RDS_MSG_COMMON* msg);
+int xrdp_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
 
 /* Client Message Types */
 
-#define XRDP_CLIENT_EVENT			101
-#define XRDP_CLIENT_CAPABILITIES		102
-#define XRDP_CLIENT_REFRESH_RECT		103
-#define XRDP_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT	104
-#define XRDP_CLIENT_SCANCODE_KEYBOARD_EVENT	105
-#define XRDP_CLIENT_VIRTUAL_KEYBOARD_EVENT	106
-#define XRDP_CLIENT_UNICODE_KEYBOARD_EVENT	107
-#define XRDP_CLIENT_MOUSE_EVENT			108
-#define XRDP_CLIENT_EXTENDED_MOUSE_EVENT	109
+#define RDS_CLIENT_CAPABILITIES			102
+#define RDS_CLIENT_REFRESH_RECT			103
+#define RDS_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT	104
+#define RDS_CLIENT_SCANCODE_KEYBOARD_EVENT	105
+#define RDS_CLIENT_VIRTUAL_KEYBOARD_EVENT	106
+#define RDS_CLIENT_UNICODE_KEYBOARD_EVENT	107
+#define RDS_CLIENT_MOUSE_EVENT			108
+#define RDS_CLIENT_EXTENDED_MOUSE_EVENT		109
 
-struct _XRDP_MSG_EVENT
-{
-	DEFINE_MSG_COMMON();
-
-	UINT32 subType;
-	UINT32 param1;
-	UINT32 param2;
-	UINT32 param3;
-	UINT32 param4;
-};
-typedef struct _XRDP_MSG_EVENT XRDP_MSG_EVENT;
-
-struct _XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT
+struct _RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 flags;
 };
-typedef struct _XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT;
+typedef struct _RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT;
 
-struct _XRDP_MSG_SCANCODE_KEYBOARD_EVENT
+struct _RDS_MSG_SCANCODE_KEYBOARD_EVENT
 {
 	DEFINE_MSG_COMMON();
 
@@ -131,27 +118,27 @@ struct _XRDP_MSG_SCANCODE_KEYBOARD_EVENT
 	UINT32 code;
 	UINT32 keyboardType;
 };
-typedef struct _XRDP_MSG_SCANCODE_KEYBOARD_EVENT XRDP_MSG_SCANCODE_KEYBOARD_EVENT;
+typedef struct _RDS_MSG_SCANCODE_KEYBOARD_EVENT RDS_MSG_SCANCODE_KEYBOARD_EVENT;
 
-struct _XRDP_MSG_VIRTUAL_KEYBOARD_EVENT
+struct _RDS_MSG_VIRTUAL_KEYBOARD_EVENT
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 flags;
 	UINT32 code;
 };
-typedef struct _XRDP_MSG_VIRTUAL_KEYBOARD_EVENT XRDP_MSG_VIRTUAL_KEYBOARD_EVENT;
+typedef struct _RDS_MSG_VIRTUAL_KEYBOARD_EVENT RDS_MSG_VIRTUAL_KEYBOARD_EVENT;
 
-struct _XRDP_MSG_UNICODE_KEYBOARD_EVENT
+struct _RDS_MSG_UNICODE_KEYBOARD_EVENT
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 flags;
 	UINT32 code;
 };
-typedef struct _XRDP_MSG_UNICODE_KEYBOARD_EVENT XRDP_MSG_UNICODE_KEYBOARD_EVENT;
+typedef struct _RDS_MSG_UNICODE_KEYBOARD_EVENT RDS_MSG_UNICODE_KEYBOARD_EVENT;
 
-struct _XRDP_MSG_MOUSE_EVENT
+struct _RDS_MSG_MOUSE_EVENT
 {
 	DEFINE_MSG_COMMON();
 
@@ -159,9 +146,9 @@ struct _XRDP_MSG_MOUSE_EVENT
 	DWORD x;
 	DWORD y;
 };
-typedef struct _XRDP_MSG_MOUSE_EVENT XRDP_MSG_MOUSE_EVENT;
+typedef struct _RDS_MSG_MOUSE_EVENT RDS_MSG_MOUSE_EVENT;
 
-struct _XRDP_MSG_EXTENDED_MOUSE_EVENT
+struct _RDS_MSG_EXTENDED_MOUSE_EVENT
 {
 	DEFINE_MSG_COMMON();
 
@@ -169,9 +156,9 @@ struct _XRDP_MSG_EXTENDED_MOUSE_EVENT
 	DWORD x;
 	DWORD y;
 };
-typedef struct _XRDP_MSG_EXTENDED_MOUSE_EVENT XRDP_MSG_EXTENDED_MOUSE_EVENT;
+typedef struct _RDS_MSG_EXTENDED_MOUSE_EVENT RDS_MSG_EXTENDED_MOUSE_EVENT;
 
-struct _XRDP_MSG_CAPABILITIES
+struct _RDS_MSG_CAPABILITIES
 {
 	DEFINE_MSG_COMMON();
 
@@ -179,82 +166,79 @@ struct _XRDP_MSG_CAPABILITIES
 	UINT32 DesktopHeight;
 	UINT32 ColorDepth;
 };
-typedef struct _XRDP_MSG_CAPABILITIES XRDP_MSG_CAPABILITIES;
+typedef struct _RDS_MSG_CAPABILITIES RDS_MSG_CAPABILITIES;
 
-struct _XRDP_MSG_REFRESH_RECT
+struct _RDS_MSG_REFRESH_RECT
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 numberOfAreas;
 	RECTANGLE_16* areasToRefresh;
 };
-typedef struct _XRDP_MSG_REFRESH_RECT XRDP_MSG_REFRESH_RECT;
+typedef struct _RDS_MSG_REFRESH_RECT RDS_MSG_REFRESH_RECT;
 
-int xrdp_read_event(wStream* s, XRDP_MSG_EVENT* msg);
-int xrdp_write_event(wStream* s, XRDP_MSG_EVENT* msg);
+int xrdp_read_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
+int xrdp_write_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
 
-int xrdp_read_synchronize_keyboard_event(wStream* s, XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
-int xrdp_write_synchronize_keyboard_event(wStream* s, XRDP_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
+int xrdp_read_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
+int xrdp_write_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
 
-int xrdp_read_virtual_keyboard_event(wStream* s, XRDP_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
-int xrdp_write_virtual_keyboard_event(wStream* s, XRDP_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
+int xrdp_read_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
+int xrdp_write_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
 
-int xrdp_read_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg);
-int xrdp_write_scancode_keyboard_event(wStream* s, XRDP_MSG_SCANCODE_KEYBOARD_EVENT* msg);
+int xrdp_read_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
+int xrdp_write_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
 
-int xrdp_read_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVENT* msg);
-int xrdp_write_unicode_keyboard_event(wStream* s, XRDP_MSG_UNICODE_KEYBOARD_EVENT* msg);
+int xrdp_read_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
+int xrdp_write_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
 
-int xrdp_read_mouse_event(wStream* s, XRDP_MSG_MOUSE_EVENT* msg);
-int xrdp_write_mouse_event(wStream* s, XRDP_MSG_MOUSE_EVENT* msg);
+int xrdp_read_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
+int xrdp_write_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
 
-int xrdp_read_extended_mouse_event(wStream* s, XRDP_MSG_EXTENDED_MOUSE_EVENT* msg);
-int xrdp_write_extended_mouse_event(wStream* s, XRDP_MSG_EXTENDED_MOUSE_EVENT* msg);
+int xrdp_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
+int xrdp_write_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
 
-int xrdp_read_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg);
-int xrdp_write_capabilities(wStream* s, XRDP_MSG_CAPABILITIES* msg);
-
-int xrdp_read_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
-int xrdp_write_refresh_rect(wStream* s, XRDP_MSG_REFRESH_RECT* msg);
+int xrdp_read_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
+int xrdp_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
 
 /* Server Message Types */
 
-#define XRDP_SERVER_BEGIN_UPDATE		1
-#define XRDP_SERVER_END_UPDATE			2
-#define XRDP_SERVER_SET_CLIPPING_REGION		3
-#define XRDP_SERVER_OPAQUE_RECT			4
-#define XRDP_SERVER_SCREEN_BLT			5
-#define XRDP_SERVER_PAINT_RECT			6
-#define XRDP_SERVER_PATBLT			7
-#define XRDP_SERVER_DSTBLT			8
-#define XRDP_SERVER_LINE_TO			9
-#define XRDP_SERVER_CREATE_OFFSCREEN_SURFACE	10
-#define XRDP_SERVER_SWITCH_OFFSCREEN_SURFACE	11
-#define XRDP_SERVER_DELETE_OFFSCREEN_SURFACE	12
-#define XRDP_SERVER_PAINT_OFFSCREEN_SURFACE	13
-#define XRDP_SERVER_SET_PALETTE			14
-#define XRDP_SERVER_CACHE_GLYPH			15
-#define XRDP_SERVER_GLYPH_INDEX			16
-#define XRDP_SERVER_SET_POINTER			17
-#define XRDP_SERVER_SHARED_FRAMEBUFFER		18
-#define XRDP_SERVER_BEEP			19
-#define XRDP_SERVER_RESET			20
-#define XRDP_SERVER_WINDOW_NEW_UPDATE		21
-#define XRDP_SERVER_WINDOW_DELETE		22
+#define RDS_SERVER_BEGIN_UPDATE			1
+#define RDS_SERVER_END_UPDATE			2
+#define RDS_SERVER_SET_CLIPPING_REGION		3
+#define RDS_SERVER_OPAQUE_RECT			4
+#define RDS_SERVER_SCREEN_BLT			5
+#define RDS_SERVER_PAINT_RECT			6
+#define RDS_SERVER_PATBLT			7
+#define RDS_SERVER_DSTBLT			8
+#define RDS_SERVER_LINE_TO			9
+#define RDS_SERVER_CREATE_OFFSCREEN_SURFACE	10
+#define RDS_SERVER_SWITCH_OFFSCREEN_SURFACE	11
+#define RDS_SERVER_DELETE_OFFSCREEN_SURFACE	12
+#define RDS_SERVER_PAINT_OFFSCREEN_SURFACE	13
+#define RDS_SERVER_SET_PALETTE			14
+#define RDS_SERVER_CACHE_GLYPH			15
+#define RDS_SERVER_GLYPH_INDEX			16
+#define RDS_SERVER_SET_POINTER			17
+#define RDS_SERVER_SHARED_FRAMEBUFFER		18
+#define RDS_SERVER_BEEP				19
+#define RDS_SERVER_RESET			20
+#define RDS_SERVER_WINDOW_NEW_UPDATE		21
+#define RDS_SERVER_WINDOW_DELETE		22
 
-struct _XRDP_MSG_BEGIN_UPDATE
+struct _RDS_MSG_BEGIN_UPDATE
 {
 	DEFINE_MSG_COMMON();
 };
-typedef struct _XRDP_MSG_BEGIN_UPDATE XRDP_MSG_BEGIN_UPDATE;
+typedef struct _RDS_MSG_BEGIN_UPDATE RDS_MSG_BEGIN_UPDATE;
 
-struct _XRDP_MSG_END_UPDATE
+struct _RDS_MSG_END_UPDATE
 {
 	DEFINE_MSG_COMMON();
 };
-typedef struct _XRDP_MSG_END_UPDATE XRDP_MSG_END_UPDATE;
+typedef struct _RDS_MSG_END_UPDATE RDS_MSG_END_UPDATE;
 
-struct _XRDP_MSG_OPAQUE_RECT
+struct _RDS_MSG_OPAQUE_RECT
 {
 	DEFINE_MSG_COMMON();
 
@@ -264,9 +248,9 @@ struct _XRDP_MSG_OPAQUE_RECT
 	INT32 nHeight;
 	UINT32 color;
 };
-typedef struct _XRDP_MSG_OPAQUE_RECT XRDP_MSG_OPAQUE_RECT;
+typedef struct _RDS_MSG_OPAQUE_RECT RDS_MSG_OPAQUE_RECT;
 
-struct _XRDP_MSG_SCREEN_BLT
+struct _RDS_MSG_SCREEN_BLT
 {
 	DEFINE_MSG_COMMON();
 
@@ -278,9 +262,9 @@ struct _XRDP_MSG_SCREEN_BLT
 	INT32 nXSrc;
 	INT32 nYSrc;
 };
-typedef struct _XRDP_MSG_SCREEN_BLT XRDP_MSG_SCREEN_BLT;
+typedef struct _RDS_MSG_SCREEN_BLT RDS_MSG_SCREEN_BLT;
 
-struct _XRDP_MSG_PAINT_RECT
+struct _RDS_MSG_PAINT_RECT
 {
 	DEFINE_MSG_COMMON();
 
@@ -293,11 +277,11 @@ struct _XRDP_MSG_PAINT_RECT
 	BYTE* bitmapData;
 	UINT32 bitmapDataLength;
 	UINT32 fbSegmentId;
-	XRDP_FRAMEBUFFER* framebuffer;
+	RDS_FRAMEBUFFER* framebuffer;
 };
-typedef struct _XRDP_MSG_PAINT_RECT XRDP_MSG_PAINT_RECT;
+typedef struct _RDS_MSG_PAINT_RECT RDS_MSG_PAINT_RECT;
 
-struct _XRDP_MSG_DSTBLT
+struct _RDS_MSG_DSTBLT
 {
 	DEFINE_MSG_COMMON();
 
@@ -307,9 +291,9 @@ struct _XRDP_MSG_DSTBLT
 	INT32 nHeight;
 	UINT32 bRop;
 };
-typedef struct _XRDP_MSG_DSTBLT XRDP_MSG_DSTBLT;
+typedef struct _RDS_MSG_DSTBLT RDS_MSG_DSTBLT;
 
-struct _XRDP_MSG_PATBLT
+struct _RDS_MSG_PATBLT
 {
 	DEFINE_MSG_COMMON();
 
@@ -322,9 +306,9 @@ struct _XRDP_MSG_PATBLT
 	UINT32 foreColor;
 	rdpBrush brush;
 };
-typedef struct _XRDP_MSG_PATBLT XRDP_MSG_PATBLT;
+typedef struct _RDS_MSG_PATBLT RDS_MSG_PATBLT;
 
-struct _XRDP_MSG_SET_CLIPPING_REGION
+struct _RDS_MSG_SET_CLIPPING_REGION
 {
 	DEFINE_MSG_COMMON();
 
@@ -334,9 +318,9 @@ struct _XRDP_MSG_SET_CLIPPING_REGION
 	INT32 nWidth;
 	INT32 nHeight;
 };
-typedef struct _XRDP_MSG_SET_CLIPPING_REGION XRDP_MSG_SET_CLIPPING_REGION;
+typedef struct _RDS_MSG_SET_CLIPPING_REGION RDS_MSG_SET_CLIPPING_REGION;
 
-struct _XRDP_MSG_LINE_TO
+struct _RDS_MSG_LINE_TO
 {
 	DEFINE_MSG_COMMON();
 
@@ -351,9 +335,9 @@ struct _XRDP_MSG_LINE_TO
 	UINT32 penWidth;
 	UINT32 penColor;
 };
-typedef struct _XRDP_MSG_LINE_TO XRDP_MSG_LINE_TO;
+typedef struct _RDS_MSG_LINE_TO RDS_MSG_LINE_TO;
 
-struct _XRDP_MSG_SET_POINTER
+struct _RDS_MSG_SET_POINTER
 {
 	DEFINE_MSG_COMMON();
 
@@ -367,17 +351,17 @@ struct _XRDP_MSG_SET_POINTER
 	BYTE* xorMaskData;
 	BYTE* andMaskData;
 };
-typedef struct _XRDP_MSG_SET_POINTER XRDP_MSG_SET_POINTER;
+typedef struct _RDS_MSG_SET_POINTER RDS_MSG_SET_POINTER;
 
-struct _XRDP_MSG_SET_PALETTE
+struct _RDS_MSG_SET_PALETTE
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32* palette;
 };
-typedef struct _XRDP_MSG_SET_PALETTE XRDP_MSG_SET_PALETTE;
+typedef struct _RDS_MSG_SET_PALETTE RDS_MSG_SET_PALETTE;
 
-struct _XRDP_MSG_CREATE_OFFSCREEN_SURFACE
+struct _RDS_MSG_CREATE_OFFSCREEN_SURFACE
 {
 	DEFINE_MSG_COMMON();
 
@@ -385,25 +369,25 @@ struct _XRDP_MSG_CREATE_OFFSCREEN_SURFACE
 	UINT32 nWidth;
 	UINT32 nHeight;
 };
-typedef struct _XRDP_MSG_CREATE_OFFSCREEN_SURFACE XRDP_MSG_CREATE_OFFSCREEN_SURFACE;
+typedef struct _RDS_MSG_CREATE_OFFSCREEN_SURFACE RDS_MSG_CREATE_OFFSCREEN_SURFACE;
 
-struct _XRDP_MSG_SWITCH_OFFSCREEN_SURFACE
+struct _RDS_MSG_SWITCH_OFFSCREEN_SURFACE
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 cacheIndex;
 };
-typedef struct _XRDP_MSG_SWITCH_OFFSCREEN_SURFACE XRDP_MSG_SWITCH_OFFSCREEN_SURFACE;
+typedef struct _RDS_MSG_SWITCH_OFFSCREEN_SURFACE RDS_MSG_SWITCH_OFFSCREEN_SURFACE;
 
-struct _XRDP_MSG_DELETE_OFFSCREEN_SURFACE
+struct _RDS_MSG_DELETE_OFFSCREEN_SURFACE
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 cacheIndex;
 };
-typedef struct _XRDP_MSG_DELETE_OFFSCREEN_SURFACE XRDP_MSG_DELETE_OFFSCREEN_SURFACE;
+typedef struct _RDS_MSG_DELETE_OFFSCREEN_SURFACE RDS_MSG_DELETE_OFFSCREEN_SURFACE;
 
-struct _XRDP_MSG_PAINT_OFFSCREEN_SURFACE
+struct _RDS_MSG_PAINT_OFFSCREEN_SURFACE
 {
 	DEFINE_MSG_COMMON();
 
@@ -416,9 +400,9 @@ struct _XRDP_MSG_PAINT_OFFSCREEN_SURFACE
 	INT32 nXSrc;
 	INT32 nYSrc;
 };
-typedef struct _XRDP_MSG_PAINT_OFFSCREEN_SURFACE XRDP_MSG_PAINT_OFFSCREEN_SURFACE;
+typedef struct _RDS_MSG_PAINT_OFFSCREEN_SURFACE RDS_MSG_PAINT_OFFSCREEN_SURFACE;
 
-struct _XRDP_GLYPH_DATA
+struct _RDS_GLYPH_DATA
 {
 	UINT32 cacheIndex;
 	INT32 x;
@@ -428,21 +412,21 @@ struct _XRDP_GLYPH_DATA
 	UINT32 cb;
 	BYTE* aj;
 };
-typedef struct _XRDP_GLYPH_DATA XRDP_GLYPH_DATA;
+typedef struct _RDS_GLYPH_DATA RDS_GLYPH_DATA;
 
-struct _XRDP_MSG_CACHE_GLYPH
+struct _RDS_MSG_CACHE_GLYPH
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 cacheId;
 	UINT32 flags;
 	UINT32 cGlyphs;
-	XRDP_GLYPH_DATA* glyphData;
+	RDS_GLYPH_DATA* glyphData;
 	BYTE* unicodeCharacters;
 };
-typedef struct _XRDP_MSG_CACHE_GLYPH XRDP_MSG_CACHE_GLYPH;
+typedef struct _RDS_MSG_CACHE_GLYPH RDS_MSG_CACHE_GLYPH;
 
-struct _XRDP_MSG_GLYPH_INDEX
+struct _RDS_MSG_GLYPH_INDEX
 {
 	DEFINE_MSG_COMMON();
 
@@ -466,9 +450,9 @@ struct _XRDP_MSG_GLYPH_INDEX
 	UINT32 cbData;
 	BYTE* data;
 };
-typedef struct _XRDP_MSG_GLYPH_INDEX XRDP_MSG_GLYPH_INDEX;
+typedef struct _RDS_MSG_GLYPH_INDEX RDS_MSG_GLYPH_INDEX;
 
-struct _XRDP_MSG_RESET
+struct _RDS_MSG_RESET
 {
 	DEFINE_MSG_COMMON();
 
@@ -476,16 +460,16 @@ struct _XRDP_MSG_RESET
 	UINT32 DesktopHeight;
 	UINT32 ColorDepth;
 };
-typedef struct _XRDP_MSG_RESET XRDP_MSG_RESET;
+typedef struct _RDS_MSG_RESET RDS_MSG_RESET;
 
-struct _XRDP_MSG_BEEP
+struct _RDS_MSG_BEEP
 {
 	DEFINE_MSG_COMMON();
 
 };
-typedef struct _XRDP_MSG_BEEP XRDP_MSG_BEEP;
+typedef struct _RDS_MSG_BEEP RDS_MSG_BEEP;
 
-struct _XRDP_MSG_WINDOW_NEW_UPDATE
+struct _RDS_MSG_WINDOW_NEW_UPDATE
 {
 	DEFINE_MSG_COMMON();
 
@@ -514,17 +498,17 @@ struct _XRDP_MSG_WINDOW_NEW_UPDATE
 	UINT32 numVisibilityRects;
 	RECTANGLE_16* visibilityRects;
 };
-typedef struct _XRDP_MSG_WINDOW_NEW_UPDATE XRDP_MSG_WINDOW_NEW_UPDATE;
+typedef struct _RDS_MSG_WINDOW_NEW_UPDATE RDS_MSG_WINDOW_NEW_UPDATE;
 
-struct _XRDP_MSG_WINDOW_DELETE
+struct _RDS_MSG_WINDOW_DELETE
 {
 	DEFINE_MSG_COMMON();
 
 	UINT32 windowId;
 };
-typedef struct _XRDP_MSG_WINDOW_DELETE XRDP_MSG_WINDOW_DELETE;
+typedef struct _RDS_MSG_WINDOW_DELETE RDS_MSG_WINDOW_DELETE;
 
-struct _XRDP_MSG_SHARED_FRAMEBUFFER
+struct _RDS_MSG_SHARED_FRAMEBUFFER
 {
 	DEFINE_MSG_COMMON();
 
@@ -536,34 +520,34 @@ struct _XRDP_MSG_SHARED_FRAMEBUFFER
 	int bitsPerPixel;
 	int bytesPerPixel;
 };
-typedef struct _XRDP_MSG_SHARED_FRAMEBUFFER XRDP_MSG_SHARED_FRAMEBUFFER;
+typedef struct _RDS_MSG_SHARED_FRAMEBUFFER RDS_MSG_SHARED_FRAMEBUFFER;
 
-union _XRDP_MSG_SERVER
+union _RDS_MSG_SERVER
 {
-	XRDP_MSG_BEGIN_UPDATE BeginUpdate;
-	XRDP_MSG_END_UPDATE EndUpdate;
-	XRDP_MSG_SET_CLIPPING_REGION SetClippingRegion;
-	XRDP_MSG_OPAQUE_RECT OpaqueRect;
-	XRDP_MSG_SCREEN_BLT ScreenBlt;
-	XRDP_MSG_PAINT_RECT PaintRect;
-	XRDP_MSG_PATBLT PatBlt;
-	XRDP_MSG_DSTBLT DstBlt;
-	XRDP_MSG_LINE_TO LineTo;
-	XRDP_MSG_CREATE_OFFSCREEN_SURFACE CreateOffscreenSurface;
-	XRDP_MSG_SWITCH_OFFSCREEN_SURFACE SwitchOffscreenSurface;
-	XRDP_MSG_DELETE_OFFSCREEN_SURFACE DeleteOffscreenSurface;
-	XRDP_MSG_PAINT_OFFSCREEN_SURFACE PaintOffscreenSurface;
-	XRDP_MSG_SET_PALETTE SetPalette;
-	XRDP_MSG_CACHE_GLYPH CacheGlyph;
-	XRDP_MSG_GLYPH_INDEX GlyphIndex;
-	XRDP_MSG_SET_POINTER SetPointer;
-	XRDP_MSG_SHARED_FRAMEBUFFER SharedFramebuffer;
-	XRDP_MSG_BEEP Beep;
-	XRDP_MSG_RESET Reset;
-	XRDP_MSG_WINDOW_NEW_UPDATE WindowNewUpdate;
-	XRDP_MSG_WINDOW_DELETE WindowDelete;
+	RDS_MSG_BEGIN_UPDATE BeginUpdate;
+	RDS_MSG_END_UPDATE EndUpdate;
+	RDS_MSG_SET_CLIPPING_REGION SetClippingRegion;
+	RDS_MSG_OPAQUE_RECT OpaqueRect;
+	RDS_MSG_SCREEN_BLT ScreenBlt;
+	RDS_MSG_PAINT_RECT PaintRect;
+	RDS_MSG_PATBLT PatBlt;
+	RDS_MSG_DSTBLT DstBlt;
+	RDS_MSG_LINE_TO LineTo;
+	RDS_MSG_CREATE_OFFSCREEN_SURFACE CreateOffscreenSurface;
+	RDS_MSG_SWITCH_OFFSCREEN_SURFACE SwitchOffscreenSurface;
+	RDS_MSG_DELETE_OFFSCREEN_SURFACE DeleteOffscreenSurface;
+	RDS_MSG_PAINT_OFFSCREEN_SURFACE PaintOffscreenSurface;
+	RDS_MSG_SET_PALETTE SetPalette;
+	RDS_MSG_CACHE_GLYPH CacheGlyph;
+	RDS_MSG_GLYPH_INDEX GlyphIndex;
+	RDS_MSG_SET_POINTER SetPointer;
+	RDS_MSG_SHARED_FRAMEBUFFER SharedFramebuffer;
+	RDS_MSG_BEEP Beep;
+	RDS_MSG_RESET Reset;
+	RDS_MSG_WINDOW_NEW_UPDATE WindowNewUpdate;
+	RDS_MSG_WINDOW_DELETE WindowDelete;
 };
-typedef union _XRDP_MSG_SERVER XRDP_MSG_SERVER;
+typedef union _RDS_MSG_SERVER RDS_MSG_SERVER;
 
 /**
  * Module Interface
@@ -592,29 +576,29 @@ typedef struct rds_client_interface rdsClientInterface;
 
 typedef int (*pRdsServerIsTerminated)(rdsModule* mod);
 
-typedef int (*pRdsServerBeginUpdate)(rdsModule* mod, XRDP_MSG_BEGIN_UPDATE* msg);
-typedef int (*pRdsServerEndUpdate)(rdsModule* mod, XRDP_MSG_END_UPDATE* msg);
-typedef int (*pRdsServerBeep)(rdsModule* mod, XRDP_MSG_BEEP* msg);
-typedef int (*pRdsServerOpaqueRect)(rdsModule* mod, XRDP_MSG_OPAQUE_RECT* msg);
-typedef int (*pRdsServerScreenBlt)(rdsModule* mod, XRDP_MSG_SCREEN_BLT* msg);
-typedef int (*pRdsServerPaintRect)(rdsModule* mod, XRDP_MSG_PAINT_RECT* msg);
-typedef int (*pRdsServerPatBlt)(rdsModule* mod, XRDP_MSG_PATBLT* msg);
-typedef int (*pRdsServerDstBlt)(rdsModule* mod, XRDP_MSG_DSTBLT* msg);
-typedef int (*pRdsServerSetPointer)(rdsModule* mod, XRDP_MSG_SET_POINTER* msg);
-typedef int (*pRdsServerSetPalette)(rdsModule* mod, XRDP_MSG_SET_PALETTE* msg);
-typedef int (*pRdsServerSetClippingRegion)(rdsModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg);
-typedef int (*pRdsServerLineTo)(rdsModule* mod, XRDP_MSG_LINE_TO* msg);
-typedef int (*pRdsServerCacheGlyph)(rdsModule* mod, XRDP_MSG_CACHE_GLYPH* msg);
-typedef int (*pRdsServerGlyphIndex)(rdsModule* mod, XRDP_MSG_GLYPH_INDEX* msg);
-typedef int (*pRdsServerSharedFramebuffer)(rdsModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg);
-typedef int (*pRdsServerReset)(rdsModule* mod, XRDP_MSG_RESET* msg);
-typedef int (*pRdsServerCreateOffscreenSurface)(rdsModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg);
-typedef int (*pRdsServerSwitchOffscreenSurface)(rdsModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg);
-typedef int (*pRdsServerDeleteOffscreenSurface)(rdsModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg);
-typedef int (*pRdsServerPaintOffscreenSurface)(rdsModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerBeginUpdate)(rdsModule* mod, RDS_MSG_BEGIN_UPDATE* msg);
+typedef int (*pRdsServerEndUpdate)(rdsModule* mod, RDS_MSG_END_UPDATE* msg);
+typedef int (*pRdsServerBeep)(rdsModule* mod, RDS_MSG_BEEP* msg);
+typedef int (*pRdsServerOpaqueRect)(rdsModule* mod, RDS_MSG_OPAQUE_RECT* msg);
+typedef int (*pRdsServerScreenBlt)(rdsModule* mod, RDS_MSG_SCREEN_BLT* msg);
+typedef int (*pRdsServerPaintRect)(rdsModule* mod, RDS_MSG_PAINT_RECT* msg);
+typedef int (*pRdsServerPatBlt)(rdsModule* mod, RDS_MSG_PATBLT* msg);
+typedef int (*pRdsServerDstBlt)(rdsModule* mod, RDS_MSG_DSTBLT* msg);
+typedef int (*pRdsServerSetPointer)(rdsModule* mod, RDS_MSG_SET_POINTER* msg);
+typedef int (*pRdsServerSetPalette)(rdsModule* mod, RDS_MSG_SET_PALETTE* msg);
+typedef int (*pRdsServerSetClippingRegion)(rdsModule* mod, RDS_MSG_SET_CLIPPING_REGION* msg);
+typedef int (*pRdsServerLineTo)(rdsModule* mod, RDS_MSG_LINE_TO* msg);
+typedef int (*pRdsServerCacheGlyph)(rdsModule* mod, RDS_MSG_CACHE_GLYPH* msg);
+typedef int (*pRdsServerGlyphIndex)(rdsModule* mod, RDS_MSG_GLYPH_INDEX* msg);
+typedef int (*pRdsServerSharedFramebuffer)(rdsModule* mod, RDS_MSG_SHARED_FRAMEBUFFER* msg);
+typedef int (*pRdsServerReset)(rdsModule* mod, RDS_MSG_RESET* msg);
+typedef int (*pRdsServerCreateOffscreenSurface)(rdsModule* mod, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerSwitchOffscreenSurface)(rdsModule* mod, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerDeleteOffscreenSurface)(rdsModule* mod, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerPaintOffscreenSurface)(rdsModule* mod, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg);
 
-typedef int (*pRdsServerWindowNewUpdate)(rdsModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
-typedef int (*pRdsServerWindowDelete)(rdsModule* mod, XRDP_MSG_WINDOW_DELETE* msg);
+typedef int (*pRdsServerWindowNewUpdate)(rdsModule* mod, RDS_MSG_WINDOW_NEW_UPDATE* msg);
+typedef int (*pRdsServerWindowDelete)(rdsModule* mod, RDS_MSG_WINDOW_DELETE* msg);
 
 struct rds_server_interface
 {
@@ -673,10 +657,10 @@ struct rds_connector
 
 	freerdp* instance;
 	rdpSettings* settings;
-	xrdpSession* session;
+	rdsSession* session;
 	HANDLE SocketEvent;
 
-	XRDP_FRAMEBUFFER framebuffer;
+	RDS_FRAMEBUFFER framebuffer;
 
 	int fps;
 	int MaxFps;
@@ -697,11 +681,11 @@ extern "C" {
 FREERDP_API int xrdp_server_message_size(UINT32 type);
 FREERDP_API char* xrdp_server_message_name(UINT32 type);
 
-FREERDP_API int xrdp_server_message_read(wStream* s, XRDP_MSG_COMMON* msg);
-FREERDP_API int xrdp_server_message_write(wStream* s, XRDP_MSG_COMMON* msg);
+FREERDP_API int xrdp_server_message_read(wStream* s, RDS_MSG_COMMON* msg);
+FREERDP_API int xrdp_server_message_write(wStream* s, RDS_MSG_COMMON* msg);
 
-FREERDP_API void* xrdp_server_message_copy(XRDP_MSG_COMMON* msg);
-FREERDP_API void xrdp_server_message_free(XRDP_MSG_COMMON* msg);
+FREERDP_API void* xrdp_server_message_copy(RDS_MSG_COMMON* msg);
+FREERDP_API void xrdp_server_message_free(RDS_MSG_COMMON* msg);
 
 /**
  * New Clean Module Interface API
