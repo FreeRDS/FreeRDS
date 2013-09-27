@@ -26,7 +26,15 @@
 #include <freerdp/gdi/gdi.h>
 
 #include <winpr/crt.h>
+#include <winpr/synch.h>
 #include <winpr/stream.h>
+
+typedef struct rds_module rdsModule;
+
+typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;
+typedef RDS_MODULE_ENTRY_POINTS_V1 RDS_MODULE_ENTRY_POINTS;
+
+typedef struct xrdp_session xrdpSession;
 
 /* Common Data Types */
 
@@ -558,6 +566,128 @@ union _XRDP_MSG_SERVER
 };
 typedef union _XRDP_MSG_SERVER XRDP_MSG_SERVER;
 
+/**
+ * Module Interface
+ */
+
+typedef int (*pRdsGetEventHandles)(rdsModule* mod, HANDLE* events, DWORD* nCount);
+typedef int (*pRdsCheckEventHandles)(rdsModule* mod);
+
+typedef int (*pRdsClientSynchronizeKeyboardEvent)(rdsModule* mod, DWORD flags);
+typedef int (*pRdsClientScancodeKeyboardEvent)(rdsModule* mod, DWORD flags, DWORD code, DWORD keyboardType);
+typedef int (*pRdsClientVirtualKeyboardEvent)(rdsModule* mod, DWORD flags, DWORD code);
+typedef int (*pRdsClientUnicodeKeyboardEvent)(rdsModule* mod, DWORD flags, DWORD code);
+typedef int (*pRdsClientMouseEvent)(rdsModule* mod, DWORD flags, DWORD x, DWORD y);
+typedef int (*pRdsClientExtendedMouseEvent)(rdsModule* mod, DWORD flags, DWORD x, DWORD y);
+
+struct rds_client_interface
+{
+	pRdsClientSynchronizeKeyboardEvent SynchronizeKeyboardEvent;
+	pRdsClientScancodeKeyboardEvent ScancodeKeyboardEvent;
+	pRdsClientVirtualKeyboardEvent VirtualKeyboardEvent;
+	pRdsClientUnicodeKeyboardEvent UnicodeKeyboardEvent;
+	pRdsClientMouseEvent MouseEvent;
+	pRdsClientExtendedMouseEvent ExtendedMouseEvent;
+};
+typedef struct rds_client_interface rdsClientInterface;
+
+typedef int (*pRdsServerIsTerminated)(rdsModule* mod);
+
+typedef int (*pRdsServerBeginUpdate)(rdsModule* mod, XRDP_MSG_BEGIN_UPDATE* msg);
+typedef int (*pRdsServerEndUpdate)(rdsModule* mod, XRDP_MSG_END_UPDATE* msg);
+typedef int (*pRdsServerBeep)(rdsModule* mod, XRDP_MSG_BEEP* msg);
+typedef int (*pRdsServerOpaqueRect)(rdsModule* mod, XRDP_MSG_OPAQUE_RECT* msg);
+typedef int (*pRdsServerScreenBlt)(rdsModule* mod, XRDP_MSG_SCREEN_BLT* msg);
+typedef int (*pRdsServerPaintRect)(rdsModule* mod, XRDP_MSG_PAINT_RECT* msg);
+typedef int (*pRdsServerPatBlt)(rdsModule* mod, XRDP_MSG_PATBLT* msg);
+typedef int (*pRdsServerDstBlt)(rdsModule* mod, XRDP_MSG_DSTBLT* msg);
+typedef int (*pRdsServerSetPointer)(rdsModule* mod, XRDP_MSG_SET_POINTER* msg);
+typedef int (*pRdsServerSetPalette)(rdsModule* mod, XRDP_MSG_SET_PALETTE* msg);
+typedef int (*pRdsServerSetClippingRegion)(rdsModule* mod, XRDP_MSG_SET_CLIPPING_REGION* msg);
+typedef int (*pRdsServerLineTo)(rdsModule* mod, XRDP_MSG_LINE_TO* msg);
+typedef int (*pRdsServerCacheGlyph)(rdsModule* mod, XRDP_MSG_CACHE_GLYPH* msg);
+typedef int (*pRdsServerGlyphIndex)(rdsModule* mod, XRDP_MSG_GLYPH_INDEX* msg);
+typedef int (*pRdsServerSharedFramebuffer)(rdsModule* mod, XRDP_MSG_SHARED_FRAMEBUFFER* msg);
+typedef int (*pRdsServerReset)(rdsModule* mod, XRDP_MSG_RESET* msg);
+typedef int (*pRdsServerCreateOffscreenSurface)(rdsModule* mod, XRDP_MSG_CREATE_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerSwitchOffscreenSurface)(rdsModule* mod, XRDP_MSG_SWITCH_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerDeleteOffscreenSurface)(rdsModule* mod, XRDP_MSG_DELETE_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerPaintOffscreenSurface)(rdsModule* mod, XRDP_MSG_PAINT_OFFSCREEN_SURFACE* msg);
+
+typedef int (*pRdsServerWindowNewUpdate)(rdsModule* mod, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
+typedef int (*pRdsServerWindowDelete)(rdsModule* mod, XRDP_MSG_WINDOW_DELETE* msg);
+
+struct rds_server_interface
+{
+	pRdsServerBeginUpdate BeginUpdate;
+	pRdsServerEndUpdate EndUpdate;
+	pRdsServerBeep Beep;
+	pRdsServerIsTerminated IsTerminated;
+	pRdsServerOpaqueRect OpaqueRect;
+	pRdsServerScreenBlt ScreenBlt;
+	pRdsServerPaintRect PaintRect;
+	pRdsServerPatBlt PatBlt;
+	pRdsServerDstBlt DstBlt;
+	pRdsServerSetPointer SetPointer;
+	pRdsServerSetPalette SetPalette;
+	pRdsServerSetClippingRegion SetClippingRegion;
+	pRdsServerLineTo LineTo;
+	pRdsServerCacheGlyph CacheGlyph;
+	pRdsServerGlyphIndex GlyphIndex;
+	pRdsServerSharedFramebuffer SharedFramebuffer;
+	pRdsServerReset Reset;
+	pRdsServerCreateOffscreenSurface CreateOffscreenSurface;
+	pRdsServerSwitchOffscreenSurface SwitchOffscreenSurface;
+	pRdsServerDeleteOffscreenSurface DeleteOffscreenSurface;
+	pRdsServerPaintOffscreenSurface PaintOffscreenSurface;
+	pRdsServerWindowNewUpdate WindowNewUpdate;
+	pRdsServerWindowDelete WindowDelete;
+};
+typedef struct rds_server_interface rdsServerInterface;
+
+#define RDS_MODULE_SERVICE_COMMON() \
+	DWORD Size; \
+	char* Endpoint; \
+	DWORD SessionId; \
+	BOOL ServerMode; \
+	rdsClientInterface* client; \
+	rdsServerInterface* server; \
+	HANDLE hClientPipe; \
+	HANDLE hServerPipe; \
+	wStream* OutboundStream; \
+	wStream* InboundStream; \
+	UINT32 InboundTotalLength; \
+	UINT32 InboundTotalCount; \
+	UINT32 OutboundTotalLength; \
+	UINT32 OutboundTotalCount; \
+	void* dummy
+
+struct rds_module
+{
+	RDS_MODULE_SERVICE_COMMON();
+
+	pRdsGetEventHandles GetEventHandles;
+	pRdsCheckEventHandles CheckEventHandles;
+
+	freerdp* instance;
+	rdpSettings* settings;
+	xrdpSession* session;
+	HANDLE SocketEvent;
+
+	XRDP_FRAMEBUFFER framebuffer;
+
+	int fps;
+	int MaxFps;
+	HANDLE StopEvent;
+	HANDLE ServerTimer;
+	HANDLE ServerThread;
+	wLinkedList* ServerList;
+	wMessageQueue* ServerQueue;
+	rdsServerInterface* ServerProxy;
+
+	RDS_MODULE_ENTRY_POINTS* pEntryPoints;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -570,6 +700,23 @@ FREERDP_API int xrdp_server_message_write(wStream* s, XRDP_MSG_COMMON* msg);
 
 FREERDP_API void* xrdp_server_message_copy(XRDP_MSG_COMMON* msg);
 FREERDP_API void xrdp_server_message_free(XRDP_MSG_COMMON* msg);
+
+/**
+ * New Clean Module Interface API
+ */
+
+FREERDP_API rdsClientInterface* freerds_client_outbound_interface_new();
+FREERDP_API rdsServerInterface* freerds_server_outbound_interface_new();
+
+FREERDP_API int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length);
+FREERDP_API int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length);
+
+FREERDP_API int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint);
+FREERDP_API HANDLE freerds_named_pipe_connect(DWORD SessionId, const char* endpoint, DWORD nTimeOut);
+FREERDP_API HANDLE freerds_named_pipe_create(DWORD SessionId, const char* endpoint);
+FREERDP_API HANDLE freerds_named_pipe_accept(HANDLE hServerPipe);
+
+FREERDP_API int freerds_transport_receive(rdsModule* module);
 
 #ifdef __cplusplus
 }
