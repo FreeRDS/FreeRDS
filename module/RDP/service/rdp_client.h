@@ -39,6 +39,8 @@ struct rds_context
 	freerdp* instance;
 	rdpSettings* settings;
 
+	DWORD SessionId;
+
 	HANDLE StopEvent;
 	HANDLE UpdateThread;
 	HANDLE ChannelsThread;

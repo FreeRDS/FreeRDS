@@ -41,11 +41,14 @@ COMMAND_LINE_ARGUMENT_A rds_service_args[] =
 	{ NULL, 0, NULL, NULL, NULL, -1, NULL, NULL }
 };
 
-void rds_parse_arguments(rdpContext* context, int argc, char** argv)
+void rds_parse_arguments(rdsContext* rds, int argc, char** argv)
 {
 	int status;
 	DWORD flags;
+	rdpContext* context;
 	COMMAND_LINE_ARGUMENT_A* arg;
+
+	context = (rdpContext*) rds;
 
 	flags = COMMAND_LINE_SEPARATOR_COLON;
 	flags |= COMMAND_LINE_SIGIL_SLASH | COMMAND_LINE_SIGIL_PLUS_MINUS;
@@ -64,7 +67,7 @@ void rds_parse_arguments(rdpContext* context, int argc, char** argv)
 
 		CommandLineSwitchCase(arg, "session-id")
 		{
-
+			rds->SessionId = atoi(arg->Value);
 		}
 
 		CommandLineSwitchEnd(arg)
@@ -77,6 +80,7 @@ int main(int argc, char** argv)
 	int status;
 	HANDLE thread;
 	DWORD dwExitCode;
+	rdsContext* rds;
 	rdpContext* context;
 	rdpSettings* settings;
 	RDP_CLIENT_ENTRY_POINTS clientEntryPoints;
@@ -88,6 +92,7 @@ int main(int argc, char** argv)
 	RDS_RdpClientEntry(&clientEntryPoints);
 
 	context = freerdp_client_context_new(&clientEntryPoints);
+	rds = (rdsContext*) context;
 
 	settings = context->settings;
 
@@ -103,7 +108,7 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	rds_parse_arguments(context, argc, argv);
+	rds_parse_arguments(rds, argc, argv);
 
 	freerdp_client_start(context);
 

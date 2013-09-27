@@ -50,7 +50,7 @@ void rds_surface_frame_marker(rdpContext* context, SURFACE_FRAME_MARKER* surface
 
 void rds_OnConnectionResultEventHandler(rdpContext* context, ConnectionResultEventArgs* e)
 {
-
+	printf("OnConnectionResult: %d\n", e->result);
 }
 
 BOOL rds_pre_connect(freerdp* instance)
@@ -125,8 +125,31 @@ void* rds_update_thread(void* arg)
 	return NULL;
 }
 
-void* rds_client_thread(void* param)
+void* rds_client_thread(void* arg)
 {
+	rdsContext* rds;
+	rdpContext* context;
+	freerdp* instance = (freerdp*) arg;
+
+	context = (rdpContext*) instance->context;
+	rds = (rdsContext*) context;
+
+	freerdp_connect(instance);
+
+	rds->UpdateThread = CreateThread(NULL, 0,
+			(LPTHREAD_START_ROUTINE) rds_update_thread,
+			instance, 0, NULL);
+
+	rds->ChannelsThread = CreateThread(NULL, 0,
+			(LPTHREAD_START_ROUTINE) rds_channels_thread,
+			instance, 0, NULL);
+
+	WaitForSingleObject(rds->UpdateThread, INFINITE);
+
+	CloseHandle(rds->UpdateThread);
+	freerdp_free(instance);
+
+	ExitThread(0);
 	return NULL;
 }
 
@@ -146,11 +169,36 @@ void rds_freerdp_client_global_uninit()
 
 int rds_freerdp_client_start(rdpContext* context)
 {
+	rdsContext* rds;
+	freerdp* instance = context->instance;
+
+	rds = (rdsContext*) context;
+
+	rds->thread = CreateThread(NULL, 0,
+			(LPTHREAD_START_ROUTINE) rds_client_thread,
+			instance, 0, NULL);
+
 	return 0;
 }
 
 int rds_freerdp_client_stop(rdpContext* context)
 {
+	rdsContext* rds;
+	wMessageQueue* queue;
+
+	rds = (rdsContext*) context;
+	queue = freerdp_get_message_queue(context->instance, FREERDP_UPDATE_MESSAGE_QUEUE);
+
+	MessageQueue_PostQuit(queue, 0);
+
+	SetEvent(rds->StopEvent);
+
+	WaitForSingleObject(rds->UpdateThread, INFINITE);
+	CloseHandle(rds->UpdateThread);
+
+	WaitForSingleObject(rds->ChannelsThread, INFINITE);
+	CloseHandle(rds->ChannelsThread);
+
 	return 0;
 }
 
@@ -166,6 +214,8 @@ int rds_freerdp_client_new(freerdp* instance, rdpContext* context)
 	instance->ReceiveChannelData = rds_receive_channel_data;
 
 	context->channels = freerdp_channels_new();
+
+	rds->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	settings = instance->settings;
 	rds->settings = instance->context->settings;
