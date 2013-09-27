@@ -331,6 +331,7 @@ void* xrdp_process_main_thread(void* arg)
 	HANDLE GlobalTermEvent;
 	xrdpSession* session;
 	rdpSettings* settings;
+	rdsConnector* connector;
 	freerdp_peer* client = (freerdp_peer*) arg;
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
@@ -370,8 +371,10 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			if (session->mod)
-				session->mod->GetEventHandles(session->mod, events, &nCount);
+			connector = (rdsConnector*) session->mod;
+
+			if (connector)
+				connector->GetEventHandles(session->mod, events, &nCount);
 		}
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
@@ -406,9 +409,11 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			if (session->mod)
+			connector = (rdsConnector*) session->mod;
+
+			if (connector)
 			{
-				if (session->mod->CheckEventHandles(session->mod) < 0)
+				if (connector->CheckEventHandles(session->mod) < 0)
 				{
 					fprintf(stderr, "ModuleClient->CheckEventHandles failure\n");
 					break;

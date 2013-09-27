@@ -38,15 +38,17 @@ void* freerds_service_client_thread(void* arg)
 
 void* freerds_service_listener_thread(void* arg)
 {
+	rdsModule* module;
 	rdsService* service;
 
+	module = (rdsModule*) arg;
 	service = (rdsService*) arg;
 
 	while (1)
 	{
-		service->hClientPipe = freerds_named_pipe_accept(service->hServerPipe);
+		module->hClientPipe = freerds_named_pipe_accept(module->hServerPipe);
 
-		if (!service->hClientPipe)
+		if (!module->hClientPipe)
 			break;
 
 		if (service->Accept)
@@ -60,9 +62,13 @@ void* freerds_service_listener_thread(void* arg)
 
 int freerds_service_start(rdsService* service)
 {
-	service->hServerPipe = freerds_named_pipe_create(service->SessionId, service->Endpoint);
+	rdsModule* module;
 
-	if (!service->hServerPipe)
+	module = (rdsModule*) service;
+
+	module->hServerPipe = freerds_named_pipe_create(module->SessionId, module->Endpoint);
+
+	if (!module->hServerPipe)
 		return -1;
 
 	service->ServerThread = CreateThread(NULL, 0,
@@ -83,22 +89,24 @@ int freerds_service_stop(rdsService* service)
 
 rdsService* freerds_service_new(DWORD SessionId, const char* endpoint)
 {
+	rdsModule* module;
 	rdsService* service;
 
 	service = (rdsService*) malloc(sizeof(rdsService));
+	module = (rdsModule*) service;
 
 	if (service)
 	{
 		ZeroMemory(service, sizeof(rdsService));
 
-		service->SessionId = SessionId;
-		service->Endpoint = _strdup(endpoint);
-		service->ServerMode = TRUE;
+		module->SessionId = SessionId;
+		module->Endpoint = _strdup(endpoint);
+		module->ServerMode = TRUE;
+
+		module->client = freerds_server_inbound_interface_new();
+		module->server = freerds_server_outbound_interface_new();
 
 		service->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-
-		service->client = freerds_server_inbound_interface_new();
-		service->server = freerds_server_outbound_interface_new();
 	}
 
 	return service;
@@ -106,10 +114,14 @@ rdsService* freerds_service_new(DWORD SessionId, const char* endpoint)
 
 void freerds_service_free(rdsService* service)
 {
+	rdsModule* module;
+
+	module = (rdsModule*) service;
+
 	if (service)
 	{
-		if (service->Endpoint)
-			free(service->Endpoint);
+		if (module->Endpoint)
+			free(module->Endpoint);
 
 		CloseHandle(service->StopEvent);
 

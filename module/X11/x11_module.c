@@ -50,7 +50,7 @@
 
 struct rds_module_x11
 {
-	rdsModule module;
+	rdsConnector connector;
 
 	STARTUPINFO X11StartupInfo;
 	PROCESS_INFORMATION X11ProcessInformation;
@@ -80,12 +80,14 @@ int x11_rds_module_start(rdsModule* module)
 	struct passwd* pwnam;
 	rdpSettings* settings;
 	char lpCommandLine[256];
+	rdsConnector* connector;
 
 	x11 = (rdsModuleX11*) module;
+	connector = (rdsConnector*) module;
 
 	token = NULL;
-	settings = module->settings;
 	SessionId = module->SessionId;
+	settings = connector->settings;
 
 	freerds_named_pipe_clean(SessionId, "X11rdp");
 
@@ -135,7 +137,11 @@ int x11_rds_module_start(rdsModule* module)
 
 int x11_rds_module_stop(rdsModule* module)
 {
-	SetEvent(module->StopEvent);
+	rdsConnector* connector;
+
+	connector = (rdsConnector*) module;
+
+	SetEvent(connector->StopEvent);
 
 #if 0
 	WaitForSingleObject(ProcessInformation.hProcess, INFINITE);

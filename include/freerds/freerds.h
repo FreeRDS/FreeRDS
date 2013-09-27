@@ -644,26 +644,29 @@ struct rds_server_interface
 };
 typedef struct rds_server_interface rdsServerInterface;
 
-#define RDS_MODULE_SERVICE_COMMON() \
-	DWORD Size; \
-	char* Endpoint; \
-	DWORD SessionId; \
-	BOOL ServerMode; \
-	rdsClientInterface* client; \
-	rdsServerInterface* server; \
-	HANDLE hClientPipe; \
-	HANDLE hServerPipe; \
-	wStream* OutboundStream; \
-	wStream* InboundStream; \
-	UINT32 InboundTotalLength; \
-	UINT32 InboundTotalCount; \
-	UINT32 OutboundTotalLength; \
-	UINT32 OutboundTotalCount; \
-	void* dummy
-
 struct rds_module
 {
-	RDS_MODULE_SERVICE_COMMON();
+	DWORD Size;
+	char* Endpoint;
+	DWORD SessionId;
+	BOOL ServerMode;
+	rdsClientInterface* client;
+	rdsServerInterface* server;
+	HANDLE hClientPipe;
+	HANDLE hServerPipe;
+	wStream* OutboundStream;
+	wStream* InboundStream;
+	UINT32 InboundTotalLength;
+	UINT32 InboundTotalCount;
+	UINT32 OutboundTotalLength;
+	UINT32 OutboundTotalCount;
+};
+
+typedef struct rds_connector rdsConnector;
+
+struct rds_connector
+{
+	rdsModule module;
 
 	pRdsGetEventHandles GetEventHandles;
 	pRdsCheckEventHandles CheckEventHandles;
@@ -762,7 +765,7 @@ typedef int (*pRdsServiceAccept)(rdsService* service);
 
 struct rds_service
 {
-	RDS_MODULE_SERVICE_COMMON();
+	rdsModule module;
 
 	HANDLE StopEvent;
 

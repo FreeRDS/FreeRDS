@@ -29,7 +29,7 @@
 
 struct rds_module_rdp
 {
-	rdsModule module;
+	rdsConnector connector;
 };
 typedef struct rds_module_rdp rdsModuleRdp;
 
@@ -50,7 +50,11 @@ int rdp_rds_module_start(rdsModule* module)
 
 int rdp_rds_module_stop(rdsModule* module)
 {
-	SetEvent(module->StopEvent);
+	rdsConnector* connector;
+
+	connector = (rdsConnector*) module;
+
+	SetEvent(connector->StopEvent);
 
 	return 0;
 }

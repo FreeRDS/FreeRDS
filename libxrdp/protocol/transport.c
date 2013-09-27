@@ -167,12 +167,15 @@ HANDLE freerds_named_pipe_accept(HANDLE hServerPipe)
 	return hClientPipe;
 }
 
-int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* common)
+int freerds_receive_server_message(rdsModule* module, wStream* s, XRDP_MSG_COMMON* common)
 {
 	int status = 0;
+	rdsConnector* connector;
 	rdsServerInterface* server;
 
-	server = mod->server;
+	connector = (rdsConnector*) module;
+
+	server = module->server;
 
 	switch (common->type)
 	{
@@ -181,7 +184,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_BEGIN_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->BeginUpdate(mod, &msg);
+				status = server->BeginUpdate(module, &msg);
 			}
 			break;
 
@@ -190,7 +193,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_END_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->EndUpdate(mod, &msg);
+				status = server->EndUpdate(module, &msg);
 			}
 			break;
 
@@ -199,7 +202,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_OPAQUE_RECT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->OpaqueRect(mod, &msg);
+				status = server->OpaqueRect(module, &msg);
 			}
 			break;
 
@@ -208,7 +211,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_SCREEN_BLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->ScreenBlt(mod, &msg);
+				status = server->ScreenBlt(module, &msg);
 			}
 			break;
 
@@ -217,7 +220,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_PATBLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->PatBlt(mod, &msg);
+				status = server->PatBlt(module, &msg);
 			}
 			break;
 
@@ -226,7 +229,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_DSTBLT msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->DstBlt(mod, &msg);
+				status = server->DstBlt(module, &msg);
 			}
 			break;
 
@@ -242,9 +245,9 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
 
 				if (msg.fbSegmentId)
-					msg.framebuffer = &(mod->framebuffer);
+					msg.framebuffer = &(connector->framebuffer);
 
-				status = server->PaintRect(mod, &msg);
+				status = server->PaintRect(module, &msg);
 			}
 			break;
 
@@ -253,7 +256,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_SET_CLIPPING_REGION msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->SetClippingRegion(mod, &msg);
+				status = server->SetClippingRegion(module, &msg);
 			}
 			break;
 
@@ -262,7 +265,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_LINE_TO msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->LineTo(mod, &msg);
+				status = server->LineTo(module, &msg);
 			}
 			break;
 
@@ -271,7 +274,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_SET_POINTER msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->SetPointer(mod, &msg);
+				status = server->SetPointer(module, &msg);
 			}
 			break;
 
@@ -280,7 +283,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_CREATE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->CreateOffscreenSurface(mod, &msg);
+				status = server->CreateOffscreenSurface(module, &msg);
 			}
 			break;
 
@@ -289,7 +292,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_SWITCH_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->SwitchOffscreenSurface(mod, &msg);
+				status = server->SwitchOffscreenSurface(module, &msg);
 			}
 			break;
 
@@ -298,7 +301,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_DELETE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->DeleteOffscreenSurface(mod, &msg);
+				status = server->DeleteOffscreenSurface(module, &msg);
 			}
 			break;
 
@@ -307,7 +310,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_PAINT_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->PaintOffscreenSurface(mod, &msg);
+				status = server->PaintOffscreenSurface(module, &msg);
 			}
 			break;
 
@@ -316,7 +319,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_WINDOW_NEW_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->WindowNewUpdate(mod, &msg);
+				status = server->WindowNewUpdate(module, &msg);
 			}
 			break;
 
@@ -325,7 +328,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_WINDOW_DELETE msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->WindowDelete(mod, &msg);
+				status = server->WindowDelete(module, &msg);
 			}
 			break;
 
@@ -334,7 +337,7 @@ int freerds_receive_server_message(rdsModule* mod, wStream* s, XRDP_MSG_COMMON* 
 				XRDP_MSG_SHARED_FRAMEBUFFER msg;
 				CopyMemory(&msg, common, sizeof(XRDP_MSG_COMMON));
 				xrdp_server_message_read(s, (XRDP_MSG_COMMON*) &msg);
-				status = server->SharedFramebuffer(mod, &msg);
+				status = server->SharedFramebuffer(module, &msg);
 			}
 			break;
 

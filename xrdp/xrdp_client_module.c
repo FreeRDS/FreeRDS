@@ -55,9 +55,10 @@ void* xrdp_client_thread(void* arg)
 	HANDLE events[8];
 	HANDLE PackTimer;
 	LARGE_INTEGER due;
-	rdsModule* mod = (rdsModule*) arg;
+	rdsModule* module = (rdsModule*) arg;
+	rdsConnector* connector = (rdsConnector*) arg;
 
-	fps = mod->fps;
+	fps = connector->fps;
 	PackTimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
 	due.QuadPart = 0;
@@ -65,31 +66,31 @@ void* xrdp_client_thread(void* arg)
 
 	nCount = 0;
 	events[nCount++] = PackTimer;
-	events[nCount++] = mod->StopEvent;
-	events[nCount++] = mod->hClientPipe;
+	events[nCount++] = connector->StopEvent;
+	events[nCount++] = module->hClientPipe;
 
 	while (1)
 	{
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-		if (WaitForSingleObject(mod->StopEvent, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(connector->StopEvent, 0) == WAIT_OBJECT_0)
 		{
 			break;
 		}
 
-		if (WaitForSingleObject(mod->hClientPipe, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(module->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			freerds_transport_receive(mod);
+			freerds_transport_receive(module);
 		}
 
 		if (status == WAIT_OBJECT_0)
 		{
-			xrdp_message_server_queue_pack(mod);
+			xrdp_message_server_queue_pack(module);
 		}
 
-		if (mod->fps != fps)
+		if (connector->fps != fps)
 		{
-			fps = mod->fps;
+			fps = connector->fps;
 			due.QuadPart = 0;
 			SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
 		}
