@@ -15,30 +15,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "xrdp-ng-protocol")
-set(MODULE_PREFIX "FREERDP_XRDP_NG_PROTOCOL")
-
-set(${MODULE_PREFIX}_SRCS
-	protocol.c
-	protocol.h
-	service.c
-	service.h
-	interface.c
-	interface.h
-	inbound.c
-	inbound.h
-	outbound.c
-	outbound.h
-	transport.c
-	transport.h)
-
-add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
-
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-utils)
-
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
-
-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+add_subdirectory(module)

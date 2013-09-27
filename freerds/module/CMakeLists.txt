@@ -15,4 +15,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(protocol)
+set(MODULE_NAME "freerds-module")
+set(MODULE_PREFIX "FREERDS_MODULE")
+
+set(${MODULE_PREFIX}_SRCS
+	protocol.c
+	protocol.h
+	service.c
+	service.h
+	interface.c
+	interface.h
+	inbound.c
+	inbound.h
+	outbound.c
+	outbound.h
+	transport.c
+	transport.h)
+
+add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+
+set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
+	MONOLITHIC ${MONOLITHIC_BUILD}
+	MODULE winpr
+	MODULES winpr-utils)
+
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
+
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})

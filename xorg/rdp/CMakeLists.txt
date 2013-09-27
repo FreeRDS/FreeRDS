@@ -238,7 +238,8 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MODULES winpr-thread winpr-synch winpr-pipe winpr-input winpr-utils)
 
 list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-common)
-list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-protocol)
+
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
 
 set(${MODULE_PREFIX}_STATIC_LIBS
 	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
@@ -251,8 +252,9 @@ list(APPEND ${MODULE_PREFIX}_LIBS
 merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
 target_link_libraries(${MODULE_NAME} combined ${${MODULE_PREFIX}_STATIC_LIBS} ${${MODULE_PREFIX}_LIBS})
+
 if (ADDITIONAL_REQUIRED_LIBS)
-message(STATUS "Linking in additional libs")
+	message(STATUS "Linking in additional libs")
 	target_link_libraries(${MODULE_NAME} ${ADDITIONAL_REQUIRED_LIBS})
 endif()
 
