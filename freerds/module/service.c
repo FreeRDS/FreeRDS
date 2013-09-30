@@ -29,9 +29,19 @@
 
 void* freerds_service_client_thread(void* arg)
 {
+	rdsModule* module;
 	rdsService* service;
 
+	module = (rdsModule*) arg;
 	service = (rdsService*) arg;
+
+	if (module->hClientPipe)
+	{
+		while (WaitForSingleObject(module->hClientPipe, INFINITE) == WAIT_OBJECT_0)
+		{
+			freerds_transport_receive(module);
+		}
+	}
 
 	return NULL;
 }
@@ -54,8 +64,16 @@ void* freerds_service_listener_thread(void* arg)
 		if (service->Accept)
 		{
 			service->Accept(service);
+
+			service->ClientThread = CreateThread(NULL, 0,
+					(LPTHREAD_START_ROUTINE) freerds_service_client_thread,
+					(void*) service, 0, NULL);
+
+			break;
 		}
 	}
+
+	WaitForSingleObject(service->ClientThread, INFINITE);
 
 	return NULL;
 }

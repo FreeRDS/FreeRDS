@@ -38,6 +38,42 @@
 
 #include "rdp_client.h"
 
+int rds_client_synchronize_keyboard_event(rdsModule* module, DWORD flags)
+{
+	printf("RdsClientSynchronizeKeyboardEvent");
+	return 0;
+}
+
+int rds_client_scancode_keyboard_event(rdsModule* module, DWORD flags, DWORD code, DWORD keyboardType)
+{
+	printf("RdsClientScancodeKeyboardEvent");
+	return 0;
+}
+
+int rds_client_virtual_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
+{
+	printf("RdsClientVirtualKeyboardEvent");
+	return 0;
+}
+
+int rds_client_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
+{
+	printf("RdsClientUnicodeKeyboardEvent");
+	return 0;
+}
+
+int rds_client_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
+{
+	printf("RdsClientMouseEvent");
+	return 0;
+}
+
+int rds_client_extended_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
+{
+	printf("RdsClientExtendedMouseEvent");
+	return 0;
+}
+
 int rds_service_accept(rdsService* service)
 {
 	printf("RdsServiceAccept\n");
@@ -168,6 +204,7 @@ void* rds_update_thread(void* arg)
 void* rds_client_thread(void* arg)
 {
 	rdsContext* rds;
+	rdsModule* module;
 	rdpContext* context;
 	freerdp* instance = (freerdp*) arg;
 
@@ -176,8 +213,17 @@ void* rds_client_thread(void* arg)
 
 	rds->service = freerds_service_new(rds->SessionId, "RDP");
 
+	module = (rdsModule*) rds->service;
+
 	rds->service->custom = (void*) rds;
 	rds->service->Accept = rds_service_accept;
+
+	module->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
+	module->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
+	module->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;
+	module->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
+	module->client->MouseEvent = rds_client_mouse_event;
+	module->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
 
 	freerds_service_start(rds->service);
 
