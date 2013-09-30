@@ -28,6 +28,7 @@
 
 #include <winpr/cmdline.h>
 
+char* RdsModuleName = NULL;
 static HANDLE g_TermEvent = NULL;
 static xrdpListener* g_listen = NULL;
 
@@ -35,6 +36,7 @@ COMMAND_LINE_ARGUMENT_A xrdp_ng_args[] =
 {
 	{ "kill", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "kill daemon" },
 	{ "nodaemon", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "no daemon" },
+	{ "module", COMMAND_LINE_VALUE_REQUIRED, "<module name>", NULL, NULL, -1, NULL, "module name" },
 	{ NULL, 0, NULL, NULL, NULL, -1, NULL, NULL }
 };
 
@@ -116,6 +118,10 @@ int main(int argc, char** argv)
 		CommandLineSwitchCase(arg, "nodaemon")
 		{
 			no_daemon = 1;
+		}
+		CommandLineSwitchCase(arg, "module")
+		{
+			RdsModuleName = _strdup(arg->Value);
 		}
 
 		CommandLineSwitchEnd(arg)

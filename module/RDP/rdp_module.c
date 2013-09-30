@@ -30,6 +30,9 @@
 struct rds_module_rdp
 {
 	rdsConnector connector;
+
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
 };
 typedef struct rds_module_rdp rdsModuleRdp;
 
@@ -45,6 +48,34 @@ void rdp_rds_module_free(rdsModule* module)
 
 int rdp_rds_module_start(rdsModule* module)
 {
+	BOOL status;
+	rdsModuleRdp* rdp;
+	rdpSettings* settings;
+	rdsConnector* connector;
+	char lpCommandLine[256];
+
+	rdp = (rdsModuleRdp*) module;
+	connector = (rdsConnector*) module;
+
+	settings = connector->settings;
+
+	freerds_named_pipe_clean(module->SessionId, "RDP");
+
+	ZeroMemory(&(rdp->si), sizeof(STARTUPINFO));
+	rdp->si.cb = sizeof(STARTUPINFO);
+	ZeroMemory(&(rdp->pi), sizeof(PROCESS_INFORMATION));
+
+	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /session-id:%d /size:%dx%d",
+			"freerds-rdp", (int) module->SessionId, settings->DesktopWidth, settings->DesktopHeight);
+
+	status = CreateProcessA(NULL, lpCommandLine,
+			NULL, NULL, FALSE, 0, NULL, NULL,
+			&(rdp->si), &(rdp->pi));
+
+	printf("Process started: %d\n", status);
+
+	module->hClientPipe = freerds_named_pipe_connect(module->SessionId, "RDP", 5 * 1000);
+
 	return 0;
 }
 

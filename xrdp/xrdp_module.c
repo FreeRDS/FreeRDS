@@ -50,6 +50,9 @@
 #include <freerdp/freerdp.h>
 
 #include "../module/X11/x11_module.h"
+#include "../module/RDP/rdp_module.h"
+
+extern char* RdsModuleName;
 
 int xrdp_client_get_event_handles(rdsModule* module, HANDLE* events, DWORD* nCount)
 {
@@ -100,7 +103,13 @@ rdsModule* xrdp_module_new(rdsSession* session)
 	EntryPoints.Version = RDS_MODULE_INTERFACE_VERSION;
 	EntryPoints.Size = sizeof(EntryPoints);
 
-	X11_RdsModuleEntry(&EntryPoints);
+	if (!RdsModuleName)
+		RdsModuleName = _strdup("X11");
+
+	if (strcmp(RdsModuleName, "RDP") == 0)
+		RDP_RdsModuleEntry(&EntryPoints);
+	else if (strcmp(RdsModuleName, "X11") == 0)
+		X11_RdsModuleEntry(&EntryPoints);
 
 	settings = session->settings;
 

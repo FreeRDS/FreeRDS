@@ -21,6 +21,11 @@
 #include "config.h"
 #endif
 
+#include <winpr/crt.h>
+
+#include <sys/shm.h>
+#include <sys/stat.h>
+
 #include <freerdp/freerdp.h>
 #include <freerdp/settings.h>
 #include <freerdp/constants.h>
@@ -33,14 +38,33 @@
 
 #include "rdp_client.h"
 
+int rds_service_accept(rdsService* service)
+{
+	printf("RdsServiceAccept\n");
+	return 0;
+}
+
 void rds_begin_paint(rdpContext* context)
 {
+	rdpGdi* gdi = context->gdi;
 
+	gdi->primary->hdc->hwnd->invalid->null = 1;
+	gdi->primary->hdc->hwnd->ninvalid = 0;
 }
 
 void rds_end_paint(rdpContext* context)
 {
+	rdsContext* rds;
+	HGDI_RGN invalid;
+	HGDI_RGN cinvalid;
+	rdpGdi* gdi = context->gdi;
 
+	rds = (rdsContext*) context;
+
+	printf("RdsPaint\n");
+
+	invalid = gdi->primary->hdc->hwnd->invalid;
+	cinvalid = gdi->primary->hdc->hwnd->cinvalid;
 }
 
 void rds_surface_frame_marker(rdpContext* context, SURFACE_FRAME_MARKER* surfaceFrameMarker)
@@ -78,14 +102,30 @@ BOOL rds_post_connect(freerdp* instance)
 	rdpGdi* gdi;
 	UINT32 flags;
 	rdsContext* rds;
+	rdpSettings* settings;
 
 	rds = (rdsContext*) instance->context;
+	settings = instance->settings;
 
 	flags = 0;
 	flags |= CLRCONV_ALPHA;
 	flags |= CLRBUF_32BPP;
 
-	gdi_init(instance, flags, NULL);
+	rds->framebuffer.fbBitsPerPixel = 32;
+	rds->framebuffer.fbBytesPerPixel = 4;
+
+	rds->framebuffer.fbWidth = settings->DesktopWidth;
+	rds->framebuffer.fbHeight = settings->DesktopHeight;
+
+	rds->framebuffer.fbScanline = rds->framebuffer.fbWidth * rds->framebuffer.fbBytesPerPixel;
+	rds->framebufferSize = rds->framebuffer.fbScanline * rds->framebuffer.fbHeight;
+
+	rds->framebuffer.fbSegmentId = shmget(IPC_PRIVATE, rds->framebufferSize,
+			IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+
+	rds->framebuffer.fbSharedMemory = (BYTE*) shmat(rds->framebuffer.fbSegmentId, 0, 0);
+
+	gdi_init(instance, flags, rds->framebuffer.fbSharedMemory);
 	gdi = instance->context->gdi;
 
 	instance->update->BeginPaint = rds_begin_paint;
@@ -133,6 +173,13 @@ void* rds_client_thread(void* arg)
 
 	context = (rdpContext*) instance->context;
 	rds = (rdsContext*) context;
+
+	rds->service = freerds_service_new(rds->SessionId, "RDP");
+
+	rds->service->custom = (void*) rds;
+	rds->service->Accept = rds_service_accept;
+
+	freerds_service_start(rds->service);
 
 	freerdp_connect(instance);
 
@@ -199,6 +246,8 @@ int rds_freerdp_client_stop(rdpContext* context)
 	WaitForSingleObject(rds->ChannelsThread, INFINITE);
 	CloseHandle(rds->ChannelsThread);
 
+	freerds_service_stop(rds->service);
+
 	return 0;
 }
 
@@ -253,12 +302,22 @@ int rds_freerdp_client_new(freerdp* instance, rdpContext* context)
 	settings->AsyncChannels = TRUE;
 	settings->AsyncUpdate = TRUE;
 
+	rds->SessionId = 10;
+
 	return 0;
 }
 
 void rds_freerdp_client_free(freerdp* instance, rdpContext* context)
 {
+	rdsContext* rds;
 
+	rds = (rdsContext*) instance->context;
+
+	if (rds->service)
+	{
+		freerds_service_free(rds->service);
+		rds->service = NULL;
+	}
 }
 
 int RDS_RdpClientEntry(RDP_CLIENT_ENTRY_POINTS* pEntryPoints)

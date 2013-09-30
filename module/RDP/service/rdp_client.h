@@ -29,6 +29,8 @@
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
 
+#include <freerds/freerds.h>
+
 typedef struct rds_context rdsContext;
 
 struct rds_context
@@ -40,10 +42,14 @@ struct rds_context
 	rdpSettings* settings;
 
 	DWORD SessionId;
+	rdsService* service;
 
 	HANDLE StopEvent;
 	HANDLE UpdateThread;
 	HANDLE ChannelsThread;
+
+	int framebufferSize;
+	RDS_FRAMEBUFFER framebuffer;
 };
 
 #ifdef __cplusplus

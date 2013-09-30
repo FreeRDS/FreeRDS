@@ -751,6 +751,8 @@ struct rds_service
 {
 	rdsModule module;
 
+	void* custom;
+
 	HANDLE StopEvent;
 
 	HANDLE ClientThread;
