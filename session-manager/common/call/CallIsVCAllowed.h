@@ -22,6 +22,7 @@ namespace freeRDS{
 
 			private:
 				std::string mVirtualChannelName;
+				bool        mVirtualChannelAllowed;
 
 			};
 

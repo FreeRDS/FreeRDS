@@ -1,4 +1,8 @@
 #include "CallIsVCAllowed.h"
+#include <ICP.pb.h>
+
+using freeRDS::icp::IsChannelAllowedRequest;
+using freeRDS::icp::IsChannelAllowedResponse;
 
 namespace freeRDS{
 	namespace sessionmanager{
@@ -17,15 +21,34 @@ namespace freeRDS{
 		};
 
 		int CallIsVCAllowed::decodeRequest() {
-				// decode protocol buffers
+			// decode protocol buffers
+			IsChannelAllowedRequest req;
+			if (!req.ParseFromString(mEncodedRequest)) {
+				// failed to parse
+				mResult = 1;// will report error with answer
+				return -1;
+			}
+			mVirtualChannelName = req.channelname();
+			return 0;
 		};
 
 		int CallIsVCAllowed::encodeResponse() {
-				// encode protocol buffers
+			// encode protocol buffers
+			IsChannelAllowedResponse resp;
+			resp.set_channelallowed(mVirtualChannelAllowed);
+
+			if (resp.SerializeToString(&mEncodedResponse)) {
+				// failed to serialize
+				mResult = 1;
+				return -1;
+			}
+			return 0;
 		};
 
 		int CallIsVCAllowed::doStuff() {
 			// find out if Virtual Channel is allowed
+			mVirtualChannelAllowed = true;
+			return 0;
 		}
 
 
