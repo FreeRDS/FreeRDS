@@ -113,7 +113,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	{
 		if (segs != 0)
 		{
-			XRDP_MSG_LINE_TO msg;
+			RDS_MSG_LINE_TO msg;
 
 			rdpup_begin_update();
 
@@ -138,7 +138,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 	{
 		if (segs != 0)
 		{
-			XRDP_MSG_LINE_TO msg;
+			RDS_MSG_LINE_TO msg;
 
 			rdpup_begin_update();
 

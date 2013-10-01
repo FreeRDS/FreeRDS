@@ -21,6 +21,30 @@
 #include "config.h"
 #endif
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
-#include "interface.h"
+#include "inbound.h"
+
+rdsServerInterface* freerds_client_inbound_interface_new()
+{
+	rdsServerInterface* server = (rdsServerInterface*) malloc(sizeof(rdsServerInterface));
+
+	if (server)
+	{
+		ZeroMemory(server, sizeof(rdsServerInterface));
+	}
+
+	return server;
+}
+
+rdsClientInterface* freerds_server_inbound_interface_new()
+{
+	rdsClientInterface* client = (rdsClientInterface*) malloc(sizeof(rdsClientInterface));
+
+	if (client)
+	{
+		ZeroMemory(client, sizeof(rdsClientInterface));
+	}
+
+	return client;
+}

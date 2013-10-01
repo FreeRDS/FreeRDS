@@ -1,0 +1,14 @@
+package freeRDS.pbRPC;
+
+message RPCBase {
+	required uint32 Tag = 1; // Tag to identify the message
+	required bool isResponse = 2 [default = false]; // request or response
+	enum RPCStatus {
+		SUCCESS = 0;
+		FAILED = 1;
+		NOTFOUND = 2;
+	}
+	required RPCStatus status = 3 [default = SUCCESS];
+	required uint32 msgType = 4;
+	required bytes payload = 5;
+}

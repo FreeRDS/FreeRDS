@@ -69,9 +69,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
-
-#include <xrdp-ng/xrdp.h>
-
 #include <freerds/freerds.h>
 
 #define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
@@ -281,17 +278,17 @@ int rdpup_check(void);
 int rdpup_begin_update(void);
 int rdpup_end_update(void);
 int rdpup_check_attach_framebuffer();
-int rdpup_opaque_rect(XRDP_MSG_OPAQUE_RECT* msg);
+int rdpup_opaque_rect(RDS_MSG_OPAQUE_RECT* msg);
 int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy);
-int rdpup_patblt(XRDP_MSG_PATBLT* msg);
-int rdpup_dstblt(XRDP_MSG_DSTBLT* msg);
-int rdpup_set_clipping_region(XRDP_MSG_SET_CLIPPING_REGION* msg);
+int rdpup_patblt(RDS_MSG_PATBLT* msg);
+int rdpup_dstblt(RDS_MSG_DSTBLT* msg);
+int rdpup_set_clipping_region(RDS_MSG_SET_CLIPPING_REGION* msg);
 int rdpup_set_clip(short x, short y, int cx, int cy);
 int rdpup_reset_clip(void);
-int rdpup_draw_line(XRDP_MSG_LINE_TO* msg);
+int rdpup_draw_line(RDS_MSG_LINE_TO* msg);
 void rdpup_send_area(int x, int y, int w, int h);
-int rdpup_set_pointer(XRDP_MSG_SET_POINTER* msg);
+int rdpup_set_pointer(RDS_MSG_SET_POINTER* msg);
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);
 void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec* priv);
-void rdpup_shared_framebuffer(XRDP_MSG_SHARED_FRAMEBUFFER* msg);
+void rdpup_shared_framebuffer(RDS_MSG_SHARED_FRAMEBUFFER* msg);
 

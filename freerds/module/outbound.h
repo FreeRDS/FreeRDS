@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#ifndef XRDP_NG_INTERFACE_H
-#define XRDP_NG_INTERFACE_H
+#ifndef RDS_NG_OUTBOUND_H
+#define RDS_NG_OUTBOUND_H
 
+#include <freerds/freerds.h>
 
-
-#endif /* XRDP_NG_INTERFACE_H */
+#endif /* RDS_NG_OUTBOUND_H */

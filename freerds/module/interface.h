@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#ifndef XRDP_NG_OUTBOUND_H
-#define XRDP_NG_OUTBOUND_H
+#ifndef RDS_NG_INTERFACE_H
+#define RDS_NG_INTERFACE_H
 
-#include <xrdp-ng/xrdp.h>
 
-#endif /* XRDP_NG_OUTBOUND_H */
+
+#endif /* RDS_NG_INTERFACE_H */

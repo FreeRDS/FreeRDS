@@ -105,7 +105,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 		if ((pGC->fillStyle == 0) && (dstblt_rop))
 		{
-			XRDP_MSG_DSTBLT msg;
+			RDS_MSG_DSTBLT msg;
 
 			for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
 			{
@@ -144,7 +144,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 			if ((pGC->fillStyle == 0) && (dstblt_rop))
 			{
-				XRDP_MSG_DSTBLT msg;
+				RDS_MSG_DSTBLT msg;
 
 				for (j = num_clips - 1; j >= 0; j--)
 				{

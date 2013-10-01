@@ -76,4 +76,11 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-add_executable(session-manager main.cpp)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common) 
+ 
+add_executable(session-manager main.cpp 
+				common/appcontext/ApplicationContext.cpp 
+				common/session/SessionStore.cpp
+				common/call/Call.cpp
+				common/call/CallFactory.cpp
+				common/call/CallIsVCAllowed.cpp)

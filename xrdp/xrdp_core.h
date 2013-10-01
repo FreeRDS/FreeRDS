@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FREERDP_XRDP_NG_CORE_H
-#define FREERDP_XRDP_NG_CORE_H
+#ifndef FREERDP_RDS_NG_CORE_H
+#define FREERDP_RDS_NG_CORE_H
 
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
@@ -34,7 +34,7 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-#include <xrdp-ng/xrdp.h>
+#include <freerds/freerds.h>
 
 #include "xrdp.h"
 
@@ -47,16 +47,16 @@ struct xrdp_brush
 };
 typedef struct xrdp_brush xrdpBrush;
 
-struct xrdp_rect
+struct RDS_RECT
 {
 	int left;
 	int top;
 	int right;
 	int bottom;
 };
-typedef struct xrdp_rect xrdpRect;
+typedef struct RDS_RECT xrdpRect;
 
-struct xrdp_session
+struct rds_session
 {
 	rdpContext context;
 
@@ -89,79 +89,79 @@ struct xrdp_session
 	DrdynvcServerContext* drdynvc;
 };
 
-FREERDP_API int libxrdp_session_init(xrdpSession* session, rdpSettings* settings);
-FREERDP_API void libxrdp_session_uninit(xrdpSession* session);
+FREERDP_API int libxrdp_session_init(rdsSession* session, rdpSettings* settings);
+FREERDP_API void libxrdp_session_uninit(rdsSession* session);
 
-FREERDP_API int libxrdp_send_palette(xrdpSession* session, int* palette);
+FREERDP_API int libxrdp_send_palette(rdsSession* session, int* palette);
 
-FREERDP_API int libxrdp_send_bell(xrdpSession* session);
+FREERDP_API int libxrdp_send_bell(rdsSession* session);
 
-FREERDP_API int libxrdp_send_bitmap_update(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT* msg);
+FREERDP_API int libxrdp_send_bitmap_update(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* msg);
 
-FREERDP_API int libxrdp_set_pointer(xrdpSession* session, XRDP_MSG_SET_POINTER* msg);
+FREERDP_API int libxrdp_set_pointer(rdsSession* session, RDS_MSG_SET_POINTER* msg);
 
-FREERDP_API int libxrdp_orders_begin_paint(xrdpSession* session);
+FREERDP_API int libxrdp_orders_begin_paint(rdsSession* session);
 
-FREERDP_API int libxrdp_orders_end_paint(xrdpSession* session);
+FREERDP_API int libxrdp_orders_end_paint(rdsSession* session);
 
-FREERDP_API int libxrdp_orders_rect(xrdpSession* session, int x, int y,
+FREERDP_API int libxrdp_orders_rect(rdsSession* session, int x, int y,
 		int cx, int cy, int color, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_screen_blt(xrdpSession* session, int x, int y,
+FREERDP_API int libxrdp_orders_screen_blt(rdsSession* session, int x, int y,
 		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_pat_blt(xrdpSession* session, int x, int y,
+FREERDP_API int libxrdp_orders_pat_blt(rdsSession* session, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
 		xrdpBrush* brush, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_dest_blt(xrdpSession* session,
+FREERDP_API int libxrdp_orders_dest_blt(rdsSession* session,
 		int x, int y, int cx, int cy, int rop, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_line(xrdpSession* session, XRDP_MSG_LINE_TO* msg, xrdpRect* rect);
+FREERDP_API int libxrdp_orders_line(rdsSession* session, RDS_MSG_LINE_TO* msg, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_mem_blt(xrdpSession* session, int cache_id,
+FREERDP_API int libxrdp_orders_mem_blt(rdsSession* session, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
 		int srcy, int cache_idx, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_text(xrdpSession* session, XRDP_MSG_GLYPH_INDEX* msg, xrdpRect* rect);
+FREERDP_API int libxrdp_orders_text(rdsSession* session, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_send_palette(xrdpSession* session, int* palette, int cache_id);
+FREERDP_API int libxrdp_orders_send_palette(rdsSession* session, int* palette, int cache_id);
 
-FREERDP_API int libxrdp_orders_send_raw_bitmap(xrdpSession* session,
+FREERDP_API int libxrdp_orders_send_raw_bitmap(rdsSession* session,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx);
 
-FREERDP_API int libxrdp_orders_send_bitmap(xrdpSession* session,
+FREERDP_API int libxrdp_orders_send_bitmap(rdsSession* session,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx);
 
-FREERDP_API int libxrdp_orders_send_font(xrdpSession* session, XRDP_MSG_CACHE_GLYPH* msg);
+FREERDP_API int libxrdp_orders_send_font(rdsSession* session, RDS_MSG_CACHE_GLYPH* msg);
 
-FREERDP_API int libxrdp_reset(xrdpSession* session, XRDP_MSG_RESET* msg);
+FREERDP_API int libxrdp_reset(rdsSession* session, RDS_MSG_RESET* msg);
 
-FREERDP_API int libxrdp_orders_send_raw_bitmap2(xrdpSession* session,
+FREERDP_API int libxrdp_orders_send_raw_bitmap2(rdsSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx);
 
-FREERDP_API int libxrdp_orders_send_bitmap2(xrdpSession* session,
+FREERDP_API int libxrdp_orders_send_bitmap2(rdsSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints);
 
-FREERDP_API int libxrdp_orders_send_bitmap3(xrdpSession* session,
+FREERDP_API int libxrdp_orders_send_bitmap3(rdsSession* session,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints);
 
-FREERDP_API int libxrdp_orders_send_brush(xrdpSession* session, int width, int height,
+FREERDP_API int libxrdp_orders_send_brush(rdsSession* session, int width, int height,
 		int bpp, int type, int size, char* data, int cache_id);
 
-FREERDP_API int libxrdp_orders_send_create_os_surface(xrdpSession* session,
+FREERDP_API int libxrdp_orders_send_create_os_surface(rdsSession* session,
 		CREATE_OFFSCREEN_BITMAP_ORDER* createOffscreenBitmap);
 
-FREERDP_API int libxrdp_orders_send_switch_os_surface(xrdpSession* session, int id);
+FREERDP_API int libxrdp_orders_send_switch_os_surface(rdsSession* session, int id);
 
-FREERDP_API int libxrdp_send_surface_bits(xrdpSession* session, int bpp, XRDP_MSG_PAINT_RECT* msg);
+FREERDP_API int libxrdp_send_surface_bits(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* msg);
 
-FREERDP_API int libxrdp_orders_send_frame_marker(xrdpSession* session, UINT32 action, UINT32 id);
+FREERDP_API int libxrdp_orders_send_frame_marker(rdsSession* session, UINT32 action, UINT32 id);
 
-FREERDP_API int libxrdp_window_new_update(xrdpSession* session, XRDP_MSG_WINDOW_NEW_UPDATE* msg);
+FREERDP_API int libxrdp_window_new_update(rdsSession* session, RDS_MSG_WINDOW_NEW_UPDATE* msg);
 
-FREERDP_API int libxrdp_window_delete(xrdpSession* session, XRDP_MSG_WINDOW_DELETE* msg);
+FREERDP_API int libxrdp_window_delete(rdsSession* session, RDS_MSG_WINDOW_DELETE* msg);
 
-#endif /* FREERDP_XRDP_NG_CORE_H */
+#endif /* FREERDP_RDS_NG_CORE_H */

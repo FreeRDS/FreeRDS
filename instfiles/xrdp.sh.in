@@ -17,9 +17,9 @@
 # Description: starts xrdp-ng
 ### END INIT INFO
 
-SBINDIR=${XRDP_SBIN_PATH}
-CFGDIR=${XRDP_CFG_PATH}
-PIDDIR=${XRDP_PID_PATH}
+SBINDIR=${RDS_SBIN_PATH}
+CFGDIR=${RDS_CFG_PATH}
+PIDDIR=${RDS_PID_PATH}
 LOG=/dev/null
 
 if ! test -x $SBINDIR/xrdp-ng

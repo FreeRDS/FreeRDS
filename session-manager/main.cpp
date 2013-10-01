@@ -1,6 +1,8 @@
 #include "config.h"
 #include <iostream>
 
+#include <appcontext/ApplicationContext.h>
+
 using namespace std;
 int main(void)
 {

@@ -601,7 +601,7 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 	int p;
 	int paddedRowBytes;
 	int bpp;
-	XRDP_MSG_SET_POINTER msg;
+	RDS_MSG_SET_POINTER msg;
 
 	if (!pCurs)
 		return;
