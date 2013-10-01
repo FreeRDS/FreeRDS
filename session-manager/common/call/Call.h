@@ -3,6 +3,7 @@
 #define CALL_H_
 
 #include <string>
+#include <stdint.h>
 
 namespace freeRDS{
 	namespace sessionmanager{
@@ -23,9 +24,18 @@ namespace freeRDS{
 				void setEncodedRequest(std::string encodedRequest);
 				std::string getEncodedResponse();
 
+				void setTag(uint32_t tag);
+				uint32_t getTag();
+
+				uint32_t getResult();
+
 			private:
+				uint32_t mTag;
+			protected:
 				std::string mEncodedRequest;
 				std::string mEncodedResponse;
+
+				uint32_t mResult;
 
 
 			};
