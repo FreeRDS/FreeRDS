@@ -164,7 +164,7 @@ class RPCBase : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 msgtype() const;
   inline void set_msgtype(::google::protobuf::uint32 value);
   
-  // required bytes payload = 5;
+  // optional bytes payload = 5;
   inline bool has_payload() const;
   inline void clear_payload();
   static const int kPayloadFieldNumber = 5;
@@ -174,6 +174,17 @@ class RPCBase : public ::google::protobuf::Message {
   inline void set_payload(const void* value, size_t size);
   inline ::std::string* mutable_payload();
   inline ::std::string* release_payload();
+  
+  // optional string errorDescription = 6;
+  inline bool has_errordescription() const;
+  inline void clear_errordescription();
+  static const int kErrorDescriptionFieldNumber = 6;
+  inline const ::std::string& errordescription() const;
+  inline void set_errordescription(const ::std::string& value);
+  inline void set_errordescription(const char* value);
+  inline void set_errordescription(const char* value, size_t size);
+  inline ::std::string* mutable_errordescription();
+  inline ::std::string* release_errordescription();
   
   // @@protoc_insertion_point(class_scope:freerds.pbrpc.RPCBase)
  private:
@@ -187,6 +198,8 @@ class RPCBase : public ::google::protobuf::Message {
   inline void clear_has_msgtype();
   inline void set_has_payload();
   inline void clear_has_payload();
+  inline void set_has_errordescription();
+  inline void clear_has_errordescription();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -195,9 +208,10 @@ class RPCBase : public ::google::protobuf::Message {
   int status_;
   ::google::protobuf::uint32 msgtype_;
   ::std::string* payload_;
+  ::std::string* errordescription_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
   
   friend void  protobuf_AddDesc_pbRPC_2eproto();
   friend void protobuf_AssignDesc_pbRPC_2eproto();
@@ -302,7 +316,7 @@ inline void RPCBase::set_msgtype(::google::protobuf::uint32 value) {
   msgtype_ = value;
 }
 
-// required bytes payload = 5;
+// optional bytes payload = 5;
 inline bool RPCBase::has_payload() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -356,6 +370,64 @@ inline ::std::string* RPCBase::release_payload() {
   } else {
     ::std::string* temp = payload_;
     payload_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string errorDescription = 6;
+inline bool RPCBase::has_errordescription() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void RPCBase::set_has_errordescription() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void RPCBase::clear_has_errordescription() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void RPCBase::clear_errordescription() {
+  if (errordescription_ != &::google::protobuf::internal::kEmptyString) {
+    errordescription_->clear();
+  }
+  clear_has_errordescription();
+}
+inline const ::std::string& RPCBase::errordescription() const {
+  return *errordescription_;
+}
+inline void RPCBase::set_errordescription(const ::std::string& value) {
+  set_has_errordescription();
+  if (errordescription_ == &::google::protobuf::internal::kEmptyString) {
+    errordescription_ = new ::std::string;
+  }
+  errordescription_->assign(value);
+}
+inline void RPCBase::set_errordescription(const char* value) {
+  set_has_errordescription();
+  if (errordescription_ == &::google::protobuf::internal::kEmptyString) {
+    errordescription_ = new ::std::string;
+  }
+  errordescription_->assign(value);
+}
+inline void RPCBase::set_errordescription(const char* value, size_t size) {
+  set_has_errordescription();
+  if (errordescription_ == &::google::protobuf::internal::kEmptyString) {
+    errordescription_ = new ::std::string;
+  }
+  errordescription_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* RPCBase::mutable_errordescription() {
+  set_has_errordescription();
+  if (errordescription_ == &::google::protobuf::internal::kEmptyString) {
+    errordescription_ = new ::std::string;
+  }
+  return errordescription_;
+}
+inline ::std::string* RPCBase::release_errordescription() {
+  clear_has_errordescription();
+  if (errordescription_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = errordescription_;
+    errordescription_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }

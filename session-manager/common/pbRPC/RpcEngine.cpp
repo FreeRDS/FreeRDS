@@ -3,6 +3,7 @@
 #include <winpr/pipe.h>
 #include <winpr/thread.h>
 #include <call/CallFactory.h>
+#include <arpa/inet.h>
 
 namespace freerds {
 namespace pbrpc {
@@ -12,7 +13,7 @@ namespace pbrpc {
 #define CLIENT_SUCCESS 0
 
 RpcEngine::RpcEngine() :
-		mHasHeaders(false), mHeaderRead(0), mPayloadRead(0) {
+		mPacktLength(0), mHeaderRead(0), mPayloadRead(0) {
 	mhStopEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
 }
 RpcEngine::~RpcEngine() {
@@ -120,7 +121,7 @@ HANDLE RpcEngine::acceptClient() {
 }
 
 int RpcEngine::read() {
-	if (mHasHeaders) {
+	if (mPacktLength > 0) {
 		return readPayload();
 	} else {
 		return readHeader();
@@ -142,7 +143,7 @@ int RpcEngine::readHeader() {
 
 	mHeaderRead += lpNumberOfBytesRead;
 	if (mHeaderRead == 4) {
-		mHasHeaders = true;
+		mPacktLength = ntohl(*(DWORD *)mHeaderBuffer);;
 	}
 	return CLIENT_SUCCESS;
 }
@@ -153,7 +154,7 @@ int RpcEngine::readPayload() {
 	BOOL fSuccess;
 
 	fSuccess = ReadFile(mhClientPipe, mPayloadBuffer + mPayloadRead,
-			((DWORD) *mHeaderBuffer) - mPayloadRead, &lpNumberOfBytesRead,
+			mPacktLength - mPayloadRead, &lpNumberOfBytesRead,
 			NULL);
 
 	if (!fSuccess || (lpNumberOfBytesRead == 0)) {
@@ -179,17 +180,19 @@ int RpcEngine::processData() {
 		if (createdCall == NULL) {
 			// call not found ... send error
 			sendError(callID, callType);
+			return CLIENT_ERROR;
 		}
 		createdCall->setEncodedRequest(mpbRPC.payload());
 		createdCall->setTag(callID);
 
 		// call the implementation ...
 		createdCall->decodeRequest();
-		int callrestult = createdCall->doStuff();
-		createdCall->encodeResponse();
-
+		if (!createdCall->doStuff()) {
+			createdCall->encodeResponse();
+		}
 		// send the result
 		send(createdCall);
+		return CLIENT_SUCCESS;
 	}
 }
 
@@ -205,6 +208,10 @@ int RpcEngine::send(freerds::sessionmanager::call::Call * call) {
 	mpbRPC.set_msgtype(call->getCallType());
 	if (call->getResult()) {
 		mpbRPC.set_status(RPCBase_RPCSTATUS_FAILED);
+		std::string errordescription = call->getErrorDescription();
+		if (errordescription.size() > 0) {
+			mpbRPC.set_errordescription(call->getErrorDescription());
+		}
 	} else {
 		mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
 		mpbRPC.set_payload(call->getEncodedResponse());
@@ -271,9 +278,9 @@ int RpcEngine::serveClient() {
 				break;
 			}
 			// process the data
-			if (mPayloadRead == ((DWORD) *mHeaderBuffer)) {
+			if (mPayloadRead == mPacktLength) {
 				processData();
-				mHasHeaders = false;
+				mPacktLength = 0;
 				mHeaderRead = 0;
 				mPayloadRead = 0;
 			}

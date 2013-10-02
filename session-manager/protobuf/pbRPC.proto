@@ -10,5 +10,6 @@ message RPCBase {
 	}
 	required RPCSTATUS status = 3 [default = SUCCESS];
 	required uint32 msgType = 4;
-	required bytes payload = 5;
+	optional bytes payload = 5;
+	optional string errorDescription = 6;
 }

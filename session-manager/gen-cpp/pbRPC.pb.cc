@@ -33,12 +33,13 @@ void protobuf_AssignDesc_pbRPC_2eproto() {
       "pbRPC.proto");
   GOOGLE_CHECK(file != NULL);
   RPCBase_descriptor_ = file->message_type(0);
-  static const int RPCBase_offsets_[5] = {
+  static const int RPCBase_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RPCBase, tag_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RPCBase, isresponse_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RPCBase, status_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RPCBase, msgtype_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RPCBase, payload_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RPCBase, errordescription_),
   };
   RPCBase_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -82,12 +83,13 @@ void protobuf_AddDesc_pbRPC_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\013pbRPC.proto\022\rfreerds.pbrpc\"\302\001\n\007RPCBase"
+    "\n\013pbRPC.proto\022\rfreerds.pbrpc\"\334\001\n\007RPCBase"
     "\022\013\n\003tag\030\001 \002(\r\022\031\n\nisResponse\030\002 \002(\010:\005false"
     "\0229\n\006status\030\003 \002(\0162 .freerds.pbrpc.RPCBase"
     ".RPCSTATUS:\007SUCCESS\022\017\n\007msgType\030\004 \002(\r\022\017\n\007"
-    "payload\030\005 \002(\014\"2\n\tRPCSTATUS\022\013\n\007SUCCESS\020\000\022"
-    "\n\n\006FAILED\020\001\022\014\n\010NOTFOUND\020\002", 225);
+    "payload\030\005 \001(\014\022\030\n\020errorDescription\030\006 \001(\t\""
+    "2\n\tRPCSTATUS\022\013\n\007SUCCESS\020\000\022\n\n\006FAILED\020\001\022\014\n"
+    "\010NOTFOUND\020\002", 251);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "pbRPC.proto", &protobuf_RegisterTypes);
   RPCBase::default_instance_ = new RPCBase();
@@ -134,6 +136,7 @@ const int RPCBase::kIsResponseFieldNumber;
 const int RPCBase::kStatusFieldNumber;
 const int RPCBase::kMsgTypeFieldNumber;
 const int RPCBase::kPayloadFieldNumber;
+const int RPCBase::kErrorDescriptionFieldNumber;
 #endif  // !_MSC_VER
 
 RPCBase::RPCBase()
@@ -157,6 +160,7 @@ void RPCBase::SharedCtor() {
   status_ = 0;
   msgtype_ = 0u;
   payload_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  errordescription_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -167,6 +171,9 @@ RPCBase::~RPCBase() {
 void RPCBase::SharedDtor() {
   if (payload_ != &::google::protobuf::internal::kEmptyString) {
     delete payload_;
+  }
+  if (errordescription_ != &::google::protobuf::internal::kEmptyString) {
+    delete errordescription_;
   }
   if (this != default_instance_) {
   }
@@ -201,6 +208,11 @@ void RPCBase::Clear() {
     if (has_payload()) {
       if (payload_ != &::google::protobuf::internal::kEmptyString) {
         payload_->clear();
+      }
+    }
+    if (has_errordescription()) {
+      if (errordescription_ != &::google::protobuf::internal::kEmptyString) {
+        errordescription_->clear();
       }
     }
   }
@@ -282,13 +294,30 @@ bool RPCBase::MergePartialFromCodedStream(
         break;
       }
       
-      // required bytes payload = 5;
+      // optional bytes payload = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_payload:
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_payload()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(50)) goto parse_errorDescription;
+        break;
+      }
+      
+      // optional string errorDescription = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_errorDescription:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_errordescription()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->errordescription().data(), this->errordescription().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -335,10 +364,19 @@ void RPCBase::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->msgtype(), output);
   }
   
-  // required bytes payload = 5;
+  // optional bytes payload = 5;
   if (has_payload()) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
       5, this->payload(), output);
+  }
+  
+  // optional string errorDescription = 6;
+  if (has_errordescription()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->errordescription().data(), this->errordescription().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      6, this->errordescription(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -370,11 +408,21 @@ void RPCBase::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->msgtype(), target);
   }
   
-  // required bytes payload = 5;
+  // optional bytes payload = 5;
   if (has_payload()) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         5, this->payload(), target);
+  }
+  
+  // optional string errorDescription = 6;
+  if (has_errordescription()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->errordescription().data(), this->errordescription().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        6, this->errordescription(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -413,11 +461,18 @@ int RPCBase::ByteSize() const {
           this->msgtype());
     }
     
-    // required bytes payload = 5;
+    // optional bytes payload = 5;
     if (has_payload()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->payload());
+    }
+    
+    // optional string errorDescription = 6;
+    if (has_errordescription()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->errordescription());
     }
     
   }
@@ -462,6 +517,9 @@ void RPCBase::MergeFrom(const RPCBase& from) {
     if (from.has_payload()) {
       set_payload(from.payload());
     }
+    if (from.has_errordescription()) {
+      set_errordescription(from.errordescription());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -479,7 +537,7 @@ void RPCBase::CopyFrom(const RPCBase& from) {
 }
 
 bool RPCBase::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000001f) != 0x0000001f) return false;
+  if ((_has_bits_[0] & 0x0000000f) != 0x0000000f) return false;
   
   return true;
 }
@@ -491,6 +549,7 @@ void RPCBase::Swap(RPCBase* other) {
     std::swap(status_, other->status_);
     std::swap(msgtype_, other->msgtype_);
     std::swap(payload_, other->payload_);
+    std::swap(errordescription_, other->errordescription_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

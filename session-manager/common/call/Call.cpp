@@ -33,6 +33,10 @@ namespace freerds{
 			return mResult;
 		}
 
+		std::string Call::getErrorDescription() {
+			return mErrorDescription;
+		}
+
 
 		}
 	}
