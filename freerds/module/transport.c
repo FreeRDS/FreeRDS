@@ -27,7 +27,10 @@
 #include <winpr/file.h>
 #include <winpr/pipe.h>
 #include <winpr/path.h>
+#include <winpr/print.h>
 #include <winpr/thread.h>
+
+#include "protocol.h"
 
 #include "transport.h"
 
@@ -40,9 +43,6 @@ int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length)
 	NumberOfBytesRead = 0;
 
 	fSuccess = ReadFile(hNamedPipe, data, length, &NumberOfBytesRead, NULL);
-
-	printf("freerds_named_pipe_read: length: %d NumberOfBytesRead: %d fSuccess: %d pid: %d\n",
-			length, NumberOfBytesRead, fSuccess, (int) GetCurrentProcessId());
 
 	if (!fSuccess || (NumberOfBytesRead == 0))
 	{
@@ -78,7 +78,7 @@ int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length)
 		data += NumberOfBytesWritten;
 	}
 
-	return NumberOfBytesWritten;
+	return TotalNumberOfBytesWritten;
 }
 
 int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint)
@@ -435,40 +435,17 @@ int freerds_receive_message(rdsModule* module, wStream* s, RDS_MSG_COMMON* commo
 int freerds_transport_receive(rdsModule* module)
 {
 	wStream* s;
-	int index;
 	int status;
 	int position;
+	UINT32 length;
+	RDS_MSG_COMMON common;
 
 	s = module->InboundStream;
 
-	if (Stream_GetPosition(s) < 8)
-	{
-		status = freerds_named_pipe_read(module->hClientPipe, Stream_Pointer(s), 8 - Stream_GetPosition(s));
-
-		if (status < 0)
-			return -1;
-
-		if (status > 0)
-			Stream_Seek(s, status);
-
-		if (Stream_GetPosition(s) >= 8)
-		{
-			position = Stream_GetPosition(s);
-			Stream_SetPosition(s, 0);
-
-			Stream_Read_UINT32(s, module->InboundTotalLength);
-			Stream_Read_UINT32(s, module->InboundTotalCount);
-
-			Stream_SetPosition(s, position);
-
-			Stream_EnsureCapacity(s, module->InboundTotalLength);
-		}
-	}
-
-	if (Stream_GetPosition(s) >= 8)
+	if (Stream_GetPosition(s) < RDS_ORDER_HEADER_LENGTH)
 	{
 		status = freerds_named_pipe_read(module->hClientPipe, Stream_Pointer(s),
-				module->InboundTotalLength - Stream_GetPosition(s));
+				RDS_ORDER_HEADER_LENGTH - Stream_GetPosition(s));
 
 		if (status < 0)
 			return -1;
@@ -477,31 +454,34 @@ int freerds_transport_receive(rdsModule* module)
 			Stream_Seek(s, status);
 	}
 
-	if (Stream_GetPosition(s) >= module->InboundTotalLength)
+	if (Stream_GetPosition(s) >= RDS_ORDER_HEADER_LENGTH)
 	{
-		Stream_SetPosition(s, 8);
+		length = xrdp_peek_common_header_length(Stream_Buffer(s));
 
-		for (index = 0; index < module->InboundTotalCount; index++)
+		status = freerds_named_pipe_read(module->hClientPipe, Stream_Pointer(s),
+				length - Stream_GetPosition(s));
+
+		if (status < 0)
+			return -1;
+
+		if (status > 0)
+			Stream_Seek(s, status);
+	}
+
+	if (Stream_GetPosition(s) >= RDS_ORDER_HEADER_LENGTH)
+	{
+		length = xrdp_peek_common_header_length(Stream_Buffer(s));
+
+		if (Stream_GetPosition(s) >= length)
 		{
-			RDS_MSG_COMMON common;
-
 			position = Stream_GetPosition(s);
 
+			Stream_SetPosition(s, 0);
 			xrdp_read_common_header(s, &common);
 
 			status = freerds_receive_message(module, s, &common);
-
-			if (status != 0)
-			{
-				break;
-			}
-
-			Stream_SetPosition(s, position + common.length);
+			Stream_SetPosition(s, 0);
 		}
-
-		Stream_SetPosition(s, 0);
-		module->InboundTotalLength = 0;
-		module->InboundTotalCount = 0;
 	}
 
 	return 0;

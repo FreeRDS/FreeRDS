@@ -230,13 +230,13 @@ int xrdp_generate_certificate(rdpSettings* settings)
 void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 {
 	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* mod = session->module;
+	rdsModule* module = session->module;
 
-	if (mod)
+	if (module)
 	{
-		if (mod->client->SynchronizeKeyboardEvent)
+		if (module->client->SynchronizeKeyboardEvent)
 		{
-			mod->client->SynchronizeKeyboardEvent(mod, flags);
+			module->client->SynchronizeKeyboardEvent(module, flags);
 		}
 	}
 }
@@ -244,13 +244,13 @@ void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* mod = session->module;
+	rdsModule* module = session->module;
 
-	if (mod)
+	if (module)
 	{
-		if (mod->client->ScancodeKeyboardEvent)
+		if (module->client->ScancodeKeyboardEvent)
 		{
-			mod->client->ScancodeKeyboardEvent(mod, flags, code, session->settings->KeyboardType);
+			module->client->ScancodeKeyboardEvent(module, flags, code, session->settings->KeyboardType);
 		}
 	}
 }
@@ -258,13 +258,13 @@ void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* mod = session->module;
+	rdsModule* module = session->module;
 
-	if (mod)
+	if (module)
 	{
-		if (mod->client->UnicodeKeyboardEvent)
+		if (module->client->UnicodeKeyboardEvent)
 		{
-			mod->client->UnicodeKeyboardEvent(mod, flags, code);
+			module->client->UnicodeKeyboardEvent(module, flags, code);
 		}
 	}
 }
@@ -272,13 +272,13 @@ void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 cod
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* mod = session->module;
+	rdsModule* module = session->module;
 
-	if (mod)
+	if (module)
 	{
-		if (mod->client->MouseEvent)
+		if (module->client->MouseEvent)
 		{
-			mod->client->MouseEvent(mod, flags, x, y);
+			module->client->MouseEvent(module, flags, x, y);
 		}
 	}
 }
@@ -286,13 +286,13 @@ void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* mod = session->module;
+	rdsModule* module = session->module;
 
-	if (mod)
+	if (module)
 	{
-		if (mod->client->ExtendedMouseEvent)
+		if (module->client->ExtendedMouseEvent)
 		{
-			mod->client->ExtendedMouseEvent(mod, flags, x, y);
+			module->client->ExtendedMouseEvent(module, flags, x, y);
 		}
 	}
 }

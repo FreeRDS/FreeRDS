@@ -40,43 +40,84 @@
 
 int rds_client_synchronize_keyboard_event(rdsModule* module, DWORD flags)
 {
+	rdpContext* context;
 	rdsContext* rds = ((rdsService*) module)->custom;
+
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientSynchronizeKeyboardEvent");
+
+	context = (rdpContext*) rds;
+	freerdp_input_send_synchronize_event(context->input, flags);
+
 	return 0;
 }
 
 int rds_client_scancode_keyboard_event(rdsModule* module, DWORD flags, DWORD code, DWORD keyboardType)
 {
+	rdpContext* context;
 	rdsContext* rds = ((rdsService*) module)->custom;
+
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientScancodeKeyboardEvent");
+
+	context = (rdpContext*) rds;
+	freerdp_input_send_keyboard_event(context->input, flags, code);
+
 	return 0;
 }
 
 int rds_client_virtual_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
 {
+	DWORD scancode;
+	rdpContext* context;
+	rdpSettings* settings;
 	rdsContext* rds = (rdsContext*) module;
+
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientVirtualKeyboardEvent");
+
+	context = (rdpContext*) rds;
+	settings = context->settings;
+
+	scancode = GetVirtualScanCodeFromVirtualKeyCode(code, settings->KeyboardType);
+	freerdp_input_send_keyboard_event(context->input, flags, scancode);
+
 	return 0;
 }
 
 int rds_client_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
 {
+	rdpContext* context;
 	rdsContext* rds = ((rdsService*) module)->custom;
+
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientUnicodeKeyboardEvent");
+
+	context = (rdpContext*) rds;
+	freerdp_input_send_unicode_event(context->input, flags, code);
+
 	return 0;
 }
 
 int rds_client_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
 {
+	rdpContext* context;
 	rdsContext* rds = ((rdsService*) module)->custom;
+
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientMouseEvent");
+
+	context = (rdpContext*) rds;
+	freerdp_input_send_mouse_event(context->input, flags, x, y);
+
 	return 0;
 }
 
 int rds_client_extended_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
 {
+	rdpContext* context;
 	rdsContext* rds = ((rdsService*) module)->custom;
+
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientExtendedMouseEvent");
+
+	context = (rdpContext*) rds;
+	freerdp_input_send_mouse_event(context->input, flags, x, y);
+
 	return 0;
 }
 
@@ -84,6 +125,31 @@ int rds_service_accept(rdsService* service)
 {
 	rdsContext* rds = (rdsContext*) service->custom;
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsServiceAccept");
+	return 0;
+}
+
+int rds_check_shared_framebuffer(rdsContext* rds)
+{
+	rdsModule* module = (rdsModule*) rds->service;
+
+	if (!rds->framebuffer.fbAttached)
+	{
+		RDS_MSG_SHARED_FRAMEBUFFER msg;
+
+		msg.attach = 1;
+		msg.width = rds->framebuffer.fbWidth;
+		msg.height = rds->framebuffer.fbHeight;
+		msg.scanline = rds->framebuffer.fbScanline;
+		msg.segmentId = rds->framebuffer.fbSegmentId;
+		msg.bitsPerPixel = rds->framebuffer.fbBitsPerPixel;
+		msg.bytesPerPixel = rds->framebuffer.fbBytesPerPixel;
+
+		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
+		module->server->SharedFramebuffer(module, &msg);
+
+		rds->framebuffer.fbAttached = 1;
+	}
+
 	return 0;
 }
 
@@ -102,17 +168,79 @@ void rds_begin_paint(rdpContext* context)
 
 void rds_end_paint(rdpContext* context)
 {
+	INT32 x, y;
+	UINT32 w, h;
 	rdsContext* rds;
 	HGDI_RGN invalid;
 	HGDI_RGN cinvalid;
+	rdsModule* module;
+	rdpSettings* settings;
+	RDS_MSG_PAINT_RECT msg;
 	rdpGdi* gdi = context->gdi;
 
 	rds = (rdsContext*) context;
+	module = (rdsModule*) rds->service;
+	settings = context->settings;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsEndPaint");
 
 	invalid = gdi->primary->hdc->hwnd->invalid;
 	cinvalid = gdi->primary->hdc->hwnd->cinvalid;
+
+	rds_check_shared_framebuffer(rds);
+
+	x = invalid->x;
+	y = invalid->y;
+	w = invalid->w;
+	h = invalid->h;
+
+	if (x < 0)
+		x = 0;
+
+	if (x > settings->DesktopWidth - 1)
+		x = settings->DesktopWidth - 1;
+
+	w += x % 16;
+	x -= x % 16;
+
+	w += w % 16;
+
+	if (x + w > settings->DesktopWidth)
+		w = settings->DesktopWidth - x;
+
+	if (y < 0)
+		y = 0;
+
+	if (y > settings->DesktopHeight - 1)
+		y = settings->DesktopHeight - 1;
+
+	h += y % 16;
+	y -= y % 16;
+
+	h += h % 16;
+
+	if (h > settings->DesktopHeight)
+		h = settings->DesktopHeight;
+
+	if (y + h > settings->DesktopHeight)
+		h = settings->DesktopHeight - y;
+
+	if (w * h < 1)
+		return;
+
+	msg.nLeftRect = x;
+	msg.nTopRect = y;
+	msg.nWidth = w;
+	msg.nHeight = h;
+	msg.nXSrc = 0;
+	msg.nYSrc = 0;
+
+	msg.fbSegmentId = rds->framebuffer.fbSegmentId;
+	msg.bitmapData = NULL;
+	msg.bitmapDataLength = 0;
+
+	msg.type = RDS_SERVER_PAINT_RECT;
+	module->server->PaintRect(module, &msg);
 }
 
 void rds_surface_frame_marker(rdpContext* context, SURFACE_FRAME_MARKER* surfaceFrameMarker)

@@ -20,6 +20,6 @@
 #ifndef RDS_NG_PROTOCOL_H
 #define RDS_NG_PROTOCOL_H
 
-
+#define RDS_ORDER_HEADER_LENGTH		10
 
 #endif /* RDS_NG_PROTOCOL_H */
