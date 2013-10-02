@@ -41,7 +41,12 @@ struct _RDS_MSG_DEFINITION
 };
 typedef struct _RDS_MSG_DEFINITION RDS_MSG_DEFINITION;
 
-#define RDS_ORDER_HEADER_LENGTH	10
+UINT32 xrdp_peek_common_header_length(BYTE* data)
+{
+	UINT32 length;
+	length = *((UINT32*) &(data[2]));
+	return length;
+}
 
 int xrdp_read_common_header(wStream* s, RDS_MSG_COMMON* msg)
 {

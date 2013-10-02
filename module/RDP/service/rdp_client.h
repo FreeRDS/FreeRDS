@@ -23,6 +23,7 @@
 #include "rdp_service.h"
 
 #include <winpr/crt.h>
+#include <winpr/wlog.h>
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 
@@ -43,6 +44,8 @@ struct rds_context
 
 	DWORD SessionId;
 	rdsService* service;
+
+	wLog* log;
 
 	HANDLE StopEvent;
 	HANDLE UpdateThread;

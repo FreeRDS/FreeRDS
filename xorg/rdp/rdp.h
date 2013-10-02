@@ -269,7 +269,6 @@ void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode);
 void KbdAddUnicodeEvent(DWORD flags, DWORD code);
 
 /* rdpup.c */
-void rdpup_get_screen_image_rect(struct image_data* id);
 UINT32 rdpup_convert_color(UINT32 color);
 UINT32 rdpup_convert_opcode(int opcode);
 UINT32 rdp_dstblt_rop(int opcode);
