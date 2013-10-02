@@ -41,7 +41,7 @@ namespace freerds{
 
 			HANDLE mhStopEvent;
 
-			BOOL mHasHeaders;
+			DWORD mPacktLength;
 
 			DWORD mHeaderRead;
 			BYTE mHeaderBuffer[4];
