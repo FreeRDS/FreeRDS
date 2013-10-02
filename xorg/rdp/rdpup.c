@@ -687,61 +687,27 @@ int rdpup_end_update(void)
 
 int rdpup_update(RDS_MSG_COMMON* msg)
 {
+	int status;
 	wStream* s = g_out_s;
 
 	if (g_connected)
 	{
+		if ((msg->type == RDS_SERVER_BEGIN_UPDATE) ||
+				(msg->type == RDS_SERVER_END_UPDATE))
+		{
+			return 0;
+		}
+
+		Stream_SetPosition(s, 0);
 		xrdp_server_message_write(NULL, msg);
-
-		if (!g_begin && (msg->type != RDS_SERVER_BEGIN_UPDATE))
-		{
-			rdpup_begin_update();
-		}
-
-		if (msg->type == RDS_SERVER_BEGIN_UPDATE)
-		{
-			if (g_begin)
-				return 0;
-
-			Stream_SetPosition(s, 0);
-			Stream_Seek(s, 8);
-
-			xrdp_server_message_write(s, msg);
-
-			g_begin = 1;
-			g_count = 1;
-
-			return 0;
-		}
-		else if (msg->type == RDS_SERVER_END_UPDATE)
-		{
-			xrdp_server_message_write(s, msg);
-			g_count++;
-
-			rdpup_send_msg(s);
-
-			g_begin = 0;
-			g_count = 0;
-
-			return 0;
-		}
-
-		if ((Stream_GetPosition(s) + msg->length + 20) > Stream_Capacity(s))
-		{
-			rdpup_send_msg(s);
-
-			g_begin = 0;
-			g_count = 0;
-		}
-
 		xrdp_server_message_write(s, msg);
-		g_count++;
+		status = rdpup_send(Stream_Buffer(s), msg->length);
 
 		LLOGLN(0, ("rdpup_update: adding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
 	}
 	else
 	{
-		//LLOGLN(0, ("rdpup_update: discarding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
+		LLOGLN(0, ("rdpup_update: discarding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
 	}
 
 	return 0;

@@ -90,7 +90,7 @@ int rds_client_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientUnicodeKeyboardEvent");
 
 	context = (rdpContext*) rds;
-	freerdp_input_send_unicode_event(context->input, flags, code);
+	freerdp_input_send_unicode_keyboard_event(context->input, flags, code);
 
 	return 0;
 }
