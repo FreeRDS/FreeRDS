@@ -88,6 +88,8 @@ typedef struct _RDS_FRAMEBUFFER RDS_FRAMEBUFFER;
 #define RDS_CODEC_NSCODEC		0x00000002
 #define RDS_CODEC_REMOTEFX		0x00000004
 
+UINT32 xrdp_peek_common_header_length(BYTE* data);
+
 int xrdp_read_common_header(wStream* s, RDS_MSG_COMMON* msg);
 int xrdp_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
 
@@ -699,6 +701,8 @@ FREERDP_API rdsClientInterface* freerds_server_inbound_interface_new();
 
 FREERDP_API int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length);
 FREERDP_API int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length);
+
+FREERDP_API int freerds_server_outbound_write_message(rdsModule* module, RDS_MSG_COMMON* msg);
 
 FREERDP_API int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint);
 FREERDP_API HANDLE freerds_named_pipe_connect(DWORD SessionId, const char* endpoint, DWORD nTimeOut);

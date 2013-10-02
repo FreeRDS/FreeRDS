@@ -80,7 +80,8 @@ void* xrdp_client_thread(void* arg)
 
 		if (WaitForSingleObject(module->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			freerds_transport_receive(module);
+			if (freerds_transport_receive(module) < 0)
+				break;
 		}
 
 		if (status == WAIT_OBJECT_0)

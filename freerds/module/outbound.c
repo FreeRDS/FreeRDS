@@ -27,7 +27,7 @@
 
 #include "outbound.h"
 
-int freerds_client_outbound_synchronize_keyboard_event(rdsModule* mod, DWORD flags)
+int freerds_client_outbound_synchronize_keyboard_event(rdsModule* module, DWORD flags)
 {
 	int length;
 	int status;
@@ -39,18 +39,18 @@ int freerds_client_outbound_synchronize_keyboard_event(rdsModule* mod, DWORD fla
 
 	msg.flags = flags;
 
-	s = mod->OutboundStream;
+	s = module->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_synchronize_keyboard_event(NULL, &msg);
 	xrdp_write_synchronize_keyboard_event(s, &msg);
 
-	status = freerds_named_pipe_write(mod->hClientPipe, Stream_Buffer(s), length);
+	status = freerds_named_pipe_write(module->hClientPipe, Stream_Buffer(s), length);
 
 	return status;
 }
 
-int freerds_client_outbound_scancode_keyboard_event(rdsModule* mod, DWORD flags, DWORD code, DWORD keyboardType)
+int freerds_client_outbound_scancode_keyboard_event(rdsModule* module, DWORD flags, DWORD code, DWORD keyboardType)
 {
 	int length;
 	int status;
@@ -64,18 +64,18 @@ int freerds_client_outbound_scancode_keyboard_event(rdsModule* mod, DWORD flags,
 	msg.code = code;
 	msg.keyboardType = keyboardType;
 
-	s = mod->OutboundStream;
+	s = module->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_scancode_keyboard_event(NULL, &msg);
 	xrdp_write_scancode_keyboard_event(s, &msg);
 
-	status = freerds_named_pipe_write(mod->hClientPipe, Stream_Buffer(s), length);
+	status = freerds_named_pipe_write(module->hClientPipe, Stream_Buffer(s), length);
 
 	return status;
 }
 
-int freerds_client_outbound_virtual_keyboard_event(rdsModule* mod, DWORD flags, DWORD code)
+int freerds_client_outbound_virtual_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
 {
 	int length;
 	int status;
@@ -88,18 +88,18 @@ int freerds_client_outbound_virtual_keyboard_event(rdsModule* mod, DWORD flags, 
 	msg.flags = flags;
 	msg.code = code;
 
-	s = mod->OutboundStream;
+	s = module->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_virtual_keyboard_event(NULL, &msg);
 	xrdp_write_virtual_keyboard_event(s, &msg);
 
-	status = freerds_named_pipe_write(mod->hClientPipe, Stream_Buffer(s), length);
+	status = freerds_named_pipe_write(module->hClientPipe, Stream_Buffer(s), length);
 
 	return status;
 }
 
-int freerds_client_outbound_unicode_keyboard_event(rdsModule* mod, DWORD flags, DWORD code)
+int freerds_client_outbound_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
 {
 	int length;
 	int status;
@@ -112,18 +112,18 @@ int freerds_client_outbound_unicode_keyboard_event(rdsModule* mod, DWORD flags, 
 	msg.flags = flags;
 	msg.code = code;
 
-	s = mod->OutboundStream;
+	s = module->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_unicode_keyboard_event(NULL, &msg);
 	xrdp_write_unicode_keyboard_event(s, &msg);
 
-	status = freerds_named_pipe_write(mod->hClientPipe, Stream_Buffer(s), length);
+	status = freerds_named_pipe_write(module->hClientPipe, Stream_Buffer(s), length);
 
 	return status;
 }
 
-int freerds_client_outbound_mouse_event(rdsModule* mod, DWORD flags, DWORD x, DWORD y)
+int freerds_client_outbound_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
 {
 	int length;
 	int status;
@@ -137,18 +137,18 @@ int freerds_client_outbound_mouse_event(rdsModule* mod, DWORD flags, DWORD x, DW
 	msg.x = x;
 	msg.y = y;
 
-	s = mod->OutboundStream;
+	s = module->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_mouse_event(NULL, &msg);
 	xrdp_write_mouse_event(s, &msg);
 
-	status = freerds_named_pipe_write(mod->hClientPipe, Stream_Buffer(s), length);
+	status = freerds_named_pipe_write(module->hClientPipe, Stream_Buffer(s), length);
 
 	return status;
 }
 
-int freerds_client_outbound_extended_mouse_event(rdsModule* mod, DWORD flags, DWORD x, DWORD y)
+int freerds_client_outbound_extended_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
 {
 	int length;
 	int status;
@@ -162,13 +162,13 @@ int freerds_client_outbound_extended_mouse_event(rdsModule* mod, DWORD flags, DW
 	msg.x = x;
 	msg.y = y;
 
-	s = mod->OutboundStream;
+	s = module->OutboundStream;
 	Stream_SetPosition(s, 0);
 
 	length = xrdp_write_extended_mouse_event(NULL, &msg);
 	xrdp_write_extended_mouse_event(s, &msg);
 
-	status = freerds_named_pipe_write(mod->hClientPipe, Stream_Buffer(s), length);
+	status = freerds_named_pipe_write(module->hClientPipe, Stream_Buffer(s), length);
 
 	return status;
 }

@@ -119,7 +119,7 @@ int x11_rds_module_start(rdsModule* module)
 
 	fprintf(stderr, "Process started: %d\n", status);
 
-	module->hClientPipe = freerds_named_pipe_connect(SessionId, "X11rdp", 5 * 1000);
+	module->hClientPipe = freerds_named_pipe_connect(SessionId, "X11", 5 * 1000);
 
 	ZeroMemory(&(x11->WMStartupInfo), sizeof(STARTUPINFO));
 	x11->WMStartupInfo.cb = sizeof(STARTUPINFO);
