@@ -145,7 +145,7 @@ int RpcEngine::readHeader() {
 
 	mHeaderRead += lpNumberOfBytesRead;
 	if (mHeaderRead == 4) {
-		mPacktLength = ntohl(*(DWORD *)mHeaderBuffer);;
+		mPacktLength = ntohl(*(DWORD *)mHeaderBuffer);
 	}
 	return CLIENT_SUCCESS;
 }
@@ -221,19 +221,12 @@ int RpcEngine::send(freerds::sessionmanager::call::Call * call) {
 
 	mpbRPC.SerializeToString(&serialized);
 
-	bool fSuccess = WriteFile(mhClientPipe, serialized.c_str(),
-			serialized.size(), &lpNumberOfBytesWritten, NULL);
-
-	if (!fSuccess || (lpNumberOfBytesWritten == 0)) {
-		printf("Server NamedPipe send failure\n");
-		return CLIENT_ERROR;
-	}
+	return sendInternal(serialized);
 
 }
 
 int RpcEngine::sendError(uint32_t callID, uint32_t callType) {
 
-	DWORD lpNumberOfBytesWritten;
 	std::string serialized;
 
 	mpbRPC.Clear();
@@ -244,15 +237,32 @@ int RpcEngine::sendError(uint32_t callID, uint32_t callType) {
 
 	mpbRPC.SerializeToString(&serialized);
 
-	bool fSuccess = WriteFile(mhClientPipe, serialized.c_str(),
-			serialized.size(), &lpNumberOfBytesWritten, NULL);
-
-	if (!fSuccess || (lpNumberOfBytesWritten == 0)) {
-		printf("Server NamedPipe sendError failure\n");
-		return -1;
-	}
+	return sendInternal(serialized);
 
 }
+
+int RpcEngine::sendInternal(std::string data) {
+	DWORD lpNumberOfBytesWritten;
+	DWORD messageSize = htonl(data.size());
+
+	bool fSuccess = WriteFile(mhClientPipe, &messageSize,
+			4, &lpNumberOfBytesWritten, NULL);
+
+	if (!fSuccess || (lpNumberOfBytesWritten == 0)) {
+		printf("Server NamedPipe sendInternal failure\n");
+		return CLIENT_ERROR;
+	}
+
+	fSuccess = WriteFile(mhClientPipe, data.c_str(),
+			data.size(), &lpNumberOfBytesWritten, NULL);
+
+	if (!fSuccess || (lpNumberOfBytesWritten == 0)) {
+		printf("Server NamedPipe sendInternal failure\n");
+		return -1;
+	}
+}
+
+
 
 int RpcEngine::serveClient() {
 
