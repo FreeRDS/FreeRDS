@@ -1,7 +1,7 @@
 #include "SessionStore.h"
 
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 		namespace session{
 

@@ -7,9 +7,9 @@
 
 #include <string>
 
-#define CALL_FACTORY freeRDS::sessionmanager::call::CallFactory::instance()
+#define CALL_FACTORY freerds::sessionmanager::call::CallFactory::instance()
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 		namespace call{
 
@@ -30,6 +30,6 @@ namespace freeRDS{
 	}
 }
 
-namespace callNS = freeRDS::sessionmanager::call;
+namespace callNS = freerds::sessionmanager::call;
 
 #endif

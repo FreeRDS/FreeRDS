@@ -13,7 +13,7 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 
-namespace freeRDS {
+namespace freerds {
 namespace icp {
 
 namespace {
@@ -24,7 +24,7 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* IsChannelAllowedResponse_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   IsChannelAllowedResponse_reflection_ = NULL;
-const ::google::protobuf::EnumDescriptor* MsgType_descriptor_ = NULL;
+const ::google::protobuf::EnumDescriptor* MSGTYPE_descriptor_ = NULL;
 
 }  // namespace
 
@@ -65,7 +65,7 @@ void protobuf_AssignDesc_ICP_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(IsChannelAllowedResponse));
-  MsgType_descriptor_ = file->enum_type(0);
+  MSGTYPE_descriptor_ = file->enum_type(0);
 }
 
 namespace {
@@ -100,10 +100,10 @@ void protobuf_AddDesc_ICP_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\tICP.proto\022\013freeRDS.icp\".\n\027IsChannelAll"
+    "\n\tICP.proto\022\013freerds.icp\".\n\027IsChannelAll"
     "owedRequest\022\023\n\013ChannelName\030\001 \002(\t\"2\n\030IsCh"
     "annelAllowedResponse\022\026\n\016ChannelAllowed\030\001"
-    " \002(\010*\037\n\007MsgType\022\024\n\020IsChannelAllowed\020\001", 157);
+    " \002(\010*\037\n\007MSGTYPE\022\024\n\020IsChannelAllowed\020\001", 157);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "ICP.proto", &protobuf_RegisterTypes);
   IsChannelAllowedRequest::default_instance_ = new IsChannelAllowedRequest();
@@ -120,11 +120,11 @@ struct StaticDescriptorInitializer_ICP_2eproto {
   }
 } static_descriptor_initializer_ICP_2eproto_;
 
-const ::google::protobuf::EnumDescriptor* MsgType_descriptor() {
+const ::google::protobuf::EnumDescriptor* MSGTYPE_descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return MsgType_descriptor_;
+  return MSGTYPE_descriptor_;
 }
-bool MsgType_IsValid(int value) {
+bool MSGTYPE_IsValid(int value) {
   switch(value) {
     case 1:
       return true;
@@ -568,6 +568,6 @@ void IsChannelAllowedResponse::Swap(IsChannelAllowedResponse* other) {
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace icp
-}  // namespace freeRDS
+}  // namespace freerds
 
 // @@protoc_insertion_point(global_scope)

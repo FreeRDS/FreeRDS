@@ -25,7 +25,7 @@
 #include <google/protobuf/generated_message_reflection.h>
 // @@protoc_insertion_point(includes)
 
-namespace freeRDS {
+namespace freerds {
 namespace icp {
 
 // Internal implementation detail -- do not call these.
@@ -36,23 +36,23 @@ void protobuf_ShutdownFile_ICP_2eproto();
 class IsChannelAllowedRequest;
 class IsChannelAllowedResponse;
 
-enum MsgType {
+enum MSGTYPE {
   IsChannelAllowed = 1
 };
-bool MsgType_IsValid(int value);
-const MsgType MsgType_MIN = IsChannelAllowed;
-const MsgType MsgType_MAX = IsChannelAllowed;
-const int MsgType_ARRAYSIZE = MsgType_MAX + 1;
+bool MSGTYPE_IsValid(int value);
+const MSGTYPE MSGTYPE_MIN = IsChannelAllowed;
+const MSGTYPE MSGTYPE_MAX = IsChannelAllowed;
+const int MSGTYPE_ARRAYSIZE = MSGTYPE_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* MsgType_descriptor();
-inline const ::std::string& MsgType_Name(MsgType value) {
+const ::google::protobuf::EnumDescriptor* MSGTYPE_descriptor();
+inline const ::std::string& MSGTYPE_Name(MSGTYPE value) {
   return ::google::protobuf::internal::NameOfEnum(
-    MsgType_descriptor(), value);
+    MSGTYPE_descriptor(), value);
 }
-inline bool MsgType_Parse(
-    const ::std::string& name, MsgType* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<MsgType>(
-    MsgType_descriptor(), name, value);
+inline bool MSGTYPE_Parse(
+    const ::std::string& name, MSGTYPE* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<MSGTYPE>(
+    MSGTYPE_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -121,7 +121,7 @@ class IsChannelAllowedRequest : public ::google::protobuf::Message {
   inline ::std::string* mutable_channelname();
   inline ::std::string* release_channelname();
   
-  // @@protoc_insertion_point(class_scope:freeRDS.icp.IsChannelAllowedRequest)
+  // @@protoc_insertion_point(class_scope:freerds.icp.IsChannelAllowedRequest)
  private:
   inline void set_has_channelname();
   inline void clear_has_channelname();
@@ -203,7 +203,7 @@ class IsChannelAllowedResponse : public ::google::protobuf::Message {
   inline bool channelallowed() const;
   inline void set_channelallowed(bool value);
   
-  // @@protoc_insertion_point(class_scope:freeRDS.icp.IsChannelAllowedResponse)
+  // @@protoc_insertion_point(class_scope:freerds.icp.IsChannelAllowedResponse)
  private:
   inline void set_has_channelallowed();
   inline void clear_has_channelallowed();
@@ -317,15 +317,15 @@ inline void IsChannelAllowedResponse::set_channelallowed(bool value) {
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace icp
-}  // namespace freeRDS
+}  // namespace freerds
 
 #ifndef SWIG
 namespace google {
 namespace protobuf {
 
 template <>
-inline const EnumDescriptor* GetEnumDescriptor< freeRDS::icp::MsgType>() {
-  return freeRDS::icp::MsgType_descriptor();
+inline const EnumDescriptor* GetEnumDescriptor< freerds::icp::MSGTYPE>() {
+  return freerds::icp::MSGTYPE_descriptor();
 }
 
 }  // namespace google

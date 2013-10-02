@@ -1,6 +1,6 @@
 #include "CallFactory.h"
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 		namespace call{
 

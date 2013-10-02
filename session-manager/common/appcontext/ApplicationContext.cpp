@@ -1,7 +1,7 @@
 #include "ApplicationContext.h"
 
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 
 
@@ -18,6 +18,13 @@ namespace freeRDS{
 		return &mSessionStore;
 	}
 
+	int ApplicationContext::startRPCEngine(){
+		return mRpcEngine.startEngine();
+	}
+
+	int ApplicationContext::stopRPCEngine(){
+		return mRpcEngine.stopEngine();
+	}
 
 
     }
