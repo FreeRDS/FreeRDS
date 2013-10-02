@@ -71,7 +71,9 @@ void* RpcEngine::listenerThread(void* arg) {
 		if (!clientPipe)
 			break;
 
-		engine->serveClient();
+		if (engine->serveClient() == CLIENT_ERROR ) {
+			break;
+		}
 
 	}
 
