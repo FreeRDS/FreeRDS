@@ -21,6 +21,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "rdp.h"
 
+#include <winpr/crt.h>
+#include <winpr/pipe.h>
+#include <winpr/synch.h>
+
 #include <freerds/freerds.h>
 
 #define LOG_LEVEL 1
@@ -29,29 +33,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
-static int g_listen_sck = 0;
-static int g_sck = 0;
-static int g_sck_closed = 0;
+static int g_clientfd = -1;
+static rdsService* g_Service;
 static int g_connected = 0;
 
-static int g_begin = 0;
-static wStream* g_out_s = 0;
-static wStream* g_in_s = 0;
 static int g_button_mask = 0;
-static int g_count = 0;
-
 static BYTE* pfbBackBufferMemory = NULL;
 
 extern ScreenPtr g_pScreen;
 extern int g_Bpp;
 extern int g_Bpp_mask;
 extern rdpScreenInfoRec g_rdpScreen;
-extern int g_use_rail;
-extern char g_uds_data[];
 extern int g_con_number;
-
-static int g_pixmap_byte_total = 0;
-static int g_pixmap_num_used = 0;
 
 /*
 0 GXclear,        0
@@ -166,231 +159,7 @@ int convert_pixel(int in_pixel)
 	return rv;
 }
 
-static int rdpup_disconnect(void)
-{
-	RemoveEnabledDevice(g_sck);
-	g_connected = 0;
-	g_tcp_close(g_sck);
-	g_sck = 0;
-	g_sck_closed = 1;
-	g_pixmap_byte_total = 0;
-	g_pixmap_num_used = 0;
-	g_use_rail = 0;
-
-	return 0;
-}
-
-/* returns error */
-static int rdpup_send(BYTE* data, int len)
-{
-	int sent;
-
-	LLOGLN(10, ("rdpup_send - sending %d bytes", len));
-
-	if (g_sck_closed)
-		return 1;
-
-	while (len > 0)
-	{
-		sent = g_tcp_send(g_sck, data, len, 0);
-
-		if (sent == -1)
-		{
-			if (g_tcp_last_error_would_block(g_sck))
-			{
-				g_sleep(1);
-			}
-			else
-			{
-				rdpup_disconnect();
-				return 1;
-			}
-		}
-		else if (sent == 0)
-		{
-			rdpup_disconnect();
-			return 1;
-		}
-		else
-		{
-			data += sent;
-			len -= sent;
-		}
-	}
-
-	return 0;
-}
-
-static int rdpup_send_msg(wStream* s)
-{
-	int length;
-	int status;
-
-	status = 1;
-
-	if (s != 0)
-	{
-		length = Stream_GetPosition(s);
-
-		if (length > Stream_Capacity(s))
-		{
-			rdpLog("overrun error len %d count %d\n", length, g_count);
-		}
-
-		Stream_SetPosition(s, 0);
-		Stream_Write_UINT32(s, length);
-		Stream_Write_UINT32(s, g_count);
-
-		status = rdpup_send(Stream_Buffer(s), length);
-	}
-
-	if (status != 0)
-	{
-		rdpLog("error in rdpup_send_msg\n");
-	}
-
-	return status;
-}
-
 int rdpup_update(RDS_MSG_COMMON* msg);
-
-/* returns error */
-static int rdpup_recv(BYTE* data, int len)
-{
-	int rcvd;
-
-	if (g_sck_closed)
-	{
-		return 1;
-	}
-
-	while (len > 0)
-	{
-		rcvd = g_tcp_recv(g_sck, data, len, 0);
-
-		if (rcvd == -1)
-		{
-			if (g_tcp_last_error_would_block(g_sck))
-			{
-				g_sleep(1);
-			}
-			else
-			{
-				rdpup_disconnect();
-				return 1;
-			}
-		}
-		else if (rcvd == 0)
-		{
-			rdpup_disconnect();
-			return 1;
-		}
-		else
-		{
-			data += rcvd;
-			len -= rcvd;
-		}
-	}
-
-	return 0;
-}
-
-static int rdpup_recv_msg(wStream* s, int* type)
-{
-	int status = 1;
-	RDS_MSG_COMMON common;
-
-	if (s != 0)
-	{
-		Stream_EnsureCapacity(s, 10);
-		Stream_SetPosition(s, 0);
-
-		status = rdpup_recv(Stream_Pointer(s), 10);
-
-		if (status == 0)
-		{
-			xrdp_read_common_header(s, &common);
-
-			if (common.length >= 10)
-			{
-				Stream_EnsureCapacity(s, common.length);
-				status = rdpup_recv(Stream_Pointer(s), common.length - 10);
-			}
-		}
-	}
-
-	if (status != 0)
-	{
-		rdpLog("error in rdpup_recv_msg\n");
-	}
-
-	Stream_SetPosition(s, common.length);
-	Stream_SealLength(s);
-	Stream_SetPosition(s, 10);
-
-	*type = common.type;
-
-	return status;
-}
-
-static int process_screen_parameters(int DesktopWidth, int DesktopHeight, int ColorDepth)
-{
-	Bool ok;
-	int mmwidth;
-	int mmheight;
-	RRScreenSizePtr pSize;
-
-	g_rdpScreen.rdp_width = DesktopWidth;
-	g_rdpScreen.rdp_height = DesktopHeight;
-	g_rdpScreen.rdp_bpp = ColorDepth;
-
-	if (ColorDepth < 15)
-	{
-		g_rdpScreen.rdp_Bpp = 1;
-		g_rdpScreen.rdp_Bpp_mask = 0xFF;
-	}
-	else if (ColorDepth == 15)
-	{
-		g_rdpScreen.rdp_Bpp = 2;
-		g_rdpScreen.rdp_Bpp_mask = 0x7FFF;
-	}
-	else if (ColorDepth == 16)
-	{
-		g_rdpScreen.rdp_Bpp = 2;
-		g_rdpScreen.rdp_Bpp_mask = 0xFFFF;
-	}
-	else if (ColorDepth > 16)
-	{
-		g_rdpScreen.rdp_Bpp = 4;
-		g_rdpScreen.rdp_Bpp_mask = 0xFFFFFF;
-	}
-
-	mmwidth = PixelToMM(DesktopWidth);
-	mmheight = PixelToMM(DesktopHeight);
-
-	pSize = RRRegisterSize(g_pScreen, DesktopWidth, DesktopHeight, mmwidth, mmheight);
-	RRSetCurrentConfig(g_pScreen, RR_Rotate_0, 0, pSize);
-
-	if ((g_rdpScreen.width != DesktopWidth) || (g_rdpScreen.height != DesktopHeight))
-	{
-		LLOGLN(0, ("  calling RRScreenSizeSet"));
-		ok = RRScreenSizeSet(g_pScreen, DesktopWidth, DesktopHeight, mmwidth, mmheight);
-		LLOGLN(0, ("  RRScreenSizeSet ok=[%d]", ok));
-	}
-
-	return 0;
-}
-
-static int rdpup_process_capabilities_msg(wStream* s)
-{
-	RDS_MSG_CAPABILITIES msg;
-
-	xrdp_read_capabilities(s, &msg);
-
-	process_screen_parameters(msg.DesktopWidth, msg.DesktopHeight, msg.ColorDepth);
-
-	return 0;
-}
 
 int rdpup_process_refresh_rect_msg(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 {
@@ -409,200 +178,6 @@ int rdpup_process_refresh_rect_msg(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 	}
 
 	return 0;
-}
-
-static int rdpup_process_msg(wStream* s, int type)
-{
-	LLOGLN(10, ("rdpup_process_msg - msg %d", type));
-
-	if (type == RDS_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT)
-	{
-		RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT msg;
-
-		xrdp_read_synchronize_keyboard_event(s, &msg);
-	}
-	else if (type == RDS_CLIENT_SCANCODE_KEYBOARD_EVENT)
-	{
-		RDS_MSG_SCANCODE_KEYBOARD_EVENT msg;
-
-		xrdp_read_scancode_keyboard_event(s, &msg);
-
-		KbdAddScancodeEvent(msg.flags, msg.code, msg.keyboardType);
-	}
-	else if (type == RDS_CLIENT_VIRTUAL_KEYBOARD_EVENT)
-	{
-		RDS_MSG_VIRTUAL_KEYBOARD_EVENT msg;
-
-		xrdp_read_virtual_keyboard_event(s, &msg);
-
-		KbdAddVirtualKeyCodeEvent(msg.flags, msg.code);
-	}
-	else if (type == RDS_CLIENT_UNICODE_KEYBOARD_EVENT)
-	{
-		RDS_MSG_UNICODE_KEYBOARD_EVENT msg;
-
-		xrdp_read_unicode_keyboard_event(s, &msg);
-
-		KbdAddUnicodeEvent(msg.flags, msg.code);
-	}
-	else if (type == RDS_CLIENT_MOUSE_EVENT)
-	{
-		RDS_MSG_MOUSE_EVENT msg;
-
-		xrdp_read_mouse_event(s, &msg);
-
-		if (msg.x > g_rdpScreen.width - 2)
-			msg.x = g_rdpScreen.width - 2;
-
-		if (msg.y > g_rdpScreen.height - 2)
-			msg.y = g_rdpScreen.height - 2;
-
-		if (msg.flags & PTR_FLAGS_MOVE)
-		{
-			PtrAddEvent(g_button_mask, msg.x, msg.y);
-		}
-
-		if (msg.flags & PTR_FLAGS_WHEEL)
-		{
-			if (msg.flags & PTR_FLAGS_WHEEL_NEGATIVE)
-			{
-				g_button_mask = g_button_mask | 16;
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-
-				g_button_mask = g_button_mask & (~16);
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-			else
-			{
-				g_button_mask = g_button_mask | 8;
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-
-				g_button_mask = g_button_mask & (~8);
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-		}
-		else if (msg.flags & PTR_FLAGS_BUTTON1)
-		{
-			if (msg.flags & PTR_FLAGS_DOWN)
-			{
-				g_button_mask = g_button_mask | 1;
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-			else
-			{
-				g_button_mask = g_button_mask & (~1);
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-		}
-		else if (msg.flags & PTR_FLAGS_BUTTON2)
-		{
-			if (msg.flags & PTR_FLAGS_DOWN)
-			{
-				g_button_mask = g_button_mask | 4;
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-			else
-			{
-				g_button_mask = g_button_mask & (~4);
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-		}
-		else if (msg.flags & PTR_FLAGS_BUTTON3)
-		{
-			if (msg.flags & PTR_FLAGS_DOWN)
-			{
-				g_button_mask = g_button_mask | 2;
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-			else
-			{
-				g_button_mask = g_button_mask & (~2);
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-		}
-	}
-	else if (type == RDS_CLIENT_EXTENDED_MOUSE_EVENT)
-	{
-		RDS_MSG_EXTENDED_MOUSE_EVENT msg;
-
-		xrdp_read_extended_mouse_event(s, &msg);
-
-		if (msg.x > g_rdpScreen.width - 2)
-			msg.x = g_rdpScreen.width - 2;
-
-		if (msg.y > g_rdpScreen.height - 2)
-			msg.y = g_rdpScreen.height - 2;
-
-		if (msg.flags & PTR_FLAGS_MOVE)
-		{
-			PtrAddEvent(g_button_mask, msg.x, msg.y);
-		}
-
-		if (msg.flags & PTR_XFLAGS_BUTTON1)
-		{
-			if (msg.flags & PTR_XFLAGS_DOWN)
-			{
-				g_button_mask = g_button_mask | 8;
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-			else
-			{
-				g_button_mask = g_button_mask & (~8);
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-		}
-		else if (msg.flags & PTR_XFLAGS_BUTTON2)
-		{
-			if (msg.flags & PTR_XFLAGS_DOWN)
-			{
-				g_button_mask = g_button_mask | 16;
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-			else
-			{
-				g_button_mask = g_button_mask & (~16);
-				PtrAddEvent(g_button_mask, msg.x, msg.y);
-			}
-		}
-	}
-	else if (type == RDS_CLIENT_CAPABILITIES)
-	{
-		rdpup_process_capabilities_msg(s);
-	}
-	else if (type == RDS_CLIENT_REFRESH_RECT)
-	{
-		int index;
-		RDS_MSG_REFRESH_RECT msg;
-
-		xrdp_read_refresh_rect(s, &msg);
-
-		rdpup_begin_update();
-
-		for (index = 0; index < msg.numberOfAreas; index++)
-		{
-			rdpup_send_area(msg.areasToRefresh[index].left, msg.areasToRefresh[index].top,
-					msg.areasToRefresh[index].right - msg.areasToRefresh[index].left + 1,
-					msg.areasToRefresh[index].bottom - msg.areasToRefresh[index].top + 1);
-		}
-
-		rdpup_end_update();
-	}
-	else
-	{
-		rdpLog("unknown message type in rdpup_process_msg %d\n", type);
-	}
-
-	return 0;
-}
-
-void rdpup_get_screen_image_rect(struct image_data *id)
-{
-	id->width = g_rdpScreen.width;
-	id->height = g_rdpScreen.height;
-	id->bpp = g_rdpScreen.rdp_bpp;
-	id->Bpp = g_rdpScreen.rdp_Bpp;
-	id->lineBytes = g_rdpScreen.paddedWidthInBytes;
-	id->pixels = g_rdpScreen.pfbMemory;
 }
 
 UINT32 rdpup_convert_color(UINT32 color)
@@ -649,46 +224,18 @@ UINT32 rdp_dstblt_rop(int opcode)
 
 int rdpup_begin_update(void)
 {
-	RDS_MSG_BEGIN_UPDATE msg;
-
-	if (g_connected)
-	{
-		if (g_begin)
-		{
-			return 0;
-		}
-
-		Stream_SetPosition(g_out_s, 0);
-		Stream_Seek(g_out_s, 8);
-
-		LLOGLN(10, ("begin %d", g_count));
-
-		msg.type = RDS_SERVER_BEGIN_UPDATE;
-		rdpup_update((RDS_MSG_COMMON*) &msg);
-	}
-
 	return 0;
 }
 
 int rdpup_end_update(void)
 {
-	RDS_MSG_END_UPDATE msg;
-
-	LLOGLN(10, ("rdpup_end_update"));
-
-	if (g_connected && g_begin)
-	{
-		msg.type = RDS_SERVER_END_UPDATE;
-		rdpup_update((RDS_MSG_COMMON*) &msg);
-	}
-
 	return 0;
 }
 
 int rdpup_update(RDS_MSG_COMMON* msg)
 {
 	int status;
-	wStream* s = g_out_s;
+	rdsModule* module = (rdsModule*) g_Service;
 
 	if (g_connected)
 	{
@@ -698,10 +245,7 @@ int rdpup_update(RDS_MSG_COMMON* msg)
 			return 0;
 		}
 
-		Stream_SetPosition(s, 0);
-		xrdp_server_message_write(NULL, msg);
-		xrdp_server_message_write(s, msg);
-		status = rdpup_send(Stream_Buffer(s), msg->length);
+		status = freerds_server_outbound_write_message(module, (RDS_MSG_COMMON*) msg);
 
 		LLOGLN(0, ("rdpup_update: adding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
 	}
@@ -996,58 +540,199 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	rdpup_update((RDS_MSG_COMMON*) &msg);
 }
 
-int rdpup_init(void)
+int rds_client_synchronize_keyboard_event(rdsModule* module, DWORD flags)
 {
-	int i;
+	return 0;
+}
 
-	if (!g_directory_exist("/tmp/.pipe"))
+int rds_client_scancode_keyboard_event(rdsModule* module, DWORD flags, DWORD code, DWORD keyboardType)
+{
+	KbdAddScancodeEvent(flags, code, keyboardType);
+	return 0;
+}
+
+int rds_client_virtual_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
+{
+	KbdAddVirtualKeyCodeEvent(flags, code);
+	return 0;
+}
+
+int rds_client_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
+{
+	KbdAddUnicodeEvent(flags, code);
+	return 0;
+}
+
+int rds_client_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
+{
+	if (x > g_rdpScreen.width - 2)
+		x = g_rdpScreen.width - 2;
+
+	if (y > g_rdpScreen.height - 2)
+		y = g_rdpScreen.height - 2;
+
+	if (flags & PTR_FLAGS_MOVE)
 	{
-		if (!g_create_dir("/tmp/.pipe"))
-		{
-			LLOGLN(0, ("rdpup_init: g_create_dir failed"));
-			return 0;
-		}
-
-		g_chmod_hex("/tmp/.pipe", 0x1777);
+		PtrAddEvent(g_button_mask, x, y);
 	}
 
-	i = atoi(display);
+	if (flags & PTR_FLAGS_WHEEL)
+	{
+		if (flags & PTR_FLAGS_WHEEL_NEGATIVE)
+		{
+			g_button_mask = g_button_mask | 16;
+			PtrAddEvent(g_button_mask, x, y);
 
-	LLOGLN(0, ("rdpup_init: display: %d", i));
+			g_button_mask = g_button_mask & (~16);
+			PtrAddEvent(g_button_mask, x, y);
+		}
+		else
+		{
+			g_button_mask = g_button_mask | 8;
+			PtrAddEvent(g_button_mask, x, y);
 
-	if (i < 1)
+			g_button_mask = g_button_mask & (~8);
+			PtrAddEvent(g_button_mask, x, y);
+		}
+	}
+	else if (flags & PTR_FLAGS_BUTTON1)
+	{
+		if (flags & PTR_FLAGS_DOWN)
+		{
+			g_button_mask = g_button_mask | 1;
+			PtrAddEvent(g_button_mask, x, y);
+		}
+		else
+		{
+			g_button_mask = g_button_mask & (~1);
+			PtrAddEvent(g_button_mask, x, y);
+		}
+	}
+	else if (flags & PTR_FLAGS_BUTTON2)
+	{
+		if (flags & PTR_FLAGS_DOWN)
+		{
+			g_button_mask = g_button_mask | 4;
+			PtrAddEvent(g_button_mask, x, y);
+		}
+		else
+		{
+			g_button_mask = g_button_mask & (~4);
+			PtrAddEvent(g_button_mask, x, y);
+		}
+	}
+	else if (flags & PTR_FLAGS_BUTTON3)
+	{
+		if (flags & PTR_FLAGS_DOWN)
+		{
+			g_button_mask = g_button_mask | 2;
+			PtrAddEvent(g_button_mask, x, y);
+		}
+		else
+		{
+			g_button_mask = g_button_mask & (~2);
+			PtrAddEvent(g_button_mask, x, y);
+		}
+	}
+
+	return 0;
+}
+
+int rds_client_extended_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
+{
+	if (x > g_rdpScreen.width - 2)
+		x = g_rdpScreen.width - 2;
+
+	if (y > g_rdpScreen.height - 2)
+		y = g_rdpScreen.height - 2;
+
+	if (flags & PTR_FLAGS_MOVE)
+	{
+		PtrAddEvent(g_button_mask, x, y);
+	}
+
+	if (flags & PTR_XFLAGS_BUTTON1)
+	{
+		if (flags & PTR_XFLAGS_DOWN)
+		{
+			g_button_mask = g_button_mask | 8;
+			PtrAddEvent(g_button_mask, x, y);
+		}
+		else
+		{
+			g_button_mask = g_button_mask & (~8);
+			PtrAddEvent(g_button_mask, x, y);
+		}
+	}
+	else if (flags & PTR_XFLAGS_BUTTON2)
+	{
+		if (flags & PTR_XFLAGS_DOWN)
+		{
+			g_button_mask = g_button_mask | 16;
+			PtrAddEvent(g_button_mask, x, y);
+		}
+		else
+		{
+			g_button_mask = g_button_mask & (~16);
+			PtrAddEvent(g_button_mask, x, y);
+		}
+	}
+
+	return 0;
+}
+
+int rds_service_accept(rdsService* service)
+{
+	rdsModule* module = (rdsModule*) service;
+
+	g_clientfd = GetNamePipeFileDescriptor(module->hClientPipe);
+
+	g_con_number++;
+	g_connected = 1;
+	g_rdpScreen.fbAttached = 0;
+	AddEnabledDevice(g_clientfd);
+
+	fprintf(stderr, "RdsServiceAccept\n");
+
+	return 0;
+}
+
+int rdpup_init(void)
+{
+	int DisplayId;
+	rdsModule* module;
+	rdsService* service;
+
+	DisplayId = atoi(display);
+
+	LLOGLN(0, ("rdpup_init: display: %d", DisplayId));
+
+	if (DisplayId < 1)
 	{
 		return 0;
 	}
 
-	if (g_in_s == 0)
-	{
-		g_in_s = Stream_New(NULL, 8192);
-	}
-
-	if (g_out_s == 0)
-	{
-		g_out_s = Stream_New(NULL, 1920 * 1088 * g_Bpp + 100);
-	}
-
 	pfbBackBufferMemory = (BYTE*) malloc(g_rdpScreen.sizeInBytes);
 
-	g_sprintf(g_uds_data, "/tmp/.pipe/FreeRDS_%s_X11rdp", display);
-
-	LLOGLN(0, ("rdpup_init: %s", g_uds_data));
-
-	if (g_listen_sck == 0)
+	if (!g_Service)
 	{
-		g_listen_sck = g_tcp_local_socket_stream();
+		g_Service = freerds_service_new(DisplayId, "X11");
 
-		if (g_tcp_local_bind(g_listen_sck, g_uds_data) != 0)
-		{
-			LLOGLN(0, ("rdpup_init: g_tcp_local_bind failed"));
-			return 0;
-		}
+		service = g_Service;
+		module = (rdsModule*) service;
 
-		g_tcp_listen(g_listen_sck);
-		AddEnabledDevice(g_listen_sck);
+		service->Accept = (pRdsServiceAccept) rds_service_accept;
+
+		module->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
+		module->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
+		module->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;
+		module->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
+		module->client->MouseEvent = rds_client_mouse_event;
+		module->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
+
+		module->hServerPipe = freerds_named_pipe_create(module->SessionId, module->Endpoint);
+		module->hClientPipe = freerds_named_pipe_accept(module->hServerPipe);
+		service->Accept(service);
 	}
 
 	return 1;
@@ -1055,47 +740,16 @@ int rdpup_init(void)
 
 int rdpup_check(void)
 {
-	int sel;
-	int new_sck;
+	rdsModule* module;
+	rdsService* service = g_Service;
 
-	sel = g_tcp_select2(g_listen_sck, g_sck);
+	module = (rdsModule*) service;
 
-	if (sel & 1)
+	if (module->hClientPipe)
 	{
-		new_sck = g_tcp_accept(g_listen_sck);
-
-		if (new_sck == -1)
+		if (WaitForSingleObject(module->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-		}
-		else
-		{
-			if (g_sck != 0)
-			{
-				/* should maybe ask is user wants to allow here with timeout */
-				rdpLog("replacing connection, already got a connection\n");
-				rdpup_disconnect();
-			}
-
-			rdpLog("got a connection\n");
-			g_sck = new_sck;
-			g_tcp_set_non_blocking(g_sck);
-			g_tcp_set_no_delay(g_sck);
-			g_connected = 1;
-			g_sck_closed = 0;
-			g_begin = 0;
-			g_con_number++;
-			g_rdpScreen.fbAttached = 0;
-			AddEnabledDevice(g_sck);
-		}
-	}
-
-	if (sel & 2)
-	{
-		int type = 0;
-
-		if (rdpup_recv_msg(g_in_s, &type) == 0)
-		{
-			rdpup_process_msg(g_in_s, type);
+			freerds_transport_receive(module);
 		}
 	}
 
