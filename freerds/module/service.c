@@ -39,7 +39,8 @@ void* freerds_service_client_thread(void* arg)
 	{
 		while (WaitForSingleObject(module->hClientPipe, INFINITE) == WAIT_OBJECT_0)
 		{
-			freerds_transport_receive(module);
+			if (freerds_transport_receive(module) < 0)
+				break;
 		}
 	}
 
@@ -74,6 +75,8 @@ void* freerds_service_listener_thread(void* arg)
 	}
 
 	WaitForSingleObject(service->ClientThread, INFINITE);
+
+	printf("Client Thread exited\n");
 
 	return NULL;
 }
@@ -124,6 +127,15 @@ rdsService* freerds_service_new(DWORD SessionId, const char* endpoint)
 		module->client = freerds_server_inbound_interface_new();
 		module->server = freerds_server_outbound_interface_new();
 
+		module->OutboundStream = Stream_New(NULL, 8192);
+		module->InboundStream = Stream_New(NULL, 8192);
+
+		module->InboundTotalLength = 0;
+		module->InboundTotalCount = 0;
+
+		module->OutboundTotalLength = 0;
+		module->OutboundTotalCount = 0;
+
 		service->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	}
 
@@ -138,6 +150,14 @@ void freerds_service_free(rdsService* service)
 
 	if (service)
 	{
+		SetEvent(service->StopEvent);
+
+		WaitForSingleObject(service->ServerThread, INFINITE);
+		CloseHandle(service->ServerThread);
+
+		Stream_Free(module->OutboundStream, TRUE);
+		Stream_Free(module->InboundStream, TRUE);
+
 		if (module->Endpoint)
 			free(module->Endpoint);
 

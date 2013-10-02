@@ -40,49 +40,61 @@
 
 int rds_client_synchronize_keyboard_event(rdsModule* module, DWORD flags)
 {
-	printf("RdsClientSynchronizeKeyboardEvent");
+	rdsContext* rds = ((rdsService*) module)->custom;
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientSynchronizeKeyboardEvent");
 	return 0;
 }
 
 int rds_client_scancode_keyboard_event(rdsModule* module, DWORD flags, DWORD code, DWORD keyboardType)
 {
-	printf("RdsClientScancodeKeyboardEvent");
+	rdsContext* rds = ((rdsService*) module)->custom;
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientScancodeKeyboardEvent");
 	return 0;
 }
 
 int rds_client_virtual_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
 {
-	printf("RdsClientVirtualKeyboardEvent");
+	rdsContext* rds = (rdsContext*) module;
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientVirtualKeyboardEvent");
 	return 0;
 }
 
 int rds_client_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
 {
-	printf("RdsClientUnicodeKeyboardEvent");
+	rdsContext* rds = ((rdsService*) module)->custom;
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientUnicodeKeyboardEvent");
 	return 0;
 }
 
 int rds_client_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
 {
-	printf("RdsClientMouseEvent");
+	rdsContext* rds = ((rdsService*) module)->custom;
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientMouseEvent");
 	return 0;
 }
 
 int rds_client_extended_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
 {
-	printf("RdsClientExtendedMouseEvent");
+	rdsContext* rds = ((rdsService*) module)->custom;
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientExtendedMouseEvent");
 	return 0;
 }
 
 int rds_service_accept(rdsService* service)
 {
-	printf("RdsServiceAccept\n");
+	rdsContext* rds = (rdsContext*) service->custom;
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsServiceAccept");
 	return 0;
 }
 
 void rds_begin_paint(rdpContext* context)
 {
+	rdsContext* rds;
 	rdpGdi* gdi = context->gdi;
+
+	rds = (rdsContext*) context;
+
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsBeginPaint");
 
 	gdi->primary->hdc->hwnd->invalid->null = 1;
 	gdi->primary->hdc->hwnd->ninvalid = 0;
@@ -97,7 +109,7 @@ void rds_end_paint(rdpContext* context)
 
 	rds = (rdsContext*) context;
 
-	printf("RdsPaint\n");
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsEndPaint");
 
 	invalid = gdi->primary->hdc->hwnd->invalid;
 	cinvalid = gdi->primary->hdc->hwnd->cinvalid;
@@ -105,17 +117,28 @@ void rds_end_paint(rdpContext* context)
 
 void rds_surface_frame_marker(rdpContext* context, SURFACE_FRAME_MARKER* surfaceFrameMarker)
 {
+	rdsContext* rds;
 
+	rds = (rdsContext*) context;
+
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsSurfaceFrameMarker");
 }
 
 void rds_OnConnectionResultEventHandler(rdpContext* context, ConnectionResultEventArgs* e)
 {
-	printf("OnConnectionResult: %d\n", e->result);
+	rdsContext* rds = (rdsContext*) context;
+
+	WLog_Print(rds->log, WLOG_DEBUG, "OnConnectionResult: %d", e->result);
 }
 
 BOOL rds_pre_connect(freerdp* instance)
 {
+	rdsContext* rds;
 	rdpContext* context = instance->context;
+
+	rds = (rdsContext*) context;
+
+	WLog_Print(rds->log, WLOG_DEBUG, "RdpPreConnect");
 
 	PubSub_SubscribeConnectionResult(context->pubSub,
 			(pConnectionResultEventHandler) rds_OnConnectionResultEventHandler);
@@ -142,6 +165,8 @@ BOOL rds_post_connect(freerdp* instance)
 
 	rds = (rdsContext*) instance->context;
 	settings = instance->settings;
+
+	WLog_Print(rds->log, WLOG_DEBUG, "RdpPostConnect");
 
 	flags = 0;
 	flags |= CLRCONV_ALPHA;
@@ -176,9 +201,16 @@ BOOL rds_post_connect(freerdp* instance)
 void* rds_update_thread(void* arg)
 {
 	int status;
+	rdsContext* rds;
 	wMessage message;
+	rdpContext* context;
 	wMessageQueue* queue;
 	freerdp* instance = (freerdp*) arg;
+
+	context = (rdpContext*) instance->context;
+	rds = (rdsContext*) context;
+
+	WLog_Print(rds->log, WLOG_DEBUG, "Starting update thread");
 
 	status = 1;
 	queue = freerdp_get_message_queue(instance, FREERDP_UPDATE_MESSAGE_QUEUE);
@@ -197,6 +229,8 @@ void* rds_update_thread(void* arg)
 			break;
 	}
 
+	WLog_Print(rds->log, WLOG_DEBUG, "Terminating update thread");
+
 	ExitThread(0);
 	return NULL;
 }
@@ -206,12 +240,18 @@ void* rds_client_thread(void* arg)
 	rdsContext* rds;
 	rdsModule* module;
 	rdpContext* context;
+	const char* endpoint = "RDP";
 	freerdp* instance = (freerdp*) arg;
 
 	context = (rdpContext*) instance->context;
 	rds = (rdsContext*) context;
 
-	rds->service = freerds_service_new(rds->SessionId, "RDP");
+	WLog_Print(rds->log, WLOG_DEBUG, "Starting client thread");
+
+	WLog_Print(rds->log, WLOG_DEBUG, "Creating service: SessionId: %d Endpoint: %s",
+			(int) rds->SessionId, endpoint);
+
+	rds->service = freerds_service_new(rds->SessionId, endpoint);
 
 	module = (rdsModule*) rds->service;
 
@@ -225,7 +265,11 @@ void* rds_client_thread(void* arg)
 	module->client->MouseEvent = rds_client_mouse_event;
 	module->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
 
+	WLog_Print(rds->log, WLOG_DEBUG, "Starting %s service", endpoint);
+
 	freerds_service_start(rds->service);
+
+	WLog_Print(rds->log, WLOG_DEBUG, "Initiating connection to RDP server");
 
 	freerdp_connect(instance);
 
@@ -241,6 +285,8 @@ void* rds_client_thread(void* arg)
 
 	CloseHandle(rds->UpdateThread);
 	freerdp_free(instance);
+
+	WLog_Print(rds->log, WLOG_DEBUG, "Terminating client thread");
 
 	ExitThread(0);
 	return NULL;
@@ -267,6 +313,8 @@ int rds_freerdp_client_start(rdpContext* context)
 
 	rds = (rdsContext*) context;
 
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsRdpClientStart");
+
 	rds->thread = CreateThread(NULL, 0,
 			(LPTHREAD_START_ROUTINE) rds_client_thread,
 			instance, 0, NULL);
@@ -280,6 +328,9 @@ int rds_freerdp_client_stop(rdpContext* context)
 	wMessageQueue* queue;
 
 	rds = (rdsContext*) context;
+
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsRdpClientStop");
+
 	queue = freerdp_get_message_queue(context->instance, FREERDP_UPDATE_MESSAGE_QUEUE);
 
 	MessageQueue_PostQuit(queue, 0);
@@ -302,7 +353,16 @@ int rds_freerdp_client_new(freerdp* instance, rdpContext* context)
 	rdsContext* rds;
 	rdpSettings* settings;
 
+	WLog_Init();
+
 	rds = (rdsContext*) instance->context;
+
+	rds->log = WLog_Get("com.freerds.module.rdp.service");
+	WLog_OpenAppender(rds->log);
+
+	WLog_SetLogLevel(rds->log, WLOG_DEBUG);
+
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsRdpClientNew");
 
 	instance->PreConnect = rds_pre_connect;
 	instance->PostConnect = rds_post_connect;
@@ -359,11 +419,15 @@ void rds_freerdp_client_free(freerdp* instance, rdpContext* context)
 
 	rds = (rdsContext*) instance->context;
 
+	WLog_Print(rds->log, WLOG_DEBUG, "RdsRdpClientFree");
+
 	if (rds->service)
 	{
 		freerds_service_free(rds->service);
 		rds->service = NULL;
 	}
+
+	WLog_Uninit();
 }
 
 int RDS_RdpClientEntry(RDP_CLIENT_ENTRY_POINTS* pEntryPoints)

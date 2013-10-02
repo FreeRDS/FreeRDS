@@ -22,6 +22,11 @@
 #endif
 
 #include <winpr/crt.h>
+#include <winpr/wlog.h>
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include <freerds/freerds.h>
 
@@ -31,6 +36,7 @@ struct rds_module_rdp
 {
 	rdsConnector connector;
 
+	wLog* log;
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 };
@@ -38,12 +44,31 @@ typedef struct rds_module_rdp rdsModuleRdp;
 
 int rdp_rds_module_new(rdsModule* module)
 {
+	rdsModuleRdp* rdp;
+
+	WLog_Init();
+
+	rdp = (rdsModuleRdp*) module;
+
+	rdp->log = WLog_Get("com.freerds.module.rdp.connector");
+	WLog_OpenAppender(rdp->log);
+
+	WLog_SetLogLevel(rdp->log, WLOG_DEBUG);
+
+	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleNew");
+
 	return 0;
 }
 
 void rdp_rds_module_free(rdsModule* module)
 {
+	rdsModuleRdp* rdp;
 
+	rdp = (rdsModuleRdp*) module;
+
+	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleFree");
+
+	WLog_Uninit();
 }
 
 int rdp_rds_module_start(rdsModule* module)
@@ -53,13 +78,17 @@ int rdp_rds_module_start(rdsModule* module)
 	rdpSettings* settings;
 	rdsConnector* connector;
 	char lpCommandLine[256];
+	const char* endpoint = "RDP";
 
 	rdp = (rdsModuleRdp*) module;
 	connector = (rdsConnector*) module;
 
+	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
+			(int) module->SessionId, endpoint);
+
 	settings = connector->settings;
 
-	freerds_named_pipe_clean(module->SessionId, "RDP");
+	freerds_named_pipe_clean(module->SessionId, endpoint);
 
 	ZeroMemory(&(rdp->si), sizeof(STARTUPINFO));
 	rdp->si.cb = sizeof(STARTUPINFO);
@@ -68,22 +97,34 @@ int rdp_rds_module_start(rdsModule* module)
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /session-id:%d /size:%dx%d",
 			"freerds-rdp", (int) module->SessionId, settings->DesktopWidth, settings->DesktopHeight);
 
+	WLog_Print(rdp->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
+
 	status = CreateProcessA(NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, NULL, NULL,
 			&(rdp->si), &(rdp->pi));
 
-	printf("Process started: %d\n", status);
+	WLog_Print(rdp->log, WLOG_DEBUG, "Process created with status: %d", status);
 
 	module->hClientPipe = freerds_named_pipe_connect(module->SessionId, "RDP", 5 * 1000);
+
+	if (!module->hClientPipe)
+	{
+		WLog_Print(rdp->log, WLOG_ERROR, "Failed to connect to service");
+		return -1;
+	}
 
 	return 0;
 }
 
 int rdp_rds_module_stop(rdsModule* module)
 {
+	rdsModuleRdp* rdp;
 	rdsConnector* connector;
 
+	rdp = (rdsModuleRdp*) module;
 	connector = (rdsConnector*) module;
+
+	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStop");
 
 	SetEvent(connector->StopEvent);
 

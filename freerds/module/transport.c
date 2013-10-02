@@ -27,6 +27,7 @@
 #include <winpr/file.h>
 #include <winpr/pipe.h>
 #include <winpr/path.h>
+#include <winpr/thread.h>
 
 #include "transport.h"
 
@@ -39,6 +40,9 @@ int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length)
 	NumberOfBytesRead = 0;
 
 	fSuccess = ReadFile(hNamedPipe, data, length, &NumberOfBytesRead, NULL);
+
+	printf("freerds_named_pipe_read: length: %d NumberOfBytesRead: %d fSuccess: %d pid: %d\n",
+			length, NumberOfBytesRead, fSuccess, (int) GetCurrentProcessId());
 
 	if (!fSuccess || (NumberOfBytesRead == 0))
 	{
@@ -161,7 +165,7 @@ HANDLE freerds_named_pipe_accept(HANDLE hServerPipe)
 
 	hClientPipe = hServerPipe;
 
-	dwPipeMode = PIPE_WAIT;
+	dwPipeMode = PIPE_NOWAIT;
 	SetNamedPipeHandleState(hClientPipe, &dwPipeMode, NULL, NULL);
 
 	return hClientPipe;
@@ -441,6 +445,9 @@ int freerds_transport_receive(rdsModule* module)
 	{
 		status = freerds_named_pipe_read(module->hClientPipe, Stream_Pointer(s), 8 - Stream_GetPosition(s));
 
+		if (status < 0)
+			return -1;
+
 		if (status > 0)
 			Stream_Seek(s, status);
 
@@ -462,6 +469,9 @@ int freerds_transport_receive(rdsModule* module)
 	{
 		status = freerds_named_pipe_read(module->hClientPipe, Stream_Pointer(s),
 				module->InboundTotalLength - Stream_GetPosition(s));
+
+		if (status < 0)
+			return -1;
 
 		if (status > 0)
 			Stream_Seek(s, status);

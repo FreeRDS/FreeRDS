@@ -30,12 +30,16 @@
 
 void rds_OnChannelConnectedEventHandler(rdpContext* context, ChannelConnectedEventArgs* e)
 {
+	rdsContext* rds = (rdsContext*) context;
 
+	WLog_Print(rds->log, WLOG_DEBUG, "OnChannelConnected: %s", e->name);
 }
 
 void rds_OnChannelDisconnectedEventHandler(rdpContext* context, ChannelDisconnectedEventArgs* e)
 {
+	rdsContext* rds = (rdsContext*) context;
 
+	WLog_Print(rds->log, WLOG_DEBUG, "OnChannelDisconnected: %s", e->name);
 }
 
 void rds_process_channel_event(rdpChannels* channels, freerdp* instance)
