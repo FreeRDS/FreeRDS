@@ -1,7 +1,7 @@
 #include "Call.h"
 #include <string>
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 		namespace call{
 

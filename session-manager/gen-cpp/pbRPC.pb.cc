@@ -13,15 +13,15 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 
-namespace freeRDS {
-namespace pbRPC {
+namespace freerds {
+namespace pbrpc {
 
 namespace {
 
 const ::google::protobuf::Descriptor* RPCBase_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   RPCBase_reflection_ = NULL;
-const ::google::protobuf::EnumDescriptor* RPCBase_RPCStatus_descriptor_ = NULL;
+const ::google::protobuf::EnumDescriptor* RPCBase_RPCSTATUS_descriptor_ = NULL;
 
 }  // namespace
 
@@ -51,7 +51,7 @@ void protobuf_AssignDesc_pbRPC_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(RPCBase));
-  RPCBase_RPCStatus_descriptor_ = RPCBase_descriptor_->enum_type(0);
+  RPCBase_RPCSTATUS_descriptor_ = RPCBase_descriptor_->enum_type(0);
 }
 
 namespace {
@@ -82,11 +82,11 @@ void protobuf_AddDesc_pbRPC_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\013pbRPC.proto\022\rfreeRDS.pbRPC\"\302\001\n\007RPCBase"
-    "\022\013\n\003Tag\030\001 \002(\r\022\031\n\nisResponse\030\002 \002(\010:\005false"
-    "\0229\n\006status\030\003 \002(\0162 .freeRDS.pbRPC.RPCBase"
-    ".RPCStatus:\007SUCCESS\022\017\n\007msgType\030\004 \002(\r\022\017\n\007"
-    "payload\030\005 \002(\014\"2\n\tRPCStatus\022\013\n\007SUCCESS\020\000\022"
+    "\n\013pbRPC.proto\022\rfreerds.pbrpc\"\302\001\n\007RPCBase"
+    "\022\013\n\003tag\030\001 \002(\r\022\031\n\nisResponse\030\002 \002(\010:\005false"
+    "\0229\n\006status\030\003 \002(\0162 .freerds.pbrpc.RPCBase"
+    ".RPCSTATUS:\007SUCCESS\022\017\n\007msgType\030\004 \002(\r\022\017\n\007"
+    "payload\030\005 \002(\014\"2\n\tRPCSTATUS\022\013\n\007SUCCESS\020\000\022"
     "\n\n\006FAILED\020\001\022\014\n\010NOTFOUND\020\002", 225);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "pbRPC.proto", &protobuf_RegisterTypes);
@@ -105,11 +105,11 @@ struct StaticDescriptorInitializer_pbRPC_2eproto {
 
 // ===================================================================
 
-const ::google::protobuf::EnumDescriptor* RPCBase_RPCStatus_descriptor() {
+const ::google::protobuf::EnumDescriptor* RPCBase_RPCSTATUS_descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return RPCBase_RPCStatus_descriptor_;
+  return RPCBase_RPCSTATUS_descriptor_;
 }
-bool RPCBase_RPCStatus_IsValid(int value) {
+bool RPCBase_RPCSTATUS_IsValid(int value) {
   switch(value) {
     case 0:
     case 1:
@@ -121,12 +121,12 @@ bool RPCBase_RPCStatus_IsValid(int value) {
 }
 
 #ifndef _MSC_VER
-const RPCBase_RPCStatus RPCBase::SUCCESS;
-const RPCBase_RPCStatus RPCBase::FAILED;
-const RPCBase_RPCStatus RPCBase::NOTFOUND;
-const RPCBase_RPCStatus RPCBase::RPCStatus_MIN;
-const RPCBase_RPCStatus RPCBase::RPCStatus_MAX;
-const int RPCBase::RPCStatus_ARRAYSIZE;
+const RPCBase_RPCSTATUS RPCBase::SUCCESS;
+const RPCBase_RPCSTATUS RPCBase::FAILED;
+const RPCBase_RPCSTATUS RPCBase::NOTFOUND;
+const RPCBase_RPCSTATUS RPCBase::RPCSTATUS_MIN;
+const RPCBase_RPCSTATUS RPCBase::RPCSTATUS_MAX;
+const int RPCBase::RPCSTATUS_ARRAYSIZE;
 #endif  // _MSC_VER
 #ifndef _MSC_VER
 const int RPCBase::kTagFieldNumber;
@@ -214,7 +214,7 @@ bool RPCBase::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required uint32 Tag = 1;
+      // required uint32 tag = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -245,7 +245,7 @@ bool RPCBase::MergePartialFromCodedStream(
         break;
       }
       
-      // required .freeRDS.pbRPC.RPCBase.RPCStatus status = 3 [default = SUCCESS];
+      // required .freerds.pbrpc.RPCBase.RPCSTATUS status = 3 [default = SUCCESS];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -254,8 +254,8 @@ bool RPCBase::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
-          if (::freeRDS::pbRPC::RPCBase_RPCStatus_IsValid(value)) {
-            set_status(static_cast< ::freeRDS::pbRPC::RPCBase_RPCStatus >(value));
+          if (::freerds::pbrpc::RPCBase_RPCSTATUS_IsValid(value)) {
+            set_status(static_cast< ::freerds::pbrpc::RPCBase_RPCSTATUS >(value));
           } else {
             mutable_unknown_fields()->AddVarint(3, value);
           }
@@ -314,7 +314,7 @@ bool RPCBase::MergePartialFromCodedStream(
 
 void RPCBase::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // required uint32 Tag = 1;
+  // required uint32 tag = 1;
   if (has_tag()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->tag(), output);
   }
@@ -324,7 +324,7 @@ void RPCBase::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->isresponse(), output);
   }
   
-  // required .freeRDS.pbRPC.RPCBase.RPCStatus status = 3 [default = SUCCESS];
+  // required .freerds.pbrpc.RPCBase.RPCSTATUS status = 3 [default = SUCCESS];
   if (has_status()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       3, this->status(), output);
@@ -349,7 +349,7 @@ void RPCBase::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* RPCBase::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // required uint32 Tag = 1;
+  // required uint32 tag = 1;
   if (has_tag()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->tag(), target);
   }
@@ -359,7 +359,7 @@ void RPCBase::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->isresponse(), target);
   }
   
-  // required .freeRDS.pbRPC.RPCBase.RPCStatus status = 3 [default = SUCCESS];
+  // required .freerds.pbrpc.RPCBase.RPCSTATUS status = 3 [default = SUCCESS];
   if (has_status()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       3, this->status(), target);
@@ -388,7 +388,7 @@ int RPCBase::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required uint32 Tag = 1;
+    // required uint32 tag = 1;
     if (has_tag()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
@@ -400,7 +400,7 @@ int RPCBase::ByteSize() const {
       total_size += 1 + 1;
     }
     
-    // required .freeRDS.pbRPC.RPCBase.RPCStatus status = 3 [default = SUCCESS];
+    // required .freerds.pbrpc.RPCBase.RPCSTATUS status = 3 [default = SUCCESS];
     if (has_status()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
@@ -508,7 +508,7 @@ void RPCBase::Swap(RPCBase* other) {
 
 // @@protoc_insertion_point(namespace_scope)
 
-}  // namespace pbRPC
-}  // namespace freeRDS
+}  // namespace pbrpc
+}  // namespace freerds
 
 // @@protoc_insertion_point(global_scope)

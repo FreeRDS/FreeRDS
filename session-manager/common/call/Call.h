@@ -5,7 +5,7 @@
 #include <string>
 #include <stdint.h>
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 		namespace call{
 			class Call{
@@ -43,6 +43,6 @@ namespace freeRDS{
 	}
 }
 
-namespace callNS = freeRDS::sessionmanager::call;
+namespace callNS = freerds::sessionmanager::call;
 
 #endif

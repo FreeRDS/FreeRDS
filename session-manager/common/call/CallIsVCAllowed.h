@@ -6,7 +6,7 @@
 #include "Call.h"
 
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 		namespace call{
 			class CallIsVCAllowed: public Call{
@@ -31,6 +31,6 @@ namespace freeRDS{
 	}
 }
 
-namespace callNS = freeRDS::sessionmanager::call;
+namespace callNS = freerds::sessionmanager::call;
 
 #endif

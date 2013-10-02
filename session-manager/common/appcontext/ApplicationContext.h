@@ -3,10 +3,11 @@
 
 #include <utils/SingletonBase.h>
 #include <session/SessionStore.h>
+#include <pbRPC/RpcEngine.h>
 
-#define APP_CONTEXT freeRDS::sessionmanager::ApplicationContextSessionManager::instance()
+#define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 
 
@@ -14,14 +15,17 @@ namespace freeRDS{
 		{
 		public:
 			sessionNS::SessionStore * getSessionStore();
+			int startRPCEngine();
+			int stopRPCEngine();
 		private:
 			sessionNS::SessionStore mSessionStore;
+			pbRPC::RpcEngine mRpcEngine;
 			SINGLETON_ADD_INITIALISATION(ApplicationContext)
 		};
 	
 	} // namespace freeRDS end
 } // namespace sessionmanager end
 
-namespace appNS = freeRDS::sessionmanager;
+namespace appNS = freerds::sessionmanager;
 
 #endif

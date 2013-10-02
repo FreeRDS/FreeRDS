@@ -1,6 +1,6 @@
-package freeRDS.icp;
+package freerds.icp;
 
-enum MsgType {
+enum MSGTYPE {
 	IsChannelAllowed = 1;
 }
 

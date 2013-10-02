@@ -1,10 +1,10 @@
 #include "CallIsVCAllowed.h"
 #include <ICP.pb.h>
 
-using freeRDS::icp::IsChannelAllowedRequest;
-using freeRDS::icp::IsChannelAllowedResponse;
+using freerds::icp::IsChannelAllowedRequest;
+using freerds::icp::IsChannelAllowedResponse;
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 		namespace call{
 

@@ -3,7 +3,7 @@
 
 #include <config.h>
 
-namespace freeRDS{
+namespace freerds{
 	namespace sessionmanager{
 		namespace session{
 
@@ -17,6 +17,6 @@ namespace freeRDS{
 	}
 }
 
-namespace sessionNS = freeRDS::sessionmanager::session;
+namespace sessionNS = freerds::sessionmanager::session;
 
 #endif

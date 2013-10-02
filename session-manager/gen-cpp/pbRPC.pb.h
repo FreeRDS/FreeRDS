@@ -25,8 +25,8 @@
 #include <google/protobuf/generated_message_reflection.h>
 // @@protoc_insertion_point(includes)
 
-namespace freeRDS {
-namespace pbRPC {
+namespace freerds {
+namespace pbrpc {
 
 // Internal implementation detail -- do not call these.
 void  protobuf_AddDesc_pbRPC_2eproto();
@@ -35,25 +35,25 @@ void protobuf_ShutdownFile_pbRPC_2eproto();
 
 class RPCBase;
 
-enum RPCBase_RPCStatus {
-  RPCBase_RPCStatus_SUCCESS = 0,
-  RPCBase_RPCStatus_FAILED = 1,
-  RPCBase_RPCStatus_NOTFOUND = 2
+enum RPCBase_RPCSTATUS {
+  RPCBase_RPCSTATUS_SUCCESS = 0,
+  RPCBase_RPCSTATUS_FAILED = 1,
+  RPCBase_RPCSTATUS_NOTFOUND = 2
 };
-bool RPCBase_RPCStatus_IsValid(int value);
-const RPCBase_RPCStatus RPCBase_RPCStatus_RPCStatus_MIN = RPCBase_RPCStatus_SUCCESS;
-const RPCBase_RPCStatus RPCBase_RPCStatus_RPCStatus_MAX = RPCBase_RPCStatus_NOTFOUND;
-const int RPCBase_RPCStatus_RPCStatus_ARRAYSIZE = RPCBase_RPCStatus_RPCStatus_MAX + 1;
+bool RPCBase_RPCSTATUS_IsValid(int value);
+const RPCBase_RPCSTATUS RPCBase_RPCSTATUS_RPCSTATUS_MIN = RPCBase_RPCSTATUS_SUCCESS;
+const RPCBase_RPCSTATUS RPCBase_RPCSTATUS_RPCSTATUS_MAX = RPCBase_RPCSTATUS_NOTFOUND;
+const int RPCBase_RPCSTATUS_RPCSTATUS_ARRAYSIZE = RPCBase_RPCSTATUS_RPCSTATUS_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* RPCBase_RPCStatus_descriptor();
-inline const ::std::string& RPCBase_RPCStatus_Name(RPCBase_RPCStatus value) {
+const ::google::protobuf::EnumDescriptor* RPCBase_RPCSTATUS_descriptor();
+inline const ::std::string& RPCBase_RPCSTATUS_Name(RPCBase_RPCSTATUS value) {
   return ::google::protobuf::internal::NameOfEnum(
-    RPCBase_RPCStatus_descriptor(), value);
+    RPCBase_RPCSTATUS_descriptor(), value);
 }
-inline bool RPCBase_RPCStatus_Parse(
-    const ::std::string& name, RPCBase_RPCStatus* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<RPCBase_RPCStatus>(
-    RPCBase_RPCStatus_descriptor(), name, value);
+inline bool RPCBase_RPCSTATUS_Parse(
+    const ::std::string& name, RPCBase_RPCSTATUS* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<RPCBase_RPCSTATUS>(
+    RPCBase_RPCSTATUS_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -109,34 +109,34 @@ class RPCBase : public ::google::protobuf::Message {
   
   // nested types ----------------------------------------------------
   
-  typedef RPCBase_RPCStatus RPCStatus;
-  static const RPCStatus SUCCESS = RPCBase_RPCStatus_SUCCESS;
-  static const RPCStatus FAILED = RPCBase_RPCStatus_FAILED;
-  static const RPCStatus NOTFOUND = RPCBase_RPCStatus_NOTFOUND;
-  static inline bool RPCStatus_IsValid(int value) {
-    return RPCBase_RPCStatus_IsValid(value);
+  typedef RPCBase_RPCSTATUS RPCSTATUS;
+  static const RPCSTATUS SUCCESS = RPCBase_RPCSTATUS_SUCCESS;
+  static const RPCSTATUS FAILED = RPCBase_RPCSTATUS_FAILED;
+  static const RPCSTATUS NOTFOUND = RPCBase_RPCSTATUS_NOTFOUND;
+  static inline bool RPCSTATUS_IsValid(int value) {
+    return RPCBase_RPCSTATUS_IsValid(value);
   }
-  static const RPCStatus RPCStatus_MIN =
-    RPCBase_RPCStatus_RPCStatus_MIN;
-  static const RPCStatus RPCStatus_MAX =
-    RPCBase_RPCStatus_RPCStatus_MAX;
-  static const int RPCStatus_ARRAYSIZE =
-    RPCBase_RPCStatus_RPCStatus_ARRAYSIZE;
+  static const RPCSTATUS RPCSTATUS_MIN =
+    RPCBase_RPCSTATUS_RPCSTATUS_MIN;
+  static const RPCSTATUS RPCSTATUS_MAX =
+    RPCBase_RPCSTATUS_RPCSTATUS_MAX;
+  static const int RPCSTATUS_ARRAYSIZE =
+    RPCBase_RPCSTATUS_RPCSTATUS_ARRAYSIZE;
   static inline const ::google::protobuf::EnumDescriptor*
-  RPCStatus_descriptor() {
-    return RPCBase_RPCStatus_descriptor();
+  RPCSTATUS_descriptor() {
+    return RPCBase_RPCSTATUS_descriptor();
   }
-  static inline const ::std::string& RPCStatus_Name(RPCStatus value) {
-    return RPCBase_RPCStatus_Name(value);
+  static inline const ::std::string& RPCSTATUS_Name(RPCSTATUS value) {
+    return RPCBase_RPCSTATUS_Name(value);
   }
-  static inline bool RPCStatus_Parse(const ::std::string& name,
-      RPCStatus* value) {
-    return RPCBase_RPCStatus_Parse(name, value);
+  static inline bool RPCSTATUS_Parse(const ::std::string& name,
+      RPCSTATUS* value) {
+    return RPCBase_RPCSTATUS_Parse(name, value);
   }
   
   // accessors -------------------------------------------------------
   
-  // required uint32 Tag = 1;
+  // required uint32 tag = 1;
   inline bool has_tag() const;
   inline void clear_tag();
   static const int kTagFieldNumber = 1;
@@ -150,12 +150,12 @@ class RPCBase : public ::google::protobuf::Message {
   inline bool isresponse() const;
   inline void set_isresponse(bool value);
   
-  // required .freeRDS.pbRPC.RPCBase.RPCStatus status = 3 [default = SUCCESS];
+  // required .freerds.pbrpc.RPCBase.RPCSTATUS status = 3 [default = SUCCESS];
   inline bool has_status() const;
   inline void clear_status();
   static const int kStatusFieldNumber = 3;
-  inline ::freeRDS::pbRPC::RPCBase_RPCStatus status() const;
-  inline void set_status(::freeRDS::pbRPC::RPCBase_RPCStatus value);
+  inline ::freerds::pbrpc::RPCBase_RPCSTATUS status() const;
+  inline void set_status(::freerds::pbrpc::RPCBase_RPCSTATUS value);
   
   // required uint32 msgType = 4;
   inline bool has_msgtype() const;
@@ -175,7 +175,7 @@ class RPCBase : public ::google::protobuf::Message {
   inline ::std::string* mutable_payload();
   inline ::std::string* release_payload();
   
-  // @@protoc_insertion_point(class_scope:freeRDS.pbRPC.RPCBase)
+  // @@protoc_insertion_point(class_scope:freerds.pbrpc.RPCBase)
  private:
   inline void set_has_tag();
   inline void clear_has_tag();
@@ -213,7 +213,7 @@ class RPCBase : public ::google::protobuf::Message {
 
 // RPCBase
 
-// required uint32 Tag = 1;
+// required uint32 tag = 1;
 inline bool RPCBase::has_tag() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -257,7 +257,7 @@ inline void RPCBase::set_isresponse(bool value) {
   isresponse_ = value;
 }
 
-// required .freeRDS.pbRPC.RPCBase.RPCStatus status = 3 [default = SUCCESS];
+// required .freerds.pbrpc.RPCBase.RPCSTATUS status = 3 [default = SUCCESS];
 inline bool RPCBase::has_status() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -271,11 +271,11 @@ inline void RPCBase::clear_status() {
   status_ = 0;
   clear_has_status();
 }
-inline ::freeRDS::pbRPC::RPCBase_RPCStatus RPCBase::status() const {
-  return static_cast< ::freeRDS::pbRPC::RPCBase_RPCStatus >(status_);
+inline ::freerds::pbrpc::RPCBase_RPCSTATUS RPCBase::status() const {
+  return static_cast< ::freerds::pbrpc::RPCBase_RPCSTATUS >(status_);
 }
-inline void RPCBase::set_status(::freeRDS::pbRPC::RPCBase_RPCStatus value) {
-  GOOGLE_DCHECK(::freeRDS::pbRPC::RPCBase_RPCStatus_IsValid(value));
+inline void RPCBase::set_status(::freerds::pbrpc::RPCBase_RPCSTATUS value) {
+  GOOGLE_DCHECK(::freerds::pbrpc::RPCBase_RPCSTATUS_IsValid(value));
   set_has_status();
   status_ = value;
 }
@@ -363,16 +363,16 @@ inline ::std::string* RPCBase::release_payload() {
 
 // @@protoc_insertion_point(namespace_scope)
 
-}  // namespace pbRPC
-}  // namespace freeRDS
+}  // namespace pbrpc
+}  // namespace freerds
 
 #ifndef SWIG
 namespace google {
 namespace protobuf {
 
 template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::freeRDS::pbRPC::RPCBase_RPCStatus>() {
-  return ::freeRDS::pbRPC::RPCBase_RPCStatus_descriptor();
+inline const EnumDescriptor* GetEnumDescriptor< ::freerds::pbrpc::RPCBase_RPCSTATUS>() {
+  return ::freerds::pbrpc::RPCBase_RPCSTATUS_descriptor();
 }
 
 }  // namespace google

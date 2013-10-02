@@ -4,11 +4,16 @@
 #include <winpr/thread.h>
 #include <call/CallFactory.h>
 
-namespace freeRDS {
-namespace pbRPC {
+namespace freerds {
+namespace pbrpc {
+
+#define CLIENT_DISCONNECTED 2
+#define CLIENT_ERROR -1
+#define CLIENT_SUCCESS 0
 
 RpcEngine::RpcEngine() :
 		mHasHeaders(false), mHeaderRead(0), mPayloadRead(0) {
+	mhStopEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
 }
 RpcEngine::~RpcEngine() {
 
@@ -34,7 +39,7 @@ int RpcEngine::startEngine() {
 	mhServerPipe = createServerPipe("\\\\.\\pipe\\FreeRDS_SessionManager");
 
 	if (!mhServerPipe)
-		return -1;
+		return CLIENT_ERROR;
 
 	mhServerThread = CreateThread(NULL, 0,
 			(LPTHREAD_START_ROUTINE) RpcEngine::listenerThread, (void*) this,
@@ -42,7 +47,16 @@ int RpcEngine::startEngine() {
 
 	ResumeThread(mhServerThread);
 
-	return 0;
+	return CLIENT_SUCCESS;
+}
+
+int RpcEngine::stopEngine() {
+	if (mhServerThread) {
+		SetEvent(mhStopEvent);
+		WaitForSingleObject(mhServerThread,INFINITE);
+		mhServerThread = NULL;
+	}
+	return CLIENT_SUCCESS;
 }
 
 void* RpcEngine::listenerThread(void* arg) {
@@ -68,24 +82,41 @@ HANDLE RpcEngine::acceptClient() {
 	if (!mhServerPipe) {
 		return NULL;
 	}
-	BOOL fConnected;
-	DWORD dwPipeMode;
+	DWORD status;
+	DWORD nCount;
+	HANDLE events[2];
 
-	fConnected = ConnectNamedPipe(mhServerPipe, NULL);
+	nCount = 0;
+	events[nCount++] = mhStopEvent;
+	events[nCount++] = mhServerPipe;
 
-	if (!fConnected)
-		fConnected = (GetLastError() == ERROR_PIPE_CONNECTED);
+	status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-	if (!fConnected) {
+	if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0) {
 		return NULL;
 	}
+	if (WaitForSingleObject(mhServerPipe, 0) == WAIT_OBJECT_0) {
+		BOOL fConnected;
+		DWORD dwPipeMode;
 
-	mhClientPipe = mhServerPipe;
+		fConnected = ConnectNamedPipe(mhServerPipe, NULL);
 
-	dwPipeMode = PIPE_WAIT;
-	SetNamedPipeHandleState(mhClientPipe, &dwPipeMode, NULL, NULL);
+		if (!fConnected)
+			fConnected = (GetLastError() == ERROR_PIPE_CONNECTED);
 
-	return mhClientPipe;
+		if (!fConnected) {
+			return NULL;
+		}
+
+		mhClientPipe = mhServerPipe;
+
+		dwPipeMode = PIPE_WAIT;
+		SetNamedPipeHandleState(mhClientPipe, &dwPipeMode, NULL, NULL);
+
+		return mhClientPipe;
+	}
+	return NULL;
+
 }
 
 int RpcEngine::read() {
@@ -106,14 +137,14 @@ int RpcEngine::readHeader() {
 
 	if (!fSuccess || (lpNumberOfBytesRead == 0)) {
 		printf("Server NamedPipe readHeader failure\n");
-		return -1;
+		return CLIENT_DISCONNECTED;
 	}
 
 	mHeaderRead += lpNumberOfBytesRead;
 	if (mHeaderRead == 4) {
 		mHasHeaders = true;
 	}
-	return 0;
+	return CLIENT_SUCCESS;
 }
 
 int RpcEngine::readPayload() {
@@ -127,11 +158,11 @@ int RpcEngine::readPayload() {
 
 	if (!fSuccess || (lpNumberOfBytesRead == 0)) {
 		printf("Server NamedPipe readPayload failure\n");
-		return -1;
+		return CLIENT_DISCONNECTED;
 	}
 
 	mPayloadRead += lpNumberOfBytesRead;
-	return 0;
+	return CLIENT_SUCCESS;
 }
 
 int RpcEngine::processData() {
@@ -162,7 +193,7 @@ int RpcEngine::processData() {
 	}
 }
 
-int RpcEngine::send(freeRDS::sessionmanager::call::Call * call) {
+int RpcEngine::send(freerds::sessionmanager::call::Call * call) {
 
 	DWORD lpNumberOfBytesWritten;
 	std::string serialized;
@@ -173,9 +204,9 @@ int RpcEngine::send(freeRDS::sessionmanager::call::Call * call) {
 	mpbRPC.set_tag(call->getTag());
 	mpbRPC.set_msgtype(call->getCallType());
 	if (call->getResult()) {
-		mpbRPC.set_status(RPCBase_RPCStatus_FAILED);
+		mpbRPC.set_status(RPCBase_RPCSTATUS_FAILED);
 	} else {
-		mpbRPC.set_status(RPCBase_RPCStatus_SUCCESS);
+		mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
 		mpbRPC.set_payload(call->getEncodedResponse());
 	}
 
@@ -186,7 +217,7 @@ int RpcEngine::send(freeRDS::sessionmanager::call::Call * call) {
 
 	if (!fSuccess || (lpNumberOfBytesWritten == 0)) {
 		printf("Server NamedPipe send failure\n");
-		return -1;
+		return CLIENT_ERROR;
 	}
 
 }
@@ -200,7 +231,7 @@ int RpcEngine::sendError(uint32_t callID, uint32_t callType) {
 	mpbRPC.set_isresponse(true);
 	mpbRPC.set_tag(callID);
 	mpbRPC.set_msgtype(callType);
-	mpbRPC.set_status(RPCBase_RPCStatus_NOTFOUND);
+	mpbRPC.set_status(RPCBase_RPCSTATUS_NOTFOUND);
 
 	mpbRPC.SerializeToString(&serialized);
 
@@ -230,6 +261,7 @@ int RpcEngine::serveClient() {
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
 		if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0) {
+			retValue = CLIENT_ERROR;
 			break;
 		}
 
