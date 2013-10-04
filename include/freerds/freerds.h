@@ -19,14 +19,15 @@
 #ifndef FREERDS_H
 #define FREERDS_H
 
+#include <winpr/crt.h>
+#include <winpr/synch.h>
+#include <winpr/stream.h>
+#include <winpr/collections.h>
+
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
 
 #include <freerdp/gdi/gdi.h>
-
-#include <winpr/crt.h>
-#include <winpr/synch.h>
-#include <winpr/stream.h>
 
 typedef struct rds_module rdsModule;
 
@@ -693,11 +694,11 @@ FREERDP_API void xrdp_server_message_free(RDS_MSG_COMMON* msg);
  * New Clean Module Interface API
  */
 
-FREERDP_API rdsClientInterface* freerds_client_outbound_interface_new();
-FREERDP_API rdsServerInterface* freerds_server_outbound_interface_new();
+FREERDP_API rdsClientInterface* freerds_client_outbound_interface_new(void);
+FREERDP_API rdsServerInterface* freerds_server_outbound_interface_new(void);
 
-FREERDP_API rdsServerInterface* freerds_client_inbound_interface_new();
-FREERDP_API rdsClientInterface* freerds_server_inbound_interface_new();
+FREERDP_API rdsServerInterface* freerds_client_inbound_interface_new(void);
+FREERDP_API rdsClientInterface* freerds_server_inbound_interface_new(void);
 
 FREERDP_API int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length);
 FREERDP_API int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length);
