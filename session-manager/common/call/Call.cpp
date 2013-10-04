@@ -1,5 +1,6 @@
 #include "Call.h"
 #include <string>
+#include <winpr/handle.h>
 
 namespace freerds{
 	namespace sessionmanager{
@@ -10,16 +11,7 @@ namespace freerds{
 		};
 
 		Call::~Call() {
-
 		};
-
-		void Call::setEncodedRequest(std::string encodedRequest) {
-				mEncodedRequest = encodedRequest;
-		}
-
-		std::string Call::getEncodedResponse() {
-			return mEncodedResponse;
-		}
 
 		void Call::setTag(uint32_t tag) {
 			mTag = 0;
@@ -36,7 +28,6 @@ namespace freerds{
 		std::string Call::getErrorDescription() {
 			return mErrorDescription;
 		}
-
 
 		}
 	}

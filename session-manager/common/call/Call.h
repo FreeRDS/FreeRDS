@@ -4,6 +4,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <winpr/synch.h>
 
 namespace freerds{
 	namespace sessionmanager{
@@ -15,14 +16,7 @@ namespace freerds{
 				virtual ~Call();
 
 				virtual unsigned long getCallType() = 0;
-
-				virtual int decodeRequest() = 0;
-				virtual int encodeResponse() = 0;
-
-				virtual int doStuff() = 0;
-
-				void setEncodedRequest(std::string encodedRequest);
-				std::string getEncodedResponse();
+				virtual unsigned long getDerivedType() = 0;
 
 				void setTag(uint32_t tag);
 				uint32_t getTag();
@@ -39,8 +33,6 @@ namespace freerds{
 				uint32_t mResult;
 				// this is used if result ist not 0
 				std::string mErrorDescription;
-
-
 			};
 		}
 	}

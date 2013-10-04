@@ -37,7 +37,7 @@ namespace freerds{
 			IsChannelAllowedResponse resp;
 			resp.set_channelallowed(mVirtualChannelAllowed);
 
-			if (resp.SerializeToString(&mEncodedResponse)) {
+			if (!resp.SerializeToString(&mEncodedResponse)) {
 				// failed to serialize
 				mResult = 1;
 				return -1;

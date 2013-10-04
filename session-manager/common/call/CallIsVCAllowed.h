@@ -3,13 +3,13 @@
 #define CALL_IS_VIRTUAL_CHANNEL_ALLOWED_H_
 #include "CallFactory.h"
 #include <string>
-#include "Call.h"
+#include "CallIn.h"
 
 
 namespace freerds{
 	namespace sessionmanager{
 		namespace call{
-			class CallIsVCAllowed: public Call{
+			class CallIsVCAllowed: public CallIn{
 
 			public:
 				CallIsVCAllowed();
@@ -19,6 +19,8 @@ namespace freerds{
 				virtual int decodeRequest();
 				virtual int encodeResponse();
 				virtual int doStuff();
+
+
 
 			private:
 				std::string mVirtualChannelName;

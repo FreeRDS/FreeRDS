@@ -22,8 +22,10 @@ namespace freerds{
 
 			HANDLE acceptClient();
 			int serveClient();
+	void resetStatus();
 
 		private:
+			int createServerPipe();
 			HANDLE createServerPipe(const char* endpoint);
 			static void* listenerThread(void* arg);
 			int read();

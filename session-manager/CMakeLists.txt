@@ -70,12 +70,6 @@ find_package(Threads REQUIRED)
 add_definitions("-DHAVE_CONFIG_H")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE session-manager
-	MODULES winpr-crt winpr-synch winpr-error winpr-file winpr-pipe)
-
-
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -98,6 +92,8 @@ set(${MODULE_PREFIX}_SRCS
 	common/appcontext/ApplicationContext.cpp 
 	common/session/SessionStore.cpp
 	common/call/Call.cpp
+	common/call/CallIn.cpp
+	common/call/CallOut.cpp
 	common/call/CallFactory.cpp
 	common/call/CallIsVCAllowed.cpp
 	common/pbRPC/RpcEngine.cpp
@@ -105,5 +101,10 @@ set(${MODULE_PREFIX}_SRCS
 	gen-cpp/ICP.pb.cc)
  
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+
+set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
+	MONOLITHIC ${MONOLITHIC_BUILD}
+	MODULE session-manager
+	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-pipe )
 				
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS}  ${PROTOBUF_LIBRARY})

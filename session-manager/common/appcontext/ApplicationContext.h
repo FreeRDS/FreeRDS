@@ -4,6 +4,8 @@
 #include <utils/SingletonBase.h>
 #include <session/SessionStore.h>
 #include <pbRPC/RpcEngine.h>
+#include <winpr/wlog.h>
+
 
 #define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
 
@@ -20,6 +22,7 @@ namespace freerds{
 		private:
 			sessionNS::SessionStore mSessionStore;
 			pbRPC::RpcEngine mRpcEngine;
+			wLog* mWLogRoot;
 			SINGLETON_ADD_INITIALISATION(ApplicationContext)
 		};
 	

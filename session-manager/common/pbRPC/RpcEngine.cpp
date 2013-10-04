@@ -4,6 +4,10 @@
 #include <winpr/thread.h>
 #include <call/CallFactory.h>
 #include <arpa/inet.h>
+#include <winpr/wlog.h>
+#include <call/CallIn.h>
+
+
 
 namespace freerds {
 namespace pbrpc {
@@ -12,11 +16,16 @@ namespace pbrpc {
 #define CLIENT_ERROR -1
 #define CLIENT_SUCCESS 0
 
+static wLog * logger_RPCEngine = WLog_Get("freerds.pbrpc.RpcEngine");
+
+
 RpcEngine::RpcEngine() :
 		mPacktLength(0), mHeaderRead(0), mPayloadRead(0) {
 	mhStopEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
+	WLog_SetLogLevel(logger_RPCEngine, WLOG_ERROR);
 }
 RpcEngine::~RpcEngine() {
+	google::protobuf::ShutdownProtobufLibrary();
 
 }
 
@@ -28,7 +37,7 @@ HANDLE RpcEngine::createServerPipe(const char* endpoint) {
 	PIPE_UNLIMITED_INSTANCES, PIPE_BUFFER_SIZE, PIPE_BUFFER_SIZE, 0, NULL);
 
 	if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE)) {
-		fprintf(stderr, "CreateNamedPipe failure\n");
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "creating namedpipe failed");
 		return NULL;
 	}
 
@@ -36,11 +45,6 @@ HANDLE RpcEngine::createServerPipe(const char* endpoint) {
 }
 
 int RpcEngine::startEngine() {
-
-	mhServerPipe = createServerPipe("\\\\.\\pipe\\FreeRDS_SessionManager");
-
-	if (!mhServerPipe)
-		return CLIENT_ERROR;
 
 	mhServerThread = CreateThread(NULL, 0,
 			(LPTHREAD_START_ROUTINE) RpcEngine::listenerThread, (void*) this,
@@ -55,17 +59,34 @@ int RpcEngine::stopEngine() {
 	if (mhServerThread) {
 		SetEvent(mhStopEvent);
 		WaitForSingleObject(mhServerThread,INFINITE);
+		CloseHandle(mhServerThread);
 		mhServerThread = NULL;
 	}
 	return CLIENT_SUCCESS;
+}
+
+int RpcEngine::createServerPipe() {
+	mhServerPipe = createServerPipe("\\\\.\\pipe\\FreeRDS_SessionManager");
+
+	if (!mhServerPipe) {
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "Could not create named pipe \\\\.\\pipe\\FreeRDS_SessionManager");
+		return CLIENT_ERROR;
+	}
+
 }
 
 void* RpcEngine::listenerThread(void* arg) {
 	RpcEngine* engine;
 
 	engine = (RpcEngine*) arg;
+	WLog_Print(logger_RPCEngine, WLOG_TRACE, "started RPC listener Thread");
 
 	while (1) {
+
+		if (!engine->createServerPipe()) {
+			break;
+		}
+
 		HANDLE clientPipe = engine->acceptClient();
 
 		if (!clientPipe)
@@ -74,6 +95,7 @@ void* RpcEngine::listenerThread(void* arg) {
 		if (engine->serveClient() == CLIENT_ERROR ) {
 			break;
 		}
+		engine->resetStatus();
 
 	}
 
@@ -94,8 +116,11 @@ HANDLE RpcEngine::acceptClient() {
 	events[nCount++] = mhServerPipe;
 
 	status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
-
+/*	if (status == WAIT_OBJECT_0) {
+		return NULL;
+	} else if (status == WAIT_OBJECT_0 +1) {*/
 	if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0) {
+		WLog_Print(logger_RPCEngine, WLOG_TRACE, "got shutdown signal");
 		return NULL;
 	}
 	if (WaitForSingleObject(mhServerPipe, 0) == WAIT_OBJECT_0) {
@@ -108,6 +133,8 @@ HANDLE RpcEngine::acceptClient() {
 			fConnected = (GetLastError() == ERROR_PIPE_CONNECTED);
 
 		if (!fConnected) {
+			WLog_Print(logger_RPCEngine, WLOG_ERROR, "could not connect client");
+
 			return NULL;
 		}
 
@@ -115,6 +142,7 @@ HANDLE RpcEngine::acceptClient() {
 
 		dwPipeMode = PIPE_WAIT;
 		SetNamedPipeHandleState(mhClientPipe, &dwPipeMode, NULL, NULL);
+		WLog_Print(logger_RPCEngine, WLOG_TRACE, "connect client with handle %x",mhClientPipe);
 
 		return mhClientPipe;
 	}
@@ -139,13 +167,14 @@ int RpcEngine::readHeader() {
 			4 - mHeaderRead, &lpNumberOfBytesRead, NULL);
 
 	if (!fSuccess || (lpNumberOfBytesRead == 0)) {
-		printf("Server NamedPipe readHeader failure\n");
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "error reading");
 		return CLIENT_DISCONNECTED;
 	}
 
 	mHeaderRead += lpNumberOfBytesRead;
 	if (mHeaderRead == 4) {
 		mPacktLength = ntohl(*(DWORD *)mHeaderBuffer);
+		WLog_Print(logger_RPCEngine, WLOG_TRACE, "header read, packet size %d",mPacktLength);
 	}
 	return CLIENT_SUCCESS;
 }
@@ -160,7 +189,7 @@ int RpcEngine::readPayload() {
 			NULL);
 
 	if (!fSuccess || (lpNumberOfBytesRead == 0)) {
-		printf("Server NamedPipe readPayload failure\n");
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "error reading payload");
 		return CLIENT_DISCONNECTED;
 	}
 
@@ -176,24 +205,37 @@ int RpcEngine::processData() {
 		// TODO handle calls which are send out by us
 
 	} else {
+
 		uint32_t callID = mpbRPC.tag();
 		uint32_t callType = mpbRPC.msgtype();
 		callNS::Call* createdCall = CALL_FACTORY.createClass(callType);
 		if (createdCall == NULL) {
 			// call not found ... send error
+			WLog_Print(logger_RPCEngine, WLOG_ERROR, "no registered class for calltype=%d",callType);
 			sendError(callID, callType);
+			delete createdCall;
 			return CLIENT_ERROR;
 		}
-		createdCall->setEncodedRequest(mpbRPC.payload());
-		createdCall->setTag(callID);
-
-		// call the implementation ...
-		createdCall->decodeRequest();
-		if (!createdCall->doStuff()) {
-			createdCall->encodeResponse();
+		if ( createdCall->getDerivedType() == 1) {
+			// we got an CallIn object ... so handle it
+			callNS::CallIn* createdCallIn = (callNS::CallIn*)createdCall;
+			createdCallIn->setEncodedRequest(mpbRPC.payload());
+			createdCallIn->setTag(callID);
+			WLog_Print(logger_RPCEngine, WLOG_TRACE, "call upacked for callType=%d and callID=%d",callType,callID);
+			// call the implementation ...
+			createdCallIn->decodeRequest();
+			if (!createdCallIn->doStuff()) {
+				createdCallIn->encodeResponse();
+			}
+			// send the result
+			send(createdCall);
+			delete createdCall;
+		} else {
+			WLog_Print(logger_RPCEngine, WLOG_ERROR, "no registered class for calltype=%d",callType);
+			sendError(callID, callType);
+			delete createdCall;
+			return CLIENT_ERROR;
 		}
-		// send the result
-		send(createdCall);
 		return CLIENT_SUCCESS;
 	}
 }
@@ -203,23 +245,34 @@ int RpcEngine::send(freerds::sessionmanager::call::Call * call) {
 	DWORD lpNumberOfBytesWritten;
 	std::string serialized;
 
-	// create answer
-	mpbRPC.Clear();
-	mpbRPC.set_isresponse(true);
-	mpbRPC.set_tag(call->getTag());
-	mpbRPC.set_msgtype(call->getCallType());
-	if (call->getResult()) {
-		mpbRPC.set_status(RPCBase_RPCSTATUS_FAILED);
-		std::string errordescription = call->getErrorDescription();
-		if (errordescription.size() > 0) {
-			mpbRPC.set_errordescription(call->getErrorDescription());
+
+	if (call->getDerivedType() == 1) {
+		// this is a CallIn
+		callNS::CallIn * callIn = (callNS::CallIn *)call;
+		// create answer
+		mpbRPC.Clear();
+		mpbRPC.set_isresponse(true);
+		mpbRPC.set_tag(callIn->getTag());
+		mpbRPC.set_msgtype(callIn->getCallType());
+		if (call->getResult()) {
+			WLog_Print(logger_RPCEngine, WLOG_TRACE, "call for callType=%d and callID=%d failed, sending error response",callIn->getCallType(),callIn->getTag());
+			mpbRPC.set_status(RPCBase_RPCSTATUS_FAILED);
+			std::string errordescription = callIn->getErrorDescription();
+			if (errordescription.size() > 0) {
+				mpbRPC.set_errordescription(errordescription);
+			}
+		} else {
+			WLog_Print(logger_RPCEngine, WLOG_TRACE, "call for callType=%d and callID=%d success, sending response",callIn->getCallType(),callIn->getTag());
+			mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
+			mpbRPC.set_payload(callIn->getEncodedResponse());
 		}
-	} else {
-		mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
-		mpbRPC.set_payload(call->getEncodedResponse());
+
+		mpbRPC.SerializeToString(&serialized);
+	} else if (call->getDerivedType() == 2) {
+		// this is a CallOut
 	}
 
-	mpbRPC.SerializeToString(&serialized);
+
 
 	return sendInternal(serialized);
 
@@ -249,7 +302,7 @@ int RpcEngine::sendInternal(std::string data) {
 			4, &lpNumberOfBytesWritten, NULL);
 
 	if (!fSuccess || (lpNumberOfBytesWritten == 0)) {
-		printf("Server NamedPipe sendInternal failure\n");
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending");
 		return CLIENT_ERROR;
 	}
 
@@ -257,12 +310,16 @@ int RpcEngine::sendInternal(std::string data) {
 			data.size(), &lpNumberOfBytesWritten, NULL);
 
 	if (!fSuccess || (lpNumberOfBytesWritten == 0)) {
-		printf("Server NamedPipe sendInternal failure\n");
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending");
 		return -1;
 	}
 }
 
-
+void RpcEngine::resetStatus() {
+	mPacktLength = 0;
+	mHeaderRead = 0;
+	mPayloadRead = 0;
+}
 
 int RpcEngine::serveClient() {
 
@@ -279,6 +336,12 @@ int RpcEngine::serveClient() {
 	while (1) {
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
+		/*if (status == WAIT_OBJECT_0) {
+			retValue = CLIENT_ERROR;
+			break;
+		} else if (status == WAIT_OBJECT_0 + 1) {*/
+
+
 		if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0) {
 			retValue = CLIENT_ERROR;
 			break;
@@ -292,9 +355,7 @@ int RpcEngine::serveClient() {
 			// process the data
 			if (mPayloadRead == mPacktLength) {
 				processData();
-				mPacktLength = 0;
-				mHeaderRead = 0;
-				mPayloadRead = 0;
+				resetStatus();
 			}
 
 		}
