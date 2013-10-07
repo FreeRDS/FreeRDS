@@ -1,3 +1,22 @@
+ /**
+ * Rpc engine build upon google protocol buffers
+ *
+ * Copyright 2013 Thinstuff Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "RpcEngine.h"
 
 #include <winpr/pipe.h>
@@ -6,6 +25,7 @@
 #include <arpa/inet.h>
 #include <winpr/wlog.h>
 #include <call/CallIn.h>
+#include <appcontext/ApplicationContext.h>
 
 
 
@@ -21,7 +41,7 @@ static wLog * logger_RPCEngine = WLog_Get("freerds.pbrpc.RpcEngine");
 
 RpcEngine::RpcEngine() :
 		mPacktLength(0), mHeaderRead(0), mPayloadRead(0) {
-	mhStopEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
+	mhStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
 	WLog_SetLogLevel(logger_RPCEngine, WLOG_ERROR);
 }
 RpcEngine::~RpcEngine() {
@@ -201,13 +221,40 @@ int RpcEngine::processData() {
 	mpbRPC.Clear();
 	mpbRPC.ParseFromArray(mPayloadBuffer, mPayloadRead);
 
+	uint32_t callID = mpbRPC.tag();
+	uint32_t callType = mpbRPC.msgtype();
+
 	if (mpbRPC.isresponse()) {
-		// TODO handle calls which are send out by us
+		// search the stored call to fill back answer
+		callNS::CallOut* foundCallOut = 0;
+		std::list<callNS::CallOut*>::iterator it;
+		for ( it = mAnswerWaitingQueue.begin(); it != mAnswerWaitingQueue.end(); it++) {
+			callNS::CallOut* currentCallOut = (callNS::CallOut*)(*it);
+			if (currentCallOut->getTag() == callID) {
+				foundCallOut = currentCallOut;
+				mAnswerWaitingQueue.remove(foundCallOut);
+				break;
+			}
+		}
+
+		if (foundCallOut == NULL) {
+			WLog_Print(logger_RPCEngine, WLOG_ERROR, "Received answer for callID %d, but no responding call was found",callID);
+			return CLIENT_SUCCESS;
+		} else {
+			// fill the answer and signal
+			if (mpbRPC.status() == RPCBase_RPCSTATUS_SUCCESS ) {
+				foundCallOut->setEncodedeResponse(mpbRPC.payload());
+				foundCallOut->setResult(0);
+			} else if (mpbRPC.status() == RPCBase_RPCSTATUS_FAILED ) {
+				foundCallOut->setErrorDescription(mpbRPC.errordescription());
+				foundCallOut->setResult(1);
+			} else if (mpbRPC.status() == RPCBase_RPCSTATUS_NOTFOUND) {
+				foundCallOut->setResult(2);
+			}
+		}
+
 
 	} else {
-
-		uint32_t callID = mpbRPC.tag();
-		uint32_t callType = mpbRPC.msgtype();
 		callNS::Call* createdCall = CALL_FACTORY.createClass(callType);
 		if (createdCall == NULL) {
 			// call not found ... send error
@@ -231,7 +278,7 @@ int RpcEngine::processData() {
 			send(createdCall);
 			delete createdCall;
 		} else {
-			WLog_Print(logger_RPCEngine, WLOG_ERROR, "no registered class for calltype=%d",callType);
+			WLog_Print(logger_RPCEngine, WLOG_ERROR, "callobject had wrong baseclass, callType=%d",callType);
 			sendError(callID, callType);
 			delete createdCall;
 			return CLIENT_ERROR;
@@ -266,14 +313,19 @@ int RpcEngine::send(freerds::sessionmanager::call::Call * call) {
 			mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
 			mpbRPC.set_payload(callIn->getEncodedResponse());
 		}
-
-		mpbRPC.SerializeToString(&serialized);
 	} else if (call->getDerivedType() == 2) {
 		// this is a CallOut
+		callNS::CallOut * callOut = (callNS::CallOut *)call;
+		// create answer
+		mpbRPC.Clear();
+		mpbRPC.set_isresponse(false);
+		mpbRPC.set_tag(callOut->getTag());
+		mpbRPC.set_msgtype(callOut->getCallType());
+		mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
+		mpbRPC.set_payload(callOut->getEncodedRequest());
 	}
 
-
-
+	mpbRPC.SerializeToString(&serialized);
 	return sendInternal(serialized);
 
 }
@@ -311,8 +363,9 @@ int RpcEngine::sendInternal(std::string data) {
 
 	if (!fSuccess || (lpNumberOfBytesWritten == 0)) {
 		WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending");
-		return -1;
+		return CLIENT_ERROR;
 	}
+	return CLIENT_SUCCESS;
 }
 
 void RpcEngine::resetStatus() {
@@ -325,22 +378,19 @@ int RpcEngine::serveClient() {
 
 	DWORD status;
 	DWORD nCount;
-	HANDLE events[2];
+	SignalingQueue<callNS::Call>* outgoingQueue = APP_CONTEXT.getRpcOutgoingQueue();
+	HANDLE queueHandle = outgoingQueue->getSignalHandle();
+	HANDLE events[3];
 
 	nCount = 0;
 	events[nCount++] = mhStopEvent;
 	events[nCount++] = mhClientPipe;
+	events[nCount++] = queueHandle;
 
 	int retValue = 0;
 
 	while (1) {
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
-
-		/*if (status == WAIT_OBJECT_0) {
-			retValue = CLIENT_ERROR;
-			break;
-		} else if (status == WAIT_OBJECT_0 + 1) {*/
-
 
 		if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0) {
 			retValue = CLIENT_ERROR;
@@ -359,9 +409,39 @@ int RpcEngine::serveClient() {
 			}
 
 		}
+
+		if (WaitForSingleObject(queueHandle, 0) == WAIT_OBJECT_0) {
+			outgoingQueue->lockQueue();
+			callNS::Call * currentCall = outgoingQueue->getElementLockFree();
+			while (currentCall != NULL) {
+				processOutgoingCall(currentCall);
+				currentCall = outgoingQueue->getElementLockFree();
+			}
+			outgoingQueue->unlockQueue();
+		}
+
 	}
 
 	return retValue;
+}
+
+int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call) {
+	if (call->getDerivedType() == 2) {
+			// this is a CallOut
+			callNS::CallOut * callOut = (callNS::CallOut *)call;
+			if (send(call) == CLIENT_SUCCESS ) {
+				mAnswerWaitingQueue.push_back(callOut);
+				return CLIENT_SUCCESS;
+			} else {
+				WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending call, informing call");
+				callOut->setResult(1); // for failed
+				return CLIENT_ERROR;
+			}
+
+	} else {
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "call was no outgoing call, wrong type in queue");
+		return CLIENT_SUCCESS;
+	}
 }
 
 }
