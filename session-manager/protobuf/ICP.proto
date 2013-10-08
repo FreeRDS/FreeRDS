@@ -1,0 +1,12 @@
+package freerds.icp;
+
+enum MSGTYPE {
+	IsChannelAllowed = 1;
+}
+
+message IsChannelAllowedRequest {
+	required string ChannelName = 1;	
+}
+message IsChannelAllowedResponse {
+	required bool ChannelAllowed = 1;
+}

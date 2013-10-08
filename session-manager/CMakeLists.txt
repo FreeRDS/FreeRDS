@@ -1,7 +1,9 @@
-# FreeRDP X11 Server Next Generation
-# xrdp-ng cmake build script
+# FreeRemoteDesktopService Session Manager
+# cmake script
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+# Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.com>
+# Copyright 2013 Thinstuff Technologies GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +19,17 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(xrdp-ng C)
+project(freerds-session-manager CXX)
 
 if(FREERDP_VERSION)
 	set(FREERDP_BUILD ON)
 endif()
+
+set(FRDS_SM_VERSION_MAJOR "0")
+set(FRDS_SM_VERSION_MINOR "1")
+set(FRDS_SM_VERSION_REVISION "0")
+set(FRDS_SM_VERSION "${FRDS_SM_VERSION_MAJOR}.${FRDS_SM_VERSION_MINOR}")
+set(FRDS_SM_VERSION_FULL "${FRDS_SM_VERSION}.${FRDS_SM_VERSION_REVISION}")
 
 set(CMAKE_COLOR_MAKEFILE ON)
 
@@ -45,15 +53,9 @@ include(FeatureSummary)
 include(CheckCCompilerFlag)
 include(GNUInstallDirsWrapper)
 
-if(NOT DEFINED RDS_NG_MODULE)
-	set(RDS_NG_MODULE "xrdp-ng")
-endif()
+set(MODULE_PREFIX "SESSION_MANAGER")
+set(MODULE_NAME "session-manager")
 
-set(RDS_NG_VERSION_MAJOR "0")
-set(RDS_NG_VERSION_MINOR "1")
-set(RDS_NG_VERSION_REVISION "0")
-set(RDS_NG_VERSION "${RDS_NG_VERSION_MAJOR}.${RDS_NG_VERSION_MINOR}")
-set(RDS_NG_VERSION_FULL "${RDS_NG_VERSION}.${RDS_NG_VERSION_REVISION}")
 
 get_directory_property(INCLUDE_DIRECTORIES INCLUDE_DIRECTORIES)
 list(REMOVE_ITEM INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}")
@@ -62,23 +64,11 @@ include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-set(SBINDIR "${CMAKE_INSTALL_PREFIX}/sbin")
-set(SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc")
-set(DATADIR "${CMAKE_INSTALL_PREFIX}/share")
-set(LOCALSTATEDIR "${CMAKE_INSTALL_PREFIX}/var")
-
-set(RDS_CFG_PATH "${SYSCONFDIR}/xrdp")
-set(RDS_SBIN_PATH "${SBINDIR}")
-set(RDS_SHARE_PATH "${DATADIR}/xrdp")
-set(RDS_PID_PATH "${LOCALSTATEDIR}/run")
-set(RDS_LOG_PATH "${LOCALSTATEDIR}/log")
-set(RDS_LIB_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 
 add_definitions("-DHAVE_CONFIG_H")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
@@ -89,28 +79,32 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-if(NOT DEFINED BUILD_SHARED_LIBS)
-	set(BUILD_SHARED_LIBS ON)
-endif()
 
-set(PIXMAN_FEATURE_TYPE "REQUIRED")
-set(PIXMAN_FEATURE_PURPOSE "Pixel Manipulation")
-set(PIXMAN_FEATURE_DESCRIPTION "Pixel Manipulation Library")
+include(FindProtobuf)
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIR})
 
-find_feature(Pixman ${PIXMAN_FEATURE_TYPE} ${PIXMAN_FEATURE_PURPOSE} ${PIXMAN_FEATURE_DESCRIPTION})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common
+					${CMAKE_CURRENT_SOURCE_DIR}/gen-cpp) 
+ 
+set(${MODULE_PREFIX}_SRCS
+	main.cpp 
+	common/appcontext/ApplicationContext.cpp 
+	common/session/SessionStore.cpp
+	common/call/Call.cpp
+	common/call/CallIn.cpp
+	common/call/CallOut.cpp
+	common/call/CallFactory.cpp
+	common/call/CallIsVCAllowed.cpp
+	common/pbRPC/RpcEngine.cpp
+	gen-cpp/pbRPC.pb.cc
+	gen-cpp/ICP.pb.cc)
+ 
+add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-include_directories(${PIXMAN_INCLUDE_DIRS})
-
-add_subdirectory(freerds)
-
-add_subdirectory(common)
-add_subdirectory(xrdp)
-add_subdirectory(instfiles)
-
-add_subdirectory(module)
-
-if(WITH_X11RDP)
-	add_subdirectory(xorg/rdp)
-endif()
-
-add_subdirectory(session-manager)
+set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
+	MONOLITHIC ${MONOLITHIC_BUILD}
+	MODULE session-manager
+	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-pipe )
+				
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS}  ${PROTOBUF_LIBRARY})
