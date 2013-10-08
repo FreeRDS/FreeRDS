@@ -101,6 +101,12 @@ int xrdp_message_server_set_pointer(rdsModule* module, RDS_MSG_SET_POINTER* msg)
 	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
 }
 
+int xrdp_message_server_set_system_pointer(rdsModule* module, RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	msg->type = RDS_SERVER_SET_SYSTEM_POINTER;
+	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+}
+
 int xrdp_message_server_set_palette(rdsModule* module, RDS_MSG_SET_PALETTE* msg)
 {
 	msg->type = RDS_SERVER_SET_PALETTE;
@@ -227,6 +233,10 @@ int xrdp_message_server_queue_process_message(rdsModule* module, wMessage* messa
 
 		case RDS_SERVER_SET_POINTER:
 			status = ServerProxy->SetPointer(module, (RDS_MSG_SET_POINTER*) message->wParam);
+			break;
+
+		case RDS_SERVER_SET_SYSTEM_POINTER:
+			status = ServerProxy->SetSystemPointer(module, (RDS_MSG_SET_SYSTEM_POINTER*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_PALETTE:
@@ -463,6 +473,7 @@ int xrdp_message_server_module_init(rdsModule* module)
 		module->server->PatBlt = xrdp_message_server_patblt;
 		module->server->DstBlt = xrdp_message_server_dstblt;
 		module->server->SetPointer = xrdp_message_server_set_pointer;
+		module->server->SetSystemPointer = xrdp_message_server_set_system_pointer;
 		module->server->SetPalette = xrdp_message_server_set_palette;
 		module->server->SetClippingRegion = xrdp_message_server_set_clipping_region;
 		module->server->LineTo = xrdp_message_server_line_to;

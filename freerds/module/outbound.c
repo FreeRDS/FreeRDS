@@ -270,6 +270,12 @@ int freerds_server_outbound_set_pointer(rdsModule* mod, RDS_MSG_SET_POINTER* msg
 	return freerds_server_outbound_write_message(mod, (RDS_MSG_COMMON*) msg);
 }
 
+int freerds_server_outbound_set_system_pointer(rdsModule* mod, RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	msg->type = RDS_SERVER_SET_SYSTEM_POINTER;
+	return freerds_server_outbound_write_message(mod, (RDS_MSG_COMMON*) msg);
+}
+
 int freerds_server_outbound_set_palette(rdsModule* mod, RDS_MSG_SET_PALETTE* msg)
 {
 	msg->type = RDS_SERVER_SET_PALETTE;
@@ -368,6 +374,7 @@ rdsServerInterface* freerds_server_outbound_interface_new()
 		server->PatBlt = freerds_server_outbound_patblt;
 		server->DstBlt = freerds_server_outbound_dstblt;
 		server->SetPointer = freerds_server_outbound_set_pointer;
+		server->SetSystemPointer = freerds_server_outbound_set_system_pointer;
 		server->SetPalette = freerds_server_outbound_set_palette;
 		server->SetClippingRegion = freerds_server_outbound_set_clipping_region;
 		server->LineTo = freerds_server_outbound_line_to;

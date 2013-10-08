@@ -100,6 +100,8 @@ FREERDP_API int libxrdp_send_bitmap_update(rdsSession* session, int bpp, RDS_MSG
 
 FREERDP_API int libxrdp_set_pointer(rdsSession* session, RDS_MSG_SET_POINTER* msg);
 
+FREERDP_API int libxrdp_set_system_pointer(rdsSession* session, RDS_MSG_SET_SYSTEM_POINTER* msg);
+
 FREERDP_API int libxrdp_orders_begin_paint(rdsSession* session);
 
 FREERDP_API int libxrdp_orders_end_paint(rdsSession* session);

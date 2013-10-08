@@ -136,6 +136,13 @@ int freerds_client_inbound_set_pointer(rdsModule* module, RDS_MSG_SET_POINTER* m
 	return 0;
 }
 
+int freerds_client_inbound_set_system_pointer(rdsModule* module, RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	rdsConnector* connector = (rdsConnector*) module;
+	libxrdp_set_system_pointer(connector->session, msg);
+	return 0;
+}
+
 int freerds_client_inbound_set_palette(rdsModule* module, RDS_MSG_SET_PALETTE* msg)
 {
 	/* TODO */
@@ -263,6 +270,7 @@ int freerds_client_inbound_module_init(rdsModule* module)
 		module->server->PatBlt = freerds_client_inbound_patblt;
 		module->server->DstBlt = freerds_client_inbound_dstblt;
 		module->server->SetPointer = freerds_client_inbound_set_pointer;
+		module->server->SetSystemPointer = freerds_client_inbound_set_system_pointer;
 		module->server->SetPalette = freerds_client_inbound_set_palette;
 		module->server->SetClippingRegion = freerds_client_inbound_set_clipping_region;
 		module->server->LineTo = freerds_client_inbound_line_to;

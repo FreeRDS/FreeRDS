@@ -282,6 +282,15 @@ int freerds_receive_server_message(rdsModule* module, wStream* s, RDS_MSG_COMMON
 			}
 			break;
 
+		case RDS_SERVER_SET_SYSTEM_POINTER:
+			{
+				RDS_MSG_SET_SYSTEM_POINTER msg;
+				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
+				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				status = server->SetSystemPointer(module, &msg);
+			}
+			break;
+
 		case RDS_SERVER_CREATE_OFFSCREEN_SURFACE:
 			{
 				RDS_MSG_CREATE_OFFSCREEN_SURFACE msg;
