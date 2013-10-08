@@ -228,6 +228,7 @@ int xrdp_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
 #define RDS_SERVER_RESET			20
 #define RDS_SERVER_WINDOW_NEW_UPDATE		21
 #define RDS_SERVER_WINDOW_DELETE		22
+#define RDS_SERVER_SET_SYSTEM_POINTER	23
 
 struct _RDS_MSG_BEGIN_UPDATE
 {
@@ -355,6 +356,14 @@ struct _RDS_MSG_SET_POINTER
 	BYTE* andMaskData;
 };
 typedef struct _RDS_MSG_SET_POINTER RDS_MSG_SET_POINTER;
+
+struct _RDS_MSG_SET_SYSTEM_POINTER
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 ptrType;
+};
+typedef struct _RDS_MSG_SET_SYSTEM_POINTER RDS_MSG_SET_SYSTEM_POINTER;
 
 struct _RDS_MSG_SET_PALETTE
 {
@@ -544,6 +553,7 @@ union _RDS_MSG_SERVER
 	RDS_MSG_CACHE_GLYPH CacheGlyph;
 	RDS_MSG_GLYPH_INDEX GlyphIndex;
 	RDS_MSG_SET_POINTER SetPointer;
+	RDS_MSG_SET_SYSTEM_POINTER SetSystemPointer;
 	RDS_MSG_SHARED_FRAMEBUFFER SharedFramebuffer;
 	RDS_MSG_BEEP Beep;
 	RDS_MSG_RESET Reset;
@@ -588,6 +598,7 @@ typedef int (*pRdsServerPaintRect)(rdsModule* mod, RDS_MSG_PAINT_RECT* msg);
 typedef int (*pRdsServerPatBlt)(rdsModule* mod, RDS_MSG_PATBLT* msg);
 typedef int (*pRdsServerDstBlt)(rdsModule* mod, RDS_MSG_DSTBLT* msg);
 typedef int (*pRdsServerSetPointer)(rdsModule* mod, RDS_MSG_SET_POINTER* msg);
+typedef int (*pRdsServerSetSystemPointer)(rdsModule* mod, RDS_MSG_SET_SYSTEM_POINTER* msg);
 typedef int (*pRdsServerSetPalette)(rdsModule* mod, RDS_MSG_SET_PALETTE* msg);
 typedef int (*pRdsServerSetClippingRegion)(rdsModule* mod, RDS_MSG_SET_CLIPPING_REGION* msg);
 typedef int (*pRdsServerLineTo)(rdsModule* mod, RDS_MSG_LINE_TO* msg);
@@ -615,6 +626,7 @@ struct rds_server_interface
 	pRdsServerPatBlt PatBlt;
 	pRdsServerDstBlt DstBlt;
 	pRdsServerSetPointer SetPointer;
+	pRdsServerSetSystemPointer SetSystemPointer;
 	pRdsServerSetPalette SetPalette;
 	pRdsServerSetClippingRegion SetClippingRegion;
 	pRdsServerLineTo LineTo;

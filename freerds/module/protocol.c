@@ -287,7 +287,7 @@ int xrdp_read_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 	Stream_Read_UINT16(s, msg->numberOfAreas);
 
 	msg->areasToRefresh = (RECTANGLE_16*) Stream_Pointer(s);
-	if (Stream_GetRemainingLength(s) < 8 * msg->areasToRefresh)
+	if (Stream_GetRemainingLength(s) < 8 * msg->numberOfAreas)
 		return -1;
 
 	for (index = 0; index < msg->numberOfAreas; index++)
@@ -1408,6 +1408,58 @@ static RDS_MSG_DEFINITION RDS_MSG_SET_POINTER_DEFINITION =
 };
 
 /**
+ * SetSystemPointer
+ */
+
+int xrdp_read_set_system_pointer(wStream* s, RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	if (Stream_GetRemainingLength(s) < 4)
+		return -1;
+
+	Stream_Read_UINT32(s, msg->ptrType);
+	return 0;
+}
+
+int xrdp_write_set_system_pointer(wStream* s, RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (RDS_MSG_COMMON*) msg) +
+			4;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (RDS_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->ptrType);
+	return 0;
+}
+
+void* xrdp_set_system_pointer_copy(RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	RDS_MSG_SET_SYSTEM_POINTER* dup = NULL;
+
+	dup = (RDS_MSG_SET_SYSTEM_POINTER*) malloc(sizeof(RDS_MSG_SET_SYSTEM_POINTER));
+	CopyMemory(dup, msg, sizeof(RDS_MSG_SET_SYSTEM_POINTER));
+
+	return (void*) dup;
+}
+
+void xrdp_set_system_pointer_free(RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	free(msg);
+}
+
+static RDS_MSG_DEFINITION RDS_MSG_SET_SYSTEM_POINTER_DEFINITION =
+{
+	sizeof(RDS_MSG_SET_SYSTEM_POINTER), "SetSystemPointer",
+	(pXrdpMessageRead) xrdp_read_set_system_pointer,
+	(pXrdpMessageWrite) xrdp_write_set_system_pointer,
+	(pXrdpMessageCopy) xrdp_set_system_pointer_copy,
+	(pXrdpMessageFree) xrdp_set_system_pointer_free
+};
+
+/**
  * SharedFramebuffer
  */
 
@@ -1861,7 +1913,7 @@ static RDS_MSG_DEFINITION* RDS_SERVER_MSG_DEFINITIONS[32] =
 	&RDS_MSG_RESET_DEFINITION, /* 20 */
 	&RDS_MSG_WINDOW_NEW_UPDATE_DEFINITION, /* 21 */
 	&RDS_MSG_WINDOW_DELETE_DEFINITION, /* 22 */
-	NULL, /* 23 */
+	&RDS_MSG_SET_SYSTEM_POINTER_DEFINITION, /* 23 */
 	NULL, /* 24 */
 	NULL, /* 25 */
 	NULL, /* 26 */

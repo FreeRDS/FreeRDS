@@ -316,6 +316,18 @@ int libxrdp_set_pointer(rdsSession* session, RDS_MSG_SET_POINTER* msg)
 	return 0;
 }
 
+int libxrdp_set_system_pointer(rdsSession* session, RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	POINTER_SYSTEM_UPDATE *pointer_system;
+	rdpPointerUpdate* pointer = session->client->update->pointer;
+
+	pointer_system = &(pointer->pointer_system);
+	pointer_system->type = msg->ptrType;
+	IFCALL(pointer->PointerSystem, (rdpContext *)session, pointer_system);
+
+	return 0;
+}
+
 int libxrdp_orders_begin_paint(rdsSession* session)
 {
 	rdpUpdate* update = ((rdpContext*) session)->update;
