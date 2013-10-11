@@ -25,6 +25,8 @@ if(FREERDP_VERSION)
 	set(FREERDP_BUILD ON)
 endif()
 
+add_subdirectory(module)
+
 set(FRDS_SM_VERSION_MAJOR "0")
 set(FRDS_SM_VERSION_MINOR "1")
 set(FRDS_SM_VERSION_REVISION "0")
@@ -98,13 +100,15 @@ set(${MODULE_PREFIX}_SRCS
 	common/call/CallIsVCAllowed.cpp
 	common/pbRPC/RpcEngine.cpp
 	gen-cpp/pbRPC.pb.cc
-	gen-cpp/ICP.pb.cc)
+	gen-cpp/ICP.pb.cc
+	common/module/ModuleManager.cpp
+	common/module/Module.cpp)
  
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE session-manager
-	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-pipe )
+	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-pipe winpr-library)
 				
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS}  ${PROTOBUF_LIBRARY})

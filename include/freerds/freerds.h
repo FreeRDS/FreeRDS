@@ -736,6 +736,7 @@ struct rds_module_entry_points_v1
 
 	pRdsModuleStart Start;
 	pRdsModuleStop Stop;
+	char * ModuleName;
 };
 
 #define RDS_MODULE_INTERFACE_VERSION	1

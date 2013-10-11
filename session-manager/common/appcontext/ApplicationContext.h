@@ -26,6 +26,7 @@
 #include <pbRPC/RpcEngine.h>
 #include <winpr/wlog.h>
 #include <call/CallOut.h>
+#include <module/ModuleManager.h>
 
 
 #define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
@@ -43,12 +44,15 @@ namespace freerds{
 
 			SignalingQueue<callNS::Call> * getRpcOutgoingQueue();
 
+			int loadModulesFromPath(std::string path);
+
 
 		private:
 			sessionNS::SessionStore mSessionStore;
 			pbRPC::RpcEngine mRpcEngine;
 			SignalingQueue<callNS::Call> mRpcOutgoingCalls;
 			wLog* mWLogRoot;
+			moduleNS::ModuleManager mModuleManager;
 			SINGLETON_ADD_INITIALISATION(ApplicationContext)
 		};
 	

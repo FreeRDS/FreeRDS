@@ -17,6 +17,10 @@
  * limitations under the License.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "config.h"
 #include <iostream>
 
@@ -27,6 +31,7 @@ int main(void)
 {
 	std::string test;
 	APP_CONTEXT.startRPCEngine();
+	APP_CONTEXT.loadModulesFromPath("/development/testModule/");
 	cout << "Hello session manager" << endl;
 	cin >>test;
 	APP_CONTEXT.stopRPCEngine();

@@ -50,6 +50,12 @@ public:
 		WaitForSingleObject(mMutex, INFINITE);
 	}
 
+	void resetEventAndLockQueue() {
+		ResetEvent(mSignalHandle);
+		WaitForSingleObject(mMutex, INFINITE);
+	}
+
+
 	QueueElement * getElementLockFree() {
 		QueueElement * element;
 		element = mlist.front();

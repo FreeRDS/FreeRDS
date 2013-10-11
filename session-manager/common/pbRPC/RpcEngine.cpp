@@ -17,6 +17,10 @@
  * limitations under the License.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "RpcEngine.h"
 
 #include <winpr/pipe.h>
@@ -411,7 +415,7 @@ int RpcEngine::serveClient() {
 		}
 
 		if (WaitForSingleObject(queueHandle, 0) == WAIT_OBJECT_0) {
-			outgoingQueue->lockQueue();
+			outgoingQueue->resetEventAndLockQueue();
 			callNS::Call * currentCall = outgoingQueue->getElementLockFree();
 			while (currentCall != NULL) {
 				processOutgoingCall(currentCall);
@@ -439,7 +443,8 @@ int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call) {
 			}
 
 	} else {
-		WLog_Print(logger_RPCEngine, WLOG_ERROR, "call was no outgoing call, wrong type in queue");
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "call was no outgoing call, wrong type in queue, dropping packet!");
+		delete call;
 		return CLIENT_SUCCESS;
 	}
 }

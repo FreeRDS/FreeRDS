@@ -17,6 +17,10 @@
  * limitations under the License.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "ApplicationContext.h"
 
 namespace freerds{
@@ -71,7 +75,11 @@ namespace freerds{
 		return &mRpcOutgoingCalls;
 	}
 
+	int ApplicationContext::loadModulesFromPath(std::string path) {
+		return mModuleManager.loadModulesFromPath(path,"*.so");
+	}
 
 
     }
 }
+
