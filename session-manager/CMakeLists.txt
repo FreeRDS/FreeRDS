@@ -58,7 +58,6 @@ include(GNUInstallDirsWrapper)
 set(MODULE_PREFIX "SESSION_MANAGER")
 set(MODULE_NAME "session-manager")
 
-
 get_directory_property(INCLUDE_DIRECTORIES INCLUDE_DIRECTORIES)
 list(REMOVE_ITEM INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}")
 set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES "${INCLUDE_DIRECTORIES}")
@@ -81,14 +80,14 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+find_feature(Protobuf REQUIRED "RPC" "Remote Procedure Call")
 
-include(FindProtobuf)
 find_package(Protobuf REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIR})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common
-					${CMAKE_CURRENT_SOURCE_DIR}/gen-cpp) 
- 
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gen-cpp)
+
 set(${MODULE_PREFIX}_SRCS
 	main.cpp 
 	common/appcontext/ApplicationContext.cpp 

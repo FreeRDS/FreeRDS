@@ -92,6 +92,8 @@ int xrdp_write_common_header(wStream* s, RDS_MSG_COMMON* msg)
 
 int xrdp_read_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 4)
+		return -1;
 	Stream_Read_UINT32(s, msg->flags);
 
 	return 0;
@@ -114,6 +116,8 @@ int xrdp_write_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOA
 
 int xrdp_read_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 12)
+		return -1;
 	Stream_Read_UINT32(s, msg->flags);
 	Stream_Read_UINT32(s, msg->code);
 	Stream_Read_UINT32(s, msg->keyboardType);
@@ -140,6 +144,8 @@ int xrdp_write_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVE
 
 int xrdp_read_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 8)
+		return -1;
 	Stream_Read_UINT32(s, msg->flags);
 	Stream_Read_UINT32(s, msg->code);
 
@@ -164,6 +170,8 @@ int xrdp_write_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT
 
 int xrdp_read_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 8)
+		return -1;
 	Stream_Read_UINT32(s, msg->flags);
 	Stream_Read_UINT32(s, msg->code);
 
@@ -188,6 +196,8 @@ int xrdp_write_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT
 
 int xrdp_read_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 12)
+		return -1;
 	Stream_Read_UINT32(s, msg->flags);
 	Stream_Read_UINT32(s, msg->x);
 	Stream_Read_UINT32(s, msg->y);
@@ -214,6 +224,8 @@ int xrdp_write_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg)
 
 int xrdp_read_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 12)
+		return -1;
 	Stream_Read_UINT32(s, msg->flags);
 	Stream_Read_UINT32(s, msg->x);
 	Stream_Read_UINT32(s, msg->y);
@@ -240,6 +252,8 @@ int xrdp_write_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* ms
 
 int xrdp_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg)
 {
+	if (Stream_GetRemainingLength(s) < 12)
+		return -1;
 	Stream_Read_UINT32(s, msg->DesktopWidth);
 	Stream_Read_UINT32(s, msg->DesktopHeight);
 	Stream_Read_UINT32(s, msg->ColorDepth);
@@ -268,9 +282,13 @@ int xrdp_read_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 {
 	int index;
 
+	if (Stream_GetRemainingLength(s) < 2)
+		return -1;
 	Stream_Read_UINT16(s, msg->numberOfAreas);
 
 	msg->areasToRefresh = (RECTANGLE_16*) Stream_Pointer(s);
+	if (Stream_GetRemainingLength(s) < 8 * msg->numberOfAreas)
+		return -1;
 
 	for (index = 0; index < msg->numberOfAreas; index++)
 	{
@@ -410,6 +428,9 @@ static RDS_MSG_DEFINITION RDS_MSG_END_UPDATE_DEFINITION =
 
 int xrdp_read_set_clipping_region(wStream* s, RDS_MSG_SET_CLIPPING_REGION* msg)
 {
+	if (Stream_GetRemainingLength(s) < 10)
+		return -1;
+
 	Stream_Read_UINT16(s, msg->bNullRegion);
 	Stream_Read_UINT16(s, msg->nLeftRect);
 	Stream_Read_UINT16(s, msg->nTopRect);
@@ -468,6 +489,9 @@ static RDS_MSG_DEFINITION RDS_MSG_SET_CLIPPING_REGION_DEFINITION =
 
 int xrdp_read_opaque_rect(wStream* s, RDS_MSG_OPAQUE_RECT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 12)
+		return -1;
+
 	Stream_Read_UINT16(s, msg->nLeftRect);
 	Stream_Read_UINT16(s, msg->nTopRect);
 	Stream_Read_UINT16(s, msg->nWidth);
@@ -531,6 +555,9 @@ static RDS_MSG_DEFINITION RDS_MSG_OPAQUE_RECT_DEFINITION =
 
 int xrdp_read_screen_blt(wStream* s, RDS_MSG_SCREEN_BLT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 12)
+		return -1;
+
 	Stream_Read_UINT16(s, msg->nLeftRect);
 	Stream_Read_UINT16(s, msg->nTopRect);
 	Stream_Read_UINT16(s, msg->nWidth);
@@ -596,6 +623,9 @@ static RDS_MSG_DEFINITION RDS_MSG_SCREEN_BLT_DEFINITION =
 
 int xrdp_read_paint_rect(wStream* s, RDS_MSG_PAINT_RECT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 12)
+		return -1;
+
 	Stream_Read_UINT16(s, msg->nLeftRect);
 	Stream_Read_UINT16(s, msg->nTopRect);
 	Stream_Read_UINT16(s, msg->nWidth);
@@ -604,14 +634,21 @@ int xrdp_read_paint_rect(wStream* s, RDS_MSG_PAINT_RECT* msg)
 
 	if (msg->bitmapDataLength)
 	{
+		if (Stream_GetRemainingLength(s) < msg->bitmapDataLength)
+			return -1;
+
 		Stream_GetPointer(s, msg->bitmapData);
 		Stream_Seek(s, msg->bitmapDataLength);
 	}
 	else
 	{
+		if (Stream_GetRemainingLength(s) < 4)
+			return -1;
 		Stream_Read_UINT32(s, msg->fbSegmentId);
 	}
 
+	if (Stream_GetRemainingLength(s) < 8)
+		return -1;
 	Stream_Read_UINT16(s, msg->nWidth);
 	Stream_Read_UINT16(s, msg->nHeight);
 	Stream_Read_UINT16(s, msg->nXSrc);
@@ -703,6 +740,9 @@ static RDS_MSG_DEFINITION RDS_MSG_PAINT_RECT_DEFINITION =
 
 int xrdp_read_patblt(wStream* s, RDS_MSG_PATBLT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 60)
+		return -1;
+
 	Stream_Read_UINT32(s, msg->nLeftRect);
 	Stream_Read_UINT32(s, msg->nTopRect);
 	Stream_Read_UINT32(s, msg->nWidth);
@@ -786,6 +826,9 @@ static RDS_MSG_DEFINITION RDS_MSG_PATBLT_DEFINITION =
 
 int xrdp_read_dstblt(wStream* s, RDS_MSG_DSTBLT* msg)
 {
+	if (Stream_GetRemainingLength(s) < 20)
+		return -1;
+
 	Stream_Read_UINT32(s, msg->nLeftRect);
 	Stream_Read_UINT32(s, msg->nTopRect);
 	Stream_Read_UINT32(s, msg->nWidth);
@@ -849,6 +892,9 @@ static RDS_MSG_DEFINITION RDS_MSG_DSTBLT_DEFINITION =
 
 int xrdp_read_line_to(wStream* s, RDS_MSG_LINE_TO* msg)
 {
+	if (Stream_GetRemainingLength(s) < 8 * 4)
+		return -1;
+
 	Stream_Read_UINT32(s, msg->nXStart);
 	Stream_Read_UINT32(s, msg->nYStart);
 	Stream_Read_UINT32(s, msg->nXEnd);
@@ -913,6 +959,9 @@ static RDS_MSG_DEFINITION RDS_MSG_LINE_TO_DEFINITION =
 
 int xrdp_read_create_offscreen_surface(wStream* s, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
+	if (Stream_GetRemainingLength(s) < 8)
+		return -1;
+
 	Stream_Read_UINT32(s, msg->cacheIndex);
 	Stream_Read_UINT16(s, msg->nWidth);
 	Stream_Read_UINT16(s, msg->nHeight);
@@ -967,6 +1016,9 @@ static RDS_MSG_DEFINITION RDS_MSG_CREATE_OFFSCREEN_SURFACE_DEFINITION =
 
 int xrdp_read_switch_offscreen_surface(wStream* s, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
+	if (Stream_GetRemainingLength(s) < 4)
+		return -1;
+
 	Stream_Read_UINT32(s, msg->cacheIndex);
 
 	return 0;
@@ -1017,6 +1069,8 @@ static RDS_MSG_DEFINITION RDS_MSG_SWITCH_OFFSCREEN_SURFACE_DEFINITION =
 
 int xrdp_read_delete_offscreen_surface(wStream* s, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
+	if (Stream_GetRemainingLength(s) < 4)
+		return -1;
 	Stream_Read_UINT32(s, msg->cacheIndex);
 
 	return 0;
@@ -1067,6 +1121,8 @@ static RDS_MSG_DEFINITION RDS_MSG_DELETE_OFFSCREEN_SURFACE_DEFINITION =
 
 int xrdp_read_paint_offscreen_surface(wStream* s, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
+	if (Stream_GetRemainingLength(s) < 4 * 8)
+		return -1;
 	Stream_Read_UINT32(s, msg->cacheIndex);
 	Stream_Read_UINT32(s, msg->nLeftRect);
 	Stream_Read_UINT32(s, msg->nTopRect);
@@ -1244,15 +1300,22 @@ static RDS_MSG_DEFINITION RDS_MSG_GLYPH_INDEX_DEFINITION =
 
 int xrdp_read_set_pointer(wStream* s, RDS_MSG_SET_POINTER* msg)
 {
+	if (Stream_GetRemainingLength(s) < 10)
+		return -1;
+
 	Stream_Read_UINT16(s, msg->xPos);
 	Stream_Read_UINT16(s, msg->yPos);
 	Stream_Read_UINT16(s, msg->xorBpp);
 	Stream_Read_UINT16(s, msg->lengthXorMask);
 	Stream_Read_UINT16(s, msg->lengthAndMask);
 
+	if (Stream_GetRemainingLength(s) < msg->lengthXorMask)
+		return -1;
 	Stream_GetPointer(s, msg->xorMaskData);
 	Stream_Seek(s, msg->lengthXorMask);
 
+	if (Stream_GetRemainingLength(s) < msg->lengthAndMask)
+		return -1;
 	Stream_GetPointer(s, msg->andMaskData);
 	Stream_Seek(s, msg->lengthAndMask);
 
@@ -1345,11 +1408,66 @@ static RDS_MSG_DEFINITION RDS_MSG_SET_POINTER_DEFINITION =
 };
 
 /**
+ * SetSystemPointer
+ */
+
+int xrdp_read_set_system_pointer(wStream* s, RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	if (Stream_GetRemainingLength(s) < 4)
+		return -1;
+
+	Stream_Read_UINT32(s, msg->ptrType);
+	return 0;
+}
+
+int xrdp_write_set_system_pointer(wStream* s, RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (RDS_MSG_COMMON*) msg) +
+			4;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (RDS_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->ptrType);
+	return 0;
+}
+
+void* xrdp_set_system_pointer_copy(RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	RDS_MSG_SET_SYSTEM_POINTER* dup = NULL;
+
+	dup = (RDS_MSG_SET_SYSTEM_POINTER*) malloc(sizeof(RDS_MSG_SET_SYSTEM_POINTER));
+	CopyMemory(dup, msg, sizeof(RDS_MSG_SET_SYSTEM_POINTER));
+
+	return (void*) dup;
+}
+
+void xrdp_set_system_pointer_free(RDS_MSG_SET_SYSTEM_POINTER* msg)
+{
+	free(msg);
+}
+
+static RDS_MSG_DEFINITION RDS_MSG_SET_SYSTEM_POINTER_DEFINITION =
+{
+	sizeof(RDS_MSG_SET_SYSTEM_POINTER), "SetSystemPointer",
+	(pXrdpMessageRead) xrdp_read_set_system_pointer,
+	(pXrdpMessageWrite) xrdp_write_set_system_pointer,
+	(pXrdpMessageCopy) xrdp_set_system_pointer_copy,
+	(pXrdpMessageFree) xrdp_set_system_pointer_free
+};
+
+/**
  * SharedFramebuffer
  */
 
 int xrdp_read_shared_framebuffer(wStream* s, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 {
+	if (Stream_GetRemainingLength(s) < 4 * 7)
+		return -1;
+
 	Stream_Read_UINT32(s, msg->width);
 	Stream_Read_UINT32(s, msg->height);
 	Stream_Read_UINT32(s, msg->attach);
@@ -1719,6 +1837,9 @@ static RDS_MSG_DEFINITION RDS_MSG_WINDOW_NEW_UPDATE_DEFINITION =
 
 int xrdp_read_window_delete(wStream* s, RDS_MSG_WINDOW_DELETE* msg)
 {
+	if (Stream_GetRemainingLength(s) < 4)
+		return -1;
+
 	Stream_Read_UINT32(s, msg->windowId);
 
 	return 0;
@@ -1792,7 +1913,7 @@ static RDS_MSG_DEFINITION* RDS_SERVER_MSG_DEFINITIONS[32] =
 	&RDS_MSG_RESET_DEFINITION, /* 20 */
 	&RDS_MSG_WINDOW_NEW_UPDATE_DEFINITION, /* 21 */
 	&RDS_MSG_WINDOW_DELETE_DEFINITION, /* 22 */
-	NULL, /* 23 */
+	&RDS_MSG_SET_SYSTEM_POINTER_DEFINITION, /* 23 */
 	NULL, /* 24 */
 	NULL, /* 25 */
 	NULL, /* 26 */
