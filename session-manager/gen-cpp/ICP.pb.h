@@ -35,13 +35,16 @@ void protobuf_ShutdownFile_ICP_2eproto();
 
 class IsChannelAllowedRequest;
 class IsChannelAllowedResponse;
+class PingRequest;
+class PingResponse;
 
 enum MSGTYPE {
-  IsChannelAllowed = 1
+  IsChannelAllowed = 1,
+  Ping = 2
 };
 bool MSGTYPE_IsValid(int value);
 const MSGTYPE MSGTYPE_MIN = IsChannelAllowed;
-const MSGTYPE MSGTYPE_MAX = IsChannelAllowed;
+const MSGTYPE MSGTYPE_MAX = Ping;
 const int MSGTYPE_ARRAYSIZE = MSGTYPE_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* MSGTYPE_descriptor();
@@ -222,6 +225,160 @@ class IsChannelAllowedResponse : public ::google::protobuf::Message {
   void InitAsDefaultInstance();
   static IsChannelAllowedResponse* default_instance_;
 };
+// -------------------------------------------------------------------
+
+class PingRequest : public ::google::protobuf::Message {
+ public:
+  PingRequest();
+  virtual ~PingRequest();
+  
+  PingRequest(const PingRequest& from);
+  
+  inline PingRequest& operator=(const PingRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PingRequest& default_instance();
+  
+  void Swap(PingRequest* other);
+  
+  // implements Message ----------------------------------------------
+  
+  PingRequest* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const PingRequest& from);
+  void MergeFrom(const PingRequest& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // @@protoc_insertion_point(class_scope:freerds.icp.PingRequest)
+ private:
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[1];
+  
+  friend void  protobuf_AddDesc_ICP_2eproto();
+  friend void protobuf_AssignDesc_ICP_2eproto();
+  friend void protobuf_ShutdownFile_ICP_2eproto();
+  
+  void InitAsDefaultInstance();
+  static PingRequest* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class PingResponse : public ::google::protobuf::Message {
+ public:
+  PingResponse();
+  virtual ~PingResponse();
+  
+  PingResponse(const PingResponse& from);
+  
+  inline PingResponse& operator=(const PingResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PingResponse& default_instance();
+  
+  void Swap(PingResponse* other);
+  
+  // implements Message ----------------------------------------------
+  
+  PingResponse* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const PingResponse& from);
+  void MergeFrom(const PingResponse& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // required bool pong = 1;
+  inline bool has_pong() const;
+  inline void clear_pong();
+  static const int kPongFieldNumber = 1;
+  inline bool pong() const;
+  inline void set_pong(bool value);
+  
+  // @@protoc_insertion_point(class_scope:freerds.icp.PingResponse)
+ private:
+  inline void set_has_pong();
+  inline void clear_has_pong();
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  bool pong_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
+  friend void  protobuf_AddDesc_ICP_2eproto();
+  friend void protobuf_AssignDesc_ICP_2eproto();
+  friend void protobuf_ShutdownFile_ICP_2eproto();
+  
+  void InitAsDefaultInstance();
+  static PingResponse* default_instance_;
+};
 // ===================================================================
 
 
@@ -311,6 +468,36 @@ inline bool IsChannelAllowedResponse::channelallowed() const {
 inline void IsChannelAllowedResponse::set_channelallowed(bool value) {
   set_has_channelallowed();
   channelallowed_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// PingRequest
+
+// -------------------------------------------------------------------
+
+// PingResponse
+
+// required bool pong = 1;
+inline bool PingResponse::has_pong() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void PingResponse::set_has_pong() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void PingResponse::clear_has_pong() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void PingResponse::clear_pong() {
+  pong_ = false;
+  clear_has_pong();
+}
+inline bool PingResponse::pong() const {
+  return pong_;
+}
+inline void PingResponse::set_pong(bool value) {
+  set_has_pong();
+  pong_ = value;
 }
 
 

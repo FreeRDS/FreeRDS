@@ -2,6 +2,7 @@ package freerds.icp;
 
 enum MSGTYPE {
 	IsChannelAllowed = 1;
+	Ping             = 2;
 }
 
 message IsChannelAllowedRequest {
@@ -9,4 +10,11 @@ message IsChannelAllowedRequest {
 }
 message IsChannelAllowedResponse {
 	required bool ChannelAllowed = 1;
+}
+
+message PingRequest {
+}
+
+message PingResponse {
+	required bool pong = 1;
 }
