@@ -37,7 +37,7 @@ namespace freerds{
 		};
 
 		void Call::setTag(uint32_t tag) {
-			mTag = 0;
+			mTag = tag;
 		}
 
 		uint32_t Call::getTag() {
