@@ -17,47 +17,45 @@
  * limitations under the License.
  */
 
-
-		// TODO USE SMART POINTERS to guard the Sesison objects
-
-#ifndef SESSIONSTORE_H_
-#define SESSIONSTORE_H_
-
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "Session.h"
 
-#include <string>
-#include <winpr/synch.h>
-#include <map>
 
 namespace freerds{
 	namespace sessionmanager{
 		namespace session{
 
-		typedef std::map<long , Session*> TSessionMap;
-		typedef std::pair<long, Session*> TSessionPair;
+			Session::Session(long sessionID):mSessionID(sessionID) {
 
+			}
 
-		class SessionStore{
-		public:
-			SessionStore();
-			~SessionStore();
+			Session::~Session() {
 
-			Session *getSession(long sessionID);
-			Session *createSession();
-			int removeSession(long sessionID);
+			}
 
-		private:
-			TSessionMap mSessionMap;
-			long mNextSessionId;
-			CRITICAL_SECTION mCSection;
-		};
+			std::string Session::getGroup() {
+				return mGroupname;
+			}
+
+			void Session::setGroup(std::string groupname) {
+				mGroupname = groupname;
+			}
+
+			std::string Session::getUserName() {
+				return mUsername;
+			}
+
+			void Session::setUserName(std::string username) {
+				mUsername = username;
+			}
+
+			long Session::getSessionID() {
+				return mSessionID;
+			}
 
 		}
 	}
 }
-
-namespace sessionNS = freerds::sessionmanager::session;
-
-#endif

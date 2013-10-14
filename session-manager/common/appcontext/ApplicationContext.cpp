@@ -63,6 +63,11 @@ namespace freerds{
 		return &mSessionStore;
 	}
 
+	configNS::PropertyManager* ApplicationContext::getPropertyManager() {
+		return &mPropertyManager;
+	}
+
+
 	int ApplicationContext::startRPCEngine(){
 		return mRpcEngine.startEngine();
 	}

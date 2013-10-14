@@ -27,6 +27,7 @@
 #include <winpr/wlog.h>
 #include <call/CallOut.h>
 #include <module/ModuleManager.h>
+#include <config/PropertyManager.h>
 
 
 #define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
@@ -39,6 +40,7 @@ namespace freerds{
 		{
 		public:
 			sessionNS::SessionStore * getSessionStore();
+			configNS::PropertyManager * getPropertyManager();
 			int startRPCEngine();
 			int stopRPCEngine();
 
@@ -49,6 +51,7 @@ namespace freerds{
 
 		private:
 			sessionNS::SessionStore mSessionStore;
+			configNS::PropertyManager mPropertyManager;
 			pbRPC::RpcEngine mRpcEngine;
 			SignalingQueue<callNS::Call> mRpcOutgoingCalls;
 			wLog* mWLogRoot;

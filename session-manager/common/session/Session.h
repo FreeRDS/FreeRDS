@@ -1,5 +1,5 @@
 /**
- * Session store class
+ * Session class
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,41 +17,35 @@
  * limitations under the License.
  */
 
-
-		// TODO USE SMART POINTERS to guard the Sesison objects
-
-#ifndef SESSIONSTORE_H_
-#define SESSIONSTORE_H_
+#ifndef SESSION_H_
+#define SESSION_H_
 
 #include <config.h>
-
-#include "Session.h"
-
 #include <string>
-#include <winpr/synch.h>
-#include <map>
+#include <list>
 
 namespace freerds{
 	namespace sessionmanager{
 		namespace session{
 
-		typedef std::map<long , Session*> TSessionMap;
-		typedef std::pair<long, Session*> TSessionPair;
-
-
-		class SessionStore{
+		class Session{
 		public:
-			SessionStore();
-			~SessionStore();
+			Session(long sessionID);
+			~Session();
 
-			Session *getSession(long sessionID);
-			Session *createSession();
-			int removeSession(long sessionID);
+			//std::list<std::string> getGroups();
+			std::string getGroup();
+			void setGroup(std::string groupname);
+			std::string getUserName();
+			void setUserName(std::string username);
+
+			long getSessionID();
 
 		private:
-			TSessionMap mSessionMap;
-			long mNextSessionId;
-			CRITICAL_SECTION mCSection;
+			long mSessionID;
+			std::string mUsername;
+			std::string mGroupname;
+
 		};
 
 		}

@@ -22,20 +22,58 @@
 #endif
 
 #include "SessionStore.h"
+#include <winpr/wlog.h>
 
 
 namespace freerds{
 	namespace sessionmanager{
 		namespace session{
 
-			SessionStore::SessionStore() {
+		static wLog * logger_SessionStore = WLog_Get("freerds.sessionmanager.session.sessionstore");
 
+
+			SessionStore::SessionStore() {
+				if (!InitializeCriticalSectionAndSpinCount(&mCSection,
+				        0x00000400) )
+				{
+					 WLog_Print(logger_SessionStore, WLOG_FATAL, "cannot init SessionStore semaphore!");
+				}
+				mNextSessionId = 1;
 			}
 
 			SessionStore::~SessionStore() {
-
+				DeleteCriticalSection(&mCSection);
 			}
+
+			Session* SessionStore::getSession(long sessionID)
+			{
+				EnterCriticalSection(&mCSection);
+				Session* session = mSessionMap[sessionID];
+				LeaveCriticalSection(&mCSection);
+				return session;
+			}
+
+			Session* SessionStore::createSession()
+			{
+				EnterCriticalSection(&mCSection);
+				Session * session = new Session(mNextSessionId++);
+				mSessionMap[session->getSessionID()] = session;
+				LeaveCriticalSection(&mCSection);
+				return session;
+			}
+
+			int SessionStore::removeSession(long sessionID)
+			{
+				EnterCriticalSection(&mCSection);
+				Session * session = mSessionMap[sessionID];
+				mSessionMap.erase(sessionID);
+				delete session;
+				LeaveCriticalSection(&mCSection);
+				return 0;
+			}
+
 
 		}
 	}
 }
+

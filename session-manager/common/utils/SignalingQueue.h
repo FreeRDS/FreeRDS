@@ -26,13 +26,18 @@
 template<typename QueueElement> class SignalingQueue {
 public:
 	SignalingQueue() {
+		if (!InitializeCriticalSectionAndSpinCount(&mCSection,
+		        0x00000400) )
+		{
+			// todo report error
+		}
+
 		mSignalHandle = CreateEvent(NULL,TRUE,FALSE,NULL);
-		mMutex = CreateMutex(NULL,FALSE,NULL);
 	}
 
 	~SignalingQueue() {
 		CloseHandle(mSignalHandle);
-		CloseHandle(mMutex);
+		DeleteCriticalSection(&mCSection);
 	}
 
 	HANDLE getSignalHandle() {
@@ -40,19 +45,19 @@ public:
 	}
 
 	void addElement(QueueElement * element) {
-		WaitForSingleObject(mMutex, INFINITE);
+		EnterCriticalSection(&mCSection);
 		mlist.push_back(element);
 		SetEvent(mSignalHandle);
-		ReleaseMutex(mMutex);
+		LeaveCriticalSection(&mCSection);
 	}
 
 	void lockQueue() {
-		WaitForSingleObject(mMutex, INFINITE);
+		EnterCriticalSection(&mCSection);
 	}
 
 	void resetEventAndLockQueue() {
 		ResetEvent(mSignalHandle);
-		WaitForSingleObject(mMutex, INFINITE);
+		EnterCriticalSection(&mCSection);
 	}
 
 
@@ -64,12 +69,13 @@ public:
 	}
 
 	void unlockQueue () {
-		ReleaseMutex(mMutex);
+		LeaveCriticalSection(&mCSection);
 	}
 
 private:
 	HANDLE mSignalHandle;
-	HANDLE mMutex;
+	//HANDLE mMutex;
+	CRITICAL_SECTION mCSection;
 	std::list<QueueElement *> mlist;
 };
 

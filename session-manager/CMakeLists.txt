@@ -92,6 +92,7 @@ set(${MODULE_PREFIX}_SRCS
 	main.cpp 
 	common/appcontext/ApplicationContext.cpp 
 	common/session/SessionStore.cpp
+	common/session/Session.cpp
 	common/call/Call.cpp
 	common/call/CallIn.cpp
 	common/call/CallOut.cpp
@@ -101,7 +102,9 @@ set(${MODULE_PREFIX}_SRCS
 	gen-cpp/pbRPC.pb.cc
 	gen-cpp/ICP.pb.cc
 	common/module/ModuleManager.cpp
-	common/module/Module.cpp)
+	common/module/Module.cpp
+	common/config/PropertyManager.cpp
+	common/config/PropertyCWrapper.cpp)
  
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
