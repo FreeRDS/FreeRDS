@@ -23,6 +23,7 @@
 #endif
 
 #include "xrdp.h"
+#include <freerds/icp.h>
 
 #include "os_calls.h"
 
@@ -255,6 +256,7 @@ int main(int argc, char** argv)
 	pid = g_getpid();
 
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	freerds_icp_start();
 
 	xrdp_listen_main_loop(g_listen);
 	xrdp_listen_delete(g_listen);
@@ -268,6 +270,7 @@ int main(int argc, char** argv)
 		g_file_delete(pid_file);
 	}
 
+	freerds_icp_shutdown();
 	g_deinit();
 
 	return 0;

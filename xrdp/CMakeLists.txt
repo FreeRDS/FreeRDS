@@ -54,6 +54,7 @@ set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-x11)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-rdp)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
 
 list(APPEND ${MODULE_PREFIX}_LIBS ${RDS_NG_MODULE}-common)
 
