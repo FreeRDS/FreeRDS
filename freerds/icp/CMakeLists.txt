@@ -29,9 +29,14 @@ set(PBRPC_SRC
 	${PBRPC_PREFIX}/${PROTOC_OUT}/pbRPC.pb-c.c
 )
 
+include_directories(${PROTOC_OUT})
 include_directories(${PBRPC_PREFIX})
 include_directories(${PBRPC_PREFIX}/${PROTOC_OUT})
+
 set(${MODULE_PREFIX}_SRCS
+	icp.c
+	icp_client_stubs.c
+	icp_server_stubs.c
 	${PROTOC_OUT}/ICP.pb-c.c
 	${PBRPC_SRC}
 )
