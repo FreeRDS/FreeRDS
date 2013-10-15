@@ -16,3 +16,4 @@
 # limitations under the License.
 
 add_subdirectory(module)
+add_subdirectory(icp)
