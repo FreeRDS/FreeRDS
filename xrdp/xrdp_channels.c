@@ -22,6 +22,7 @@
 #endif
 
 #include "xrdp_channels.h"
+#include <freerds/icp_client_stubs.h>
 
 int xrdp_channels_post_connect(rdsSession* session)
 {
@@ -30,8 +31,13 @@ int xrdp_channels_post_connect(rdsSession* session)
 
 	for (i = 0; i < settings->ChannelCount; i++)
 	{
+
 		if (settings->ChannelDefArray[i].joined)
 		{
+			BOOL allowed = FALSE;
+
+			freerds_icp_IsChannelAllowed(session->id, settings->ChannelDefArray[i].Name, &allowed);
+			printf("channel %s is %s\n", settings->ChannelDefArray[i].Name, allowed ? "allowed" : "not allowed");
 #if 0
 			if (strncmp(settings->ChannelDefArray[i].Name, "cliprdr", 7) == 0)
 			{
