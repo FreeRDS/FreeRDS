@@ -39,6 +39,31 @@ struct pbrpc_transaction
 };
 typedef struct pbrpc_transaction pbRPCTransaction;
 
+pbRPCTransaction *pbrpc_transaction_new()
+{
+	pbRPCTransaction *ta = malloc(sizeof(pbRPCTransaction));
+	ZeroMemory(ta, sizeof(pbRPCTransaction));
+	return ta;
+}
+
+void pbrpc_transaction_free(pbRPCTransaction* ta)
+{
+	if (!ta)
+		return;
+	free(ta);
+}
+
+static void queu_item_free(void *obj)
+{
+	pbrpc_message_free((Freerds__Pbrpc__RPCBase *)obj, FALSE);
+}
+
+static void list_dictionary_item_free(void *item)
+{
+	wListDictionaryItem *di = (wListDictionaryItem *)item;
+	pbrpc_transaction_free((pbRPCTransaction *)(di->value));
+}
+
 pbRPCContext *pbrpc_server_new(pbRPCTransportContext *transport)
 {
 	pbRPCContext *context = malloc(sizeof(pbRPCContext));
@@ -46,7 +71,9 @@ pbRPCContext *pbrpc_server_new(pbRPCTransportContext *transport)
 	context->stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	context->transport = transport;
 	context->transactions = ListDictionary_New(TRUE);
+	context->transactions->object.fnObjectFree = list_dictionary_item_free;
 	context->writeQueue = Queue_New(TRUE, -1, -1);
+	context->writeQueue->object.fnObjectFree = queu_item_free;
 	return context;
 }
 
@@ -238,9 +265,15 @@ static int pbrpc_transport_open(pbRPCContext *context)
 
 static void pbrpc_reconnect(pbRPCContext *context)
 {
+	pbRPCTransaction *ta = NULL;
 	context->isConnected = FALSE;
 	context->transport->close(context->transport);
 	Queue_Clear(context->writeQueue);
+	while ((ta = ListDictionary_Remove_Head(context->transactions)))
+	{
+		ta->errorReason  = PBRCP_TRANSPORT_ERROR;
+		SetEvent(ta->Event);
+	}
 	if (0 != pbrpc_transport_open(context))
 		return;
 	context->isConnected = TRUE;
@@ -315,21 +348,6 @@ int pbrpc_server_stop(pbRPCContext *context)
 	return 0;
 }
 
-pbRPCTransaction *pbrpc_transaction_new()
-{
-	pbRPCTransaction *ta = malloc(sizeof(pbRPCTransaction));
-	ZeroMemory(ta, sizeof(pbRPCTransaction));
-	return ta;
-}
-
-void pbrpc_transaction_free(pbRPCTransaction* ta)
-{
-	if (!ta)
-		return;
-	free(ta);
-}
-
-
 int pbrpc_call_method(pbRPCContext *context, UINT32 type, pbRPCPayload *request, pbRPCPayload **response)
 {
 	Freerds__Pbrpc__RPCBase *message;
@@ -357,10 +375,17 @@ int pbrpc_call_method(pbRPCContext *context, UINT32 type, pbRPCPayload *request,
 	wait_ret = WaitForSingleObject(ta->Event,PBRPC_TIMEOUT);
 	if (wait_ret != WAIT_OBJECT_0)
 	{
-		ListDictionary_Remove(context->transactions, (void *)((UINT_PTR)(tag)));
-		CloseHandle(ta->Event);
-		pbrpc_transaction_free(ta);
-		return PBRCP_CALL_TIMEOUT;
+		if(!ListDictionary_Remove(context->transactions, (void *)((UINT_PTR)(tag))))
+		{
+			// special case - timeout occurred but request is already processing
+			WaitForSingleObject(ta->Event,INFINITE);
+		}
+		else
+		{
+			CloseHandle(ta->Event);
+			pbrpc_transaction_free(ta);
+			return PBRCP_CALL_TIMEOUT;
+		}
 	}
 
 	CloseHandle(ta->Event);
