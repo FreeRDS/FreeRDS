@@ -55,8 +55,9 @@ void pbrpc_server_free(pbRPCContext *context)
 	if (!context)
 		return;
 	CloseHandle(context->stopEvent);
-	ListDictionary_Clear(context->transactions);
-	Queue_Clear(context->writeQueue);
+	CloseHandle(context->thread);
+	ListDictionary_Free(context->transactions);
+	Queue_Free(context->writeQueue);
 	free(context);
 }
 
