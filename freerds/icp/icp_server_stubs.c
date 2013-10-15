@@ -19,6 +19,7 @@
  */
 #include "icp_server_stubs.h"
 #include "ICP.pb-c.h"
+#include "pbrpc_utils.h"
 
 #define ICP_SERVER_STUB_SETUP(camel, expanded) \
 	Freerds__Icp__##camel ##Request *request; \
