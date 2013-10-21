@@ -51,6 +51,7 @@
 
 #include "../module/X11/x11_module.h"
 #include "../module/RDP/rdp_module.h"
+#include "../module/CEF/cef_module.h"
 
 extern char* RdsModuleName;
 
@@ -110,6 +111,8 @@ rdsModule* xrdp_module_new(rdsSession* session)
 		RDP_RdsModuleEntry(&EntryPoints);
 	else if (strcmp(RdsModuleName, "X11") == 0)
 		X11_RdsModuleEntry(&EntryPoints);
+	else if (strcmp(RdsModuleName, "CEF") == 0)
+		CEF_RdsModuleEntry(&EntryPoints);
 
 	settings = session->settings;
 

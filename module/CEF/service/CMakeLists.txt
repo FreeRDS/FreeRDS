@@ -15,6 +15,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(X11)
-add_subdirectory(RDP)
-add_subdirectory(CEF)
+set(MODULE_NAME "freerds-cef-service")
+set(MODULE_PREFIX "FREERDS_CEF_SERVICE")
+
+set(${MODULE_PREFIX}_SRCS
+	cef_service.c
+	cef_service.h)
+
+add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+
+set_target_properties(${MODULE_NAME} PROPERTIES OUTPUT_NAME "freerds-cef" RUNTIME_OUTPUT_DIRECTORY "..")
+
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
+
+set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
+	MONOLITHIC ${MONOLITHIC_BUILD}
+	MODULE winpr
+	MODULES winpr-crt winpr-synch winpr-thread winpr-environment winpr-utils)
+
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
+
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+

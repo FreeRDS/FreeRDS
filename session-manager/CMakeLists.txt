@@ -21,42 +21,16 @@ cmake_minimum_required(VERSION 2.8)
 
 project(freerds-session-manager CXX)
 
-if(FREERDP_VERSION)
-	set(FREERDP_BUILD ON)
-endif()
-
 add_subdirectory(module)
 
-set(FRDS_SM_VERSION_MAJOR "0")
-set(FRDS_SM_VERSION_MINOR "1")
-set(FRDS_SM_VERSION_REVISION "0")
-set(FRDS_SM_VERSION "${FRDS_SM_VERSION_MAJOR}.${FRDS_SM_VERSION_MINOR}")
-set(FRDS_SM_VERSION_FULL "${FRDS_SM_VERSION}.${FRDS_SM_VERSION_REVISION}")
+set(MODULE_PREFIX "FREERDS_SESSION_MANAGER")
+set(MODULE_NAME "freerds-session-manager")
 
-set(CMAKE_COLOR_MAKEFILE ON)
-
-include(CheckIncludeFiles)
-include(CheckLibraryExists)
-include(CheckStructHasMember)
-include(FindPkgConfig)
-include(TestBigEndian)
-
-if(NOT FREERDP_BUILD)
-	set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/)
-endif()
-
-include(CheckCmakeCompat)
-
-include(FindFeature)
-include(AutoVersioning)
-include(ConfigOptions)
-include(ComplexLibrary)
-include(FeatureSummary)
-include(CheckCCompilerFlag)
-include(GNUInstallDirsWrapper)
-
-set(MODULE_PREFIX "SESSION_MANAGER")
-set(MODULE_NAME "session-manager")
+set(FREERDS_SESSION_MANAGER_VERSION_MAJOR "0")
+set(FREERDS_SESSION_MANAGER_VERSION_MINOR "1")
+set(FREERDS_SESSION_MANAGER_VERSION_REVISION "0")
+set(FREERDS_SESSION_MANAGER_VERSION "${FREERDS_SESSION_MANAGER_VERSION_MAJOR}.${FREERDS_SESSION_MANAGER_VERSION_MINOR}")
+set(FREERDS_SESSION_MANAGER_VERSION_FULL "${FREERDS_SESSION_MANAGER_VERSION}.${FREERDS_SESSION_MANAGER_VERSION_REVISION}")
 
 get_directory_property(INCLUDE_DIRECTORIES INCLUDE_DIRECTORIES)
 list(REMOVE_ITEM INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}")
@@ -65,24 +39,7 @@ include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-find_package(Threads REQUIRED)
-
-add_definitions("-DHAVE_CONFIG_H")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}:\$ORIGIN/..")
-
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE "Release")
-endif()
-
 find_feature(Protobuf REQUIRED "RPC" "Remote Procedure Call")
-
-find_package(Protobuf REQUIRED)
 
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
@@ -112,5 +69,8 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr
 	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-pipe winpr-library)
-	
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS}  ${PROTOBUF_LIBRARY})
+
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY})
+
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
