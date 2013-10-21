@@ -110,7 +110,7 @@ add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE session-manager
+	MODULE winpr
 	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-pipe winpr-library)
-				
+	
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS}  ${PROTOBUF_LIBRARY})
