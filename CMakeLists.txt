@@ -117,7 +117,7 @@ add_subdirectory(instfiles)
 add_subdirectory(module)
 
 if(WITH_X11RDP)
-	add_subdirectory(xorg/rdp)
+	add_subdirectory(xorg)
 endif()
 
 add_subdirectory(session-manager)

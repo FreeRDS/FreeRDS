@@ -10,13 +10,20 @@ include(FindPackageHandleStandardArgs)
 set(MODULE_NAME "X11rdp")
 set(MODULE_PREFIX "X11RDP")
 
-set(XSRCBASE_RELATIVE "../xorg-server")
-set(XOBJBASE_RELATIVE "../xorg-server")
+if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../xorg-xserver")
+	set(XSRCBASE_RELATIVE "../xorg-server")
+	set(XOBJBASE_RELATIVE "../xorg-server")
+else()
+	set(XSRCBASE_RELATIVE "../external/Source/xorg-server")
+	set(XOBJBASE_RELATIVE "../external/Source/xorg-server")
+endif()
+
+message(STATUS "Using xorg-server sources in ${XSRCBASE_RELATIVE}")
 
 # include local settings to overwrite/set some build options
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/LocalConfigSettings.cmake)
-message(STATUS "Using local settings")
-include(${CMAKE_CURRENT_SOURCE_DIR}/LocalConfigSettings.cmake)
+	message(STATUS "Using local settings")
+	include(${CMAKE_CURRENT_SOURCE_DIR}/LocalConfigSettings.cmake)
 else()
 endif()
 
@@ -144,9 +151,14 @@ set(${MODULE_PREFIX}_SRCS
 	rdpSetSpans.h
 	rdpup.c)
 
-set(${MODULE_PREFIX}_SRCS ${${MODULE_PREFIX}_SRCS}
+set(${MODULE_PREFIX}_XORG_XSERVER_SRCS
 	${XSRCBASE_RELATIVE}/mi/miinitext.c
 	${XSRCBASE_RELATIVE}/fb/fbcmap_mi.c)
+
+set_source_files_properties(${${MODULE_PREFIX}_XORG_XSERVER_SRCS} GENERATED)
+
+set(${MODULE_PREFIX}_SRCS ${${MODULE_PREFIX}_SRCS}
+	${${MODULE_PREFIX}_XORG_XSERVER_SRCS})
 
 add_library("composite-static" STATIC IMPORTED)
 set_property(TARGET "composite-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/composite/.libs/libcomposite.a")
@@ -229,6 +241,8 @@ set(${MODULE_PREFIX}_DEFINES "-DHAVE_XORG_CONFIG_H -DXF86PM")
 add_definitions(${${MODULE_PREFIX}_DEFINES})
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+
+add_dependencies(${MODULE_NAME} xorg-server)
 
 set(${MODULE_PREFIX}_LIBS z m freetype rt crypto dl ${CMAKE_THREAD_LIBS_INIT})
 
