@@ -131,10 +131,11 @@ int rdp_rds_module_stop(rdsModule* module)
 	return 0;
 }
 
-int RDP_RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
+int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 {
 	pEntryPoints->Version = 1;
 	pEntryPoints->Size = sizeof(RDS_MODULE_ENTRY_POINTS_V1);
+	pEntryPoints->Name = "RDP";
 
 	pEntryPoints->ContextSize = sizeof(rdsModuleRdp);
 	pEntryPoints->New = rdp_rds_module_new;

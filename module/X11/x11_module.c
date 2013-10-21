@@ -155,10 +155,11 @@ int x11_rds_module_stop(rdsModule* module)
 	return 0;
 }
 
-int X11_RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
+int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 {
 	pEntryPoints->Version = 1;
 	pEntryPoints->Size = sizeof(RDS_MODULE_ENTRY_POINTS_V1);
+	pEntryPoints->Name = "X11";
 
 	pEntryPoints->ContextSize = sizeof(rdsModuleX11);
 	pEntryPoints->New = x11_rds_module_new;

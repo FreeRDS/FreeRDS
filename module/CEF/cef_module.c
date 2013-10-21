@@ -133,10 +133,11 @@ int cef_rds_module_stop(rdsModule* module)
 	return 0;
 }
 
-int CEF_RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
+int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 {
 	pEntryPoints->Version = 1;
 	pEntryPoints->Size = sizeof(RDS_MODULE_ENTRY_POINTS_V1);
+	pEntryPoints->Name = "CEF";
 
 	pEntryPoints->ContextSize = sizeof(rdsModuleCef);
 	pEntryPoints->New = cef_rds_module_new;

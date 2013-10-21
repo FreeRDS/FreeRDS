@@ -22,6 +22,6 @@
 
 #include <freerds/freerds.h>
 
-int RDP_RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
+int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
 
 #endif /* FREERDS_MODULE_RDP_H */

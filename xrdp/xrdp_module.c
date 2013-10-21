@@ -41,17 +41,15 @@
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
 #include <winpr/path.h>
+#include <winpr/file.h>
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/stream.h>
+#include <winpr/library.h>
 #include <winpr/sspicli.h>
 #include <winpr/environment.h>
 
 #include <freerdp/freerdp.h>
-
-#include "../module/X11/x11_module.h"
-#include "../module/RDP/rdp_module.h"
-#include "../module/CEF/cef_module.h"
 
 extern char* RdsModuleName;
 
@@ -91,6 +89,35 @@ int xrdp_client_check_event_handles(rdsModule* module)
 	return status;
 }
 
+pRdsModuleEntry freerds_load_dynamic_module(const char* name)
+{
+	char* lowerName;
+	HINSTANCE library;
+	char moduleFileName[256];
+	pRdsModuleEntry moduleEntry;
+
+	lowerName = _strdup(name);
+	CharLowerA(lowerName);
+
+	sprintf_s(moduleFileName, sizeof(moduleFileName), RDS_LIB_PATH "/libfreerds-%s.so", lowerName);
+
+	free(lowerName);
+
+	library = LoadLibraryA(moduleFileName);
+
+	if (!library)
+		return NULL;
+
+	moduleEntry = GetProcAddress(library, RDS_MODULE_ENTRY_POINT_NAME);
+
+	if (moduleEntry)
+		return moduleEntry;
+
+	FreeLibrary(library);
+
+	return NULL;
+}
+
 rdsModule* xrdp_module_new(rdsSession* session)
 {
 	int error_code;
@@ -98,6 +125,7 @@ rdsModule* xrdp_module_new(rdsSession* session)
 	rdsModule* module;
 	rdpSettings* settings;
 	rdsConnector* connector;
+	pRdsModuleEntry moduleEntry;
 	RDS_MODULE_ENTRY_POINTS EntryPoints;
 
 	ZeroMemory(&EntryPoints, sizeof(EntryPoints));
@@ -107,12 +135,17 @@ rdsModule* xrdp_module_new(rdsSession* session)
 	if (!RdsModuleName)
 		RdsModuleName = _strdup("X11");
 
-	if (strcmp(RdsModuleName, "RDP") == 0)
-		RDP_RdsModuleEntry(&EntryPoints);
-	else if (strcmp(RdsModuleName, "X11") == 0)
-		X11_RdsModuleEntry(&EntryPoints);
-	else if (strcmp(RdsModuleName, "CEF") == 0)
-		CEF_RdsModuleEntry(&EntryPoints);
+	moduleEntry = freerds_load_dynamic_module(RdsModuleName);
+
+	if (moduleEntry)
+	{
+		moduleEntry(&EntryPoints);
+	}
+	else
+	{
+		fprintf(stderr, "failed to load module");
+		return NULL;
+	}
 
 	settings = session->settings;
 

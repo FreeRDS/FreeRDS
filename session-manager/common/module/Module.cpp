@@ -48,7 +48,7 @@ namespace freerds{
 					WLog_Print(logger_Module, WLOG_ERROR, "not all passed function pointers are set for module %s",mModuleFile.c_str());
 					return -1;
 				}
-				if (entrypoints->ModuleName == NULL) {
+				if (entrypoints->Name == NULL) {
 					 WLog_Print(logger_Module, WLOG_ERROR, "no ModuleName is set for module %s",mModuleFile.c_str());
 
 					return -1;
@@ -57,7 +57,7 @@ namespace freerds{
 				mfpNew = entrypoints->New;
 				mfpStart = entrypoints->Start;
 				mfpStop = entrypoints->Stop;
-				mModuleName = std::string(entrypoints->ModuleName);
+				mModuleName = std::string(entrypoints->Name);
 				return 0;
 			}
 

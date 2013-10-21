@@ -22,6 +22,6 @@
 
 #include <freerds/freerds.h>
 
-int CEF_RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
+int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
 
 #endif /* FREERDS_MODULE_CEF_H */
