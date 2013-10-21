@@ -18,6 +18,31 @@
 set(MODULE_NAME "freerds-cef")
 set(MODULE_PREFIX "FREERDS_CEF")
 
+find_path(CEF_INCLUDE_DIR
+	NAMES cef_version.h
+	PATHS /opt/cef/include)
+
+find_library(CEF_DEBUG_LIBRARY
+	NAMES cef
+	PATHS /opt/cef/Debug)
+
+find_library(CEF_RELEASE_LIBRARY
+	NAMES cef
+	PATHS /opt/cef/Release)
+
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+	set(CEF_LIBRARY ${CEF_DEBUG_LIBRARY})
+else()
+	set(CEF_LIBRARY ${CEF_RELEASE_LIBRARY})
+endif()
+
+find_package_handle_standard_args(CEF DEFAULT_MSG CEF_LIBRARY CEF_INCLUDE_DIR)
+
+if(CEF_FOUND)
+	set(CEF_LIBRARIES ${CEF_LIBRARY})
+	set(CEF_INCLUDE_DIRS ${CEF_INCLUDE_DIR})
+endif()
+
 set(${MODULE_PREFIX}_SRCS
 	cef_module.c
 	cef_module.h)
@@ -35,5 +60,7 @@ target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-add_subdirectory(service)
+if(CEF_FOUND)
+	add_subdirectory(service)
+endif()
 

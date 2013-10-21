@@ -22,11 +22,15 @@ set(${MODULE_PREFIX}_SRCS
 	cef_service.c
 	cef_service.h)
 
+include_directories(${CEF_INCLUDE_DIRS})
+
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set_target_properties(${MODULE_NAME} PROPERTIES OUTPUT_NAME "freerds-cef" RUNTIME_OUTPUT_DIRECTORY "..")
 
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
+
+list(APPEND ${MODULE_PREFIX}_LIBS ${CEF_LIBRARIES})
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
