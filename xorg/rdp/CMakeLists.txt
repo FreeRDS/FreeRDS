@@ -10,7 +10,7 @@ include(FindPackageHandleStandardArgs)
 set(MODULE_NAME "X11rdp")
 set(MODULE_PREFIX "X11RDP")
 
-if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../xorg-xserver")
+if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../xorg-server")
 	set(XSRCBASE_RELATIVE "../xorg-server")
 	set(XOBJBASE_RELATIVE "../xorg-server")
 else()

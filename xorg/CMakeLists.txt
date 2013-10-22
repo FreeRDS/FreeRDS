@@ -17,6 +17,7 @@
 
 include(ExternalProject)
 
+if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/xorg-server")
 set(EXTERNAL_PROJECTS_BASE "${CMAKE_CURRENT_BINARY_DIR}/external")
 set_property(DIRECTORY PROPERTY "EP_BASE" ${EXTERNAL_PROJECTS_BASE})
 
@@ -32,7 +33,7 @@ set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}
 set(${EXTERNAL_PROJECT}_EXT ".tar.bz2")
 set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
 set(${EXTERNAL_PROJECT}_URL "http://xorg.freedesktop.org/releases/individual/xserver/${${EXTERNAL_PROJECT}_FILE}")
-set(${EXTERNAL_PROJECT}_CONFIGURE "${COMMON_CONFIGURE_OPTS};--with-sha1=libcrypto;--disable-dmx;--enable-mitshm;--enable-composite;--enable-dri;--enable-dri2;--enable-glx;--enable-libdrm")
+set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=/usr;--with-sha1=libcrypto;--disable-dpms")
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")
 
@@ -42,6 +43,7 @@ ExternalProject_Add(${EXTERNAL_PROJECT}
 	CONFIGURE_COMMAND "${EXTERNAL_PROJECTS_BASE}/Source/${EXTERNAL_PROJECT}/configure" ${${EXTERNAL_PROJECT}_CONFIGURE}
 	BUILD_IN_SOURCE 1
 	INSTALL_COMMAND "")
-
+endif()
+	
 add_subdirectory(rdp)
 
