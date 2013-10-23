@@ -17,7 +17,7 @@
 
 include(ExternalProject)
 
-if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/xorg-server")
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/xorg-server")
 set(EXTERNAL_PROJECTS_BASE "${CMAKE_CURRENT_BINARY_DIR}/external")
 set_property(DIRECTORY PROPERTY "EP_BASE" ${EXTERNAL_PROJECTS_BASE})
 

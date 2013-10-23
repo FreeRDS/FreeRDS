@@ -10,7 +10,7 @@ include(FindPackageHandleStandardArgs)
 set(MODULE_NAME "X11rdp")
 set(MODULE_PREFIX "X11RDP")
 
-if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../xorg-server")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../xorg-server")
 	set(XSRCBASE_RELATIVE "../xorg-server")
 	set(XOBJBASE_RELATIVE "../xorg-server")
 else()
@@ -27,8 +27,13 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/LocalConfigSettings.cmake)
 else()
 endif()
 
-set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
-set(XOBJBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XOBJBASE_RELATIVE}")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../xorg-server")
+	set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
+	set(XOBJBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XOBJBASE_RELATIVE}")
+else()
+	set(XSRCBASE "${CMAKE_CURRENT_BINARY_DIR}/${XSRCBASE_RELATIVE}")
+	set(XOBJBASE "${CMAKE_CURRENT_BINARY_DIR}/${XOBJBASE_RELATIVE}")
+endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -fno-strength-reduce")
 
@@ -152,8 +157,8 @@ set(${MODULE_PREFIX}_SRCS
 	rdpup.c)
 
 set(${MODULE_PREFIX}_XORG_XSERVER_SRCS
-	${XSRCBASE_RELATIVE}/mi/miinitext.c
-	${XSRCBASE_RELATIVE}/fb/fbcmap_mi.c)
+	${XSRCBASE}/mi/miinitext.c
+	${XSRCBASE}/fb/fbcmap_mi.c)
 
 set_source_files_properties(${${MODULE_PREFIX}_XORG_XSERVER_SRCS} GENERATED)
 
