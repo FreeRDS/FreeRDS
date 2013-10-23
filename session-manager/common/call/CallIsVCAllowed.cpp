@@ -40,7 +40,7 @@ namespace freerds{
 		};
 
 		unsigned long CallIsVCAllowed::getCallType() {
-			return 1;
+			return freerds::icp::IsChannelAllowed;
 		};
 
 		int CallIsVCAllowed::decodeRequest() {
