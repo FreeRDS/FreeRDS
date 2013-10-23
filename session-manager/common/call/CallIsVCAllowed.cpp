@@ -22,7 +22,6 @@
 #endif
 
 #include "CallIsVCAllowed.h"
-#include <ICP.pb.h>
 
 using freerds::icp::IsChannelAllowedRequest;
 using freerds::icp::IsChannelAllowedResponse;

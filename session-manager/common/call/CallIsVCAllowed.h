@@ -22,6 +22,7 @@
 #include "CallFactory.h"
 #include <string>
 #include "CallIn.h"
+#include <ICP.pb.h>
 
 
 namespace freerds{
@@ -46,7 +47,7 @@ namespace freerds{
 
 			};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallIsVCAllowed,1);
+			FACTORY_REGISTER_DWORD(CallFactory,CallIsVCAllowed,freerds::icp::IsChannelAllowed);
 		}
 	}
 }
