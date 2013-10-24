@@ -42,6 +42,11 @@ namespace freerds{
 
 
 			private:
+				std::string mUserName;
+				std::string mDomainName;
+
+				long mSessionID;
+				std::string mPipeName;
 
 			};
 

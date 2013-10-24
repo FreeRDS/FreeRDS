@@ -45,6 +45,7 @@ namespace freerds{
 		WLog_Layout_SetPrefixFormat(mWLogRoot, layout, "[%lv:%mn] [%fl|%fn|%ln] - ");
 
 		WLog_OpenAppender(mWLogRoot);
+		WLog_SetLogLevel(mWLogRoot, WLOG_TRACE);
 		setupTestingPropValues();
 
 	}

@@ -28,6 +28,7 @@
 #include "os_calls.h"
 
 #include <winpr/cmdline.h>
+#include <freerds/icp_client_stubs.h>
 
 char* RdsModuleName = NULL;
 static HANDLE g_TermEvent = NULL;
@@ -90,6 +91,8 @@ int main(int argc, char** argv)
 	char pid_file[256];
 	char cfg_file[256];
 	COMMAND_LINE_ARGUMENT_A* arg;
+	long sessionid;
+	char * pipe;
 
 	g_init("xrdp");
 
@@ -259,6 +262,7 @@ int main(int argc, char** argv)
 	printf("starting icp and waiting for session manager \n");
 	freerds_icp_start();
 	printf("connected to session manager\n");
+	freerds_icp_GetUserSession("demo1","HUG",&sessionid,&pipe);
 
 	xrdp_listen_main_loop(g_listen);
 	xrdp_listen_delete(g_listen);

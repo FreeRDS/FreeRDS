@@ -121,7 +121,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	//freerds_named_pipe_clean(SessionId, "X11rdp");
 	pipeName = (char *)malloc(256);
-	sprintf_s(pipeName, 256, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, "X11");
+	sprintf_s(pipeName, 256, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId+10, "X11");
 
 	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
 
@@ -155,7 +155,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	x11_rds_module_reset_process_informations(x11);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds",
-			"X11rdp", (int) SessionId, xres, yres, colordepth);
+			"X11rdp", (int) (SessionId+10), xres, yres, colordepth);
 
 	status = CreateProcessA(NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
@@ -164,7 +164,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	fprintf(stderr, "Process started: %d\n", status);
 
 	//hClientPipe = freerds_named_pipe_connect(SessionId, "X11",5 * 1000);
-	if (!WaitNamedPipeA(pipeName, 5 * 1000))
+	if (!WaitNamedPipeA(pipeName, 5 * 10000))
 	{
 		fprintf(stderr, "WaitNamedPipe failure: %s\n", pipeName);
 		return NULL;
