@@ -1,8 +1,9 @@
 /**
- * Class for rpc call IsVirtualChannelAllowed (freerds to session manager)
+ * Class for rpc call Ping (freerds to session manager)
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.at>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +18,8 @@
  * limitations under the License.
  */
 
-#ifndef CALL_IS_VIRTUAL_CHANNEL_ALLOWED_H_
-#define CALL_IS_VIRTUAL_CHANNEL_ALLOWED_H_
+#ifndef _CALL_IN_PING_H_
+#define _CALL_IN_PING_H_
 #include "CallFactory.h"
 #include <string>
 #include "CallIn.h"
@@ -52,4 +53,4 @@ namespace freerds{
 
 namespace callNS = freerds::sessionmanager::call;
 
-#endif
+#endif // _CALL_IN_PING_H_
