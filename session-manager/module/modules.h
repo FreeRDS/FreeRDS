@@ -43,7 +43,7 @@ struct rds_module_entry_points_v1
 
 	pRdsModuleStart Start;
 	pRdsModuleStop Stop;
-	char * ModuleName;
+	char * Name;
 
 	pgetPropertyBool getPropertyBool;
 	pgetPropertyNumber getPropertyNumber;

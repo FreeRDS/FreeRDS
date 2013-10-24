@@ -222,7 +222,7 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Start = x11_rds_module_start;
 	pEntryPoints->Stop = x11_rds_module_stop;
 
-	pEntryPoints->ModuleName = X11_MODULE_NAME;
+	pEntryPoints->Name = X11_MODULE_NAME;
 
 	gGetPropertyBool = pEntryPoints->getPropertyBool;
 	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
