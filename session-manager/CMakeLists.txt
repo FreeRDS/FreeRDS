@@ -57,7 +57,8 @@ set(${MODULE_PREFIX}_SRCS
 	common/call/CallIn.cpp
 	common/call/CallOut.cpp
 	common/call/CallFactory.cpp
-	common/call/CallIsVCAllowed.cpp
+	common/call/CallInIsVCAllowed.cpp
+	common/call/CallInPing.cpp
 	common/pbRPC/RpcEngine.cpp
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp

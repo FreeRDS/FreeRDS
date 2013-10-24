@@ -28,11 +28,11 @@
 namespace freerds{
 	namespace sessionmanager{
 		namespace call{
-			class CallIsVCAllowed: public CallIn{
+			class CallInPing: public CallIn{
 
 			public:
-				CallIsVCAllowed();
-				virtual ~CallIsVCAllowed();
+				CallInPing();
+				virtual ~CallInPing();
 
 				virtual unsigned long getCallType();
 				virtual int decodeRequest();
@@ -42,12 +42,10 @@ namespace freerds{
 
 
 			private:
-				std::string mVirtualChannelName;
-				bool        mVirtualChannelAllowed;
 
 			};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallIsVCAllowed,freerds::icp::IsChannelAllowed);
+			FACTORY_REGISTER_DWORD(CallFactory,CallInPing,freerds::icp::Ping);
 		}
 	}
 }

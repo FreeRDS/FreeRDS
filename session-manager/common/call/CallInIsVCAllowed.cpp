@@ -21,42 +21,43 @@
 #include "config.h"
 #endif
 
-#include "CallPing.h"
+#include "CallInIsVCAllowed.h"
 
-using freerds::icp::PingRequest;
-using freerds::icp::PingResponse;
+using freerds::icp::IsChannelAllowedRequest;
+using freerds::icp::IsChannelAllowedResponse;
 
 namespace freerds{
 	namespace sessionmanager{
 		namespace call{
 
-		CallPing::CallPing() {
+		CallInIsVCAllowed::CallInIsVCAllowed() {
 
 		};
 
-		CallPing::~CallPing() {
+		CallInIsVCAllowed::~CallInIsVCAllowed() {
 
 		};
 
-		unsigned long CallPing::getCallType() {
-			return freerds::icp::Ping;
+		unsigned long CallInIsVCAllowed::getCallType() {
+			return freerds::icp::IsChannelAllowed;
 		};
 
-		int CallPing::decodeRequest() {
+		int CallInIsVCAllowed::decodeRequest() {
 			// decode protocol buffers
-			PingRequest req;
+			IsChannelAllowedRequest req;
 			if (!req.ParseFromString(mEncodedRequest)) {
 				// failed to parse
 				mResult = 1;// will report error with answer
 				return -1;
 			}
+			mVirtualChannelName = req.channelname();
 			return 0;
 		};
 
-		int CallPing::encodeResponse() {
+		int CallInIsVCAllowed::encodeResponse() {
 			// encode protocol buffers
-			PingResponse resp;
-			resp.set_pong(true);
+			IsChannelAllowedResponse resp;
+			resp.set_channelallowed(mVirtualChannelAllowed);
 
 			if (!resp.SerializeToString(&mEncodedResponse)) {
 				// failed to serialize
@@ -66,7 +67,9 @@ namespace freerds{
 			return 0;
 		};
 
-		int CallPing::doStuff() {
+		int CallInIsVCAllowed::doStuff() {
+			// find out if Virtual Channel is allowed
+			mVirtualChannelAllowed = true;
 			return 0;
 		}
 
@@ -74,3 +77,4 @@ namespace freerds{
 		}
 	}
 }
+
