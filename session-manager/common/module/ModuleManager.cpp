@@ -32,6 +32,8 @@
 
 #include <vector>
 
+#include <config/PropertyCWrapper.h>
+
 namespace freerds{
 	namespace sessionmanager{
 		namespace module{

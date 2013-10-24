@@ -164,7 +164,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	fprintf(stderr, "Process started: %d\n", status);
 
 	//hClientPipe = freerds_named_pipe_connect(SessionId, "X11",5 * 1000);
-	if (!WaitNamedPipeA(pipeName, 5 * 10000))
+	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
 		fprintf(stderr, "WaitNamedPipe failure: %s\n", pipeName);
 		return NULL;
@@ -223,6 +223,10 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Stop = x11_rds_module_stop;
 
 	pEntryPoints->Name = X11_MODULE_NAME;
+
+	gGetPropertyBool = pEntryPoints->getPropertyBool;
+	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
+	gGetPropertyString = pEntryPoints->getPropertyString;
 
 	gGetPropertyBool = pEntryPoints->getPropertyBool;
 	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
