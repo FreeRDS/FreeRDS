@@ -117,3 +117,36 @@ int freerds_icp_Ping(BOOL *pong)
 	ICP_CLIENT_STUB_CLEANUP(Ping, ping)
 	return PBRPC_SUCCESS;
 }
+
+int freerds_icp_GetUserSession(char *username, char * domain, UINT32 *sessionID, char **serviceEndpoint)
+{
+	ICP_CLIENT_STUB_SETUP(GetUserSession, get_user_session)
+
+	request.domainname = domain;
+	request.username = username;
+
+	ICP_CLIENT_STUB_CALL(GetUserSession, get_user_session)
+	if (ret != 0)
+	{
+		// handle function specific frees
+		return ret;
+	}
+
+	ICP_CLIENT_STUB_UNPACK_RESPONSE(GetUserSession, get_user_session)
+	if (NULL == response)
+	{
+		// unpack error
+		// free function specific stuff
+		return PBRPC_BAD_RESPONSE;
+	}
+
+	// assign returned stuff here!
+	// don't use pointers since response get's freed (copy might be required..)
+	*sessionID = response->sessionid;
+	*serviceEndpoint = strdup(response->serviceendpoint);
+
+	// free function specific stuff
+
+	ICP_CLIENT_STUB_CLEANUP(GetUserSession, get_user_session)
+	return PBRPC_SUCCESS;
+}
