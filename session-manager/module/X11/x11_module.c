@@ -3,6 +3,8 @@
  * X11 Server Module
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013 Thinstuff Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,104 +46,158 @@
 #include <winpr/sspicli.h>
 #include <winpr/environment.h>
 
-#include <freerds/freerds.h>
-
 #include "x11_module.h"
+
+pgetPropertyBool gGetPropertyBool;
+pgetPropertyNumber gGetPropertyNumber;
+pgetPropertyString gGetPropertyString;
+
 
 struct rds_module_x11
 {
-	rdsConnector connector;
+	RDS_MODULE_COMMON commonModule;
 
 	STARTUPINFO X11StartupInfo;
 	PROCESS_INFORMATION X11ProcessInformation;
 
 	STARTUPINFO WMStartupInfo;
 	PROCESS_INFORMATION WMProcessInformation;
+
 };
 typedef struct rds_module_x11 rdsModuleX11;
 
-int x11_rds_module_new(rdsModule* module)
-{
-	return 0;
+void x11_rds_module_reset_process_informations(rdsModuleX11* module) {
+	ZeroMemory(&(module->X11StartupInfo), sizeof(STARTUPINFO));
+	module->X11StartupInfo.cb = sizeof(STARTUPINFO);
+	ZeroMemory(&(module->X11ProcessInformation), sizeof(PROCESS_INFORMATION));
+	ZeroMemory(&(module->WMStartupInfo), sizeof(STARTUPINFO));
+	module->WMStartupInfo.cb = sizeof(STARTUPINFO);
+	ZeroMemory(&(module->WMProcessInformation), sizeof(PROCESS_INFORMATION));
 }
 
-void x11_rds_module_free(rdsModule* module)
+RDS_MODULE_COMMON * x11_rds_module_new(void )
 {
+	rdsModuleX11 * module = (rdsModuleX11*) malloc(sizeof(rdsModuleX11));
 
+	x11_rds_module_reset_process_informations(module);
+
+	module->commonModule.sessionId = 0;
+	module->commonModule.userToken = NULL;
+	module->commonModule.authToken = NULL;
+
+	return (RDS_MODULE_COMMON *) module;
 }
 
-int x11_rds_module_start(rdsModule* module)
+void x11_rds_module_free(RDS_MODULE_COMMON * module)
+{
+	rdsModuleX11 * moduleCon = (rdsModuleX11*) module;
+	if (moduleCon->commonModule.authToken) {
+		free(moduleCon->commonModule.authToken);
+	}
+	if (moduleCon->commonModule.userToken) {
+		CloseHandle(moduleCon->commonModule.userToken);
+	}
+	free(module);
+}
+
+char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 {
 	BOOL status;
-	HANDLE token;
+	HANDLE hClientPipe;
 	DWORD SessionId;
 	char envstr[256];
 	rdsModuleX11* x11;
 	struct passwd* pwnam;
-	rdpSettings* settings;
 	char lpCommandLine[256];
-	rdsConnector* connector;
+
+	char* filename;
+	char* pipeName;
+
+	long xres,yres,colordepth;
 
 	x11 = (rdsModuleX11*) module;
-	connector = (rdsConnector*) module;
 
-	token = NULL;
-	SessionId = module->SessionId;
-	settings = connector->settings;
+	SessionId = x11->commonModule.sessionId;
 
-	freerds_named_pipe_clean(SessionId, "X11rdp");
+	//freerds_named_pipe_clean(SessionId, "X11rdp");
+	pipeName = (char *)malloc(256);
+	sprintf_s(pipeName, 256, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, "X11");
 
-	LogonUserA(settings->Username, settings->Domain, settings->Password,
-			LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &token);
+	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
 
-	pwnam = getpwnam(settings->Username);
+	if (PathFileExistsA(filename))
+	{
+		DeleteFileA(filename);
+		status = 1;
+	}
+
+	free(filename);
+
+	pwnam = getpwnam(x11->commonModule.userName);
+
 
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) SessionId);
-	SetEnvironmentVariableA("DISPLAY", envstr);
+	SetEnvironmentVariableEBA(x11->commonModule.envBlock,"DISPLAY",envstr);
 
-	SetEnvironmentVariableA("SHELL", pwnam->pw_shell);
-	SetEnvironmentVariableA("USER", pwnam->pw_name);
-	SetEnvironmentVariableA("HOME", pwnam->pw_dir);
+	if (!gGetPropertyNumber(x11->commonModule.sessionId,"module.x11.xres",&xres)) {
+		xres = 1024;
+	}
 
-	sprintf_s(envstr, sizeof(envstr), "%d", (int) pwnam->pw_uid);
-	SetEnvironmentVariableA("UID", envstr);
+	if (!gGetPropertyNumber(x11->commonModule.sessionId,"module.x11.yres",&yres)) {
+		yres = 768;
+	}
 
-	ZeroMemory(&(x11->X11StartupInfo), sizeof(STARTUPINFO));
-	x11->X11StartupInfo.cb = sizeof(STARTUPINFO);
-	ZeroMemory(&(x11->X11ProcessInformation), sizeof(PROCESS_INFORMATION));
+	if (!gGetPropertyNumber(x11->commonModule.sessionId,"module.x11.colordepth",&colordepth)) {
+		colordepth = 24;
+	}
+
+
+	x11_rds_module_reset_process_informations(x11);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds",
-			"X11rdp", (int) SessionId, settings->DesktopWidth, settings->DesktopHeight, 24);
+			"X11rdp", (int) SessionId, xres, yres, colordepth);
 
 	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, NULL, NULL,
+			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
 	fprintf(stderr, "Process started: %d\n", status);
 
-	module->hClientPipe = freerds_named_pipe_connect(SessionId, "X11", 5 * 1000);
+	//hClientPipe = freerds_named_pipe_connect(SessionId, "X11",5 * 1000);
+	if (!WaitNamedPipeA(pipeName, 5 * 1000))
+	{
+		fprintf(stderr, "WaitNamedPipe failure: %s\n", pipeName);
+		return NULL;
+	}
 
-	ZeroMemory(&(x11->WMStartupInfo), sizeof(STARTUPINFO));
-	x11->WMStartupInfo.cb = sizeof(STARTUPINFO);
-	ZeroMemory(&(x11->WMProcessInformation), sizeof(PROCESS_INFORMATION));
+	hClientPipe = CreateFileA(pipeName,
+			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
-	status = CreateProcessAsUserA(token,
+	if ((!hClientPipe) || (hClientPipe == INVALID_HANDLE_VALUE))
+	{
+		fprintf(stderr, "Failed to create named pipe %s\n", pipeName);
+		return NULL;
+	}
+
+	CloseHandle(hClientPipe);
+
+	status = CreateProcessAsUserA(x11->commonModule.userToken,
 			NULL, "startwm.sh",
-			NULL, NULL, FALSE, 0, NULL, NULL,
+			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->WMStartupInfo), &(x11->WMProcessInformation));
 
 	fprintf(stderr, "User process started: %d\n", status);
 
-	return 0;
+	return pipeName;
 }
 
-int x11_rds_module_stop(rdsModule* module)
+int x11_rds_module_stop(RDS_MODULE_COMMON * module)
 {
-	rdsConnector* connector;
+	/*rdsConnector* connector;
 
 	connector = (rdsConnector*) module;
 
-	SetEvent(connector->StopEvent);
+	SetEvent(connector->StopEvent);*/
 
 #if 0
 	WaitForSingleObject(ProcessInformation.hProcess, INFINITE);
@@ -158,15 +214,19 @@ int x11_rds_module_stop(rdsModule* module)
 int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 {
 	pEntryPoints->Version = 1;
-	pEntryPoints->Size = sizeof(RDS_MODULE_ENTRY_POINTS_V1);
-	pEntryPoints->Name = X11_MODULE_NAME;
 
-	pEntryPoints->ContextSize = sizeof(rdsModuleX11);
+	//pEntryPoints->ContextSize = sizeof(rdsModuleX11);
 	pEntryPoints->New = x11_rds_module_new;
 	pEntryPoints->Free = x11_rds_module_free;
 
 	pEntryPoints->Start = x11_rds_module_start;
 	pEntryPoints->Stop = x11_rds_module_stop;
+
+	pEntryPoints->ModuleName = X11_MODULE_NAME;
+
+	gGetPropertyBool = pEntryPoints->getPropertyBool;
+	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
+	gGetPropertyString = pEntryPoints->getPropertyString;
 
 	return 0;
 }

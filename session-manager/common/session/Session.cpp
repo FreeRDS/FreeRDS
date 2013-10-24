@@ -23,12 +23,26 @@
 
 #include "Session.h"
 
+#include <string.h>
+#include <pwd.h>
+
+#include <winpr/wlog.h>
+#include <winpr/sspicli.h>
+#include <winpr/environment.h>
+
+#include <winpr/crt.h>
+#include <winpr/tchar.h>
+
+#include <appcontext/ApplicationContext.h>
+
 
 namespace freerds{
 	namespace sessionmanager{
 		namespace session{
 
-			Session::Session(long sessionID):mSessionID(sessionID) {
+		static wLog * logger_Session= WLog_Get("freerds.sessionmanager.session.session");
+
+			Session::Session(long sessionID):mSessionID(sessionID),mSessionStarted(false) {
 
 			}
 
@@ -36,12 +50,12 @@ namespace freerds{
 
 			}
 
-			std::string Session::getGroup() {
-				return mGroupname;
+			std::string Session::getDomain() {
+				return mDomain;
 			}
 
-			void Session::setGroup(std::string groupname) {
-				mGroupname = groupname;
+			void Session::setDomain(std::string domain) {
+				mDomain = domain;
 			}
 
 			std::string Session::getUserName() {
@@ -56,6 +70,108 @@ namespace freerds{
 				return mSessionID;
 			}
 
-		}
+			bool Session::generateUserToken() {
+				if (mUsername.length() == 0 ) {
+					 WLog_Print(logger_Session, WLOG_ERROR, "generate UserToken failed, no username!");
+					return false;
+				};
+				return LogonUserA(mUsername.c_str(), mDomain.c_str(), NULL,
+						LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &mUserToken);
+			}
+
+			bool Session::generateEnvBlockAndModify() {
+				struct passwd* pwnam;
+				char envstr[256];
+
+
+				if (mUsername.length() == 0 ) {
+					 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed, no username!");
+					return false;
+				};
+
+				if (mpEnvBlock){
+					free(mpEnvBlock);
+					mpEnvBlock = NULL;
+				}
+
+				pwnam = getpwnam(mUsername.c_str());
+				if (pwnam == NULL) {
+					 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed to get userinformation (getpwnam) for username %s!",mUsername.c_str());
+					return false;
+				}
+				mpEnvBlock = GetEnvironmentStrings();
+
+
+				sprintf_s(envstr, sizeof(envstr), "%d", (int) pwnam->pw_uid);
+				SetEnvironmentVariableEBA(&mpEnvBlock,"UID",envstr);
+				SetEnvironmentVariableEBA(&mpEnvBlock,"SHELL",pwnam->pw_shell);
+				SetEnvironmentVariableEBA(&mpEnvBlock,"USER",pwnam->pw_name);
+				SetEnvironmentVariableEBA(&mpEnvBlock,"HOME",pwnam->pw_dir);
+				return true;
+			}
+
+			char** Session::getPEnvBlock() {
+				return &mpEnvBlock;
+			}
+
+			void Session::setModuleName(std::string moduleName) {
+				mModuleName = moduleName;
+			}
+
+
+			bool Session::startModule(std::string& pipeName) {
+
+				std::string pName;
+
+				if (mSessionStarted) {
+					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, session has already be started, stop first.");
+					return false;
+				}
+				moduleNS::Module * currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
+				if (currentModule == NULL) {
+					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no module found for name %s",mModuleName.c_str());
+					return false;
+				}
+
+				mCurrentModuleContext = currentModule->newContext();
+				mCurrentModuleContext->sessionId = mSessionID;
+
+				mCurrentModuleContext->userName = strdup(mUsername.c_str());
+
+				mCurrentModuleContext->userToken = mUserToken;
+				mCurrentModuleContext->envBlock = &mpEnvBlock;
+
+				pName = currentModule->start(mCurrentModuleContext);
+				if (pName.length() == 0) {
+					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no pipeName was returned");
+					return false;
+				} else {
+					pipeName = pName;
+					mSessionStarted = true;
+					return true;
+				}
+			}
+
+			bool Session::stopModule() {
+				if (!mSessionStarted) {
+					WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no session has started yet.");
+					return false;
+				}
+				moduleNS::Module * currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
+				if (currentModule == NULL) {
+					WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no module found for name %s",mModuleName.c_str());
+					return false;
+				}
+
+				currentModule->stop(mCurrentModuleContext);
+
+				currentModule->freeContext(mCurrentModuleContext);
+				mCurrentModuleContext = NULL;
+				return true;
+
+			}
+
+}
 	}
 }
+

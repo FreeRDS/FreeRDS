@@ -45,7 +45,7 @@ namespace freerds{
 		WLog_Layout_SetPrefixFormat(mWLogRoot, layout, "[%lv:%mn] [%fl|%fn|%ln] - ");
 
 		WLog_OpenAppender(mWLogRoot);
-
+		setupTestingPropValues();
 
 	}
 
@@ -83,6 +83,16 @@ namespace freerds{
 	int ApplicationContext::loadModulesFromPath(std::string path) {
 		return mModuleManager.loadModulesFromPath(path,"*.so");
 	}
+
+	moduleNS::ModuleManager* ApplicationContext::getModuleManager() {
+		return &mModuleManager;
+	}
+
+	void ApplicationContext::setupTestingPropValues() {
+		mPropertyManager.setPropertyNumber(Global,0,"module.x11.xres",1024);
+		mPropertyManager.setPropertyNumber(Global,0,"module.x11.yres",768);
+		mPropertyManager.setPropertyNumber(Global,0,"module.x11.colordepth",24);
+			}
 
 
     }

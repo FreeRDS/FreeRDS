@@ -39,10 +39,14 @@ struct rds_module_rdp
 	wLog* log;
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
+
+	DWORD SessionId;
+	HANDLE hClientPipe;
+
 };
 typedef struct rds_module_rdp rdsModuleRdp;
 
-int rdp_rds_module_new(rdsModule* module)
+int rdp_rds_module_new(void * module)
 {
 	rdsModuleRdp* rdp;
 
@@ -60,7 +64,7 @@ int rdp_rds_module_new(rdsModule* module)
 	return 0;
 }
 
-void rdp_rds_module_free(rdsModule* module)
+void rdp_rds_module_free(void * module)
 {
 	rdsModuleRdp* rdp;
 
@@ -71,7 +75,7 @@ void rdp_rds_module_free(rdsModule* module)
 	WLog_Uninit();
 }
 
-int rdp_rds_module_start(rdsModule* module)
+int rdp_rds_module_start(void * module)
 {
 	BOOL status;
 	rdsModuleRdp* rdp;
@@ -84,18 +88,18 @@ int rdp_rds_module_start(rdsModule* module)
 	connector = (rdsConnector*) module;
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
-			(int) module->SessionId, endpoint);
+			(int) rdp->SessionId, endpoint);
 
 	settings = connector->settings;
 
-	freerds_named_pipe_clean(module->SessionId, endpoint);
+	freerds_named_pipe_clean(rdp->SessionId, endpoint);
 
 	ZeroMemory(&(rdp->si), sizeof(STARTUPINFO));
 	rdp->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(rdp->pi), sizeof(PROCESS_INFORMATION));
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /session-id:%d /size:%dx%d",
-			"freerds-rdp", (int) module->SessionId, settings->DesktopWidth, settings->DesktopHeight);
+			"freerds-rdp", (int) rdp->SessionId, settings->DesktopWidth, settings->DesktopHeight);
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
@@ -105,9 +109,9 @@ int rdp_rds_module_start(rdsModule* module)
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Process created with status: %d", status);
 
-	module->hClientPipe = freerds_named_pipe_connect(module->SessionId, "RDP", 5 * 1000);
+	rdp->hClientPipe = freerds_named_pipe_connect(rdp->SessionId, "RDP", 5 * 1000);
 
-	if (!module->hClientPipe)
+	if (!rdp->hClientPipe)
 	{
 		WLog_Print(rdp->log, WLOG_ERROR, "Failed to connect to service");
 		return -1;
@@ -116,7 +120,7 @@ int rdp_rds_module_start(rdsModule* module)
 	return 0;
 }
 
-int rdp_rds_module_stop(rdsModule* module)
+int rdp_rds_module_stop(void * module)
 {
 	rdsModuleRdp* rdp;
 	rdsConnector* connector;

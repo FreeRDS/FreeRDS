@@ -24,6 +24,9 @@
 #include <string>
 #include <list>
 
+#include <winpr/handle.h>
+#include <module/modules.h>
+
 namespace freerds{
 	namespace sessionmanager{
 		namespace session{
@@ -33,18 +36,34 @@ namespace freerds{
 			Session(long sessionID);
 			~Session();
 
-			//std::list<std::string> getGroups();
-			std::string getGroup();
-			void setGroup(std::string groupname);
+			std::string getDomain();
+			void setDomain(std::string groupname);
 			std::string getUserName();
 			void setUserName(std::string username);
-
 			long getSessionID();
+
+			bool generateUserToken();
+			bool generateEnvBlockAndModify();
+			char ** getPEnvBlock();
+
+			void setModuleName(std::string moduleName);
+			bool startModule(std::string & pipeName);
+			bool stopModule();
+
+
 
 		private:
 			long mSessionID;
+			bool mSessionStarted;
+
 			std::string mUsername;
-			std::string mGroupname;
+			std::string mDomain;
+
+			HANDLE mUserToken;
+			char * mpEnvBlock;
+
+			std::string mModuleName;
+			RDS_MODULE_COMMON * mCurrentModuleContext;
 
 		};
 

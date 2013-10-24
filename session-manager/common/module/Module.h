@@ -21,7 +21,9 @@
 #define MODULE_H_
 
 #include "Module.h"
-#include <freerds/freerds.h>
+//#include <freerds/freerds.h>
+#include <winpr/wtypes.h>
+#include <module/modules.h>
 #include <string>
 
 namespace freerds{
@@ -33,6 +35,15 @@ namespace freerds{
 				int initModule(HMODULE libHandle,std::string moduleFileName,RDS_MODULE_ENTRY_POINTS * entrypoints);
 				virtual ~Module();
 				std::string getName();
+
+				RDS_MODULE_COMMON * newContext();
+				void freeContext(RDS_MODULE_COMMON * context);
+
+				std::string start(RDS_MODULE_COMMON * context);
+				int stop(RDS_MODULE_COMMON * context);
+
+
+
 			private:
 				pRdsModuleNew mfpNew;
 				pRdsModuleFree mfpFree;

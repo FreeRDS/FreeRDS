@@ -96,14 +96,35 @@ namespace freerds{
 
 			int PropertyManager::setPropertyBool(PROPERTY_LEVEL level, long sessionID,
 					std::string path, bool value) {
+				// only global config for now
+				PROPERTY_STORE_HELPER helper;
+				helper.type = BoolType;
+				helper.boolValue = value;
+
+				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				return 0;
 			}
 
 			int PropertyManager::setPropertyNumber(PROPERTY_LEVEL level, long sessionID,
 					std::string path, long value) {
+				// only global config for now
+				PROPERTY_STORE_HELPER helper;
+				helper.type = NumberType;
+				helper.numberValue = value;
+
+				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				return 0;
 			}
 
 			int PropertyManager::setPropertyString(PROPERTY_LEVEL level, long sessionID,
 					std::string path, std::string value) {
+				// only global config for now
+				PROPERTY_STORE_HELPER helper;
+				helper.type = StringType;
+				helper.stringValue = value;
+
+				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				return 0;
 			}
 
 			int PropertyManager::loadProperties() {

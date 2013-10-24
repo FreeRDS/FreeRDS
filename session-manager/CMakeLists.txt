@@ -74,9 +74,8 @@ add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr
-	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-pipe winpr-library)
+	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-pipe winpr-library winpr-sspicli)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
-

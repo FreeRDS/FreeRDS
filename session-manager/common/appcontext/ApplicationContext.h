@@ -41,12 +41,15 @@ namespace freerds{
 		public:
 			sessionNS::SessionStore * getSessionStore();
 			configNS::PropertyManager * getPropertyManager();
+			moduleNS::ModuleManager * getModuleManager();
 			int startRPCEngine();
 			int stopRPCEngine();
 
 			SignalingQueue<callNS::Call> * getRpcOutgoingQueue();
 
 			int loadModulesFromPath(std::string path);
+
+			void setupTestingPropValues();
 
 
 		private:

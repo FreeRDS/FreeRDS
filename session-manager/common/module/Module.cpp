@@ -68,8 +68,32 @@ namespace freerds{
 			std::string Module::getName() {
 				return mModuleName;
 			}
+
+			RDS_MODULE_COMMON* Module::newContext() {
+				return mfpNew();
+			}
+
+			void Module::freeContext(RDS_MODULE_COMMON* context) {
+				return mfpFree(context);
+			}
+
+			std::string Module::start(RDS_MODULE_COMMON* context) {
+				char * pipeName;
+				std::string pipeNameStr;
+				pipeName = mfpStart(context);
+				if (pipeName) {
+					pipeNameStr.assign(pipeName);
+				} else {
+					return pipeNameStr;
+				}
+			}
+
+			int Module::stop(RDS_MODULE_COMMON* context) {
+				return mfpStop(context);
+			}
+
+
 		}
 	}
 }
-
 

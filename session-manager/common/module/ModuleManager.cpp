@@ -26,6 +26,8 @@
 #include <winpr/library.h>
 #include <winpr/wlog.h>
 
+#include <config/PropertyCWrapper.h>
+
 namespace freerds{
 	namespace sessionmanager{
 		namespace module{
@@ -97,6 +99,10 @@ namespace freerds{
 				if (entry != NULL) {
 					// found entrypoint
 					memset(&entrypoints,0,sizeof(RDS_MODULE_ENTRY_POINTS));
+					// setting the property callbacks
+					entrypoints.getPropertyBool =getPropertyBool;
+					entrypoints.getPropertyNumber =getPropertyNumber;
+					entrypoints.getPropertyString =getPropertyString;
 					result = entry(&entrypoints);
 					if (result == 0) {
 						// no error occurred
