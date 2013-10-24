@@ -3,6 +3,7 @@ package freerds.icp;
 enum MSGTYPE {
 	IsChannelAllowed = 1;
 	Ping             = 2;
+	GetUserSession   = 3;
 }
 
 message IsChannelAllowedRequest {
@@ -18,3 +19,14 @@ message PingRequest {
 message PingResponse {
 	required bool pong = 1;
 }
+
+message GetUserSessionRequest {
+	required string username = 1;
+	optional string domainname = 2;
+}
+
+message GetUserSessionResponse {
+	required uint32 SessionID = 1;
+	required string ServiceEndpoint = 2;
+}
+
