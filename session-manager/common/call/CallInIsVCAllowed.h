@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef CALL_IS_VIRTUAL_CHANNEL_ALLOWED_H_
-#define CALL_IS_VIRTUAL_CHANNEL_ALLOWED_H_
+#ifndef CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_
+#define CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_
 #include "CallFactory.h"
 #include <string>
 #include "CallIn.h"
@@ -54,4 +54,4 @@ namespace freerds{
 
 namespace callNS = freerds::sessionmanager::call;
 
-#endif
+#endif // CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_
