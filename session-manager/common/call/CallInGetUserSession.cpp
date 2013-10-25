@@ -81,15 +81,18 @@ namespace freerds{
 			currentSession->setDomain(mDomainName);
 
 			if (!currentSession->generateUserToken()) {
+				mResult = 1;// will report error with answer
 				return 1;
 			}
 
 			if (!currentSession->generateEnvBlockAndModify() ){
+				mResult = 1;// will report error with answer
 				return 1;
 			}
 
 			currentSession->setModuleName("x11module");
 			if (!currentSession->startModule(pipeName)) {
+				mResult = 1;// will report error with answer
 				return 1;
 			}
 

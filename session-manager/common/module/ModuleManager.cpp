@@ -25,8 +25,12 @@
 #include <winpr/file.h>
 #include <winpr/library.h>
 #include <winpr/wlog.h>
+#include <winpr/environment.h>
 
 #include <config/PropertyCWrapper.h>
+#include <utils/StringHelpers.h>
+
+#include <vector>
 
 namespace freerds{
 	namespace sessionmanager{
@@ -42,6 +46,31 @@ namespace freerds{
 
 			}
 
+			int ModuleManager::loadModuelsFromPathAndEnv(std::string path,std::string pattern){
+				// the the Environment variable
+
+				DWORD nSize = GetEnvironmentVariableA(MODULE_ENV_VAR, NULL, 0);
+				if (nSize) {
+					// we found the env variable
+					char * lpBuffer = (LPSTR) malloc(nSize);
+					nSize = GetEnvironmentVariableA(MODULE_ENV_VAR, lpBuffer, nSize);
+
+					WLog_Print(logger_ModuleManager, WLOG_TRACE, "found env variable %s with content %s",MODULE_ENV_VAR,lpBuffer);
+
+					std::string envpath(lpBuffer);
+					std::vector<std::string> pathList = split<std::string>(envpath, ":");
+
+					for (int run=0; run < pathList.size(); run++) {
+						loadModulesFromPath(pathList[run],pattern);
+					}
+				} else {
+					WLog_Print(logger_ModuleManager, WLOG_TRACE, "did not find env variable %s",MODULE_ENV_VAR);
+				}
+				loadModulesFromPath(path,pattern);
+
+				return 0;
+			}
+
 			int ModuleManager::loadModulesFromPath(std::string path,std::string pattern){
 
 				 WIN32_FIND_DATA FindFileData;
@@ -49,7 +78,7 @@ namespace freerds{
 				 std::string fullsearch = path + pattern;
 
 				 hFind = FindFirstFile(fullsearch.c_str(), &FindFileData);
-				 WLog_Print(logger_ModuleManager, WLOG_TRACE, "scanning with pattern %s for modules",fullsearch.c_str());
+				 WLog_Print(logger_ModuleManager, WLOG_TRACE, "scanning with in directory %s for modules",fullsearch.c_str());
 
 				 if (hFind == INVALID_HANDLE_VALUE) {
 					 WLog_Print(logger_ModuleManager, WLOG_ERROR, "FindFirstFile (path = %s) failed",fullsearch.c_str());

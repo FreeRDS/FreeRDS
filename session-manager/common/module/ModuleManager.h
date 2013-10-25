@@ -24,6 +24,7 @@
 #include <string>
 #include <map>
 
+#define MODULE_ENV_VAR "FREERDS_ADDITIONAL_MODULES"
 
 namespace freerds{
 	namespace sessionmanager{
@@ -34,6 +35,8 @@ namespace freerds{
 				virtual ~ModuleManager();
 
 				int loadModulesFromPath(std::string path,std::string pattern);
+				int loadModuelsFromPathAndEnv(std::string path,std::string pattern);
+
 				Module * getModule(std::string moduleName);
 			private:
 				int addModule(std::string path, std::string modulename);

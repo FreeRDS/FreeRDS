@@ -82,7 +82,7 @@ namespace freerds{
 	}
 
 	int ApplicationContext::loadModulesFromPath(std::string path) {
-		return mModuleManager.loadModulesFromPath(path,"*.so");
+		return mModuleManager.loadModuelsFromPathAndEnv(path,"*.so");
 	}
 
 	moduleNS::ModuleManager* ApplicationContext::getModuleManager() {
