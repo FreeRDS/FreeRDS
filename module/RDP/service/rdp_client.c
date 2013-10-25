@@ -38,10 +38,10 @@
 
 #include "rdp_client.h"
 
-int rds_client_synchronize_keyboard_event(rdsModule* module, DWORD flags)
+int rds_client_synchronize_keyboard_event(rdsModuleConnector* connector, DWORD flags)
 {
 	rdpContext* context;
-	rdsContext* rds = ((rdsService*) module)->custom;
+	rdsContext* rds = ((rdsService*) connector)->custom;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientSynchronizeKeyboardEvent");
 
@@ -51,10 +51,10 @@ int rds_client_synchronize_keyboard_event(rdsModule* module, DWORD flags)
 	return 0;
 }
 
-int rds_client_scancode_keyboard_event(rdsModule* module, DWORD flags, DWORD code, DWORD keyboardType)
+int rds_client_scancode_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code, DWORD keyboardType)
 {
 	rdpContext* context;
-	rdsContext* rds = ((rdsService*) module)->custom;
+	rdsContext* rds = ((rdsService*) connector)->custom;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientScancodeKeyboardEvent");
 
@@ -64,12 +64,12 @@ int rds_client_scancode_keyboard_event(rdsModule* module, DWORD flags, DWORD cod
 	return 0;
 }
 
-int rds_client_virtual_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
+int rds_client_virtual_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code)
 {
 	DWORD scancode;
 	rdpContext* context;
 	rdpSettings* settings;
-	rdsContext* rds = (rdsContext*) module;
+	rdsContext* rds = (rdsContext*) connector;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientVirtualKeyboardEvent");
 
@@ -82,10 +82,10 @@ int rds_client_virtual_keyboard_event(rdsModule* module, DWORD flags, DWORD code
 	return 0;
 }
 
-int rds_client_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
+int rds_client_unicode_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code)
 {
 	rdpContext* context;
-	rdsContext* rds = ((rdsService*) module)->custom;
+	rdsContext* rds = ((rdsService*) connector)->custom;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientUnicodeKeyboardEvent");
 
@@ -95,10 +95,10 @@ int rds_client_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code
 	return 0;
 }
 
-int rds_client_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
+int rds_client_mouse_event(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y)
 {
 	rdpContext* context;
-	rdsContext* rds = ((rdsService*) module)->custom;
+	rdsContext* rds = ((rdsService*) connector)->custom;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientMouseEvent");
 
@@ -108,10 +108,10 @@ int rds_client_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
 	return 0;
 }
 
-int rds_client_extended_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
+int rds_client_extended_mouse_event(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y)
 {
 	rdpContext* context;
-	rdsContext* rds = ((rdsService*) module)->custom;
+	rdsContext* rds = ((rdsService*) connector)->custom;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientExtendedMouseEvent");
 
@@ -130,7 +130,7 @@ int rds_service_accept(rdsService* service)
 
 int rds_check_shared_framebuffer(rdsContext* rds)
 {
-	rdsModule* module = (rdsModule*) rds->service;
+	rdsModuleConnector* connector = (rdsModuleConnector*) rds->service;
 
 	if (!rds->framebuffer.fbAttached)
 	{
@@ -145,7 +145,7 @@ int rds_check_shared_framebuffer(rdsContext* rds)
 		msg.bytesPerPixel = rds->framebuffer.fbBytesPerPixel;
 
 		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
-		module->server->SharedFramebuffer(module, &msg);
+		connector->server->SharedFramebuffer(connector, &msg);
 
 		rds->framebuffer.fbAttached = 1;
 	}
@@ -173,13 +173,13 @@ void rds_end_paint(rdpContext* context)
 	rdsContext* rds;
 	HGDI_RGN invalid;
 	HGDI_RGN cinvalid;
-	rdsModule* module;
+	rdsModuleConnector* connector;
 	rdpSettings* settings;
 	RDS_MSG_PAINT_RECT msg;
 	rdpGdi* gdi = context->gdi;
 
 	rds = (rdsContext*) context;
-	module = (rdsModule*) rds->service;
+	connector = (rdsModuleConnector*) rds->service;
 	settings = context->settings;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsEndPaint");
@@ -240,7 +240,7 @@ void rds_end_paint(rdpContext* context)
 	msg.bitmapDataLength = 0;
 
 	msg.type = RDS_SERVER_PAINT_RECT;
-	module->server->PaintRect(module, &msg);
+	connector->server->PaintRect(connector, &msg);
 }
 
 void rds_surface_frame_marker(rdpContext* context, SURFACE_FRAME_MARKER* surfaceFrameMarker)
@@ -366,7 +366,7 @@ void* rds_update_thread(void* arg)
 void* rds_client_thread(void* arg)
 {
 	rdsContext* rds;
-	rdsModule* module;
+	rdsModuleConnector* connector;
 	rdpContext* context;
 	const char* endpoint = "RDP";
 	freerdp* instance = (freerdp*) arg;
@@ -381,17 +381,17 @@ void* rds_client_thread(void* arg)
 
 	rds->service = freerds_service_new(rds->SessionId, endpoint);
 
-	module = (rdsModule*) rds->service;
+	connector = (rdsModuleConnector*) rds->service;
 
 	rds->service->custom = (void*) rds;
 	rds->service->Accept = rds_service_accept;
 
-	module->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
-	module->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
-	module->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;
-	module->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
-	module->client->MouseEvent = rds_client_mouse_event;
-	module->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
+	connector->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
+	connector->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
+	connector->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;
+	connector->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
+	connector->client->MouseEvent = rds_client_mouse_event;
+	connector->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "Starting %s service", endpoint);
 

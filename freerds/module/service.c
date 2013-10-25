@@ -29,17 +29,17 @@
 
 void* freerds_service_client_thread(void* arg)
 {
-	rdsModule* module;
+	rdsModuleConnector* connector;
 	rdsService* service;
 
-	module = (rdsModule*) arg;
+	connector = (rdsModuleConnector*) arg;
 	service = (rdsService*) arg;
 
-	if (module->hClientPipe)
+	if (connector->hClientPipe)
 	{
-		while (WaitForSingleObject(module->hClientPipe, INFINITE) == WAIT_OBJECT_0)
+		while (WaitForSingleObject(connector->hClientPipe, INFINITE) == WAIT_OBJECT_0)
 		{
-			if (freerds_transport_receive(module) < 0)
+			if (freerds_transport_receive(connector) < 0)
 				break;
 		}
 	}
@@ -49,17 +49,17 @@ void* freerds_service_client_thread(void* arg)
 
 void* freerds_service_listener_thread(void* arg)
 {
-	rdsModule* module;
+	rdsModuleConnector* connector;
 	rdsService* service;
 
-	module = (rdsModule*) arg;
+	connector = (rdsModuleConnector*) arg;
 	service = (rdsService*) arg;
 
 	while (1)
 	{
-		module->hClientPipe = freerds_named_pipe_accept(module->hServerPipe);
+		connector->hClientPipe = freerds_named_pipe_accept(connector->hServerPipe);
 
-		if (!module->hClientPipe)
+		if (!connector->hClientPipe)
 			break;
 
 		if (service->Accept)
@@ -83,13 +83,13 @@ void* freerds_service_listener_thread(void* arg)
 
 int freerds_service_start(rdsService* service)
 {
-	rdsModule* module;
+	rdsModuleConnector* connector;
 
-	module = (rdsModule*) service;
+	connector = (rdsModuleConnector*) service;
 
-	module->hServerPipe = freerds_named_pipe_create(module->SessionId, module->Endpoint);
+	connector->hServerPipe = freerds_named_pipe_create(connector->SessionId, connector->Endpoint);
 
-	if (!module->hServerPipe)
+	if (!connector->hServerPipe)
 		return -1;
 
 	service->ServerThread = CreateThread(NULL, 0,
@@ -110,31 +110,31 @@ int freerds_service_stop(rdsService* service)
 
 rdsService* freerds_service_new(DWORD SessionId, const char* endpoint)
 {
-	rdsModule* module;
+	rdsModuleConnector* connector;
 	rdsService* service;
 
 	service = (rdsService*) malloc(sizeof(rdsService));
-	module = (rdsModule*) service;
+	connector = (rdsModuleConnector*) service;
 
 	if (service)
 	{
 		ZeroMemory(service, sizeof(rdsService));
 
-		module->SessionId = SessionId;
-		module->Endpoint = _strdup(endpoint);
-		module->ServerMode = TRUE;
+		connector->SessionId = SessionId;
+		connector->Endpoint = _strdup(endpoint);
+		connector->ServerMode = TRUE;
 
-		module->client = freerds_server_inbound_interface_new();
-		module->server = freerds_server_outbound_interface_new();
+		connector->client = freerds_server_inbound_interface_new();
+		connector->server = freerds_server_outbound_interface_new();
 
-		module->OutboundStream = Stream_New(NULL, 8192);
-		module->InboundStream = Stream_New(NULL, 8192);
+		connector->OutboundStream = Stream_New(NULL, 8192);
+		connector->InboundStream = Stream_New(NULL, 8192);
 
-		module->InboundTotalLength = 0;
-		module->InboundTotalCount = 0;
+		connector->InboundTotalLength = 0;
+		connector->InboundTotalCount = 0;
 
-		module->OutboundTotalLength = 0;
-		module->OutboundTotalCount = 0;
+		connector->OutboundTotalLength = 0;
+		connector->OutboundTotalCount = 0;
 
 		service->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	}
@@ -144,9 +144,9 @@ rdsService* freerds_service_new(DWORD SessionId, const char* endpoint)
 
 void freerds_service_free(rdsService* service)
 {
-	rdsModule* module;
+	rdsModuleConnector* connector;
 
-	module = (rdsModule*) service;
+	connector = (rdsModuleConnector*) service;
 
 	if (service)
 	{
@@ -155,11 +155,11 @@ void freerds_service_free(rdsService* service)
 		WaitForSingleObject(service->ServerThread, INFINITE);
 		CloseHandle(service->ServerThread);
 
-		Stream_Free(module->OutboundStream, TRUE);
-		Stream_Free(module->InboundStream, TRUE);
+		Stream_Free(connector->OutboundStream, TRUE);
+		Stream_Free(connector->InboundStream, TRUE);
 
-		if (module->Endpoint)
-			free(module->Endpoint);
+		if (connector->Endpoint)
+			free(connector->Endpoint);
 
 		CloseHandle(service->StopEvent);
 

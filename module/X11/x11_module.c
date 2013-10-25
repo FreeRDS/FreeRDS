@@ -50,7 +50,7 @@
 
 struct rds_module_x11
 {
-	rdsConnector connector;
+	rdsModuleConnector connector;
 
 	STARTUPINFO X11StartupInfo;
 	PROCESS_INFORMATION X11ProcessInformation;
@@ -60,17 +60,17 @@ struct rds_module_x11
 };
 typedef struct rds_module_x11 rdsModuleX11;
 
-int x11_rds_module_new(rdsModule* module)
+int x11_rds_module_new(rdsModuleConnector* connector)
 {
 	return 0;
 }
 
-void x11_rds_module_free(rdsModule* module)
+void x11_rds_module_free(rdsModuleConnector* connector)
 {
 
 }
 
-int x11_rds_module_start(rdsModule* module)
+int x11_rds_module_start(rdsModuleConnector* connector)
 {
 	BOOL status;
 	HANDLE token;
@@ -80,13 +80,9 @@ int x11_rds_module_start(rdsModule* module)
 	struct passwd* pwnam;
 	rdpSettings* settings;
 	char lpCommandLine[256];
-	rdsConnector* connector;
-
-	x11 = (rdsModuleX11*) module;
-	connector = (rdsConnector*) module;
 
 	token = NULL;
-	SessionId = module->SessionId;
+	SessionId = connector->SessionId;
 	settings = connector->settings;
 
 	freerds_named_pipe_clean(SessionId, "X11rdp");
@@ -119,7 +115,7 @@ int x11_rds_module_start(rdsModule* module)
 
 	fprintf(stderr, "Process started: %d\n", status);
 
-	module->hClientPipe = freerds_named_pipe_connect(SessionId, "X11", 5 * 1000);
+	connector->hClientPipe = freerds_named_pipe_connect(SessionId, "X11", 5 * 1000);
 
 	ZeroMemory(&(x11->WMStartupInfo), sizeof(STARTUPINFO));
 	x11->WMStartupInfo.cb = sizeof(STARTUPINFO);
@@ -135,11 +131,11 @@ int x11_rds_module_start(rdsModule* module)
 	return 0;
 }
 
-int x11_rds_module_stop(rdsModule* module)
+int x11_rds_module_stop(rdsModuleConnector* module)
 {
-	rdsConnector* connector;
+	rdsModuleConnector* connector;
 
-	connector = (rdsConnector*) module;
+	connector = (rdsModuleConnector*) module;
 
 	SetEvent(connector->StopEvent);
 

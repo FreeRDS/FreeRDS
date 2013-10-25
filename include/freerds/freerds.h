@@ -29,7 +29,7 @@
 
 #include <freerdp/gdi/gdi.h>
 
-typedef struct rds_module rdsModule;
+typedef struct rds_module_connector rdsModuleConnector;
 
 typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;
 typedef RDS_MODULE_ENTRY_POINTS_V1 RDS_MODULE_ENTRY_POINTS;
@@ -619,16 +619,16 @@ typedef union _RDS_MSG_SERVER RDS_MSG_SERVER;
  * Module Interface
  */
 
-typedef int (*pRdsGetEventHandles)(rdsModule* mod, HANDLE* events, DWORD* nCount);
-typedef int (*pRdsCheckEventHandles)(rdsModule* mod);
+typedef int (*pRdsGetEventHandles)(rdsModuleConnector *connector, HANDLE* events, DWORD* nCount);
+typedef int (*pRdsCheckEventHandles)(rdsModuleConnector* connector);
 
-typedef int (*pRdsClientSynchronizeKeyboardEvent)(rdsModule* mod, DWORD flags);
-typedef int (*pRdsClientScancodeKeyboardEvent)(rdsModule* mod, DWORD flags, DWORD code, DWORD keyboardType);
-typedef int (*pRdsClientVirtualKeyboardEvent)(rdsModule* mod, DWORD flags, DWORD code);
-typedef int (*pRdsClientUnicodeKeyboardEvent)(rdsModule* mod, DWORD flags, DWORD code);
-typedef int (*pRdsClientMouseEvent)(rdsModule* mod, DWORD flags, DWORD x, DWORD y);
-typedef int (*pRdsClientExtendedMouseEvent)(rdsModule* mod, DWORD flags, DWORD x, DWORD y);
-typedef int (*pRdsClientVBlankEvent)(rdsModule *mod);
+typedef int (*pRdsClientSynchronizeKeyboardEvent)(rdsModuleConnector* connector, DWORD flags);
+typedef int (*pRdsClientScancodeKeyboardEvent)(rdsModuleConnector* connector, DWORD flags, DWORD code, DWORD keyboardType);
+typedef int (*pRdsClientVirtualKeyboardEvent)(rdsModuleConnector* connector, DWORD flags, DWORD code);
+typedef int (*pRdsClientUnicodeKeyboardEvent)(rdsModuleConnector* connector, DWORD flags, DWORD code);
+typedef int (*pRdsClientMouseEvent)(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y);
+typedef int (*pRdsClientExtendedMouseEvent)(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y);
+typedef int (*pRdsClientVBlankEvent)(rdsModuleConnector *connector);
 
 struct rds_client_interface
 {
@@ -642,35 +642,35 @@ struct rds_client_interface
 };
 typedef struct rds_client_interface rdsClientInterface;
 
-typedef int (*pRdsServerIsTerminated)(rdsModule* mod);
+typedef int (*pRdsServerIsTerminated)(rdsModuleConnector* connector);
 
-typedef int (*pRdsServerBeginUpdate)(rdsModule* mod, RDS_MSG_BEGIN_UPDATE* msg);
-typedef int (*pRdsServerEndUpdate)(rdsModule* mod, RDS_MSG_END_UPDATE* msg);
-typedef int (*pRdsServerBeep)(rdsModule* mod, RDS_MSG_BEEP* msg);
-typedef int (*pRdsServerOpaqueRect)(rdsModule* mod, RDS_MSG_OPAQUE_RECT* msg);
-typedef int (*pRdsServerScreenBlt)(rdsModule* mod, RDS_MSG_SCREEN_BLT* msg);
-typedef int (*pRdsServerPaintRect)(rdsModule* mod, RDS_MSG_PAINT_RECT* msg);
-typedef int (*pRdsServerPatBlt)(rdsModule* mod, RDS_MSG_PATBLT* msg);
-typedef int (*pRdsServerDstBlt)(rdsModule* mod, RDS_MSG_DSTBLT* msg);
-typedef int (*pRdsServerSetPointer)(rdsModule* mod, RDS_MSG_SET_POINTER* msg);
-typedef int (*pRdsServerSetSystemPointer)(rdsModule* mod, RDS_MSG_SET_SYSTEM_POINTER* msg);
-typedef int (*pRdsServerSetPalette)(rdsModule* mod, RDS_MSG_SET_PALETTE* msg);
-typedef int (*pRdsServerSetClippingRegion)(rdsModule* mod, RDS_MSG_SET_CLIPPING_REGION* msg);
-typedef int (*pRdsServerLineTo)(rdsModule* mod, RDS_MSG_LINE_TO* msg);
-typedef int (*pRdsServerCacheGlyph)(rdsModule* mod, RDS_MSG_CACHE_GLYPH* msg);
-typedef int (*pRdsServerGlyphIndex)(rdsModule* mod, RDS_MSG_GLYPH_INDEX* msg);
-typedef int (*pRdsServerSharedFramebuffer)(rdsModule* mod, RDS_MSG_SHARED_FRAMEBUFFER* msg);
-typedef int (*pRdsServerReset)(rdsModule* mod, RDS_MSG_RESET* msg);
-typedef int (*pRdsServerCreateOffscreenSurface)(rdsModule* mod, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg);
-typedef int (*pRdsServerSwitchOffscreenSurface)(rdsModule* mod, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg);
-typedef int (*pRdsServerDeleteOffscreenSurface)(rdsModule* mod, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg);
-typedef int (*pRdsServerPaintOffscreenSurface)(rdsModule* mod, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerBeginUpdate)(rdsModuleConnector* connector, RDS_MSG_BEGIN_UPDATE* msg);
+typedef int (*pRdsServerEndUpdate)(rdsModuleConnector* connector, RDS_MSG_END_UPDATE* msg);
+typedef int (*pRdsServerBeep)(rdsModuleConnector* connector, RDS_MSG_BEEP* msg);
+typedef int (*pRdsServerOpaqueRect)(rdsModuleConnector* connector, RDS_MSG_OPAQUE_RECT* msg);
+typedef int (*pRdsServerScreenBlt)(rdsModuleConnector* connector, RDS_MSG_SCREEN_BLT* msg);
+typedef int (*pRdsServerPaintRect)(rdsModuleConnector* connector, RDS_MSG_PAINT_RECT* msg);
+typedef int (*pRdsServerPatBlt)(rdsModuleConnector* connector, RDS_MSG_PATBLT* msg);
+typedef int (*pRdsServerDstBlt)(rdsModuleConnector* connector, RDS_MSG_DSTBLT* msg);
+typedef int (*pRdsServerSetPointer)(rdsModuleConnector* connector, RDS_MSG_SET_POINTER* msg);
+typedef int (*pRdsServerSetSystemPointer)(rdsModuleConnector* connector, RDS_MSG_SET_SYSTEM_POINTER* msg);
+typedef int (*pRdsServerSetPalette)(rdsModuleConnector* connector, RDS_MSG_SET_PALETTE* msg);
+typedef int (*pRdsServerSetClippingRegion)(rdsModuleConnector* connector, RDS_MSG_SET_CLIPPING_REGION* msg);
+typedef int (*pRdsServerLineTo)(rdsModuleConnector* connector, RDS_MSG_LINE_TO* msg);
+typedef int (*pRdsServerCacheGlyph)(rdsModuleConnector* connector, RDS_MSG_CACHE_GLYPH* msg);
+typedef int (*pRdsServerGlyphIndex)(rdsModuleConnector* connector, RDS_MSG_GLYPH_INDEX* msg);
+typedef int (*pRdsServerSharedFramebuffer)(rdsModuleConnector* connector, RDS_MSG_SHARED_FRAMEBUFFER* msg);
+typedef int (*pRdsServerReset)(rdsModuleConnector* connector, RDS_MSG_RESET* msg);
+typedef int (*pRdsServerCreateOffscreenSurface)(rdsModuleConnector* connector, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerSwitchOffscreenSurface)(rdsModuleConnector* connector, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerDeleteOffscreenSurface)(rdsModuleConnector* connector, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg);
+typedef int (*pRdsServerPaintOffscreenSurface)(rdsModuleConnector* connector, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg);
 
-typedef int (*pRdsServerWindowNewUpdate)(rdsModule* mod, RDS_MSG_WINDOW_NEW_UPDATE* msg);
-typedef int (*pRdsServerWindowDelete)(rdsModule* mod, RDS_MSG_WINDOW_DELETE* msg);
+typedef int (*pRdsServerWindowNewUpdate)(rdsModuleConnector* connector, RDS_MSG_WINDOW_NEW_UPDATE* msg);
+typedef int (*pRdsServerWindowDelete)(rdsModuleConnector* connector, RDS_MSG_WINDOW_DELETE* msg);
 
-typedef int (*pRdsServerLogonUser)(rdsModule* mod, RDS_MSG_LOGON_USER* msg);
-typedef int (*pRdsServerLogoffUser)(rdsModule* mod, RDS_MSG_LOGOFF_USER* msg);
+typedef int (*pRdsServerLogonUser)(rdsModuleConnector* connector, RDS_MSG_LOGON_USER* msg);
+typedef int (*pRdsServerLogoffUser)(rdsModuleConnector* connector, RDS_MSG_LOGOFF_USER* msg);
 
 struct rds_server_interface
 {
@@ -703,8 +703,9 @@ struct rds_server_interface
 };
 typedef struct rds_server_interface rdsServerInterface;
 
-struct rds_module
+struct rds_module_connector
 {
+
 	DWORD Size;
 	char* Endpoint;
 	DWORD SessionId;
@@ -719,14 +720,6 @@ struct rds_module
 	UINT32 InboundTotalCount;
 	UINT32 OutboundTotalLength;
 	UINT32 OutboundTotalCount;
-};
-
-typedef struct rds_connector rdsConnector;
-
-struct rds_connector
-{
-	rdsModule module;
-
 	pRdsGetEventHandles GetEventHandles;
 	pRdsCheckEventHandles CheckEventHandles;
 
@@ -775,14 +768,14 @@ FREERDP_API rdsClientInterface* freerds_server_inbound_interface_new(void);
 FREERDP_API int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length);
 FREERDP_API int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length);
 
-FREERDP_API int freerds_server_outbound_write_message(rdsModule* module, RDS_MSG_COMMON* msg);
+FREERDP_API int freerds_server_outbound_write_message(rdsModuleConnector* connector, RDS_MSG_COMMON* msg);
 
 FREERDP_API int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint);
 FREERDP_API HANDLE freerds_named_pipe_connect(DWORD SessionId, const char* endpoint, DWORD nTimeOut);
 FREERDP_API HANDLE freerds_named_pipe_create(DWORD SessionId, const char* endpoint);
 FREERDP_API HANDLE freerds_named_pipe_accept(HANDLE hServerPipe);
 
-FREERDP_API int freerds_transport_receive(rdsModule* module);
+FREERDP_API int freerds_transport_receive(rdsModuleConnector* connector);
 
 #ifdef __cplusplus
 }
@@ -792,11 +785,11 @@ FREERDP_API int freerds_transport_receive(rdsModule* module);
  * Module Entry Points
  */
 
-typedef int (*pRdsModuleNew)(rdsModule* module);
-typedef void (*pRdsModuleFree)(rdsModule* module);
+typedef int (*pRdsModuleNew)(rdsModuleConnector* connector);
+typedef void (*pRdsModuleFree)(rdsModuleConnector* connector);
 
-typedef int (*pRdsModuleStart)(rdsModule* module);
-typedef int (*pRdsModuleStop)(rdsModule* module);
+typedef int (*pRdsModuleStart)(rdsModuleConnector* connector);
+typedef int (*pRdsModuleStop)(rdsModuleConnector* connector);
 
 struct rds_module_entry_points_v1
 {
@@ -827,7 +820,7 @@ typedef int (*pRdsServiceAccept)(rdsService* service);
 
 struct rds_service
 {
-	rdsModule module;
+	rdsModuleConnector connector;
 
 	void* custom;
 

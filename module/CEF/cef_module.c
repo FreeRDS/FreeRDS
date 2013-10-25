@@ -36,7 +36,7 @@
 
 struct rds_module_cef
 {
-	rdsConnector connector;
+	rdsModuleConnector connector;
 
 	wLog* log;
 	STARTUPINFO si;
@@ -44,13 +44,13 @@ struct rds_module_cef
 };
 typedef struct rds_module_cef rdsModuleCef;
 
-int cef_rds_module_new(rdsModule* module)
+int cef_rds_module_new(rdsModuleConnector* connector)
 {
 	rdsModuleCef* cef;
 
 	WLog_Init();
 
-	cef = (rdsModuleCef*) module;
+	cef = (rdsModuleCef*) connector;
 
 	cef->log = WLog_Get("com.freerds.module.cef.connector");
 	WLog_OpenAppender(cef->log);
@@ -62,42 +62,40 @@ int cef_rds_module_new(rdsModule* module)
 	return 0;
 }
 
-void cef_rds_module_free(rdsModule* module)
+void cef_rds_module_free(rdsModuleConnector* connector)
 {
 	rdsModuleCef* cef;
 
-	cef = (rdsModuleCef*) module;
+	cef = (rdsModuleCef*) connector;
 
 	WLog_Print(cef->log, WLOG_DEBUG, "RdsModuleFree");
 
 	WLog_Uninit();
 }
 
-int cef_rds_module_start(rdsModule* module)
+int cef_rds_module_start(rdsModuleConnector* connector)
 {
 	BOOL status;
 	rdsModuleCef* cef;
 	rdpSettings* settings;
-	rdsConnector* connector;
 	char lpCommandLine[256];
 	const char* endpoint = "CEF";
 
-	cef = (rdsModuleCef*) module;
-	connector = (rdsConnector*) module;
+	cef = (rdsModuleCef*) connector;
 
 	WLog_Print(cef->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
-			(int) module->SessionId, endpoint);
+			(int) connector->SessionId, endpoint);
 
 	settings = connector->settings;
 
-	freerds_named_pipe_clean(module->SessionId, endpoint);
+	freerds_named_pipe_clean(connector->SessionId, endpoint);
 
 	ZeroMemory(&(cef->si), sizeof(STARTUPINFO));
 	cef->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(cef->pi), sizeof(PROCESS_INFORMATION));
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /session-id:%d /width:%d /height:%d",
-			"freerds-cef", (int) module->SessionId, settings->DesktopWidth, settings->DesktopHeight);
+			"freerds-cef", (int) connector->SessionId, settings->DesktopWidth, settings->DesktopHeight);
 
 	WLog_Print(cef->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
@@ -107,9 +105,9 @@ int cef_rds_module_start(rdsModule* module)
 
 	WLog_Print(cef->log, WLOG_DEBUG, "Process created with status: %d", status);
 
-	module->hClientPipe = freerds_named_pipe_connect(module->SessionId, "CEF", 5 * 1000);
+	connector->hClientPipe = freerds_named_pipe_connect(connector->SessionId, "CEF", 5 * 1000);
 
-	if (!module->hClientPipe)
+	if (!connector->hClientPipe)
 	{
 		WLog_Print(cef->log, WLOG_ERROR, "Failed to connect to service");
 		return -1;
@@ -118,13 +116,12 @@ int cef_rds_module_start(rdsModule* module)
 	return 0;
 }
 
-int cef_rds_module_stop(rdsModule* module)
+int cef_rds_module_stop(rdsModuleConnector* connector)
 {
 	rdsModuleCef* cef;
-	rdsConnector* connector;
+	cef = (rdsModuleCef*) connector;
 
-	cef = (rdsModuleCef*) module;
-	connector = (rdsConnector*) module;
+
 
 	WLog_Print(cef->log, WLOG_DEBUG, "RdsModuleStop");
 

@@ -235,7 +235,7 @@ int rdpup_end_update(void)
 int rdpup_update(RDS_MSG_COMMON* msg)
 {
 	int status;
-	rdsModule* module = (rdsModule*) g_Service;
+	rdsModuleConnector* connector = (rdsModuleConnector*) g_Service;
 
 	if (g_connected)
 	{
@@ -245,7 +245,7 @@ int rdpup_update(RDS_MSG_COMMON* msg)
 			return 0;
 		}
 
-		status = freerds_server_outbound_write_message(module, (RDS_MSG_COMMON*) msg);
+		status = freerds_server_outbound_write_message(connector, (RDS_MSG_COMMON*) msg);
 
 		LLOGLN(0, ("rdpup_update: adding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
 	}
@@ -540,30 +540,30 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	rdpup_update((RDS_MSG_COMMON*) &msg);
 }
 
-int rds_client_synchronize_keyboard_event(rdsModule* module, DWORD flags)
+int rds_client_synchronize_keyboard_event(rdsModuleConnector* connector, DWORD flags)
 {
 	return 0;
 }
 
-int rds_client_scancode_keyboard_event(rdsModule* module, DWORD flags, DWORD code, DWORD keyboardType)
+int rds_client_scancode_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code, DWORD keyboardType)
 {
 	KbdAddScancodeEvent(flags, code, keyboardType);
 	return 0;
 }
 
-int rds_client_virtual_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
+int rds_client_virtual_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code)
 {
 	KbdAddVirtualKeyCodeEvent(flags, code);
 	return 0;
 }
 
-int rds_client_unicode_keyboard_event(rdsModule* module, DWORD flags, DWORD code)
+int rds_client_unicode_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code)
 {
 	KbdAddUnicodeEvent(flags, code);
 	return 0;
 }
 
-int rds_client_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
+int rds_client_mouse_event(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y)
 {
 	if (x > g_rdpScreen.width - 2)
 		x = g_rdpScreen.width - 2;
@@ -638,7 +638,7 @@ int rds_client_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
 	return 0;
 }
 
-int rds_client_extended_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWORD y)
+int rds_client_extended_mouse_event(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y)
 {
 	if (x > g_rdpScreen.width - 2)
 		x = g_rdpScreen.width - 2;
@@ -683,9 +683,9 @@ int rds_client_extended_mouse_event(rdsModule* module, DWORD flags, DWORD x, DWO
 
 int rds_service_accept(rdsService* service)
 {
-	rdsModule* module = (rdsModule*) service;
+	rdsModuleConnector* connector = (rdsModuleConnector*) service;
 
-	g_clientfd = GetNamePipeFileDescriptor(module->hClientPipe);
+	g_clientfd = GetNamePipeFileDescriptor(connector->hClientPipe);
 
 	g_con_number++;
 	g_connected = 1;
@@ -700,7 +700,7 @@ int rds_service_accept(rdsService* service)
 int rdpup_init(void)
 {
 	int DisplayId;
-	rdsModule* module;
+	rdsModuleConnector* connector;
 	rdsService* service;
 
 	DisplayId = atoi(display);
@@ -719,19 +719,19 @@ int rdpup_init(void)
 		g_Service = freerds_service_new(DisplayId, "X11");
 
 		service = g_Service;
-		module = (rdsModule*) service;
+		connector = (rdsModuleConnector*) service;
 
 		service->Accept = (pRdsServiceAccept) rds_service_accept;
 
-		module->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
-		module->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
-		module->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;
-		module->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
-		module->client->MouseEvent = rds_client_mouse_event;
-		module->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
+		connector->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
+		connector->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
+		connector->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;
+		connector->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
+		connector->client->MouseEvent = rds_client_mouse_event;
+		connector->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
 
-		module->hServerPipe = freerds_named_pipe_create(module->SessionId, module->Endpoint);
-		module->hClientPipe = freerds_named_pipe_accept(module->hServerPipe);
+		connector->hServerPipe = freerds_named_pipe_create(connector->SessionId, connector->Endpoint);
+		connector->hClientPipe = freerds_named_pipe_accept(connector->hServerPipe);
 		service->Accept(service);
 	}
 
@@ -740,16 +740,16 @@ int rdpup_init(void)
 
 int rdpup_check(void)
 {
-	rdsModule* module;
+	rdsModuleConnector* connector;
 	rdsService* service = g_Service;
 
-	module = (rdsModule*) service;
+	connector = (rdsModuleConnector*) service;
 
-	if (module->hClientPipe)
+	if (connector->hClientPipe)
 	{
-		if (WaitForSingleObject(module->hClientPipe, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(connector->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			freerds_transport_receive(module);
+			freerds_transport_receive(connector);
 		}
 	}
 

@@ -23,11 +23,9 @@
 
 #include "xrdp.h"
 
-int xrdp_server_message_enqueue(rdsModule* module, RDS_MSG_COMMON* msg)
+int xrdp_server_message_enqueue(rdsModuleConnector* connector, RDS_MSG_COMMON* msg)
 {
 	void* dup = NULL;
-	rdsConnector* connector = (rdsConnector*) module;
-
 	dup = xrdp_server_message_copy(msg);
 
 	LinkedList_AddLast(connector->ServerList, (void*) dup);
@@ -39,159 +37,156 @@ int xrdp_server_message_enqueue(rdsModule* module, RDS_MSG_COMMON* msg)
  * Server Callbacks
  */
 
-int xrdp_message_server_is_terminated(rdsModule* module)
+int xrdp_message_server_is_terminated(rdsModuleConnector* connector)
 {
 	int status;
-	rdsConnector* connector = (rdsConnector*) module;
-	status = connector->ServerProxy->IsTerminated(module);
+	status = connector->ServerProxy->IsTerminated(connector);
 	return status;
 }
 
-int xrdp_message_server_begin_update(rdsModule* module, RDS_MSG_BEGIN_UPDATE* msg)
+int xrdp_message_server_begin_update(rdsModuleConnector* connector, RDS_MSG_BEGIN_UPDATE* msg)
 {
 	msg->type = RDS_SERVER_BEGIN_UPDATE;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_end_update(rdsModule* module, RDS_MSG_END_UPDATE* msg)
+int xrdp_message_server_end_update(rdsModuleConnector* connector, RDS_MSG_END_UPDATE* msg)
 {
 	msg->type = RDS_SERVER_END_UPDATE;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_beep(rdsModule* module, RDS_MSG_BEEP* msg)
+int xrdp_message_server_beep(rdsModuleConnector* connector, RDS_MSG_BEEP* msg)
 {
 	msg->type = RDS_SERVER_BEEP;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_opaque_rect(rdsModule* module, RDS_MSG_OPAQUE_RECT* msg)
+int xrdp_message_server_opaque_rect(rdsModuleConnector* connector, RDS_MSG_OPAQUE_RECT* msg)
 {
 	msg->type = RDS_SERVER_OPAQUE_RECT;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_screen_blt(rdsModule* module, RDS_MSG_SCREEN_BLT* msg)
+int xrdp_message_server_screen_blt(rdsModuleConnector* connector, RDS_MSG_SCREEN_BLT* msg)
 {
 	msg->type = RDS_SERVER_SCREEN_BLT;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_paint_rect(rdsModule* module, RDS_MSG_PAINT_RECT* msg)
+int xrdp_message_server_paint_rect(rdsModuleConnector* connector, RDS_MSG_PAINT_RECT* msg)
 {
 	msg->type = RDS_SERVER_PAINT_RECT;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_patblt(rdsModule* module, RDS_MSG_PATBLT* msg)
+int xrdp_message_server_patblt(rdsModuleConnector* connector, RDS_MSG_PATBLT* msg)
 {
 	msg->type = RDS_SERVER_PATBLT;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_dstblt(rdsModule* module, RDS_MSG_DSTBLT* msg)
+int xrdp_message_server_dstblt(rdsModuleConnector* connector, RDS_MSG_DSTBLT* msg)
 {
 	msg->type = RDS_SERVER_DSTBLT;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_set_pointer(rdsModule* module, RDS_MSG_SET_POINTER* msg)
+int xrdp_message_server_set_pointer(rdsModuleConnector* connector, RDS_MSG_SET_POINTER* msg)
 {
 	msg->type = RDS_SERVER_SET_POINTER;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_set_system_pointer(rdsModule* module, RDS_MSG_SET_SYSTEM_POINTER* msg)
+int xrdp_message_server_set_system_pointer(rdsModuleConnector* connector, RDS_MSG_SET_SYSTEM_POINTER* msg)
 {
 	msg->type = RDS_SERVER_SET_SYSTEM_POINTER;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_set_palette(rdsModule* module, RDS_MSG_SET_PALETTE* msg)
+int xrdp_message_server_set_palette(rdsModuleConnector* connector, RDS_MSG_SET_PALETTE* msg)
 {
 	msg->type = RDS_SERVER_SET_PALETTE;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_set_clipping_region(rdsModule* module, RDS_MSG_SET_CLIPPING_REGION* msg)
+int xrdp_message_server_set_clipping_region(rdsModuleConnector* connector, RDS_MSG_SET_CLIPPING_REGION* msg)
 {
 	msg->type = RDS_SERVER_SET_CLIPPING_REGION;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_line_to(rdsModule* module, RDS_MSG_LINE_TO* msg)
+int xrdp_message_server_line_to(rdsModuleConnector* connector, RDS_MSG_LINE_TO* msg)
 {
 	msg->type = RDS_SERVER_LINE_TO;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_cache_glyph(rdsModule* module, RDS_MSG_CACHE_GLYPH* msg)
+int xrdp_message_server_cache_glyph(rdsModuleConnector* connector, RDS_MSG_CACHE_GLYPH* msg)
 {
 	msg->type = RDS_SERVER_CACHE_GLYPH;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_glyph_index(rdsModule* module, RDS_MSG_GLYPH_INDEX* msg)
+int xrdp_message_glyph_index(rdsModuleConnector* connector, RDS_MSG_GLYPH_INDEX* msg)
 {
 	msg->type = RDS_SERVER_GLYPH_INDEX;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_shared_framebuffer(rdsModule* module, RDS_MSG_SHARED_FRAMEBUFFER* msg)
+int xrdp_message_server_shared_framebuffer(rdsModuleConnector* connector, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	msg->type = RDS_SERVER_SHARED_FRAMEBUFFER;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_reset(rdsModule* module, RDS_MSG_RESET* msg)
+int xrdp_message_server_reset(rdsModuleConnector* connector, RDS_MSG_RESET* msg)
 {
 	msg->type = RDS_SERVER_RESET;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_create_offscreen_surface(rdsModule* module, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg)
+int xrdp_message_server_create_offscreen_surface(rdsModuleConnector* connector, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = RDS_SERVER_CREATE_OFFSCREEN_SURFACE;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_switch_offscreen_surface(rdsModule* module, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
+int xrdp_message_server_switch_offscreen_surface(rdsModuleConnector* connector, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = RDS_SERVER_SWITCH_OFFSCREEN_SURFACE;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_delete_offscreen_surface(rdsModule* module, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg)
+int xrdp_message_server_delete_offscreen_surface(rdsModuleConnector* connector, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = RDS_SERVER_DELETE_OFFSCREEN_SURFACE;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_paint_offscreen_surface(rdsModule* module, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg)
+int xrdp_message_server_paint_offscreen_surface(rdsModuleConnector* connector, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = RDS_SERVER_PAINT_OFFSCREEN_SURFACE;
-	return xrdp_server_message_enqueue(module, (RDS_MSG_COMMON*) msg);
+	return xrdp_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
 }
 
-int xrdp_message_server_window_new_update(rdsModule* module, RDS_MSG_WINDOW_NEW_UPDATE* msg)
+int xrdp_message_server_window_new_update(rdsModuleConnector* connector, RDS_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	//mod->ServerProxy->WindowNewUpdate(mod, msg);
 	return 0;
 }
 
-int xrdp_message_server_window_delete(rdsModule* module, RDS_MSG_WINDOW_DELETE* msg)
+int xrdp_message_server_window_delete(rdsModuleConnector* connector, RDS_MSG_WINDOW_DELETE* msg)
 {
 	//mod->ServerProxy->WindowDelete(mod, msg);
 	return 0;
 }
 
-int xrdp_message_server_queue_process_message(rdsModule* module, wMessage* message)
+int xrdp_message_server_queue_process_message(rdsModuleConnector* connector, wMessage* message)
 {
 	int status;
-	rdsConnector* connector;
 	rdsServerInterface* ServerProxy;
 
-	connector = (rdsConnector*) module;
 	ServerProxy = connector->ServerProxy;
 
 	if (message->id == WMQ_QUIT)
@@ -200,87 +195,87 @@ int xrdp_message_server_queue_process_message(rdsModule* module, wMessage* messa
 	switch (message->id)
 	{
 		case RDS_SERVER_BEGIN_UPDATE:
-			status = ServerProxy->BeginUpdate(module, (RDS_MSG_BEGIN_UPDATE*) message->wParam);
+			status = ServerProxy->BeginUpdate(connector, (RDS_MSG_BEGIN_UPDATE*) message->wParam);
 			break;
 
 		case RDS_SERVER_END_UPDATE:
-			status = ServerProxy->EndUpdate(module, (RDS_MSG_END_UPDATE*) message->wParam);
+			status = ServerProxy->EndUpdate(connector, (RDS_MSG_END_UPDATE*) message->wParam);
 			break;
 
 		case RDS_SERVER_BEEP:
-			status = ServerProxy->Beep(module, (RDS_MSG_BEEP*) message->wParam);
+			status = ServerProxy->Beep(connector, (RDS_MSG_BEEP*) message->wParam);
 			break;
 
 		case RDS_SERVER_OPAQUE_RECT:
-			status = ServerProxy->OpaqueRect(module, (RDS_MSG_OPAQUE_RECT*) message->wParam);
+			status = ServerProxy->OpaqueRect(connector, (RDS_MSG_OPAQUE_RECT*) message->wParam);
 			break;
 
 		case RDS_SERVER_SCREEN_BLT:
-			status = ServerProxy->ScreenBlt(module, (RDS_MSG_SCREEN_BLT*) message->wParam);
+			status = ServerProxy->ScreenBlt(connector, (RDS_MSG_SCREEN_BLT*) message->wParam);
 			break;
 
 		case RDS_SERVER_PAINT_RECT:
-			status = ServerProxy->PaintRect(module, (RDS_MSG_PAINT_RECT*) message->wParam);
+			status = ServerProxy->PaintRect(connector, (RDS_MSG_PAINT_RECT*) message->wParam);
 			break;
 
 		case RDS_SERVER_PATBLT:
-			status = ServerProxy->PatBlt(module, (RDS_MSG_PATBLT*) message->wParam);
+			status = ServerProxy->PatBlt(connector, (RDS_MSG_PATBLT*) message->wParam);
 			break;
 
 		case RDS_SERVER_DSTBLT:
-			status = ServerProxy->DstBlt(module, (RDS_MSG_DSTBLT*) message->wParam);
+			status = ServerProxy->DstBlt(connector, (RDS_MSG_DSTBLT*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_POINTER:
-			status = ServerProxy->SetPointer(module, (RDS_MSG_SET_POINTER*) message->wParam);
+			status = ServerProxy->SetPointer(connector, (RDS_MSG_SET_POINTER*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_SYSTEM_POINTER:
-			status = ServerProxy->SetSystemPointer(module, (RDS_MSG_SET_SYSTEM_POINTER*) message->wParam);
+			status = ServerProxy->SetSystemPointer(connector, (RDS_MSG_SET_SYSTEM_POINTER*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_PALETTE:
-			status = ServerProxy->SetPalette(module, (RDS_MSG_SET_PALETTE*) message->wParam);
+			status = ServerProxy->SetPalette(connector, (RDS_MSG_SET_PALETTE*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_CLIPPING_REGION:
-			status = ServerProxy->SetClippingRegion(module, (RDS_MSG_SET_CLIPPING_REGION*) message->wParam);
+			status = ServerProxy->SetClippingRegion(connector, (RDS_MSG_SET_CLIPPING_REGION*) message->wParam);
 			break;
 
 		case RDS_SERVER_LINE_TO:
-			status = ServerProxy->LineTo(module, (RDS_MSG_LINE_TO*) message->wParam);
+			status = ServerProxy->LineTo(connector, (RDS_MSG_LINE_TO*) message->wParam);
 			break;
 
 		case RDS_SERVER_CACHE_GLYPH:
-			status = ServerProxy->CacheGlyph(module, (RDS_MSG_CACHE_GLYPH*) message->wParam);
+			status = ServerProxy->CacheGlyph(connector, (RDS_MSG_CACHE_GLYPH*) message->wParam);
 			break;
 
 		case RDS_SERVER_GLYPH_INDEX:
-			status = ServerProxy->GlyphIndex(module, (RDS_MSG_GLYPH_INDEX*) message->wParam);
+			status = ServerProxy->GlyphIndex(connector, (RDS_MSG_GLYPH_INDEX*) message->wParam);
 			break;
 
 		case RDS_SERVER_SHARED_FRAMEBUFFER:
-			status = ServerProxy->SharedFramebuffer(module, (RDS_MSG_SHARED_FRAMEBUFFER*) message->wParam);
+			status = ServerProxy->SharedFramebuffer(connector, (RDS_MSG_SHARED_FRAMEBUFFER*) message->wParam);
 			break;
 
 		case RDS_SERVER_RESET:
-			status = ServerProxy->Reset(module, (RDS_MSG_RESET*) message->wParam);
+			status = ServerProxy->Reset(connector, (RDS_MSG_RESET*) message->wParam);
 			break;
 
 		case RDS_SERVER_CREATE_OFFSCREEN_SURFACE:
-			status = ServerProxy->CreateOffscreenSurface(module, (RDS_MSG_CREATE_OFFSCREEN_SURFACE*) message->wParam);
+			status = ServerProxy->CreateOffscreenSurface(connector, (RDS_MSG_CREATE_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case RDS_SERVER_SWITCH_OFFSCREEN_SURFACE:
-			status = ServerProxy->SwitchOffscreenSurface(module, (RDS_MSG_SWITCH_OFFSCREEN_SURFACE*) message->wParam);
+			status = ServerProxy->SwitchOffscreenSurface(connector, (RDS_MSG_SWITCH_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case RDS_SERVER_DELETE_OFFSCREEN_SURFACE:
-			status = ServerProxy->DeleteOffscreenSurface(module, (RDS_MSG_DELETE_OFFSCREEN_SURFACE*) message->wParam);
+			status = ServerProxy->DeleteOffscreenSurface(connector, (RDS_MSG_DELETE_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case RDS_SERVER_PAINT_OFFSCREEN_SURFACE:
-			status = ServerProxy->PaintOffscreenSurface(module, (RDS_MSG_PAINT_OFFSCREEN_SURFACE*) message->wParam);
+			status = ServerProxy->PaintOffscreenSurface(connector, (RDS_MSG_PAINT_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		default:
@@ -299,12 +294,9 @@ int xrdp_message_server_queue_process_message(rdsModule* module, wMessage* messa
 	return 0;
 }
 
-int xrdp_message_server_align_rect(rdsModule* module, RDS_RECT* rect)
+int xrdp_message_server_align_rect(rdsModuleConnector* connector, RDS_RECT* rect)
 {
 	rdpSettings* settings;
-	rdsConnector* connector;
-
-	connector = (rdsConnector*) module;
 	settings = connector->settings;
 
 	if (rect->x < 0)
@@ -341,19 +333,16 @@ int xrdp_message_server_align_rect(rdsModule* module, RDS_RECT* rect)
 	return 0;
 }
 
-int xrdp_message_server_queue_pack(rdsModule* module)
+int xrdp_message_server_queue_pack(rdsModuleConnector* connector)
 {
 	RDS_RECT rect;
 	int ChainedMode;
 	wLinkedList* list;
 	rdsConnection* connection;
 	RDS_MSG_COMMON* node;
-	rdsConnector* connector;
 	pixman_bool_t status;
 	pixman_box32_t* extents;
 	pixman_region32_t region;
-
-	connector = (rdsConnector*) module;
 
 	ChainedMode = 0;
 	connection = connector->connection;
@@ -375,7 +364,7 @@ int xrdp_message_server_queue_pack(rdsModule* module)
 		}
 		else
 		{
-			MessageQueue_Post(connector->ServerQueue, (void*) module, node->type, (void*) node, NULL);
+			MessageQueue_Post(connector->ServerQueue, (void*) connector, node->type, (void*) node, NULL);
 		}
 	}
 
@@ -390,7 +379,7 @@ int xrdp_message_server_queue_pack(rdsModule* module)
 		rect.width = extents->x2 - extents->x1;
 		rect.height = extents->y2 - extents->y1;
 
-		xrdp_message_server_align_rect(module, &rect);
+		xrdp_message_server_align_rect(connector, &rect);
 
 		if (connector->framebuffer.fbAttached && (rect.width * rect.height))
 		{
@@ -413,7 +402,7 @@ int xrdp_message_server_queue_pack(rdsModule* module)
 
 			msg = xrdp_server_message_copy((RDS_MSG_COMMON*) &paintRect);
 
-			MessageQueue_Post(connector->ServerQueue, (void*) module, msg->type, (void*) msg, NULL);
+			MessageQueue_Post(connector->ServerQueue, (void*) connector, msg->type, (void*) msg, NULL);
 		}
 	}
 
@@ -422,15 +411,12 @@ int xrdp_message_server_queue_pack(rdsModule* module)
 	return 0;
 }
 
-int xrdp_message_server_queue_process_pending_messages(rdsModule* module)
+int xrdp_message_server_queue_process_pending_messages(rdsModuleConnector* connector)
 {
 	int count;
 	int status;
 	wMessage message;
 	wMessageQueue* queue;
-	rdsConnector* connector;
-
-	connector = (rdsConnector*) module;
 
 	count = 0;
 	status = 0;
@@ -438,7 +424,7 @@ int xrdp_message_server_queue_process_pending_messages(rdsModule* module)
 
 	while (MessageQueue_Peek(queue, &message, TRUE))
 	{
-		status = xrdp_message_server_queue_process_message(module, &message);
+		status = xrdp_message_server_queue_process_message(connector, &message);
 
 		if (!status)
 			break;
@@ -449,44 +435,40 @@ int xrdp_message_server_queue_process_pending_messages(rdsModule* module)
 	return status;
 }
 
-int xrdp_message_server_module_init(rdsModule* module)
+int xrdp_message_server_connector_init(rdsModuleConnector* connector)
 {
-	rdsConnector* connector;
-
-	connector = (rdsConnector*) module;
-
 	connector->ServerProxy = (rdsServerInterface*) malloc(sizeof(rdsServerInterface));
 
 	//mod->ServerProxy = NULL; /* disable */
 
 	if (connector->ServerProxy)
 	{
-		CopyMemory(connector->ServerProxy, module->server, sizeof(rdsServerInterface));
+		CopyMemory(connector->ServerProxy, connector->server, sizeof(rdsServerInterface));
 
-		module->server->BeginUpdate = xrdp_message_server_begin_update;
-		module->server->EndUpdate = xrdp_message_server_end_update;
-		module->server->Beep = xrdp_message_server_beep;
-		module->server->IsTerminated = xrdp_message_server_is_terminated;
-		module->server->OpaqueRect = xrdp_message_server_opaque_rect;
-		module->server->ScreenBlt = xrdp_message_server_screen_blt;
-		module->server->PaintRect = xrdp_message_server_paint_rect;
-		module->server->PatBlt = xrdp_message_server_patblt;
-		module->server->DstBlt = xrdp_message_server_dstblt;
-		module->server->SetPointer = xrdp_message_server_set_pointer;
-		module->server->SetSystemPointer = xrdp_message_server_set_system_pointer;
-		module->server->SetPalette = xrdp_message_server_set_palette;
-		module->server->SetClippingRegion = xrdp_message_server_set_clipping_region;
-		module->server->LineTo = xrdp_message_server_line_to;
-		module->server->CacheGlyph = xrdp_message_server_cache_glyph;
-		module->server->GlyphIndex = xrdp_message_glyph_index;
-		module->server->SharedFramebuffer = xrdp_message_server_shared_framebuffer;
-		module->server->Reset = xrdp_message_server_reset;
-		module->server->CreateOffscreenSurface = xrdp_message_server_create_offscreen_surface;
-		module->server->SwitchOffscreenSurface = xrdp_message_server_switch_offscreen_surface;
-		module->server->DeleteOffscreenSurface = xrdp_message_server_delete_offscreen_surface;
-		module->server->PaintOffscreenSurface = xrdp_message_server_paint_offscreen_surface;
-		module->server->WindowNewUpdate = xrdp_message_server_window_new_update;
-		module->server->WindowDelete = xrdp_message_server_window_delete;
+		connector->server->BeginUpdate = xrdp_message_server_begin_update;
+		connector->server->EndUpdate = xrdp_message_server_end_update;
+		connector->server->Beep = xrdp_message_server_beep;
+		connector->server->IsTerminated = xrdp_message_server_is_terminated;
+		connector->server->OpaqueRect = xrdp_message_server_opaque_rect;
+		connector->server->ScreenBlt = xrdp_message_server_screen_blt;
+		connector->server->PaintRect = xrdp_message_server_paint_rect;
+		connector->server->PatBlt = xrdp_message_server_patblt;
+		connector->server->DstBlt = xrdp_message_server_dstblt;
+		connector->server->SetPointer = xrdp_message_server_set_pointer;
+		connector->server->SetSystemPointer = xrdp_message_server_set_system_pointer;
+		connector->server->SetPalette = xrdp_message_server_set_palette;
+		connector->server->SetClippingRegion = xrdp_message_server_set_clipping_region;
+		connector->server->LineTo = xrdp_message_server_line_to;
+		connector->server->CacheGlyph = xrdp_message_server_cache_glyph;
+		connector->server->GlyphIndex = xrdp_message_glyph_index;
+		connector->server->SharedFramebuffer = xrdp_message_server_shared_framebuffer;
+		connector->server->Reset = xrdp_message_server_reset;
+		connector->server->CreateOffscreenSurface = xrdp_message_server_create_offscreen_surface;
+		connector->server->SwitchOffscreenSurface = xrdp_message_server_switch_offscreen_surface;
+		connector->server->DeleteOffscreenSurface = xrdp_message_server_delete_offscreen_surface;
+		connector->server->PaintOffscreenSurface = xrdp_message_server_paint_offscreen_surface;
+		connector->server->WindowNewUpdate = xrdp_message_server_window_new_update;
+		connector->server->WindowDelete = xrdp_message_server_window_delete;
 	}
 
 	connector->MaxFps = connector->fps = 60;

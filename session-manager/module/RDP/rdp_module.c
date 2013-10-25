@@ -34,7 +34,7 @@
 
 struct rds_module_rdp
 {
-	rdsConnector connector;
+	rdsModuleConnector connector;
 
 	wLog* log;
 	STARTUPINFO si;
@@ -80,12 +80,12 @@ int rdp_rds_module_start(void * module)
 	BOOL status;
 	rdsModuleRdp* rdp;
 	rdpSettings* settings;
-	rdsConnector* connector;
+	rdsModuleConnector* connector;
+
 	char lpCommandLine[256];
 	const char* endpoint = "RDP";
 
 	rdp = (rdsModuleRdp*) module;
-	connector = (rdsConnector*) module;
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
 			(int) rdp->SessionId, endpoint);
@@ -123,10 +123,12 @@ int rdp_rds_module_start(void * module)
 int rdp_rds_module_stop(void * module)
 {
 	rdsModuleRdp* rdp;
-	rdsConnector* connector;
+	rdsModuleConnector* connector;
+
+
 
 	rdp = (rdsModuleRdp*) module;
-	connector = (rdsConnector*) module;
+	connector = (rdsModuleConnector*) module;
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStop");
 

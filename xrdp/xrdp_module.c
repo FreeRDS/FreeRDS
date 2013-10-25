@@ -53,13 +53,9 @@
 
 extern char* RdsModuleName;
 
-int xrdp_client_get_event_handles(rdsModule* module, HANDLE* events, DWORD* nCount)
+int xrdp_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount)
 {
-	rdsConnector* connector;
-
-	connector = (rdsConnector*) module;
-
-	if (module)
+	if (connector)
 	{
 		if (connector->ServerQueue)
 		{
@@ -71,19 +67,17 @@ int xrdp_client_get_event_handles(rdsModule* module, HANDLE* events, DWORD* nCou
 	return 0;
 }
 
-int xrdp_client_check_event_handles(rdsModule* module)
+int xrdp_client_check_event_handles(rdsModuleConnector* connector)
 {
 	int status = 0;
-	rdsConnector* connector;
 
-	connector = (rdsConnector*) module;
 
-	if (!module)
+	if (!connector)
 		return 0;
 
 	while (WaitForSingleObject(MessageQueue_Event(connector->ServerQueue), 0) == WAIT_OBJECT_0)
 	{
-		status = xrdp_message_server_queue_process_pending_messages(module);
+		status = xrdp_message_server_queue_process_pending_messages(connector);
 	}
 
 	return status;
@@ -118,13 +112,12 @@ pRdsModuleEntry freerds_load_dynamic_module(const char* name)
 	return NULL;
 }
 
-rdsModule* xrdp_module_new(rdsConnection* connection)
+rdsModuleConnector* xrdp_module_new(rdsConnection* connection)
 {
 	int error_code;
 	int auth_status;
-	rdsModule* module;
 	rdpSettings* settings;
-	rdsConnector* connector;
+	rdsModuleConnector* connector;
 	pRdsModuleEntry moduleEntry;
 	RDS_MODULE_ENTRY_POINTS EntryPoints;
 
@@ -151,13 +144,11 @@ rdsModule* xrdp_module_new(rdsConnection* connection)
 
 	auth_status = xrdp_authenticate(settings->Username, settings->Password, &error_code);
 
-	module = (rdsModule*) malloc(EntryPoints.ContextSize);
-	ZeroMemory(module, EntryPoints.ContextSize);
+	connector = (rdsModuleConnector*) malloc(EntryPoints.ContextSize);
+	ZeroMemory(connector, EntryPoints.ContextSize);
 
-	connector = (rdsConnector*) module;
-
-	module->Size = EntryPoints.ContextSize;
-	module->SessionId = 10;
+	connector->Size = EntryPoints.ContextSize;
+	connector->SessionId = 10;
 
 	connector->connection = connection;
 	connector->settings = connection->settings;
@@ -168,39 +159,39 @@ rdsModule* xrdp_module_new(rdsConnection* connection)
 	connector->GetEventHandles = xrdp_client_get_event_handles;
 	connector->CheckEventHandles = xrdp_client_check_event_handles;
 
-	module->client = freerds_client_outbound_interface_new();
-	module->server = freerds_server_outbound_interface_new();
+	connector->client = freerds_client_outbound_interface_new();
+	connector->server = freerds_server_outbound_interface_new();
 
-	module->OutboundStream = Stream_New(NULL, 8192);
-	module->InboundStream = Stream_New(NULL, 8192);
+	connector->OutboundStream = Stream_New(NULL, 8192);
+	connector->InboundStream = Stream_New(NULL, 8192);
 
-	module->InboundTotalLength = 0;
-	module->InboundTotalCount = 0;
+	connector->InboundTotalLength = 0;
+	connector->InboundTotalCount = 0;
 
-	module->OutboundTotalLength = 0;
-	module->OutboundTotalCount = 0;
+	connector->OutboundTotalLength = 0;
+	connector->OutboundTotalCount = 0;
 
 	connector->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	connector->pEntryPoints->New((rdsModule*) module);
+	connector->pEntryPoints->New((rdsModuleConnector*) connector);
 
 	connector->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) xrdp_client_thread,
-			(void*) module, CREATE_SUSPENDED, NULL);
+			(void*) connector, CREATE_SUSPENDED, NULL);
 
-	freerds_client_inbound_module_init(module);
+	freerds_client_inbound_connector_init(connector);
 
-	connector->pEntryPoints->Start(module);
+	connector->pEntryPoints->Start(connector);
 
 	ResumeThread(connector->ServerThread);
 
-	return module;
+	return connector;
 }
 
-void xrdp_module_free(rdsModule* module)
+void xrdp_module_free(rdsModuleConnector* module)
 {
-	rdsConnector* connector;
+	rdsModuleConnector* connector;
 
-	connector = (rdsConnector*) module;
+	connector = (rdsModuleConnector*) module;
 
 	SetEvent(connector->StopEvent);
 

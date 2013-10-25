@@ -162,8 +162,8 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (settings->RemoteFxCodec || settings->NSCodec)
 		connection->codecMode = TRUE;
 
-	if (!connection->module)
-		connection->module = xrdp_module_new(connection);
+	if (!connection->connector)
+		connection->connector = xrdp_module_new(connection);
 
 	printf("Client Activated\n");
 
@@ -230,13 +230,13 @@ int xrdp_generate_certificate(rdpSettings* settings)
 void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModule* module = connection->module;
+	rdsModuleConnector* connector = connection->connector;
 
-	if (module)
+	if (connector)
 	{
-		if (module->client->SynchronizeKeyboardEvent)
+		if (connector->client->SynchronizeKeyboardEvent)
 		{
-			module->client->SynchronizeKeyboardEvent(module, flags);
+			connector->client->SynchronizeKeyboardEvent(connector, flags);
 		}
 	}
 }
@@ -244,13 +244,13 @@ void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModule* module = connection->module;
+	rdsModuleConnector* connector = connection->connector;
 
-	if (module)
+	if (connector)
 	{
-		if (module->client->ScancodeKeyboardEvent)
+		if (connector->client->ScancodeKeyboardEvent)
 		{
-			module->client->ScancodeKeyboardEvent(module, flags, code, connection->settings->KeyboardType);
+			connector->client->ScancodeKeyboardEvent(connector, flags, code, connection->settings->KeyboardType);
 		}
 	}
 }
@@ -258,13 +258,13 @@ void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModule* module = connection->module;
+	rdsModuleConnector* connector = connection->connector;
 
-	if (module)
+	if (connector)
 	{
-		if (module->client->UnicodeKeyboardEvent)
+		if (connector->client->UnicodeKeyboardEvent)
 		{
-			module->client->UnicodeKeyboardEvent(module, flags, code);
+			connector->client->UnicodeKeyboardEvent(connector, flags, code);
 		}
 	}
 }
@@ -272,13 +272,13 @@ void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 cod
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModule* module = connection->module;
+	rdsModuleConnector* connector = connection->connector;
 
-	if (module)
+	if (connector)
 	{
-		if (module->client->MouseEvent)
+		if (connector->client->MouseEvent)
 		{
-			module->client->MouseEvent(module, flags, x, y);
+			connector->client->MouseEvent(connector, flags, x, y);
 		}
 	}
 }
@@ -286,13 +286,13 @@ void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModule* module = connection->module;
+	rdsModuleConnector* connector = connection->connector;
 
-	if (module)
+	if (connector)
 	{
-		if (module->client->ExtendedMouseEvent)
+		if (connector->client->ExtendedMouseEvent)
 		{
-			module->client->ExtendedMouseEvent(module, flags, x, y);
+			connector->client->ExtendedMouseEvent(connector, flags, x, y);
 		}
 	}
 }
@@ -331,7 +331,7 @@ void* xrdp_process_main_thread(void* arg)
 	HANDLE GlobalTermEvent;
 	rdsConnection* connection;
 	rdpSettings* settings;
-	rdsConnector* connector;
+	rdsModuleConnector* connector;
 	freerdp_peer* client = (freerdp_peer*) arg;
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
@@ -371,10 +371,10 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			connector = (rdsConnector*) connection->module;
+			connector = (rdsModuleConnector*) connection->connector;
 
 			if (connector)
-				connector->GetEventHandles(connection->module, events, &nCount);
+				connector->GetEventHandles(connection->connector, events, &nCount);
 		}
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
@@ -409,11 +409,11 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			connector = (rdsConnector*) connection->module;
+			connector = (rdsModuleConnector*) connection->connector;
 
 			if (connector)
 			{
-				if (connector->CheckEventHandles(connection->module) < 0)
+				if (connector->CheckEventHandles(connection->connector) < 0)
 				{
 					fprintf(stderr, "ModuleClient->CheckEventHandles failure\n");
 					break;
