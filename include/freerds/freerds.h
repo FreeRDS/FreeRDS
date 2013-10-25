@@ -34,7 +34,7 @@ typedef struct rds_module rdsModule;
 typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;
 typedef RDS_MODULE_ENTRY_POINTS_V1 RDS_MODULE_ENTRY_POINTS;
 
-typedef struct rds_session rdsSession;
+typedef struct rds_connection rdsConnection;
 
 /* Common Data Types */
 
@@ -732,7 +732,7 @@ struct rds_connector
 
 	freerdp* instance;
 	rdpSettings* settings;
-	rdsSession* session;
+	rdsConnection* connection;
 	HANDLE SocketEvent;
 
 	RDS_FRAMEBUFFER framebuffer;

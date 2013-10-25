@@ -35,7 +35,7 @@
 int freerds_client_inbound_begin_update(rdsModule* module, RDS_MSG_BEGIN_UPDATE* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
-	libxrdp_orders_begin_paint(connector->session);
+	libxrdp_orders_begin_paint(connector->connection);
 	return 0;
 }
 
@@ -50,7 +50,7 @@ int freerds_client_inbound_end_update(rdsModule* module, RDS_MSG_END_UPDATE* msg
 int freerds_client_inbound_beep(rdsModule* module, RDS_MSG_BEEP* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
-	libxrdp_send_bell(connector->session);
+	libxrdp_send_bell(connector->connection);
 	return 0;
 }
 
@@ -78,18 +78,18 @@ int freerds_client_inbound_paint_rect(rdsModule* module, RDS_MSG_PAINT_RECT* msg
 	int bpp;
 	int inFlightFrames;
 	SURFACE_FRAME* frame;
-	rdsSession* session;
+	rdsConnection* connection;
 	rdpSettings* settings;
 	rdsConnector* connector = (rdsConnector*) module;
 
-	session = connector->session;
-	settings = session->settings;
+	connection = connector->connection;
+	settings = connection->settings;
 
 	bpp = msg->framebuffer->fbBitsPerPixel;
 
-	if (session->codecMode)
+	if (connection->codecMode)
 	{
-		inFlightFrames = ListDictionary_Count(session->FrameList);
+		inFlightFrames = ListDictionary_Count(connection->FrameList);
 
 		if (inFlightFrames > settings->FrameAcknowledge)
 			connector->fps = (100 / (inFlightFrames + 1) * connector->MaxFps) / 100;
@@ -101,16 +101,16 @@ int freerds_client_inbound_paint_rect(rdsModule* module, RDS_MSG_PAINT_RECT* msg
 
 		frame = (SURFACE_FRAME*) malloc(sizeof(SURFACE_FRAME));
 
-		frame->frameId = ++session->frameId;
-		ListDictionary_Add(session->FrameList, (void*) (size_t) frame->frameId, frame);
+		frame->frameId = ++connection->frameId;
+		ListDictionary_Add(connection->FrameList, (void*) (size_t) frame->frameId, frame);
 
-		libxrdp_orders_send_frame_marker(session, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
-		libxrdp_send_surface_bits(session, bpp, msg);
-		libxrdp_orders_send_frame_marker(session, SURFACECMD_FRAMEACTION_END, frame->frameId);
+		libxrdp_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
+		libxrdp_send_surface_bits(connection, bpp, msg);
+		libxrdp_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_END, frame->frameId);
 	}
 	else
 	{
-		libxrdp_send_bitmap_update(session, bpp, msg);
+		libxrdp_send_bitmap_update(connection, bpp, msg);
 	}
 
 	return 0;
@@ -133,14 +133,14 @@ int freerds_client_inbound_dstblt(rdsModule* module, RDS_MSG_DSTBLT* msg)
 int freerds_client_inbound_set_pointer(rdsModule* module, RDS_MSG_SET_POINTER* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
-	libxrdp_set_pointer(connector->session, msg);
+	libxrdp_set_pointer(connector->connection, msg);
 	return 0;
 }
 
 int freerds_client_inbound_set_system_pointer(rdsModule* module, RDS_MSG_SET_SYSTEM_POINTER* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
-	libxrdp_set_system_pointer(connector->session, msg);
+	libxrdp_set_system_pointer(connector->connection, msg);
 	return 0;
 }
 
@@ -168,7 +168,7 @@ int freerds_client_inbound_line_to(rdsModule* module, RDS_MSG_LINE_TO* msg)
 int freerds_client_inbound_cache_glyph(rdsModule* module, RDS_MSG_CACHE_GLYPH* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
-	return libxrdp_orders_send_font(connector->session, msg);
+	return libxrdp_orders_send_font(connector->connection, msg);
 }
 
 int freerds_client_inbound_glyph_index(rdsModule* module, RDS_MSG_GLYPH_INDEX* msg)
@@ -221,7 +221,7 @@ int freerds_client_inbound_reset(rdsModule* module, RDS_MSG_RESET* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
 
-	if (libxrdp_reset(connector->session, msg) != 0)
+	if (libxrdp_reset(connector->connection, msg) != 0)
 		return 0;
 
 	return 0;
@@ -250,13 +250,13 @@ int freerds_client_inbound_paint_offscreen_surface(rdsModule* module, RDS_MSG_PA
 int freerds_client_inbound_window_new_update(rdsModule* module, RDS_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
-	return libxrdp_window_new_update(connector->session, msg);
+	return libxrdp_window_new_update(connector->connection, msg);
 }
 
 int freerds_client_inbound_window_delete(rdsModule* module, RDS_MSG_WINDOW_DELETE* msg)
 {
 	rdsConnector* connector = (rdsConnector*) module;
-	return libxrdp_window_delete(connector->session, msg);
+	return libxrdp_window_delete(connector->connection, msg);
 }
 
 int freerds_client_inbound_logon_user(rdsModule* module, RDS_MSG_LOGON_USER* msg)

@@ -41,7 +41,7 @@
 
 #include "xrdp_channels.h"
 
-void xrdp_peer_context_new(freerdp_peer* client, rdsSession* context)
+void xrdp_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
 	rdpSettings* settings = client->settings;
 
@@ -50,28 +50,28 @@ void xrdp_peer_context_new(freerdp_peer* client, rdsSession* context)
 	settings->BitmapCacheV3Enabled = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
 
-	libxrdp_session_init(context, settings);
+	libxrdp_connection_init(context, settings);
 	context->client = client;
 
 	context->vcm = WTSCreateVirtualChannelManager(client);
 }
 
-void xrdp_peer_context_free(freerdp_peer* client, rdsSession* context)
+void xrdp_peer_context_free(freerdp_peer* client, rdsConnection* context)
 {
-	libxrdp_session_uninit(context);
+	libxrdp_connection_uninit(context);
 	WTSDestroyVirtualChannelManager(context->vcm);
 }
 
-rdsSession* xrdp_process_create(freerdp_peer* client)
+rdsConnection* xrdp_process_create(freerdp_peer* client)
 {
-	rdsSession* xfp;
+	rdsConnection* xfp;
 
-	client->ContextSize = sizeof(rdsSession);
+	client->ContextSize = sizeof(rdsConnection);
 	client->ContextNew = (psPeerContextNew) xrdp_peer_context_new;
 	client->ContextFree = (psPeerContextFree) xrdp_peer_context_free;
 	freerdp_peer_context_new(client);
 
-	xfp = (rdsSession*) client->context;
+	xfp = (rdsConnection*) client->context;
 
 	xfp->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
@@ -80,12 +80,12 @@ rdsSession* xrdp_process_create(freerdp_peer* client)
 	return xfp;
 }
 
-void xrdp_process_delete(rdsSession* self)
+void xrdp_process_delete(rdsConnection* self)
 {
 	CloseHandle(self->TermEvent);
 }
 
-HANDLE xrdp_process_get_term_event(rdsSession* self)
+HANDLE xrdp_process_get_term_event(rdsConnection* self)
 {
 	return self->TermEvent;
 }
@@ -101,10 +101,10 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 	UINT32 DesktopWidth;
 	UINT32 DesktopHeight;
 	rdpSettings* settings;
-	rdsSession* session;
+	rdsConnection* connection;
 
 	settings = client->settings;
-	session = (rdsSession*) client->context;
+	connection = (rdsConnection*) client->context;
 
 	fprintf(stderr, "Client %s is connected", client->hostname);
 
@@ -143,7 +143,7 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 		return TRUE;
 	}
 
-	xrdp_channels_post_connect(session);
+	xrdp_channels_post_connect(connection);
 
 	return TRUE;
 }
@@ -151,7 +151,7 @@ BOOL xrdp_peer_post_connect(freerdp_peer* client)
 BOOL xrdp_peer_activate(freerdp_peer* client)
 {
 	rdpSettings* settings;
-	rdsSession* session = (rdsSession*) client->context;
+	rdsConnection* connection = (rdsConnection*) client->context;
 
 	settings = client->settings;
 	settings->BitmapCacheVersion = 2;
@@ -160,10 +160,10 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 		settings->AutoLogonEnabled = 1;
 
 	if (settings->RemoteFxCodec || settings->NSCodec)
-		session->codecMode = TRUE;
+		connection->codecMode = TRUE;
 
-	if (!session->module)
-		session->module = xrdp_module_new(session);
+	if (!connection->module)
+		connection->module = xrdp_module_new(connection);
 
 	printf("Client Activated\n");
 
@@ -229,8 +229,8 @@ int xrdp_generate_certificate(rdpSettings* settings)
 
 void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 {
-	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* module = session->module;
+	rdsConnection* connection = (rdsConnection*) input->context;
+	rdsModule* module = connection->module;
 
 	if (module)
 	{
@@ -243,22 +243,22 @@ void xrdp_input_synchronize_event(rdpInput* input, UINT32 flags)
 
 void xrdp_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
-	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* module = session->module;
+	rdsConnection* connection = (rdsConnection*) input->context;
+	rdsModule* module = connection->module;
 
 	if (module)
 	{
 		if (module->client->ScancodeKeyboardEvent)
 		{
-			module->client->ScancodeKeyboardEvent(module, flags, code, session->settings->KeyboardType);
+			module->client->ScancodeKeyboardEvent(module, flags, code, connection->settings->KeyboardType);
 		}
 	}
 }
 
 void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
-	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* module = session->module;
+	rdsConnection* connection = (rdsConnection*) input->context;
+	rdsModule* module = connection->module;
 
 	if (module)
 	{
@@ -271,8 +271,8 @@ void xrdp_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 cod
 
 void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
-	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* module = session->module;
+	rdsConnection* connection = (rdsConnection*) input->context;
+	rdsModule* module = connection->module;
 
 	if (module)
 	{
@@ -285,8 +285,8 @@ void xrdp_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 
 void xrdp_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
-	rdsSession* session = (rdsSession*) input->context;
-	rdsModule* module = session->module;
+	rdsConnection* connection = (rdsConnection*) input->context;
+	rdsModule* module = connection->module;
 
 	if (module)
 	{
@@ -309,13 +309,13 @@ void xrdp_input_register_callbacks(rdpInput* input)
 void xrdp_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
 {
 	SURFACE_FRAME* frame;
-	rdsSession* session = (rdsSession*) context;
+	rdsConnection* connection = (rdsConnection*) context;
 
-	frame = (SURFACE_FRAME*) ListDictionary_GetItemValue(session->FrameList, (void*) (size_t) frameId);
+	frame = (SURFACE_FRAME*) ListDictionary_GetItemValue(connection->FrameList, (void*) (size_t) frameId);
 
 	if (frame)
 	{
-		ListDictionary_Remove(session->FrameList, (void*) (size_t) frameId);
+		ListDictionary_Remove(connection->FrameList, (void*) (size_t) frameId);
 		free(frame);
 	}
 }
@@ -329,14 +329,14 @@ void* xrdp_process_main_thread(void* arg)
 	HANDLE ChannelEvent;
 	HANDLE LocalTermEvent;
 	HANDLE GlobalTermEvent;
-	rdsSession* session;
+	rdsConnection* connection;
 	rdpSettings* settings;
 	rdsConnector* connector;
 	freerdp_peer* client = (freerdp_peer*) arg;
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
 
-	session = (rdsSession*) client->context;
+	connection = (rdsConnection*) client->context;
 	settings = client->settings;
 
 	xrdp_generate_certificate(settings);
@@ -356,10 +356,10 @@ void* xrdp_process_main_thread(void* arg)
 	client->update->SurfaceFrameAcknowledge = xrdp_update_frame_acknowledge;
 
 	ClientEvent = client->GetEventHandle(client);
-	ChannelEvent = WTSVirtualChannelManagerGetEventHandle(session->vcm);
+	ChannelEvent = WTSVirtualChannelManagerGetEventHandle(connection->vcm);
 
 	GlobalTermEvent = g_get_term_event();
-	LocalTermEvent = session->TermEvent;
+	LocalTermEvent = connection->TermEvent;
 
 	while (1)
 	{
@@ -371,10 +371,10 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			connector = (rdsConnector*) session->module;
+			connector = (rdsConnector*) connection->module;
 
 			if (connector)
-				connector->GetEventHandles(session->module, events, &nCount);
+				connector->GetEventHandles(connection->module, events, &nCount);
 		}
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
@@ -400,7 +400,7 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (WaitForSingleObject(ChannelEvent, 0) == WAIT_OBJECT_0)
 		{
-			if (WTSVirtualChannelManagerCheckFileDescriptor(session->vcm) != TRUE)
+			if (WTSVirtualChannelManagerCheckFileDescriptor(connection->vcm) != TRUE)
 			{
 				fprintf(stderr, "WTSVirtualChannelManagerCheckFileDescriptor failure\n");
 				break;
@@ -409,11 +409,11 @@ void* xrdp_process_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			connector = (rdsConnector*) session->module;
+			connector = (rdsConnector*) connection->module;
 
 			if (connector)
 			{
-				if (connector->CheckEventHandles(session->module) < 0)
+				if (connector->CheckEventHandles(connection->module) < 0)
 				{
 					fprintf(stderr, "ModuleClient->CheckEventHandles failure\n");
 					break;

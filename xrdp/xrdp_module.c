@@ -118,7 +118,7 @@ pRdsModuleEntry freerds_load_dynamic_module(const char* name)
 	return NULL;
 }
 
-rdsModule* xrdp_module_new(rdsSession* session)
+rdsModule* xrdp_module_new(rdsConnection* connection)
 {
 	int error_code;
 	int auth_status;
@@ -147,7 +147,7 @@ rdsModule* xrdp_module_new(rdsSession* session)
 		return NULL;
 	}
 
-	settings = session->settings;
+	settings = connection->settings;
 
 	auth_status = xrdp_authenticate(settings->Username, settings->Password, &error_code);
 
@@ -159,8 +159,8 @@ rdsModule* xrdp_module_new(rdsSession* session)
 	module->Size = EntryPoints.ContextSize;
 	module->SessionId = 10;
 
-	connector->session = session;
-	connector->settings = session->settings;
+	connector->connection = connection;
+	connector->settings = connection->settings;
 
 	connector->pEntryPoints = (RDS_MODULE_ENTRY_POINTS*) malloc(sizeof(RDS_MODULE_ENTRY_POINTS));
 	CopyMemory(connector->pEntryPoints, &EntryPoints, sizeof(RDS_MODULE_ENTRY_POINTS));

@@ -346,7 +346,7 @@ int xrdp_message_server_queue_pack(rdsModule* module)
 	RDS_RECT rect;
 	int ChainedMode;
 	wLinkedList* list;
-	rdsSession* session;
+	rdsConnection* connection;
 	RDS_MSG_COMMON* node;
 	rdsConnector* connector;
 	pixman_bool_t status;
@@ -356,7 +356,7 @@ int xrdp_message_server_queue_pack(rdsModule* module)
 	connector = (rdsConnector*) module;
 
 	ChainedMode = 0;
-	session = connector->session;
+	connection = connector->connection;
 
 	list = connector->ServerList;
 

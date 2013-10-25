@@ -44,16 +44,16 @@ int g_is_term(void);
 void g_set_term(int in_val);
 HANDLE g_get_term_event(void);
 
-rdsSession* xrdp_process_create(freerdp_peer* client);
-void xrdp_process_delete(rdsSession* self);
-HANDLE xrdp_process_get_term_event(rdsSession* self);
+rdsConnection* xrdp_process_create(freerdp_peer* client);
+void xrdp_process_delete(rdsConnection* self);
+HANDLE xrdp_process_get_term_event(rdsConnection* self);
 void* xrdp_process_main_thread(void* arg);
 
 xrdpListener* xrdp_listen_create(void);
 void xrdp_listen_delete(xrdpListener* self);
 int xrdp_listen_main_loop(xrdpListener* self);
 
-rdsModule* xrdp_module_new(rdsSession* session);
+rdsModule* xrdp_module_new(rdsConnection* session);
 void xrdp_module_free(rdsModule* mod);
 
 long xrdp_authenticate(char* username, char* password, int* errorcode);

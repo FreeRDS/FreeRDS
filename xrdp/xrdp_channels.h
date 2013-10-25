@@ -24,6 +24,6 @@
 
 #include <freerds/freerds.h>
 
-int xrdp_channels_post_connect(rdsSession* session);
+int xrdp_channels_post_connect(rdsConnection* session);
 
 #endif /* RDS_NG_CHANNELS_H */

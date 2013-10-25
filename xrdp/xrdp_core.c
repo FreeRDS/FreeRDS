@@ -36,9 +36,9 @@
  * Custom helpers
  */
 
-int libxrdp_set_bounds_rect(rdsSession* session, xrdpRect* rect)
+int libxrdp_set_bounds_rect(rdsConnection* connection, xrdpRect* rect)
 {
-	rdpUpdate* update = session->client->update;
+	rdpUpdate* update = connection->client->update;
 
 	if (rect)
 	{
@@ -49,82 +49,82 @@ int libxrdp_set_bounds_rect(rdsSession* session, xrdpRect* rect)
 		bounds.right = rect->right - 1;
 		bounds.bottom = rect->bottom - 1;
 
-		update->SetBounds((rdpContext*) session, &bounds);
+		update->SetBounds((rdpContext*) connection, &bounds);
 	}
 	else
 	{
-		update->SetBounds((rdpContext*) session, NULL);
+		update->SetBounds((rdpContext*) connection, NULL);
 	}
 
 	return 0;
 }
 
-int libxrdp_session_init(rdsSession* session, rdpSettings* settings)
+int libxrdp_connection_init(rdsConnection* connection, rdpSettings* settings)
 {
-	session->settings = settings;
+	connection->settings = settings;
 
-	session->bytesPerPixel = 4;
+	connection->bytesPerPixel = 4;
 
-	session->bs = Stream_New(NULL, 16384);
-	session->bts = Stream_New(NULL, 16384);
+	connection->bs = Stream_New(NULL, 16384);
+	connection->bts = Stream_New(NULL, 16384);
 
-	session->rfx_s = Stream_New(NULL, 16384);
-	session->rfx_context = rfx_context_new(TRUE);
+	connection->rfx_s = Stream_New(NULL, 16384);
+	connection->rfx_context = rfx_context_new(TRUE);
 
-	session->rfx_context->mode = RLGR3;
-	session->rfx_context->width = settings->DesktopWidth;
-	session->rfx_context->height = settings->DesktopHeight;
+	connection->rfx_context->mode = RLGR3;
+	connection->rfx_context->width = settings->DesktopWidth;
+	connection->rfx_context->height = settings->DesktopHeight;
 
-	session->nsc_s = Stream_New(NULL, 16384);
-	session->nsc_context = nsc_context_new();
+	connection->nsc_s = Stream_New(NULL, 16384);
+	connection->nsc_context = nsc_context_new();
 
-	if (session->bytesPerPixel == 4)
+	if (connection->bytesPerPixel == 4)
 	{
-		rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
-		nsc_context_set_pixel_format(session->nsc_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+		rfx_context_set_pixel_format(connection->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+		nsc_context_set_pixel_format(connection->nsc_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 	}
-	else if (session->bytesPerPixel == 3)
+	else if (connection->bytesPerPixel == 3)
 	{
-		rfx_context_set_pixel_format(session->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
-		nsc_context_set_pixel_format(session->nsc_context, RDP_PIXEL_FORMAT_B8G8R8);
+		rfx_context_set_pixel_format(connection->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
+		nsc_context_set_pixel_format(connection->nsc_context, RDP_PIXEL_FORMAT_B8G8R8);
 	}
 
-	session->FrameList = ListDictionary_New(TRUE);
+	connection->FrameList = ListDictionary_New(TRUE);
 
 	return 0;
 }
 
-void libxrdp_session_uninit(rdsSession* session)
+void libxrdp_connection_uninit(rdsConnection* connection)
 {
-	Stream_Free(session->bs, TRUE);
-	Stream_Free(session->bts, TRUE);
+	Stream_Free(connection->bs, TRUE);
+	Stream_Free(connection->bts, TRUE);
 
-	Stream_Free(session->rfx_s, TRUE);
-	rfx_context_free(session->rfx_context);
+	Stream_Free(connection->rfx_s, TRUE);
+	rfx_context_free(connection->rfx_context);
 
-	Stream_Free(session->nsc_s, TRUE);
-	nsc_context_free(session->nsc_context);
+	Stream_Free(connection->nsc_s, TRUE);
+	nsc_context_free(connection->nsc_context);
 
-	ListDictionary_Free(session->FrameList);
+	ListDictionary_Free(connection->FrameList);
 }
 
 /**
  * Original XRDP stubbed interface
  */
 
-int libxrdp_send_palette(rdsSession* session, int* palette)
+int libxrdp_send_palette(rdsConnection* connection, int* palette)
 {
 	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_send_bell(rdsSession* session)
+int libxrdp_send_bell(rdsConnection* connection)
 {
 	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_send_bitmap_update(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* msg)
+int libxrdp_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT_RECT* msg)
 {
 	BYTE* data;
 	BYTE* tile;
@@ -142,7 +142,7 @@ int libxrdp_send_bitmap_update(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT*
 	pixman_image_t* fbImage;
 	BITMAP_DATA* bitmapData;
 	BITMAP_UPDATE bitmapUpdate;
-	rdpUpdate* update = session->client->update;
+	rdpUpdate* update = connection->client->update;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -175,7 +175,7 @@ int libxrdp_send_bitmap_update(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT*
 				//		i, j, subMsg.nLeftRect, subMsg.nTopRect, subMsg.nWidth, subMsg.nHeight);
 
 				if ((subMsg.nWidth * subMsg.nHeight) > 0)
-					libxrdp_send_bitmap_update(session, bpp, &subMsg);
+					libxrdp_send_bitmap_update(connection, bpp, &subMsg);
 			}
 		}
 
@@ -220,8 +220,8 @@ int libxrdp_send_bitmap_update(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT*
 				//		k, bitmapData[k].destLeft, bitmapData[k].destTop,
 				//		bitmapData[k].destRight, bitmapData[k].destBottom, nWidth, nHeight);
 
-				s = session->bs;
-				ts = session->bts;
+				s = connection->bs;
+				ts = connection->bts;
 
 				Stream_SetPosition(s, 0);
 				Stream_SetPosition(ts, 0);
@@ -263,7 +263,7 @@ int libxrdp_send_bitmap_update(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT*
 
 	bitmapUpdate.count = bitmapUpdate.number = k;
 
-	IFCALL(update->BitmapUpdate, (rdpContext*) session, &bitmapUpdate);
+	IFCALL(update->BitmapUpdate, (rdpContext*) connection, &bitmapUpdate);
 
 	for (k = 0; k < bitmapUpdate.number; k++)
 	{
@@ -276,12 +276,12 @@ int libxrdp_send_bitmap_update(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT*
 	return 0;
 }
 
-int libxrdp_set_pointer(rdsSession* session, RDS_MSG_SET_POINTER* msg)
+int libxrdp_set_pointer(rdsConnection* connection, RDS_MSG_SET_POINTER* msg)
 {
 	POINTER_NEW_UPDATE pointerNew;
 	POINTER_COLOR_UPDATE* pointerColor;
 	POINTER_CACHED_UPDATE pointerCached;
-	rdpPointerUpdate* pointer = session->client->update->pointer;
+	rdpPointerUpdate* pointer = connection->client->update->pointer;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -300,61 +300,61 @@ int libxrdp_set_pointer(rdsSession* session, RDS_MSG_SET_POINTER* msg)
 	if (!msg->xorBpp)
 	{
 		pointerColor->lengthXorMask = 3072;
-		IFCALL(pointer->PointerColor, (rdpContext*) session, pointerColor);
+		IFCALL(pointer->PointerColor, (rdpContext*) connection, pointerColor);
 	}
 	else
 	{
 		pointerNew.xorBpp = msg->xorBpp;
 		pointerColor->lengthXorMask = ((msg->xorBpp + 7) / 8) * 32 * 32;
-		IFCALL(pointer->PointerNew, (rdpContext*) session, &pointerNew);
+		IFCALL(pointer->PointerNew, (rdpContext*) connection, &pointerNew);
 	}
 
 	pointerCached.cacheIndex = pointerColor->cacheIndex;
 
-	IFCALL(pointer->PointerCached, (rdpContext*) session, &pointerCached);
+	IFCALL(pointer->PointerCached, (rdpContext*) connection, &pointerCached);
 
 	return 0;
 }
 
-int libxrdp_set_system_pointer(rdsSession* session, RDS_MSG_SET_SYSTEM_POINTER* msg)
+int libxrdp_set_system_pointer(rdsConnection* connection, RDS_MSG_SET_SYSTEM_POINTER* msg)
 {
 	POINTER_SYSTEM_UPDATE *pointer_system;
-	rdpPointerUpdate* pointer = session->client->update->pointer;
+	rdpPointerUpdate* pointer = connection->client->update->pointer;
 
 	pointer_system = &(pointer->pointer_system);
 	pointer_system->type = msg->ptrType;
-	IFCALL(pointer->PointerSystem, (rdpContext *)session, pointer_system);
+	IFCALL(pointer->PointerSystem, (rdpContext *)connection, pointer_system);
 
 	return 0;
 }
 
-int libxrdp_orders_begin_paint(rdsSession* session)
+int libxrdp_orders_begin_paint(rdsConnection* connection)
 {
-	rdpUpdate* update = ((rdpContext*) session)->update;
+	rdpUpdate* update = ((rdpContext*) connection)->update;
 
 	//printf("%s\n", __FUNCTION__);
 
-	update->BeginPaint((rdpContext*) session);
+	update->BeginPaint((rdpContext*) connection);
 
 	return 0;
 }
 
-int libxrdp_orders_end_paint(rdsSession* session)
+int libxrdp_orders_end_paint(rdsConnection* connection)
 {
-	rdpUpdate* update = ((rdpContext*) session)->update;
+	rdpUpdate* update = ((rdpContext*) connection)->update;
 
 	//printf("%s\n", __FUNCTION__);
 
-	update->EndPaint((rdpContext*) session);
+	update->EndPaint((rdpContext*) connection);
 
 	return 0;
 }
 
-int libxrdp_orders_rect(rdsSession* session, int x, int y,
+int libxrdp_orders_rect(rdsConnection* connection, int x, int y,
 		int cx, int cy, int color, xrdpRect* rect)
 {
 	OPAQUE_RECT_ORDER opaqueRect;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = connection->client->update->primary;
 
 	printf("%s\n", __FUNCTION__);
 
@@ -364,18 +364,18 @@ int libxrdp_orders_rect(rdsSession* session, int x, int y,
 	opaqueRect.nHeight = cy;
 	opaqueRect.color = color;
 
-	libxrdp_set_bounds_rect(session, rect);
+	libxrdp_set_bounds_rect(connection, rect);
 
-	IFCALL(primary->OpaqueRect, (rdpContext*) session, &opaqueRect);
+	IFCALL(primary->OpaqueRect, (rdpContext*) connection, &opaqueRect);
 
 	return 0;
 }
 
-int libxrdp_orders_screen_blt(rdsSession* session, int x, int y,
+int libxrdp_orders_screen_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect)
 {
 	SCRBLT_ORDER scrblt;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = connection->client->update->primary;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -387,19 +387,19 @@ int libxrdp_orders_screen_blt(rdsSession* session, int x, int y,
 	scrblt.nXSrc = srcx;
 	scrblt.nYSrc = srcy;
 
-	libxrdp_set_bounds_rect(session, rect);
+	libxrdp_set_bounds_rect(connection, rect);
 
-	IFCALL(primary->ScrBlt, (rdpContext*) session, &scrblt);
+	IFCALL(primary->ScrBlt, (rdpContext*) connection, &scrblt);
 
 	return 0;
 }
 
-int libxrdp_orders_pat_blt(rdsSession* session, int x, int y,
+int libxrdp_orders_pat_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
 		xrdpBrush* brush, xrdpRect* rect)
 {
 	PATBLT_ORDER patblt;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = connection->client->update->primary;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -418,18 +418,18 @@ int libxrdp_orders_pat_blt(rdsSession* session, int x, int y,
 	CopyMemory(patblt.brush.data, brush->pattern, 8);
 	patblt.brush.hatch = patblt.brush.data[0];
 
-	libxrdp_set_bounds_rect(session, rect);
+	libxrdp_set_bounds_rect(connection, rect);
 
-	IFCALL(primary->PatBlt, (rdpContext*) session, &patblt);
+	IFCALL(primary->PatBlt, (rdpContext*) connection, &patblt);
 
 	return 0;
 }
 
-int libxrdp_orders_dest_blt(rdsSession* session,
+int libxrdp_orders_dest_blt(rdsConnection* connection,
 		int x, int y, int cx, int cy, int rop, xrdpRect* rect)
 {
 	DSTBLT_ORDER dstblt;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = connection->client->update->primary;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -439,17 +439,17 @@ int libxrdp_orders_dest_blt(rdsSession* session,
 	dstblt.nHeight = cy;
 	dstblt.bRop = rop;
 
-	libxrdp_set_bounds_rect(session, rect);
+	libxrdp_set_bounds_rect(connection, rect);
 
-	IFCALL(primary->DstBlt, (rdpContext*) session, &dstblt);
+	IFCALL(primary->DstBlt, (rdpContext*) connection, &dstblt);
 
 	return 0;
 }
 
-int libxrdp_orders_line(rdsSession* session, RDS_MSG_LINE_TO* msg, xrdpRect* rect)
+int libxrdp_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRect* rect)
 {
 	LINE_TO_ORDER lineTo;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = connection->client->update->primary;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -464,19 +464,19 @@ int libxrdp_orders_line(rdsSession* session, RDS_MSG_LINE_TO* msg, xrdpRect* rec
 	lineTo.penWidth = msg->penWidth;
 	lineTo.penColor = msg->penColor;
 
-	libxrdp_set_bounds_rect(session, rect);
+	libxrdp_set_bounds_rect(connection, rect);
 
-	IFCALL(primary->LineTo, (rdpContext*) session, &lineTo);
+	IFCALL(primary->LineTo, (rdpContext*) connection, &lineTo);
 
 	return 0;
 }
 
-int libxrdp_orders_mem_blt(rdsSession* session, int cache_id,
+int libxrdp_orders_mem_blt(rdsConnection* connection, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
 		int srcy, int cache_idx, xrdpRect* rect)
 {
 	MEMBLT_ORDER memblt;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = connection->client->update->primary;
 
 	//printf("%s id: %d index: %d width: %d height: %d\n",
 	//		__FUNCTION__, cache_id, cache_idx, cx, cy);
@@ -492,17 +492,17 @@ int libxrdp_orders_mem_blt(rdsSession* session, int cache_id,
 	memblt.cacheIndex = cache_idx;
 	memblt.colorIndex = color_table;
 
-	libxrdp_set_bounds_rect(session, rect);
+	libxrdp_set_bounds_rect(connection, rect);
 
-	IFCALL(primary->MemBlt, (rdpContext*) session, &memblt);
+	IFCALL(primary->MemBlt, (rdpContext*) connection, &memblt);
 
 	return 0;
 }
 
-int libxrdp_orders_text(rdsSession* session, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect)
+int libxrdp_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect)
 {
 	GLYPH_INDEX_ORDER glyphIndex;
-	rdpPrimaryUpdate* primary = session->client->update->primary;
+	rdpPrimaryUpdate* primary = connection->client->update->primary;
 
 	//printf("%s: cacheId: %d\n", __FUNCTION__, msg->cacheId);
 
@@ -527,17 +527,17 @@ int libxrdp_orders_text(rdsSession* session, RDS_MSG_GLYPH_INDEX* msg, xrdpRect*
 	glyphIndex.cbData = msg->cbData;
 	CopyMemory(glyphIndex.data, msg->data, glyphIndex.cbData);
 
-	libxrdp_set_bounds_rect(session, rect);
+	libxrdp_set_bounds_rect(connection, rect);
 
-	IFCALL(primary->GlyphIndex, (rdpContext*) session, &glyphIndex);
+	IFCALL(primary->GlyphIndex, (rdpContext*) connection, &glyphIndex);
 
 	return 0;
 }
 
-int libxrdp_orders_send_palette(rdsSession* session, int* palette, int cache_id)
+int libxrdp_orders_send_palette(rdsConnection* connection, int* palette, int cache_id)
 {
 	CACHE_COLOR_TABLE_ORDER cache_color_table;
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = connection->client->update->secondary;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -545,18 +545,18 @@ int libxrdp_orders_send_palette(rdsSession* session, int* palette, int cache_id)
 	cache_color_table.numberColors = 256;
 	CopyMemory(&(cache_color_table.colorTable), palette, 256 * 4);
 
-	IFCALL(secondary->CacheColorTable, (rdpContext*) session, &cache_color_table);
+	IFCALL(secondary->CacheColorTable, (rdpContext*) connection, &cache_color_table);
 
 	return 0;
 }
 
-int libxrdp_orders_send_raw_bitmap(rdsSession* session,
+int libxrdp_orders_send_raw_bitmap(rdsConnection* connection,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx)
 {
 	int bytesPerPixel;
 	CACHE_BITMAP_ORDER cache_bitmap;
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = connection->client->update->secondary;
 
 	//printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
@@ -571,12 +571,12 @@ int libxrdp_orders_send_raw_bitmap(rdsSession* session,
 	bytesPerPixel = (bpp + 7) / 8;
 	cache_bitmap.bitmapLength = width * height * bytesPerPixel;
 
-	IFCALL(secondary->CacheBitmap, (rdpContext*) session, &cache_bitmap);
+	IFCALL(secondary->CacheBitmap, (rdpContext*) connection, &cache_bitmap);
 
 	return 0;
 }
 
-int libxrdp_orders_send_bitmap(rdsSession* session,
+int libxrdp_orders_send_bitmap(rdsConnection* connection,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx)
 {
@@ -584,7 +584,7 @@ int libxrdp_orders_send_bitmap(rdsSession* session,
 	wStream* ts;
 	int e, lines;
 	CACHE_BITMAP_ORDER cache_bitmap;
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = connection->client->update->secondary;
 
 	//printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
@@ -600,8 +600,8 @@ int libxrdp_orders_send_bitmap(rdsSession* session,
 	cache_bitmap.cacheIndex = cache_idx;
 	cache_bitmap.compressed = TRUE;
 
-	s = session->bs;
-	ts = session->bts;
+	s = connection->bs;
+	ts = connection->bts;
 
 	Stream_SetPosition(s, 0);
 	Stream_SetPosition(ts, 0);
@@ -612,14 +612,14 @@ int libxrdp_orders_send_bitmap(rdsSession* session,
 	cache_bitmap.bitmapDataStream = Stream_Buffer(s);
 	cache_bitmap.bitmapLength = Stream_Length(s);
 
-	IFCALL(secondary->CacheBitmap, (rdpContext*) session, &cache_bitmap);
+	IFCALL(secondary->CacheBitmap, (rdpContext*) connection, &cache_bitmap);
 
 	return 0;
 }
 
-int libxrdp_orders_send_font(rdsSession* session, RDS_MSG_CACHE_GLYPH* msg)
+int libxrdp_orders_send_font(rdsConnection* connection, RDS_MSG_CACHE_GLYPH* msg)
 {
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = connection->client->update->secondary;
 
 	//printf("%s: cacheId: %d cacheIndex: %d\n", __FUNCTION__,
 	//		msg->cacheId, msg->glyphData[0].cacheIndex);
@@ -639,7 +639,7 @@ int libxrdp_orders_send_font(rdsSession* session, RDS_MSG_CACHE_GLYPH* msg)
 		cache_glyph_v2.glyphData[0].aj = msg->glyphData[0].aj;
 		cache_glyph_v2.unicodeCharacters = NULL;
 
-		IFCALL(secondary->CacheGlyphV2, (rdpContext*) session, &cache_glyph_v2);
+		IFCALL(secondary->CacheGlyphV2, (rdpContext*) connection, &cache_glyph_v2);
 	}
 	else
 	{
@@ -655,29 +655,29 @@ int libxrdp_orders_send_font(rdsSession* session, RDS_MSG_CACHE_GLYPH* msg)
 		cache_glyph.glyphData[0].aj = msg->glyphData[0].aj;
 		cache_glyph.unicodeCharacters = NULL;
 
-		IFCALL(secondary->CacheGlyph, (rdpContext*) session, &cache_glyph);
+		IFCALL(secondary->CacheGlyph, (rdpContext*) connection, &cache_glyph);
 	}
 
 	return 0;
 }
 
-int libxrdp_reset(rdsSession* session, RDS_MSG_RESET* msg)
+int libxrdp_reset(rdsConnection* connection, RDS_MSG_RESET* msg)
 {
 	//printf("%s\n", __FUNCTION__);
 
-	session->settings->DesktopWidth = msg->DesktopWidth;
-	session->settings->DesktopHeight = msg->DesktopHeight;
-	session->settings->ColorDepth = msg->ColorDepth;
+	connection->settings->DesktopWidth = msg->DesktopWidth;
+	connection->settings->DesktopHeight = msg->DesktopHeight;
+	connection->settings->ColorDepth = msg->ColorDepth;
 
 	return 0;
 }
 
-int libxrdp_orders_send_raw_bitmap2(rdsSession* session,
+int libxrdp_orders_send_raw_bitmap2(rdsConnection* connection,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx)
 {
 	int bytesPerPixel;
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = connection->client->update->secondary;
 
 	//printf("%s id: %d index: %d\n", __FUNCTION__, cache_id, cache_idx);
 
@@ -694,12 +694,12 @@ int libxrdp_orders_send_raw_bitmap2(rdsSession* session,
 	cache_bitmap_v2.cbUncompressedSize = width * height * bytesPerPixel;
 	cache_bitmap_v2.bitmapLength = width * height * bytesPerPixel;
 
-	IFCALL(secondary->CacheBitmapV2, (rdpContext*) session, &cache_bitmap_v2);
+	IFCALL(secondary->CacheBitmapV2, (rdpContext*) connection, &cache_bitmap_v2);
 
 	return 0;
 }
 
-int libxrdp_orders_send_bitmap2(rdsSession* session,
+int libxrdp_orders_send_bitmap2(rdsConnection* connection,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints)
 {
 	wStream* s;
@@ -707,7 +707,7 @@ int libxrdp_orders_send_bitmap2(rdsSession* session,
 	int e, lines;
 	int bytesPerPixel;
 	CACHE_BITMAP_V2_ORDER cache_bitmap_v2;
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = connection->client->update->secondary;
 
 	//printf("%s id: %d index: %d width: %d height: %d\n",
 	//		__FUNCTION__, cache_id, cache_idx, width, height);
@@ -725,8 +725,8 @@ int libxrdp_orders_send_bitmap2(rdsSession* session,
 	cache_bitmap_v2.compressed = TRUE;
 	cache_bitmap_v2.flags = 0;
 
-	s = session->bs;
-	ts = session->bts;
+	s = connection->bs;
+	ts = connection->bts;
 
 	Stream_SetPosition(s, 0);
 	Stream_SetPosition(ts, 0);
@@ -741,17 +741,17 @@ int libxrdp_orders_send_bitmap2(rdsSession* session,
 	bytesPerPixel = (bpp + 7) / 8;
 	cache_bitmap_v2.cbUncompressedSize = width * height * bytesPerPixel;
 
-	IFCALL(secondary->CacheBitmapV2, (rdpContext*) session, &cache_bitmap_v2);
+	IFCALL(secondary->CacheBitmapV2, (rdpContext*) connection, &cache_bitmap_v2);
 
 	return 0;
 }
 
-int libxrdp_orders_send_bitmap3(rdsSession* session,
+int libxrdp_orders_send_bitmap3(rdsConnection* connection,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints)
 {
 	BITMAP_DATA_EX* bitmapData;
 	CACHE_BITMAP_V3_ORDER cache_bitmap_v3;
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = connection->client->update->secondary;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -771,16 +771,16 @@ int libxrdp_orders_send_bitmap3(rdsSession* session,
 	bitmapData->length = 0;
 	bitmapData->data = (BYTE*) data;
 
-	IFCALL(secondary->CacheBitmapV3, (rdpContext*) session, &cache_bitmap_v3);
+	IFCALL(secondary->CacheBitmapV3, (rdpContext*) connection, &cache_bitmap_v3);
 
 	return 0;
 }
 
-int libxrdp_orders_send_brush(rdsSession* session, int width, int height,
+int libxrdp_orders_send_brush(rdsConnection* connection, int width, int height,
 		int bpp, int type, int size, char* data, int cache_id)
 {
 	CACHE_BRUSH_ORDER cache_brush;
-	rdpSecondaryUpdate* secondary = session->client->update->secondary;
+	rdpSecondaryUpdate* secondary = connection->client->update->secondary;
 
 	//printf("%s\n", __FUNCTION__);
 
@@ -792,37 +792,37 @@ int libxrdp_orders_send_brush(rdsSession* session, int width, int height,
 	cache_brush.length = size;
 	CopyMemory(cache_brush.data, data, cache_brush.length);
 
-	IFCALL(secondary->CacheBrush, (rdpContext*) session, &cache_brush);
+	IFCALL(secondary->CacheBrush, (rdpContext*) connection, &cache_brush);
 
 	return 0;
 }
 
-int libxrdp_orders_send_create_os_surface(rdsSession* session, CREATE_OFFSCREEN_BITMAP_ORDER* createOffscreenBitmap)
+int libxrdp_orders_send_create_os_surface(rdsConnection* connection, CREATE_OFFSCREEN_BITMAP_ORDER* createOffscreenBitmap)
 {
-	rdpAltSecUpdate* altsec = session->client->update->altsec;
+	rdpAltSecUpdate* altsec = connection->client->update->altsec;
 
 	//printf("%s: id: %d width: %d height: %d\n", __FUNCTION__, id, width, height);
 
-	IFCALL(altsec->CreateOffscreenBitmap, (rdpContext*) session, createOffscreenBitmap);
+	IFCALL(altsec->CreateOffscreenBitmap, (rdpContext*) connection, createOffscreenBitmap);
 
 	return 0;
 }
 
-int libxrdp_orders_send_switch_os_surface(rdsSession* session, int id)
+int libxrdp_orders_send_switch_os_surface(rdsConnection* connection, int id)
 {
 	SWITCH_SURFACE_ORDER switch_surface;
-	rdpAltSecUpdate* altsec = session->client->update->altsec;
+	rdpAltSecUpdate* altsec = connection->client->update->altsec;
 
 	//printf("%s: id: %d\n", __FUNCTION__, id);
 
 	switch_surface.bitmapId = id & 0xFFFF;
 
-	IFCALL(altsec->SwitchSurface, (rdpContext*) session, &switch_surface);
+	IFCALL(altsec->SwitchSurface, (rdpContext*) connection, &switch_surface);
 
 	return 0;
 }
 
-int libxrdp_send_surface_bits(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* msg)
+int libxrdp_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_RECT* msg)
 {
 	int i;
 	BYTE* data;
@@ -831,7 +831,7 @@ int libxrdp_send_surface_bits(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* 
 	int numMessages;
 	int bytesPerPixel;
 	SURFACE_BITS_COMMAND cmd;
-	rdpUpdate* update = ((rdpContext*) session)->update;
+	rdpUpdate* update = ((rdpContext*) connection)->update;
 
 	if ((bpp == 24) || (bpp == 32))
 	{
@@ -858,23 +858,23 @@ int libxrdp_send_surface_bits(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* 
 	//printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
 	//		bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
-	if (session->settings->RemoteFxCodec)
+	if (connection->settings->RemoteFxCodec)
 	{
 		RFX_RECT rect;
 		RFX_MESSAGE* messages;
 
-		s = session->rfx_s;
+		s = connection->rfx_s;
 
 		rect.x = msg->nLeftRect;
 		rect.y = msg->nTopRect;
 		rect.width = msg->nWidth;
 		rect.height = msg->nHeight;
 
-		messages = rfx_encode_messages(session->rfx_context, &rect, 1, data,
+		messages = rfx_encode_messages(connection->rfx_context, &rect, 1, data,
 				msg->nWidth, msg->nHeight, scanline, &numMessages,
-				session->settings->MultifragMaxRequestSize);
+				connection->settings->MultifragMaxRequestSize);
 
-		cmd.codecID = session->settings->RemoteFxCodecId;
+		cmd.codecID = connection->settings->RemoteFxCodecId;
 
 		cmd.destLeft = msg->nLeftRect;
 		cmd.destTop = msg->nTopRect;
@@ -888,8 +888,8 @@ int libxrdp_send_surface_bits(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* 
 		for (i = 0; i < numMessages; i++)
 		{
 			Stream_SetPosition(s, 0);
-			rfx_write_message(session->rfx_context, s, &messages[i]);
-			rfx_message_free(session->rfx_context, &messages[i]);
+			rfx_write_message(connection->rfx_context, s, &messages[i]);
+			rfx_message_free(connection->rfx_context, &messages[i]);
 
 			cmd.bitmapDataLength = Stream_GetPosition(s);
 			cmd.bitmapData = Stream_Buffer(s);
@@ -901,25 +901,25 @@ int libxrdp_send_surface_bits(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* 
 
 		return 0;
 	}
-	else if (session->settings->NSCodec)
+	else if (connection->settings->NSCodec)
 	{
 		NSC_MESSAGE* messages;
 
-		s = session->nsc_s;
+		s = connection->nsc_s;
 
-		messages = nsc_encode_messages(session->nsc_context, data,
+		messages = nsc_encode_messages(connection->nsc_context, data,
 				msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight,
-				scanline, &numMessages, session->settings->MultifragMaxRequestSize);
+				scanline, &numMessages, connection->settings->MultifragMaxRequestSize);
 
 		cmd.bpp = 32;
-		cmd.codecID = session->settings->NSCodecId;
+		cmd.codecID = connection->settings->NSCodecId;
 
 		for (i = 0; i < numMessages; i++)
 		{
 			Stream_SetPosition(s, 0);
 
-			nsc_write_message(session->nsc_context, s, &messages[i]);
-			nsc_message_free(session->nsc_context, &messages[i]);
+			nsc_write_message(connection->nsc_context, s, &messages[i]);
+			nsc_message_free(connection->nsc_context, &messages[i]);
 
 			cmd.destLeft = messages[i].x;
 			cmd.destTop = messages[i].y;
@@ -947,28 +947,28 @@ int libxrdp_send_surface_bits(rdsSession* session, int bpp, RDS_MSG_PAINT_RECT* 
 	return 0;
 }
 
-int libxrdp_orders_send_frame_marker(rdsSession* session, UINT32 action, UINT32 id)
+int libxrdp_orders_send_frame_marker(rdsConnection* connection, UINT32 action, UINT32 id)
 {
 	SURFACE_FRAME_MARKER surfaceFrameMarker;
-	rdpUpdate* update = session->client->update;
+	rdpUpdate* update = connection->client->update;
 
 	//printf("%s: action: %d id: %d\n", __FUNCTION__, action, id);
 
 	surfaceFrameMarker.frameAction = action;
 	surfaceFrameMarker.frameId = id;
 
-	IFCALL(update->SurfaceFrameMarker, (rdpContext*) session, &surfaceFrameMarker);
+	IFCALL(update->SurfaceFrameMarker, (rdpContext*) connection, &surfaceFrameMarker);
 
 	return 0;
 }
 
-int libxrdp_window_new_update(rdsSession* session, RDS_MSG_WINDOW_NEW_UPDATE* msg)
+int libxrdp_window_new_update(rdsConnection* connection, RDS_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	//printf("%s\n", __FUNCTION__);
 	return 0;
 }
 
-int libxrdp_window_delete(rdsSession* session, RDS_MSG_WINDOW_DELETE* msg)
+int libxrdp_window_delete(rdsConnection* connection, RDS_MSG_WINDOW_DELETE* msg)
 {
 	//printf("%s\n", __FUNCTION__);
 	return 0;
