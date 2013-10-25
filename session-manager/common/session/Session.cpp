@@ -42,7 +42,7 @@ namespace freerds{
 
 		static wLog * logger_Session= WLog_Get("freerds.sessionmanager.session.session");
 
-			Session::Session(long sessionID):mSessionID(sessionID),mSessionStarted(false) {
+			Session::Session(long sessionID):mSessionID(sessionID),mSessionStarted(false),mpEnvBlock(NULL) {
 
 			}
 
