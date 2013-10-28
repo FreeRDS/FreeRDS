@@ -32,6 +32,7 @@ set(PBRPC_SRC
 include_directories(${PROTOC_OUT})
 include_directories(${PBRPC_PREFIX})
 include_directories(${PBRPC_PREFIX}/${PROTOC_OUT})
+include_directories(${PROTOBUF_INCLUDE_DIRS})
 
 set(${MODULE_PREFIX}_SRCS
 	icp.c

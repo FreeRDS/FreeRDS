@@ -1,4 +1,5 @@
 *~
+*.build
 .DS_Store
 aclocal.m4
 AUTHORS
@@ -32,9 +33,13 @@ stamp-h1
 .project
 .cproject
 
+*.xcodeproj
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
+CMakeScripts/
 
+Debug/
+Release/

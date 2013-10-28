@@ -38,7 +38,6 @@ endif()
 
 include(CheckCmakeCompat)
 
-include(FindProtobufC)
 include(FindFeature)
 include(AutoVersioning)
 include(ConfigOptions)
@@ -101,12 +100,13 @@ set(PIXMAN_FEATURE_DESCRIPTION "Pixel Manipulation Library")
 
 set(PROTOBUFC_FEATURE_TYPE "REQUIRED")
 set(PROTOBUFC_FEATURE_PURPOSE "Protobuf based RPC")
-set(PROTOBUFC_FEATURE_DESCRIPTION "googles protocol buffers")
+set(PROTOBUFC_FEATURE_DESCRIPTION "google protocol buffers")
 
 find_feature(Pixman ${PIXMAN_FEATURE_TYPE} ${PIXMAN_FEATURE_PURPOSE} ${PIXMAN_FEATURE_DESCRIPTION})
 find_feature(ProtobufC ${PROTOBUFC_FEATURE_TYPE} ${PROTOBUFC_FEATURE_PURPOSE} ${PROTOBUFC_FEATURE_DESCRIPTION})
 
 include_directories(${PIXMAN_INCLUDE_DIRS})
+include_directories(${PROTOBUFC_INCLUDE_DIRS})
 
 add_subdirectory(freerds)
 
