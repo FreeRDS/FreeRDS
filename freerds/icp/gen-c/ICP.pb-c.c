@@ -254,11 +254,8 @@ const ProtobufCMessageDescriptor freerds__icp__is_channel_allowed_response__desc
   (ProtobufCMessageInit) freerds__icp__is_channel_allowed_response__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor freerds__icp__ping_request__field_descriptors[0] =
-{
-};
-static const unsigned freerds__icp__ping_request__field_indices_by_name[] = {
-};
+#define freerds__icp__ping_request__field_descriptors NULL
+#define freerds__icp__ping_request__field_indices_by_name NULL
 #define freerds__icp__ping_request__number_ranges NULL
 const ProtobufCMessageDescriptor freerds__icp__ping_request__descriptor =
 {
