@@ -89,6 +89,10 @@ struct rds_session
 	DrdynvcServerContext* drdynvc;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 FREERDP_API int libxrdp_session_init(rdsSession* session, rdpSettings* settings);
 FREERDP_API void libxrdp_session_uninit(rdsSession* session);
 
@@ -165,5 +169,10 @@ FREERDP_API int libxrdp_orders_send_frame_marker(rdsSession* session, UINT32 act
 FREERDP_API int libxrdp_window_new_update(rdsSession* session, RDS_MSG_WINDOW_NEW_UPDATE* msg);
 
 FREERDP_API int libxrdp_window_delete(rdsSession* session, RDS_MSG_WINDOW_DELETE* msg);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* FREERDP_RDS_NG_CORE_H */

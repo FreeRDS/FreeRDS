@@ -425,6 +425,15 @@ int freerds_receive_client_message(rdsModule* mod, wStream* s, RDS_MSG_COMMON* c
 			}
 			break;
 
+		case RDS_CLIENT_VBLANK_EVENT:
+			{
+				RDS_MSG_VBLANK_EVENT msg;
+				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
+				xrdp_read_vblank_event(s, &msg);
+				status = client->VBlankEvent(mod);
+			}
+			break;
+
 		default:
 			status = 0;
 			break;
@@ -467,14 +476,17 @@ int freerds_transport_receive(rdsModule* module)
 	{
 		length = xrdp_peek_common_header_length(Stream_Buffer(s));
 
-		status = freerds_named_pipe_read(module->hClientPipe, Stream_Pointer(s),
-				length - Stream_GetPosition(s));
+		if (length - Stream_GetPosition(s))
+		{
+			status = freerds_named_pipe_read(module->hClientPipe, Stream_Pointer(s),
+					length - Stream_GetPosition(s));
 
-		if (status < 0)
-			return -1;
+			if (status < 0)
+				return -1;
 
-		if (status > 0)
-			Stream_Seek(s, status);
+			if (status > 0)
+				Stream_Seek(s, status);
+		}
 	}
 
 	if (Stream_GetPosition(s) >= RDS_ORDER_HEADER_LENGTH)

@@ -89,10 +89,18 @@ typedef struct _RDS_FRAMEBUFFER RDS_FRAMEBUFFER;
 #define RDS_CODEC_NSCODEC		0x00000002
 #define RDS_CODEC_REMOTEFX		0x00000004
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 UINT32 xrdp_peek_common_header_length(BYTE* data);
 
 int xrdp_read_common_header(wStream* s, RDS_MSG_COMMON* msg);
 int xrdp_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* Client Message Types */
 
@@ -104,6 +112,8 @@ int xrdp_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
 #define RDS_CLIENT_UNICODE_KEYBOARD_EVENT	107
 #define RDS_CLIENT_MOUSE_EVENT			108
 #define RDS_CLIENT_EXTENDED_MOUSE_EVENT		109
+#define RDS_CLIENT_VBLANK_EVENT			110
+
 
 struct _RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT
 {
@@ -180,6 +190,17 @@ struct _RDS_MSG_REFRESH_RECT
 };
 typedef struct _RDS_MSG_REFRESH_RECT RDS_MSG_REFRESH_RECT;
 
+struct _RDS_MSG_VBLANK_EVENT
+{
+	DEFINE_MSG_COMMON();
+};
+typedef struct _RDS_MSG_VBLANK_EVENT RDS_MSG_VBLANK_EVENT;
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int xrdp_read_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
 int xrdp_write_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
 
@@ -203,6 +224,14 @@ int xrdp_write_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
 
 int xrdp_read_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
 int xrdp_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
+
+int xrdp_read_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
+int xrdp_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 /* Server Message Types */
 
@@ -575,6 +604,7 @@ typedef int (*pRdsClientVirtualKeyboardEvent)(rdsModule* mod, DWORD flags, DWORD
 typedef int (*pRdsClientUnicodeKeyboardEvent)(rdsModule* mod, DWORD flags, DWORD code);
 typedef int (*pRdsClientMouseEvent)(rdsModule* mod, DWORD flags, DWORD x, DWORD y);
 typedef int (*pRdsClientExtendedMouseEvent)(rdsModule* mod, DWORD flags, DWORD x, DWORD y);
+typedef int (*pRdsClientVBlankEvent)(rdsModule *mod);
 
 struct rds_client_interface
 {
@@ -584,6 +614,7 @@ struct rds_client_interface
 	pRdsClientUnicodeKeyboardEvent UnicodeKeyboardEvent;
 	pRdsClientMouseEvent MouseEvent;
 	pRdsClientExtendedMouseEvent ExtendedMouseEvent;
+	pRdsClientVBlankEvent VBlankEvent;
 };
 typedef struct rds_client_interface rdsClientInterface;
 
@@ -779,15 +810,16 @@ struct rds_service
 	pRdsServiceAccept Accept;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int freerds_service_start(rdsService* service);
 int freerds_service_stop(rdsService* service);
 
 rdsService* freerds_service_new(DWORD SessionId, const char* endpoint);
 void freerds_service_free(rdsService* service);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifdef __cplusplus
 }

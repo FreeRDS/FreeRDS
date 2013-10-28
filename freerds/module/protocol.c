@@ -250,6 +250,25 @@ int xrdp_write_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* ms
 	return 0;
 }
 
+int xrdp_read_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg)
+{
+	return 0;
+}
+
+int xrdp_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = xrdp_write_common_header(NULL, (RDS_MSG_COMMON *)msg);
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (RDS_MSG_COMMON*) msg);
+
+	return 0;
+}
+
+
 int xrdp_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg)
 {
 	if (Stream_GetRemainingLength(s) < 12)
@@ -1973,6 +1992,12 @@ int xrdp_server_message_read(wStream* s, RDS_MSG_COMMON* msg)
 int xrdp_server_message_write(wStream* s, RDS_MSG_COMMON* msg)
 {
 	RDS_MSG_DEFINITION* msgDef;
+
+	if (msg->type > 31)
+	{
+		fprintf(stderr, "unable to treat message type %d\n", msg->type);
+		return 0;
+	}
 
 	msgDef = RDS_SERVER_MSG_DEFINITIONS[msg->type];
 
