@@ -83,7 +83,7 @@ function(PROTOBUFC_GENERATE_C SOURCES HEADERS)
 endfunction()
 
 find_library(PROTOBUFC_LIBRARY
-							NAMES "libprotobuf-c.so"
+							NAMES "protobuf-c"
 							PATHS "/usr" "/usr/local" "/opt" ENV PROTOBUFC_ROOTDIR
 							PATH_SUFFIXES "lib")
 mark_as_advanced(PROTOBUFC_LIBRARY)
