@@ -173,6 +173,28 @@ int freerds_client_outbound_extended_mouse_event(rdsModule* module, DWORD flags,
 	return status;
 }
 
+int freerds_client_outbound_vblank_event(rdsModule* module)
+{
+	int length;
+	int status;
+	wStream* s;
+	RDS_MSG_VBLANK_EVENT msg;
+
+	msg.msgFlags = 0;
+	msg.type = RDS_CLIENT_VBLANK_EVENT;
+
+	s = module->OutboundStream;
+	Stream_SetPosition(s, 0);
+
+	length = xrdp_write_vblank_event(NULL, &msg);
+	xrdp_write_vblank_event(s, &msg);
+
+	status = freerds_named_pipe_write(module->hClientPipe, Stream_Buffer(s), length);
+
+	return status;
+}
+
+
 rdsClientInterface* freerds_client_outbound_interface_new()
 {
 	rdsClientInterface* client;
@@ -189,6 +211,7 @@ rdsClientInterface* freerds_client_outbound_interface_new()
 		client->UnicodeKeyboardEvent = freerds_client_outbound_unicode_keyboard_event;
 		client->MouseEvent = freerds_client_outbound_mouse_event;
 		client->ExtendedMouseEvent = freerds_client_outbound_extended_mouse_event;
+		client->VBlankEvent = freerds_client_outbound_vblank_event;
 	}
 
 	return client;

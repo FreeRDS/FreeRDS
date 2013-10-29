@@ -43,6 +43,7 @@ int freerds_client_inbound_end_update(rdsModule* module, RDS_MSG_END_UPDATE* msg
 {
 	rdsConnector* connector = (rdsConnector*) module;
 	libxrdp_orders_end_paint(connector->session);
+	module->client->VBlankEvent(module);
 	return 0;
 }
 
@@ -210,6 +211,8 @@ int freerds_client_inbound_shared_framebuffer(rdsModule* module, RDS_MSG_SHARED_
 		connector->framebuffer.fbAttached = FALSE;
 		connector->framebuffer.fbSharedMemory = 0;
 	}
+
+	module->client->VBlankEvent(module);
 
 	return 0;
 }
