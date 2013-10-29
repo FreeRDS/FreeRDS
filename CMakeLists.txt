@@ -113,8 +113,6 @@ add_subdirectory(common)
 add_subdirectory(xrdp)
 add_subdirectory(instfiles)
 
-add_subdirectory(module)
-
 if(WITH_X11RDP)
 	add_subdirectory(xorg)
 endif()
