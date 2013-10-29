@@ -26,6 +26,7 @@
 #include <winpr/thread.h>
 
 #include <freerds/freerds.h>
+#include <freerds/service_helper.h>
 
 typedef struct rds_context_cef rdsContextCef;
 
