@@ -41,9 +41,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 find_feature(Protobuf REQUIRED "RPC" "Remote Procedure Call")
 
+PROTOBUF_GENERATE_CPP(PBRPC_PROTOBUF_SRC PBRPC_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/pbRPC.proto)
+PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICP.proto)
+
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gen-cpp)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(${MODULE_PREFIX}_SRCS
 	main.cpp 
@@ -56,12 +59,15 @@ set(${MODULE_PREFIX}_SRCS
 	common/call/CallFactory.cpp
 	common/call/CallIsVCAllowed.cpp
 	common/pbRPC/RpcEngine.cpp
-	gen-cpp/pbRPC.pb.cc
-	gen-cpp/ICP.pb.cc
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp
 	common/config/PropertyManager.cpp
-	common/config/PropertyCWrapper.cpp)
+	common/config/PropertyCWrapper.cpp
+	${PBRPC_PROTOBUF_SRC}
+	${PBRPC_PROTOBUF_HEADERS}
+	${ICP_PROTOBUF_SRC}
+	${ICP_PROTOBUF_HEADERS}
+	)
  
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
