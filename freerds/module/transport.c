@@ -354,6 +354,24 @@ int freerds_receive_server_message(rdsModule* module, wStream* s, RDS_MSG_COMMON
 			}
 			break;
 
+		case RDS_SERVER_LOGON_USER:
+			{
+				RDS_MSG_LOGON_USER msg;
+				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
+				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				status = server->LogonUser(module, &msg);
+			}
+			break;
+
+		case RDS_SERVER_LOGOFF_USER:
+			{
+				RDS_MSG_LOGOFF_USER msg;
+				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
+				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				status = server->LogoffUser(module, &msg);
+			}
+			break;
+
 		default:
 			status = 0;
 			break;

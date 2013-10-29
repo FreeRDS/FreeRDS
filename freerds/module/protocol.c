@@ -1904,6 +1904,185 @@ static RDS_MSG_DEFINITION RDS_MSG_WINDOW_DELETE_DEFINITION =
 };
 
 /**
+ * LogonUser
+ */
+
+int xrdp_read_logon_user(wStream* s, RDS_MSG_LOGON_USER* msg)
+{
+	if (Stream_GetRemainingLength(s) < 12)
+		return -1;
+
+	Stream_Read_UINT32(s, msg->Flags);
+	Stream_Read_UINT32(s, msg->UserLength);
+	Stream_Read_UINT32(s, msg->DomainLength);
+	Stream_Read_UINT32(s, msg->PasswordLength);
+
+	msg->User = msg->Domain = msg->Password = NULL;
+
+	if (msg->UserLength)
+	{
+		msg->User = (char*) malloc(msg->UserLength + 1);
+		Stream_Read(s, msg->User, msg->UserLength);
+		msg->User[msg->UserLength] = '\0';
+	}
+
+	if (msg->DomainLength)
+	{
+		msg->Domain = (char*) malloc(msg->DomainLength + 1);
+		Stream_Read(s, msg->Domain, msg->DomainLength);
+		msg->Domain[msg->DomainLength] = '\0';
+	}
+
+	if (msg->PasswordLength)
+	{
+		msg->Password = (char*) malloc(msg->PasswordLength + 1);
+		Stream_Read(s, msg->Password, msg->PasswordLength);
+		msg->Password[msg->PasswordLength] = '\0';
+	}
+
+	return 0;
+}
+
+int xrdp_write_logon_user(wStream* s, RDS_MSG_LOGON_USER* msg)
+{
+	msg->msgFlags = 0;
+
+	msg->UserLength = msg->DomainLength = msg->PasswordLength = 0;
+
+	if (msg->User)
+		msg->UserLength = strlen(msg->User);
+
+	if (msg->Domain)
+		msg->DomainLength = strlen(msg->Domain);
+
+	if (msg->Password)
+		msg->PasswordLength = strlen(msg->PasswordLength);
+
+	msg->length = xrdp_write_common_header(NULL, (RDS_MSG_COMMON*) msg) + 12 +
+			msg->UserLength + msg->DomainLength + msg->PasswordLength;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (RDS_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->Flags);
+	Stream_Write_UINT32(s, msg->UserLength);
+	Stream_Write_UINT32(s, msg->DomainLength);
+	Stream_Write_UINT32(s, msg->PasswordLength);
+
+	if (msg->UserLength)
+		Stream_Write(s, msg->User, msg->UserLength);
+
+	if (msg->DomainLength)
+		Stream_Write(s, msg->Domain, msg->DomainLength);
+
+	if (msg->PasswordLength)
+		Stream_Write(s, msg->Password, msg->PasswordLength);
+
+	return 0;
+}
+
+void* xrdp_logon_user_copy(RDS_MSG_LOGON_USER* msg)
+{
+	RDS_MSG_LOGON_USER* dup = NULL;
+
+	dup = (RDS_MSG_LOGON_USER*) malloc(sizeof(RDS_MSG_LOGON_USER));
+	CopyMemory(dup, msg, sizeof(RDS_MSG_LOGON_USER));
+
+	if (msg->UserLength)
+	{
+		dup->User = malloc(msg->UserLength + 1);
+		CopyMemory(dup->User, msg->User, msg->UserLength);
+		dup->User[msg->UserLength] = '\0';
+	}
+
+	if (msg->DomainLength)
+	{
+		dup->Domain = malloc(msg->DomainLength + 1);
+		CopyMemory(dup->Domain, msg->Domain, msg->DomainLength);
+		dup->Domain[msg->DomainLength] = '\0';
+	}
+
+	if (msg->PasswordLength)
+	{
+		dup->Password = malloc(msg->PasswordLength + 1);
+		CopyMemory(dup->Password, msg->Password, msg->PasswordLength);
+		dup->Password[msg->PasswordLength] = '\0';
+	}
+
+	return (void*) dup;
+}
+
+void xrdp_logon_user_free(RDS_MSG_LOGON_USER* msg)
+{
+	free(msg);
+}
+
+static RDS_MSG_DEFINITION RDS_MSG_LOGON_USER_DEFINITION =
+{
+	sizeof(RDS_MSG_LOGON_USER), "LogonUser",
+	(pXrdpMessageRead) xrdp_read_logon_user,
+	(pXrdpMessageWrite) xrdp_write_logon_user,
+	(pXrdpMessageCopy) xrdp_logon_user_copy,
+	(pXrdpMessageFree) xrdp_logon_user_free
+};
+
+/**
+ * LogoffUser
+ */
+
+int xrdp_read_logoff_user(wStream* s, RDS_MSG_LOGOFF_USER* msg)
+{
+	if (Stream_GetRemainingLength(s) < 4)
+		return -1;
+
+	Stream_Read_UINT32(s, msg->Flags);
+
+	return 0;
+}
+
+int xrdp_write_logoff_user(wStream* s, RDS_MSG_LOGOFF_USER* msg)
+{
+	msg->msgFlags = 0;
+
+	msg->length = xrdp_write_common_header(NULL, (RDS_MSG_COMMON*) msg) + 4;
+
+	if (!s)
+		return msg->length;
+
+	xrdp_write_common_header(s, (RDS_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->Flags);
+
+	return 0;
+}
+
+void* xrdp_logoff_user_copy(RDS_MSG_LOGOFF_USER* msg)
+{
+	RDS_MSG_LOGOFF_USER* dup = NULL;
+
+	dup = (RDS_MSG_LOGOFF_USER*) malloc(sizeof(RDS_MSG_LOGOFF_USER));
+	CopyMemory(dup, msg, sizeof(RDS_MSG_LOGOFF_USER));
+
+	return (void*) dup;
+}
+
+void xrdp_logoff_user_free(RDS_MSG_LOGOFF_USER* msg)
+{
+	free(msg);
+}
+
+static RDS_MSG_DEFINITION RDS_MSG_LOGOFF_USER_DEFINITION =
+{
+	sizeof(RDS_MSG_LOGOFF_USER), "LogoffUser",
+	(pXrdpMessageRead) xrdp_read_logoff_user,
+	(pXrdpMessageWrite) xrdp_write_logoff_user,
+	(pXrdpMessageCopy) xrdp_logoff_user_copy,
+	(pXrdpMessageFree) xrdp_logoff_user_free
+};
+
+/**
  * Generic Functions
  */
 
@@ -1933,8 +2112,8 @@ static RDS_MSG_DEFINITION* RDS_SERVER_MSG_DEFINITIONS[32] =
 	&RDS_MSG_WINDOW_NEW_UPDATE_DEFINITION, /* 21 */
 	&RDS_MSG_WINDOW_DELETE_DEFINITION, /* 22 */
 	&RDS_MSG_SET_SYSTEM_POINTER_DEFINITION, /* 23 */
-	NULL, /* 24 */
-	NULL, /* 25 */
+	&RDS_MSG_LOGON_USER_DEFINITION, /* 24 */
+	&RDS_MSG_LOGOFF_USER_DEFINITION, /* 25 */
 	NULL, /* 26 */
 	NULL, /* 27 */
 	NULL, /* 28 */

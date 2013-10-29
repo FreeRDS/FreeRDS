@@ -259,6 +259,16 @@ int freerds_client_inbound_window_delete(rdsModule* module, RDS_MSG_WINDOW_DELET
 	return libxrdp_window_delete(connector->session, msg);
 }
 
+int freerds_client_inbound_logon_user(rdsModule* module, RDS_MSG_LOGON_USER* msg)
+{
+	return 0;
+}
+
+int freerds_client_inbound_logoff_user(rdsModule* module, RDS_MSG_LOGOFF_USER* msg)
+{
+	return 0;
+}
+
 int freerds_client_inbound_module_init(rdsModule* module)
 {
 	if (module->server)
@@ -287,6 +297,8 @@ int freerds_client_inbound_module_init(rdsModule* module)
 		module->server->PaintOffscreenSurface = freerds_client_inbound_paint_offscreen_surface;
 		module->server->WindowNewUpdate = freerds_client_inbound_window_new_update;
 		module->server->WindowDelete = freerds_client_inbound_window_delete;
+		module->server->LogonUser = freerds_client_inbound_logon_user;
+		module->server->LogoffUser = freerds_client_inbound_logoff_user;
 	}
 
 	xrdp_message_server_module_init(module);

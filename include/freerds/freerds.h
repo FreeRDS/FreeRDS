@@ -114,7 +114,6 @@ int xrdp_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
 #define RDS_CLIENT_EXTENDED_MOUSE_EVENT		109
 #define RDS_CLIENT_VBLANK_EVENT			110
 
-
 struct _RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT
 {
 	DEFINE_MSG_COMMON();
@@ -257,7 +256,9 @@ int xrdp_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
 #define RDS_SERVER_RESET			20
 #define RDS_SERVER_WINDOW_NEW_UPDATE		21
 #define RDS_SERVER_WINDOW_DELETE		22
-#define RDS_SERVER_SET_SYSTEM_POINTER	23
+#define RDS_SERVER_SET_SYSTEM_POINTER		23
+#define RDS_SERVER_LOGON_USER			24
+#define RDS_SERVER_LOGOFF_USER			25
 
 struct _RDS_MSG_BEGIN_UPDATE
 {
@@ -549,6 +550,29 @@ struct _RDS_MSG_WINDOW_DELETE
 };
 typedef struct _RDS_MSG_WINDOW_DELETE RDS_MSG_WINDOW_DELETE;
 
+struct _RDS_MSG_LOGON_USER
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 Flags;
+	UINT32 UserLength;
+	UINT32 DomainLength;
+	UINT32 PasswordLength;
+
+	char* User;
+	char* Domain;
+	char* Password;
+};
+typedef struct _RDS_MSG_LOGON_USER RDS_MSG_LOGON_USER;
+
+struct _RDS_MSG_LOGOFF_USER
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 Flags;
+};
+typedef struct _RDS_MSG_LOGOFF_USER RDS_MSG_LOGOFF_USER;
+
 struct _RDS_MSG_SHARED_FRAMEBUFFER
 {
 	DEFINE_MSG_COMMON();
@@ -645,6 +669,9 @@ typedef int (*pRdsServerPaintOffscreenSurface)(rdsModule* mod, RDS_MSG_PAINT_OFF
 typedef int (*pRdsServerWindowNewUpdate)(rdsModule* mod, RDS_MSG_WINDOW_NEW_UPDATE* msg);
 typedef int (*pRdsServerWindowDelete)(rdsModule* mod, RDS_MSG_WINDOW_DELETE* msg);
 
+typedef int (*pRdsServerLogonUser)(rdsModule* mod, RDS_MSG_LOGON_USER* msg);
+typedef int (*pRdsServerLogoffUser)(rdsModule* mod, RDS_MSG_LOGOFF_USER* msg);
+
 struct rds_server_interface
 {
 	pRdsServerBeginUpdate BeginUpdate;
@@ -671,6 +698,8 @@ struct rds_server_interface
 	pRdsServerPaintOffscreenSurface PaintOffscreenSurface;
 	pRdsServerWindowNewUpdate WindowNewUpdate;
 	pRdsServerWindowDelete WindowDelete;
+	pRdsServerLogonUser LogonUser;
+	pRdsServerLogoffUser LogoffUser;
 };
 typedef struct rds_server_interface rdsServerInterface;
 
