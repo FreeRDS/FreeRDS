@@ -59,9 +59,12 @@ void xrdp_module_free(rdsModuleConnector* connector);
 long xrdp_authenticate(char* username, char* password, int* errorcode);
 
 void* xrdp_client_thread(void* arg);
+int xrdp_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount);
+int xrdp_client_check_event_handles(rdsModuleConnector* connector);
 
 int freerds_client_inbound_connector_init(rdsModuleConnector* connector);
 int xrdp_message_server_connector_init(rdsModuleConnector* connector);
+
 
 int xrdp_message_server_queue_pack(rdsModuleConnector* connector);
 int xrdp_message_server_queue_process_pending_messages(rdsModuleConnector* connector);

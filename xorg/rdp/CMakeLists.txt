@@ -257,8 +257,7 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MODULES winpr-thread winpr-synch winpr-pipe winpr-input winpr-utils)
 
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-common)
-
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
 
 set(${MODULE_PREFIX}_STATIC_LIBS
 	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static

@@ -22,21 +22,6 @@
 
 #include "xrdp.h"
 
-#include <pwd.h>
-#include <grp.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <sys/shm.h>
-#include <sys/stat.h>
-
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-
-#include <winpr/crt.h>
 #include <winpr/pipe.h>
 #include <winpr/path.h>
 #include <winpr/synch.h>
@@ -99,4 +84,35 @@ void* xrdp_client_thread(void* arg)
 	CloseHandle(PackTimer);
 
 	return NULL;
+}
+
+
+int xrdp_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount)
+{
+	if (connector)
+	{
+		if (connector->ServerQueue)
+		{
+			events[*nCount] = MessageQueue_Event(connector->ServerQueue);
+			(*nCount)++;
+		}
+	}
+
+	return 0;
+}
+
+int xrdp_client_check_event_handles(rdsModuleConnector* connector)
+{
+	int status = 0;
+
+
+	if (!connector)
+		return 0;
+
+	while (WaitForSingleObject(MessageQueue_Event(connector->ServerQueue), 0) == WAIT_OBJECT_0)
+	{
+		status = xrdp_message_server_queue_process_pending_messages(connector);
+	}
+
+	return status;
 }

@@ -152,6 +152,8 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 {
 	rdpSettings* settings;
 	rdsConnection* connection = (rdsConnection*) client->context;
+	int auth_status;
+	int error_code;
 
 	settings = client->settings;
 	settings->BitmapCacheVersion = 2;
@@ -162,8 +164,21 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (settings->RemoteFxCodec || settings->NSCodec)
 		connection->codecMode = TRUE;
 
+	auth_status = xrdp_authenticate(settings->Username, settings->Password, &error_code);
+
 	if (!connection->connector)
-		connection->connector = xrdp_module_new(connection);
+		connection->connector = freerds_module_connector_new(connection);
+
+
+	connection->connector->GetEventHandles = xrdp_client_get_event_handles;
+	connection->connector->CheckEventHandles = xrdp_client_check_event_handles;
+
+	connection->connector->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) xrdp_client_thread,
+			(void*) connection->connector, CREATE_SUSPENDED, NULL);
+
+	freerds_client_inbound_connector_init(connection->connector);
+
+	ResumeThread(connection->connector->ServerThread);
 
 	printf("Client Activated\n");
 

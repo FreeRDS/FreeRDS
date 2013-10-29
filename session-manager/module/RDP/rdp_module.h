@@ -20,8 +20,7 @@
 #ifndef FREERDS_MODULE_RDP_H
 #define FREERDS_MODULE_RDP_H
 
-#include <freerds/freerds.h>
-
+#include "../modules.h"
 #define RDP_MODULE_NAME "rdpmodule"
 
 int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);

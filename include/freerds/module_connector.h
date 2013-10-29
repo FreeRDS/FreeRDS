@@ -1,8 +1,9 @@
 /**
- * FreeRDP: A Remote Desktop Protocol Implementation
- * xrdp-ng interprocess communication protocol
+ * FreeRDS module connector interface
+ * module connector provides the glue between a service module and rds
  *
- * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013 Thinstuff Technologies GmbH
+ * Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.at>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#ifndef MODULE_CONNECTOR_H_
+#define MODULE_CONNECTOR_H_
 
 #include <freerds/freerds.h>
 
-#include "interface.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+rdsModuleConnector* freerds_module_connector_new(rdsConnection* connection);
+void freerds_module_connector_free(rdsModuleConnector* connector);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MODULE_CONNECTOR_H_ */

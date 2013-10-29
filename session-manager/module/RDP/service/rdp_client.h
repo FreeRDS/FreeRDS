@@ -31,6 +31,7 @@
 #include <freerdp/freerdp.h>
 
 #include <freerds/freerds.h>
+#include <freerds/service_helper.h>
 
 typedef struct rds_context rdsContext;
 

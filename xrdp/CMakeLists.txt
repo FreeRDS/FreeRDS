@@ -38,7 +38,6 @@ set(${MODULE_PREFIX}_SRCS
 	xrdp_channels.c
 	xrdp_channels.h
 	xrdp_listener.c
-	xrdp_module.c
 	xrdp_pipeline.c
 	xrdp_process.c
 	xrdp_client_module.c
@@ -51,7 +50,7 @@ add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
 
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
 
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-common)

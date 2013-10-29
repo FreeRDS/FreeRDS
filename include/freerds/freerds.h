@@ -31,9 +31,6 @@
 
 typedef struct rds_module_connector rdsModuleConnector;
 
-typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;
-typedef RDS_MODULE_ENTRY_POINTS_V1 RDS_MODULE_ENTRY_POINTS;
-
 typedef struct rds_connection rdsConnection;
 
 /* Common Data Types */
@@ -738,8 +735,6 @@ struct rds_module_connector
 	wLinkedList* ServerList;
 	wMessageQueue* ServerQueue;
 	rdsServerInterface* ServerProxy;
-
-	RDS_MODULE_ENTRY_POINTS* pEntryPoints;
 };
 
 #ifdef __cplusplus
@@ -776,72 +771,6 @@ FREERDP_API HANDLE freerds_named_pipe_create(DWORD SessionId, const char* endpoi
 FREERDP_API HANDLE freerds_named_pipe_accept(HANDLE hServerPipe);
 
 FREERDP_API int freerds_transport_receive(rdsModuleConnector* connector);
-
-#ifdef __cplusplus
-}
-#endif
-
-/**
- * Module Entry Points
- */
-
-typedef int (*pRdsModuleNew)(rdsModuleConnector* connector);
-typedef void (*pRdsModuleFree)(rdsModuleConnector* connector);
-
-typedef int (*pRdsModuleStart)(rdsModuleConnector* connector);
-typedef int (*pRdsModuleStop)(rdsModuleConnector* connector);
-
-struct rds_module_entry_points_v1
-{
-	DWORD Size;
-	DWORD Version;
-	char* Name;
-
-	DWORD ContextSize;
-	pRdsModuleNew New;
-	pRdsModuleFree Free;
-
-	pRdsModuleStart Start;
-	pRdsModuleStop Stop;
-};
-
-#define RDS_MODULE_INTERFACE_VERSION	1
-#define RDS_MODULE_ENTRY_POINT_NAME	"RdsModuleEntry"
-
-typedef int (*pRdsModuleEntry)(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
-
-/**
- * Service Interface
- */
-
-typedef struct rds_service rdsService;
-
-typedef int (*pRdsServiceAccept)(rdsService* service);
-
-struct rds_service
-{
-	rdsModuleConnector connector;
-
-	void* custom;
-
-	HANDLE StopEvent;
-
-	HANDLE ClientThread;
-	HANDLE ServerThread;
-
-	pRdsServiceAccept Accept;
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int freerds_service_start(rdsService* service);
-int freerds_service_stop(rdsService* service);
-
-rdsService* freerds_service_new(DWORD SessionId, const char* endpoint);
-void freerds_service_free(rdsService* service);
-
 
 #ifdef __cplusplus
 }

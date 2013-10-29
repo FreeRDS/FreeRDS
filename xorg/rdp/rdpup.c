@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <winpr/pipe.h>
 #include <winpr/synch.h>
 
-#include <freerds/freerds.h>
+#include <freerds/service_helper.h>
 
 #define LOG_LEVEL 1
 #define LLOG(_level, _args) \
