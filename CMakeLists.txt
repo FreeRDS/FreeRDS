@@ -105,6 +105,8 @@ find_feature(ProtobufC ${PROTOBUFC_FEATURE_TYPE} ${PROTOBUFC_FEATURE_PURPOSE} ${
 include_directories(${PIXMAN_INCLUDE_DIRS})
 include_directories(${PROTOBUFC_INCLUDE_DIRS})
 
+add_subdirectory(include)
+
 add_subdirectory(freerds)
 
 add_subdirectory(common)
