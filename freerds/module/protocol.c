@@ -1956,7 +1956,7 @@ int xrdp_write_logon_user(wStream* s, RDS_MSG_LOGON_USER* msg)
 		msg->DomainLength = strlen(msg->Domain);
 
 	if (msg->Password)
-		msg->PasswordLength = strlen(msg->PasswordLength);
+		msg->PasswordLength = strlen(msg->Password);
 
 	msg->length = xrdp_write_common_header(NULL, (RDS_MSG_COMMON*) msg) + 12 +
 			msg->UserLength + msg->DomainLength + msg->PasswordLength;

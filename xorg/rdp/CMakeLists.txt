@@ -256,7 +256,7 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MODULE winpr
 	MODULES winpr-thread winpr-synch winpr-pipe winpr-input winpr-utils)
 
-list(APPEND ${MODULE_PREFIX}_LIBS xrdp-ng-common)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-common)
 
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
 

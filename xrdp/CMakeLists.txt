@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "${RDS_NG_MODULE}")
+set(MODULE_NAME "freerds")
 set(MODULE_PREFIX "FREERDP_XRDP")
 
 set(PAM_FEATURE_TYPE "REQUIRED")
@@ -54,7 +54,7 @@ set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
 
-list(APPEND ${MODULE_PREFIX}_LIBS ${RDS_NG_MODULE}-common)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-common)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}

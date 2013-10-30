@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "${RDS_NG_MODULE}-common")
+set(MODULE_NAME "freerds-common")
 set(MODULE_PREFIX "FREERDP_RDS_COMMON")
 
 set(ZLIB_FEATURE_TYPE "REQUIRED")
@@ -54,5 +54,5 @@ set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS} ${OPENSSL_LIBRARIES})
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR} EXPORT FreeRDSTargets)
 
