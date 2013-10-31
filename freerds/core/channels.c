@@ -25,7 +25,7 @@
 
 #include <freerds/icp_client_stubs.h>
 
-int xrdp_channels_post_connect(rdsConnection* session)
+int freerds_channels_post_connect(rdsConnection* session)
 {
 	int i;
 	rdpSettings* settings = session->settings;

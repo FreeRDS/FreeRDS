@@ -44,30 +44,29 @@ int g_is_term(void);
 void g_set_term(int in_val);
 HANDLE g_get_term_event(void);
 
-rdsConnection* xrdp_process_create(freerdp_peer* client);
-void xrdp_process_delete(rdsConnection* self);
-HANDLE xrdp_process_get_term_event(rdsConnection* self);
-void* xrdp_process_main_thread(void* arg);
+rdsConnection* freerds_connection_create(freerdp_peer* client);
+void freerds_connection_delete(rdsConnection* self);
+HANDLE freerds_connection_get_term_event(rdsConnection* self);
+void* freerds_connection_main_thread(void* arg);
 
-xrdpListener* xrdp_listen_create(void);
-void xrdp_listen_delete(xrdpListener* self);
-int xrdp_listen_main_loop(xrdpListener* self);
+xrdpListener* freerds_listener_create(void);
+void freerds_listener_delete(xrdpListener* self);
+int freerds_listener_main_loop(xrdpListener* self);
 
-rdsModuleConnector* xrdp_module_new(rdsConnection* connection);
-void xrdp_module_free(rdsModuleConnector* connector);
+rdsModuleConnector* freerds_module_new(rdsConnection* connection);
+void freerds_module_free(rdsModuleConnector* connector);
 
-long xrdp_authenticate(char* username, char* password, int* errorcode);
+long freerds_authenticate(char* username, char* password, int* errorcode);
 
-void* xrdp_client_thread(void* arg);
-int xrdp_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount);
-int xrdp_client_check_event_handles(rdsModuleConnector* connector);
+void* freerds_client_thread(void* arg);
+int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount);
+int freerds_client_check_event_handles(rdsModuleConnector* connector);
 
 int freerds_client_inbound_connector_init(rdsModuleConnector* connector);
-int xrdp_message_server_connector_init(rdsModuleConnector* connector);
+int freerds_message_server_connector_init(rdsModuleConnector* connector);
 
-
-int xrdp_message_server_queue_pack(rdsModuleConnector* connector);
-int xrdp_message_server_queue_process_pending_messages(rdsModuleConnector* connector);
-int xrdp_message_server_module_init(rdsModuleConnector* connector);
+int freerds_message_server_queue_pack(rdsModuleConnector* connector);
+int freerds_message_server_queue_process_pending_messages(rdsModuleConnector* connector);
+int freerds_message_server_module_init(rdsModuleConnector* connector);
 
 #endif /* RDS_H */

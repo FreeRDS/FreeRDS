@@ -90,10 +90,10 @@ typedef struct _RDS_FRAMEBUFFER RDS_FRAMEBUFFER;
 extern "C" {
 #endif
 
-UINT32 xrdp_peek_common_header_length(BYTE* data);
+UINT32 freerds_peek_common_header_length(BYTE* data);
 
-int xrdp_read_common_header(wStream* s, RDS_MSG_COMMON* msg);
-int xrdp_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
+int freerds_read_common_header(wStream* s, RDS_MSG_COMMON* msg);
+int freerds_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
 
 #ifdef __cplusplus
 }
@@ -197,32 +197,32 @@ typedef struct _RDS_MSG_VBLANK_EVENT RDS_MSG_VBLANK_EVENT;
 extern "C" {
 #endif
 
-int xrdp_read_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
-int xrdp_write_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
+int freerds_read_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
+int freerds_write_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
 
-int xrdp_read_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
-int xrdp_write_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
+int freerds_read_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
+int freerds_write_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
 
-int xrdp_read_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
-int xrdp_write_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
+int freerds_read_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
+int freerds_write_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
 
-int xrdp_read_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
-int xrdp_write_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
+int freerds_read_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
+int freerds_write_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
 
-int xrdp_read_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
-int xrdp_write_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
+int freerds_read_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
+int freerds_write_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
 
-int xrdp_read_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
-int xrdp_write_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
+int freerds_read_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
+int freerds_write_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
 
-int xrdp_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
-int xrdp_write_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
+int freerds_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
+int freerds_write_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
 
-int xrdp_read_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
-int xrdp_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
+int freerds_read_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
+int freerds_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
 
-int xrdp_read_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
-int xrdp_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
+int freerds_read_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
+int freerds_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
 
 #ifdef __cplusplus
 }
@@ -741,14 +741,14 @@ struct rds_module_connector
 extern "C" {
 #endif
 
-FREERDP_API int xrdp_server_message_size(UINT32 type);
-FREERDP_API char* xrdp_server_message_name(UINT32 type);
+FREERDP_API int freerds_server_message_size(UINT32 type);
+FREERDP_API char* freerds_server_message_name(UINT32 type);
 
-FREERDP_API int xrdp_server_message_read(wStream* s, RDS_MSG_COMMON* msg);
-FREERDP_API int xrdp_server_message_write(wStream* s, RDS_MSG_COMMON* msg);
+FREERDP_API int freerds_server_message_read(wStream* s, RDS_MSG_COMMON* msg);
+FREERDP_API int freerds_server_message_write(wStream* s, RDS_MSG_COMMON* msg);
 
-FREERDP_API void* xrdp_server_message_copy(RDS_MSG_COMMON* msg);
-FREERDP_API void xrdp_server_message_free(RDS_MSG_COMMON* msg);
+FREERDP_API void* freerds_server_message_copy(RDS_MSG_COMMON* msg);
+FREERDP_API void freerds_server_message_free(RDS_MSG_COMMON* msg);
 
 /**
  * New Clean Module Interface API

@@ -32,7 +32,7 @@
 
 #include <freerdp/freerdp.h>
 
-void* xrdp_client_thread(void* arg)
+void* freerds_client_thread(void* arg)
 {
 	int fps;
 	DWORD status;
@@ -70,7 +70,7 @@ void* xrdp_client_thread(void* arg)
 
 		if (status == WAIT_OBJECT_0)
 		{
-			xrdp_message_server_queue_pack(connector);
+			freerds_message_server_queue_pack(connector);
 		}
 
 		if (connector->fps != fps)
@@ -87,7 +87,7 @@ void* xrdp_client_thread(void* arg)
 }
 
 
-int xrdp_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount)
+int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount)
 {
 	if (connector)
 	{
@@ -101,7 +101,7 @@ int xrdp_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events,
 	return 0;
 }
 
-int xrdp_client_check_event_handles(rdsModuleConnector* connector)
+int freerds_client_check_event_handles(rdsModuleConnector* connector)
 {
 	int status = 0;
 
@@ -111,7 +111,7 @@ int xrdp_client_check_event_handles(rdsModuleConnector* connector)
 
 	while (WaitForSingleObject(MessageQueue_Event(connector->ServerQueue), 0) == WAIT_OBJECT_0)
 	{
-		status = xrdp_message_server_queue_process_pending_messages(connector);
+		status = freerds_message_server_queue_process_pending_messages(connector);
 	}
 
 	return status;

@@ -203,7 +203,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_BEGIN_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->BeginUpdate(connector, &msg);
 			}
 			break;
@@ -212,7 +212,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_END_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->EndUpdate(connector, &msg);
 			}
 			break;
@@ -221,7 +221,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_OPAQUE_RECT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->OpaqueRect(connector, &msg);
 			}
 			break;
@@ -230,7 +230,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_SCREEN_BLT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->ScreenBlt(connector, &msg);
 			}
 			break;
@@ -239,7 +239,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_PATBLT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->PatBlt(connector, &msg);
 			}
 			break;
@@ -248,7 +248,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_DSTBLT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->DstBlt(connector, &msg);
 			}
 			break;
@@ -262,7 +262,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				msg.fbSegmentId = 0;
 				msg.framebuffer = NULL;
 
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 
 				if (msg.fbSegmentId)
 					msg.framebuffer = &(connector->framebuffer);
@@ -275,7 +275,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_SET_CLIPPING_REGION msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->SetClippingRegion(connector, &msg);
 			}
 			break;
@@ -284,7 +284,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_LINE_TO msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->LineTo(connector, &msg);
 			}
 			break;
@@ -293,7 +293,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_SET_POINTER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->SetPointer(connector, &msg);
 			}
 			break;
@@ -302,7 +302,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_SET_SYSTEM_POINTER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->SetSystemPointer(connector, &msg);
 			}
 			break;
@@ -311,7 +311,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_CREATE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->CreateOffscreenSurface(connector, &msg);
 			}
 			break;
@@ -320,7 +320,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_SWITCH_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->SwitchOffscreenSurface(connector, &msg);
 			}
 			break;
@@ -329,7 +329,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_DELETE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->DeleteOffscreenSurface(connector, &msg);
 			}
 			break;
@@ -338,7 +338,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_PAINT_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->PaintOffscreenSurface(connector, &msg);
 			}
 			break;
@@ -347,7 +347,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_WINDOW_NEW_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->WindowNewUpdate(connector, &msg);
 			}
 			break;
@@ -356,7 +356,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_WINDOW_DELETE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->WindowDelete(connector, &msg);
 			}
 			break;
@@ -365,7 +365,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_SHARED_FRAMEBUFFER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->SharedFramebuffer(connector, &msg);
 			}
 			break;
@@ -374,7 +374,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_LOGON_USER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->LogonUser(connector, &msg);
 			}
 			break;
@@ -383,7 +383,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_LOGOFF_USER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 				status = server->LogoffUser(connector, &msg);
 			}
 			break;
@@ -409,7 +409,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_read_synchronize_keyboard_event(s, &msg);
+				freerds_read_synchronize_keyboard_event(s, &msg);
 				status = client->SynchronizeKeyboardEvent(connector, msg.flags);
 			}
 			break;
@@ -418,7 +418,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_SCANCODE_KEYBOARD_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_read_scancode_keyboard_event(s, &msg);
+				freerds_read_scancode_keyboard_event(s, &msg);
 				status = client->ScancodeKeyboardEvent(connector, msg.flags, msg.code, msg.keyboardType);
 			}
 			break;
@@ -427,7 +427,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_VIRTUAL_KEYBOARD_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_read_virtual_keyboard_event(s, &msg);
+				freerds_read_virtual_keyboard_event(s, &msg);
 				status = client->VirtualKeyboardEvent(connector, msg.flags, msg.code);
 			}
 			break;
@@ -436,7 +436,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_UNICODE_KEYBOARD_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_read_unicode_keyboard_event(s, &msg);
+				freerds_read_unicode_keyboard_event(s, &msg);
 				status = client->UnicodeKeyboardEvent(connector, msg.flags, msg.code);
 			}
 			break;
@@ -445,7 +445,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_MOUSE_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_read_mouse_event(s, &msg);
+				freerds_read_mouse_event(s, &msg);
 				status = client->MouseEvent(connector, msg.flags, msg.x, msg.y);
 			}
 			break;
@@ -454,7 +454,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_EXTENDED_MOUSE_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_read_extended_mouse_event(s, &msg);
+				freerds_read_extended_mouse_event(s, &msg);
 				status = client->ExtendedMouseEvent(connector, msg.flags, msg.x, msg.y);
 			}
 			break;
@@ -463,7 +463,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 			{
 				RDS_MSG_VBLANK_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
-				xrdp_read_vblank_event(s, &msg);
+				freerds_read_vblank_event(s, &msg);
 				if (client->VBlankEvent)
 					status = client->VBlankEvent(connector);
 				else
@@ -511,7 +511,7 @@ int freerds_transport_receive(rdsModuleConnector* connector)
 
 	if (Stream_GetPosition(s) >= RDS_ORDER_HEADER_LENGTH)
 	{
-		length = xrdp_peek_common_header_length(Stream_Buffer(s));
+		length = freerds_peek_common_header_length(Stream_Buffer(s));
 
 		if (length - Stream_GetPosition(s))
 		{
@@ -528,14 +528,14 @@ int freerds_transport_receive(rdsModuleConnector* connector)
 
 	if (Stream_GetPosition(s) >= RDS_ORDER_HEADER_LENGTH)
 	{
-		length = xrdp_peek_common_header_length(Stream_Buffer(s));
+		length = freerds_peek_common_header_length(Stream_Buffer(s));
 
 		if (Stream_GetPosition(s) >= length)
 		{
 			position = Stream_GetPosition(s);
 
 			Stream_SetPosition(s, 0);
-			xrdp_read_common_header(s, &common);
+			freerds_read_common_header(s, &common);
 
 			status = freerds_receive_message(connector, s, &common);
 			Stream_SetPosition(s, 0);

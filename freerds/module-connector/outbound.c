@@ -42,8 +42,8 @@ int freerds_client_outbound_synchronize_keyboard_event(rdsModuleConnector* conne
 	s = connector->OutboundStream;
 	Stream_SetPosition(s, 0);
 
-	length = xrdp_write_synchronize_keyboard_event(NULL, &msg);
-	xrdp_write_synchronize_keyboard_event(s, &msg);
+	length = freerds_write_synchronize_keyboard_event(NULL, &msg);
+	freerds_write_synchronize_keyboard_event(s, &msg);
 
 	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), length);
 
@@ -67,8 +67,8 @@ int freerds_client_outbound_scancode_keyboard_event(rdsModuleConnector* connecto
 	s = connector->OutboundStream;
 	Stream_SetPosition(s, 0);
 
-	length = xrdp_write_scancode_keyboard_event(NULL, &msg);
-	xrdp_write_scancode_keyboard_event(s, &msg);
+	length = freerds_write_scancode_keyboard_event(NULL, &msg);
+	freerds_write_scancode_keyboard_event(s, &msg);
 
 	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), length);
 
@@ -91,8 +91,8 @@ int freerds_client_outbound_virtual_keyboard_event(rdsModuleConnector* connector
 	s = connector->OutboundStream;
 	Stream_SetPosition(s, 0);
 
-	length = xrdp_write_virtual_keyboard_event(NULL, &msg);
-	xrdp_write_virtual_keyboard_event(s, &msg);
+	length = freerds_write_virtual_keyboard_event(NULL, &msg);
+	freerds_write_virtual_keyboard_event(s, &msg);
 
 	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), length);
 
@@ -115,8 +115,8 @@ int freerds_client_outbound_unicode_keyboard_event(rdsModuleConnector* connector
 	s = connector->OutboundStream;
 	Stream_SetPosition(s, 0);
 
-	length = xrdp_write_unicode_keyboard_event(NULL, &msg);
-	xrdp_write_unicode_keyboard_event(s, &msg);
+	length = freerds_write_unicode_keyboard_event(NULL, &msg);
+	freerds_write_unicode_keyboard_event(s, &msg);
 
 	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), length);
 
@@ -140,8 +140,8 @@ int freerds_client_outbound_mouse_event(rdsModuleConnector* connector, DWORD fla
 	s = connector->OutboundStream;
 	Stream_SetPosition(s, 0);
 
-	length = xrdp_write_mouse_event(NULL, &msg);
-	xrdp_write_mouse_event(s, &msg);
+	length = freerds_write_mouse_event(NULL, &msg);
+	freerds_write_mouse_event(s, &msg);
 
 	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), length);
 
@@ -165,8 +165,8 @@ int freerds_client_outbound_extended_mouse_event(rdsModuleConnector* connector, 
 	s = connector->OutboundStream;
 	Stream_SetPosition(s, 0);
 
-	length = xrdp_write_extended_mouse_event(NULL, &msg);
-	xrdp_write_extended_mouse_event(s, &msg);
+	length = freerds_write_extended_mouse_event(NULL, &msg);
+	freerds_write_extended_mouse_event(s, &msg);
 
 	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), length);
 
@@ -186,8 +186,8 @@ int freerds_client_outbound_vblank_event(rdsModuleConnector* connector)
 	s = connector->OutboundStream;
 	Stream_SetPosition(s, 0);
 
-	length = xrdp_write_vblank_event(NULL, &msg);
-	xrdp_write_vblank_event(s, &msg);
+	length = freerds_write_vblank_event(NULL, &msg);
+	freerds_write_vblank_event(s, &msg);
 
 	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), length);
 
@@ -225,9 +225,9 @@ int freerds_server_outbound_write_message(rdsModuleConnector* connector, RDS_MSG
 	s = connector->OutboundStream;
 	Stream_SetPosition(s, 0);
 
-	xrdp_server_message_write(NULL, msg);
+	freerds_server_message_write(NULL, msg);
 	Stream_EnsureRemainingCapacity(s, msg->length);
-	xrdp_server_message_write(s, msg);
+	freerds_server_message_write(s, msg);
 
 	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), msg->length);
 

@@ -247,11 +247,11 @@ int rdpup_update(RDS_MSG_COMMON* msg)
 
 		status = freerds_server_outbound_write_message(connector, (RDS_MSG_COMMON*) msg);
 
-		LLOGLN(0, ("rdpup_update: adding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
+		LLOGLN(0, ("rdpup_update: adding %s message (%d)", freerds_server_message_name(msg->type), msg->type));
 	}
 	else
 	{
-		LLOGLN(0, ("rdpup_update: discarding %s message (%d)", xrdp_server_message_name(msg->type), msg->type));
+		LLOGLN(0, ("rdpup_update: discarding %s message (%d)", freerds_server_message_name(msg->type), msg->type));
 	}
 
 	return 0;

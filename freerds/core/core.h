@@ -93,82 +93,82 @@ struct rds_connection
 extern "C" {
 #endif
 
-FREERDP_API int libxrdp_connection_init(rdsConnection* connection, rdpSettings* settings);
-FREERDP_API void libxrdp_connection_uninit(rdsConnection* connection);
+FREERDP_API int freerds_connection_init(rdsConnection* connection, rdpSettings* settings);
+FREERDP_API void freerds_connection_uninit(rdsConnection* connection);
 
-FREERDP_API int libxrdp_send_palette(rdsConnection* connection, int* palette);
+FREERDP_API int freerds_send_palette(rdsConnection* connection, int* palette);
 
-FREERDP_API int libxrdp_send_bell(rdsConnection* connection);
+FREERDP_API int freerds_send_bell(rdsConnection* connection);
 
-FREERDP_API int libxrdp_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT_RECT* msg);
+FREERDP_API int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT_RECT* msg);
 
-FREERDP_API int libxrdp_set_pointer(rdsConnection* connection, RDS_MSG_SET_POINTER* msg);
+FREERDP_API int freerds_set_pointer(rdsConnection* connection, RDS_MSG_SET_POINTER* msg);
 
-FREERDP_API int libxrdp_set_system_pointer(rdsConnection* connection, RDS_MSG_SET_SYSTEM_POINTER* msg);
+FREERDP_API int freerds_set_system_pointer(rdsConnection* connection, RDS_MSG_SET_SYSTEM_POINTER* msg);
 
-FREERDP_API int libxrdp_orders_begin_paint(rdsConnection* connection);
+FREERDP_API int freerds_orders_begin_paint(rdsConnection* connection);
 
-FREERDP_API int libxrdp_orders_end_paint(rdsConnection* connection);
+FREERDP_API int freerds_orders_end_paint(rdsConnection* connection);
 
-FREERDP_API int libxrdp_orders_rect(rdsConnection* connection, int x, int y,
+FREERDP_API int freerds_orders_rect(rdsConnection* connection, int x, int y,
 		int cx, int cy, int color, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_screen_blt(rdsConnection* connection, int x, int y,
+FREERDP_API int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_pat_blt(rdsConnection* connection, int x, int y,
+FREERDP_API int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
 		xrdpBrush* brush, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_dest_blt(rdsConnection* connection,
+FREERDP_API int freerds_orders_dest_blt(rdsConnection* connection,
 		int x, int y, int cx, int cy, int rop, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRect* rect);
+FREERDP_API int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_mem_blt(rdsConnection* connection, int cache_id,
+FREERDP_API int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
 		int srcy, int cache_idx, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect);
+FREERDP_API int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect);
 
-FREERDP_API int libxrdp_orders_send_palette(rdsConnection* connection, int* palette, int cache_id);
+FREERDP_API int freerds_orders_send_palette(rdsConnection* connection, int* palette, int cache_id);
 
-FREERDP_API int libxrdp_orders_send_raw_bitmap(rdsConnection* connection,
+FREERDP_API int freerds_orders_send_raw_bitmap(rdsConnection* connection,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx);
 
-FREERDP_API int libxrdp_orders_send_bitmap(rdsConnection* connection,
+FREERDP_API int freerds_orders_send_bitmap(rdsConnection* connection,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx);
 
-FREERDP_API int libxrdp_orders_send_font(rdsConnection* connection, RDS_MSG_CACHE_GLYPH* msg);
+FREERDP_API int freerds_orders_send_font(rdsConnection* connection, RDS_MSG_CACHE_GLYPH* msg);
 
-FREERDP_API int libxrdp_reset(rdsConnection* connection, RDS_MSG_RESET* msg);
+FREERDP_API int freerds_reset(rdsConnection* connection, RDS_MSG_RESET* msg);
 
-FREERDP_API int libxrdp_orders_send_raw_bitmap2(rdsConnection* connection,
+FREERDP_API int freerds_orders_send_raw_bitmap2(rdsConnection* connection,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx);
 
-FREERDP_API int libxrdp_orders_send_bitmap2(rdsConnection* connection,
+FREERDP_API int freerds_orders_send_bitmap2(rdsConnection* connection,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints);
 
-FREERDP_API int libxrdp_orders_send_bitmap3(rdsConnection* connection,
+FREERDP_API int freerds_orders_send_bitmap3(rdsConnection* connection,
 		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints);
 
-FREERDP_API int libxrdp_orders_send_brush(rdsConnection* connection, int width, int height,
+FREERDP_API int freerds_orders_send_brush(rdsConnection* connection, int width, int height,
 		int bpp, int type, int size, char* data, int cache_id);
 
-FREERDP_API int libxrdp_orders_send_create_os_surface(rdsConnection* connection,
+FREERDP_API int freerds_orders_send_create_os_surface(rdsConnection* connection,
 		CREATE_OFFSCREEN_BITMAP_ORDER* createOffscreenBitmap);
 
-FREERDP_API int libxrdp_orders_send_switch_os_surface(rdsConnection* connection, int id);
+FREERDP_API int freerds_orders_send_switch_os_surface(rdsConnection* connection, int id);
 
-FREERDP_API int libxrdp_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_RECT* msg);
+FREERDP_API int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_RECT* msg);
 
-FREERDP_API int libxrdp_orders_send_frame_marker(rdsConnection* connection, UINT32 action, UINT32 id);
+FREERDP_API int freerds_orders_send_frame_marker(rdsConnection* connection, UINT32 action, UINT32 id);
 
-FREERDP_API int libxrdp_window_new_update(rdsConnection* connection, RDS_MSG_WINDOW_NEW_UPDATE* msg);
+FREERDP_API int freerds_window_new_update(rdsConnection* connection, RDS_MSG_WINDOW_NEW_UPDATE* msg);
 
-FREERDP_API int libxrdp_window_delete(rdsConnection* connection, RDS_MSG_WINDOW_DELETE* msg);
+FREERDP_API int freerds_window_delete(rdsConnection* connection, RDS_MSG_WINDOW_DELETE* msg);
 
 #ifdef __cplusplus
 }

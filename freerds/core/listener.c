@@ -31,27 +31,27 @@
 #include <sys/select.h>
 #include <sys/signal.h>
 
-void xrdp_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
+void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 {
-	xrdp_process_create(client);
+	freerds_connection_create(client);
 }
 
-xrdpListener* xrdp_listen_create(void)
+xrdpListener* freerds_listener_create(void)
 {
 	freerdp_listener* listener;
 
 	listener = freerdp_listener_new();
-	listener->PeerAccepted = xrdp_peer_accepted;
+	listener->PeerAccepted = freerds_peer_accepted;
 
 	return (xrdpListener*) listener;
 }
 
-void xrdp_listen_delete(xrdpListener* self)
+void freerds_listener_delete(xrdpListener* self)
 {
 	freerdp_listener_free((freerdp_listener*) self);
 }
 
-int xrdp_listen_main_loop(xrdpListener* self)
+int freerds_listener_main_loop(xrdpListener* self)
 {
 	DWORD status;
 	DWORD nCount;

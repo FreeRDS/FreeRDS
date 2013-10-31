@@ -98,7 +98,7 @@ static int verify_pam_conv(int num_msg, const struct pam_message **msg, struct p
 	return PAM_SUCCESS;
 }
 
-long xrdp_authenticate(char* username, char* password, int* errorcode)
+long freerds_authenticate(char* username, char* password, int* errorcode)
 {
 	int error;
 	char service_name[256];

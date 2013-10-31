@@ -55,7 +55,7 @@ COMMAND_LINE_ARGUMENT_A freerds_args[] =
 	{ NULL, 0, NULL, NULL, NULL, -1, NULL, NULL }
 };
 
-void xrdp_shutdown(int sig)
+void freerds_shutdown(int sig)
 {
 	DWORD threadId;
 
@@ -88,8 +88,7 @@ HANDLE g_get_term_event(void)
 
 void pipe_sig(int sig_num)
 {
-	/* do nothing */
-	printf("got XRDP SIGPIPE(%d)\n", sig_num);
+	printf("FreeRDS SIGPIPE (%d)\n", sig_num);
 }
 
 int main(int argc, char** argv)
@@ -253,12 +252,12 @@ int main(int argc, char** argv)
 		/* end of daemonizing code */
 	}
 
-	g_listen = xrdp_listen_create();
+	g_listen = freerds_listener_create();
 
-	signal(SIGINT, xrdp_shutdown);
-	signal(SIGKILL, xrdp_shutdown);
+	signal(SIGINT, freerds_shutdown);
+	signal(SIGKILL, freerds_shutdown);
 	signal(SIGPIPE, pipe_sig);
-	signal(SIGPIPE, xrdp_shutdown);
+	signal(SIGPIPE, freerds_shutdown);
 
 	pid = GetCurrentProcessId();
 
@@ -267,8 +266,8 @@ int main(int argc, char** argv)
 	freerds_icp_start();
 	printf("connected to session manager\n");
 
-	xrdp_listen_main_loop(g_listen);
-	xrdp_listen_delete(g_listen);
+	freerds_listener_main_loop(g_listen);
+	freerds_listener_delete(g_listen);
 
 	CloseHandle(g_TermEvent);
 
