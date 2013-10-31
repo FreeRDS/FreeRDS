@@ -35,3 +35,7 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+if(WITH_X11RDP)
+	add_subdirectory(service)
+endif()

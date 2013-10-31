@@ -112,10 +112,6 @@ add_subdirectory(freerds)
 
 add_subdirectory(instfiles)
 
-if(WITH_X11RDP)
-	add_subdirectory(xorg)
-endif()
-
 add_subdirectory(session-manager)
 
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.10")
