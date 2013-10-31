@@ -37,6 +37,8 @@
 #include <sys/select.h>
 #include <sys/signal.h>
 
+#include <freerds/module_connector.h>
+#include <freerds/icp_client_stubs.h>
 #include "makecert.h"
 
 #include "xrdp_channels.h"
@@ -154,6 +156,7 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	rdsConnection* connection = (rdsConnection*) client->context;
 	int auth_status;
 	int error_code;
+	HANDLE hClientPipe;
 
 	settings = client->settings;
 	settings->BitmapCacheVersion = 2;
@@ -169,7 +172,22 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (!connection->connector)
 		connection->connector = freerds_module_connector_new(connection);
 
+	error_code = freerds_icp_GetUserSession(settings->Username, settings->Domain, &(connection->connector->SessionId), &(connection->connector->Endpoint));
+	if (error_code != 0)
+	{
+		printf("freerds_icp_GetUserSession failed %d\n", error_code);
+		return FALSE;
+	}
+	hClientPipe = freerds_named_pipe_connect(connection->connector->Endpoint, 20);
 
+	if (!hClientPipe)
+	{
+		fprintf(stderr, "Failed to create named pipe %s\n", connection->connector->Endpoint);
+		return FALSE;
+	}
+	printf("Connected to session %d\n", connection->connector->SessionId);
+
+	connection->connector->hClientPipe = hClientPipe;
 	connection->connector->GetEventHandles = xrdp_client_get_event_handles;
 	connection->connector->CheckEventHandles = xrdp_client_check_event_handles;
 

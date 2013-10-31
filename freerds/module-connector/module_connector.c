@@ -29,7 +29,6 @@
 #include <winpr/thread.h>
 #include <winpr/synch.h>
 
-
 rdsModuleConnector* freerds_module_connector_new(rdsConnection* connection)
 {
 	rdpSettings* settings;
@@ -37,12 +36,8 @@ rdsModuleConnector* freerds_module_connector_new(rdsConnection* connection)
 
 	settings = connection->settings;
 
-
 	connector = (rdsModuleConnector*) malloc(sizeof(rdsModuleConnector));
 	ZeroMemory(connector, sizeof(rdsModuleConnector));
-
-	// htbd
-	connector->SessionId = 10;
 
 	connector->connection = connection;
 	connector->settings = connection->settings;

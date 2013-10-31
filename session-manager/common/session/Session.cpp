@@ -83,7 +83,6 @@ namespace freerds{
 				struct passwd* pwnam;
 				char envstr[256];
 
-
 				if (mUsername.length() == 0 ) {
 					 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed, no username!");
 					return false;
@@ -99,8 +98,6 @@ namespace freerds{
 					 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed to get userinformation (getpwnam) for username %s!",mUsername.c_str());
 					return false;
 				}
-				mpEnvBlock = GetEnvironmentStrings();
-
 
 				sprintf_s(envstr, sizeof(envstr), "%d", (int) pwnam->pw_uid);
 				SetEnvironmentVariableEBA(&mpEnvBlock,"UID",envstr);

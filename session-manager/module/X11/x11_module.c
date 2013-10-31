@@ -78,6 +78,7 @@ void x11_rds_module_reset_process_informations(rdsModuleX11* module) {
 RDS_MODULE_COMMON * x11_rds_module_new(void )
 {
 	rdsModuleX11 * module = (rdsModuleX11*) malloc(sizeof(rdsModuleX11));
+	ZeroMemory(module, sizeof(rdsModuleX11));
 
 	x11_rds_module_reset_process_informations(module);
 
@@ -136,7 +137,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	pwnam = getpwnam(x11->commonModule.userName);
 
 
-	sprintf_s(envstr, sizeof(envstr), ":%d", (int) SessionId);
+	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (SessionId+10));
 	SetEnvironmentVariableEBA(x11->commonModule.envBlock,"DISPLAY",envstr);
 
 	if (!gGetPropertyNumber(x11->commonModule.sessionId,"module.x11.xres",&xres)) {
@@ -151,25 +152,23 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 		colordepth = 24;
 	}
 
-
 	x11_rds_module_reset_process_informations(x11);
 
-	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds",
+	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
 			"X11rdp", (int) (SessionId+10), xres, yres, colordepth);
 
 	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
+			NULL, NULL, FALSE, 0, *(x11->commonModule.envBlock), NULL,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
 	fprintf(stderr, "Process started: %d\n", status);
 
-	//hClientPipe = freerds_named_pipe_connect(SessionId, "X11",5 * 1000);
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
 		fprintf(stderr, "WaitNamedPipe failure: %s\n", pipeName);
 		return NULL;
 	}
-
+#if 0
 	hClientPipe = CreateFileA(pipeName,
 			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
@@ -178,12 +177,12 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 		fprintf(stderr, "Failed to create named pipe %s\n", pipeName);
 		return NULL;
 	}
-
 	CloseHandle(hClientPipe);
+#endif
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken,
 			NULL, "startwm.sh",
-			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
+			NULL, NULL, FALSE, 0, *(x11->commonModule.envBlock), NULL,
 			&(x11->WMStartupInfo), &(x11->WMProcessInformation));
 
 	fprintf(stderr, "User process started: %d\n", status);
