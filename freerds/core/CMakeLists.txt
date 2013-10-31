@@ -27,7 +27,6 @@ find_feature(PAM ${PAM_FEATURE_TYPE} ${PAM_FEATURE_PURPOSE} ${PAM_FEATURE_DESCRI
 include_directories(${PAM_INCLUDE_DIR})
 
 include_directories(".")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../common")
 include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
 set(${MODULE_PREFIX}_SRCS
@@ -50,8 +49,6 @@ set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
 
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
-
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-common)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}

@@ -28,13 +28,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <signal.h>
 
 #include "freerds.h"
 
 #include <freerds/icp.h>
-
-#include "os_calls.h"
 
 #include <winpr/crt.h>
 #include <winpr/path.h>
@@ -95,8 +94,8 @@ void pipe_sig(int sig_num)
 
 int main(int argc, char** argv)
 {
-	int fd;
 	int pid;
+	FILE* fd;
 	int status;
 	DWORD flags;
 	int no_daemon;
@@ -145,14 +144,14 @@ int main(int argc, char** argv)
 	{
 		printf("stopping FreeRDS\n");
 
-		fd = -1;
+		fd = NULL;
 
 		if (PathFileExistsA(pid_file))
 		{
-			fd = g_file_open(pid_file);
+			fd = fopen(pid_file, "r");
 		}
 
-		if (fd == -1)
+		if (!fd)
 		{
 			printf("problem opening freerds.pid [%s]\n", pid_file);
 			printf("maybe its not running\n");
@@ -160,7 +159,7 @@ int main(int argc, char** argv)
 		else
 		{
 			ZeroMemory(text, 32);
-			g_file_read(fd, (unsigned char*) text, 31);
+			fread((void*) text, 31, 1, fd);
 			pid = atoi(text);
 			printf("stopping process id %d\n", pid);
 
@@ -169,41 +168,43 @@ int main(int argc, char** argv)
 				kill(pid, SIGTERM);
 			}
 
-			g_file_close(fd);
+			fclose(fd);
 		}
 
-		g_exit(0);
+		return 0;
 	}
 
 	if (PathFileExistsA(pid_file))
 	{
 		printf("It looks like FreeRDS is already running,\n");
 		printf("if not delete the freerds.pid file and try again\n");
-		g_exit(0);
+		return 0;
 	}
 
 	if (!no_daemon)
 	{
+		if (!PathFileExistsA(FREERDS_VAR_PATH))
+			CreateDirectoryA(FREERDS_VAR_PATH, NULL);
 
-		/* make sure containing directory exists */
-		g_create_path(pid_file);
+		if (!PathFileExistsA(FREERDS_PID_PATH))
+			CreateDirectoryA(FREERDS_PID_PATH, NULL);
 
 		/* make sure we can write to pid file */
-		fd = g_file_open(pid_file);
+		fd = fopen(pid_file, "w+");
 
-		if (fd == -1)
+		if (!fd)
 		{
 			printf("running in daemon mode with no access to pid files, quitting\n");
-			g_exit(0);
+			return 0;
 		}
 
-		if (g_file_write(fd, (unsigned char*) "0", 1) == -1)
+		if (fwrite((void*) "0", 1, 1, fd) == -1)
 		{
 			printf("running in daemon mode with no access to pid files, quitting\n");
-			g_exit(0);
+			return 0;
 		}
 
-		g_file_close(fd);
+		fclose(fd);
 		DeleteFileA(pid_file);
 	}
 
@@ -215,23 +216,22 @@ int main(int argc, char** argv)
 		if (pid == -1)
 		{
 			printf("problem forking\n");
-			g_exit(1);
+			return 1;
 		}
 
 		if (0 != pid)
 		{
 			printf("process %d started\n", pid);
-			/* exit, this is the main process */
-			g_exit(0);
+			return 0;
 		}
 
 		Sleep(1000);
 
 		/* write the pid to file */
 		pid = GetCurrentProcessId();
-		fd = g_file_open(pid_file);
+		fd = fopen(pid_file, "w+");
 
-		if (fd == -1)
+		if (!fd)
 		{
 			printf("trying to write process id to freerds.pid\n");
 			printf("problem opening freerds.pid\n");
@@ -239,17 +239,17 @@ int main(int argc, char** argv)
 		else
 		{
 			sprintf_s(text, sizeof(text), "%d", pid);
-			g_file_write(fd, (unsigned char*) text, strlen(text));
-			g_file_close(fd);
+			fwrite((void*) text, strlen(text), 1, fd);
+			fclose(fd);
 		}
 
 		Sleep(1000);
-		g_file_close(0);
-		g_file_close(1);
-		g_file_close(2);
-		g_file_open("/dev/null");
-		g_file_open("/dev/null");
-		g_file_open("/dev/null");
+		close(0);
+		close(1);
+		close(2);
+		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		/* end of daemonizing code */
 	}
 
