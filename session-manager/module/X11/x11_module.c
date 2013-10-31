@@ -104,8 +104,8 @@ void x11_rds_module_free(RDS_MODULE_COMMON * module)
 char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 {
 	BOOL status;
-	HANDLE hClientPipe;
 	DWORD SessionId;
+	DWORD displayNum;
 	char envstr[256];
 	rdsModuleX11* x11;
 	struct passwd* pwnam;
@@ -119,10 +119,10 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	x11 = (rdsModuleX11*) module;
 
 	SessionId = x11->commonModule.sessionId;
+	displayNum = SessionId+10;
 
-	//freerds_named_pipe_clean(SessionId, "X11rdp");
 	pipeName = (char *)malloc(256);
-	sprintf_s(pipeName, 256, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId+10, "X11");
+	sprintf_s(pipeName, 256, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, "X11");
 
 	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
 
@@ -137,7 +137,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	pwnam = getpwnam(x11->commonModule.userName);
 
 
-	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (SessionId+10));
+	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (displayNum));
 	SetEnvironmentVariableEBA(x11->commonModule.envBlock,"DISPLAY",envstr);
 
 	if (!gGetPropertyNumber(x11->commonModule.sessionId,"module.x11.xres",&xres)) {
@@ -155,7 +155,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	x11_rds_module_reset_process_informations(x11);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
-			"X11rdp", (int) (SessionId+10), xres, yres, colordepth);
+			"X11rdp", (int) (displayNum), xres, yres, colordepth);
 
 	status = CreateProcessA(NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, *(x11->commonModule.envBlock), NULL,
