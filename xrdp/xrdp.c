@@ -262,7 +262,6 @@ int main(int argc, char** argv)
 	printf("starting icp and waiting for session manager \n");
 	freerds_icp_start();
 	printf("connected to session manager\n");
-	freerds_icp_GetUserSession("demo1","HUG",&sessionid,&pipe);
 
 	xrdp_listen_main_loop(g_listen);
 	xrdp_listen_delete(g_listen);
