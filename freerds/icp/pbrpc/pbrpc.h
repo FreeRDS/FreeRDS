@@ -24,7 +24,7 @@
 
 #include "pbrpc_transport.h"
 
-#define PBRPC_TIMEOUT 2000
+#define PBRPC_TIMEOUT 10000
 
 typedef struct pbrpc_method pbRPCMethod;
 
