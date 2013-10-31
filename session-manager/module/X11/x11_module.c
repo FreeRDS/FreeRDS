@@ -45,6 +45,7 @@
 #include <winpr/stream.h>
 #include <winpr/sspicli.h>
 #include <winpr/environment.h>
+#include <freerds/freerds.h>
 
 #include "x11_module.h"
 
@@ -122,7 +123,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	displayNum = SessionId+10;
 
 	pipeName = (char *)malloc(256);
-	sprintf_s(pipeName, 256, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, "X11");
+	freerds_named_pipe_get_endpoint_name(displayNum, "X11", pipeName, 256);
 
 	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
 
