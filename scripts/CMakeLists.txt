@@ -15,10 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp.sh.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp.sh)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/freerds.sh.in ${CMAKE_CURRENT_SOURCE_DIR}/freerds.sh)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/freerds.service.in ${CMAKE_CURRENT_SOURCE_DIR}/freerds.service)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng.service.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng.service)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng-sesman.service.in ${CMAKE_CURRENT_SOURCE_DIR}/xrdp-ng-sesman.service)
-
-install(PROGRAMS "xrdp.sh" DESTINATION ${FREERDS_CFG_PATH})
+install(PROGRAMS "freerds.sh" DESTINATION ${FREERDS_CFG_PATH})
 install(PROGRAMS "startwm.sh" DESTINATION ${FREERDS_CFG_PATH})

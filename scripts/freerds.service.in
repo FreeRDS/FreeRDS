@@ -1,0 +1,14 @@
+[Unit]
+Description=FreeRDS daemon
+After=syslog.target network.target
+
+[Service]
+Type=forking
+PIDFile=${FREERDS_PID_PATH}/freerds.pid
+EnvironmentFile=/etc/sysconfig/freerds
+ExecStart=${FREERDS_SBIN_PATH}/freerds $FREERDS_OPTIONS
+ExecStop=${FREERDS_SBIN_PATH}/freerds $FREERDS_OPTIONS --kill
+
+[Install]
+WantedBy=multi-user.target
+

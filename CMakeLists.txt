@@ -110,7 +110,7 @@ add_subdirectory(include)
 
 add_subdirectory(freerds)
 
-add_subdirectory(instfiles)
+add_subdirectory(scripts)
 
 add_subdirectory(session-manager)
 
