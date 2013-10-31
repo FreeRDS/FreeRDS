@@ -445,7 +445,10 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_VBLANK_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				xrdp_read_vblank_event(s, &msg);
-				status = client->VBlankEvent(connector);
+				if (client->VBlankEvent)
+					status = client->VBlankEvent(connector);
+				else
+					status = 0;
 			}
 			break;
 
