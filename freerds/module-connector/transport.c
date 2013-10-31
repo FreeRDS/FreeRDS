@@ -81,6 +81,11 @@ int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length)
 	return TotalNumberOfBytesWritten;
 }
 
+void freerds_named_pipe_get_endpoint_name(DWORD id, const char *endpoint, char *dest, int len)
+{
+	sprintf_s(dest, len, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) id, endpoint);
+}
+
 int freerds_named_pipe_clean(const char* pipeName)
 {
 	int status = 0;
@@ -99,12 +104,10 @@ int freerds_named_pipe_clean(const char* pipeName)
 
 }
 
-int freerds_named_pipe_clean_endpoint(DWORD SessionId, const char* endpoint)
+int freerds_named_pipe_clean_endpoint(DWORD id, const char* endpoint)
 {
-	char pipeName[256];
-
-	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
-
+	char pipeName[255];
+	freerds_named_pipe_get_endpoint_name(id, endpoint, pipeName, 255);
 	return freerds_named_pipe_clean(pipeName);
 }
 
@@ -131,11 +134,10 @@ HANDLE freerds_named_pipe_connect(const char* pipeName, DWORD nTimeOut)
 
 }
 
-HANDLE freerds_named_pipe_connect_endpoint(DWORD SessionId, const char* endpoint, DWORD nTimeOut)
+HANDLE freerds_named_pipe_connect_endpoint(DWORD id, const char* endpoint, DWORD nTimeOut)
 {
-	char pipeName[256];
-
-	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
+	char pipeName[255];
+	freerds_named_pipe_get_endpoint_name(id, endpoint, pipeName, 255);
 	return freerds_named_pipe_connect(pipeName, nTimeOut);
 }
 
@@ -157,12 +159,10 @@ HANDLE freerds_named_pipe_create(const char* pipeName)
 
 }
 
-HANDLE freerds_named_pipe_create_endpoint(DWORD SessionId, const char* endpoint)
+HANDLE freerds_named_pipe_create_endpoint(DWORD id, const char* endpoint)
 {
-	char pipeName[256];
-
-	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
-
+	char pipeName[255];
+	freerds_named_pipe_get_endpoint_name(id, endpoint, pipeName, 255);
 	return freerds_named_pipe_create(pipeName);
 }
 
