@@ -20,7 +20,7 @@
 #include "config.h"
 #endif
 
-#include "xrdp.h"
+#include "freerds.h"
 
 #include <winpr/pipe.h>
 #include <winpr/path.h>

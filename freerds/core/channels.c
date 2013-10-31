@@ -21,7 +21,8 @@
 #include "config.h"
 #endif
 
-#include "xrdp_channels.h"
+#include "channels.h"
+
 #include <freerds/icp_client_stubs.h>
 
 int xrdp_channels_post_connect(rdsConnection* session)

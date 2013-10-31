@@ -36,7 +36,7 @@
 
 #include <freerds/freerds.h>
 
-#include "xrdp.h"
+#include "freerds.h"
 
 struct xrdp_brush
 {

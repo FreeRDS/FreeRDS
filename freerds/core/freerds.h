@@ -38,7 +38,7 @@
 
 typedef struct xrdp_listener xrdpListener;
 
-#include "xrdp_core.h"
+#include "core.h"
 
 int g_is_term(void);
 void g_set_term(int in_val);

@@ -31,7 +31,7 @@ set(${MODULE_PREFIX}_SRCS
 	module_connector.c
 	)
 
-include_directories(../../xrdp)
+include_directories(../core)
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS

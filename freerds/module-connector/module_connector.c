@@ -23,7 +23,7 @@
 #include "config.h"
 #endif
 
-#include "xrdp.h"
+#include "freerds.h"
 #include <freerds/module_connector.h>
 #include <winpr/wtypes.h>
 #include <winpr/thread.h>

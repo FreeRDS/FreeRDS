@@ -16,7 +16,7 @@
 # limitations under the License.
 
 set(MODULE_NAME "freerds")
-set(MODULE_PREFIX "FREERDP_XRDP")
+set(MODULE_PREFIX "FREERDS_CORE")
 
 set(PAM_FEATURE_TYPE "REQUIRED")
 set(PAM_FEATURE_PURPOSE "authentication")
@@ -27,24 +27,22 @@ find_feature(PAM ${PAM_FEATURE_TYPE} ${PAM_FEATURE_PURPOSE} ${PAM_FEATURE_DESCRI
 include_directories(${PAM_INCLUDE_DIR})
 
 include_directories(".")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../common")
 include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
 set(${MODULE_PREFIX}_SRCS
-	xrdp.c
-	xrdp_auth.c
-	xrdp_core.c
-	xrdp_core.h
-	xrdp_channels.c
-	xrdp_channels.h
-	xrdp_listener.c
-	xrdp_pipeline.c
-	xrdp_process.c
-	xrdp_client_module.c
-	xrdp_server_module.c)
-
-set(${MODULE_PREFIX}_CFG_DATA
-	xrdp.ini)
+	freerds.c
+	freerds.h
+	auth.c
+	core.c
+	core.h
+	channels.c
+	channels.h
+	listener.c
+	pipeline.c
+	process.c
+	client_module.c
+	server_module.c)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
@@ -74,6 +72,3 @@ list(APPEND ${MODULE_PREFIX}_LIBS winpr-makecert-tool)
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
-
-install(FILES ${${MODULE_PREFIX}_CFG_DATA} DESTINATION ${RDS_CFG_PATH})
-

@@ -21,7 +21,7 @@
 #include "config.h"
 #endif
 
-#include "xrdp.h"
+#include "freerds.h"
 
 int xrdp_server_message_enqueue(rdsModuleConnector* connector, RDS_MSG_COMMON* msg)
 {

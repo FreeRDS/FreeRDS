@@ -28,7 +28,7 @@
 
 #include <security/pam_appl.h>
 
-#include "xrdp.h"
+#include "freerds.h"
 
 struct t_user_pass
 {

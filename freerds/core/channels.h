@@ -20,7 +20,7 @@
 #ifndef RDS_NG_CHANNELS_H
 #define RDS_NG_CHANNELS_H
 
-#include "xrdp.h"
+#include "freerds.h"
 
 #include <freerds/freerds.h>
 

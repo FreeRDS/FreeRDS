@@ -22,7 +22,8 @@
 #include "config.h"
 #endif
 
-#include "xrdp.h"
+#include "freerds.h"
+
 #include <freerds/icp.h>
 
 #include "os_calls.h"

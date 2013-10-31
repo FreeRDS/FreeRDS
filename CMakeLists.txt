@@ -110,7 +110,6 @@ add_subdirectory(include)
 add_subdirectory(freerds)
 
 add_subdirectory(common)
-add_subdirectory(xrdp)
 add_subdirectory(instfiles)
 
 if(WITH_X11RDP)

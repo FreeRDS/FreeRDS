@@ -22,7 +22,7 @@
 #include "config.h"
 #endif
 
-#include "xrdp.h"
+#include "freerds.h"
 
 #include <winpr/crt.h>
 #include <winpr/file.h>
@@ -41,7 +41,7 @@
 #include <freerds/icp_client_stubs.h>
 #include "makecert.h"
 
-#include "xrdp_channels.h"
+#include "channels.h"
 
 void xrdp_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {

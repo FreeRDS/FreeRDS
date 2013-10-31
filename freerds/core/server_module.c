@@ -30,7 +30,7 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 
-#include "xrdp.h"
+#include "freerds.h"
 
 int freerds_client_inbound_begin_update(rdsModuleConnector* connector, RDS_MSG_BEGIN_UPDATE* msg)
 {
