@@ -22,9 +22,8 @@
 #include "config.h"
 #endif
 
-#include "os_calls.h"
-
 #include <winpr/crt.h>
+#include <winpr/path.h>
 
 #include <security/pam_appl.h>
 
@@ -49,9 +48,9 @@ static void get_service_name(char* service_name)
 {
 	service_name[0] = 0;
 
-	if (g_file_exist("/etc/pam.d/xrdp-ng-sesman"))
+	if (PathFileExistsA("/etc/pam.d/freerds"))
 	{
-		strncpy(service_name, "xrdp-ng-sesman", 255);
+		strncpy(service_name, "freerds", 255);
 	}
 	else
 	{
@@ -65,7 +64,12 @@ static int verify_pam_conv(int num_msg, const struct pam_message **msg, struct p
 	struct pam_response* reply;
 	struct t_user_pass* user_pass;
 
-	reply = g_malloc(sizeof(struct pam_response) * num_msg, 1);
+	reply = malloc(sizeof(struct pam_response) * num_msg);
+
+	if (!reply)
+		return -1;
+
+	ZeroMemory(reply, sizeof(struct pam_response) * num_msg);
 
 	for (i = 0; i < num_msg; i++)
 	{
