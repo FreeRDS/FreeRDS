@@ -91,8 +91,6 @@ int main(int argc, char** argv)
 	char pid_file[256];
 	char cfg_file[256];
 	COMMAND_LINE_ARGUMENT_A* arg;
-	long sessionid;
-	char * pipe;
 
 	g_init("xrdp");
 

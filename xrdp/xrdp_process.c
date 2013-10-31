@@ -172,7 +172,8 @@ BOOL xrdp_peer_activate(freerdp_peer* client)
 	if (!connection->connector)
 		connection->connector = freerds_module_connector_new(connection);
 
-	error_code = freerds_icp_GetUserSession(settings->Username, settings->Domain, &(connection->connector->SessionId), &(connection->connector->Endpoint));
+	error_code = freerds_icp_GetUserSession(settings->Username, settings->Domain,
+	(UINT32 *)(&(connection->connector->SessionId)), (&(connection->connector->Endpoint)));
 	if (error_code != 0)
 	{
 		printf("freerds_icp_GetUserSession failed %d\n", error_code);
