@@ -32,9 +32,13 @@
 
 #include "rdp_module.h"
 
+pgetPropertyBool gGetPropertyBool;
+pgetPropertyNumber gGetPropertyNumber;
+pgetPropertyString gGetPropertyString;
+
 struct rds_module_rdp
 {
-	rdsModuleConnector connector;
+	RDS_MODULE_COMMON commonModule;
 
 	wLog* log;
 	STARTUPINFO si;
@@ -46,25 +50,25 @@ struct rds_module_rdp
 };
 typedef struct rds_module_rdp rdsModuleRdp;
 
-int rdp_rds_module_new(void * module)
+RDS_MODULE_COMMON * rdp_rds_module_new(void )
 {
 	rdsModuleRdp* rdp;
 
 	WLog_Init();
 
-	rdp = (rdsModuleRdp*) module;
+	rdp = (rdsModuleRdp *) malloc(sizeof(rdsModuleRdp));
 
-	rdp->log = WLog_Get("com.freerds.module.rdp.connector");
+	rdp->log = WLog_Get("com.freerds.module.rdp");
 	WLog_OpenAppender(rdp->log);
 
 	WLog_SetLogLevel(rdp->log, WLOG_DEBUG);
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleNew");
 
-	return 0;
+	return (RDS_MODULE_COMMON *)rdp;
 }
 
-void rdp_rds_module_free(void * module)
+void rdp_rds_module_free(RDS_MODULE_COMMON * module)
 {
 	rdsModuleRdp* rdp;
 
@@ -73,33 +77,41 @@ void rdp_rds_module_free(void * module)
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleFree");
 
 	WLog_Uninit();
+	free(rdp);
 }
 
-int rdp_rds_module_start(void * module)
+char * rdp_rds_module_start(RDS_MODULE_COMMON * module)
 {
 	BOOL status;
 	rdsModuleRdp* rdp;
-	rdpSettings* settings;
-	rdsModuleConnector* connector;
 
 	char lpCommandLine[256];
 	const char* endpoint = "RDP";
+	long xres,yres;
+	char *pipeName = (char *)malloc(256);
 
 	rdp = (rdsModuleRdp*) module;
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
-			(int) rdp->SessionId, endpoint);
+			(int) rdp->commonModule.sessionId, endpoint);
 
-	settings = connector->settings;
-
-	freerds_named_pipe_clean_endpoint(rdp->SessionId, endpoint);
+	freerds_named_pipe_get_endpoint_name((int)rdp->commonModule.sessionId, endpoint, pipeName, 256);
+	freerds_named_pipe_clean(pipeName);
 
 	ZeroMemory(&(rdp->si), sizeof(STARTUPINFO));
 	rdp->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(rdp->pi), sizeof(PROCESS_INFORMATION));
 
+	if (!gGetPropertyNumber(rdp->commonModule.sessionId,"module.rdp.xres",&xres)) {
+		xres = 1024;
+	}
+
+	if (!gGetPropertyNumber(rdp->commonModule.sessionId,"module.rdp.yres",&yres)) {
+		yres = 768;
+	}
+
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /session-id:%d /size:%dx%d",
-			"freerds-rdp", (int) rdp->SessionId, settings->DesktopWidth, settings->DesktopHeight);
+			"freerds-rdp", (int) rdp->SessionId, xres, yres);
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
@@ -109,31 +121,16 @@ int rdp_rds_module_start(void * module)
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Process created with status: %d", status);
 
-	rdp->hClientPipe = freerds_named_pipe_connect_endpoint(rdp->SessionId, "RDP", 5 * 1000);
-
-	if (!rdp->hClientPipe)
-	{
-		WLog_Print(rdp->log, WLOG_ERROR, "Failed to connect to service");
-		return -1;
-	}
-
-	return 0;
+	return pipeName;
 }
 
-int rdp_rds_module_stop(void * module)
+int rdp_rds_module_stop(RDS_MODULE_COMMON * module)
 {
 	rdsModuleRdp* rdp;
-	rdsModuleConnector* connector;
-
-
 
 	rdp = (rdsModuleRdp*) module;
-	connector = (rdsModuleConnector*) module;
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStop");
-
-	SetEvent(connector->StopEvent);
-
 	return 0;
 }
 
@@ -148,6 +145,9 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Start = rdp_rds_module_start;
 	pEntryPoints->Stop = rdp_rds_module_stop;
 
+	gGetPropertyBool = pEntryPoints->getPropertyBool;
+	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
+	gGetPropertyString = pEntryPoints->getPropertyString;
+
 	return 0;
 }
-
