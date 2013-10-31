@@ -71,7 +71,8 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 	if (npt > 1)
 	{
-		segs = (xSegment*) g_malloc(sizeof(xSegment) * nseg, 0);
+		segs = (xSegment*) malloc(sizeof(xSegment) * nseg);
+
 		segs[0].x1 = pptInit[0].x + pDrawable->x;
 		segs[0].y1 = pptInit[0].y + pDrawable->y;
 

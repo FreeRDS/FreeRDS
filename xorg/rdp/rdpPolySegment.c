@@ -65,7 +65,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 
 	if (nseg) /* get the rects */
 	{
-		segs = (xSegment*) g_malloc(nseg * sizeof(xSegment), 0);
+		segs = (xSegment*) malloc(nseg * sizeof(xSegment));
 
 		for (i = 0; i < nseg; i++)
 		{

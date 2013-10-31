@@ -200,10 +200,6 @@ typedef rdpPixmapRec* rdpPixmapPtr;
 #define GETPIXPRIV(_pPixmap) \
 		(rdpPixmapPtr)dixGetPrivateAddr(&(_pPixmap->devPrivates), &g_rdpPixmapIndex)
 
-/* rdpmisc.c */
-
-#include "os_calls.h"
-
 void rdpLog(char *format, ...);
 int rdpBitsPerPixel(int depth);
 void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt);

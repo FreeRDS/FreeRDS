@@ -277,14 +277,16 @@ void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 	pKeySyms->minKeyCode = MIN_KEY_CODE;
 	pKeySyms->maxKeyCode = MAX_KEY_CODE;
 	pKeySyms->mapWidth = GLYPHS_PER_KEY;
-	i = sizeof(KeySym) * MAP_LENGTH * GLYPHS_PER_KEY;
-	pKeySyms->map = (KeySym *)g_malloc(i, 1);
 
-	if (pKeySyms->map == 0)
+	pKeySyms->map = (KeySym*) malloc(sizeof(KeySym) * MAP_LENGTH * GLYPHS_PER_KEY);
+
+	if (!pKeySyms->map)
 	{
-		rdpLog("KbdDeviceInit g_malloc failed\n");
+		rdpLog("KbdDeviceInit malloc failed\n");
 		exit(1);
 	}
+
+	ZeroMemory(pKeySyms->map, sizeof(KeySym) * MAP_LENGTH * GLYPHS_PER_KEY);
 
 	for (i = 0; i < MAP_LENGTH * GLYPHS_PER_KEY; i++)
 	{

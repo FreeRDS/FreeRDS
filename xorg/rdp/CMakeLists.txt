@@ -223,7 +223,6 @@ add_library("sync-static" STATIC IMPORTED)
 set_property(TARGET "sync-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/miext/sync/.libs/libsync.a")
 
 set(${MODULE_PREFIX}_INCLUDES
-	"../../common"
 	"${XSRCBASE}/include"
 	"${XSRCBASE}/Xext"
 	"${XSRCBASE}/composite"
@@ -256,7 +255,6 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MODULE winpr
 	MODULES winpr-thread winpr-synch winpr-pipe winpr-input winpr-utils)
 
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-common)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
 
 set(${MODULE_PREFIX}_STATIC_LIBS

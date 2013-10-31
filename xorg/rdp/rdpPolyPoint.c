@@ -66,7 +66,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 	if (npt > 32)
 	{
-		pts = (DDXPointPtr) g_malloc(sizeof(DDXPointRec) * npt, 0);
+		pts = (DDXPointPtr) malloc(sizeof(DDXPointRec) * npt);
 	}
 	else
 	{

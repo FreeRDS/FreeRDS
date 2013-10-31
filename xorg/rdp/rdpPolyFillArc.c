@@ -67,7 +67,8 @@ void rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 	if (narcs > 0)
 	{
-		rects = (xRectangle*) g_malloc(narcs * sizeof(xRectangle), 0);
+		rects = (xRectangle*) malloc(narcs * sizeof(xRectangle));
+
 		lw = pGC->lineWidth;
 
 		if (lw == 0)

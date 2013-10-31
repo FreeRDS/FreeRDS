@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "rdp.h"
 #include "rdpdraw.h"
 
+#include <winpr/crt.h>
+
 #define LDEBUG 0
 
 #define LOG_LEVEL 1
@@ -68,7 +70,8 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 
 	if (narcs > 0)
 	{
-		rects = (xRectangle*) g_malloc(narcs * sizeof(xRectangle), 0);
+		rects = (xRectangle*) malloc(narcs * sizeof(xRectangle));
+
 		lw = pGC->lineWidth;
 
 		if (lw == 0)

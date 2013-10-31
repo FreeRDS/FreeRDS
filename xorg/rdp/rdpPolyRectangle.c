@@ -70,7 +70,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 	LLOGLN(10, ("rdpPolyRectangle:"));
 
 	/* make a copy of rects */
-	rect1 = (xRectangle*) g_malloc(sizeof(xRectangle) * nrects, 0);
+	rect1 = (xRectangle*) malloc(sizeof(xRectangle) * nrects);
 
 	for (i = 0; i < nrects; i++)
 	{
@@ -112,7 +112,8 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 	if ((cd != 0) && (nrects > 0))
 	{
-		regRects = (xRectangle*) g_malloc(nrects * 4 * sizeof(xRectangle), 0);
+		regRects = (xRectangle*) malloc(nrects * 4 * sizeof(xRectangle));
+
 		lw = pGC->lineWidth;
 
 		if (lw < 1)
