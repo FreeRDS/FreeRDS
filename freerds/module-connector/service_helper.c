@@ -85,7 +85,7 @@ int freerds_service_start(rdsService* service)
 
 	connector = (rdsModuleConnector*) service;
 
-	connector->hServerPipe = freerds_named_pipe_create(connector->SessionId, connector->Endpoint);
+	connector->hServerPipe = freerds_named_pipe_create_endpoint(connector->SessionId, connector->Endpoint);
 
 	if (!connector->hServerPipe)
 		return -1;

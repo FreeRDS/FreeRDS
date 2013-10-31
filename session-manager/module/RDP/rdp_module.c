@@ -92,7 +92,7 @@ int rdp_rds_module_start(void * module)
 
 	settings = connector->settings;
 
-	freerds_named_pipe_clean(rdp->SessionId, endpoint);
+	freerds_named_pipe_clean_endpoint(rdp->SessionId, endpoint);
 
 	ZeroMemory(&(rdp->si), sizeof(STARTUPINFO));
 	rdp->si.cb = sizeof(STARTUPINFO);
@@ -109,7 +109,7 @@ int rdp_rds_module_start(void * module)
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Process created with status: %d", status);
 
-	rdp->hClientPipe = freerds_named_pipe_connect(rdp->SessionId, "RDP", 5 * 1000);
+	rdp->hClientPipe = freerds_named_pipe_connect_endpoint(rdp->SessionId, "RDP", 5 * 1000);
 
 	if (!rdp->hClientPipe)
 	{

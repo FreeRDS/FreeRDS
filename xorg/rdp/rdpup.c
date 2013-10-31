@@ -730,7 +730,7 @@ int rdpup_init(void)
 		connector->client->MouseEvent = rds_client_mouse_event;
 		connector->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
 
-		connector->hServerPipe = freerds_named_pipe_create(connector->SessionId, connector->Endpoint);
+		connector->hServerPipe = freerds_named_pipe_create_endpoint(connector->SessionId, connector->Endpoint);
 		connector->hClientPipe = freerds_named_pipe_accept(connector->hServerPipe);
 		service->Accept(service);
 	}

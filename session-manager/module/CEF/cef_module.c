@@ -83,7 +83,7 @@ char * cef_rds_module_start(RDS_MODULE_COMMON * module)
 	WLog_Print(cef->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
 			(int) SessionId, endpoint);
 
-	freerds_named_pipe_clean(SessionId, endpoint);
+	freerds_named_pipe_clean_endpoint(SessionId, endpoint);
 
 	ZeroMemory(&(cef->si), sizeof(STARTUPINFO));
 	cef->si.cb = sizeof(STARTUPINFO);

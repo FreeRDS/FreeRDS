@@ -81,13 +81,10 @@ int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length)
 	return TotalNumberOfBytesWritten;
 }
 
-int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint)
+int freerds_named_pipe_clean(const char* pipeName)
 {
 	int status = 0;
 	char* filename;
-	char pipeName[256];
-
-	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
 
 	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
 
@@ -98,16 +95,22 @@ int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint)
 	}
 
 	free(filename);
-
 	return status;
+
 }
 
-HANDLE freerds_named_pipe_connect(DWORD SessionId, const char* endpoint, DWORD nTimeOut)
+int freerds_named_pipe_clean_endpoint(DWORD SessionId, const char* endpoint)
 {
-	HANDLE hNamedPipe;
 	char pipeName[256];
 
 	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
+
+	return freerds_named_pipe_clean(pipeName);
+}
+
+HANDLE freerds_named_pipe_connect(const char* pipeName, DWORD nTimeOut)
+{
+	HANDLE hNamedPipe;
 
 	if (!WaitNamedPipeA(pipeName, nTimeOut))
 	{
@@ -125,14 +128,20 @@ HANDLE freerds_named_pipe_connect(DWORD SessionId, const char* endpoint, DWORD n
 	}
 
 	return hNamedPipe;
+
 }
 
-HANDLE freerds_named_pipe_create(DWORD SessionId, const char* endpoint)
+HANDLE freerds_named_pipe_connect_endpoint(DWORD SessionId, const char* endpoint, DWORD nTimeOut)
 {
-	HANDLE hNamedPipe;
 	char pipeName[256];
 
 	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
+	return freerds_named_pipe_connect(pipeName, nTimeOut);
+}
+
+HANDLE freerds_named_pipe_create(const char* pipeName)
+{
+	HANDLE hNamedPipe;
 
 	hNamedPipe = CreateNamedPipe(pipeName, PIPE_ACCESS_DUPLEX,
 			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
@@ -145,6 +154,16 @@ HANDLE freerds_named_pipe_create(DWORD SessionId, const char* endpoint)
 	}
 
 	return hNamedPipe;
+
+}
+
+HANDLE freerds_named_pipe_create_endpoint(DWORD SessionId, const char* endpoint)
+{
+	char pipeName[256];
+
+	sprintf_s(pipeName, sizeof(pipeName), "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, endpoint);
+
+	return freerds_named_pipe_create(pipeName);
 }
 
 HANDLE freerds_named_pipe_accept(HANDLE hServerPipe)

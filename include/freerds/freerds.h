@@ -765,9 +765,13 @@ FREERDP_API int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD le
 
 FREERDP_API int freerds_server_outbound_write_message(rdsModuleConnector* connector, RDS_MSG_COMMON* msg);
 
-FREERDP_API int freerds_named_pipe_clean(DWORD SessionId, const char* endpoint);
-FREERDP_API HANDLE freerds_named_pipe_connect(DWORD SessionId, const char* endpoint, DWORD nTimeOut);
-FREERDP_API HANDLE freerds_named_pipe_create(DWORD SessionId, const char* endpoint);
+FREERDP_API int freerds_named_pipe_clean(const char* pipeName);
+FREERDP_API HANDLE freerds_named_pipe_connect(const char* pipeName, DWORD nTimeOut);
+FREERDP_API HANDLE freerds_named_pipe_create(const char* pipeName);
+
+FREERDP_API int freerds_named_pipe_clean_endpoint(DWORD SessionId, const char* endpoint);
+FREERDP_API HANDLE freerds_named_pipe_connect_endpoint(DWORD SessionId, const char* endpoint, DWORD nTimeOut);
+FREERDP_API HANDLE freerds_named_pipe_create_endpoint(DWORD SessionId, const char* endpoint);
 FREERDP_API HANDLE freerds_named_pipe_accept(HANDLE hServerPipe);
 
 FREERDP_API int freerds_transport_receive(rdsModuleConnector* connector);
