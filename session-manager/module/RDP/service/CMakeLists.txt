@@ -1,5 +1,5 @@
-# FreeRDP X11 Server Next Generation
-# xrdp-ng cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services
+# FreeRDS cmake build script
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "freerds-rdp-serviceSM")
-set(MODULE_PREFIX "FREERDS_RDP_SERVICESM")
+set(MODULE_NAME "freerds-rdp-service")
+set(MODULE_PREFIX "FREERDS_RDP_SERVICE")
 
 set(${MODULE_PREFIX}_SRCS
 	rdp_service.c

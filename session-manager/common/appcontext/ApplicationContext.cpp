@@ -21,81 +21,90 @@
 #include "config.h"
 #endif
 
+#include <winpr/crt.h>
+#include <winpr/path.h>
+
 #include "ApplicationContext.h"
 
-namespace freerds{
-	namespace sessionmanager{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		ApplicationContext::ApplicationContext()
+		{
+			wLogLayout* layout;
+			wLogAppender* appender;
 
+			WLog_Init();
 
-	ApplicationContext::ApplicationContext(){
+			mWLogRoot = WLog_GetRoot();
 
-		wLogLayout* layout;
-		wLogAppender* appender;
+			WLog_SetLogAppenderType(mWLogRoot, WLOG_APPENDER_CONSOLE);
 
-		WLog_Init();
+			appender = WLog_GetLogAppender(mWLogRoot);
+			WLog_ConsoleAppender_SetOutputStream(mWLogRoot, (wLogConsoleAppender*) appender, WLOG_CONSOLE_STDERR);
 
-		mWLogRoot = WLog_GetRoot();
+			layout = WLog_GetLogLayout(mWLogRoot);
+			WLog_Layout_SetPrefixFormat(mWLogRoot, layout, "[%lv:%mn] [%fl|%fn|%ln] - ");
 
-		WLog_SetLogAppenderType(mWLogRoot, WLOG_APPENDER_CONSOLE);
+			WLog_OpenAppender(mWLogRoot);
+			WLog_SetLogLevel(mWLogRoot, WLOG_TRACE);
+			setupTestingPropValues();
+		}
 
-		appender = WLog_GetLogAppender(mWLogRoot);
-		WLog_ConsoleAppender_SetOutputStream(mWLogRoot, (wLogConsoleAppender*) appender, WLOG_CONSOLE_STDERR);
+		ApplicationContext::~ApplicationContext()
+		{
+			WLog_CloseAppender(mWLogRoot);
 
-		layout = WLog_GetLogLayout(mWLogRoot);
-		WLog_Layout_SetPrefixFormat(mWLogRoot, layout, "[%lv:%mn] [%fl|%fn|%ln] - ");
+			WLog_Uninit();
+		}
 
-		WLog_OpenAppender(mWLogRoot);
-		WLog_SetLogLevel(mWLogRoot, WLOG_TRACE);
-		setupTestingPropValues();
+		sessionNS::SessionStore * ApplicationContext::getSessionStore()
+		{
+			return &mSessionStore;
+		}
 
+		configNS::PropertyManager* ApplicationContext::getPropertyManager()
+		{
+			return &mPropertyManager;
+		}
+
+		int ApplicationContext::startRPCEngine()
+		{
+			return mRpcEngine.startEngine();
+		}
+
+		int ApplicationContext::stopRPCEngine()
+		{
+			return mRpcEngine.stopEngine();
+		}
+
+		SignalingQueue<callNS::Call> * ApplicationContext::getRpcOutgoingQueue()
+		{
+			return &mRpcOutgoingCalls;
+		}
+
+		int ApplicationContext::loadModulesFromPath(std::string path)
+		{
+			LPCSTR pszExt;
+			char pattern[256];
+
+			pszExt = PathGetSharedLibraryExtensionA(0);
+			sprintf_s(pattern, 256, "*freerds-module-*.%s", pszExt);
+
+			return mModuleManager.loadModuelsFromPathAndEnv(path, pattern);
+		}
+
+		moduleNS::ModuleManager* ApplicationContext::getModuleManager()
+		{
+			return &mModuleManager;
+		}
+
+		void ApplicationContext::setupTestingPropValues()
+		{
+			mPropertyManager.setPropertyNumber(Global,0,"module.x11.xres",1024);
+			mPropertyManager.setPropertyNumber(Global,0,"module.x11.yres",768);
+			mPropertyManager.setPropertyNumber(Global,0,"module.x11.colordepth",24);
+		}
 	}
-
-
-	ApplicationContext::~ApplicationContext(){
-
-		WLog_CloseAppender(mWLogRoot);
-
-		WLog_Uninit();
-
-
-	}
-
-	sessionNS::SessionStore * ApplicationContext::getSessionStore(){
-		return &mSessionStore;
-	}
-
-	configNS::PropertyManager* ApplicationContext::getPropertyManager() {
-		return &mPropertyManager;
-	}
-
-
-	int ApplicationContext::startRPCEngine(){
-		return mRpcEngine.startEngine();
-	}
-
-	int ApplicationContext::stopRPCEngine(){
-		return mRpcEngine.stopEngine();
-	}
-
-	SignalingQueue<callNS::Call> * ApplicationContext::getRpcOutgoingQueue(){
-		return &mRpcOutgoingCalls;
-	}
-
-	int ApplicationContext::loadModulesFromPath(std::string path) {
-		return mModuleManager.loadModuelsFromPathAndEnv(path,"*.so");
-	}
-
-	moduleNS::ModuleManager* ApplicationContext::getModuleManager() {
-		return &mModuleManager;
-	}
-
-	void ApplicationContext::setupTestingPropValues() {
-		mPropertyManager.setPropertyNumber(Global,0,"module.x11.xres",1024);
-		mPropertyManager.setPropertyNumber(Global,0,"module.x11.yres",768);
-		mPropertyManager.setPropertyNumber(Global,0,"module.x11.colordepth",24);
-			}
-
-
-    }
 }
-

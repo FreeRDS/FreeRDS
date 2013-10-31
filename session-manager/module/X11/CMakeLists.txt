@@ -1,5 +1,5 @@
-# FreeRDP X11 Server Next Generation
-# xrdp-ng cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services
+# FreeRDS cmake build script
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "freerds-x11SM")
-set(MODULE_PREFIX "FREERDS_X11SM")
+set(MODULE_NAME "freerds-module-x11")
+set(MODULE_PREFIX "FREERDS_MODULE_X11")
 
 set(${MODULE_PREFIX}_SRCS
 	x11_module.c
@@ -33,6 +33,5 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MODULES winpr-crt winpr-synch winpr-thread winpr-environment winpr-sspicli winpr-utils)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
-
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})

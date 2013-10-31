@@ -1,5 +1,5 @@
-# FreeRDP X11 Server Next Generation
-# xrdp-ng cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services
+# FreeRDS cmake build script
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #

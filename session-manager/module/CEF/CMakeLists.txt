@@ -1,5 +1,5 @@
-# FreeRDP X11 Server Next Generation
-# xrdp-ng cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services
+# FreeRDS cmake build script
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "freerds-cef")
-set(MODULE_PREFIX "FREERDS_CEF")
+set(MODULE_NAME "freerds-module-cef")
+set(MODULE_PREFIX "FREERDS_MODULE_CEF")
 
 find_path(CEF_INCLUDE_DIR
 	NAMES cef_version.h
