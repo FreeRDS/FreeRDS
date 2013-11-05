@@ -135,3 +135,9 @@ if(${CMAKE_VERSION} VERSION_GREATER "2.8.10")
 	install(EXPORT FreeRDSTargets DESTINATION ${FREERDS_CMAKE_INSTALL_DIR})
 
 endif()
+
+if(NOT MSVC)
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/freerds-module-connector.pc.in ${CMAKE_CURRENT_BINARY_DIR}/freerds-module-connector.pc @ONLY)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/freerds-module-connector.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
+
