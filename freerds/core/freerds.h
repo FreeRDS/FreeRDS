@@ -56,8 +56,6 @@ int freerds_listener_main_loop(xrdpListener* self);
 rdsModuleConnector* freerds_module_new(rdsConnection* connection);
 void freerds_module_free(rdsModuleConnector* connector);
 
-long freerds_authenticate(char* username, char* password, int* errorcode);
-
 void* freerds_client_thread(void* arg);
 int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount);
 int freerds_client_check_event_handles(rdsModuleConnector* connector);

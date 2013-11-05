@@ -17,21 +17,12 @@
 set(MODULE_NAME "freerds")
 set(MODULE_PREFIX "FREERDS_CORE")
 
-set(PAM_FEATURE_TYPE "REQUIRED")
-set(PAM_FEATURE_PURPOSE "authentication")
-set(PAM_FEATURE_DESCRIPTION "user authentication")
-
-find_feature(PAM ${PAM_FEATURE_TYPE} ${PAM_FEATURE_PURPOSE} ${PAM_FEATURE_DESCRIPTION})
-
-include_directories(${PAM_INCLUDE_DIR})
-
 include_directories(".")
 include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
 set(${MODULE_PREFIX}_SRCS
 	freerds.c
 	freerds.h
-	auth.c
 	core.c
 	core.h
 	channels.c
@@ -44,8 +35,7 @@ set(${MODULE_PREFIX}_SRCS
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
-
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-auth)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
 

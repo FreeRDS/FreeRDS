@@ -22,11 +22,47 @@
 
 #include <freerds/freerds.h>
 
+typedef struct rds_auth_module_entry_points_v1 RDS_AUTH_MODULE_ENTRY_POINTS_V1;
+typedef RDS_AUTH_MODULE_ENTRY_POINTS_V1 RDS_AUTH_MODULE_ENTRY_POINTS;
+
+/**
+ * Authentication Module Entry Points
+ */
+
+struct _rds_auth_module
+{
+	void* dummy;
+};
+typedef struct _rds_auth_module rdsAuthModule;
+
+typedef rdsAuthModule* (*pRdsAuthModuleNew)(void);
+typedef void (*pRdsAuthModuleFree)(rdsAuthModule* auth);
+
+typedef char* (*pRdsAuthModuleStart)(rdsAuthModule* auth);
+typedef int (*pRdsAuthModuleStop)(rdsAuthModule* auth);
+
+typedef int (*pRdsAuthLogonUser)(rdsAuthModule* auth, char* username, char* domain, char* password);
+
+struct rds_auth_module_entry_points_v1
+{
+	DWORD Version;
+
+	pRdsAuthModuleNew New;
+	pRdsAuthModuleFree Free;
+
+	pRdsAuthLogonUser LogonUser;
+};
+
+#define RDS_AUTH_MODULE_INTERFACE_VERSION	1
+#define RDS_AUTH_MODULE_ENTRY_POINT_NAME	"RdsAuthModuleEntry"
+
+typedef int (*pRdsAuthModuleEntry)(RDS_AUTH_MODULE_ENTRY_POINTS* pEntryPoints);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
+pRdsAuthModuleEntry freerds_load_auth_module(const char* name);
 
 #ifdef __cplusplus
 }

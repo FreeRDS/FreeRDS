@@ -22,3 +22,35 @@
 #endif
 
 #include <freerds/auth.h>
+
+#include <winpr/crt.h>
+#include <winpr/library.h>
+
+pRdsAuthModuleEntry freerds_load_auth_module(const char* name)
+{
+        char* lowerName;
+        HINSTANCE library;
+        char moduleFileName[256];
+        pRdsAuthModuleEntry moduleEntry;
+
+        lowerName = _strdup(name);
+        CharLowerA(lowerName);
+
+        sprintf_s(moduleFileName, sizeof(moduleFileName), FREERDS_LIB_PATH "/libfreerds-auth-%s.so", lowerName);
+
+        free(lowerName);
+
+        library = LoadLibraryA(moduleFileName);
+
+        if (!library)
+                return NULL;
+
+        moduleEntry = GetProcAddress(library, RDS_AUTH_MODULE_ENTRY_POINT_NAME);
+
+        if (moduleEntry)
+                return moduleEntry;
+
+        FreeLibrary(library);
+
+        return NULL;
+}

@@ -26,6 +26,8 @@
 
 #include <security/pam_appl.h>
 
+#include "pam_auth.h"
+
 struct t_user_pass
 {
 	char user[256];
@@ -147,3 +149,60 @@ long freerds_authenticate_pam(char* username, char* password, int* errorcode)
 	return (long) auth_info;
 }
  
+/**
+ * FreeRDS Authentication Module Interface
+ */
+
+struct rds_auth_module_pam
+{
+	rdsAuthModule common;
+};
+typedef struct rds_auth_module_pam rdsAuthModulePam;
+
+rdsAuthModulePam* rds_auth_module_new(void)
+{
+	rdsAuthModulePam* pam;
+
+	pam = (rdsAuthModulePam*) malloc(sizeof(rdsAuthModulePam));
+
+	if (!pam)
+		return NULL;
+
+	return pam;
+}
+
+void rds_auth_module_free(rdsAuthModulePam* pam)
+{
+	if (!pam)
+		return;
+
+	free(pam);
+}
+
+int rds_auth_logon_user(rdsAuthModulePam* pam, char* username, char* domain, char* password)
+{
+	int error_code = 0;
+	long auth_status = 0;
+
+	if (!pam)
+		return -1;
+
+	auth_status = freerds_authenticate_pam(username, password, &error_code);
+
+	if (!auth_status)
+		return -1;
+
+	return 0;
+}
+
+int RdsAuthModuleEntry(RDS_AUTH_MODULE_ENTRY_POINTS* pEntryPoints)
+{
+	pEntryPoints->Version = 1;
+
+	pEntryPoints->New = (pRdsAuthModuleNew) rds_auth_module_new;
+	pEntryPoints->Free = (pRdsAuthModuleFree) rds_auth_module_free;
+
+	pEntryPoints->LogonUser = (pRdsAuthLogonUser) rds_auth_logon_user;
+
+	return 0;
+}

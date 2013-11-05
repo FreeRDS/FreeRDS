@@ -37,8 +37,10 @@
 #include <sys/select.h>
 #include <sys/signal.h>
 
+#include <freerds/auth.h>
 #include <freerds/module_connector.h>
 #include <freerds/icp_client_stubs.h>
+
 #include "makecert.h"
 
 #include "channels.h"
@@ -150,6 +152,46 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	return TRUE;
 }
 
+int freerds_peer_authenticate(rdsConnection* connection)
+{
+	int status;
+	rdsAuthModule* auth;
+	rdpSettings* settings;
+	pRdsAuthModuleEntry ModuleEntry;
+	RDS_AUTH_MODULE_ENTRY_POINTS EntryPoints;
+
+	settings = connection->settings;
+
+	ModuleEntry = freerds_load_auth_module("pam");
+
+	if (!ModuleEntry)
+		return -1;
+
+	ZeroMemory(&EntryPoints, sizeof(RDS_AUTH_MODULE_ENTRY_POINTS));
+
+	EntryPoints.Version = RDS_AUTH_MODULE_INTERFACE_VERSION;
+
+	status = ModuleEntry(&EntryPoints);
+
+	if (status < 0)
+		return -1;
+
+	auth = EntryPoints.New();
+
+	if (!auth)
+		return -1;
+
+	if (!EntryPoints.LogonUser)
+		return -1;
+
+	status = EntryPoints.LogonUser(auth, settings->Username, settings->Domain, settings->Password);
+
+	if (EntryPoints.Free)
+		EntryPoints.Free(auth);
+
+	return status;
+}
+
 BOOL freerds_peer_activate(freerdp_peer* client)
 {
 	rdpSettings* settings;
@@ -167,7 +209,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	if (settings->RemoteFxCodec || settings->NSCodec)
 		connection->codecMode = TRUE;
 
-	auth_status = freerds_authenticate(settings->Username, settings->Password, &error_code);
+	auth_status = freerds_peer_authenticate(connection);
 
 	if (!connection->connector)
 		connection->connector = freerds_module_connector_new(connection);

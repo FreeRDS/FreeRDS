@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-long freerds_authenticate_pam(char* username, char* password, int* errorcode);
+int RdsAuthModuleEntry(RDS_AUTH_MODULE_ENTRY_POINTS* pEntryPoints);
 
 #ifdef __cplusplus
 }
