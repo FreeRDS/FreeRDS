@@ -186,7 +186,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 		fprintf(stderr, "Failed to create named pipe %s\n", connection->connector->Endpoint);
 		return FALSE;
 	}
-	printf("Connected to session %d\n", connection->connector->SessionId);
+	printf("Connected to session %d\n", (int) connection->connector->SessionId);
 
 	connection->connector->hClientPipe = hClientPipe;
 	connection->connector->GetEventHandles = freerds_client_get_event_handles;

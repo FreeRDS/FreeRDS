@@ -1,5 +1,4 @@
-# FreeRDP X11 Server Next Generation
-# xrdp-ng cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
@@ -15,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+add_subdirectory(auth)
 add_subdirectory(core)
 add_subdirectory(module-connector)
 add_subdirectory(icp)

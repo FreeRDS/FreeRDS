@@ -1,9 +1,7 @@
-# FreeRDP X11 Server Next Generation
-# FreeRDS cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
 # Copyright 2013 Thinstuff Technologies GmbH
 # Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.at>
-#
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

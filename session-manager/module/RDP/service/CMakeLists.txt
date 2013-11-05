@@ -1,5 +1,4 @@
-# FreeRDS: FreeRDP Remote Desktop Services
-# FreeRDS cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
