@@ -42,6 +42,7 @@ namespace freerds{
 			std::string getUserName();
 			void setUserName(std::string username);
 			long getSessionID();
+			std::string getPipeName();
 
 			bool generateUserToken();
 			bool generateEnvBlockAndModify();

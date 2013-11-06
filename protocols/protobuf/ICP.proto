@@ -4,6 +4,7 @@ enum MSGTYPE {
 	IsChannelAllowed = 1;
 	Ping             = 2;
 	GetUserSession   = 3;
+	DisconnectUserSession = 4;
 }
 
 message IsChannelAllowedRequest {
@@ -29,4 +30,13 @@ message GetUserSessionResponse {
 	required uint32 SessionID = 1;
 	required string ServiceEndpoint = 2;
 }
+
+message DisconnectUserSessionRequest {
+	required uint32 SessionID = 1;
+}
+
+message DisconnectuserSessionResponse {
+	required bool disconnected = 1;
+}
+
 

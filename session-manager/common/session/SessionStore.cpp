@@ -62,6 +62,22 @@ namespace freerds{
 				return session;
 			}
 
+			Session* SessionStore::getFirstSessionUserName(std::string username,std::string domain)
+			{
+				EnterCriticalSection(&mCSection);
+				Session * session = NULL;
+				TSessionMap::iterator iter;
+				for(iter = mSessionMap.begin(); iter != mSessionMap.end();iter++) {
+					if((iter->second->getUserName().compare(username) == 0) &&
+							(iter->second->getDomain().compare(domain) == 0)) {
+						session = iter->second;
+						break;
+					}
+				}
+				LeaveCriticalSection(&mCSection);
+				return session;
+			}
+
 			int SessionStore::removeSession(long sessionID)
 			{
 				EnterCriticalSection(&mCSection);

@@ -76,28 +76,35 @@ namespace freerds{
 
 		int CallInGetUserSession::doStuff() {
 			std::string pipeName;
-			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->createSession();
-			currentSession->setUserName(mUserName);
-			currentSession->setDomain(mDomainName);
 
-			if (!currentSession->generateUserToken()) {
-				mResult = 1;// will report error with answer
-				return 1;
+			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName,mDomainName);
+			if ((currentSession == NULL) || (currentSession->getConnectState() != WTSDisconnected) ) {
+				currentSession = APP_CONTEXT.getSessionStore()->createSession();
+				currentSession->setUserName(mUserName);
+				currentSession->setDomain(mDomainName);
+
+				if (!currentSession->generateUserToken()) {
+					mResult = 1;// will report error with answer
+					return 1;
+				}
+
+				if (!currentSession->generateEnvBlockAndModify() ){
+					mResult = 1;// will report error with answer
+					return 1;
+				}
+
+				currentSession->setModuleName("x11module");
 			}
 
-			if (!currentSession->generateEnvBlockAndModify() ){
-				mResult = 1;// will report error with answer
-				return 1;
-			}
 
-			currentSession->setModuleName("x11module");
-			if (!currentSession->startModule(pipeName)) {
-				mResult = 1;// will report error with answer
-				return 1;
+			if (currentSession->getConnectState() == WTSDown) {
+				if (!currentSession->startModule(pipeName)) {
+					mResult = 1;// will report error with answer
+					return 1;
+				}
 			}
-
 			mSessionID = currentSession->getSessionID();
-			mPipeName = pipeName;
+			mPipeName = currentSession->getPipeName();
 
 			return 0;
 		}
