@@ -1,5 +1,5 @@
 /**
- * Class for rpc call DisconnectUserSession (freerds to session manager)
+ * Class for rpc call LogOffUserSession (freerds to session manager)
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -21,32 +21,32 @@
 #include "config.h"
 #endif
 
-#include "CallInDisconnectUserSession.h"
+#include "CallInLogOffUserSession.h"
 #include <appcontext/ApplicationContext.h>
 
-using freerds::icp::DisconnectUserSessionRequest;
-using freerds::icp::DisconnectuserSessionResponse;
+using freerds::icp::LogOffUserSessionRequest;
+using freerds::icp::LogOffUserSessionResponse;
 
 namespace freerds{
 	namespace sessionmanager{
 		namespace call{
 
-		CallInDisconnectUserSession::CallInDisconnectUserSession() {
+		CallInLogOffUserSession::CallInLogOffUserSession() {
 			mSessionID = 0;
-			mDisconnected = false;
+			mLoggedOff = false;
 		};
 
-		CallInDisconnectUserSession::~CallInDisconnectUserSession() {
+		CallInLogOffUserSession::~CallInLogOffUserSession() {
 
 		};
 
-		unsigned long CallInDisconnectUserSession::getCallType() {
-			return freerds::icp::DisconnectUserSession;
+		unsigned long CallInLogOffUserSession::getCallType() {
+			return freerds::icp::LogOffUserSession;
 		};
 
-		int CallInDisconnectUserSession::decodeRequest() {
+		int CallInLogOffUserSession::decodeRequest() {
 			// decode protocol buffers
-			DisconnectUserSessionRequest req;
+			LogOffUserSessionRequest req;
 			if (!req.ParseFromString(mEncodedRequest)) {
 				// failed to parse
 				mResult = 1;// will report error with answer
@@ -56,12 +56,12 @@ namespace freerds{
 			return 0;
 		};
 
-		int CallInDisconnectUserSession::encodeResponse() {
+		int CallInLogOffUserSession::encodeResponse() {
 			// encode protocol buffers
-			DisconnectuserSessionResponse resp;
+			LogOffUserSessionResponse resp;
 			// stup do stuff here
 
-			resp.set_disconnected(mDisconnected);
+			resp.set_loggedoff(mLoggedOff);
 
 			if (!resp.SerializeToString(&mEncodedResponse)) {
 				// failed to serialize
@@ -71,15 +71,15 @@ namespace freerds{
 			return 0;
 		};
 
-		int CallInDisconnectUserSession::doStuff() {
+		int CallInLogOffUserSession::doStuff() {
 			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionID);
 			if (currentSession == NULL) {
-				mDisconnected = false;
-				return -1;
+				mLoggedOff = false;
+				return 0;
 			}
-			currentSession->setConnectState(WTSDisconnected);
+			currentSession->stopModule();
 
-			mDisconnected = true;
+			mLoggedOff = true;
 			return 0;
 		}
 
