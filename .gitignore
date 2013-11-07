@@ -43,3 +43,5 @@ CMakeScripts/
 
 Debug/
 Release/
+
+*.pc
