@@ -26,14 +26,45 @@
 
 #include <appcontext/ApplicationContext.h>
 
+#ifndef _WIN32
+#include <winpr/wtypes.h>
+#include <winpr/synch.h>
+#include <signal.h>
+#endif
+
 using namespace std;
+
+static HANDLE TermEvent;
+
+#ifndef _WIN32
+void shutdown(int signal)
+{
+	SetEvent(TermEvent);
+}
+#endif
+
+
 int main(void)
 {
+#ifdef _WIN32
 	std::string test;
+#endif
 	APP_CONTEXT.startRPCEngine();
 	APP_CONTEXT.loadModulesFromPath("/development/testModule/");
+
 	cout << "Hello session manager" << endl;
+#ifndef _WIN32
+	TermEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	signal(SIGINT, shutdown);
+	signal(SIGKILL, shutdown);
+	signal(SIGPIPE, shutdown);
+
+	WaitForSingleObject(TermEvent, INFINITE);
+	CloseHandle(TermEvent);
+#else // _WIN32
 	cin >>test;
+#endif // _WIN32
+
 	APP_CONTEXT.stopRPCEngine();
 	return 0;
 }
