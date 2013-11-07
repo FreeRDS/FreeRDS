@@ -46,7 +46,7 @@ namespace freerds{
 
 		int CallInLogOffUserSession::decodeRequest() {
 			// decode protocol buffers
-			LoggOffUserSessionRequest req;
+			LogOffUserSessionRequest req;
 			if (!req.ParseFromString(mEncodedRequest)) {
 				// failed to parse
 				mResult = 1;// will report error with answer
@@ -58,7 +58,7 @@ namespace freerds{
 
 		int CallInLogOffUserSession::encodeResponse() {
 			// encode protocol buffers
-			LogOffuserSessionResponse resp;
+			LogOffUserSessionResponse resp;
 			// stup do stuff here
 
 			resp.set_loggedoff(mLoggedOff);
