@@ -36,7 +36,7 @@ message DisconnectUserSessionRequest {
 	required uint32 SessionID = 1;
 }
 
-message DisconnectuserSessionResponse {
+message DisconnectUserSessionResponse {
 	required bool disconnected = 1;
 }
 

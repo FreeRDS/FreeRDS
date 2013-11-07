@@ -25,7 +25,7 @@
 #include <appcontext/ApplicationContext.h>
 
 using freerds::icp::DisconnectUserSessionRequest;
-using freerds::icp::DisconnectuserSessionResponse;
+using freerds::icp::DisconnectUserSessionResponse;
 
 namespace freerds{
 	namespace sessionmanager{
@@ -58,7 +58,7 @@ namespace freerds{
 
 		int CallInDisconnectUserSession::encodeResponse() {
 			// encode protocol buffers
-			DisconnectuserSessionResponse resp;
+			DisconnectUserSessionResponse resp;
 			// stup do stuff here
 
 			resp.set_disconnected(mDisconnected);
