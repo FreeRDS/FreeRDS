@@ -46,7 +46,7 @@ namespace freerds{
 
 		int CallInLogOffUserSession::decodeRequest() {
 			// decode protocol buffers
-			LogOffUserSessionRequest req;
+			LoggOffUserSessionRequest req;
 			if (!req.ParseFromString(mEncodedRequest)) {
 				// failed to parse
 				mResult = 1;// will report error with answer
@@ -58,7 +58,7 @@ namespace freerds{
 
 		int CallInLogOffUserSession::encodeResponse() {
 			// encode protocol buffers
-			LogOffUserSessionResponse resp;
+			LogOffuserSessionResponse resp;
 			// stup do stuff here
 
 			resp.set_loggedoff(mLoggedOff);
@@ -75,9 +75,8 @@ namespace freerds{
 			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionID);
 			if (currentSession == NULL) {
 				mLoggedOff = false;
-				return 0;
 			}
-			currentSession->stopModule();
+			currentSession->setConnectState(WTSDisconnected);
 
 			mLoggedOff = true;
 			return 0;
