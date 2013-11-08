@@ -409,6 +409,7 @@ void* freerds_connection_main_thread(void* arg)
 	rdpSettings* settings;
 	rdsModuleConnector* connector;
 	freerdp_peer* client = (freerdp_peer*) arg;
+	BOOL disconnected = FALSE;
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
 
@@ -500,7 +501,11 @@ void* freerds_connection_main_thread(void* arg)
 
 	fprintf(stderr, "Client %s disconnected.\n", client->hostname);
 
+
+	freerds_icp_DisconnectUserSession(connector->SessionId, &disconnected);
 	client->Disconnect(client);
+	CloseHandle(connector->hClientPipe);
+
 
 	freerdp_peer_context_free(client);
 	freerdp_peer_free(client);
