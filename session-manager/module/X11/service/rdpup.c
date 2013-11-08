@@ -683,7 +683,19 @@ int rds_client_extended_mouse_event(rdsModuleConnector* connector, DWORD flags, 
 
 int rds_service_accept(rdsService* service)
 {
+	HANDLE hServerPipe;
 	rdsModuleConnector* connector = (rdsModuleConnector*) service;
+	hServerPipe = connector->hServerPipe;
+	RemoveEnabledDevice(GetNamePipeFileDescriptor(hServerPipe));
+
+	connector->hServerPipe = freerds_named_pipe_create_endpoint(connector->SessionId, connector->Endpoint);
+	if (!connector->hServerPipe)
+	{
+		fprintf(stderr, "server pipe failed?!\n");
+		return 1;
+	}
+	AddEnabledDevice(GetNamePipeFileDescriptor(connector->hServerPipe));
+	connector->hClientPipe = freerds_named_pipe_accept(hServerPipe);
 
 	g_clientfd = GetNamePipeFileDescriptor(connector->hClientPipe);
 
@@ -691,9 +703,20 @@ int rds_service_accept(rdsService* service)
 	g_connected = 1;
 	g_rdpScreen.fbAttached = 0;
 	AddEnabledDevice(g_clientfd);
-
 	fprintf(stderr, "RdsServiceAccept\n");
+	return 0;
+}
 
+int rds_service_disconnect(rdsService* service)
+{
+	rdsModuleConnector* connector = (rdsModuleConnector*) service;
+	RemoveEnabledDevice(g_clientfd);
+	CloseHandle(connector->hClientPipe);
+	connector->hClientPipe = NULL;
+	fprintf(stderr, "RdsServiceDisconnect\n");
+	g_connected = 0;
+	g_rdpScreen.fbAttached = 0;
+	g_clientfd = 0;
 	return 0;
 }
 
@@ -731,8 +754,7 @@ int rdpup_init(void)
 		connector->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
 
 		connector->hServerPipe = freerds_named_pipe_create_endpoint(connector->SessionId, connector->Endpoint);
-		connector->hClientPipe = freerds_named_pipe_accept(connector->hServerPipe);
-		service->Accept(service);
+		AddEnabledDevice(GetNamePipeFileDescriptor(connector->hServerPipe));
 	}
 
 	return 1;
@@ -749,7 +771,17 @@ int rdpup_check(void)
 	{
 		if (WaitForSingleObject(connector->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			freerds_transport_receive(connector);
+			if (freerds_transport_receive(connector) < 0)
+			{
+				rds_service_disconnect(service);
+			}
+		}
+	}
+	else
+	{
+		if (WaitForSingleObject(connector->hServerPipe, 0) == WAIT_OBJECT_0)
+		{
+			service->Accept(service);
 		}
 	}
 
