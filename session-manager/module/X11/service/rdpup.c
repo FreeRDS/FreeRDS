@@ -703,6 +703,7 @@ int rds_service_accept(rdsService* service)
 	g_connected = 1;
 	g_rdpScreen.fbAttached = 0;
 	AddEnabledDevice(g_clientfd);
+	rdpup_check_attach_framebuffer();
 	fprintf(stderr, "RdsServiceAccept\n");
 	return 0;
 }
