@@ -150,3 +150,46 @@ int freerds_icp_GetUserSession(char *username, char * domain, UINT32 *sessionID,
 	ICP_CLIENT_STUB_CLEANUP(GetUserSession, get_user_session)
 	return PBRPC_SUCCESS;
 }
+
+int freerds_icp_DisconnectUserSession(UINT32 sessionID, BOOL *disconnected)
+{
+	ICP_CLIENT_STUB_SETUP(DisconnectUserSession, disconnect_user_session)
+	request.sessionid = sessionID;
+	ICP_CLIENT_STUB_CALL(GetUserSession, disconnect_user_session)
+	if (ret != 0)
+	{
+		// handle function specific frees
+		return ret;
+	}
+	ICP_CLIENT_STUB_UNPACK_RESPONSE(DisconnectUserSession, disconnect_user_session)
+	if (NULL == response)
+	{
+		// unpack error
+		return PBRPC_BAD_RESPONSE;
+	}
+	*disconnected = response->disconnected;
+	ICP_CLIENT_STUB_CLEANUP(DisconnectUserSession, disconnect_user_session)
+	return PBRPC_SUCCESS;
+
+}
+
+int freerds_icp_LogOffUserSession(UINT32 sessionID, BOOL *loggedoff)
+{
+	ICP_CLIENT_STUB_SETUP(LogOffUserSession, log_off_user_session)
+	request.sessionid = sessionID;
+	ICP_CLIENT_STUB_CALL(LogOffUserSession, log_off_user_session)
+	if (ret != 0)
+	{
+		// handle function specific frees
+		return ret;
+	}
+	ICP_CLIENT_STUB_UNPACK_RESPONSE(LogOffUserSession, log_off_user_session)
+	if (NULL == response)
+	{
+		// unpack error
+		return PBRPC_BAD_RESPONSE;
+	}
+	*loggedoff = response->loggedoff;
+	ICP_CLIENT_STUB_CLEANUP(LogOffUserSession, log_off_user_session)
+	return PBRPC_SUCCESS;
+}

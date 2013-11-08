@@ -25,4 +25,6 @@
 int freerds_icp_IsChannelAllowed(int sessionId, char *channelName, BOOL *isAllowed);
 int freerds_icp_Ping(BOOL *pong);
 int freerds_icp_GetUserSession(char *username, char * domain, UINT32 *sessionID, char **serviceEndpoint);
+int freerds_icp_DisconnectUserSession(UINT32 sessionID, BOOL *disconnected);
+int freerds_icp_LogOffUserSession(UINT32 sessionID, BOOL *loggedoff);
 #endif // _ICP_CLIENT_STUBS_H
