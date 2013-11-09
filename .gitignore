@@ -40,7 +40,7 @@ cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
 CMakeScripts/
-
+FreeRDSConfig.cmake
 Debug/
 Release/
 

@@ -81,7 +81,7 @@ int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length)
 	return TotalNumberOfBytesWritten;
 }
 
-void freerds_named_pipe_get_endpoint_name(DWORD id, const char *endpoint, char *dest, int len)
+void freerds_named_pipe_get_endpoint_name(DWORD id, const char* endpoint, char* dest, int len)
 {
 	sprintf_s(dest, len, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) id, endpoint);
 }

@@ -1,6 +1,6 @@
 /**
  * FreeRDS: FreeRDP Remote Desktop Services (RDS)
- * RDP Server Module
+ * NetSurf Server Module
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef FREERDS_MODULE_RDP_H
-#define FREERDS_MODULE_RDP_H
+#ifndef FREERDS_MODULE_NETSURF_H
+#define FREERDS_MODULE_NETSURF_H
 
 #include "../modules.h"
 
 int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
 
-#endif /* FREERDS_MODULE_RDP_H */
+#endif /* FREERDS_MODULE_NETSURF_H */

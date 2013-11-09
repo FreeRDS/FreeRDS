@@ -50,13 +50,13 @@ struct rds_module_rdp
 };
 typedef struct rds_module_rdp rdsModuleRdp;
 
-RDS_MODULE_COMMON * rdp_rds_module_new(void )
+RDS_MODULE_COMMON* rdp_rds_module_new(void)
 {
 	rdsModuleRdp* rdp;
 
 	WLog_Init();
 
-	rdp = (rdsModuleRdp *) malloc(sizeof(rdsModuleRdp));
+	rdp = (rdsModuleRdp*) malloc(sizeof(rdsModuleRdp));
 
 	rdp->log = WLog_Get("com.freerds.module.rdp");
 	WLog_OpenAppender(rdp->log);
@@ -65,10 +65,10 @@ RDS_MODULE_COMMON * rdp_rds_module_new(void )
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleNew");
 
-	return (RDS_MODULE_COMMON *)rdp;
+	return (RDS_MODULE_COMMON*) rdp;
 }
 
-void rdp_rds_module_free(RDS_MODULE_COMMON * module)
+void rdp_rds_module_free(RDS_MODULE_COMMON* module)
 {
 	rdsModuleRdp* rdp;
 
@@ -80,22 +80,21 @@ void rdp_rds_module_free(RDS_MODULE_COMMON * module)
 	free(rdp);
 }
 
-char * rdp_rds_module_start(RDS_MODULE_COMMON * module)
+char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
 	rdsModuleRdp* rdp;
-
 	char lpCommandLine[256];
 	const char* endpoint = "RDP";
-	long xres,yres;
-	char *pipeName = (char *)malloc(256);
+	long xres, yres;
+	char* pipeName = (char*) malloc(256);
 
 	rdp = (rdsModuleRdp*) module;
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
 			(int) rdp->commonModule.sessionId, endpoint);
 
-	freerds_named_pipe_get_endpoint_name((int)rdp->commonModule.sessionId, endpoint, pipeName, 256);
+	freerds_named_pipe_get_endpoint_name((int) rdp->commonModule.sessionId, endpoint, pipeName, 256);
 	freerds_named_pipe_clean(pipeName);
 
 	ZeroMemory(&(rdp->si), sizeof(STARTUPINFO));
@@ -111,7 +110,7 @@ char * rdp_rds_module_start(RDS_MODULE_COMMON * module)
 	}
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /session-id:%d /size:%dx%d",
-			"freerds-rdp", (int) rdp->SessionId, xres, yres);
+			"freerds-rdp", (int) rdp->SessionId, (int) xres, (int) yres);
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
@@ -124,7 +123,7 @@ char * rdp_rds_module_start(RDS_MODULE_COMMON * module)
 	return pipeName;
 }
 
-int rdp_rds_module_stop(RDS_MODULE_COMMON * module)
+int rdp_rds_module_stop(RDS_MODULE_COMMON* module)
 {
 	rdsModuleRdp* rdp;
 
@@ -137,7 +136,7 @@ int rdp_rds_module_stop(RDS_MODULE_COMMON * module)
 int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 {
 	pEntryPoints->Version = 1;
-	pEntryPoints->Name = RDP_MODULE_NAME;
+	pEntryPoints->Name = "RDP";
 
 	pEntryPoints->New = rdp_rds_module_new;
 	pEntryPoints->Free = rdp_rds_module_free;
