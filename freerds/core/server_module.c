@@ -185,6 +185,7 @@ int freerds_client_inbound_shared_framebuffer(rdsModuleConnector* connector, RDS
 
 	if (!connector->framebuffer.fbAttached && msg->attach)
 	{
+		RDS_MSG_PAINT_RECT fm;
 		connector->framebuffer.fbSharedMemory = (BYTE*) shmat(connector->framebuffer.fbSegmentId, 0, 0);
 		connector->framebuffer.fbAttached = TRUE;
 
@@ -194,6 +195,13 @@ int freerds_client_inbound_shared_framebuffer(rdsModuleConnector* connector, RDS
 		connector->framebuffer.image = (void*) pixman_image_create_bits(PIXMAN_x8r8g8b8,
 				connector->framebuffer.fbWidth, connector->framebuffer.fbHeight,
 				(uint32_t*) connector->framebuffer.fbSharedMemory, connector->framebuffer.fbScanline);
+
+		fm.nTopRect = 0;
+		fm.nLeftRect = 0;
+		fm.nWidth = msg->width;
+		fm.nHeight = msg->height;
+		fm.framebuffer = &(connector->framebuffer);
+		freerds_client_inbound_paint_rect(connector, &fm);
 	}
 
 	if (connector->framebuffer.fbAttached && !msg->attach)

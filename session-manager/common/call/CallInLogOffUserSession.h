@@ -1,5 +1,5 @@
 /**
- * Class for rpc call IsVirtualChannelAllowed (freerds to session manager)
+ * Class for rpc call LogOffUserSession (freerds to session manager)
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef CALL_IN_GET_USER_SESSION_H_
-#define CALL_IN_GET_USER_SESSION_H_
+#ifndef CALL_IN_LOGOFF_USER_SESSION_H_
+#define CALL_IN_LOGOFF_USER_SESSION_H_
 #include "CallFactory.h"
 #include <string>
 #include "CallIn.h"
@@ -28,11 +28,11 @@
 namespace freerds{
 	namespace sessionmanager{
 		namespace call{
-			class CallInGetUserSession: public CallIn{
+			class CallInLogOffUserSession: public CallIn{
 
 			public:
-				CallInGetUserSession();
-				virtual ~CallInGetUserSession();
+				CallInLogOffUserSession();
+				virtual ~CallInLogOffUserSession();
 
 				virtual unsigned long getCallType();
 				virtual int decodeRequest();
@@ -42,15 +42,11 @@ namespace freerds{
 
 
 			private:
-				std::string mUserName;
-				std::string mDomainName;
-
 				long mSessionID;
-				std::string mPipeName;
-
+				bool mLoggedOff;
 			};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInGetUserSession,freerds::icp::GetUserSession);
+			FACTORY_REGISTER_DWORD(CallFactory,CallInLogOffUserSession,freerds::icp::LogOffUserSession);
 		}
 	}
 }

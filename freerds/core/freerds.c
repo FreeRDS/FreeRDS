@@ -257,7 +257,6 @@ int main(int argc, char** argv)
 	signal(SIGINT, freerds_shutdown);
 	signal(SIGKILL, freerds_shutdown);
 	signal(SIGPIPE, pipe_sig);
-	signal(SIGPIPE, freerds_shutdown);
 
 	pid = GetCurrentProcessId();
 

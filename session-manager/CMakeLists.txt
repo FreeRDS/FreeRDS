@@ -59,6 +59,8 @@ set(${MODULE_PREFIX}_SRCS
 	common/call/CallInIsVCAllowed.cpp
 	common/call/CallInPing.cpp
 	common/call/CallInGetUserSession.cpp
+	common/call/CallInDisconnectUserSession.cpp
+	common/call/CallInLogOffUserSession.cpp
 	common/pbRPC/RpcEngine.cpp
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp

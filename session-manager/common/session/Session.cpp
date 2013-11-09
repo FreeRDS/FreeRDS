@@ -42,7 +42,10 @@ namespace freerds{
 
 		static wLog * logger_Session= WLog_Get("freerds.sessionmanager.session.session");
 
-			Session::Session(long sessionID):mSessionID(sessionID),mSessionStarted(false),mpEnvBlock(NULL) {
+			Session::Session(long sessionID):mSessionID(sessionID),
+					mSessionStarted(false),mpEnvBlock(NULL),
+					mCurrentState(WTSDown),mUserToken(NULL),
+					mCurrentModuleContext(NULL){
 
 			}
 
@@ -144,7 +147,9 @@ namespace freerds{
 					return false;
 				} else {
 					pipeName = pName;
+					mPipeName = pName;
 					mSessionStarted = true;
+					setConnectState(WTSActive);
 					return true;
 				}
 			}
@@ -164,11 +169,27 @@ namespace freerds{
 
 				currentModule->freeContext(mCurrentModuleContext);
 				mCurrentModuleContext = NULL;
+				mPipeName.clear();
+				setConnectState(WTSDown);
 				return true;
 
 			}
 
-}
+			std::string Session::getPipeName() {
+				return mPipeName;
+			}
+
+
+			WTS_CONNECTSTATE_CLASS Session::getConnectState() {
+				return mCurrentState;
+			}
+
+			void Session::setConnectState(WTS_CONNECTSTATE_CLASS state) {
+				mCurrentState = state;
+			}
+
+
+		}
 	}
 }
 

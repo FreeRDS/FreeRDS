@@ -45,6 +45,7 @@ namespace freerds{
 			~SessionStore();
 
 			Session *getSession(long sessionID);
+			Session *getFirstSessionUserName(std::string username,std::string domain);
 			Session *createSession();
 			int removeSession(long sessionID);
 
