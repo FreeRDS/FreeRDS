@@ -31,13 +31,13 @@
 #include <winpr/wlog.h>
 #include <appcontext/ApplicationContext.h>
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
-		namespace config
+		namespace Config
 		{
-			static wLog * logger_PropertyManager = WLog_Get("freerds.sessionmanager.config.propertymanager");
+			static wLog* logger_PropertyManager = WLog_Get("freerds.SessionManager.config.propertymanager");
 
 			PropertyManager::PropertyManager()
 			{
@@ -129,7 +129,7 @@ namespace freerds
 				helper.type = BoolType;
 				helper.boolValue = value;
 
-				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				mPropertyGlobalMap.insert(std::make_pair(path, helper));
 				return 0;
 			}
 
@@ -141,7 +141,7 @@ namespace freerds
 				helper.type = NumberType;
 				helper.numberValue = value;
 
-				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				mPropertyGlobalMap.insert(std::make_pair(path, helper));
 				return 0;
 			}
 
@@ -153,7 +153,7 @@ namespace freerds
 				helper.type = StringType;
 				helper.stringValue = value;
 
-				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				mPropertyGlobalMap.insert(std::make_pair(path, helper));
 				return 0;
 			}
 

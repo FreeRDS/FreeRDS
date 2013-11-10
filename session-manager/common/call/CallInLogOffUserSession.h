@@ -24,9 +24,9 @@
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace call
 		{
@@ -46,11 +46,11 @@ namespace freerds
 				bool mLoggedOff;
 			};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInLogOffUserSession,freerds::icp::LogOffUserSession);
+			FACTORY_REGISTER_DWORD(CallFactory,CallInLogOffUserSession,FreeRDS::icp::LogOffUserSession);
 		}
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = FreeRDS::SessionManager::call;
 
 #endif

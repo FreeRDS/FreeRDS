@@ -44,7 +44,7 @@ bool getPropertyString(long sessionID, char* path, char* value, unsigned int val
 
 int setPropertyBool(PROPERTY_LEVEL level, long sessionID, char* path, bool value);
 int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, char* path, long value);
-int setPropertyString(PROPERTY_LEVEL level, long sessionID, char* path, char * value);
+int setPropertyString(PROPERTY_LEVEL level, long sessionID, char* path, char* value);
 
 #ifdef __cplusplus
 }

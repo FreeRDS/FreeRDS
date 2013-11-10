@@ -24,9 +24,10 @@
 #include "ModuleManager.h"
 
 #include <winpr/crt.h>
-#include <winpr/file.h>
-#include <winpr/library.h>
 #include <winpr/wlog.h>
+#include <winpr/file.h>
+#include <winpr/path.h>
+#include <winpr/library.h>
 #include <winpr/environment.h>
 
 #include <config/PropertyCWrapper.h>
@@ -36,15 +37,17 @@
 
 #include <config/PropertyCWrapper.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace module{
-
-			static wLog * logger_ModuleManager = WLog_Get("freerds.sessionmanager.module.modulemanager");
+namespace FreeRDS
+{
+	namespace SessionManager
+	{
+		namespace module
+		{
+			static wLog* logger_ModuleManager = WLog_Get("freerds.SessionManager.module.modulemanager");
 
 			ModuleManager::ModuleManager()
 			{
-
+				this->pathSeparator = PathGetSeparatorA(PATH_STYLE_NATIVE);
 			}
 
 			ModuleManager::~ModuleManager()
@@ -52,7 +55,7 @@ namespace freerds{
 
 			}
 
-			int ModuleManager::loadModuelsFromPathAndEnv(std::string path,std::string pattern)
+			int ModuleManager::loadModulesFromPathAndEnv(std::string path, std::string pattern)
 			{
 				// the the Environment variable
 				DWORD nSize = GetEnvironmentVariableA(MODULE_ENV_VAR, NULL, 0);
@@ -60,25 +63,26 @@ namespace freerds{
 				if (nSize)
 				{
 					// we found the env variable
-					char * lpBuffer = (LPSTR) malloc(nSize);
+					char* lpBuffer = (LPSTR) malloc(nSize);
 					nSize = GetEnvironmentVariableA(MODULE_ENV_VAR, lpBuffer, nSize);
 
-					WLog_Print(logger_ModuleManager, WLOG_TRACE, "found env variable %s with content %s",MODULE_ENV_VAR,lpBuffer);
+					WLog_Print(logger_ModuleManager, WLOG_TRACE,
+							"found env variable %s with content %s", MODULE_ENV_VAR, lpBuffer);
 
 					std::string envpath(lpBuffer);
 					std::vector<std::string> pathList = split<std::string>(envpath, ":");
 
-					for (int run=0; run < pathList.size(); run++)
+					for (int run = 0; run < pathList.size(); run++)
 					{
-						loadModulesFromPath(pathList[run],pattern);
+						loadModulesFromPath(pathList[run], pattern);
 					}
 				}
 				else
 				{
-					WLog_Print(logger_ModuleManager, WLOG_TRACE, "did not find env variable %s",MODULE_ENV_VAR);
+					WLog_Print(logger_ModuleManager, WLOG_TRACE, "did not find env variable %s", MODULE_ENV_VAR);
 				}
 
-				loadModulesFromPath(path,pattern);
+				loadModulesFromPath(path, pattern);
 
 				return 0;
 			}
@@ -87,14 +91,14 @@ namespace freerds{
 			{
 				 HANDLE hFind;
 				 WIN32_FIND_DATA FindFileData;
-				 std::string fullsearch = path + pattern;
+				 std::string fullsearch = path + pathSeparator + pattern;
 
 				 hFind = FindFirstFile(fullsearch.c_str(), &FindFileData);
-				 WLog_Print(logger_ModuleManager, WLOG_TRACE, "scanning with in directory %s for modules",fullsearch.c_str());
+				 WLog_Print(logger_ModuleManager, WLOG_TRACE, "scanning with in directory %s for modules", fullsearch.c_str());
 
 				 if (hFind == INVALID_HANDLE_VALUE)
 				 {
-					 WLog_Print(logger_ModuleManager, WLOG_ERROR, "FindFirstFile (path = %s) failed",fullsearch.c_str());
+					 WLog_Print(logger_ModuleManager, WLOG_ERROR, "FindFirstFile (path = %s) failed", fullsearch.c_str());
 					 return -1;
 				 }
 
@@ -107,7 +111,7 @@ namespace freerds{
 					 else
 					 {
 						 // try to add this module ...
-						 addModule(path,std::string(FindFileData.cFileName));
+						 addModule(path, std::string(FindFileData.cFileName));
 
 					 }
 				 }
@@ -121,15 +125,15 @@ namespace freerds{
 				pRdsModuleEntry entry;
 				RDS_MODULE_ENTRY_POINTS entrypoints;
 
-				std::string fullFileName = path + modulename;
+				std::string fullFileName = path + pathSeparator + modulename;
 
-				WLog_Print(logger_ModuleManager, WLOG_TRACE, "loading library %s",fullFileName.c_str());
+				WLog_Print(logger_ModuleManager, WLOG_TRACE, "loading library %s", fullFileName.c_str());
 
 				hLib = LoadLibrary(fullFileName.c_str());
 
 				if (!hLib)
 				{
-					WLog_Print(logger_ModuleManager, WLOG_ERROR, "loading library %s failed",fullFileName.c_str());
+					WLog_Print(logger_ModuleManager, WLOG_ERROR, "loading library %s failed", fullFileName.c_str());
 					return -1;
 				}
 
@@ -141,9 +145,9 @@ namespace freerds{
 					// found entrypoint
 					ZeroMemory(&entrypoints, sizeof(RDS_MODULE_ENTRY_POINTS));
 					// setting the property callbacks
-					entrypoints.getPropertyBool =getPropertyBool;
-					entrypoints.getPropertyNumber =getPropertyNumber;
-					entrypoints.getPropertyString =getPropertyString;
+					entrypoints.getPropertyBool = getPropertyBool;
+					entrypoints.getPropertyNumber = getPropertyNumber;
+					entrypoints.getPropertyString = getPropertyString;
 					result = entry(&entrypoints);
 
 					if (result == 0)
@@ -151,39 +155,39 @@ namespace freerds{
 						// no error occurred
 						Module* module = new Module();
 
-						if (module->initModule(hLib,fullFileName,&entrypoints) == 0)
+						if (module->initModule(hLib, fullFileName, &entrypoints) == 0)
 						{
 							// check if module with same name is registered.
 							if (mModulesMap.count(module->getName()))
 							{
-								WLog_Print(logger_ModuleManager, WLOG_INFO, "library %s loaded, but another library has already registred modulename %s",module->getName().c_str());
+								WLog_Print(logger_ModuleManager, WLOG_INFO,
+										"library %s loaded, but another library has already registred modulename %s", module->getName().c_str());
 								delete module;
 								return -1;
-
 							}
 							else
 							{
-								WLog_Print(logger_ModuleManager, WLOG_INFO, "library %s loaded properly",fullFileName.c_str());
+								WLog_Print(logger_ModuleManager, WLOG_INFO, "library %s loaded properly", fullFileName.c_str());
 								// add this module to the map
-								mModulesMap.insert(std::pair<std::string,Module *>(module->getName(),module));
+								mModulesMap.insert(std::pair<std::string,Module *>(module->getName(), module));
 							}
 						}
 						else
 						{
-							WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s not loaded",fullFileName.c_str());
+							WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s not loaded", fullFileName.c_str());
 							delete module;
 							return -1;
 						}
 					}
 					else
 					{
-						WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s function %s reported error %d",fullFileName.c_str(),RDS_MODULE_ENTRY_POINT_NAME,result);
+						WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s function %s reported error %d", fullFileName.c_str(), RDS_MODULE_ENTRY_POINT_NAME, result);
 						return -1;
 					}
 				}
 				else
 				{
-					WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s does not export function %s",fullFileName.c_str(),RDS_MODULE_ENTRY_POINT_NAME);
+					WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s does not export function %s", fullFileName.c_str(), RDS_MODULE_ENTRY_POINT_NAME);
 					return -1;
 				}
 				return 0;

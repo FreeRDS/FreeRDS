@@ -31,7 +31,7 @@
 #include <call/CallIn.h>
 #include <appcontext/ApplicationContext.h>
 
-namespace freerds {
+namespace FreeRDS {
 namespace pbrpc {
 
 #define CLIENT_DISCONNECTED 2
@@ -333,7 +333,7 @@ int RpcEngine::processData()
 	}
 }
 
-int RpcEngine::send(freerds::sessionmanager::call::Call* call)
+int RpcEngine::send(FreeRDS::SessionManager::call::Call* call)
 {
 	DWORD lpNumberOfBytesWritten;
 	std::string serialized;
@@ -492,7 +492,7 @@ int RpcEngine::serveClient()
 	return retValue;
 }
 
-int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call)
+int RpcEngine::processOutgoingCall(FreeRDS::SessionManager::call::Call* call)
 {
 	if (call->getDerivedType() == 2)
 	{

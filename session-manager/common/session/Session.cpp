@@ -35,13 +35,13 @@
 
 #include <appcontext/ApplicationContext.h>
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace session
 		{
-			static wLog* logger_Session= WLog_Get("freerds.sessionmanager.session.session");
+			static wLog* logger_Session= WLog_Get("freerds.SessionManager.session.session");
 
 			Session::Session(long sessionID):mSessionID(sessionID),
 					mSessionStarted(false),mpEnvBlock(NULL),

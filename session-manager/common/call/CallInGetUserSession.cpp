@@ -24,12 +24,12 @@
 #include "CallInGetUserSession.h"
 #include <appcontext/ApplicationContext.h>
 
-using freerds::icp::GetUserSessionRequest;
-using freerds::icp::GetUserSessionResponse;
+using FreeRDS::icp::GetUserSessionRequest;
+using FreeRDS::icp::GetUserSessionResponse;
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace call
 		{
@@ -45,7 +45,7 @@ namespace freerds
 
 		unsigned long CallInGetUserSession::getCallType()
 		{
-			return freerds::icp::GetUserSession;
+			return FreeRDS::icp::GetUserSession;
 		};
 
 		int CallInGetUserSession::decodeRequest()

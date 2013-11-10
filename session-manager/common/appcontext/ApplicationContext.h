@@ -29,11 +29,11 @@
 #include <module/ModuleManager.h>
 #include <config/PropertyManager.h>
 
-#define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
+#define APP_CONTEXT FreeRDS::SessionManager::ApplicationContext::instance()
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		class ApplicationContext: public SingletonBase<ApplicationContext>
 		{
@@ -44,12 +44,29 @@ namespace freerds
 			int startRPCEngine();
 			int stopRPCEngine();
 
+			char* getHomePath();
+			char* getLibraryPath();
+			char* getExecutablePath();
+			char* getShareDataPath();
+			char* getSystemConfigPath();
+
 			SignalingQueue<callNS::Call> * getRpcOutgoingQueue();
 
 			int loadModulesFromPath(std::string path);
 			void setupTestingPropValues();
 
 		private:
+			char* homePath;
+			char* libraryPath;
+			char* executablePath;
+			char* shareDataPath;
+			char* systemConfigPath;
+
+			void initPaths();
+			void uninitPaths();
+
+			void configureExecutableSearchPath();
+
 			sessionNS::SessionStore mSessionStore;
 			configNS::PropertyManager mPropertyManager;
 			pbRPC::RpcEngine mRpcEngine;
@@ -61,6 +78,6 @@ namespace freerds
 	}
 }
 
-namespace appNS = freerds::sessionmanager;
+namespace appNS = FreeRDS::SessionManager;
 
 #endif

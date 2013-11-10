@@ -24,13 +24,13 @@
 #include "SessionStore.h"
 #include <winpr/wlog.h>
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace session
 		{
-			static wLog * logger_SessionStore = WLog_Get("freerds.sessionmanager.session.sessionstore");
+			static wLog * logger_SessionStore = WLog_Get("freerds.SessionManager.session.sessionstore");
 
 			SessionStore::SessionStore()
 			{

@@ -25,13 +25,13 @@
 #include <winpr/wlog.h>
 #include <winpr/library.h>
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace module
 		{
-			static wLog* logger_Module = WLog_Get("freerds.sessionmanager.module.module");
+			static wLog* logger_Module = WLog_Get("freerds.SessionManager.module.module");
 
 			Module::Module() : mfpNew(0), mfpFree(0)
 				,mfpStart(0), mfpStop(0)

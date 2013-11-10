@@ -30,7 +30,7 @@
 
 #define PIPE_BUFFER_SIZE	0xFFFF
 
-namespace freerds{
+namespace FreeRDS{
 	namespace pbrpc{
 
 		class RpcEngine{
@@ -53,10 +53,10 @@ namespace freerds{
 			int readHeader();
 			int readPayload();
 			int processData();
-			int send(freerds::sessionmanager::call::Call * call);
+			int send(FreeRDS::SessionManager::call::Call * call);
 			int sendError(uint32_t callID, uint32_t callType);
 			int sendInternal(std::string data);
-			int processOutgoingCall(freerds::sessionmanager::call::Call * call);
+			int processOutgoingCall(FreeRDS::SessionManager::call::Call * call);
 
 
 
@@ -83,7 +83,7 @@ namespace freerds{
 	}
 }
 
-namespace pbRPC = freerds::pbrpc;
+namespace pbRPC = FreeRDS::pbrpc;
 
 
 

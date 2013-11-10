@@ -24,12 +24,12 @@
 #include "CallInDisconnectUserSession.h"
 #include <appcontext/ApplicationContext.h>
 
-using freerds::icp::DisconnectUserSessionRequest;
-using freerds::icp::DisconnectUserSessionResponse;
+using FreeRDS::icp::DisconnectUserSessionRequest;
+using FreeRDS::icp::DisconnectUserSessionResponse;
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace call
 		{
@@ -47,7 +47,7 @@ namespace freerds
 
 		unsigned long CallInDisconnectUserSession::getCallType()
 		{
-			return freerds::icp::DisconnectUserSession;
+			return FreeRDS::icp::DisconnectUserSession;
 		};
 
 		int CallInDisconnectUserSession::decodeRequest()

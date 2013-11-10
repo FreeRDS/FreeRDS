@@ -23,9 +23,9 @@
 #include <call/Call.h>
 #include <winpr/synch.h>
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace call
 		{
@@ -55,7 +55,7 @@ namespace freerds
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = FreeRDS::SessionManager::call;
 
 
 #endif /* CALLOUT_H_ */

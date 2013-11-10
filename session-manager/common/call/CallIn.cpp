@@ -25,9 +25,9 @@
 #include <string>
 #include <winpr/handle.h>
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace call
 		{

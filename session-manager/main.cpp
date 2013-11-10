@@ -50,11 +50,11 @@ int main(void)
 	std::string test;
 #endif
 	APP_CONTEXT.startRPCEngine();
-	APP_CONTEXT.loadModulesFromPath("/development/testModule/");
+	APP_CONTEXT.loadModulesFromPath(APP_CONTEXT.getLibraryPath());
 
 	cout << "Hello session manager" << endl;
 #ifndef _WIN32
-	TermEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	signal(SIGINT, shutdown);
 	signal(SIGKILL, shutdown);
 	signal(SIGPIPE, shutdown);

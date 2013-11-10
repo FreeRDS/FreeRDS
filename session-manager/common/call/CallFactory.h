@@ -26,11 +26,11 @@
 
 #include <string>
 
-#define CALL_FACTORY freerds::sessionmanager::call::CallFactory::instance()
+#define CALL_FACTORY FreeRDS::SessionManager::call::CallFactory::instance()
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace call
 		{
@@ -52,6 +52,6 @@ namespace freerds
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = FreeRDS::SessionManager::call;
 
 #endif

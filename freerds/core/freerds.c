@@ -40,12 +40,41 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/cmdline.h>
+#include <winpr/library.h>
 
+#include <freerds/freerds.h>
 #include <freerds/icp_client_stubs.h>
 
 char* RdsModuleName = NULL;
 static HANDLE g_TermEvent = NULL;
 static xrdpListener* g_listen = NULL;
+static char* freerds_home_path = NULL;
+
+char* freerds_get_home_path()
+{
+	if (!freerds_home_path)
+	{
+		char* p;
+		int length;
+		char separator;
+		char moduleFileName[4096];
+
+		separator = PathGetSeparatorA(PATH_STYLE_NATIVE);
+		GetModuleFileNameA(NULL, moduleFileName, sizeof(moduleFileName));
+
+		p = strrchr(moduleFileName, separator);
+		*p = '\0';
+		p = strrchr(moduleFileName, separator);
+		*p = '\0';
+
+		length = strlen(moduleFileName);
+		freerds_home_path = (char*) malloc(length + 1);
+		CopyMemory(freerds_home_path, moduleFileName, length);
+		freerds_home_path[length] = '\0';
+	}
+
+	return freerds_home_path;
+}
 
 COMMAND_LINE_ARGUMENT_A freerds_args[] =
 {
@@ -259,6 +288,8 @@ int main(int argc, char** argv)
 	signal(SIGPIPE, pipe_sig);
 
 	pid = GetCurrentProcessId();
+
+	freerds_get_home_path();
 
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	printf("starting icp and waiting for session manager \n");

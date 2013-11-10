@@ -24,12 +24,12 @@
 
 #include "CallInPing.h"
 
-using freerds::icp::PingRequest;
-using freerds::icp::PingResponse;
+using FreeRDS::icp::PingRequest;
+using FreeRDS::icp::PingResponse;
 
-namespace freerds
+namespace FreeRDS
 {
-	namespace sessionmanager
+	namespace SessionManager
 	{
 		namespace call
 		{
@@ -46,7 +46,7 @@ namespace freerds
 
 		unsigned long CallInPing::getCallType()
 		{
-			return freerds::icp::Ping;
+			return FreeRDS::icp::Ping;
 		};
 
 		int CallInPing::decodeRequest()
