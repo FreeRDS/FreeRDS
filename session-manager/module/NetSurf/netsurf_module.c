@@ -32,8 +32,13 @@
 #endif
 
 #include <freerds/freerds.h>
+#include <freerds/module_connector.h>
 
 #include "netsurf_module.h"
+
+pgetPropertyBool gGetPropertyBool;
+pgetPropertyNumber gGetPropertyNumber;
+pgetPropertyString gGetPropertyString;
 
 struct rds_module_netsurf
 {
@@ -82,6 +87,8 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 	WLog_Print(ns->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
 			(int) SessionId, endpoint);
 
+	pipeName = (char*) malloc(256);
+	freerds_named_pipe_get_endpoint_name(SessionId, endpoint, pipeName, 256);
 	freerds_named_pipe_clean_endpoint(SessionId, endpoint);
 
 	ZeroMemory(&(ns->si), sizeof(STARTUPINFO));
@@ -99,9 +106,13 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 
 	WLog_Print(ns->log, WLOG_DEBUG, "Process created with status: %d", status);
 
-	pipeName = (char*) malloc(256);
-	sprintf_s(pipeName, 256, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, "NetSurf");
+	if (!WaitNamedPipeA(pipeName, 5 * 1000))
+	{
+		fprintf(stderr, "WaitNamedPipe failure: %s\n", pipeName);
+		return NULL;
+	}
 
+#if 0
 	hClientPipe = CreateFileA(pipeName,
 			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
@@ -112,7 +123,7 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 	}
 
 	CloseHandle(hClientPipe);
-
+#endif
 	return pipeName;
 }
 
@@ -135,6 +146,10 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 
 	pEntryPoints->Start = netsurf_rds_module_start;
 	pEntryPoints->Stop = netsurf_rds_module_stop;
+
+	gGetPropertyBool = pEntryPoints->getPropertyBool;
+	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
+	gGetPropertyString = pEntryPoints->getPropertyString;
 
 	return 0;
 }

@@ -563,6 +563,8 @@ int RDS_RdpClientEntry(RDP_CLIENT_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Version = 1;
 	pEntryPoints->Size = sizeof(RDP_CLIENT_ENTRY_POINTS_V1);
 
+	pEntryPoints->settings = NULL;
+
 	pEntryPoints->GlobalInit = rds_freerdp_client_global_init;
 	pEntryPoints->GlobalUninit = rds_freerdp_client_global_uninit;
 

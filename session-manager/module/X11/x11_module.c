@@ -67,7 +67,8 @@ struct rds_module_x11
 };
 typedef struct rds_module_x11 rdsModuleX11;
 
-void x11_rds_module_reset_process_informations(rdsModuleX11* module) {
+void x11_rds_module_reset_process_informations(rdsModuleX11* module)
+{
 	ZeroMemory(&(module->X11StartupInfo), sizeof(STARTUPINFO));
 	module->X11StartupInfo.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(module->X11ProcessInformation), sizeof(PROCESS_INFORMATION));
@@ -76,9 +77,9 @@ void x11_rds_module_reset_process_informations(rdsModuleX11* module) {
 	ZeroMemory(&(module->WMProcessInformation), sizeof(PROCESS_INFORMATION));
 }
 
-RDS_MODULE_COMMON * x11_rds_module_new(void )
+RDS_MODULE_COMMON* x11_rds_module_new(void)
 {
-	rdsModuleX11 * module = (rdsModuleX11*) malloc(sizeof(rdsModuleX11));
+	rdsModuleX11* module = (rdsModuleX11*) malloc(sizeof(rdsModuleX11));
 	ZeroMemory(module, sizeof(rdsModuleX11));
 
 	x11_rds_module_reset_process_informations(module);
@@ -87,22 +88,23 @@ RDS_MODULE_COMMON * x11_rds_module_new(void )
 	module->commonModule.userToken = NULL;
 	module->commonModule.authToken = NULL;
 
-	return (RDS_MODULE_COMMON *) module;
+	return (RDS_MODULE_COMMON*) module;
 }
 
-void x11_rds_module_free(RDS_MODULE_COMMON * module)
+void x11_rds_module_free(RDS_MODULE_COMMON* module)
 {
-	rdsModuleX11 * moduleCon = (rdsModuleX11*) module;
-	if (moduleCon->commonModule.authToken) {
+	rdsModuleX11* moduleCon = (rdsModuleX11*) module;
+
+	if (moduleCon->commonModule.authToken)
 		free(moduleCon->commonModule.authToken);
-	}
-	if (moduleCon->commonModule.userToken) {
+
+	if (moduleCon->commonModule.userToken)
 		CloseHandle(moduleCon->commonModule.userToken);
-	}
+
 	free(module);
 }
 
-char * x11_rds_module_start(RDS_MODULE_COMMON * module)
+char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 {
 	BOOL status;
 	DWORD SessionId;
@@ -114,15 +116,14 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	char* filename;
 	char* pipeName;
-
-	long xres,yres,colordepth;
+	long xres, yres, colordepth;
 
 	x11 = (rdsModuleX11*) module;
 
 	SessionId = x11->commonModule.sessionId;
-	displayNum = SessionId+10;
+	displayNum = SessionId + 10;
 
-	pipeName = (char *)malloc(256);
+	pipeName = (char*) malloc(256);
 	freerds_named_pipe_get_endpoint_name(displayNum, "X11", pipeName, 256);
 
 	filename = GetNamedPipeUnixDomainSocketFilePathA(pipeName);
@@ -137,21 +138,17 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	pwnam = getpwnam(x11->commonModule.userName);
 
-
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (displayNum));
-	SetEnvironmentVariableEBA(x11->commonModule.envBlock,"DISPLAY",envstr);
+	SetEnvironmentVariableEBA(x11->commonModule.envBlock, "DISPLAY", envstr);
 
-	if (!gGetPropertyNumber(x11->commonModule.sessionId,"module.x11.xres",&xres)) {
+	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.xres", &xres))
 		xres = 1024;
-	}
 
-	if (!gGetPropertyNumber(x11->commonModule.sessionId,"module.x11.yres",&yres)) {
+	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.yres", &yres))
 		yres = 768;
-	}
 
-	if (!gGetPropertyNumber(x11->commonModule.sessionId,"module.x11.colordepth",&colordepth)) {
+	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", &colordepth))
 		colordepth = 24;
-	}
 
 	x11_rds_module_reset_process_informations(x11);
 

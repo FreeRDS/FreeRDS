@@ -23,6 +23,9 @@
 
 #include <winpr/crt.h>
 #include <winpr/wlog.h>
+#include <winpr/synch.h>
+#include <winpr/thread.h>
+#include <winpr/pipe.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -92,6 +95,8 @@ char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 
 	rdp = (rdsModuleRdp*) module;
 
+	rdp->SessionId = rdp->commonModule.sessionId;
+
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
 			(int) rdp->commonModule.sessionId, endpoint);
 
@@ -102,24 +107,28 @@ char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 	rdp->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(rdp->pi), sizeof(PROCESS_INFORMATION));
 
-	if (!gGetPropertyNumber(rdp->commonModule.sessionId,"module.rdp.xres",&xres)) {
+	if (!gGetPropertyNumber(rdp->commonModule.sessionId, "module.rdp.xres", &xres))
 		xres = 1024;
-	}
 
-	if (!gGetPropertyNumber(rdp->commonModule.sessionId,"module.rdp.yres",&yres)) {
+	if (!gGetPropertyNumber(rdp->commonModule.sessionId, "module.rdp.yres", &yres))
 		yres = 768;
-	}
 
-	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /session-id:%d /size:%dx%d",
-			"freerds-rdp", (int) rdp->SessionId, (int) xres, (int) yres);
+	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /size:%dx%d",
+			"freerds-rdp", (int) xres, (int) yres);
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
 	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, NULL, NULL,
+			NULL, NULL, FALSE, 0, *(rdp->commonModule.envBlock), NULL,
 			&(rdp->si), &(rdp->pi));
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Process created with status: %d", status);
+
+	if (!WaitNamedPipeA(pipeName, 5 * 1000))
+	{
+		fprintf(stderr, "WaitNamedPipe failure: %s\n", pipeName);
+		return NULL;
+	}
 
 	return pipeName;
 }
