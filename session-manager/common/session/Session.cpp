@@ -151,7 +151,7 @@ namespace FreeRDS
 
 				if (!currentModule)
 				{
-					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no module found for name %s",mModuleName.c_str());
+					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no module found for name %s", mModuleName.c_str());
 					return false;
 				}
 
@@ -188,11 +188,11 @@ namespace FreeRDS
 					return false;
 				}
 
-				moduleNS::Module * currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
+				moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
 
 				if (!currentModule)
 				{
-					WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no module found for name %s",mModuleName.c_str());
+					WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no module found for name %s", mModuleName.c_str());
 					return false;
 				}
 

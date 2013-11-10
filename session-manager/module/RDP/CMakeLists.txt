@@ -23,6 +23,9 @@ set(${MODULE_PREFIX}_SRCS
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
+set(${MODULE_PREFIX}_LIBS "")
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
+
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr

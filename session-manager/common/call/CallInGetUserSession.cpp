@@ -34,6 +34,7 @@ namespace FreeRDS
 		namespace call
 		{
 		CallInGetUserSession::CallInGetUserSession()
+			: mSessionID(0)
 		{
 
 		};
@@ -52,6 +53,7 @@ namespace FreeRDS
 		{
 			// decode protocol buffers
 			GetUserSessionRequest req;
+
 			if (!req.ParseFromString(mEncodedRequest))
 			{
 				// failed to parse
@@ -92,7 +94,7 @@ namespace FreeRDS
 		{
 			std::string pipeName;
 
-			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName,mDomainName);
+			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{
@@ -112,7 +114,8 @@ namespace FreeRDS
 					return 1;
 				}
 
-				currentSession->setModuleName("X11");
+				char* moduleName = APP_CONTEXT.getModuleManager()->getDefaultModuleName();
+				currentSession->setModuleName(moduleName);
 			}
 
 			if (currentSession->getConnectState() == WTSDown)

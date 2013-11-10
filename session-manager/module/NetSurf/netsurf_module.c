@@ -51,7 +51,7 @@ RDS_MODULE_COMMON* netsurf_rds_module_new(void)
 
 	WLog_Init();
 
-	ns->log = WLog_Get("com.freerds.module.cef");
+	ns->log = WLog_Get("com.freerds.module.netsurf");
 	WLog_OpenAppender(ns->log);
 
 	WLog_SetLogLevel(ns->log, WLOG_DEBUG);
