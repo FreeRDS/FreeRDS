@@ -78,7 +78,6 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
 	char* pipeName;
-	HANDLE hClientPipe;
 	char lpCommandLine[256];
 	const char* endpoint = "NetSurf";
 	rdsModuleNetSurf* ns = (rdsModuleNetSurf*) module;
@@ -101,7 +100,7 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 	WLog_Print(ns->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
 	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, NULL, NULL,
+			NULL, NULL, FALSE, 0, *(ns->commonModule.envBlock), NULL,
 			&(ns->si), &(ns->pi));
 
 	WLog_Print(ns->log, WLOG_DEBUG, "Process created with status: %d", status);
@@ -112,18 +111,6 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 		return NULL;
 	}
 
-#if 0
-	hClientPipe = CreateFileA(pipeName,
-			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-
-	if ((!hClientPipe) || (hClientPipe == INVALID_HANDLE_VALUE))
-	{
-		fprintf(stderr, "Failed to create named pipe %s\n", pipeName);
-		return NULL;
-	}
-
-	CloseHandle(hClientPipe);
-#endif
 	return pipeName;
 }
 

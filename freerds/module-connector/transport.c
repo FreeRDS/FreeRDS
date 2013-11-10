@@ -101,7 +101,6 @@ int freerds_named_pipe_clean(const char* pipeName)
 
 	free(filename);
 	return status;
-
 }
 
 int freerds_named_pipe_clean_endpoint(DWORD id, const char* endpoint)
@@ -131,7 +130,6 @@ HANDLE freerds_named_pipe_connect(const char* pipeName, DWORD nTimeOut)
 	}
 
 	return hNamedPipe;
-
 }
 
 HANDLE freerds_named_pipe_connect_endpoint(DWORD id, const char* endpoint, DWORD nTimeOut)
@@ -156,7 +154,6 @@ HANDLE freerds_named_pipe_create(const char* pipeName)
 	}
 
 	return hNamedPipe;
-
 }
 
 HANDLE freerds_named_pipe_create_endpoint(DWORD id, const char* endpoint)

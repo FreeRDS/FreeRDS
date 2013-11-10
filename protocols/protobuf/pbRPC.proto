@@ -1,4 +1,4 @@
-package freerds.pbrpc;
+package FreeRDS.pbrpc;
 
 message RPCBase {
 	required uint32 tag = 1; // Tag to identify the message

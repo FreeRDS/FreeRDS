@@ -24,21 +24,21 @@
 #include "pbrpc_utils.h"
 
 #define ICP_CLIENT_STUB_SETUP(camel, expanded) \
-    UINT32 type = FREERDS__ICP__MSGTYPE__##camel ; \
+    UINT32 type = FREE_RDS__ICP__MSGTYPE__##camel ; \
 	pbRPCPayload pbrequest; \
 	pbRPCPayload *pbresponse = NULL; \
 	int ret; \
-	Freerds__Icp__##camel ## Request request; \
-	Freerds__Icp__##camel ## Response *response = NULL; \
-	pbRPCContext *context = (pbRPCContext *)freerds_icp_get_context(); \
+	FreeRDS__Icp__##camel ## Request request; \
+	FreeRDS__Icp__##camel ## Response *response = NULL; \
+	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context(); \
 	if (!context) \
 		return PBRPC_FAILED; \
-	freerds__icp__ ##expanded ##_request__init(&request);
+	free_rds__icp__ ##expanded ##_request__init(&request);
 
 #define ICP_CLIENT_STUB_CALL(camel, expanded) \
-	pbrequest.dataLen = freerds__icp__##expanded ##_request__get_packed_size(&request); \
+	pbrequest.dataLen = free_rds__icp__##expanded ##_request__get_packed_size(&request); \
 	pbrequest.data = malloc(pbrequest.dataLen); \
-	ret = freerds__icp__##expanded ##_request__pack(&request, (uint8_t *)pbrequest.data); \
+	ret = free_rds__icp__##expanded ##_request__pack(&request, (uint8_t*) pbrequest.data); \
 	if (ret == pbrequest.dataLen) \
 	{ \
 		ret = pbrpc_call_method(context, type, &pbrequest, &pbresponse); \
@@ -50,14 +50,14 @@
 	free(pbrequest.data);
 
 #define ICP_CLIENT_STUB_UNPACK_RESPONSE(camel, expanded) \
-	response = freerds__icp__##expanded ##_response__unpack(NULL, pbresponse->dataLen, (uint8_t *)pbresponse->data); \
+	response = free_rds__icp__##expanded ##_response__unpack(NULL, pbresponse->dataLen, (uint8_t*) pbresponse->data); \
 	pbrpc_free_payload(pbresponse);
 
 #define ICP_CLIENT_STUB_CLEANUP(camel, expanded) \
-	freerds__icp__##expanded ##_response__free_unpacked(response, NULL);
+	free_rds__icp__##expanded ##_response__free_unpacked(response, NULL);
 
 
-int freerds_icp_IsChannelAllowed(int sessionId, char *channelName, BOOL *isAllowed)
+int freerds_icp_IsChannelAllowed(int sessionId, char* channelName, BOOL* isAllowed)
 {
 	ICP_CLIENT_STUB_SETUP(IsChannelAllowed, is_channel_allowed)
 
@@ -89,7 +89,7 @@ int freerds_icp_IsChannelAllowed(int sessionId, char *channelName, BOOL *isAllow
 	return PBRPC_SUCCESS;
 }
 
-int freerds_icp_Ping(BOOL *pong)
+int freerds_icp_Ping(BOOL* pong)
 {
 	ICP_CLIENT_STUB_SETUP(Ping, ping)
 
@@ -118,7 +118,7 @@ int freerds_icp_Ping(BOOL *pong)
 	return PBRPC_SUCCESS;
 }
 
-int freerds_icp_GetUserSession(char *username, char * domain, UINT32 *sessionID, char **serviceEndpoint)
+int freerds_icp_GetUserSession(char* username, char* domain, UINT32* sessionID, char** serviceEndpoint)
 {
 	ICP_CLIENT_STUB_SETUP(GetUserSession, get_user_session)
 
@@ -151,7 +151,7 @@ int freerds_icp_GetUserSession(char *username, char * domain, UINT32 *sessionID,
 	return PBRPC_SUCCESS;
 }
 
-int freerds_icp_DisconnectUserSession(UINT32 sessionID, BOOL *disconnected)
+int freerds_icp_DisconnectUserSession(UINT32 sessionID, BOOL* disconnected)
 {
 	ICP_CLIENT_STUB_SETUP(DisconnectUserSession, disconnect_user_session)
 	request.sessionid = sessionID;
@@ -170,10 +170,9 @@ int freerds_icp_DisconnectUserSession(UINT32 sessionID, BOOL *disconnected)
 	*disconnected = response->disconnected;
 	ICP_CLIENT_STUB_CLEANUP(DisconnectUserSession, disconnect_user_session)
 	return PBRPC_SUCCESS;
-
 }
 
-int freerds_icp_LogOffUserSession(UINT32 sessionID, BOOL *loggedoff)
+int freerds_icp_LogOffUserSession(UINT32 sessionID, BOOL* loggedoff)
 {
 	ICP_CLIENT_STUB_SETUP(LogOffUserSession, log_off_user_session)
 	request.sessionid = sessionID;

@@ -26,6 +26,7 @@ Makefile.in
 missing
 NEWS
 *.o
+*.a
 *.so
 config.h
 README

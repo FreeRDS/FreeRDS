@@ -45,28 +45,33 @@ static int tp_npipe_open(pbRPCTransportContext* context, int timeout)
 	{
 		return -1;
 	}
+
 	np->handle = hNamedPipe;
+
 	return 0;
 }
 
 static int tp_npipe_close(pbRPCTransportContext* context)
 {
-	NpTransportContext *np = (NpTransportContext *) context;
+	NpTransportContext* np = (NpTransportContext*) context;
+
 	if(np->handle)
 	{
 		CloseHandle(np->handle);
 		np->handle = 0;
 	}
+
 	return 0;
 }
 
-static int tp_npipe_write(pbRPCTransportContext* context, char *data, unsigned int datalen)
+static int tp_npipe_write(pbRPCTransportContext* context, char* data, unsigned int datalen)
 {
 	DWORD bytesWritten;
 	BOOL fSuccess = FALSE;
-	NpTransportContext *np = (NpTransportContext *) context;
+	NpTransportContext* np = (NpTransportContext*) context;
 
-	fSuccess = WriteFile(np->handle,data, datalen, (LPDWORD)&bytesWritten, NULL);
+	fSuccess = WriteFile(np->handle, data, datalen, (LPDWORD) &bytesWritten, NULL);
+
 	if (!fSuccess || (bytesWritten < datalen))
 	{
 		return -1;
@@ -75,9 +80,9 @@ static int tp_npipe_write(pbRPCTransportContext* context, char *data, unsigned i
 	return bytesWritten;
 }
 
-static int tp_npipe_read(pbRPCTransportContext* context, char *data, unsigned int datalen)
+static int tp_npipe_read(pbRPCTransportContext* context, char* data, unsigned int datalen)
 {
-	NpTransportContext *np = (NpTransportContext *) context;
+	NpTransportContext* np = (NpTransportContext*) context;
 	DWORD bytesRead;
 	BOOL fSuccess = FALSE;
 
@@ -99,9 +104,9 @@ HANDLE tp_npipe_get_fds(pbRPCTransportContext* context)
 
 pbRPCTransportContext* tp_npipe_new()
 {
-	NpTransportContext *np = malloc(sizeof(NpTransportContext));
+	NpTransportContext* np = malloc(sizeof(NpTransportContext));
 	ZeroMemory(np, sizeof(NpTransportContext));
-	pbRPCTransportContext *ctx = (pbRPCTransportContext *)np;
+	pbRPCTransportContext *ctx = (pbRPCTransportContext*) np;
 	ctx->open = tp_npipe_open;
 	ctx->close = tp_npipe_close;
 	ctx->read = tp_npipe_read;
@@ -110,7 +115,7 @@ pbRPCTransportContext* tp_npipe_new()
 	return ctx;
 }
 
-void tp_npipe_free(pbRPCTransportContext *context)
+void tp_npipe_free(pbRPCTransportContext* context)
 {
 	free(context);
 }

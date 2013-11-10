@@ -46,7 +46,7 @@ set(${MODULE_PREFIX}_SRCS
 	cef_module.c
 	cef_module.h)
 
-add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS "")
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)

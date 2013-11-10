@@ -17,6 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <freerds/icp.h>
 #include "pbrpc.h"
 #include "pipe_transport.h"
@@ -25,21 +26,20 @@
 
 struct icp_context
 {
-	pbRPCContext *pbcontext;
-	pbRPCTransportContext *tpcontext;
+	pbRPCContext* pbcontext;
+	pbRPCTransportContext* tpcontext;
 };
 
-static struct icp_context *icpContext = NULL;
+static struct icp_context* icpContext = NULL;
 
 static pbRPCMethod icpMethods[] =
 {
-	{FREERDS__ICP__MSGTYPE__Ping, ping},
-	{0, NULL}
+	{ FREE_RDS__ICP__MSGTYPE__Ping, ping },
+	{ 0, NULL }
 };
 
 int freerds_icp_start()
 {
-
 	icpContext = malloc(sizeof(struct icp_context));
 	icpContext->tpcontext = tp_npipe_new();
 	icpContext->pbcontext = pbrpc_server_new(icpContext->tpcontext);
@@ -58,7 +58,7 @@ int freerds_icp_shutdown()
 	return 0;
 }
 
-void *freerds_icp_get_context()
+void* freerds_icp_get_context()
 {
 	return icpContext->pbcontext;
 }
