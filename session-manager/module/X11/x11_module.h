@@ -24,10 +24,6 @@
 
 #include "../modules.h"
 
-#define X11_MODULE_NAME "x11module"
-
 int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
-
-
 
 #endif /* FREERDS_MODULE_X11_H */

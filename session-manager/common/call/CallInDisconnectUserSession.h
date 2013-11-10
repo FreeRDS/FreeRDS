@@ -24,12 +24,14 @@
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-			class CallInDisconnectUserSession: public CallIn{
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallInDisconnectUserSession: public CallIn
+			{
 			public:
 				CallInDisconnectUserSession();
 				virtual ~CallInDisconnectUserSession();
@@ -38,8 +40,6 @@ namespace freerds{
 				virtual int decodeRequest();
 				virtual int encodeResponse();
 				virtual int doStuff();
-
-
 
 			private:
 				long mSessionID;

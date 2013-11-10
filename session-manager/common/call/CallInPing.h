@@ -20,17 +20,20 @@
 
 #ifndef _CALL_IN_PING_H_
 #define _CALL_IN_PING_H_
+
 #include "CallFactory.h"
 #include <string>
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-			class CallInPing: public CallIn{
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallInPing: public CallIn
+			{
 			public:
 				CallInPing();
 				virtual ~CallInPing();
@@ -39,8 +42,6 @@ namespace freerds{
 				virtual int decodeRequest();
 				virtual int encodeResponse();
 				virtual int doStuff();
-
-
 
 			private:
 

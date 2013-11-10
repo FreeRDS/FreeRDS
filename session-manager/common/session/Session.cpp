@@ -35,100 +35,122 @@
 
 #include <appcontext/ApplicationContext.h>
 
-
-namespace freerds{
-	namespace sessionmanager{
-		namespace session{
-
-		static wLog * logger_Session= WLog_Get("freerds.sessionmanager.session.session");
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace session
+		{
+			static wLog* logger_Session= WLog_Get("freerds.sessionmanager.session.session");
 
 			Session::Session(long sessionID):mSessionID(sessionID),
 					mSessionStarted(false),mpEnvBlock(NULL),
 					mCurrentState(WTSDown),mUserToken(NULL),
-					mCurrentModuleContext(NULL){
+					mCurrentModuleContext(NULL)
+			{
 
 			}
 
-			Session::~Session() {
+			Session::~Session()
+			{
 
 			}
 
-			std::string Session::getDomain() {
+			std::string Session::getDomain()
+			{
 				return mDomain;
 			}
 
-			void Session::setDomain(std::string domain) {
+			void Session::setDomain(std::string domain)
+			{
 				mDomain = domain;
 			}
 
-			std::string Session::getUserName() {
+			std::string Session::getUserName()
+			{
 				return mUsername;
 			}
 
-			void Session::setUserName(std::string username) {
+			void Session::setUserName(std::string username)
+			{
 				mUsername = username;
 			}
 
-			long Session::getSessionID() {
+			long Session::getSessionID()
+			{
 				return mSessionID;
 			}
 
-			bool Session::generateUserToken() {
-				if (mUsername.length() == 0 ) {
+			bool Session::generateUserToken()
+			{
+				if (mUsername.length() == 0)
+				{
 					 WLog_Print(logger_Session, WLOG_ERROR, "generate UserToken failed, no username!");
 					return false;
-				};
+				}
+
 				return LogonUserA(mUsername.c_str(), mDomain.c_str(), NULL,
 						LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &mUserToken);
 			}
 
-			bool Session::generateEnvBlockAndModify() {
+			bool Session::generateEnvBlockAndModify()
+			{
 				struct passwd* pwnam;
 				char envstr[256];
 
-				if (mUsername.length() == 0 ) {
+				if (mUsername.length() == 0)
+				{
 					 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed, no username!");
 					return false;
-				};
+				}
 
-				if (mpEnvBlock){
+				if (mpEnvBlock)
+				{
 					free(mpEnvBlock);
 					mpEnvBlock = NULL;
 				}
 
 				pwnam = getpwnam(mUsername.c_str());
-				if (pwnam == NULL) {
+
+				if (!pwnam)
+				{
 					 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed to get userinformation (getpwnam) for username %s!",mUsername.c_str());
 					return false;
 				}
 
 				sprintf_s(envstr, sizeof(envstr), "%d", (int) pwnam->pw_uid);
-				SetEnvironmentVariableEBA(&mpEnvBlock,"UID",envstr);
-				SetEnvironmentVariableEBA(&mpEnvBlock,"SHELL",pwnam->pw_shell);
-				SetEnvironmentVariableEBA(&mpEnvBlock,"USER",pwnam->pw_name);
-				SetEnvironmentVariableEBA(&mpEnvBlock,"HOME",pwnam->pw_dir);
+				SetEnvironmentVariableEBA(&mpEnvBlock, "UID", envstr);
+				SetEnvironmentVariableEBA(&mpEnvBlock, "SHELL", pwnam->pw_shell);
+				SetEnvironmentVariableEBA(&mpEnvBlock, "USER", pwnam->pw_name);
+				SetEnvironmentVariableEBA(&mpEnvBlock, "HOME", pwnam->pw_dir);
+
 				return true;
 			}
 
-			char** Session::getPEnvBlock() {
+			char** Session::getPEnvBlock()
+			{
 				return &mpEnvBlock;
 			}
 
-			void Session::setModuleName(std::string moduleName) {
+			void Session::setModuleName(std::string moduleName)
+			{
 				mModuleName = moduleName;
 			}
 
-
-			bool Session::startModule(std::string& pipeName) {
-
+			bool Session::startModule(std::string& pipeName)
+			{
 				std::string pName;
 
-				if (mSessionStarted) {
+				if (mSessionStarted)
+				{
 					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, session has already be started, stop first.");
 					return false;
 				}
-				moduleNS::Module * currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
-				if (currentModule == NULL) {
+
+				moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
+
+				if (!currentModule)
+				{
 					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no module found for name %s",mModuleName.c_str());
 					return false;
 				}
@@ -142,10 +164,14 @@ namespace freerds{
 				mCurrentModuleContext->envBlock = &mpEnvBlock;
 
 				pName = currentModule->start(mCurrentModuleContext);
-				if (pName.length() == 0) {
+
+				if (pName.length() == 0)
+				{
 					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no pipeName was returned");
 					return false;
-				} else {
+				}
+				else
+				{
 					pipeName = pName;
 					mPipeName = pName;
 					mSessionStarted = true;
@@ -154,13 +180,18 @@ namespace freerds{
 				}
 			}
 
-			bool Session::stopModule() {
-				if (!mSessionStarted) {
+			bool Session::stopModule()
+			{
+				if (!mSessionStarted)
+				{
 					WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no session has started yet.");
 					return false;
 				}
+
 				moduleNS::Module * currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
-				if (currentModule == NULL) {
+
+				if (!currentModule)
+				{
 					WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no module found for name %s",mModuleName.c_str());
 					return false;
 				}
@@ -172,23 +203,22 @@ namespace freerds{
 				mPipeName.clear();
 				setConnectState(WTSDown);
 				return true;
-
 			}
 
-			std::string Session::getPipeName() {
+			std::string Session::getPipeName()
+			{
 				return mPipeName;
 			}
 
-
-			WTS_CONNECTSTATE_CLASS Session::getConnectState() {
+			WTS_CONNECTSTATE_CLASS Session::getConnectState()
+			{
 				return mCurrentState;
 			}
 
-			void Session::setConnectState(WTS_CONNECTSTATE_CLASS state) {
+			void Session::setConnectState(WTS_CONNECTSTATE_CLASS state)
+			{
 				mCurrentState = state;
 			}
-
-
 		}
 	}
 }

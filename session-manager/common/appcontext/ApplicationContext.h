@@ -29,28 +29,25 @@
 #include <module/ModuleManager.h>
 #include <config/PropertyManager.h>
 
-
 #define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
 
-namespace freerds{
-	namespace sessionmanager{
-
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
 		class ApplicationContext: public SingletonBase<ApplicationContext>
 		{
 		public:
-			sessionNS::SessionStore * getSessionStore();
-			configNS::PropertyManager * getPropertyManager();
-			moduleNS::ModuleManager * getModuleManager();
+			sessionNS::SessionStore* getSessionStore();
+			configNS::PropertyManager* getPropertyManager();
+			moduleNS::ModuleManager* getModuleManager();
 			int startRPCEngine();
 			int stopRPCEngine();
 
 			SignalingQueue<callNS::Call> * getRpcOutgoingQueue();
 
 			int loadModulesFromPath(std::string path);
-
 			void setupTestingPropValues();
-
 
 		private:
 			sessionNS::SessionStore mSessionStore;
@@ -61,9 +58,8 @@ namespace freerds{
 			moduleNS::ModuleManager mModuleManager;
 			SINGLETON_ADD_INITIALISATION(ApplicationContext)
 		};
-	
-	} // namespace freeRDS end
-} // namespace sessionmanager end
+	}
+}
 
 namespace appNS = freerds::sessionmanager;
 

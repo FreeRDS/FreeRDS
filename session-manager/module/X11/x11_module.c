@@ -156,7 +156,7 @@ char * x11_rds_module_start(RDS_MODULE_COMMON * module)
 	x11_rds_module_reset_process_informations(x11);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
-			"X11rdp", (int) (displayNum), xres, yres, colordepth);
+			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) colordepth);
 
 	status = CreateProcessA(NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, *(x11->commonModule.envBlock), NULL,
@@ -222,7 +222,7 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Start = x11_rds_module_start;
 	pEntryPoints->Stop = x11_rds_module_stop;
 
-	pEntryPoints->Name = X11_MODULE_NAME;
+	pEntryPoints->Name = "X11";
 
 	gGetPropertyBool = pEntryPoints->getPropertyBool;
 	gGetPropertyNumber = pEntryPoints->getPropertyNumber;

@@ -25,52 +25,62 @@
 #include <string>
 #include <winpr/handle.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
-		CallOut::CallOut():mAnswer(NULL) {
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+		CallOut::CallOut():mAnswer(NULL)
+		{
 
 		};
 
-		CallOut::~CallOut() {
-			if (mAnswer) {
+		CallOut::~CallOut()
+		{
+			if (mAnswer)
+			{
 				CloseHandle(mAnswer);
 				mAnswer = NULL;
 			}
 
 		};
 
-		std::string CallOut::getEncodedRequest() {
+		std::string CallOut::getEncodedRequest()
+		{
 			return mEncodedRequest;
 		}
 
-		void CallOut::setEncodedeResponse(std::string encodedResponse){
+		void CallOut::setEncodedeResponse(std::string encodedResponse)
+		{
 			mEncodedResponse = encodedResponse;
 		}
 
-		void CallOut::initAnswerHandle() {
+		void CallOut::initAnswerHandle()
+		{
 			mAnswer = CreateEvent(NULL,FALSE,FALSE,NULL);
 		}
 
-		HANDLE CallOut::getAnswerHandle() {
+		HANDLE CallOut::getAnswerHandle()
+		{
 			return mAnswer;
 		}
 
-		unsigned long CallOut::getDerivedType() {
+		unsigned long CallOut::getDerivedType()
+		{
 			return 2; // for all CallIns
 		}
 
-		void CallOut::setResult(uint32_t result) {
+		void CallOut::setResult(uint32_t result)
+		{
 			mResult = result;
 			SetEvent(mAnswer);
 		}
 
-		void CallOut::setErrorDescription(std::string error) {
+		void CallOut::setErrorDescription(std::string error)
+		{
 			mErrorDescription = error;
 		}
-
-
 		}
 	}
 }

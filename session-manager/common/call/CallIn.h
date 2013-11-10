@@ -22,12 +22,14 @@
 
 #include <call/Call.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
-			class CallIn:public Call {
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallIn:public Call
+			{
 			public:
 				CallIn();
 				virtual ~CallIn();
@@ -41,10 +43,7 @@ namespace freerds{
 				std::string getEncodedResponse();
 
 				virtual int doStuff() = 0;
-
-
 			};
-
 		}
 	}
 }

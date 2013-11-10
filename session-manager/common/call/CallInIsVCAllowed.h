@@ -19,17 +19,20 @@
 
 #ifndef CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_
 #define CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_
+
 #include "CallFactory.h"
 #include <string>
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-			class CallInIsVCAllowed: public CallIn{
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallInIsVCAllowed: public CallIn
+			{
 			public:
 				CallInIsVCAllowed();
 				virtual ~CallInIsVCAllowed();
@@ -38,8 +41,6 @@ namespace freerds{
 				virtual int decodeRequest();
 				virtual int encodeResponse();
 				virtual int doStuff();
-
-
 
 			private:
 				std::string mVirtualChannelName;

@@ -28,7 +28,7 @@ split(const T & str, const T & delimiters) {
 	std::vector<T> v;
     typename T::size_type start = 0;
     typename T::size_type pos = str.find_first_of(delimiters, start);
-    while(pos != T::npos) {
+    while (pos != T::npos) {
         if(pos != start) // ignore empty tokens
         	v.push_back(str.substr(start, pos - start));
         start = pos + 1;

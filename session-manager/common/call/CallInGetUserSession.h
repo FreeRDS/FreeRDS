@@ -24,12 +24,14 @@
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-			class CallInGetUserSession: public CallIn{
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallInGetUserSession: public CallIn
+			{
 			public:
 				CallInGetUserSession();
 				virtual ~CallInGetUserSession();
@@ -39,15 +41,12 @@ namespace freerds{
 				virtual int encodeResponse();
 				virtual int doStuff();
 
-
-
 			private:
 				std::string mUserName;
 				std::string mDomainName;
 
 				long mSessionID;
 				std::string mPipeName;
-
 			};
 
 			FACTORY_REGISTER_DWORD(CallFactory,CallInGetUserSession,freerds::icp::GetUserSession);

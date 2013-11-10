@@ -27,62 +27,75 @@
 using freerds::icp::LogOffUserSessionRequest;
 using freerds::icp::LogOffUserSessionResponse;
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
-		CallInLogOffUserSession::CallInLogOffUserSession() {
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+		CallInLogOffUserSession::CallInLogOffUserSession()
+		{
 			mSessionID = 0;
 			mLoggedOff = false;
 		};
 
-		CallInLogOffUserSession::~CallInLogOffUserSession() {
+		CallInLogOffUserSession::~CallInLogOffUserSession()
+		{
 
 		};
 
-		unsigned long CallInLogOffUserSession::getCallType() {
+		unsigned long CallInLogOffUserSession::getCallType()
+		{
 			return freerds::icp::LogOffUserSession;
 		};
 
-		int CallInLogOffUserSession::decodeRequest() {
+		int CallInLogOffUserSession::decodeRequest()
+		{
 			// decode protocol buffers
 			LogOffUserSessionRequest req;
-			if (!req.ParseFromString(mEncodedRequest)) {
+
+			if (!req.ParseFromString(mEncodedRequest))
+			{
 				// failed to parse
 				mResult = 1;// will report error with answer
 				return -1;
 			}
+
 			mSessionID = req.sessionid();
+
 			return 0;
 		};
 
-		int CallInLogOffUserSession::encodeResponse() {
+		int CallInLogOffUserSession::encodeResponse()
+		{
 			// encode protocol buffers
 			LogOffUserSessionResponse resp;
 			// stup do stuff here
 
 			resp.set_loggedoff(mLoggedOff);
 
-			if (!resp.SerializeToString(&mEncodedResponse)) {
+			if (!resp.SerializeToString(&mEncodedResponse))
+			{
 				// failed to serialize
 				mResult = 1;
 				return -1;
 			}
+
 			return 0;
 		};
 
-		int CallInLogOffUserSession::doStuff() {
-			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionID);
-			if (currentSession == NULL) {
+		int CallInLogOffUserSession::doStuff()
+		{
+			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionID);
+
+			if (!currentSession)
 				mLoggedOff = false;
-			}
+
 			currentSession->setConnectState(WTSDisconnected);
 
 			mLoggedOff = true;
 			return 0;
 		}
-
-
 		}
 	}
 }

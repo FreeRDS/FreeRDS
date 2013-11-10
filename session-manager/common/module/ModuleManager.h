@@ -26,10 +26,14 @@
 
 #define MODULE_ENV_VAR "FREERDS_ADDITIONAL_MODULES"
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace module{
-			class ModuleManager {
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace module
+		{
+			class ModuleManager
+			{
 			public:
 				ModuleManager();
 				virtual ~ModuleManager();
@@ -37,15 +41,15 @@ namespace freerds{
 				int loadModulesFromPath(std::string path,std::string pattern);
 				int loadModuelsFromPathAndEnv(std::string path,std::string pattern);
 
-				Module * getModule(std::string moduleName);
+				Module* getModule(std::string moduleName);
 			private:
 				int addModule(std::string path, std::string modulename);
 				std::map<std::string,Module *> mModulesMap;
 			};
-
 		}
 	}
 }
+
 namespace moduleNS = freerds::sessionmanager::module;
 
 #endif /* MODULEMANAGER_H_ */

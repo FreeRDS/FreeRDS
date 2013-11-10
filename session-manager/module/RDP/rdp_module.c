@@ -29,6 +29,7 @@
 #endif
 
 #include <freerds/freerds.h>
+#include <freerds/module_connector.h>
 
 #include "rdp_module.h"
 

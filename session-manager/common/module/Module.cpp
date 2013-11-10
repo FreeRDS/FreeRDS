@@ -25,74 +25,86 @@
 #include <winpr/wlog.h>
 #include <winpr/library.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace module{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace module
+		{
+			static wLog* logger_Module = WLog_Get("freerds.sessionmanager.module.module");
 
-			static wLog * logger_Module = WLog_Get("freerds.sessionmanager.module.module");
+			Module::Module() : mfpNew(0), mfpFree(0)
+				,mfpStart(0), mfpStop(0)
+			{
 
-			Module::Module():mfpNew(0),mfpFree(0)
-				,mfpStart(0),mfpStop(0) {
 			}
 
-			int Module::initModule(HMODULE libHandle,std::string moduleFileName,RDS_MODULE_ENTRY_POINTS* entrypoints) {
+			int Module::initModule(HMODULE libHandle, std::string moduleFileName, RDS_MODULE_ENTRY_POINTS* entrypoints)
+			{
 				char buffer[260];
 
-				if (entrypoints == NULL) {
+				if (!entrypoints)
 					return -1;
-				}
 
 				mModuleFile = moduleFileName;
 
-				if ((entrypoints->Free == NULL) || (entrypoints->New == NULL)|| (entrypoints->Start == NULL)|| (entrypoints->Stop == NULL)) {
+				if ((!entrypoints->Free) || (!entrypoints->New)|| (!entrypoints->Start)|| (!entrypoints->Stop))
+				{
 					WLog_Print(logger_Module, WLOG_ERROR, "not all passed function pointers are set for module %s",mModuleFile.c_str());
 					return -1;
 				}
-				if (entrypoints->Name == NULL) {
-					 WLog_Print(logger_Module, WLOG_ERROR, "no ModuleName is set for module %s",mModuleFile.c_str());
 
-					return -1;
+				if (!entrypoints->Name)
+				{
+					 WLog_Print(logger_Module, WLOG_ERROR, "no ModuleName is set for module %s",mModuleFile.c_str());
+					 return -1;
 				}
+
 				mfpFree = entrypoints->Free;
 				mfpNew = entrypoints->New;
 				mfpStart = entrypoints->Start;
 				mfpStop = entrypoints->Stop;
 				mModuleName = std::string(entrypoints->Name);
+
 				return 0;
 			}
 
-			Module::~Module() {
+			Module::~Module()
+			{
 
 			}
 
-			std::string Module::getName() {
+			std::string Module::getName()
+			{
 				return mModuleName;
 			}
 
-			RDS_MODULE_COMMON* Module::newContext() {
+			RDS_MODULE_COMMON* Module::newContext()
+			{
 				return mfpNew();
 			}
 
-			void Module::freeContext(RDS_MODULE_COMMON* context) {
+			void Module::freeContext(RDS_MODULE_COMMON* context)
+			{
 				return mfpFree(context);
 			}
 
-			std::string Module::start(RDS_MODULE_COMMON* context) {
+			std::string Module::start(RDS_MODULE_COMMON* context)
+			{
 				char * pipeName;
 				std::string pipeNameStr;
 				pipeName = mfpStart(context);
-				if (pipeName) {
+
+				if (pipeName)
 					pipeNameStr.assign(pipeName);
-				} else {
+				else
 					return pipeNameStr;
-				}
 			}
 
-			int Module::stop(RDS_MODULE_COMMON* context) {
+			int Module::stop(RDS_MODULE_COMMON* context)
+			{
 				return mfpStop(context);
 			}
-
-
 		}
 	}
 }

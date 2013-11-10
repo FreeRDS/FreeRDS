@@ -99,7 +99,7 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 
 	WLog_Print(ns->log, WLOG_DEBUG, "Process created with status: %d", status);
 
-	pipeName = (char *)malloc(256);
+	pipeName = (char*) malloc(256);
 	sprintf_s(pipeName, 256, "\\\\.\\pipe\\FreeRDS_%d_%s", (int) SessionId, "NetSurf");
 
 	hClientPipe = CreateFileA(pipeName,
