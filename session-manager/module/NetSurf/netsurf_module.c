@@ -78,6 +78,7 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
 	char* pipeName;
+	long xres, yres;
 	char lpCommandLine[256];
 	const char* endpoint = "NetSurf";
 	rdsModuleNetSurf* ns = (rdsModuleNetSurf*) module;
@@ -94,8 +95,14 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 	ns->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(ns->pi), sizeof(PROCESS_INFORMATION));
 
-	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -f freerds -b 32",
-			"netsurf");
+	if (!gGetPropertyNumber(ns->commonModule.sessionId, "module.rdp.xres", &xres))
+		xres = 1024;
+
+	if (!gGetPropertyNumber(ns->commonModule.sessionId, "module.rdp.yres", &yres))
+		yres = 768;
+
+	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -f freerds -b 32 -w %d -h %d",
+			"netsurf", (int) xres, (int) yres);
 
 	WLog_Print(ns->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 

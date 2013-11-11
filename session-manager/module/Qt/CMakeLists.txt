@@ -14,8 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(X11)
-add_subdirectory(RDP)
-add_subdirectory(CEF)
-add_subdirectory(NetSurf)
-add_subdirectory(Qt)
+set(MODULE_NAME "freerds-module-qt")
+set(MODULE_PREFIX "FREERDS_MODULE_QT")
+
+set(${MODULE_PREFIX}_SRCS
+	qt_module.c
+	qt_module.h)
+
+add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
+
+set(${MODULE_PREFIX}_LIBS "")
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
+
+set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
+	MONOLITHIC ${MONOLITHIC_BUILD}
+	MODULE winpr
+	MODULES winpr-crt winpr-synch winpr-thread winpr-environment winpr-utils winpr-utils)
+
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
+
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
