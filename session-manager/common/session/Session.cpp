@@ -41,7 +41,7 @@ namespace freerds
 	{
 		namespace session
 		{
-			static wLog* logger_Session= WLog_Get("freerds.SessionManager.session.session");
+			static wLog* logger_Session= WLog_Get("freerds.sessionmanager.session.session");
 
 			Session::Session(long sessionID):mSessionID(sessionID),
 					mSessionStarted(false),mpEnvBlock(NULL),
@@ -158,7 +158,7 @@ namespace freerds
 				mCurrentModuleContext = currentModule->newContext();
 				mCurrentModuleContext->sessionId = mSessionID;
 
-				mCurrentModuleContext->userName = strdup(mUsername.c_str());
+				mCurrentModuleContext->userName = _strdup(mUsername.c_str());
 
 				mCurrentModuleContext->userToken = mUserToken;
 				mCurrentModuleContext->envBlock = &mpEnvBlock;
