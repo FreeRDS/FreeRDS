@@ -29,6 +29,10 @@ typedef RDS_AUTH_MODULE_ENTRY_POINTS_V1 RDS_AUTH_MODULE_ENTRY_POINTS;
  * Authentication Module Entry Points
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _rds_auth_module
 {
 	void* dummy;
@@ -57,10 +61,6 @@ struct rds_auth_module_entry_points_v1
 #define RDS_AUTH_MODULE_ENTRY_POINT_NAME	"RdsAuthModuleEntry"
 
 typedef int (*pRdsAuthModuleEntry)(RDS_AUTH_MODULE_ENTRY_POINTS* pEntryPoints);
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 pRdsAuthModuleEntry freerds_load_auth_module(const char* name);
 

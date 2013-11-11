@@ -43,7 +43,7 @@ namespace freerds
 	{
 		namespace module
 		{
-			static wLog* logger_ModuleManager = WLog_Get("freerds.SessionManager.module.modulemanager");
+			static wLog* logger_ModuleManager = WLog_Get("freerds.sessionmanager.module.modulemanager");
 
 			ModuleManager::ModuleManager()
 			{

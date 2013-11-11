@@ -64,6 +64,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/pbRPC/RpcEngine.cpp
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp
+	common/module/AuthModule.cpp
 	common/config/PropertyManager.cpp
 	common/config/PropertyCWrapper.cpp
 	${PBRPC_PROTOBUF_SRC}
