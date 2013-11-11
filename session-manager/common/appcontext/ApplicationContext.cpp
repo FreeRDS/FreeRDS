@@ -71,11 +71,17 @@ namespace freerds
 
 		int ApplicationContext::startRPCEngine()
 		{
+#ifdef WITH_FDSAPI
+			mFDSApiServer.startFDSApi();
+#endif
 			return mRpcEngine.startEngine();
 		}
 
 		int ApplicationContext::stopRPCEngine()
 		{
+#ifdef WITH_FDSAPI
+			mFDSApiServer.stopFDSApi();
+#endif
 			return mRpcEngine.stopEngine();
 		}
 

@@ -29,6 +29,10 @@
 #include <module/ModuleManager.h>
 #include <config/PropertyManager.h>
 
+#ifdef WITH_FDSAPI
+#include <fdsapi/FDSApiServer.h>
+#endif
+
 
 #define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
 
@@ -59,6 +63,9 @@ namespace freerds{
 			SignalingQueue<callNS::Call> mRpcOutgoingCalls;
 			wLog* mWLogRoot;
 			moduleNS::ModuleManager mModuleManager;
+#ifdef WITH_FDSAPI
+			fdsapiNS::FDSApiServer mFDSApiServer;
+#endif
 			SINGLETON_ADD_INITIALISATION(ApplicationContext)
 		};
 	

@@ -20,7 +20,6 @@ cmake_minimum_required(VERSION 2.8)
 
 project(freerds-session-manager CXX)
 
-add_subdirectory(module)
 
 set(MODULE_PREFIX "FREERDS_SESSION_MANAGER")
 set(MODULE_NAME "freerds-session-manager")
@@ -45,7 +44,21 @@ PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOUR
 
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gen)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+if(WITH_FDSAPI)
+include(ThriftExternalProject)
+
+include_directories(SYSTEM ${THRIFT_INCLUDE_DIR})
+set(THRIFT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen/fdsapi)
+file(MAKE_DIRECTORY ${THRIFT_OUTPUT_DIR})
+include(ThriftUtils)
+
+THRIFT_GEN(THRIFT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/thrift/fdsapi.thrift)
+add_definitions(-DWITH_FDSAPI)
+set(FDSAPI_SRC common/fdsapi/FDSApiServer.cpp common/fdsapi/FDSApiHandler.cpp)
+endif()
 
 set(${MODULE_PREFIX}_SRCS
 	main.cpp 
@@ -66,19 +79,29 @@ set(${MODULE_PREFIX}_SRCS
 	common/module/Module.cpp
 	common/config/PropertyManager.cpp
 	common/config/PropertyCWrapper.cpp
+	${FDSAPI_SRC}
 	${PBRPC_PROTOBUF_SRC}
 	${PBRPC_PROTOBUF_HEADERS}
 	${ICP_PROTOBUF_SRC}
 	${ICP_PROTOBUF_HEADERS}
+	${THRIFT_FILES}
 	)
  
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+add_dependencies(${MODULE_NAME} thrift)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr
 	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-path winpr-pipe winpr-library winpr-sspicli)
 
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY})
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY} ${THRIFT_STATIC_LIB})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_subdirectory(module)
+
+if (WITH_FDSAPI)
+add_subdirectory(fdsapi)
+endif()
+
