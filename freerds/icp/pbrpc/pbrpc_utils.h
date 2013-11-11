@@ -25,11 +25,11 @@
 #include "pbRPC.pb-c.h"
 
 DWORD pbrpc_getTag(pbRPCContext *context);
-FreeRDS__Pbrpc__RPCBase *pbrpc_message_new();
-void pbrpc_message_free(FreeRDS__Pbrpc__RPCBase* msg, BOOL freePayload);
-void pbrpc_prepare_request(pbRPCContext* context, FreeRDS__Pbrpc__RPCBase* msg);
-void pbrpc_prepare_response(FreeRDS__Pbrpc__RPCBase* msg, UINT32 tag);
-void pbrpc_prepare_error(FreeRDS__Pbrpc__RPCBase* msg, UINT32 tag, char* error);
+Freerds__Pbrpc__RPCBase *pbrpc_message_new();
+void pbrpc_message_free(Freerds__Pbrpc__RPCBase* msg, BOOL freePayload);
+void pbrpc_prepare_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg);
+void pbrpc_prepare_response(Freerds__Pbrpc__RPCBase* msg, UINT32 tag);
+void pbrpc_prepare_error(Freerds__Pbrpc__RPCBase* msg, UINT32 tag, char* error);
 pbRPCPayload* pbrpc_payload_new();
 void pbrpc_free_payload(pbRPCPayload* response);
 

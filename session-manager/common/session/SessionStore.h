@@ -31,9 +31,9 @@
 #include <winpr/synch.h>
 #include <map>
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace session
 		{
@@ -60,6 +60,6 @@ namespace FreeRDS
 	}
 }
 
-namespace sessionNS = FreeRDS::SessionManager::session;
+namespace sessionNS = freerds::sessionmanager::session;
 
 #endif

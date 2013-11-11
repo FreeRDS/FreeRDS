@@ -25,9 +25,9 @@
 #include <winpr/wlog.h>
 #include <winpr/library.h>
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace module
 		{

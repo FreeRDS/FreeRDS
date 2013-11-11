@@ -24,21 +24,21 @@
 #include "pbrpc_utils.h"
 
 #define ICP_CLIENT_STUB_SETUP(camel, expanded) \
-    UINT32 type = FREE_RDS__ICP__MSGTYPE__##camel ; \
+    UINT32 type = FREERDS__ICP__MSGTYPE__##camel ; \
 	pbRPCPayload pbrequest; \
 	pbRPCPayload *pbresponse = NULL; \
 	int ret; \
-	FreeRDS__Icp__##camel ## Request request; \
-	FreeRDS__Icp__##camel ## Response *response = NULL; \
+	Freerds__Icp__##camel ## Request request; \
+	Freerds__Icp__##camel ## Response *response = NULL; \
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context(); \
 	if (!context) \
 		return PBRPC_FAILED; \
-	free_rds__icp__ ##expanded ##_request__init(&request);
+	freerds__icp__ ##expanded ##_request__init(&request);
 
 #define ICP_CLIENT_STUB_CALL(camel, expanded) \
-	pbrequest.dataLen = free_rds__icp__##expanded ##_request__get_packed_size(&request); \
+	pbrequest.dataLen = freerds__icp__##expanded ##_request__get_packed_size(&request); \
 	pbrequest.data = malloc(pbrequest.dataLen); \
-	ret = free_rds__icp__##expanded ##_request__pack(&request, (uint8_t*) pbrequest.data); \
+	ret = freerds__icp__##expanded ##_request__pack(&request, (uint8_t*) pbrequest.data); \
 	if (ret == pbrequest.dataLen) \
 	{ \
 		ret = pbrpc_call_method(context, type, &pbrequest, &pbresponse); \
@@ -50,11 +50,11 @@
 	free(pbrequest.data);
 
 #define ICP_CLIENT_STUB_UNPACK_RESPONSE(camel, expanded) \
-	response = free_rds__icp__##expanded ##_response__unpack(NULL, pbresponse->dataLen, (uint8_t*) pbresponse->data); \
+	response = freerds__icp__##expanded ##_response__unpack(NULL, pbresponse->dataLen, (uint8_t*) pbresponse->data); \
 	pbrpc_free_payload(pbresponse);
 
 #define ICP_CLIENT_STUB_CLEANUP(camel, expanded) \
-	free_rds__icp__##expanded ##_response__free_unpacked(response, NULL);
+	freerds__icp__##expanded ##_response__free_unpacked(response, NULL);
 
 
 int freerds_icp_IsChannelAllowed(int sessionId, char* channelName, BOOL* isAllowed)

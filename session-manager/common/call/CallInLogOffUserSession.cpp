@@ -24,12 +24,12 @@
 #include "CallInLogOffUserSession.h"
 #include <appcontext/ApplicationContext.h>
 
-using FreeRDS::icp::LogOffUserSessionRequest;
-using FreeRDS::icp::LogOffUserSessionResponse;
+using freerds::icp::LogOffUserSessionRequest;
+using freerds::icp::LogOffUserSessionResponse;
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace call
 		{
@@ -46,7 +46,7 @@ namespace FreeRDS
 
 		unsigned long CallInLogOffUserSession::getCallType()
 		{
-			return FreeRDS::icp::LogOffUserSession;
+			return freerds::icp::LogOffUserSession;
 		};
 
 		int CallInLogOffUserSession::decodeRequest()

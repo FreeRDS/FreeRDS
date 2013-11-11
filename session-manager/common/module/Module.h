@@ -26,9 +26,9 @@
 #include <module/modules.h>
 #include <string>
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace module
 		{
@@ -59,6 +59,6 @@ namespace FreeRDS
 	}
 }
 
-namespace moduleNS = FreeRDS::SessionManager::module;
+namespace moduleNS = freerds::sessionmanager::module;
 
 #endif /* MODULE_H_ */

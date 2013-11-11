@@ -24,9 +24,9 @@
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace call
 		{
@@ -49,11 +49,11 @@ namespace FreeRDS
 				std::string mPipeName;
 			};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInGetUserSession,FreeRDS::icp::GetUserSession);
+			FACTORY_REGISTER_DWORD(CallFactory,CallInGetUserSession,freerds::icp::GetUserSession);
 		}
 	}
 }
 
-namespace callNS = FreeRDS::SessionManager::call;
+namespace callNS = freerds::sessionmanager::call;
 
 #endif

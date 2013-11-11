@@ -28,8 +28,8 @@
 #include <module/modules.h>
 #include <winpr/wtsapi.h>
 
-namespace FreeRDS{
-	namespace SessionManager{
+namespace freerds{
+	namespace sessionmanager{
 		namespace session{
 
 		class Session{
@@ -79,6 +79,6 @@ namespace FreeRDS{
 	}
 }
 
-namespace sessionNS = FreeRDS::SessionManager::session;
+namespace sessionNS = freerds::sessionmanager::session;
 
 #endif

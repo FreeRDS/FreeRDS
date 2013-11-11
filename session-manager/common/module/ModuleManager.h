@@ -26,9 +26,9 @@
 
 #define MODULE_ENV_VAR "FREERDS_ADDITIONAL_MODULES"
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace module
 		{
@@ -54,6 +54,6 @@ namespace FreeRDS
 	}
 }
 
-namespace moduleNS = FreeRDS::SessionManager::module;
+namespace moduleNS = freerds::sessionmanager::module;
 
 #endif /* MODULEMANAGER_H_ */

@@ -30,11 +30,11 @@
 #include <map>
 #include "PropertyLevel.h"
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
-		namespace Config
+		namespace config
 		{
 			typedef enum _PROPERTY_STORE_TYPE
 			{
@@ -83,6 +83,6 @@ namespace FreeRDS
 	}
 }
 
-namespace configNS = FreeRDS::SessionManager::Config;
+namespace configNS = freerds::sessionmanager::config;
 
 #endif /* PROPERTYMANAGER_H_ */

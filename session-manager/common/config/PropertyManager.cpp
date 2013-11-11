@@ -31,11 +31,11 @@
 #include <winpr/wlog.h>
 #include <appcontext/ApplicationContext.h>
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
-		namespace Config
+		namespace config
 		{
 			static wLog* logger_PropertyManager = WLog_Get("freerds.SessionManager.config.propertymanager");
 

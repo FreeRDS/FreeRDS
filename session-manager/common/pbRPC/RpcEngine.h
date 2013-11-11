@@ -28,7 +28,7 @@
 
 #define PIPE_BUFFER_SIZE	0xFFFF
 
-namespace FreeRDS
+namespace freerds
 {
 	namespace pbrpc
 	{
@@ -53,10 +53,10 @@ namespace FreeRDS
 			int readHeader();
 			int readPayload();
 			int processData();
-			int send(FreeRDS::SessionManager::call::Call * call);
+			int send(freerds::sessionmanager::call::Call * call);
 			int sendError(uint32_t callID, uint32_t callType);
 			int sendInternal(std::string data);
-			int processOutgoingCall(FreeRDS::SessionManager::call::Call * call);
+			int processOutgoingCall(freerds::sessionmanager::call::Call * call);
 
 		private:
 			HANDLE mhClientPipe;
@@ -79,6 +79,6 @@ namespace FreeRDS
 	}
 }
 
-namespace pbRPC = FreeRDS::pbrpc;
+namespace pbRPC = freerds::pbrpc;
 
 #endif /* RPCENGINE_H_ */

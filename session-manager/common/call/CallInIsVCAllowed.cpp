@@ -23,12 +23,12 @@
 
 #include "CallInIsVCAllowed.h"
 
-using FreeRDS::icp::IsChannelAllowedRequest;
-using FreeRDS::icp::IsChannelAllowedResponse;
+using freerds::icp::IsChannelAllowedRequest;
+using freerds::icp::IsChannelAllowedResponse;
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace call
 		{
@@ -44,7 +44,7 @@ namespace FreeRDS
 
 		unsigned long CallInIsVCAllowed::getCallType()
 		{
-			return FreeRDS::icp::IsChannelAllowed;
+			return freerds::icp::IsChannelAllowed;
 		};
 
 		int CallInIsVCAllowed::decodeRequest()

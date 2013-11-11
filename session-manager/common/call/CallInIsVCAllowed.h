@@ -25,9 +25,9 @@
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace call
 		{
@@ -48,11 +48,11 @@ namespace FreeRDS
 
 			};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInIsVCAllowed,FreeRDS::icp::IsChannelAllowed);
+			FACTORY_REGISTER_DWORD(CallFactory,CallInIsVCAllowed,freerds::icp::IsChannelAllowed);
 		}
 	}
 }
 
-namespace callNS = FreeRDS::SessionManager::call;
+namespace callNS = freerds::sessionmanager::call;
 
 #endif // CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_

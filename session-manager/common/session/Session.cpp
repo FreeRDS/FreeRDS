@@ -35,9 +35,9 @@
 
 #include <appcontext/ApplicationContext.h>
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace session
 		{

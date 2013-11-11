@@ -24,9 +24,9 @@
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		namespace call
 		{
@@ -46,11 +46,11 @@ namespace FreeRDS
 				bool mDisconnected;
 			};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInDisconnectUserSession,FreeRDS::icp::DisconnectUserSession);
+			FACTORY_REGISTER_DWORD(CallFactory,CallInDisconnectUserSession,freerds::icp::DisconnectUserSession);
 		}
 	}
 }
 
-namespace callNS = FreeRDS::SessionManager::call;
+namespace callNS = freerds::sessionmanager::call;
 
 #endif

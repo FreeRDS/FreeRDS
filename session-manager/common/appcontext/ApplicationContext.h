@@ -29,11 +29,11 @@
 #include <module/ModuleManager.h>
 #include <config/PropertyManager.h>
 
-#define APP_CONTEXT FreeRDS::SessionManager::ApplicationContext::instance()
+#define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
 
-namespace FreeRDS
+namespace freerds
 {
-	namespace SessionManager
+	namespace sessionmanager
 	{
 		class ApplicationContext: public SingletonBase<ApplicationContext>
 		{
@@ -78,6 +78,6 @@ namespace FreeRDS
 	}
 }
 
-namespace appNS = FreeRDS::SessionManager;
+namespace appNS = freerds::sessionmanager;
 
 #endif

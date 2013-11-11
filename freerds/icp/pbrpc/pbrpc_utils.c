@@ -30,13 +30,13 @@ DWORD pbrpc_getTag(pbRPCContext *context)
 	return InterlockedIncrement(&(context->tag));
 }
 
-FreeRDS__Pbrpc__RPCBase* pbrpc_message_new()
+Freerds__Pbrpc__RPCBase* pbrpc_message_new()
 {
-	FreeRDS__Pbrpc__RPCBase* msg = malloc(sizeof(FreeRDS__Pbrpc__RPCBase));
+	Freerds__Pbrpc__RPCBase* msg = malloc(sizeof(Freerds__Pbrpc__RPCBase));
 
 	if (msg)
 	{
-		free_rds__pbrpc__rpcbase__init(msg);
+		freerds__pbrpc__rpcbase__init(msg);
 	}
 	else
 	{
@@ -46,7 +46,7 @@ FreeRDS__Pbrpc__RPCBase* pbrpc_message_new()
 	return msg;
 }
 
-void pbrpc_message_free(FreeRDS__Pbrpc__RPCBase* msg, BOOL freePayload)
+void pbrpc_message_free(Freerds__Pbrpc__RPCBase* msg, BOOL freePayload)
 {
 	if (freePayload && msg->payload.data)
 	{
@@ -61,23 +61,23 @@ void pbrpc_message_free(FreeRDS__Pbrpc__RPCBase* msg, BOOL freePayload)
 	free(msg);
 }
 
-void pbrpc_prepare_request(pbRPCContext* context, FreeRDS__Pbrpc__RPCBase* msg)
+void pbrpc_prepare_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg)
 {
 	msg->tag = pbrpc_getTag(context);
 	msg->isresponse = FALSE;
-	msg->status = FREE_RDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
+	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
 }
 
-void pbrpc_prepare_response(FreeRDS__Pbrpc__RPCBase* msg, UINT32 tag)
+void pbrpc_prepare_response(Freerds__Pbrpc__RPCBase* msg, UINT32 tag)
 {
 	msg->isresponse = TRUE;
 	msg->tag = tag;
 }
 
-void pbrpc_prepare_error(FreeRDS__Pbrpc__RPCBase* msg, UINT32 tag, char *error)
+void pbrpc_prepare_error(Freerds__Pbrpc__RPCBase* msg, UINT32 tag, char *error)
 {
 	pbrpc_prepare_response(msg, tag);
-	msg->status = FREE_RDS__PBRPC__RPCBASE__RPCSTATUS__FAILED;
+	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__FAILED;
 	msg->errordescription = error;
 }
 

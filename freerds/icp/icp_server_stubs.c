@@ -22,23 +22,23 @@
 #include "pbrpc_utils.h"
 
 #define ICP_SERVER_STUB_SETUP(camel, expanded) \
-	FreeRDS__Icp__##camel ##Request *request; \
-	FreeRDS__Icp__##camel ##Response response; \
+	Freerds__Icp__##camel ##Request *request; \
+	Freerds__Icp__##camel ##Response response; \
 	pbRPCPayload *payload; \
 	int ret = 0; \
-	free_rds__icp__##expanded ##_response__init(&response); \
-	request = free_rds__icp__##expanded ##_request__unpack(NULL, pbrequest->dataLen, (uint8_t*)pbrequest->data);\
+	freerds__icp__##expanded ##_response__init(&response); \
+	request = freerds__icp__##expanded ##_request__unpack(NULL, pbrequest->dataLen, (uint8_t*)pbrequest->data);\
 	if (!request) \
 	{ \
 		return PBRPC_BAD_REQEST_DATA; \
 	}
 
 #define ICP_SERVER_STUB_RESPOND(camel, expanded) \
-	free_rds__icp__##expanded ##_request__free_unpacked(request, NULL); \
+	freerds__icp__##expanded ##_request__free_unpacked(request, NULL); \
 	payload = pbrpc_payload_new(); \
-	payload->dataLen = free_rds__icp__##expanded ##_response__get_packed_size(&response); \
+	payload->dataLen = freerds__icp__##expanded ##_response__get_packed_size(&response); \
 	payload->data = malloc(payload->dataLen); \
-	ret = free_rds__icp__##expanded ##_response__pack(&response, (uint8_t*) payload->data); \
+	ret = freerds__icp__##expanded ##_response__pack(&response, (uint8_t*) payload->data); \
 	if (ret != payload->dataLen) \
 	{ \
 		free(payload->data); \
