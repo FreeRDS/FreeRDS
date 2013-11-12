@@ -52,6 +52,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/appcontext/ApplicationContext.cpp 
 	common/session/SessionStore.cpp
 	common/session/Session.cpp
+	common/session/Connection.cpp
 	common/call/Call.cpp
 	common/call/CallIn.cpp
 	common/call/CallOut.cpp

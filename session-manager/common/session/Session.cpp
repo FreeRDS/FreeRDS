@@ -43,12 +43,12 @@ namespace freerds
 		{
 			static wLog* logger_Session= WLog_Get("freerds.sessionmanager.session.session");
 
-			Session::Session(long sessionID):mSessionID(sessionID),
-					mSessionStarted(false),mpEnvBlock(NULL),
-					mCurrentState(WTSDown),mUserToken(NULL),
+			Session::Session(long sessionID): mSessionID(sessionID),
+					mSessionStarted(false), mpEnvBlock(NULL),
+					mCurrentState(WTSDown), mUserToken(NULL),
 					mCurrentModuleContext(NULL)
 			{
-
+				mConnection = Connection::create();
 			}
 
 			Session::~Session()
@@ -202,6 +202,7 @@ namespace freerds
 				mCurrentModuleContext = NULL;
 				mPipeName.clear();
 				setConnectState(WTSDown);
+
 				return true;
 			}
 

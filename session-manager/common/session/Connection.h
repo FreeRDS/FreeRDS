@@ -1,5 +1,5 @@
 /**
- * Session store class
+ * Session class
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,19 +17,17 @@
  * limitations under the License.
  */
 
-
-		// TODO USE SMART POINTERS to guard the Sesison objects
-
-#ifndef SESSIONSTORE_H_
-#define SESSIONSTORE_H_
+#ifndef CONNECTION_H_
+#define CONNECTION_H_
 
 #include <config.h>
-
-#include "Session.h"
-
 #include <string>
-#include <winpr/synch.h>
-#include <map>
+#include <list>
+
+#include <winpr/crt.h>
+#include <winpr/wtsapi.h>
+
+#include <module/modules.h>
 
 namespace freerds
 {
@@ -37,24 +35,19 @@ namespace freerds
 	{
 		namespace session
 		{
-		typedef std::map<long , Session*> TSessionMap;
-		typedef std::pair<long, Session*> TSessionPair;
-
-		class SessionStore
+		class Connection
 		{
 		public:
-			SessionStore();
-			~SessionStore();
+			Connection(DWORD connectionId);
+			~Connection();
 
-			Session* getSession(long sessionID);
-			Session* getFirstSessionUserName(std::string username, std::string domain);
-			Session* createSession();
-			int removeSession(long sessionID);
+			char* getPipeName();
+
+			static Connection* create();
 
 		private:
-			TSessionMap mSessionMap;
-			long mNextSessionId;
-			CRITICAL_SECTION mCSection;
+			char* mPipeName;
+			DWORD mConnectionId;
 		};
 		}
 	}
@@ -62,4 +55,4 @@ namespace freerds
 
 namespace sessionNS = freerds::sessionmanager::session;
 
-#endif
+#endif // CONNECTION_H_
