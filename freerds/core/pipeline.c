@@ -473,7 +473,7 @@ int freerds_message_server_connector_init(rdsModuleConnector* connector)
 
 	connector->MaxFps = connector->fps = 60;
 	connector->ServerList = LinkedList_New();
-	connector->ServerQueue = MessageQueue_New();
+	connector->ServerQueue = MessageQueue_New(NULL);
 
 	return 0;
 }
