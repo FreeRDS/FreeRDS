@@ -23,11 +23,12 @@
 #include <list>
 #include <winpr/synch.h>
 
-template<typename QueueElement> class SignalingQueue {
+template<typename QueueElement> class SignalingQueue
+{
 public:
-	SignalingQueue() {
-		if (!InitializeCriticalSectionAndSpinCount(&mCSection,
-		        0x00000400) )
+	SignalingQueue()
+{
+		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 		{
 			// todo report error
 		}
@@ -35,51 +36,53 @@ public:
 		mSignalHandle = CreateEvent(NULL,TRUE,FALSE,NULL);
 	}
 
-	~SignalingQueue() {
+	~SignalingQueue()
+	{
 		CloseHandle(mSignalHandle);
 		DeleteCriticalSection(&mCSection);
 	}
 
-	HANDLE getSignalHandle() {
+	HANDLE getSignalHandle()
+	{
 		return mSignalHandle;
 	}
 
-	void addElement(QueueElement * element) {
+	void addElement(QueueElement * element)
+	{
 		EnterCriticalSection(&mCSection);
 		mlist.push_back(element);
 		SetEvent(mSignalHandle);
 		LeaveCriticalSection(&mCSection);
 	}
 
-	void lockQueue() {
+	void lockQueue()
+	{
 		EnterCriticalSection(&mCSection);
 	}
 
-	void resetEventAndLockQueue() {
+	void resetEventAndLockQueue()
+	{
 		ResetEvent(mSignalHandle);
 		EnterCriticalSection(&mCSection);
 	}
 
-
-	QueueElement * getElementLockFree() {
-		QueueElement * element;
+	QueueElement* getElementLockFree()
+	{
+		QueueElement* element;
 		element = mlist.front();
 		mlist.pop_front();
 		return element;
 	}
 
-	void unlockQueue () {
+	void unlockQueue()
+	{
 		LeaveCriticalSection(&mCSection);
 	}
 
 private:
 	HANDLE mSignalHandle;
-	//HANDLE mMutex;
 	CRITICAL_SECTION mCSection;
 	std::list<QueueElement *> mlist;
 };
-
-
-
 
 #endif /* SIGNALINGQUEUE_H_ */

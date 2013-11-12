@@ -23,12 +23,15 @@
 #include <string>
 #include <stdint.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
 
-		class Call{
-
+		class Call
+		{
 			public:
 				Call();
 				virtual ~Call();

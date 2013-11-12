@@ -26,23 +26,25 @@
 #include <module/modules.h>
 #include <string>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace module{
-			class Module {
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace module
+		{
+			class Module
+			{
 			public:
 				Module();
-				int initModule(HMODULE libHandle,std::string moduleFileName,RDS_MODULE_ENTRY_POINTS * entrypoints);
+				int initModule(HMODULE libHandle, std::string moduleFileName, RDS_MODULE_ENTRY_POINTS* entrypoints);
 				virtual ~Module();
 				std::string getName();
 
-				RDS_MODULE_COMMON * newContext();
-				void freeContext(RDS_MODULE_COMMON * context);
+				RDS_MODULE_COMMON* newContext();
+				void freeContext(RDS_MODULE_COMMON* context);
 
-				std::string start(RDS_MODULE_COMMON * context);
-				int stop(RDS_MODULE_COMMON * context);
-
-
+				std::string start(RDS_MODULE_COMMON* context);
+				int stop(RDS_MODULE_COMMON* context);
 
 			private:
 				pRdsModuleNew mfpNew;
@@ -52,15 +54,11 @@ namespace freerds{
 				pRdsModuleStop mfpStop;
 				std::string mModuleFile;
 				std::string mModuleName;
-
 			};
-
 		}
 	}
 }
+
 namespace moduleNS = freerds::sessionmanager::module;
-
-
-
 
 #endif /* MODULE_H_ */

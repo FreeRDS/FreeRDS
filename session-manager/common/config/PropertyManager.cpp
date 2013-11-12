@@ -31,108 +31,141 @@
 #include <winpr/wlog.h>
 #include <appcontext/ApplicationContext.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace config{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace config
+		{
+			static wLog* logger_PropertyManager = WLog_Get("freerds.SessionManager.config.propertymanager");
 
-			static wLog * logger_PropertyManager = WLog_Get("freerds.sessionmanager.config.propertymanager");
-
-			PropertyManager::PropertyManager() {
+			PropertyManager::PropertyManager()
+			{
 
 			};
 
-			PropertyManager::~PropertyManager() {
+			PropertyManager::~PropertyManager()
+			{
 
 			};
 
-
-			bool PropertyManager::getPropertyBool(long sessionID, std::string path, bool &value) {
+			bool PropertyManager::getPropertyBool(long sessionID, std::string path, bool &value)
+			{
 				// only global config for now
-				if (mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end()) {
+				if (mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end())
+				{
 					PROPERTY_STORE_HELPER internStore = mPropertyGlobalMap[path];
-					if (internStore.type != BoolType) {
+
+					if (internStore.type != BoolType)
+					{
 						return false;
-					} else {
+					}
+					else
+					{
 						value = internStore.boolValue;
 						return true;
 					}
-				} else {
+				}
+				else
+				{
 					// element not found
 					return false;
 				}
 			}
 
-			bool PropertyManager::getPropertyNumber(long sessionID, std::string path, long &value) {
+			bool PropertyManager::getPropertyNumber(long sessionID, std::string path, long &value)
+			{
 				// only global config for now
-				if (mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end()) {
+				if (mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end())
+				{
 					PROPERTY_STORE_HELPER internStore = mPropertyGlobalMap[path];
-					if (internStore.type != NumberType) {
+
+					if (internStore.type != NumberType)
+					{
 						return false;
-					} else {
+					}
+					else
+					{
 						value = internStore.numberValue;
 						return true;
 					}
-				} else {
+				}
+				else
+				{
 					// element not found
 					return false;
 				}
 			}
 
-			bool PropertyManager::getPropertyString(long sessionID, std::string path, std::string &value) {
+			bool PropertyManager::getPropertyString(long sessionID, std::string path, std::string &value)
+			{
 				// only global config for now
-				if (mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end()) {
+				if (mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end())
+				{
 					PROPERTY_STORE_HELPER internStore = mPropertyGlobalMap[path];
-					if (internStore.type != StringType) {
+
+					if (internStore.type != StringType)
+					{
 						return false;
-					} else {
+					}
+					else
+					{
 						value = internStore.stringValue;
 						return true;
 					}
-				} else {
+				}
+				else
+				{
 					// element not found
 					return false;
 				}
 			}
 
 			int PropertyManager::setPropertyBool(PROPERTY_LEVEL level, long sessionID,
-					std::string path, bool value) {
+					std::string path, bool value)
+			{
 				// only global config for now
 				PROPERTY_STORE_HELPER helper;
 				helper.type = BoolType;
 				helper.boolValue = value;
 
-				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				mPropertyGlobalMap.insert(std::make_pair(path, helper));
 				return 0;
 			}
 
 			int PropertyManager::setPropertyNumber(PROPERTY_LEVEL level, long sessionID,
-					std::string path, long value) {
+					std::string path, long value)
+			{
 				// only global config for now
 				PROPERTY_STORE_HELPER helper;
 				helper.type = NumberType;
 				helper.numberValue = value;
 
-				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				mPropertyGlobalMap.insert(std::make_pair(path, helper));
 				return 0;
 			}
 
 			int PropertyManager::setPropertyString(PROPERTY_LEVEL level, long sessionID,
-					std::string path, std::string value) {
+					std::string path, std::string value)
+			{
 				// only global config for now
 				PROPERTY_STORE_HELPER helper;
 				helper.type = StringType;
 				helper.stringValue = value;
 
-				mPropertyGlobalMap.insert(std::make_pair(path,helper));
+				mPropertyGlobalMap.insert(std::make_pair(path, helper));
 				return 0;
 			}
 
-			int PropertyManager::loadProperties() {
+			int PropertyManager::loadProperties()
+			{
+
 			}
 
-			int PropertyManager::saveProperties() {
-			}
+			int PropertyManager::saveProperties()
+			{
 
+			}
 		}
 	}
 }

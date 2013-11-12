@@ -702,7 +702,6 @@ typedef struct rds_server_interface rdsServerInterface;
 
 struct rds_module_connector
 {
-
 	DWORD Size;
 	char* Endpoint;
 	DWORD SessionId;

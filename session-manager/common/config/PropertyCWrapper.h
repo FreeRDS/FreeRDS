@@ -34,23 +34,20 @@ extern "C" {
 
 #include <stdbool.h>
 
-typedef bool (*pgetPropertyBool)(long sessionID,char * path, bool * value);
-typedef bool (*pgetPropertyNumber)(long sessionID,char * path, long * value);
-typedef bool (*pgetPropertyString)(long sessionID,char * path, char * value,unsigned int valueLength);
+typedef bool (*pgetPropertyBool)(long sessionID, char* path, bool* value);
+typedef bool (*pgetPropertyNumber)(long sessionID, char* path, long* value);
+typedef bool (*pgetPropertyString)(long sessionID, char* path, char* value, unsigned int valueLength);
 
-bool getPropertyBool(long sessionID,char * path, bool * value);
-bool getPropertyNumber(long sessionID,char * path, long * value);
-bool getPropertyString(long sessionID,char * path, char * value,unsigned int valueLength);
+bool getPropertyBool(long sessionID, char* path, bool* value);
+bool getPropertyNumber(long sessionID, char* path, long* value);
+bool getPropertyString(long sessionID, char* path, char* value, unsigned int valueLength);
 
-int setPropertyBool(PROPERTY_LEVEL level, long sessionID,char * path,bool value);
-int setPropertyNumber(PROPERTY_LEVEL level, long sessionID,char * path,long value);
-int setPropertyString(PROPERTY_LEVEL level, long sessionID,char * path,char * value);
-
-
+int setPropertyBool(PROPERTY_LEVEL level, long sessionID, char* path, bool value);
+int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, char* path, long value);
+int setPropertyString(PROPERTY_LEVEL level, long sessionID, char* path, char* value);
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* PROPERTYCWRAPPER_H_ */

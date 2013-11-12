@@ -26,14 +26,14 @@
 #include <call/CallOut.h>
 #include <list>
 
-
-
 #define PIPE_BUFFER_SIZE	0xFFFF
 
-namespace freerds{
-	namespace pbrpc{
-
-		class RpcEngine{
+namespace freerds
+{
+	namespace pbrpc
+	{
+		class RpcEngine
+		{
 		public:
 			RpcEngine();
 			~RpcEngine();
@@ -43,10 +43,10 @@ namespace freerds{
 
 			HANDLE acceptClient();
 			int serveClient();
-	void resetStatus();
+			void resetStatus();
 
 		private:
-			int createServerPipe();
+			int createServerPipe(void);
 			HANDLE createServerPipe(const char* endpoint);
 			static void* listenerThread(void* arg);
 			int read();
@@ -57,8 +57,6 @@ namespace freerds{
 			int sendError(uint32_t callID, uint32_t callType);
 			int sendInternal(std::string data);
 			int processOutgoingCall(freerds::sessionmanager::call::Call * call);
-
-
 
 		private:
 			HANDLE mhClientPipe;
@@ -77,14 +75,10 @@ namespace freerds{
 
 			RPCBase mpbRPC;
 			std::list<callNS::CallOut*> mAnswerWaitingQueue;
-
 		};
-
 	}
 }
 
 namespace pbRPC = freerds::pbrpc;
-
-
 
 #endif /* RPCENGINE_H_ */

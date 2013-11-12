@@ -65,6 +65,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/appcontext/ApplicationContext.cpp 
 	common/session/SessionStore.cpp
 	common/session/Session.cpp
+	common/session/Connection.cpp
 	common/call/Call.cpp
 	common/call/CallIn.cpp
 	common/call/CallOut.cpp
@@ -77,6 +78,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/pbRPC/RpcEngine.cpp
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp
+	common/module/AuthModule.cpp
 	common/config/PropertyManager.cpp
 	common/config/PropertyCWrapper.cpp
 	${FDSAPI_SRC}
@@ -90,11 +92,17 @@ set(${MODULE_PREFIX}_SRCS
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 add_dependencies(${MODULE_NAME} thrift)
 
+set(${MODULE_PREFIX}_LIBS "")
+
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr
 	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-path winpr-pipe winpr-library winpr-sspicli)
 
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
+
+list(APPEND ${MODULE_PREFIX}_LIBS ${PROTOBUF_LIBRARY})
+	
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY} ${THRIFT_STATIC_LIB})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})

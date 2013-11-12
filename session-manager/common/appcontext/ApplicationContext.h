@@ -33,30 +33,44 @@
 #include <fdsapi/FDSApiServer.h>
 #endif
 
-
 #define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
 
-namespace freerds{
-	namespace sessionmanager{
-
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
 		class ApplicationContext: public SingletonBase<ApplicationContext>
 		{
 		public:
-			sessionNS::SessionStore * getSessionStore();
-			configNS::PropertyManager * getPropertyManager();
-			moduleNS::ModuleManager * getModuleManager();
+			sessionNS::SessionStore* getSessionStore();
+			configNS::PropertyManager* getPropertyManager();
+			moduleNS::ModuleManager* getModuleManager();
 			int startRPCEngine();
 			int stopRPCEngine();
+
+			char* getHomePath();
+			char* getLibraryPath();
+			char* getExecutablePath();
+			char* getShareDataPath();
+			char* getSystemConfigPath();
 
 			SignalingQueue<callNS::Call> * getRpcOutgoingQueue();
 
 			int loadModulesFromPath(std::string path);
-
 			void setupTestingPropValues();
 
-
 		private:
+			char* homePath;
+			char* libraryPath;
+			char* executablePath;
+			char* shareDataPath;
+			char* systemConfigPath;
+
+			void initPaths();
+			void uninitPaths();
+
+			void configureExecutableSearchPath();
+
 			sessionNS::SessionStore mSessionStore;
 			configNS::PropertyManager mPropertyManager;
 			pbRPC::RpcEngine mRpcEngine;
@@ -68,9 +82,8 @@ namespace freerds{
 #endif
 			SINGLETON_ADD_INITIALISATION(ApplicationContext)
 		};
-	
-	} // namespace freeRDS end
-} // namespace sessionmanager end
+	}
+}
 
 namespace appNS = freerds::sessionmanager;
 

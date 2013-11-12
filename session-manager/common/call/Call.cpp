@@ -25,10 +25,12 @@
 #include <string>
 #include <winpr/handle.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
 		Call::Call():mTag(0),mResult(0) {
 
 		};
@@ -55,4 +57,3 @@ namespace freerds{
 		}
 	}
 }
-

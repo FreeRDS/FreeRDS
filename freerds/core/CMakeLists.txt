@@ -42,7 +42,7 @@ list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr
-	MODULES winpr-thread winpr-synch winpr-file winpr-path winpr-sysinfo winpr-pipe winpr-environment winpr-sspicli winpr-utils winpr-crt)
+	MODULES winpr-thread winpr-synch winpr-file winpr-path winpr-sysinfo winpr-pipe winpr-environment winpr-library winpr-sspicli winpr-utils winpr-crt)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
@@ -57,4 +57,4 @@ list(APPEND ${MODULE_PREFIX}_LIBS winpr-makecert-tool)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})

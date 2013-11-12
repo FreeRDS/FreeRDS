@@ -27,27 +27,35 @@
 using freerds::icp::DisconnectUserSessionRequest;
 using freerds::icp::DisconnectUserSessionResponse;
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
 
-		CallInDisconnectUserSession::CallInDisconnectUserSession() {
+		CallInDisconnectUserSession::CallInDisconnectUserSession()
+		{
 			mSessionID = 0;
 			mDisconnected = false;
 		};
 
-		CallInDisconnectUserSession::~CallInDisconnectUserSession() {
+		CallInDisconnectUserSession::~CallInDisconnectUserSession()
+		{
 
 		};
 
-		unsigned long CallInDisconnectUserSession::getCallType() {
+		unsigned long CallInDisconnectUserSession::getCallType()
+		{
 			return freerds::icp::DisconnectUserSession;
 		};
 
-		int CallInDisconnectUserSession::decodeRequest() {
+		int CallInDisconnectUserSession::decodeRequest()
+		{
 			// decode protocol buffers
 			DisconnectUserSessionRequest req;
-			if (!req.ParseFromString(mEncodedRequest)) {
+			if (!req.ParseFromString(mEncodedRequest))
+			{
 				// failed to parse
 				mResult = 1;// will report error with answer
 				return -1;
@@ -56,34 +64,39 @@ namespace freerds{
 			return 0;
 		};
 
-		int CallInDisconnectUserSession::encodeResponse() {
+		int CallInDisconnectUserSession::encodeResponse()
+		{
 			// encode protocol buffers
 			DisconnectUserSessionResponse resp;
 			// stup do stuff here
 
 			resp.set_disconnected(mDisconnected);
 
-			if (!resp.SerializeToString(&mEncodedResponse)) {
+			if (!resp.SerializeToString(&mEncodedResponse))
+			{
 				// failed to serialize
 				mResult = 1;
 				return -1;
 			}
+
 			return 0;
 		};
 
-		int CallInDisconnectUserSession::doStuff() {
+		int CallInDisconnectUserSession::doStuff()
+		{
 			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionID);
-			if (currentSession == NULL) {
+
+			if (!currentSession)
+			{
 				mDisconnected = false;
 				return -1;
 			}
+
 			currentSession->setConnectState(WTSDisconnected);
 
 			mDisconnected = true;
 			return 0;
 		}
-
-
 		}
 	}
 }

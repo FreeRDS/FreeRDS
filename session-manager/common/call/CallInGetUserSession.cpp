@@ -27,38 +27,52 @@
 using freerds::icp::GetUserSessionRequest;
 using freerds::icp::GetUserSessionResponse;
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
-		CallInGetUserSession::CallInGetUserSession() {
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+		CallInGetUserSession::CallInGetUserSession()
+			: mSessionID(0)
+		{
 
 		};
 
-		CallInGetUserSession::~CallInGetUserSession() {
+		CallInGetUserSession::~CallInGetUserSession()
+		{
 
 		};
 
-		unsigned long CallInGetUserSession::getCallType() {
+		unsigned long CallInGetUserSession::getCallType()
+		{
 			return freerds::icp::GetUserSession;
 		};
 
-		int CallInGetUserSession::decodeRequest() {
+		int CallInGetUserSession::decodeRequest()
+		{
 			// decode protocol buffers
 			GetUserSessionRequest req;
-			if (!req.ParseFromString(mEncodedRequest)) {
+
+			if (!req.ParseFromString(mEncodedRequest))
+			{
 				// failed to parse
 				mResult = 1;// will report error with answer
 				return -1;
 			}
+
 			mUserName = req.username();
-			if (req.has_domainname()) {
+
+			if (req.has_domainname())
+			{
 				mDomainName = req.domainname();
 			}
+
 			return 0;
 		};
 
-		int CallInGetUserSession::encodeResponse() {
+		int CallInGetUserSession::encodeResponse()
+		{
 			// encode protocol buffers
 			GetUserSessionResponse resp;
 			// stup do stuff here
@@ -66,50 +80,66 @@ namespace freerds{
 			resp.set_sessionid(mSessionID);
 			resp.set_serviceendpoint(mPipeName);
 
-			if (!resp.SerializeToString(&mEncodedResponse)) {
+			if (!resp.SerializeToString(&mEncodedResponse))
+			{
 				// failed to serialize
 				mResult = 1;
 				return -1;
 			}
+
 			return 0;
 		};
 
-		int CallInGetUserSession::doStuff() {
+		int CallInGetUserSession::doStuff()
+		{
 			std::string pipeName;
 
-			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName,mDomainName);
-			if ((currentSession == NULL) || (currentSession->getConnectState() != WTSDisconnected) ) {
+			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
+
+			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
+			{
 				currentSession = APP_CONTEXT.getSessionStore()->createSession();
 				currentSession->setUserName(mUserName);
 				currentSession->setDomain(mDomainName);
 
-				if (!currentSession->generateUserToken()) {
+				if (!currentSession->generateUserToken())
+				{
 					mResult = 1;// will report error with answer
 					return 1;
 				}
 
-				if (!currentSession->generateEnvBlockAndModify() ){
+				if (!currentSession->generateEnvBlockAndModify())
+				{
 					mResult = 1;// will report error with answer
 					return 1;
 				}
 
-				currentSession->setModuleName("x11module");
+				char* moduleName = APP_CONTEXT.getModuleManager()->getDefaultModuleName();
+				currentSession->setModuleName(moduleName);
 			}
 
-
-			if (currentSession->getConnectState() == WTSDown) {
-				if (!currentSession->startModule(pipeName)) {
+			if (currentSession->getConnectState() == WTSDown)
+			{
+				if (!currentSession->startModule(pipeName))
+				{
 					mResult = 1;// will report error with answer
 					return 1;
 				}
 			}
+
 			mSessionID = currentSession->getSessionID();
-			mPipeName = currentSession->getPipeName();
+
+			if (currentSession->isProxyConnection())
+			{
+				mPipeName = currentSession->getProxyPipeName();
+			}
+			else
+			{
+				mPipeName = currentSession->getPipeName();
+			}
 
 			return 0;
 		}
-
-
 		}
 	}
 }

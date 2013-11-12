@@ -28,9 +28,12 @@
 
 #define CALL_FACTORY freerds::sessionmanager::call::CallFactory::instance()
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
 
 		/**
 		* @class	PacketFactory.
@@ -40,8 +43,8 @@ namespace freerds{
 		* @author	Martin Haimberger
 		*/
 
-		class CallFactory :public FactoryBase<Call,unsigned long>, public SingletonBase<CallFactory>  {
-
+		class CallFactory :public FactoryBase<Call,unsigned long>, public SingletonBase<CallFactory>
+		{
 			SINGLETON_ADD_INITIALISATION(CallFactory)
 		};
 

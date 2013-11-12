@@ -30,57 +30,59 @@
 #include <map>
 #include "PropertyLevel.h"
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace config{
-
-
-		typedef enum _PROPERTY_STORE_TYPE
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace config
 		{
-			BoolType = 1,
-			NumberType = 2,
-			StringType = 3
-		} PROPERTY_STORE_TYPE, *PPROPERTY_STORE_TYPE;
+			typedef enum _PROPERTY_STORE_TYPE
+			{
+				BoolType = 1,
+				NumberType = 2,
+				StringType = 3
+			} PROPERTY_STORE_TYPE, *PPROPERTY_STORE_TYPE;
 
+			typedef struct _PROPERTY_STORE_HELPER
+			{
+				PROPERTY_STORE_TYPE type;
+				bool boolValue;
+				long numberValue;
+				std::string stringValue;
+			} PROPERTY_STORE_HELPER, *PPROPERTY_STORE_HELPER;
 
-		typedef struct _PROPERTY_STORE_HELPER {
-			PROPERTY_STORE_TYPE type;
-			bool boolValue;
-			long numberValue;
-			std::string stringValue;
-		}PROPERTY_STORE_HELPER, *PPROPERTY_STORE_HELPER;
+			typedef std::map<std::string, PROPERTY_STORE_HELPER> TPropertyMap;
+			typedef std::pair<std::string, PROPERTY_STORE_HELPER> TPropertyPair;
 
-		typedef std::map<std::string, PROPERTY_STORE_HELPER> TPropertyMap;
-		typedef std::pair<std::string, PROPERTY_STORE_HELPER> TPropertyPair;
+			typedef std::map<std::string, TPropertyMap> TPropertyPropertyMap;
+			typedef std::pair<std::string, TPropertyMap> TPropertyPropertyPair;
 
-		typedef std::map<std::string, TPropertyMap> TPropertyPropertyMap;
-		typedef std::pair<std::string, TPropertyMap> TPropertyPropertyPair;
+			class PropertyManager
+			{
+			public:
+				PropertyManager();
+				~PropertyManager();
 
+				bool getPropertyBool(long sessionID, std::string path, bool &value);
+				bool getPropertyNumber(long sessionID, std::string path, long &value);
+				bool getPropertyString(long sessionID, std::string path, std::string &value);
 
-		class PropertyManager{
-		public:
-			PropertyManager();
-			~PropertyManager();
+				int setPropertyBool(PROPERTY_LEVEL level, long sessionID, std::string path, bool value);
+				int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, std::string path, long value);
+				int setPropertyString(PROPERTY_LEVEL level, long sessionID, std::string path, std::string value);
 
-			bool getPropertyBool(long sessionID,std::string path, bool &value);
-			bool getPropertyNumber(long sessionID,std::string path, long &value);
-			bool getPropertyString(long sessionID,std::string path, std::string &value);
+				int saveProperties();
+				int loadProperties();
 
-			int setPropertyBool(PROPERTY_LEVEL level, long sessionID,std::string path,bool value);
-			int setPropertyNumber(PROPERTY_LEVEL level, long sessionID,std::string path,long value);
-			int setPropertyString(PROPERTY_LEVEL level, long sessionID,std::string path,std::string value);
-
-			int saveProperties();
-			int loadProperties();
-
-		private:
-			TPropertyMap mPropertyGlobalMap;
-			TPropertyPropertyMap mPropertyGroupMap;
-			TPropertyPropertyMap mPropertyUserMap;
-		};
+			private:
+				TPropertyMap mPropertyGlobalMap;
+				TPropertyPropertyMap mPropertyGroupMap;
+				TPropertyPropertyMap mPropertyUserMap;
+			};
 		}
 	}
 }
+
 namespace configNS = freerds::sessionmanager::config;
 
 #endif /* PROPERTYMANAGER_H_ */

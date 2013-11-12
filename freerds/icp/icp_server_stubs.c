@@ -38,7 +38,7 @@
 	payload = pbrpc_payload_new(); \
 	payload->dataLen = freerds__icp__##expanded ##_response__get_packed_size(&response); \
 	payload->data = malloc(payload->dataLen); \
-	ret = freerds__icp__##expanded ##_response__pack(&response, (uint8_t *)payload->data); \
+	ret = freerds__icp__##expanded ##_response__pack(&response, (uint8_t*) payload->data); \
 	if (ret != payload->dataLen) \
 	{ \
 		free(payload->data); \
@@ -46,7 +46,7 @@
 	} \
 	*pbresponse = payload;
 
-int ping(pbRPCPayload *pbrequest, pbRPCPayload **pbresponse)
+int ping(pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
 	ICP_SERVER_STUB_SETUP(Ping, ping)
 

@@ -34,13 +34,13 @@ rdsModuleConnector* freerds_module_connector_new(rdsConnection* connection)
 	rdpSettings* settings;
 	rdsModuleConnector* connector;
 
-	settings = connection->settings;
+	settings = (connection) ? connection->settings : NULL;
 
 	connector = (rdsModuleConnector*) malloc(sizeof(rdsModuleConnector));
 	ZeroMemory(connector, sizeof(rdsModuleConnector));
 
 	connector->connection = connection;
-	connector->settings = connection->settings;
+	connector->settings = settings;
 
 	connector->client = freerds_client_outbound_interface_new();
 	connector->server = freerds_server_outbound_interface_new();

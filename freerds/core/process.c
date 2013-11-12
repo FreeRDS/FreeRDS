@@ -152,53 +152,12 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	return TRUE;
 }
 
-int freerds_peer_authenticate(rdsConnection* connection)
-{
-	int status;
-	rdsAuthModule* auth;
-	rdpSettings* settings;
-	pRdsAuthModuleEntry ModuleEntry;
-	RDS_AUTH_MODULE_ENTRY_POINTS EntryPoints;
-
-	settings = connection->settings;
-
-	ModuleEntry = freerds_load_auth_module("pam");
-
-	if (!ModuleEntry)
-		return -1;
-
-	ZeroMemory(&EntryPoints, sizeof(RDS_AUTH_MODULE_ENTRY_POINTS));
-
-	EntryPoints.Version = RDS_AUTH_MODULE_INTERFACE_VERSION;
-
-	status = ModuleEntry(&EntryPoints);
-
-	if (status < 0)
-		return -1;
-
-	auth = EntryPoints.New();
-
-	if (!auth)
-		return -1;
-
-	if (!EntryPoints.LogonUser)
-		return -1;
-
-	status = EntryPoints.LogonUser(auth, settings->Username, settings->Domain, settings->Password);
-
-	if (EntryPoints.Free)
-		EntryPoints.Free(auth);
-
-	return status;
-}
-
 BOOL freerds_peer_activate(freerdp_peer* client)
 {
-	rdpSettings* settings;
-	rdsConnection* connection = (rdsConnection*) client->context;
-	int auth_status;
 	int error_code;
 	HANDLE hClientPipe;
+	rdpSettings* settings;
+	rdsConnection* connection = (rdsConnection*) client->context;
 
 	settings = client->settings;
 	settings->BitmapCacheVersion = 2;
@@ -209,18 +168,18 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	if (settings->RemoteFxCodec || settings->NSCodec)
 		connection->codecMode = TRUE;
 
-	auth_status = freerds_peer_authenticate(connection);
-
 	if (!connection->connector)
 		connection->connector = freerds_module_connector_new(connection);
 
 	error_code = freerds_icp_GetUserSession(settings->Username, settings->Domain,
-	(UINT32 *)(&(connection->connector->SessionId)), (&(connection->connector->Endpoint)));
+			(UINT32*)(&(connection->connector->SessionId)), (&(connection->connector->Endpoint)));
+
 	if (error_code != 0)
 	{
 		printf("freerds_icp_GetUserSession failed %d\n", error_code);
 		return FALSE;
 	}
+
 	hClientPipe = freerds_named_pipe_connect(connection->connector->Endpoint, 20);
 
 	if (!hClientPipe)
@@ -501,11 +460,9 @@ void* freerds_connection_main_thread(void* arg)
 
 	fprintf(stderr, "Client %s disconnected.\n", client->hostname);
 
-
 	freerds_icp_DisconnectUserSession(connector->SessionId, &disconnected);
 	client->Disconnect(client);
 	CloseHandle(connector->hClientPipe);
-
 
 	freerdp_peer_context_free(client);
 	freerdp_peer_free(client);

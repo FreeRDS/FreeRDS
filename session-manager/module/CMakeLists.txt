@@ -17,3 +17,5 @@
 add_subdirectory(X11)
 add_subdirectory(RDP)
 add_subdirectory(CEF)
+add_subdirectory(NetSurf)
+add_subdirectory(Qt)

@@ -23,17 +23,18 @@
 #include <call/Call.h>
 #include <winpr/synch.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
-			class CallOut:public Call {
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallOut:public Call
+			{
 			public:
 				CallOut();
 				~CallOut();
 				virtual unsigned long getDerivedType();
-
 
 				virtual int encodeRequest() = 0;
 				std::string getEncodedRequest();
@@ -47,13 +48,9 @@ namespace freerds{
 				void	setResult(uint32_t result);
 				void	setErrorDescription(std::string error);
 
-
 			private :
 				HANDLE mAnswer;
-
-
 			};
-
 		}
 	}
 }

@@ -31,22 +31,24 @@
 #include <winpr/synch.h>
 #include <map>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace session{
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace session
+		{
 		typedef std::map<long , Session*> TSessionMap;
 		typedef std::pair<long, Session*> TSessionPair;
 
-
-		class SessionStore{
+		class SessionStore
+		{
 		public:
 			SessionStore();
 			~SessionStore();
 
-			Session *getSession(long sessionID);
-			Session *getFirstSessionUserName(std::string username,std::string domain);
-			Session *createSession();
+			Session* getSession(long sessionID);
+			Session* getFirstSessionUserName(std::string username, std::string domain);
+			Session* createSession();
 			int removeSession(long sessionID);
 
 		private:
@@ -54,7 +56,6 @@ namespace freerds{
 			long mNextSessionId;
 			CRITICAL_SECTION mCSection;
 		};
-
 		}
 	}
 }

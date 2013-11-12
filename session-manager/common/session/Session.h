@@ -28,11 +28,16 @@
 #include <module/modules.h>
 #include <winpr/wtsapi.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace session{
+#include "Connection.h"
 
-		class Session{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace session
+		{
+		class Session
+		{
 		public:
 			Session(long sessionID);
 			~Session();
@@ -46,7 +51,7 @@ namespace freerds{
 
 			bool generateUserToken();
 			bool generateEnvBlockAndModify();
-			char ** getPEnvBlock();
+			char** getPEnvBlock();
 
 			void setModuleName(std::string moduleName);
 			bool startModule(std::string & pipeName);
@@ -55,11 +60,15 @@ namespace freerds{
 			WTS_CONNECTSTATE_CLASS getConnectState();
 			void setConnectState(WTS_CONNECTSTATE_CLASS state);
 
-
+			bool isProxyConnection();
+			std::string getProxyPipeName();
 
 		private:
 			long mSessionID;
 			bool mSessionStarted;
+
+			bool mProxyConnection;
+			Connection* mConnection;
 
 			std::string mUsername;
 			std::string mDomain;
@@ -67,12 +76,11 @@ namespace freerds{
 			std::string mPipeName;
 
 			HANDLE mUserToken;
-			char * mpEnvBlock;
+			char* mpEnvBlock;
 
 			std::string mModuleName;
 			RDS_MODULE_COMMON * mCurrentModuleContext;
 			WTS_CONNECTSTATE_CLASS mCurrentState;
-
 		};
 
 		}

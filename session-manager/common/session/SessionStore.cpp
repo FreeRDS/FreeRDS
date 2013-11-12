@@ -24,24 +24,25 @@
 #include "SessionStore.h"
 #include <winpr/wlog.h>
 
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace session
+		{
+			static wLog * logger_SessionStore = WLog_Get("freerds.SessionManager.session.sessionstore");
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace session{
-
-		static wLog * logger_SessionStore = WLog_Get("freerds.sessionmanager.session.sessionstore");
-
-
-			SessionStore::SessionStore() {
-				if (!InitializeCriticalSectionAndSpinCount(&mCSection,
-				        0x00000400) )
+			SessionStore::SessionStore()
+			{
+				if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 				{
-					 WLog_Print(logger_SessionStore, WLOG_FATAL, "cannot init SessionStore semaphore!");
+					 WLog_Print(logger_SessionStore, WLOG_FATAL, "cannot init SessionStore critical section!");
 				}
 				mNextSessionId = 1;
 			}
 
-			SessionStore::~SessionStore() {
+			SessionStore::~SessionStore()
+			{
 				DeleteCriticalSection(&mCSection);
 			}
 
@@ -65,16 +66,22 @@ namespace freerds{
 			Session* SessionStore::getFirstSessionUserName(std::string username,std::string domain)
 			{
 				EnterCriticalSection(&mCSection);
-				Session * session = NULL;
+
+				Session* session = NULL;
 				TSessionMap::iterator iter;
-				for(iter = mSessionMap.begin(); iter != mSessionMap.end();iter++) {
+
+				for (iter = mSessionMap.begin(); iter != mSessionMap.end();iter++)
+				{
 					if((iter->second->getUserName().compare(username) == 0) &&
-							(iter->second->getDomain().compare(domain) == 0)) {
+							(iter->second->getDomain().compare(domain) == 0))
+					{
 						session = iter->second;
 						break;
 					}
 				}
+
 				LeaveCriticalSection(&mCSection);
+
 				return session;
 			}
 
@@ -87,9 +94,6 @@ namespace freerds{
 				LeaveCriticalSection(&mCSection);
 				return 0;
 			}
-
-
 		}
 	}
 }
-

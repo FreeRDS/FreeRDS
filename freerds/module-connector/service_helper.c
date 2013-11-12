@@ -17,13 +17,14 @@
  * limitations under the License.
  */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <freerds/service_helper.h>
+#include <winpr/crt.h>
 #include <winpr/synch.h>
+
+#include <freerds/service_helper.h>
 
 void* freerds_service_client_thread(void* arg)
 {
@@ -139,7 +140,6 @@ rdsService* freerds_service_new(DWORD SessionId, const char* endpoint)
 
 	return service;
 }
-
 
 void freerds_service_free(rdsService* service)
 {

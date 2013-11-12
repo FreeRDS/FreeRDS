@@ -28,32 +28,44 @@
 #include <appcontext/ApplicationContext.h>
 #include <string>
 
-
-bool getPropertyBool(long sessionID,char * path, bool * value) {
-	return APP_CONTEXT.getPropertyManager()->getPropertyBool(sessionID,std::string(path),*value);
+bool getPropertyBool(long sessionID, char* path, bool* value)
+{
+	return APP_CONTEXT.getPropertyManager()->getPropertyBool(sessionID,std::string(path), *value);
 }
 
-bool getPropertyNumber(long sessionID,char * path, long * value) {
-	return APP_CONTEXT.getPropertyManager()->getPropertyNumber(sessionID,std::string(path),*value);
+bool getPropertyNumber(long sessionID, char* path, long* value)
+{
+	return APP_CONTEXT.getPropertyManager()->getPropertyNumber(sessionID,std::string(path), *value);
 
 }
-bool getPropertyString(long sessionID,char * path, char * value,unsigned int valueLength) {
+
+bool getPropertyString(long sessionID, char* path, char* value, unsigned int valueLength)
+{
 	std::string stdvalue;
-	bool retValue = APP_CONTEXT.getPropertyManager()->getPropertyString(sessionID,std::string(path),stdvalue);
-	if (stdvalue.size() > valueLength) {
+	bool retValue = APP_CONTEXT.getPropertyManager()->getPropertyString(sessionID, std::string(path), stdvalue);
+
+	if (stdvalue.size() > valueLength)
+	{
 		return false;
-	} else {
-		memcpy(value,stdvalue.c_str(),stdvalue.size());
+	}
+	else
+	{
+		memcpy(value,stdvalue.c_str(), stdvalue.size());
 		return true;
 	}
 }
 
-int setPropertyBool(PROPERTY_LEVEL level, long sessionID,char * path,bool value) {
+int setPropertyBool(PROPERTY_LEVEL level, long sessionID, char* path, bool value)
+{
 
 }
-int setPropertyNumber(PROPERTY_LEVEL level, long sessionID,char * path,long value) {
+
+int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, char* path, long value)
+{
 
 }
-int setPropertyString(PROPERTY_LEVEL level, long sessionID,char * path,char * value) {
+
+int setPropertyString(PROPERTY_LEVEL level, long sessionID, char* path, char* value)
+{
 
 }
