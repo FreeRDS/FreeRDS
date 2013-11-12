@@ -38,7 +38,7 @@ namespace pbrpc {
 #define CLIENT_ERROR -1
 #define CLIENT_SUCCESS 0
 
-static wLog * logger_RPCEngine = WLog_Get("freerds.pbrpc.RpcEngine");
+static wLog* logger_RPCEngine = WLog_Get("freerds.pbrpc.RpcEngine");
 
 RpcEngine::RpcEngine() :
 		mPacktLength(0), mHeaderRead(0), mPayloadRead(0)
@@ -54,13 +54,17 @@ RpcEngine::~RpcEngine()
 
 HANDLE RpcEngine::createServerPipe(const char* endpoint)
 {
+	DWORD dwPipeMode;
 	HANDLE hNamedPipe;
 
-	hNamedPipe = CreateNamedPipe(endpoint, PIPE_ACCESS_DUPLEX,
-	PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-	PIPE_UNLIMITED_INSTANCES, PIPE_BUFFER_SIZE, PIPE_BUFFER_SIZE, 0, NULL);
+	dwPipeMode = PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT;
 
-	if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE)) {
+	hNamedPipe = CreateNamedPipe(endpoint, PIPE_ACCESS_DUPLEX,
+			dwPipeMode, PIPE_UNLIMITED_INSTANCES,
+			PIPE_BUFFER_SIZE, PIPE_BUFFER_SIZE, 0, NULL);
+
+	if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
+	{
 		WLog_Print(logger_RPCEngine, WLOG_ERROR, "creating namedpipe failed");
 		return NULL;
 	}
@@ -84,7 +88,7 @@ int RpcEngine::stopEngine()
 	if (mhServerThread)
 	{
 		SetEvent(mhStopEvent);
-		WaitForSingleObject(mhServerThread,INFINITE);
+		WaitForSingleObject(mhServerThread, INFINITE);
 		CloseHandle(mhServerThread);
 		mhServerThread = NULL;
 	}
@@ -92,7 +96,7 @@ int RpcEngine::stopEngine()
 	return CLIENT_SUCCESS;
 }
 
-int RpcEngine::createServerPipe()
+int RpcEngine::createServerPipe(void)
 {
 	mhServerPipe = createServerPipe("\\\\.\\pipe\\FreeRDS_SessionManager");
 
@@ -101,6 +105,8 @@ int RpcEngine::createServerPipe()
 		WLog_Print(logger_RPCEngine, WLOG_ERROR, "Could not create named pipe \\\\.\\pipe\\FreeRDS_SessionManager");
 		return CLIENT_ERROR;
 	}
+
+	return CLIENT_SUCCESS;
 }
 
 void* RpcEngine::listenerThread(void* arg)
@@ -112,7 +118,7 @@ void* RpcEngine::listenerThread(void* arg)
 
 	while (1)
 	{
-		if (!engine->createServerPipe())
+		if (engine->createServerPipe() != CLIENT_SUCCESS)
 		{
 			break;
 		}
@@ -148,9 +154,6 @@ HANDLE RpcEngine::acceptClient()
 
 	status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-/*	if (status == WAIT_OBJECT_0) {
-		return NULL;
-	} else if (status == WAIT_OBJECT_0 +1) {*/
 
 	if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0)
 	{
@@ -168,9 +171,9 @@ HANDLE RpcEngine::acceptClient()
 		if (!fConnected)
 			fConnected = (GetLastError() == ERROR_PIPE_CONNECTED);
 
-		if (!fConnected) {
+		if (!fConnected)
+		{
 			WLog_Print(logger_RPCEngine, WLOG_ERROR, "could not connect client");
-
 			return NULL;
 		}
 
@@ -196,8 +199,8 @@ int RpcEngine::read()
 
 int RpcEngine::readHeader()
 {
-	DWORD lpNumberOfBytesRead = 0;
 	BOOL fSuccess;
+	DWORD lpNumberOfBytesRead = 0;
 
 	fSuccess = ReadFile(mhClientPipe, mHeaderBuffer + mHeaderRead,
 			4 - mHeaderRead, &lpNumberOfBytesRead, NULL);
@@ -221,12 +224,11 @@ int RpcEngine::readHeader()
 
 int RpcEngine::readPayload()
 {
-	DWORD lpNumberOfBytesRead = 0;
 	BOOL fSuccess;
+	DWORD lpNumberOfBytesRead = 0;
 
 	fSuccess = ReadFile(mhClientPipe, mPayloadBuffer + mPayloadRead,
-			mPacktLength - mPayloadRead, &lpNumberOfBytesRead,
-			NULL);
+			mPacktLength - mPayloadRead, &lpNumberOfBytesRead, NULL);
 
 	if (!fSuccess || (lpNumberOfBytesRead == 0))
 	{
@@ -235,6 +237,7 @@ int RpcEngine::readPayload()
 	}
 
 	mPayloadRead += lpNumberOfBytesRead;
+
 	return CLIENT_SUCCESS;
 }
 
@@ -272,12 +275,12 @@ int RpcEngine::processData()
 		else
 		{
 			// fill the answer and signal
-			if (mpbRPC.status() == RPCBase_RPCSTATUS_SUCCESS )
+			if (mpbRPC.status() == RPCBase_RPCSTATUS_SUCCESS)
 			{
 				foundCallOut->setEncodedeResponse(mpbRPC.payload());
 				foundCallOut->setResult(0);
 			}
-			else if (mpbRPC.status() == RPCBase_RPCSTATUS_FAILED )
+			else if (mpbRPC.status() == RPCBase_RPCSTATUS_FAILED)
 			{
 				foundCallOut->setErrorDescription(mpbRPC.errordescription());
 				foundCallOut->setResult(1);
@@ -304,7 +307,7 @@ int RpcEngine::processData()
 		if (createdCall->getDerivedType() == 1)
 		{
 			// we got an CallIn object ... so handle it
-			callNS::CallIn* createdCallIn = (callNS::CallIn*)createdCall;
+			callNS::CallIn* createdCallIn = (callNS::CallIn*) createdCall;
 			createdCallIn->setEncodedRequest(mpbRPC.payload());
 			createdCallIn->setTag(callID);
 
@@ -331,6 +334,8 @@ int RpcEngine::processData()
 
 		return CLIENT_SUCCESS;
 	}
+
+	return CLIENT_SUCCESS;
 }
 
 int RpcEngine::send(freerds::sessionmanager::call::Call* call)
@@ -338,11 +343,10 @@ int RpcEngine::send(freerds::sessionmanager::call::Call* call)
 	DWORD lpNumberOfBytesWritten;
 	std::string serialized;
 
-
 	if (call->getDerivedType() == 1)
 	{
 		// this is a CallIn
-		callNS::CallIn * callIn = (callNS::CallIn*) call;
+		callNS::CallIn* callIn = (callNS::CallIn*) call;
 		// create answer
 		mpbRPC.Clear();
 		mpbRPC.set_isresponse(true);
@@ -401,10 +405,11 @@ int RpcEngine::sendError(uint32_t callID, uint32_t callType)
 
 int RpcEngine::sendInternal(std::string data)
 {
+	BOOL fSuccess;
 	DWORD lpNumberOfBytesWritten;
 	DWORD messageSize = htonl(data.size());
 
-	bool fSuccess = WriteFile(mhClientPipe, &messageSize,
+	fSuccess = WriteFile(mhClientPipe, &messageSize,
 			4, &lpNumberOfBytesWritten, NULL);
 
 	if (!fSuccess || (lpNumberOfBytesWritten == 0))
@@ -470,13 +475,12 @@ int RpcEngine::serveClient()
 				processData();
 				resetStatus();
 			}
-
 		}
 
 		if (WaitForSingleObject(queueHandle, 0) == WAIT_OBJECT_0)
 		{
 			outgoingQueue->resetEventAndLockQueue();
-			callNS::Call * currentCall = outgoingQueue->getElementLockFree();
+			callNS::Call* currentCall = outgoingQueue->getElementLockFree();
 
 			while (currentCall)
 			{
@@ -486,7 +490,6 @@ int RpcEngine::serveClient()
 
 			outgoingQueue->unlockQueue();
 		}
-
 	}
 
 	return retValue;
@@ -497,9 +500,9 @@ int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call)
 	if (call->getDerivedType() == 2)
 	{
 			// this is a CallOut
-			callNS::CallOut * callOut = (callNS::CallOut*) call;
+			callNS::CallOut* callOut = (callNS::CallOut*) call;
 
-			if (send(call) == CLIENT_SUCCESS )
+			if (send(call) == CLIENT_SUCCESS)
 			{
 				mAnswerWaitingQueue.push_back(callOut);
 				return CLIENT_SUCCESS;
@@ -510,7 +513,6 @@ int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call)
 				callOut->setResult(1); // for failed
 				return CLIENT_ERROR;
 			}
-
 	}
 	else
 	{
@@ -518,6 +520,8 @@ int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call)
 		delete call;
 		return CLIENT_SUCCESS;
 	}
+
+	return 0;
 }
 
 }

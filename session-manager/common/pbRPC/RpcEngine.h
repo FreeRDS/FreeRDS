@@ -46,7 +46,7 @@ namespace freerds
 			void resetStatus();
 
 		private:
-			int createServerPipe();
+			int createServerPipe(void);
 			HANDLE createServerPipe(const char* endpoint);
 			static void* listenerThread(void* arg);
 			int read();
