@@ -460,11 +460,9 @@ void* freerds_connection_main_thread(void* arg)
 
 	fprintf(stderr, "Client %s disconnected.\n", client->hostname);
 
-
 	freerds_icp_DisconnectUserSession(connector->SessionId, &disconnected);
 	client->Disconnect(client);
 	CloseHandle(connector->hClientPipe);
-
 
 	freerdp_peer_context_free(client);
 	freerdp_peer_free(client);

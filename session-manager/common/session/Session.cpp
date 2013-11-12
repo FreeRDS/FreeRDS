@@ -43,12 +43,13 @@ namespace freerds
 		{
 			static wLog* logger_Session= WLog_Get("freerds.sessionmanager.session.session");
 
-			Session::Session(long sessionID):mSessionID(sessionID),
-					mSessionStarted(false),mpEnvBlock(NULL),
-					mCurrentState(WTSDown),mUserToken(NULL),
+			Session::Session(long sessionID): mSessionID(sessionID),
+					mSessionStarted(false), mpEnvBlock(NULL),
+					mCurrentState(WTSDown), mUserToken(NULL),
 					mCurrentModuleContext(NULL)
 			{
-
+				mProxyConnection = false;
+				mConnection = Connection::create();
 			}
 
 			Session::~Session()
@@ -79,6 +80,11 @@ namespace freerds
 			long Session::getSessionID()
 			{
 				return mSessionID;
+			}
+
+			bool Session::isProxyConnection()
+			{
+				return mProxyConnection;
 			}
 
 			bool Session::generateUserToken()
@@ -202,12 +208,18 @@ namespace freerds
 				mCurrentModuleContext = NULL;
 				mPipeName.clear();
 				setConnectState(WTSDown);
+
 				return true;
 			}
 
 			std::string Session::getPipeName()
 			{
 				return mPipeName;
+			}
+
+			std::string Session::getProxyPipeName()
+			{
+				return mConnection->getServerPipeName();
 			}
 
 			WTS_CONNECTSTATE_CLASS Session::getConnectState()
