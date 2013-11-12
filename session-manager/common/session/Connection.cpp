@@ -50,8 +50,7 @@ namespace freerds
 			Connection::Connection(DWORD connectionId)
 				: mConnectionId(connectionId),
 				  mServerPipeConnected(false),
-				  mClientPipeConnected(false),
-				  mConnector(NULL)
+				  mClientPipeConnected(false)
 			{
 				std::ostringstream os;
 

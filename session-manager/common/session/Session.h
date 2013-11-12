@@ -60,10 +60,14 @@ namespace freerds
 			WTS_CONNECTSTATE_CLASS getConnectState();
 			void setConnectState(WTS_CONNECTSTATE_CLASS state);
 
+			bool isProxyConnection();
+			std::string getProxyPipeName();
+
 		private:
 			long mSessionID;
 			bool mSessionStarted;
 
+			bool mProxyConnection;
 			Connection* mConnection;
 
 			std::string mUsername;

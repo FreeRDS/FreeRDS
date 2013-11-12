@@ -58,7 +58,6 @@ int freerds_service_stop(rdsService* service);
 rdsService* freerds_service_new(DWORD SessionId, const char* endpoint);
 void freerds_service_free(rdsService* service);
 
-
 #ifdef __cplusplus
 }
 #endif

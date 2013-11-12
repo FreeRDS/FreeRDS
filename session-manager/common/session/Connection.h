@@ -61,8 +61,6 @@ namespace freerds
 			bool mClientPipeConnected;
 			std::string mServerPipeName;
 			std::string mClientPipeName;
-
-			rdsModuleConnector* mConnector;
 		};
 		}
 	}

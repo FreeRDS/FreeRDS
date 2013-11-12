@@ -128,7 +128,15 @@ namespace freerds
 			}
 
 			mSessionID = currentSession->getSessionID();
-			mPipeName = currentSession->getPipeName();
+
+			if (currentSession->isProxyConnection())
+			{
+				mPipeName = currentSession->getProxyPipeName();
+			}
+			else
+			{
+				mPipeName = currentSession->getPipeName();
+			}
 
 			return 0;
 		}

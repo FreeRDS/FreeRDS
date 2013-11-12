@@ -48,6 +48,7 @@ namespace freerds
 					mCurrentState(WTSDown), mUserToken(NULL),
 					mCurrentModuleContext(NULL)
 			{
+				mProxyConnection = false;
 				mConnection = Connection::create();
 			}
 
@@ -79,6 +80,11 @@ namespace freerds
 			long Session::getSessionID()
 			{
 				return mSessionID;
+			}
+
+			bool Session::isProxyConnection()
+			{
+				return mProxyConnection;
 			}
 
 			bool Session::generateUserToken()
@@ -209,6 +215,11 @@ namespace freerds
 			std::string Session::getPipeName()
 			{
 				return mPipeName;
+			}
+
+			std::string Session::getProxyPipeName()
+			{
+				return mConnection->getServerPipeName();
 			}
 
 			WTS_CONNECTSTATE_CLASS Session::getConnectState()
