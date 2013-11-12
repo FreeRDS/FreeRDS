@@ -29,6 +29,9 @@
 
 #include <module/modules.h>
 
+#include <freerds/freerds.h>
+#include <freerds/module_connector.h>
+
 namespace freerds
 {
 	namespace sessionmanager
@@ -41,13 +44,25 @@ namespace freerds
 			Connection(DWORD connectionId);
 			~Connection();
 
-			char* getPipeName();
+			HANDLE createServerPipe();
+			HANDLE connectClientPipe(std::string clientPipeName);
+
+			std::string getServerPipeName();
+			std::string getClientPipeName();
 
 			static Connection* create();
 
 		private:
-			char* mPipeName;
 			DWORD mConnectionId;
+			HANDLE mListenPipe;
+			HANDLE mServerPipe;
+			HANDLE mClientPipe;
+			bool mServerPipeConnected;
+			bool mClientPipeConnected;
+			std::string mServerPipeName;
+			std::string mClientPipeName;
+
+			rdsModuleConnector* mConnector;
 		};
 		}
 	}

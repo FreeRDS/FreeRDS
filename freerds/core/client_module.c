@@ -86,7 +86,6 @@ void* freerds_client_thread(void* arg)
 	return NULL;
 }
 
-
 int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount)
 {
 	if (connector)
@@ -104,7 +103,6 @@ int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* even
 int freerds_client_check_event_handles(rdsModuleConnector* connector)
 {
 	int status = 0;
-
 
 	if (!connector)
 		return 0;

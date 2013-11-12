@@ -23,8 +23,15 @@
 
 #include <winpr/crt.h>
 #include <winpr/wlog.h>
-#include <winpr/sspicli.h>
+#include <winpr/pipe.h>
+#include <winpr/synch.h>
+#include <winpr/thread.h>
 #include <winpr/environment.h>
+
+#include <iostream>
+#include <sstream>
+
+#include <freerds/freerds.h>
 
 #include <appcontext/ApplicationContext.h>
 
@@ -41,10 +48,15 @@ namespace freerds
 			static wLog* logger_Connection = WLog_Get("freerds.sessionmanager.session.connection");
 
 			Connection::Connection(DWORD connectionId)
-				: mConnectionId(connectionId)
+				: mConnectionId(connectionId),
+				  mServerPipeConnected(false),
+				  mClientPipeConnected(false),
+				  mConnector(NULL)
 			{
-				mPipeName = (char*) malloc(256);
-				sprintf_s(mPipeName, 256, "\\\\.\\pipe\\FreeRDS_Connection_%d", (int) mConnectionId);
+				std::ostringstream os;
+
+				os << "\\\\.\\pipe\\FreeRDS_Connection_" << mConnectionId;
+				mServerPipeName = os.str();
 			}
 
 			Connection::~Connection()
@@ -52,9 +64,51 @@ namespace freerds
 
 			}
 
-			char* Connection::getPipeName()
+			std::string Connection::getServerPipeName()
 			{
-				return mPipeName;
+				return mServerPipeName;
+			}
+
+			std::string Connection::getClientPipeName()
+			{
+				return mClientPipeName;
+			}
+
+			HANDLE Connection::createServerPipe()
+			{
+				DWORD dwPipeMode;
+				HANDLE hNamedPipe;
+
+				freerds_named_pipe_clean(mServerPipeName.c_str());
+
+				dwPipeMode = PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT;
+
+				hNamedPipe = CreateNamedPipeA(mServerPipeName.c_str(), PIPE_ACCESS_DUPLEX,
+						dwPipeMode, 1, PIPE_BUFFER_SIZE, PIPE_BUFFER_SIZE, 0, NULL);
+
+				if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
+				{
+					WLog_Print(logger_Connection, WLOG_ERROR, "failed to create server named pipe");
+					return NULL;
+				}
+
+				return hNamedPipe;
+			}
+
+			HANDLE Connection::connectClientPipe(std::string clientPipeName)
+			{
+				HANDLE hNamedPipe;
+				mClientPipeName = clientPipeName;
+
+				hNamedPipe = freerds_named_pipe_connect(mClientPipeName.c_str(), 20);
+
+				if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
+				{
+					WLog_Print(logger_Connection, WLOG_ERROR, "failed to connect to client named pipe");
+					return NULL;
+				}
+
+				return hNamedPipe;
 			}
 
 			Connection* Connection::create()
