@@ -152,6 +152,23 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	return TRUE;
 }
 
+static int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
+{
+	RDS_MSG_CAPABILITIES capabilities;
+
+	ZeroMemory(&capabilities, sizeof(RDS_MSG_CAPABILITIES));
+	capabilities.type = RDS_CLIENT_CAPABILITIES;
+	capabilities.Version = 1;
+	capabilities.DesktopWidth = settings->DesktopWidth;
+	capabilities.DesktopHeight = settings->DesktopHeight;
+	capabilities.KeyboardLayout = settings->KeyboardLayout;
+	capabilities.KeyboardSubType = settings->KeyboardSubType;
+
+	freerds_write_capabilities(s, &capabilities);
+
+	return freerds_named_pipe_write(hClientPipe, Stream_Buffer(s), Stream_GetPosition(s));
+}
+
 BOOL freerds_peer_activate(freerdp_peer* client)
 {
 	int error_code;
@@ -182,13 +199,19 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 
 	hClientPipe = freerds_named_pipe_connect(connection->connector->Endpoint, 20);
 
-	if (!hClientPipe)
+	if (hClientPipe == INVALID_HANDLE_VALUE)
 	{
 		fprintf(stderr, "Failed to create named pipe %s\n", connection->connector->Endpoint);
 		return FALSE;
 	}
+
 	printf("Connected to session %d\n", (int) connection->connector->SessionId);
 
+	if (freerds_init_client(hClientPipe, settings, connection->connector->OutboundStream))
+	{
+		fprintf(stderr, "Error sending initial packet with %s\n", connection->connector->Endpoint);
+		return FALSE;
+	}
 	connection->connector->hClientPipe = hClientPipe;
 	connection->connector->GetEventHandles = freerds_client_get_event_handles;
 	connection->connector->CheckEventHandles = freerds_client_check_event_handles;

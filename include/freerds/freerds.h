@@ -171,9 +171,12 @@ struct _RDS_MSG_CAPABILITIES
 {
 	DEFINE_MSG_COMMON();
 
+	UINT32 Version;
 	UINT32 DesktopWidth;
 	UINT32 DesktopHeight;
 	UINT32 ColorDepth;
+	UINT32 KeyboardLayout;
+	UINT32 KeyboardSubType;
 };
 typedef struct _RDS_MSG_CAPABILITIES RDS_MSG_CAPABILITIES;
 
