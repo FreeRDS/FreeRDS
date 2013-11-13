@@ -20,7 +20,6 @@ set(MODULE_PREFIX "FREERDS_FDSAPI")
 set(${MODULE_PREFIX}_SRCS
 	fdsapi_thrift.cpp)
 
-message("woho ${THRIFT_INCLUDE_DIR}")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../gen ${THRIFT_INCLUDE_DIR})
 
 
