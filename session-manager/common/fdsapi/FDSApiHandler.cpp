@@ -22,7 +22,11 @@
 #include <appcontext/ApplicationContext.h>
 
 #include <winpr/thread.h>
+#include <winpr/synch.h>
 #include <winpr/wlog.h>
+
+#include <call/CallOutFdsApiVirtualChannelOpen.h>
+
 
 namespace freerds{
 	namespace sessionmanager{
@@ -47,6 +51,22 @@ namespace freerds{
 				const TLPSTR& authToken, const TDWORD sessionId,
 				const TLPSTR& virtualName)
 		{
+			// ....
+
+			callNS::CallOutFdsApiVirtualChannelOpen openCall;
+			openCall.setSessionID(sessionId);
+			openCall.setVirtualName(virtualName);
+
+			APP_CONTEXT.getRpcOutgoingQueue()->addElement(&openCall);
+			WaitForSingleObject(openCall.getAnswerHandle(),INFINITE);
+			if (openCall.getResult() == 0) {
+				// no error
+				_return = openCall.getConnectionString();
+			} else {
+				// report error
+				_return = "";
+			}
+
 		}
 
 		void FDSApiHandler::virtualChannelOpenEx(

@@ -6,6 +6,7 @@ enum MSGTYPE {
 	GetUserSession   = 3;
 	DisconnectUserSession = 4;
 	LogOffUserSession = 5;
+	FdsApiVirtualChannelOpen = 6;
 }
 
 message IsChannelAllowedRequest {
@@ -46,6 +47,15 @@ message LogOffUserSessionRequest {
 
 message LogOffUserSessionResponse {
 	required bool loggedoff = 1;
+}
+
+message FdsApiVirtualChannelOpenRequest {
+	required uint32 SessionID = 1;
+	required string VirtualName = 2;
+}
+
+message FdsApiVirtualChannelOpenResponse {
+	required string ConnectionString = 1;
 }
 
 

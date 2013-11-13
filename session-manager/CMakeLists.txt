@@ -57,7 +57,7 @@ include(ThriftUtils)
 
 THRIFT_GEN(THRIFT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/thrift/fdsapi.thrift)
 add_definitions(-DWITH_FDSAPI)
-set(FDSAPI_SRC common/fdsapi/FDSApiServer.cpp common/fdsapi/FDSApiHandler.cpp)
+set(FDSAPI_SRC common/fdsapi/FDSApiHandler.cpp common/fdsapi/FDSApiServer.cpp)
 endif()
 
 set(${MODULE_PREFIX}_SRCS
@@ -72,15 +72,18 @@ set(${MODULE_PREFIX}_SRCS
 	common/call/CallFactory.cpp
 	common/call/CallInIsVCAllowed.cpp
 	common/call/CallInPing.cpp
+	common/call/CallOutPing.cpp
 	common/call/CallInGetUserSession.cpp
 	common/call/CallInDisconnectUserSession.cpp
 	common/call/CallInLogOffUserSession.cpp
+	common/call/CallOutFdsApiVirtualChannelOpen.cpp
 	common/pbRPC/RpcEngine.cpp
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp
 	common/module/AuthModule.cpp
 	common/config/PropertyManager.cpp
 	common/config/PropertyCWrapper.cpp
+	common/utils/StringHelpers.cpp
 	${FDSAPI_SRC}
 	${PBRPC_PROTOBUF_SRC}
 	${PBRPC_PROTOBUF_HEADERS}

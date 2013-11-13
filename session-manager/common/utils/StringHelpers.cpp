@@ -17,33 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef __STRING_HELPERS_HEADER_H
-#define __STRING_HELPERS_HEADER_H
-
-#include <vector>
-#include <string>
-
-template<typename T>
-std::vector<T>
-split(const T & str, const T & delimiters) {
-	std::vector<T> v;
-    typename T::size_type start = 0;
-    typename T::size_type pos = str.find_first_of(delimiters, start);
-    while (pos != T::npos) {
-        if(pos != start) // ignore empty tokens
-        	v.push_back(str.substr(start, pos - start));
-        start = pos + 1;
-        pos = str.find_first_of(delimiters, start);
-    }
-    if(start < str.length()) // ignore trailing delimiter
-    	v.push_back(str.substr(start,  str.length() - start));
-
-    return v;
-}
+#include "StringHelpers.h"
 
 namespace std{
 
-	bool stringEndsWith(const string& compString, const string& suffix);
+	bool stringEndsWith(const string& compString, const string& suffix)
+	{
+		return compString.rfind(suffix) == (compString.size()-suffix.size());
+	}
 }
 
-#endif
