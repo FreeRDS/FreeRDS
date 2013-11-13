@@ -60,6 +60,9 @@ add_definitions(-DWITH_FDSAPI)
 set(FDSAPI_SRC common/fdsapi/FDSApiHandler.cpp common/fdsapi/FDSApiServer.cpp)
 endif()
 
+FIND_PACKAGE(Boost REQUIRED)
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+
 set(${MODULE_PREFIX}_SRCS
 	main.cpp 
 	common/appcontext/ApplicationContext.cpp 
