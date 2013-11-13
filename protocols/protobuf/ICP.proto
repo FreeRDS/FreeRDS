@@ -7,6 +7,7 @@ enum MSGTYPE {
 	DisconnectUserSession = 4;
 	LogOffUserSession = 5;
 	FdsApiVirtualChannelOpen = 6;
+	LogonUser = 7;
 }
 
 message IsChannelAllowedRequest {
@@ -58,5 +59,13 @@ message FdsApiVirtualChannelOpenResponse {
 	required string ConnectionString = 1;
 }
 
+message LogonUserRequest {
+	required string Username = 1;
+	required string Password = 2;
+	required string Domain = 3;
+}
 
-
+message LogonUserResponse {
+	required uint32 AuthStatus = 1;
+	required string ServiceEndpoint = 2;
+}
