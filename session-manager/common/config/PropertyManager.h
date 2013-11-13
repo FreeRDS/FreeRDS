@@ -29,6 +29,7 @@
 #include <string>
 #include <map>
 #include "PropertyLevel.h"
+#include <boost/property_tree/ptree.hpp>
 
 namespace freerds
 {
@@ -43,22 +44,22 @@ namespace freerds
 				StringType = 3
 			} PROPERTY_STORE_TYPE, *PPROPERTY_STORE_TYPE;
 
-			typedef struct _PROPERTY_STORE_HELPER
-			{
+
+			typedef struct _PROPERTY_STORE_HELPER {
 				PROPERTY_STORE_TYPE type;
 				bool boolValue;
 				long numberValue;
 				std::string stringValue;
-			} PROPERTY_STORE_HELPER, *PPROPERTY_STORE_HELPER;
+			}PROPERTY_STORE_HELPER, *PPROPERTY_STORE_HELPER;
 
 			typedef std::map<std::string, PROPERTY_STORE_HELPER> TPropertyMap;
 			typedef std::pair<std::string, PROPERTY_STORE_HELPER> TPropertyPair;
 
-			typedef std::map<std::string, TPropertyMap> TPropertyPropertyMap;
-			typedef std::pair<std::string, TPropertyMap> TPropertyPropertyPair;
+			typedef std::map<std::string, TPropertyMap * > TPropertyPropertyMap;
+			typedef std::pair<std::string, TPropertyMap * > TPropertyPropertyPair;
 
-			class PropertyManager
-			{
+
+			class PropertyManager{
 			public:
 				PropertyManager();
 				~PropertyManager();
@@ -67,16 +68,19 @@ namespace freerds
 				bool getPropertyNumber(long sessionID, std::string path, long &value);
 				bool getPropertyString(long sessionID, std::string path, std::string &value);
 
-				int setPropertyBool(PROPERTY_LEVEL level, long sessionID, std::string path, bool value);
-				int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, std::string path, long value);
-				int setPropertyString(PROPERTY_LEVEL level, long sessionID, std::string path, std::string value);
+				int setPropertyBool(PROPERTY_LEVEL level, long sessionID, std::string path, bool value, std::string username="");
+				int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, std::string path, long value, std::string username="");
+				int setPropertyString(PROPERTY_LEVEL level, long sessionID, std::string path, std::string value, std::string username="");
 
-				int saveProperties();
-				int loadProperties();
+				int saveProperties(std::string filename);
+				int loadProperties(std::string filename);
 
 			private:
+				int parsePropertyGlobal(std::string parentPath, const boost::property_tree::ptree& tree, PROPERTY_LEVEL level);
+				int setPropertyInternal(PROPERTY_LEVEL level, long sessionID, std::string path, PROPERTY_STORE_HELPER helper, std::string username);
+				bool getPropertyInternal(long sessionID, std::string path, PROPERTY_STORE_HELPER & helper);
+
 				TPropertyMap mPropertyGlobalMap;
-				TPropertyPropertyMap mPropertyGroupMap;
 				TPropertyPropertyMap mPropertyUserMap;
 			};
 		}
