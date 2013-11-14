@@ -20,7 +20,7 @@
 #ifndef FREERDS_MODULE_CEF_H
 #define FREERDS_MODULE_CEF_H
 
-#include "../modules.h"
+#include <freerds/modules.h>
 
 
 int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);

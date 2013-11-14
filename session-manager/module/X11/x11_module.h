@@ -22,7 +22,7 @@
 #ifndef FREERDS_MODULE_X11_H
 #define FREERDS_MODULE_X11_H
 
-#include "../modules.h"
+#include <freerds/modules.h>
 
 int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
 

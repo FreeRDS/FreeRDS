@@ -23,7 +23,7 @@
 #include "Module.h"
 //#include <freerds/freerds.h>
 #include <winpr/wtypes.h>
-#include <module/modules.h>
+#include <freerds/modules.h>
 #include <string>
 
 namespace freerds
