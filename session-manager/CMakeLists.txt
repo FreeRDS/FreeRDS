@@ -16,59 +16,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 2.8)
-
 project(freerds-session-manager CXX)
-
 
 set(MODULE_PREFIX "FREERDS_SESSION_MANAGER")
 set(MODULE_NAME "freerds-session-manager")
-
-set(FREERDS_SESSION_MANAGER_VERSION_MAJOR "0")
-set(FREERDS_SESSION_MANAGER_VERSION_MINOR "1")
-set(FREERDS_SESSION_MANAGER_VERSION_REVISION "0")
-set(FREERDS_SESSION_MANAGER_VERSION "${FREERDS_SESSION_MANAGER_VERSION_MAJOR}.${FREERDS_SESSION_MANAGER_VERSION_MINOR}")
-set(FREERDS_SESSION_MANAGER_VERSION_FULL "${FREERDS_SESSION_MANAGER_VERSION}.${FREERDS_SESSION_MANAGER_VERSION_REVISION}")
-
-get_directory_property(INCLUDE_DIRECTORIES INCLUDE_DIRECTORIES)
-list(REMOVE_ITEM INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}")
-set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES "${INCLUDE_DIRECTORIES}")
-include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 find_feature(Protobuf REQUIRED "RPC" "Remote Procedure Call")
 
 PROTOBUF_GENERATE_CPP(PBRPC_PROTOBUF_SRC PBRPC_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/pbRPC.proto)
 PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICP.proto)
 
+if(WITH_FDSAPI)
+	include(ThriftExternalProject)
+
+	include_directories(SYSTEM ${THRIFT_INCLUDE_DIR})
+	set(THRIFT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen/fdsapi)
+	file(MAKE_DIRECTORY ${THRIFT_OUTPUT_DIR})
+	include(ThriftUtils)
+
+	THRIFT_GEN(THRIFT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/thrift/fdsapi.thrift)
+	add_definitions(-DWITH_FDSAPI)
+	set(FDSAPI_SRC common/fdsapi/FDSApiHandler.cpp common/fdsapi/FDSApiServer.cpp)
+endif(WITH_FDSAPI)
+
+find_package(Boost REQUIRED)
+include_directories( ${Boost_INCLUDE_DIR} )
+
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gen)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-if(WITH_FDSAPI)
-include(ThriftExternalProject)
 
-include_directories(SYSTEM ${THRIFT_INCLUDE_DIR})
-set(THRIFT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen/fdsapi)
-file(MAKE_DIRECTORY ${THRIFT_OUTPUT_DIR})
-include(ThriftUtils)
-
-THRIFT_GEN(THRIFT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/thrift/fdsapi.thrift)
-add_definitions(-DWITH_FDSAPI)
-set(FDSAPI_SRC common/fdsapi/FDSApiHandler.cpp common/fdsapi/FDSApiServer.cpp)
-endif()
-
-FIND_PACKAGE(Boost REQUIRED)
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
-
-set(${MODULE_PREFIX}_SRCS
-	main.cpp 
-	common/appcontext/ApplicationContext.cpp 
-	common/session/SessionStore.cpp
-	common/session/Session.cpp
-	common/session/Connection.cpp
+set(ICP_SOURCES 
 	common/call/Call.cpp
 	common/call/CallIn.cpp
 	common/call/CallOut.cpp
@@ -81,12 +61,21 @@ set(${MODULE_PREFIX}_SRCS
 	common/call/CallInLogOffUserSession.cpp
 	common/call/CallOutFdsApiVirtualChannelOpen.cpp
 	common/pbRPC/RpcEngine.cpp
+)
+
+set(${MODULE_PREFIX}_SRCS
+	main.cpp 
+	common/appcontext/ApplicationContext.cpp 
+	common/session/SessionStore.cpp
+	common/session/Session.cpp
+	common/session/Connection.cpp
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp
 	common/module/AuthModule.cpp
 	common/config/PropertyManager.cpp
 	common/config/PropertyCWrapper.cpp
 	common/utils/StringHelpers.cpp
+	${ICP_SOURCES}
 	${FDSAPI_SRC}
 	${PBRPC_PROTOBUF_SRC}
 	${PBRPC_PROTOBUF_HEADERS}
@@ -118,4 +107,3 @@ add_subdirectory(module)
 if (WITH_FDSAPI)
 add_subdirectory(fdsapi)
 endif()
-
