@@ -41,11 +41,11 @@ namespace freerds
 				int initModule(pRdsAuthModuleEntry moduleEntry);
 				virtual ~AuthModule();
 
-				int logonUser(char* username, char* domain, char* password);
+				int logonUser(std::string username, std::string domain, std::string password);
 
-				static pRdsAuthModuleEntry loadModuleEntry(const char* filename);
-				static AuthModule* loadFromFileName(const char* fileName);
-				static AuthModule* loadFromName(const char* name);
+				static pRdsAuthModuleEntry loadModuleEntry(std::string filename);
+				static AuthModule* loadFromFileName(std::string fileName);
+				static AuthModule* loadFromName(std::string name);
 
 			private:
 				rdsAuthModule* mAuth;

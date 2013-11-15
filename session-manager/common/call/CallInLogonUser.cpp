@@ -34,7 +34,7 @@ namespace freerds
 		namespace call
 		{
 		CallInLogonUser::CallInLogonUser()
-			: mSessionId(0)
+			: mSessionId(0), mAuthStatus(0)
 		{
 
 		};
@@ -61,7 +61,6 @@ namespace freerds
 				return -1;
 			}
 
-			//mSessionId = req.sessionid();
 			mUserName = req.username();
 
 			if (req.has_domain())
@@ -97,10 +96,14 @@ namespace freerds
 		{
 			std::string pipeName;
 
+			mAuthStatus = 0;
+
 			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{
+				char* moduleName;
+
 				currentSession = APP_CONTEXT.getSessionStore()->createSession();
 				currentSession->setUserName(mUserName);
 				currentSession->setDomain(mDomainName);
@@ -117,7 +120,24 @@ namespace freerds
 					return 1;
 				}
 
-				char* moduleName = APP_CONTEXT.getModuleManager()->getDefaultModuleName();
+				if (!currentSession->isAuthenticated())
+				{
+					int status;
+
+					status = currentSession->authenticate(mUserName, mDomainName, mPassword);
+
+					mAuthStatus = status;
+				}
+
+				if (mAuthStatus == 0)
+				{
+					moduleName = APP_CONTEXT.getModuleManager()->getDefaultModuleName();
+				}
+				else
+				{
+					moduleName = APP_CONTEXT.getModuleManager()->getDefaultGreeterModuleName();
+				}
+
 				currentSession->setModuleName(moduleName);
 			}
 
@@ -133,7 +153,6 @@ namespace freerds
 			mSessionId = currentSession->getSessionID();
 
 			mPipeName = currentSession->getPipeName();
-			mAuthStatus = 0;
 
 			return 0;
 		}

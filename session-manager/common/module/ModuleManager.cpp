@@ -76,6 +76,26 @@ namespace freerds
 				return this->defaultModuleName;
 			}
 
+			char* ModuleManager::getDefaultGreeterModuleName()
+			{
+				if (!this->defaultGreeterModuleName)
+				{
+					DWORD nSize = GetEnvironmentVariableA("FREERDS_DEFAULT_GREETER_MODULE", NULL, 0);
+
+					if (nSize)
+					{
+						this->defaultGreeterModuleName = (LPSTR) malloc(nSize);
+						nSize = GetEnvironmentVariableA("FREERDS_DEFAULT_GREETER_MODULE", this->defaultGreeterModuleName, nSize);
+					}
+					else
+					{
+						this->defaultGreeterModuleName = _strdup("Qt");
+					}
+				}
+
+				return this->defaultGreeterModuleName;
+			}
+
 			int ModuleManager::loadModulesFromPathAndEnv(std::string path, std::string pattern)
 			{
 				// the the Environment variable

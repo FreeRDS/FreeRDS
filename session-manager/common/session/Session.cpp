@@ -33,6 +33,7 @@
 #include <winpr/crt.h>
 #include <winpr/tchar.h>
 
+#include <module/AuthModule.h>
 #include <appcontext/ApplicationContext.h>
 
 namespace freerds
@@ -46,10 +47,9 @@ namespace freerds
 			Session::Session(long sessionID): mSessionID(sessionID),
 					mSessionStarted(false), mpEnvBlock(NULL),
 					mCurrentState(WTSDown), mUserToken(NULL),
-					mCurrentModuleContext(NULL)
+					mCurrentModuleContext(NULL), mAuthenticated(false)
 			{
-				mProxyConnection = false;
-				mConnection = Connection::create();
+
 			}
 
 			Session::~Session()
@@ -77,14 +77,35 @@ namespace freerds
 				mUsername = username;
 			}
 
-			long Session::getSessionID()
+			UINT32 Session::getSessionID()
 			{
 				return mSessionID;
 			}
 
-			bool Session::isProxyConnection()
+			bool Session::isAuthenticated()
 			{
-				return mProxyConnection;
+				return mAuthenticated;
+			}
+
+			int Session::authenticate(std::string username, std::string domain, std::string password)
+			{
+				int status;
+				this->mUsername = username;
+				this->mDomain = domain;
+
+				moduleNS::AuthModule* auth = moduleNS::AuthModule::loadFromName("PAM");
+
+				if (!auth)
+					return -1;
+
+				status = auth->logonUser(username, domain, password);
+
+				if (status == 0)
+					mAuthenticated = true;
+
+				delete auth;
+
+				return status;
 			}
 
 			bool Session::generateUserToken()
@@ -215,11 +236,6 @@ namespace freerds
 			std::string Session::getPipeName()
 			{
 				return mPipeName;
-			}
-
-			std::string Session::getProxyPipeName()
-			{
-				return mConnection->getServerPipeName();
 			}
 
 			WTS_CONNECTSTATE_CLASS Session::getConnectState()

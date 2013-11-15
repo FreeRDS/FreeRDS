@@ -223,7 +223,7 @@ int freerds_icp_LogOffUserSession(UINT32 sessionId, BOOL* loggedoff)
 }
 
 int freerds_icp_LogonUser(UINT32* sessionId, char* username, char* domain,
-		char* password, UINT32* authStatus, char** serviceEndpoint)
+		char* password, int* authStatus, char** serviceEndpoint)
 {
 	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
 

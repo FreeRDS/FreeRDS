@@ -46,12 +46,15 @@ namespace freerds
 			void setDomain(std::string groupname);
 			std::string getUserName();
 			void setUserName(std::string username);
-			long getSessionID();
+			UINT32 getSessionID();
 			std::string getPipeName();
 
 			bool generateUserToken();
 			bool generateEnvBlockAndModify();
 			char** getPEnvBlock();
+
+			bool isAuthenticated();
+			int authenticate(std::string username, std::string domain, std::string password);
 
 			void setModuleName(std::string moduleName);
 			bool startModule(std::string & pipeName);
@@ -60,15 +63,10 @@ namespace freerds
 			WTS_CONNECTSTATE_CLASS getConnectState();
 			void setConnectState(WTS_CONNECTSTATE_CLASS state);
 
-			bool isProxyConnection();
-			std::string getProxyPipeName();
-
 		private:
-			long mSessionID;
+			UINT32 mSessionID;
+			bool mAuthenticated;
 			bool mSessionStarted;
-
-			bool mProxyConnection;
-			Connection* mConnection;
 
 			std::string mUsername;
 			std::string mDomain;
@@ -79,7 +77,7 @@ namespace freerds
 			char* mpEnvBlock;
 
 			std::string mModuleName;
-			RDS_MODULE_COMMON * mCurrentModuleContext;
+			RDS_MODULE_COMMON* mCurrentModuleContext;
 			WTS_CONNECTSTATE_CLASS mCurrentState;
 		};
 

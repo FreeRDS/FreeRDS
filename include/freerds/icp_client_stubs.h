@@ -29,6 +29,6 @@ int freerds_icp_GetUserSession(char* username, char* domain, UINT32* sessionId, 
 int freerds_icp_DisconnectUserSession(UINT32 sessionId, BOOL* disconnected);
 int freerds_icp_LogOffUserSession(UINT32 sessionId, BOOL* loggedoff);
 int freerds_icp_LogonUser(UINT32* sessionId, char* username, char* domain,
-		char* password, UINT32* authStatus, char** serviceEndpoint);
+		char* password, int* authStatus, char** serviceEndpoint);
 
 #endif // _ICP_CLIENT_STUBS_H

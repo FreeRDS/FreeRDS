@@ -60,14 +60,14 @@ message FdsApiVirtualChannelOpenResponse {
 }
 
 message LogonUserRequest {
-	required uint32 SessionID = 1;
+	required uint32 SessionId = 1;
 	required string Username = 2;
 	required string Password = 3;
 	required string Domain = 4;
 }
 
 message LogonUserResponse {
-	required uint32 SessionID = 1;
-	required uint32 AuthStatus = 2;
+	required uint32 SessionId = 1;
+	required int32 AuthStatus = 2;
 	required string ServiceEndpoint = 3;
 }

@@ -45,7 +45,7 @@ typedef void (*pRdsAuthModuleFree)(rdsAuthModule* auth);
 typedef char* (*pRdsAuthModuleStart)(rdsAuthModule* auth);
 typedef int (*pRdsAuthModuleStop)(rdsAuthModule* auth);
 
-typedef int (*pRdsAuthLogonUser)(rdsAuthModule* auth, char* username, char* domain, char* password);
+typedef int (*pRdsAuthLogonUser)(rdsAuthModule* auth, const char* username, const char* domain, const char* password);
 
 struct rds_auth_module_entry_points_v1
 {

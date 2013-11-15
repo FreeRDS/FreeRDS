@@ -42,11 +42,14 @@ namespace freerds
 				int loadModulesFromPathAndEnv(std::string path, std::string pattern);
 
 				Module* getModule(std::string moduleName);
+
 				char* getDefaultModuleName();
+				char* getDefaultGreeterModuleName();
 
 			private:
 				char pathSeparator;
 				char* defaultModuleName;
+				char* defaultGreeterModuleName;
 				int addModule(std::string path, std::string modulename);
 				std::map<std::string,Module *> mModulesMap;
 			};

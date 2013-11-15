@@ -76,24 +76,24 @@ namespace freerds
 				}
 			}
 
-			int AuthModule::logonUser(char* username, char* domain, char* password)
+			int AuthModule::logonUser(std::string username, std::string domain, std::string password)
 			{
 				int status;
 
 				if (!mEntryPoints.LogonUser)
 					return -1;
 
-				status = mEntryPoints.LogonUser(mAuth, username, domain, password);
+				status = mEntryPoints.LogonUser(mAuth, username.c_str(), domain.c_str(), password.c_str());
 
 				return status;
 			}
 
-			pRdsAuthModuleEntry AuthModule::loadModuleEntry(const char* filename)
+			pRdsAuthModuleEntry AuthModule::loadModuleEntry(std::string filename)
 			{
 				HINSTANCE library;
 				pRdsAuthModuleEntry moduleEntry;
 
-				library = LoadLibraryA(filename);
+				library = LoadLibraryA(filename.c_str());
 
 				if (!library)
 					return (pRdsAuthModuleEntry) NULL;
@@ -108,12 +108,12 @@ namespace freerds
 				return (pRdsAuthModuleEntry) NULL;
 			}
 
-			AuthModule* AuthModule::loadFromFileName(const char* filename)
+			AuthModule* AuthModule::loadFromFileName(std::string filename)
 			{
 				AuthModule* module;
 				pRdsAuthModuleEntry moduleEntry;
 
-				moduleEntry = AuthModule::loadModuleEntry(filename);
+				moduleEntry = AuthModule::loadModuleEntry(filename.c_str());
 
 				if (!moduleEntry)
 					return (AuthModule*) NULL;
@@ -124,7 +124,7 @@ namespace freerds
 				return module;
 			}
 
-			AuthModule* AuthModule::loadFromName(const char* name)
+			AuthModule* AuthModule::loadFromName(std::string name)
 			{
 				int length;
 				char* filename;
@@ -135,7 +135,7 @@ namespace freerds
 
 				libraryPath = APP_CONTEXT.getLibraryPath();
 
-				lowerName = _strdup(name);
+				lowerName = _strdup(name.c_str());
 				CharLowerA(lowerName);
 
 				length = strlen(lowerName) + libraryPath.size() + 64;

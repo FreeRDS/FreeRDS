@@ -172,7 +172,7 @@ static int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStrea
 BOOL freerds_peer_activate(freerdp_peer* client)
 {
 	int error_code;
-	UINT32 authStatus;
+	int authStatus;
 	HANDLE hClientPipe;
 	rdpSettings* settings;
 	rdsConnection* connection = (rdsConnection*) client->context;
@@ -201,6 +201,8 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 		printf("freerds_icp_LogonUser failed %d\n", error_code);
 		return FALSE;
 	}
+
+	fprintf(stderr, "Auto Logon Status: %d\n", authStatus);
 
 	hClientPipe = freerds_named_pipe_connect(connection->connector->Endpoint, 20);
 
