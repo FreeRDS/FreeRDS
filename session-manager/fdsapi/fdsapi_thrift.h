@@ -1,8 +1,8 @@
 /**
- * FreeRDS: FreeRDP Remote Desktop Services (RDS)
- * Qt Server Module
+ * FreeRDS: FDSApi implementation for thrift
  *
- * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013 Thinstuff Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef FREERDS_MODULE_QT_H
-#define FREERDS_MODULE_QT_H
+#ifndef FREERDS_FDSAPI_THRIFT_H
+#define FREERDS_FDSAPI_THRIFT_H
 
-#include <freerds/modules.h>
+#include <winpr/wtsapi.h>
 
-int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
+PWTSFunctionTable FDSApiEntry();
 
-#endif /* FREERDS_MODULE_QT_H */
+#endif //FREERDS_FDSAPI_THRIFT_H

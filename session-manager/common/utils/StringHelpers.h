@@ -21,6 +21,7 @@
 #define __STRING_HELPERS_HEADER_H
 
 #include <vector>
+#include <string>
 
 template<typename T>
 std::vector<T>
@@ -40,5 +41,9 @@ split(const T & str, const T & delimiters) {
     return v;
 }
 
+namespace std{
+
+	bool stringEndsWith(const string& compString, const string& suffix);
+}
 
 #endif

@@ -129,7 +129,7 @@ namespace freerds
 				int length;
 				char* filename;
 				char* lowerName;
-				char* libraryPath;
+				std::string libraryPath;
 				AuthModule* module;
 				pRdsAuthModuleEntry moduleEntry;
 
@@ -138,10 +138,10 @@ namespace freerds
 				lowerName = _strdup(name);
 				CharLowerA(lowerName);
 
-				length = strlen(lowerName) + strlen(libraryPath) + 64;
+				length = strlen(lowerName) + libraryPath.size() + 64;
 				filename = (char*) malloc(length + 1);
 
-				sprintf_s(filename, length, "%s/libfreerds-auth-%s.so", libraryPath, lowerName);
+				sprintf_s(filename, length, "%s/libfreerds-auth-%s.so", libraryPath.c_str(), lowerName);
 				free(lowerName);
 
 				module = AuthModule::loadFromFileName(filename);

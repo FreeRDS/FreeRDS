@@ -1,5 +1,5 @@
 /**
- * Module
+ * Class for rpc call FdsApiVirtualChannelOpen (session manager to freerds)
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,48 +17,43 @@
  * limitations under the License.
  */
 
-#ifndef MODULE_H_
-#define MODULE_H_
+#ifndef CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_
+#define CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_
 
-#include "Module.h"
-//#include <freerds/freerds.h>
-#include <winpr/wtypes.h>
-#include <freerds/modules.h>
 #include <string>
+#include "CallOut.h"
+#include <ICP.pb.h>
 
 namespace freerds
 {
 	namespace sessionmanager
 	{
-		namespace module
+		namespace call
 		{
-			class Module
+			class CallOutFdsApiVirtualChannelOpen: public CallOut
 			{
 			public:
-				Module();
-				int initModule(HMODULE libHandle, std::string moduleFileName, RDS_MODULE_ENTRY_POINTS* entrypoints);
-				virtual ~Module();
-				std::string getName();
+				CallOutFdsApiVirtualChannelOpen();
+				virtual ~CallOutFdsApiVirtualChannelOpen();
 
-				RDS_MODULE_COMMON* newContext();
-				void freeContext(RDS_MODULE_COMMON* context);
+				virtual unsigned long getCallType();
 
-				std::string start(RDS_MODULE_COMMON* context);
-				int stop(RDS_MODULE_COMMON* context);
+				virtual int encodeRequest();
+				virtual int decodeResponse();
+
+				void setSessionID(long sessionID);
+				void setVirtualName(std::string virtualName);
+				std::string getConnectionString();
 
 			private:
-				pRdsModuleNew mfpNew;
-				pRdsModuleFree mfpFree;
-
-				pRdsModuleStart mfpStart;
-				pRdsModuleStop mfpStop;
-				std::string mModuleFile;
-				std::string mModuleName;
+				long mSessionID;
+				std::string mVirtualName;
+				std::string mConnectionString;
 			};
 		}
 	}
 }
 
-namespace moduleNS = freerds::sessionmanager::module;
+namespace callNS = freerds::sessionmanager::call;
 
-#endif /* MODULE_H_ */
+#endif //CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_

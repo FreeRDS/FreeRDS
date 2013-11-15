@@ -29,6 +29,10 @@
 #include <module/ModuleManager.h>
 #include <config/PropertyManager.h>
 
+#ifdef WITH_FDSAPI
+#include <fdsapi/FDSApiServer.h>
+#endif
+
 #define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
 
 namespace freerds
@@ -44,11 +48,11 @@ namespace freerds
 			int startRPCEngine();
 			int stopRPCEngine();
 
-			char* getHomePath();
-			char* getLibraryPath();
-			char* getExecutablePath();
-			char* getShareDataPath();
-			char* getSystemConfigPath();
+			std::string getHomePath();
+			std::string getLibraryPath();
+			std::string getExecutablePath();
+			std::string getShareDataPath();
+			std::string getSystemConfigPath();
 
 			SignalingQueue<callNS::Call> * getRpcOutgoingQueue();
 
@@ -56,14 +60,13 @@ namespace freerds
 			void setupTestingPropValues();
 
 		private:
-			char* homePath;
-			char* libraryPath;
-			char* executablePath;
-			char* shareDataPath;
-			char* systemConfigPath;
+			std::string mHomePath;
+			std::string mLibraryPath;
+			std::string mExecutablePath;
+			std::string mShareDataPath;
+			std::string mSystemConfigPath;
 
 			void initPaths();
-			void uninitPaths();
 
 			void configureExecutableSearchPath();
 
@@ -73,6 +76,9 @@ namespace freerds
 			SignalingQueue<callNS::Call> mRpcOutgoingCalls;
 			wLog* mWLogRoot;
 			moduleNS::ModuleManager mModuleManager;
+#ifdef WITH_FDSAPI
+			fdsapiNS::FDSApiServer mFDSApiServer;
+#endif
 			SINGLETON_ADD_INITIALISATION(ApplicationContext)
 		};
 	}

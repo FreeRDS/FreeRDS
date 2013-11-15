@@ -1,8 +1,8 @@
 /**
- * FreeRDS: FreeRDP Remote Desktop Services (RDS)
- * Qt Server Module
+ * helper templates for strings
  *
- * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013 Thinstuff Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FREERDS_MODULE_QT_H
-#define FREERDS_MODULE_QT_H
+#include "StringHelpers.h"
 
-#include <freerds/modules.h>
+namespace std{
 
-int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
+	bool stringEndsWith(const string& compString, const string& suffix)
+	{
+		return compString.rfind(suffix) == (compString.size()-suffix.size());
+	}
+}
 
-#endif /* FREERDS_MODULE_QT_H */

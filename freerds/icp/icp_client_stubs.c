@@ -221,3 +221,40 @@ int freerds_icp_LogOffUserSession(UINT32 sessionID, BOOL* loggedoff)
 
 	return PBRPC_SUCCESS;
 }
+
+int freerds_icp_LogonUser(char* username, char* domain, char *password, UINT32* authStatus, char** serviceEndpoint)
+{
+	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
+
+	request.domain = domain;
+	request.username = username;
+	request.password = password;
+
+	ICP_CLIENT_STUB_CALL(LogonUser, logon_user)
+
+	if (ret != 0)
+	{
+		// handle function specific frees
+		return ret;
+	}
+
+	ICP_CLIENT_STUB_UNPACK_RESPONSE(LogonUser, logon_user)
+
+	if (NULL == response)
+	{
+		// unpack error
+		// free function specific stuff
+		return PBRPC_BAD_RESPONSE;
+	}
+
+	// assign returned stuff here!
+	// don't use pointers since response get's freed (copy might be required..)
+	*authStatus = response->authstatus;
+	*serviceEndpoint = _strdup(response->serviceendpoint);
+
+	// free function specific stuff
+
+	ICP_CLIENT_STUB_CLEANUP(LogonUser, logon_user)
+
+	return PBRPC_SUCCESS;
+}

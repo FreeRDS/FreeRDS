@@ -65,13 +65,12 @@ namespace freerds
 		{
 			WLog_CloseAppender(mWLogRoot);
 			WLog_Uninit();
-
-			uninitPaths();
 		}
 
-		char* ApplicationContext::getHomePath()
+		std::string ApplicationContext::getHomePath()
 		{
-			if (!this->homePath)
+
+			if (mHomePath.size() == 0)
 			{
 				char* p;
 				int length;
@@ -86,67 +85,80 @@ namespace freerds
 				p = strrchr(moduleFileName, separator);
 				*p = '\0';
 
-				length = strlen(moduleFileName);
-				this->homePath = (char*) malloc(length + 1);
-				CopyMemory(this->homePath, moduleFileName, length);
-				this->homePath[length] = '\0';
+				mHomePath.assign(moduleFileName);
+
+//				length = strlen(moduleFileName);
+	//			this->homePath = (char*) malloc(length + 1);
+		//		CopyMemory(this->homePath, moduleFileName, length);
+			//	this->homePath[length] = '\0';
 			}
 
-			return this->homePath;
+			return mHomePath;
 		}
 
-		char* ApplicationContext::getLibraryPath()
+		std::string ApplicationContext::getLibraryPath()
 		{
-			if (!this->libraryPath)
+			if (mLibraryPath.size() == 0)
 			{
-				getHomePath();
-				this->libraryPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_LIBDIR);
+				mLibraryPath = getHomePath();
+				mLibraryPath += "/";
+				mLibraryPath += FREERDS_INSTALL_LIBDIR;
+				//this->libraryPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_LIBDIR);
 			}
 
-			return this->libraryPath;
+			return mLibraryPath;
 		}
 
-		char* ApplicationContext::getExecutablePath()
+		std::string ApplicationContext::getExecutablePath()
 		{
-			if (!this->executablePath)
+			if (mExecutablePath.size() == 0)
 			{
-				getHomePath();
-				this->executablePath = GetCombinedPath(this->homePath, FREERDS_INSTALL_BINDIR);
+				mExecutablePath = getHomePath();
+				mExecutablePath += "/";
+				mExecutablePath += FREERDS_INSTALL_BINDIR;
+				//this->executablePath = GetCombinedPath(this->homePath, FREERDS_INSTALL_BINDIR);
 			}
 
-			return this->executablePath;
+			return mExecutablePath;
 		}
 
-		char* ApplicationContext::getShareDataPath()
+		std::string ApplicationContext::getShareDataPath()
 		{
-			if (!this->shareDataPath)
+			if (mShareDataPath.size() == 0)
 			{
-				char* rootShareDataPath;
+				//char* rootShareDataPath;
 
-				getHomePath();
-
-				rootShareDataPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_DATAROOTDIR);
-				this->shareDataPath = GetCombinedPath(rootShareDataPath, "freerds");
-				free(rootShareDataPath);
+				mShareDataPath = getHomePath();
+				mShareDataPath += "/";
+				mShareDataPath += FREERDS_INSTALL_DATAROOTDIR;
+				mShareDataPath += "/";
+				mShareDataPath += "freerds";
+				//rootShareDataPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_DATAROOTDIR);
+				//this->shareDataPath = GetCombinedPath(rootShareDataPath, "freerds");
+				//free(rootShareDataPath);
 			}
 
-			return this->shareDataPath;
+			return mShareDataPath;
 		}
 
-		char* ApplicationContext::getSystemConfigPath()
+		std::string ApplicationContext::getSystemConfigPath()
 		{
-			if (!this->systemConfigPath)
+			if (mSystemConfigPath.size() == 0)
 			{
-				char* rootSystemConfigPath;
+				//char* rootSystemConfigPath;
 
-				getHomePath();
+				mSystemConfigPath = getHomePath();
+				mSystemConfigPath += "/";
+				mSystemConfigPath += FREERDS_INSTALL_SYSCONFDIR;
+				mSystemConfigPath += "/";
+				mSystemConfigPath += "freerds";
 
-				rootSystemConfigPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_SYSCONFDIR);
-				this->systemConfigPath = GetCombinedPath(rootSystemConfigPath, "freerds");
-				free(rootSystemConfigPath);
+				//rootSystemConfigPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_SYSCONFDIR);
+				//this->systemConfigPath = GetCombinedPath(rootSystemConfigPath, "freerds");
+				//free(rootSystemConfigPath);
 			}
 
-			return this->systemConfigPath;
+			return mSystemConfigPath;
 		}
 
 		void ApplicationContext::initPaths()
@@ -158,14 +170,6 @@ namespace freerds
 			getSystemConfigPath();
 		}
 
-		void ApplicationContext::uninitPaths()
-		{
-			free(this->homePath);
-			free(this->libraryPath);
-			free(this->executablePath);
-			free(this->shareDataPath);
-			free(this->systemConfigPath);
-		}
 
 		void ApplicationContext::configureExecutableSearchPath()
 		{
@@ -190,21 +194,21 @@ namespace freerds
 
 				for (index = 0; index < pathList.size(); index++)
 				{
-					if (strcmp(this->executablePath, pathList[index].c_str()) == 0)
+					if (strcmp(mExecutablePath.c_str(), pathList[index].c_str()) == 0)
 						executablePathPresent = true;
-					else if (strcmp(this->systemConfigPath, pathList[index].c_str()) == 0)
+					else if (strcmp(mSystemConfigPath.c_str(), pathList[index].c_str()) == 0)
 						systemConfigPathPresent = true;
 				}
 
 				if (!executablePathPresent)
 				{
-					pathExtra += this->executablePath;
+					pathExtra += mExecutablePath;
 					pathExtra += ":";
 				}
 
 				if (!systemConfigPathPresent)
 				{
-					pathExtra += this->systemConfigPath;
+					pathExtra += mSystemConfigPath;
 					pathExtra += ":";
 				}
 
@@ -228,11 +232,17 @@ namespace freerds
 
 		int ApplicationContext::startRPCEngine()
 		{
+#ifdef WITH_FDSAPI
+			mFDSApiServer.startFDSApi();
+#endif
 			return mRpcEngine.startEngine();
 		}
 
 		int ApplicationContext::stopRPCEngine()
 		{
+#ifdef WITH_FDSAPI
+			mFDSApiServer.stopFDSApi();
+#endif
 			return mRpcEngine.stopEngine();
 		}
 
@@ -262,6 +272,12 @@ namespace freerds
 			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.xres",1024);
 			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.yres",768);
 			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.colordepth",24);
+			mPropertyManager.setPropertyString(Global, 0, "module","x11");
+			mPropertyManager.setPropertyNumber(User, 0, "module.x11.xres",800,"demo1");
+			mPropertyManager.setPropertyNumber(User, 0, "module.x11.yres",600,"demo1");
+			mPropertyManager.setPropertyNumber(User, 0, "module.x11.xres",800,"demo2");
+			mPropertyManager.setPropertyNumber(User, 0, "module.x11.yres",600,"demo2");
+			mPropertyManager.setPropertyString(User, 0, "module","x11","demo2");
 		}
 	}
 }

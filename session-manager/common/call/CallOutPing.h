@@ -1,8 +1,6 @@
 /**
- * FreeRDS: FreeRDP Remote Desktop Services (RDS)
- * X11 Server Module
+ * Class for rpc call Ping (session manager to)
  *
- * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
  *
@@ -19,11 +17,40 @@
  * limitations under the License.
  */
 
-#ifndef FREERDS_MODULE_X11_H
-#define FREERDS_MODULE_X11_H
+#ifndef __CALL_OUT_PING_H_
+#define __CALL_OUT_PING_H_
 
-#include <freerds/modules.h>
+#include <string>
+#include "CallOut.h"
+#include <ICP.pb.h>
 
-int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallOutPing: public CallOut
+			{
+			public:
+				CallOutPing();
+				virtual ~CallOutPing();
 
-#endif /* FREERDS_MODULE_X11_H */
+				virtual unsigned long getCallType();
+
+				virtual int encodeRequest();
+				virtual int decodeResponse();
+
+				bool getPong();
+
+			private:
+				bool mPong;
+
+			};
+		}
+	}
+}
+
+namespace callNS = freerds::sessionmanager::call;
+
+#endif // __CALL_OUT_PING_H_

@@ -25,7 +25,7 @@
 #include <list>
 
 #include <winpr/handle.h>
-#include <module/modules.h>
+#include <freerds/modules.h>
 #include <winpr/wtsapi.h>
 
 #include "Connection.h"
