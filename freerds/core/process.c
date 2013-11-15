@@ -207,7 +207,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 
 	printf("Connected to session %d\n", (int) connection->connector->SessionId);
 
-	if (freerds_init_client(hClientPipe, settings, connection->connector->OutboundStream))
+	if (freerds_init_client(hClientPipe, settings, connection->connector->OutboundStream) < 0)
 	{
 		fprintf(stderr, "Error sending initial packet with %s\n", connection->connector->Endpoint);
 		return FALSE;
