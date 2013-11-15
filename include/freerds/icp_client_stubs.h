@@ -17,16 +17,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef _ICP_CLIENT_STUBS_H
 #define  _ICP_CLIENT_STUBS_H
+
 #include <winpr/wtypes.h>
 
+int freerds_icp_IsChannelAllowed(int sessionId, char* channelName, BOOL* isAllowed);
+int freerds_icp_Ping(BOOL* pong);
+int freerds_icp_GetUserSession(char* username, char* domain, UINT32* sessionId, char** serviceEndpoint);
+int freerds_icp_DisconnectUserSession(UINT32 sessionId, BOOL* disconnected);
+int freerds_icp_LogOffUserSession(UINT32 sessionId, BOOL* loggedoff);
+int freerds_icp_LogonUser(UINT32* sessionId, char* username, char* domain,
+		char* password, UINT32* authStatus, char** serviceEndpoint);
 
-int freerds_icp_IsChannelAllowed(int sessionId, char *channelName, BOOL *isAllowed);
-int freerds_icp_Ping(BOOL *pong);
-int freerds_icp_GetUserSession(char *username, char * domain, UINT32 *sessionID, char **serviceEndpoint);
-int freerds_icp_DisconnectUserSession(UINT32 sessionID, BOOL *disconnected);
-int freerds_icp_LogOffUserSession(UINT32 sessionID, BOOL *loggedoff);
-int freerds_icp_LogonUser(char* username, char* domain, char *password, UINT32* authStatus, char**
-serviceEndpoint);
 #endif // _ICP_CLIENT_STUBS_H

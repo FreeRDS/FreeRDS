@@ -56,6 +56,7 @@ set(ICP_SOURCES
 	common/call/CallInIsVCAllowed.cpp
 	common/call/CallInPing.cpp
 	common/call/CallOutPing.cpp
+	common/call/CallInLogonUser.cpp
 	common/call/CallInGetUserSession.cpp
 	common/call/CallInDisconnectUserSession.cpp
 	common/call/CallInLogOffUserSession.cpp

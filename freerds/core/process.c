@@ -172,6 +172,7 @@ static int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStrea
 BOOL freerds_peer_activate(freerdp_peer* client)
 {
 	int error_code;
+	UINT32 authStatus;
 	HANDLE hClientPipe;
 	rdpSettings* settings;
 	rdsConnection* connection = (rdsConnection*) client->context;
@@ -188,12 +189,16 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	if (!connection->connector)
 		connection->connector = freerds_module_connector_new(connection);
 
-	error_code = freerds_icp_GetUserSession(settings->Username, settings->Domain,
-			(UINT32*)(&(connection->connector->SessionId)), (&(connection->connector->Endpoint)));
+	authStatus = 0;
+	connection->connector->SessionId = 0;
+
+	error_code = freerds_icp_LogonUser((UINT32*)(&(connection->connector->SessionId)),
+			settings->Username, settings->Domain, settings->Password, &authStatus,
+			&(connection->connector->Endpoint));
 
 	if (error_code != 0)
 	{
-		printf("freerds_icp_GetUserSession failed %d\n", error_code);
+		printf("freerds_icp_LogonUser failed %d\n", error_code);
 		return FALSE;
 	}
 
