@@ -101,7 +101,19 @@ namespace freerds
 				status = auth->logonUser(username, domain, password);
 
 				if (status == 0)
+				{
 					mAuthenticated = true;
+
+					if (!generateUserToken())
+					{
+						return -1;
+					}
+
+					if (!generateEnvBlockAndModify())
+					{
+						return -1;
+					}
+				}
 
 				delete auth;
 
@@ -141,7 +153,7 @@ namespace freerds
 
 				if (!pwnam)
 				{
-					 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed to get userinformation (getpwnam) for username %s!",mUsername.c_str());
+					 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed to get user information (getpwnam) for username %s!",mUsername.c_str());
 					return false;
 				}
 

@@ -232,6 +232,21 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 
 	printf("Client Activated\n");
 
+	if (authStatus != 0)
+	{
+		RDS_MSG_LOGON_USER msg;
+
+		ZeroMemory(&msg, sizeof(RDS_MSG_LOGON_USER));
+		msg.type = RDS_CLIENT_LOGON_USER;
+
+		msg.Flags = 0;
+		msg.User = settings->Username;
+		msg.Domain = settings->Domain;
+		msg.Password = settings->Password;
+
+		connection->connector->client->LogonUser(connection->connector, &msg);
+	}
+
 	return TRUE;
 }
 

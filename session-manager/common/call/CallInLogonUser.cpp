@@ -105,20 +105,6 @@ namespace freerds
 				char* moduleName;
 
 				currentSession = APP_CONTEXT.getSessionStore()->createSession();
-				currentSession->setUserName(mUserName);
-				currentSession->setDomain(mDomainName);
-
-				if (!currentSession->generateUserToken())
-				{
-					mResult = 1;// will report error with answer
-					return 1;
-				}
-
-				if (!currentSession->generateEnvBlockAndModify())
-				{
-					mResult = 1;// will report error with answer
-					return 1;
-				}
 
 				if (!currentSession->isAuthenticated())
 				{

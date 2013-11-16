@@ -2092,6 +2092,161 @@ static RDS_MSG_DEFINITION RDS_MSG_LOGOFF_USER_DEFINITION =
  * Generic Functions
  */
 
+/**
+ * Client
+ */
+
+static RDS_MSG_DEFINITION* RDS_CLIENT_MSG_DEFINITIONS[32] =
+{
+	NULL, /* 0 */
+	NULL, /* 1 */
+	NULL, /* 2 */
+	NULL, /* 3 */
+	NULL, /* 4 */
+	NULL, /* 5 */
+	NULL, /* 6 */
+	NULL, /* 7 */
+	NULL, /* 8 */
+	NULL, /* 9 */
+	NULL, /* 10 */
+	&RDS_MSG_LOGON_USER_DEFINITION, /* 11 */
+	&RDS_MSG_LOGOFF_USER_DEFINITION, /* 12 */
+	NULL, /* 13 */
+	NULL, /* 14 */
+	NULL, /* 15 */
+	NULL, /* 16 */
+	NULL, /* 17 */
+	NULL, /* 18 */
+	NULL, /* 19 */
+	NULL, /* 20 */
+	NULL, /* 21 */
+	NULL, /* 22 */
+	NULL, /* 23 */
+	NULL, /* 24 */
+	NULL, /* 25 */
+	NULL, /* 26 */
+	NULL, /* 27 */
+	NULL, /* 28 */
+	NULL, /* 29 */
+	NULL, /* 30 */
+	NULL /* 31 */
+};
+
+int freerds_client_message_size(UINT32 type)
+{
+	RDS_MSG_DEFINITION* msgDef;
+
+	type -= 100;
+
+	msgDef = RDS_CLIENT_MSG_DEFINITIONS[type];
+
+	if (msgDef)
+	{
+		if (msgDef->Size)
+			return msgDef->Size;
+	}
+
+	return sizeof(RDS_MSG_SERVER);
+}
+
+char* freerds_client_message_name(UINT32 type)
+{
+	RDS_MSG_DEFINITION* msgDef;
+
+	type -= 100;
+
+	msgDef = RDS_CLIENT_MSG_DEFINITIONS[type];
+
+	if (msgDef)
+	{
+		if (msgDef->Name)
+			return (char*) msgDef->Name;
+	}
+
+	return "Unknown";
+}
+
+int freerds_client_message_read(wStream* s, RDS_MSG_COMMON* msg)
+{
+	int type;
+	int status = 0;
+	RDS_MSG_DEFINITION* msgDef;
+
+	type = msg->type - 100;
+	msgDef = RDS_CLIENT_MSG_DEFINITIONS[type];
+
+	if (msgDef)
+	{
+		if (msgDef->Read)
+			status = msgDef->Read(s, msg);
+	}
+
+	return status;
+}
+
+int freerds_client_message_write(wStream* s, RDS_MSG_COMMON* msg)
+{
+	int type;
+	RDS_MSG_DEFINITION* msgDef;
+
+	type = msg->type - 100;
+
+	if (type > 31)
+	{
+		fprintf(stderr, "unable to treat message type %d\n", type);
+		return 0;
+	}
+
+	msgDef = RDS_CLIENT_MSG_DEFINITIONS[type];
+
+	if (msgDef)
+	{
+		if (msgDef->Write)
+			msgDef->Write(s, msg);
+	}
+
+	return msg->length;
+}
+
+void* freerds_client_message_copy(RDS_MSG_COMMON* msg)
+{
+	int type;
+	void* dup = NULL;
+	RDS_MSG_DEFINITION* msgDef;
+
+	type = msg->type - 100;
+
+	msgDef = RDS_CLIENT_MSG_DEFINITIONS[type];
+
+	if (msgDef)
+	{
+		if (msgDef->Copy)
+			dup = msgDef->Copy(msg);
+	}
+
+	return dup;
+}
+
+void freerds_client_message_free(RDS_MSG_COMMON* msg)
+{
+	int type;
+	RDS_MSG_DEFINITION* msgDef;
+
+	type = msg->type - 100;
+
+	msgDef = RDS_CLIENT_MSG_DEFINITIONS[msg->type];
+
+	if (msgDef)
+	{
+		if (msgDef->Free)
+			msgDef->Free(msg);
+	}
+}
+
+/**
+ * Server
+ */
+
 static RDS_MSG_DEFINITION* RDS_SERVER_MSG_DEFINITIONS[32] =
 {
 	NULL, /* 0 */

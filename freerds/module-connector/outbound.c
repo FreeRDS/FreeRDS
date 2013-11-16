@@ -27,6 +27,23 @@
 
 #include "outbound.h"
 
+int freerds_client_outbound_write_message(rdsModuleConnector* connector, RDS_MSG_COMMON* msg)
+{
+	int status;
+	wStream* s;
+
+	s = connector->OutboundStream;
+	Stream_SetPosition(s, 0);
+
+	freerds_client_message_write(NULL, msg);
+	Stream_EnsureRemainingCapacity(s, msg->length);
+	freerds_client_message_write(s, msg);
+
+	status = freerds_named_pipe_write(connector->hClientPipe, Stream_Buffer(s), msg->length);
+
+	return status;
+}
+
 int freerds_client_outbound_synchronize_keyboard_event(rdsModuleConnector* connector, DWORD flags)
 {
 	int length;
@@ -194,6 +211,17 @@ int freerds_client_outbound_vblank_event(rdsModuleConnector* connector)
 	return status;
 }
 
+int freerds_client_outbound_logon_user(rdsModuleConnector* connector, RDS_MSG_LOGON_USER* msg)
+{
+	msg->type = RDS_CLIENT_LOGON_USER;
+	return freerds_client_outbound_write_message(connector, (RDS_MSG_COMMON*) msg);
+}
+
+int freerds_client_outbound_logoff_user(rdsModuleConnector* connector, RDS_MSG_LOGOFF_USER* msg)
+{
+	msg->type = RDS_CLIENT_LOGOFF_USER;
+	return freerds_client_outbound_write_message(connector, (RDS_MSG_COMMON*) msg);
+}
 
 rdsClientInterface* freerds_client_outbound_interface_new()
 {
@@ -212,6 +240,8 @@ rdsClientInterface* freerds_client_outbound_interface_new()
 		client->MouseEvent = freerds_client_outbound_mouse_event;
 		client->ExtendedMouseEvent = freerds_client_outbound_extended_mouse_event;
 		client->VBlankEvent = freerds_client_outbound_vblank_event;
+		client->LogonUser = freerds_client_outbound_logon_user;
+		client->LogoffUser = freerds_client_outbound_logoff_user;
 	}
 
 	return client;

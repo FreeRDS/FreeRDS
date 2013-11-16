@@ -53,8 +53,8 @@ int main(void)
 	APP_CONTEXT.loadModulesFromPath(APP_CONTEXT.getLibraryPath());
 
 
-	//APP_CONTEXT.getPropertyManager()->saveProperties(APP_CONTEXT.getSystemConfigPath() + "\config.ini");
-	APP_CONTEXT.getPropertyManager()->loadProperties(APP_CONTEXT.getSystemConfigPath() + "\config.ini");
+	//APP_CONTEXT.getPropertyManager()->saveProperties(APP_CONTEXT.getSystemConfigPath() + "/config.ini");
+	APP_CONTEXT.getPropertyManager()->loadProperties(APP_CONTEXT.getSystemConfigPath() + "/config.ini");
 
 
 	cout << "Hello session manager" << endl;

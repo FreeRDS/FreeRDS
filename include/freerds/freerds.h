@@ -86,6 +86,29 @@ typedef struct _RDS_FRAMEBUFFER RDS_FRAMEBUFFER;
 #define RDS_CODEC_NSCODEC		0x00000002
 #define RDS_CODEC_REMOTEFX		0x00000004
 
+struct _RDS_MSG_LOGON_USER
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 Flags;
+	UINT32 UserLength;
+	UINT32 DomainLength;
+	UINT32 PasswordLength;
+
+	char* User;
+	char* Domain;
+	char* Password;
+};
+typedef struct _RDS_MSG_LOGON_USER RDS_MSG_LOGON_USER;
+
+struct _RDS_MSG_LOGOFF_USER
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 Flags;
+};
+typedef struct _RDS_MSG_LOGOFF_USER RDS_MSG_LOGOFF_USER;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -94,6 +117,12 @@ UINT32 freerds_peek_common_header_length(BYTE* data);
 
 int freerds_read_common_header(wStream* s, RDS_MSG_COMMON* msg);
 int freerds_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
+
+int freerds_read_logon_user(wStream* s, RDS_MSG_LOGON_USER* msg);
+int freerds_write_logon_user(wStream* s, RDS_MSG_LOGON_USER* msg);
+
+int freerds_read_logoff_user(wStream* s, RDS_MSG_LOGOFF_USER* msg);
+int freerds_write_logoff_user(wStream* s, RDS_MSG_LOGOFF_USER* msg);
 
 #ifdef __cplusplus
 }
@@ -110,6 +139,8 @@ int freerds_write_common_header(wStream* s, RDS_MSG_COMMON* msg);
 #define RDS_CLIENT_MOUSE_EVENT			108
 #define RDS_CLIENT_EXTENDED_MOUSE_EVENT		109
 #define RDS_CLIENT_VBLANK_EVENT			110
+#define RDS_CLIENT_LOGON_USER			111
+#define RDS_CLIENT_LOGOFF_USER			112
 
 struct _RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT
 {
@@ -550,29 +581,6 @@ struct _RDS_MSG_WINDOW_DELETE
 };
 typedef struct _RDS_MSG_WINDOW_DELETE RDS_MSG_WINDOW_DELETE;
 
-struct _RDS_MSG_LOGON_USER
-{
-	DEFINE_MSG_COMMON();
-
-	UINT32 Flags;
-	UINT32 UserLength;
-	UINT32 DomainLength;
-	UINT32 PasswordLength;
-
-	char* User;
-	char* Domain;
-	char* Password;
-};
-typedef struct _RDS_MSG_LOGON_USER RDS_MSG_LOGON_USER;
-
-struct _RDS_MSG_LOGOFF_USER
-{
-	DEFINE_MSG_COMMON();
-
-	UINT32 Flags;
-};
-typedef struct _RDS_MSG_LOGOFF_USER RDS_MSG_LOGOFF_USER;
-
 struct _RDS_MSG_SHARED_FRAMEBUFFER
 {
 	DEFINE_MSG_COMMON();
@@ -628,7 +636,9 @@ typedef int (*pRdsClientVirtualKeyboardEvent)(rdsModuleConnector* connector, DWO
 typedef int (*pRdsClientUnicodeKeyboardEvent)(rdsModuleConnector* connector, DWORD flags, DWORD code);
 typedef int (*pRdsClientMouseEvent)(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y);
 typedef int (*pRdsClientExtendedMouseEvent)(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y);
-typedef int (*pRdsClientVBlankEvent)(rdsModuleConnector *connector);
+typedef int (*pRdsClientVBlankEvent)(rdsModuleConnector* connector);
+typedef int (*pRdsClientLogonUser)(rdsModuleConnector* connector, RDS_MSG_LOGON_USER* msg);
+typedef int (*pRdsClientLogoffUser)(rdsModuleConnector* connector, RDS_MSG_LOGOFF_USER* msg);
 
 struct rds_client_interface
 {
@@ -639,6 +649,8 @@ struct rds_client_interface
 	pRdsClientMouseEvent MouseEvent;
 	pRdsClientExtendedMouseEvent ExtendedMouseEvent;
 	pRdsClientVBlankEvent VBlankEvent;
+	pRdsClientLogonUser LogonUser;
+	pRdsClientLogoffUser LogoffUser;
 };
 typedef struct rds_client_interface rdsClientInterface;
 
@@ -742,6 +754,15 @@ struct rds_module_connector
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+FREERDP_API int freerds_client_message_size(UINT32 type);
+FREERDP_API char* freerds_client_message_name(UINT32 type);
+
+FREERDP_API int freerds_client_message_read(wStream* s, RDS_MSG_COMMON* msg);
+FREERDP_API int freerds_client_message_write(wStream* s, RDS_MSG_COMMON* msg);
+
+FREERDP_API void* freerds_client_message_copy(RDS_MSG_COMMON* msg);
+FREERDP_API void freerds_client_message_free(RDS_MSG_COMMON* msg);
 
 FREERDP_API int freerds_server_message_size(UINT32 type);
 FREERDP_API char* freerds_server_message_name(UINT32 type);
