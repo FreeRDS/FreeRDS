@@ -47,7 +47,7 @@
 
 char* RdsModuleName = NULL;
 static HANDLE g_TermEvent = NULL;
-static xrdpListener* g_listen = NULL;
+static rdsListener* g_listen = NULL;
 static char* freerds_home_path = NULL;
 
 char* freerds_get_home_path()

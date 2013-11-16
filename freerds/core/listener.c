@@ -36,22 +36,22 @@ void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 	freerds_connection_create(client);
 }
 
-xrdpListener* freerds_listener_create(void)
+rdsListener* freerds_listener_create(void)
 {
 	freerdp_listener* listener;
 
 	listener = freerdp_listener_new();
 	listener->PeerAccepted = freerds_peer_accepted;
 
-	return (xrdpListener*) listener;
+	return (rdsListener*) listener;
 }
 
-void freerds_listener_delete(xrdpListener* self)
+void freerds_listener_delete(rdsListener* self)
 {
 	freerdp_listener_free((freerdp_listener*) self);
 }
 
-int freerds_listener_main_loop(xrdpListener* self)
+int freerds_listener_main_loop(rdsListener* self)
 {
 	DWORD status;
 	DWORD nCount;

@@ -36,7 +36,7 @@
 
 #include <pixman.h>
 
-typedef struct xrdp_listener xrdpListener;
+typedef struct xrdp_listener rdsListener;
 
 #include "core.h"
 
@@ -49,9 +49,9 @@ void freerds_connection_delete(rdsConnection* self);
 HANDLE freerds_connection_get_term_event(rdsConnection* self);
 void* freerds_connection_main_thread(void* arg);
 
-xrdpListener* freerds_listener_create(void);
-void freerds_listener_delete(xrdpListener* self);
-int freerds_listener_main_loop(xrdpListener* self);
+rdsListener* freerds_listener_create(void);
+void freerds_listener_delete(rdsListener* self);
+int freerds_listener_main_loop(rdsListener* self);
 
 rdsModuleConnector* freerds_module_new(rdsConnection* connection);
 void freerds_module_free(rdsModuleConnector* connector);

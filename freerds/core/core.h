@@ -38,23 +38,14 @@
 
 #include "freerds.h"
 
-struct xrdp_brush
-{
-	int x_orgin;
-	int y_orgin;
-	int style;
-	char pattern[8];
-};
-typedef struct xrdp_brush xrdpBrush;
-
-struct RDS_RECT
+struct rds_rect
 {
 	int left;
 	int top;
 	int right;
 	int bottom;
 };
-typedef struct RDS_RECT xrdpRect;
+typedef struct rds_rect rdsRect;
 
 struct rds_connection
 {
@@ -111,25 +102,25 @@ FREERDP_API int freerds_orders_begin_paint(rdsConnection* connection);
 FREERDP_API int freerds_orders_end_paint(rdsConnection* connection);
 
 FREERDP_API int freerds_orders_rect(rdsConnection* connection, int x, int y,
-		int cx, int cy, int color, xrdpRect* rect);
+		int cx, int cy, int color, rdsRect* rect);
 
 FREERDP_API int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
-		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect);
+		int cx, int cy, int srcx, int srcy, int rop, rdsRect* rect);
 
 FREERDP_API int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
-		xrdpBrush* brush, xrdpRect* rect);
+		rdpBrush* brush, rdsRect* rect);
 
 FREERDP_API int freerds_orders_dest_blt(rdsConnection* connection,
-		int x, int y, int cx, int cy, int rop, xrdpRect* rect);
+		int x, int y, int cx, int cy, int rop, rdsRect* rect);
 
-FREERDP_API int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRect* rect);
+FREERDP_API int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, rdsRect* rect);
 
 FREERDP_API int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
-		int srcy, int cache_idx, xrdpRect* rect);
+		int srcy, int cache_idx, rdsRect* rect);
 
-FREERDP_API int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect);
+FREERDP_API int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, rdsRect* rect);
 
 FREERDP_API int freerds_orders_send_palette(rdsConnection* connection, int* palette, int cache_id);
 

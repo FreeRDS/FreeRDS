@@ -36,7 +36,7 @@
  * Custom helpers
  */
 
-int freerds_set_bounds_rect(rdsConnection* connection, xrdpRect* rect)
+int freerds_set_bounds_rect(rdsConnection* connection, rdsRect* rect)
 {
 	rdpUpdate* update = connection->client->update;
 
@@ -351,7 +351,7 @@ int freerds_orders_end_paint(rdsConnection* connection)
 }
 
 int freerds_orders_rect(rdsConnection* connection, int x, int y,
-		int cx, int cy, int color, xrdpRect* rect)
+		int cx, int cy, int color, rdsRect* rect)
 {
 	OPAQUE_RECT_ORDER opaqueRect;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -372,7 +372,7 @@ int freerds_orders_rect(rdsConnection* connection, int x, int y,
 }
 
 int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
-		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect)
+		int cx, int cy, int srcx, int srcy, int rop, rdsRect* rect)
 {
 	SCRBLT_ORDER scrblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -396,7 +396,7 @@ int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
 
 int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
-		xrdpBrush* brush, xrdpRect* rect)
+		rdpBrush* brush, rdsRect* rect)
 {
 	PATBLT_ORDER patblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -411,11 +411,11 @@ int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 	patblt.backColor = (UINT32) fg_color;
 	patblt.foreColor = (UINT32) bg_color;
 
-	patblt.brush.x = brush->x_orgin;
-	patblt.brush.y = brush->y_orgin;
+	patblt.brush.x = brush->x;
+	patblt.brush.y = brush->y;
 	patblt.brush.style = brush->style;
 	patblt.brush.data = patblt.brush.p8x8;
-	CopyMemory(patblt.brush.data, brush->pattern, 8);
+	CopyMemory(patblt.brush.data, brush->data, 8);
 	patblt.brush.hatch = patblt.brush.data[0];
 
 	freerds_set_bounds_rect(connection, rect);
@@ -426,7 +426,7 @@ int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 }
 
 int freerds_orders_dest_blt(rdsConnection* connection,
-		int x, int y, int cx, int cy, int rop, xrdpRect* rect)
+		int x, int y, int cx, int cy, int rop, rdsRect* rect)
 {
 	DSTBLT_ORDER dstblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -446,7 +446,7 @@ int freerds_orders_dest_blt(rdsConnection* connection,
 	return 0;
 }
 
-int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRect* rect)
+int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, rdsRect* rect)
 {
 	LINE_TO_ORDER lineTo;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -473,7 +473,7 @@ int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRec
 
 int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
-		int srcy, int cache_idx, xrdpRect* rect)
+		int srcy, int cache_idx, rdsRect* rect)
 {
 	MEMBLT_ORDER memblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -499,7 +499,7 @@ int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 	return 0;
 }
 
-int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect)
+int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, rdsRect* rect)
 {
 	GLYPH_INDEX_ORDER glyphIndex;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
