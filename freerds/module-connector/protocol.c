@@ -25,19 +25,19 @@
 
 #include "protocol.h"
 
-typedef int (*pXrdpMessageRead)(wStream* s, RDS_MSG_COMMON* msg);
-typedef int (*pXrdpMessageWrite)(wStream* s, RDS_MSG_COMMON* msg);
-typedef void* (*pXrdpMessageCopy)(RDS_MSG_COMMON* msg);
-typedef void (*pXrdpMessageFree)(RDS_MSG_COMMON* msg);
+typedef int (*pRdsMessageRead)(wStream* s, RDS_MSG_COMMON* msg);
+typedef int (*pRdsMessageWrite)(wStream* s, RDS_MSG_COMMON* msg);
+typedef void* (*pRdsMessageCopy)(RDS_MSG_COMMON* msg);
+typedef void (*pRdsMessageFree)(RDS_MSG_COMMON* msg);
 
 struct _RDS_MSG_DEFINITION
 {
 	int Size;
 	const char* Name;
-	pXrdpMessageRead Read;
-	pXrdpMessageWrite Write;
-	pXrdpMessageCopy Copy;
-	pXrdpMessageFree Free;
+	pRdsMessageRead Read;
+	pRdsMessageWrite Write;
+	pRdsMessageCopy Copy;
+	pRdsMessageFree Free;
 };
 typedef struct _RDS_MSG_DEFINITION RDS_MSG_DEFINITION;
 
@@ -395,10 +395,10 @@ void freerds_begin_update_free(RDS_MSG_BEGIN_UPDATE* msg)
 static RDS_MSG_DEFINITION RDS_MSG_BEGIN_UPDATE_DEFINITION =
 {
 	sizeof(RDS_MSG_BEGIN_UPDATE), "BeginUpdate",
-	(pXrdpMessageRead) freerds_read_begin_update,
-	(pXrdpMessageWrite) freerds_write_begin_update,
-	(pXrdpMessageCopy) freerds_begin_update_copy,
-	(pXrdpMessageFree) freerds_begin_update_free
+	(pRdsMessageRead) freerds_read_begin_update,
+	(pRdsMessageWrite) freerds_write_begin_update,
+	(pRdsMessageCopy) freerds_begin_update_copy,
+	(pRdsMessageFree) freerds_begin_update_free
 };
 
 /**
@@ -441,10 +441,10 @@ void freerds_end_update_free(RDS_MSG_END_UPDATE* msg)
 static RDS_MSG_DEFINITION RDS_MSG_END_UPDATE_DEFINITION =
 {
 	sizeof(RDS_MSG_END_UPDATE), "EndUpdate",
-	(pXrdpMessageRead) freerds_read_end_update,
-	(pXrdpMessageWrite) freerds_write_end_update,
-	(pXrdpMessageCopy) freerds_end_update_copy,
-	(pXrdpMessageFree) freerds_end_update_free
+	(pRdsMessageRead) freerds_read_end_update,
+	(pRdsMessageWrite) freerds_write_end_update,
+	(pRdsMessageCopy) freerds_end_update_copy,
+	(pRdsMessageFree) freerds_end_update_free
 };
 
 /**
@@ -502,10 +502,10 @@ void freerds_set_clipping_region_free(RDS_MSG_SET_CLIPPING_REGION* msg)
 static RDS_MSG_DEFINITION RDS_MSG_SET_CLIPPING_REGION_DEFINITION =
 {
 	sizeof(RDS_MSG_SET_CLIPPING_REGION), "SetClippingRegion",
-	(pXrdpMessageRead) freerds_read_set_clipping_region,
-	(pXrdpMessageWrite) freerds_write_set_clipping_region,
-	(pXrdpMessageCopy) freerds_set_clipping_region_copy,
-	(pXrdpMessageFree) freerds_set_clipping_region_free
+	(pRdsMessageRead) freerds_read_set_clipping_region,
+	(pRdsMessageWrite) freerds_write_set_clipping_region,
+	(pRdsMessageCopy) freerds_set_clipping_region_copy,
+	(pRdsMessageFree) freerds_set_clipping_region_free
 };
 
 /**
@@ -568,10 +568,10 @@ void freerds_opaque_rect_free(RDS_MSG_OPAQUE_RECT* msg)
 static RDS_MSG_DEFINITION RDS_MSG_OPAQUE_RECT_DEFINITION =
 {
 	sizeof(RDS_MSG_OPAQUE_RECT), "OpaqueRect",
-	(pXrdpMessageRead) freerds_read_opaque_rect,
-	(pXrdpMessageWrite) freerds_write_opaque_rect,
-	(pXrdpMessageCopy) freerds_opaque_rect_copy,
-	(pXrdpMessageFree) freerds_opaque_rect_free
+	(pRdsMessageRead) freerds_read_opaque_rect,
+	(pRdsMessageWrite) freerds_write_opaque_rect,
+	(pRdsMessageCopy) freerds_opaque_rect_copy,
+	(pRdsMessageFree) freerds_opaque_rect_free
 };
 
 /**
@@ -636,10 +636,10 @@ void freerds_screen_blt_free(RDS_MSG_SCREEN_BLT* msg)
 static RDS_MSG_DEFINITION RDS_MSG_SCREEN_BLT_DEFINITION =
 {
 	sizeof(RDS_MSG_SCREEN_BLT), "ScreenBlt",
-	(pXrdpMessageRead) freerds_read_screen_blt,
-	(pXrdpMessageWrite) freerds_write_screen_blt,
-	(pXrdpMessageCopy) freerds_screen_blt_copy,
-	(pXrdpMessageFree) freerds_screen_blt_free
+	(pRdsMessageRead) freerds_read_screen_blt,
+	(pRdsMessageWrite) freerds_write_screen_blt,
+	(pRdsMessageCopy) freerds_screen_blt_copy,
+	(pRdsMessageFree) freerds_screen_blt_free
 };
 
 /**
@@ -753,10 +753,10 @@ void freerds_paint_rect_free(RDS_MSG_PAINT_RECT* msg)
 static RDS_MSG_DEFINITION RDS_MSG_PAINT_RECT_DEFINITION =
 {
 	sizeof(RDS_MSG_PAINT_RECT), "PaintRect",
-	(pXrdpMessageRead) freerds_read_paint_rect,
-	(pXrdpMessageWrite) freerds_write_paint_rect,
-	(pXrdpMessageCopy) freerds_paint_rect_copy,
-	(pXrdpMessageFree) freerds_paint_rect_free
+	(pRdsMessageRead) freerds_read_paint_rect,
+	(pRdsMessageWrite) freerds_write_paint_rect,
+	(pRdsMessageCopy) freerds_paint_rect_copy,
+	(pRdsMessageFree) freerds_paint_rect_free
 };
 
 /**
@@ -839,10 +839,10 @@ void freerds_patblt_free(RDS_MSG_PATBLT* msg)
 static RDS_MSG_DEFINITION RDS_MSG_PATBLT_DEFINITION =
 {
 	sizeof(RDS_MSG_PATBLT), "PatBlt",
-	(pXrdpMessageRead) freerds_read_patblt,
-	(pXrdpMessageWrite) freerds_write_patblt,
-	(pXrdpMessageCopy) freerds_patblt_copy,
-	(pXrdpMessageFree) freerds_patblt_free
+	(pRdsMessageRead) freerds_read_patblt,
+	(pRdsMessageWrite) freerds_write_patblt,
+	(pRdsMessageCopy) freerds_patblt_copy,
+	(pRdsMessageFree) freerds_patblt_free
 };
 
 /**
@@ -905,10 +905,10 @@ void freerds_dstblt_free(RDS_MSG_DSTBLT* msg)
 static RDS_MSG_DEFINITION RDS_MSG_DSTBLT_DEFINITION =
 {
 	sizeof(RDS_MSG_DSTBLT), "DstBlt",
-	(pXrdpMessageRead) freerds_read_dstblt,
-	(pXrdpMessageWrite) freerds_write_dstblt,
-	(pXrdpMessageCopy) freerds_dstblt_copy,
-	(pXrdpMessageFree) freerds_dstblt_free
+	(pRdsMessageRead) freerds_read_dstblt,
+	(pRdsMessageWrite) freerds_write_dstblt,
+	(pRdsMessageCopy) freerds_dstblt_copy,
+	(pRdsMessageFree) freerds_dstblt_free
 };
 
 /**
@@ -972,10 +972,10 @@ void freerds_line_to_free(RDS_MSG_LINE_TO* msg)
 static RDS_MSG_DEFINITION RDS_MSG_LINE_TO_DEFINITION =
 {
 	sizeof(RDS_MSG_LINE_TO), "LineTo",
-	(pXrdpMessageRead) freerds_read_line_to,
-	(pXrdpMessageWrite) freerds_write_line_to,
-	(pXrdpMessageCopy) freerds_line_to_copy,
-	(pXrdpMessageFree) freerds_line_to_free
+	(pRdsMessageRead) freerds_read_line_to,
+	(pRdsMessageWrite) freerds_write_line_to,
+	(pRdsMessageCopy) freerds_line_to_copy,
+	(pRdsMessageFree) freerds_line_to_free
 };
 
 /**
@@ -1029,10 +1029,10 @@ void freerds_create_offscreen_surface_free(RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg
 static RDS_MSG_DEFINITION RDS_MSG_CREATE_OFFSCREEN_SURFACE_DEFINITION =
 {
 	sizeof(RDS_MSG_CREATE_OFFSCREEN_SURFACE), "CreateOffscreenSurface",
-	(pXrdpMessageRead) freerds_read_create_offscreen_surface,
-	(pXrdpMessageWrite) freerds_write_create_offscreen_surface,
-	(pXrdpMessageCopy) freerds_create_offscreen_surface_copy,
-	(pXrdpMessageFree) freerds_create_offscreen_surface_free
+	(pRdsMessageRead) freerds_read_create_offscreen_surface,
+	(pRdsMessageWrite) freerds_write_create_offscreen_surface,
+	(pRdsMessageCopy) freerds_create_offscreen_surface_copy,
+	(pRdsMessageFree) freerds_create_offscreen_surface_free
 };
 
 /**
@@ -1082,10 +1082,10 @@ void freerds_switch_offscreen_surface_free(RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg
 static RDS_MSG_DEFINITION RDS_MSG_SWITCH_OFFSCREEN_SURFACE_DEFINITION =
 {
 	sizeof(RDS_MSG_SWITCH_OFFSCREEN_SURFACE), "SwitchOffscreenSurface",
-	(pXrdpMessageRead) freerds_read_switch_offscreen_surface,
-	(pXrdpMessageWrite) freerds_write_switch_offscreen_surface,
-	(pXrdpMessageCopy) freerds_switch_offscreen_surface_copy,
-	(pXrdpMessageFree) freerds_switch_offscreen_surface_free
+	(pRdsMessageRead) freerds_read_switch_offscreen_surface,
+	(pRdsMessageWrite) freerds_write_switch_offscreen_surface,
+	(pRdsMessageCopy) freerds_switch_offscreen_surface_copy,
+	(pRdsMessageFree) freerds_switch_offscreen_surface_free
 };
 
 /**
@@ -1134,10 +1134,10 @@ void freerds_delete_offscreen_surface_free(RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg
 static RDS_MSG_DEFINITION RDS_MSG_DELETE_OFFSCREEN_SURFACE_DEFINITION =
 {
 	sizeof(RDS_MSG_DELETE_OFFSCREEN_SURFACE), "DeleteOffscreenSurface",
-	(pXrdpMessageRead) freerds_read_delete_offscreen_surface,
-	(pXrdpMessageWrite) freerds_write_delete_offscreen_surface,
-	(pXrdpMessageCopy) freerds_delete_offscreen_surface_copy,
-	(pXrdpMessageFree) freerds_delete_offscreen_surface_free
+	(pRdsMessageRead) freerds_read_delete_offscreen_surface,
+	(pRdsMessageWrite) freerds_write_delete_offscreen_surface,
+	(pRdsMessageCopy) freerds_delete_offscreen_surface_copy,
+	(pRdsMessageFree) freerds_delete_offscreen_surface_free
 };
 
 /**
@@ -1200,10 +1200,10 @@ void freerds_paint_offscreen_surface_free(RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 static RDS_MSG_DEFINITION RDS_MSG_PAINT_OFFSCREEN_SURFACE_DEFINITION =
 {
 	sizeof(RDS_MSG_PAINT_OFFSCREEN_SURFACE), "PaintOffscreenSurface",
-	(pXrdpMessageRead) freerds_read_paint_offscreen_surface,
-	(pXrdpMessageWrite) freerds_write_paint_offscreen_surface,
-	(pXrdpMessageCopy) freerds_paint_offscreen_surface_copy,
-	(pXrdpMessageFree) freerds_paint_offscreen_surface_free
+	(pRdsMessageRead) freerds_read_paint_offscreen_surface,
+	(pRdsMessageWrite) freerds_write_paint_offscreen_surface,
+	(pRdsMessageCopy) freerds_paint_offscreen_surface_copy,
+	(pRdsMessageFree) freerds_paint_offscreen_surface_free
 };
 
 /**
@@ -1237,10 +1237,10 @@ void freerds_set_palette_free(RDS_MSG_SET_PALETTE* msg)
 static RDS_MSG_DEFINITION RDS_MSG_SET_PALETTE_DEFINITION =
 {
 	sizeof(RDS_MSG_SET_PALETTE), "SetPalette",
-	(pXrdpMessageRead) freerds_read_set_palette,
-	(pXrdpMessageWrite) freerds_write_set_palette,
-	(pXrdpMessageCopy) freerds_set_palette_copy,
-	(pXrdpMessageFree) freerds_set_palette_free
+	(pRdsMessageRead) freerds_read_set_palette,
+	(pRdsMessageWrite) freerds_write_set_palette,
+	(pRdsMessageCopy) freerds_set_palette_copy,
+	(pRdsMessageFree) freerds_set_palette_free
 };
 
 /**
@@ -1275,10 +1275,10 @@ void freerds_cache_glyph_free(RDS_MSG_CACHE_GLYPH* msg)
 static RDS_MSG_DEFINITION RDS_MSG_CACHE_GLYPH_DEFINITION =
 {
 	sizeof(RDS_MSG_CACHE_GLYPH), "CacheGlyph",
-	(pXrdpMessageRead) freerds_read_cache_glyph,
-	(pXrdpMessageWrite) freerds_write_cache_glyph,
-	(pXrdpMessageCopy) freerds_cache_glyph_copy,
-	(pXrdpMessageFree) freerds_cache_glyph_free
+	(pRdsMessageRead) freerds_read_cache_glyph,
+	(pRdsMessageWrite) freerds_write_cache_glyph,
+	(pRdsMessageCopy) freerds_cache_glyph_copy,
+	(pRdsMessageFree) freerds_cache_glyph_free
 };
 
 /**
@@ -1313,10 +1313,10 @@ void freerds_glyph_index_free(RDS_MSG_GLYPH_INDEX* msg)
 static RDS_MSG_DEFINITION RDS_MSG_GLYPH_INDEX_DEFINITION =
 {
 	sizeof(RDS_MSG_GLYPH_INDEX), "GlyphIndex",
-	(pXrdpMessageRead) freerds_read_glyph_index,
-	(pXrdpMessageWrite) freerds_write_glyph_index,
-	(pXrdpMessageCopy) freerds_glyph_index_copy,
-	(pXrdpMessageFree) freerds_glyph_index_free
+	(pRdsMessageRead) freerds_read_glyph_index,
+	(pRdsMessageWrite) freerds_write_glyph_index,
+	(pRdsMessageCopy) freerds_glyph_index_copy,
+	(pRdsMessageFree) freerds_glyph_index_free
 };
 
 /**
@@ -1426,10 +1426,10 @@ void freerds_set_pointer_free(RDS_MSG_SET_POINTER* msg)
 static RDS_MSG_DEFINITION RDS_MSG_SET_POINTER_DEFINITION =
 {
 	sizeof(RDS_MSG_SET_POINTER), "SetPointer",
-	(pXrdpMessageRead) freerds_read_set_pointer,
-	(pXrdpMessageWrite) freerds_write_set_pointer,
-	(pXrdpMessageCopy) freerds_set_pointer_copy,
-	(pXrdpMessageFree) freerds_set_pointer_free
+	(pRdsMessageRead) freerds_read_set_pointer,
+	(pRdsMessageWrite) freerds_write_set_pointer,
+	(pRdsMessageCopy) freerds_set_pointer_copy,
+	(pRdsMessageFree) freerds_set_pointer_free
 };
 
 /**
@@ -1478,10 +1478,10 @@ void freerds_set_system_pointer_free(RDS_MSG_SET_SYSTEM_POINTER* msg)
 static RDS_MSG_DEFINITION RDS_MSG_SET_SYSTEM_POINTER_DEFINITION =
 {
 	sizeof(RDS_MSG_SET_SYSTEM_POINTER), "SetSystemPointer",
-	(pXrdpMessageRead) freerds_read_set_system_pointer,
-	(pXrdpMessageWrite) freerds_write_set_system_pointer,
-	(pXrdpMessageCopy) freerds_set_system_pointer_copy,
-	(pXrdpMessageFree) freerds_set_system_pointer_free
+	(pRdsMessageRead) freerds_read_set_system_pointer,
+	(pRdsMessageWrite) freerds_write_set_system_pointer,
+	(pRdsMessageCopy) freerds_set_system_pointer_copy,
+	(pRdsMessageFree) freerds_set_system_pointer_free
 };
 
 /**
@@ -1543,10 +1543,10 @@ void freerds_shared_framebuffer_free(RDS_MSG_SHARED_FRAMEBUFFER* msg)
 static RDS_MSG_DEFINITION RDS_MSG_SHARED_FRAMEBUFFER_DEFINITION =
 {
 	sizeof(RDS_MSG_SHARED_FRAMEBUFFER), "SharedFramebuffer",
-	(pXrdpMessageRead) freerds_read_shared_framebuffer,
-	(pXrdpMessageWrite) freerds_write_shared_framebuffer,
-	(pXrdpMessageCopy) freerds_shared_framebuffer_copy,
-	(pXrdpMessageFree) freerds_shared_framebuffer_free
+	(pRdsMessageRead) freerds_read_shared_framebuffer,
+	(pRdsMessageWrite) freerds_write_shared_framebuffer,
+	(pRdsMessageCopy) freerds_shared_framebuffer_copy,
+	(pRdsMessageFree) freerds_shared_framebuffer_free
 };
 
 /**
@@ -1581,10 +1581,10 @@ void freerds_beep_free(RDS_MSG_BEEP* msg)
 static RDS_MSG_DEFINITION RDS_MSG_BEEP_DEFINITION =
 {
 	sizeof(RDS_MSG_BEEP), "Beep",
-	(pXrdpMessageRead) freerds_read_beep,
-	(pXrdpMessageWrite) freerds_write_beep,
-	(pXrdpMessageCopy) freerds_beep_copy,
-	(pXrdpMessageFree) freerds_beep_free
+	(pRdsMessageRead) freerds_read_beep,
+	(pRdsMessageWrite) freerds_write_beep,
+	(pRdsMessageCopy) freerds_beep_copy,
+	(pRdsMessageFree) freerds_beep_free
 };
 
 /**
@@ -1619,10 +1619,10 @@ void freerds_reset_free(RDS_MSG_RESET* msg)
 static RDS_MSG_DEFINITION RDS_MSG_RESET_DEFINITION =
 {
 	sizeof(RDS_MSG_RESET), "Reset",
-	(pXrdpMessageRead) freerds_read_reset,
-	(pXrdpMessageWrite) freerds_write_reset,
-	(pXrdpMessageCopy) freerds_reset_copy,
-	(pXrdpMessageFree) freerds_reset_free
+	(pRdsMessageRead) freerds_read_reset,
+	(pRdsMessageWrite) freerds_write_reset,
+	(pRdsMessageCopy) freerds_reset_copy,
+	(pRdsMessageFree) freerds_reset_free
 };
 
 /**
@@ -1850,10 +1850,10 @@ void freerds_window_new_update_free(RDS_MSG_WINDOW_NEW_UPDATE* msg)
 static RDS_MSG_DEFINITION RDS_MSG_WINDOW_NEW_UPDATE_DEFINITION =
 {
 	sizeof(RDS_MSG_WINDOW_NEW_UPDATE), "WindowNewUpdate",
-	(pXrdpMessageRead) freerds_read_window_new_update,
-	(pXrdpMessageWrite) freerds_write_window_new_update,
-	(pXrdpMessageCopy) freerds_window_new_update_copy,
-	(pXrdpMessageFree) freerds_window_new_update_free
+	(pRdsMessageRead) freerds_read_window_new_update,
+	(pRdsMessageWrite) freerds_write_window_new_update,
+	(pRdsMessageCopy) freerds_window_new_update_copy,
+	(pRdsMessageFree) freerds_window_new_update_free
 };
 
 /**
@@ -1903,10 +1903,10 @@ void freerds_window_delete_free(RDS_MSG_WINDOW_DELETE* msg)
 static RDS_MSG_DEFINITION RDS_MSG_WINDOW_DELETE_DEFINITION =
 {
 	sizeof(RDS_MSG_WINDOW_DELETE), "WindowDelete",
-	(pXrdpMessageRead) freerds_read_window_delete,
-	(pXrdpMessageWrite) freerds_write_window_delete,
-	(pXrdpMessageCopy) freerds_window_delete_copy,
-	(pXrdpMessageFree) freerds_window_delete_free
+	(pRdsMessageRead) freerds_read_window_delete,
+	(pRdsMessageWrite) freerds_write_window_delete,
+	(pRdsMessageCopy) freerds_window_delete_copy,
+	(pRdsMessageFree) freerds_window_delete_free
 };
 
 /**
@@ -1915,7 +1915,7 @@ static RDS_MSG_DEFINITION RDS_MSG_WINDOW_DELETE_DEFINITION =
 
 int freerds_read_logon_user(wStream* s, RDS_MSG_LOGON_USER* msg)
 {
-	if (Stream_GetRemainingLength(s) < 12)
+	if (Stream_GetRemainingLength(s) < 16)
 		return -1;
 
 	Stream_Read_UINT32(s, msg->Flags);
@@ -1964,7 +1964,7 @@ int freerds_write_logon_user(wStream* s, RDS_MSG_LOGON_USER* msg)
 	if (msg->Password)
 		msg->PasswordLength = strlen(msg->Password);
 
-	msg->length = freerds_write_common_header(NULL, (RDS_MSG_COMMON*) msg) + 12 +
+	msg->length = freerds_write_common_header(NULL, (RDS_MSG_COMMON*) msg) + 16 +
 			msg->UserLength + msg->DomainLength + msg->PasswordLength;
 
 	if (!s)
@@ -2028,10 +2028,10 @@ void freerds_logon_user_free(RDS_MSG_LOGON_USER* msg)
 static RDS_MSG_DEFINITION RDS_MSG_LOGON_USER_DEFINITION =
 {
 	sizeof(RDS_MSG_LOGON_USER), "LogonUser",
-	(pXrdpMessageRead) freerds_read_logon_user,
-	(pXrdpMessageWrite) freerds_write_logon_user,
-	(pXrdpMessageCopy) freerds_logon_user_copy,
-	(pXrdpMessageFree) freerds_logon_user_free
+	(pRdsMessageRead) freerds_read_logon_user,
+	(pRdsMessageWrite) freerds_write_logon_user,
+	(pRdsMessageCopy) freerds_logon_user_copy,
+	(pRdsMessageFree) freerds_logon_user_free
 };
 
 /**
@@ -2082,10 +2082,10 @@ void freerds_logoff_user_free(RDS_MSG_LOGOFF_USER* msg)
 static RDS_MSG_DEFINITION RDS_MSG_LOGOFF_USER_DEFINITION =
 {
 	sizeof(RDS_MSG_LOGOFF_USER), "LogoffUser",
-	(pXrdpMessageRead) freerds_read_logoff_user,
-	(pXrdpMessageWrite) freerds_write_logoff_user,
-	(pXrdpMessageCopy) freerds_logoff_user_copy,
-	(pXrdpMessageFree) freerds_logoff_user_free
+	(pRdsMessageRead) freerds_read_logoff_user,
+	(pRdsMessageWrite) freerds_write_logoff_user,
+	(pRdsMessageCopy) freerds_logoff_user_copy,
+	(pRdsMessageFree) freerds_logoff_user_free
 };
 
 /**

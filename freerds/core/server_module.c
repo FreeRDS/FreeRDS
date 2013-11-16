@@ -256,6 +256,11 @@ int freerds_client_inbound_window_delete(rdsModuleConnector* connector, RDS_MSG_
 
 int freerds_client_inbound_logon_user(rdsModuleConnector* module, RDS_MSG_LOGON_USER* msg)
 {
+	if (msg->Domain)
+		fprintf(stderr, "LogonUser: %s\\%s | %s", msg->Domain, msg->User, msg->Password);
+	else
+		fprintf(stderr, "LogonUser: %s | %s", msg->User, msg->Password);
+
 	return 0;
 }
 
