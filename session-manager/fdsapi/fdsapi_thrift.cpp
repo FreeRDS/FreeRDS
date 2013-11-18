@@ -23,6 +23,7 @@
 
 #include "fdsapi_thrift.h"
 #include <winpr/crt.h>
+#include <winpr/pipe.h>
 #include <fdsapi/fdsapi.h>
 
 
@@ -189,28 +190,45 @@ BOOL RpcGetChildSessionId(void* context, PULONG pSessionId)
 	return TRUE;
 }
 
-char * RpcVirtualChannelOpen(DWORD SessionId, LPSTR pVirtualName) {
+HANDLE RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName) {
 	CHECK_CLIENT_CONNECTION();
 	std::string result;
 	std::string virtualName(pVirtualName);
-	gClient->virtualChannelOpen(result,gAuthToken,SessionId,virtualName);
+	gClient->virtualChannelOpen(result,gAuthToken,sessionId,virtualName);
 	if (result.size() == 0) {
 		return NULL;
 	} else {
-		char * retValue = (char *) malloc(result.size() + 1);
-		memccpy(retValue,result.c_str(),result.size(),1);
-		*(retValue + result.size()) = 0;
+		HANDLE hNamedPipe;
+
+		if (!WaitNamedPipeA(result.c_str(), 5000))
+		{
+			fprintf(stderr, "WaitNamedPipe failure: %s\n", result.c_str());
+			return NULL;
+		}
+
+		hNamedPipe = CreateFileA(result.c_str(),
+				GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+		if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
+		{
+			fprintf(stderr, "Failed to create named pipe %s\n", result.c_str());
+			return NULL;
+		}
+		// add the sessionID and the virtual Name into a map
+		// so we have this information for RpcVirtualChannelClose
+
+		return hNamedPipe;
 	}
 }
 
-char * RpcVirtualChannelOpenEx(DWORD SessionId, LPSTR pVirtualName, DWORD flags) {
+HANDLE RpcVirtualChannelOpenEx(DWORD SessionId, LPSTR pVirtualName, DWORD flags) {
 	CHECK_CLIENT_CONNECTION();
 	return NULL;
 }
-BOOL RpcVirtualChannelClose(DWORD SessionId, LPSTR pVirtualName) {
+BOOL RpcVirtualChannelClose(HANDLE virtualChannelHandle) {
 	CHECK_CLIENT_CONNECTION();
-	std::string virtualName(pVirtualName);
-	return gClient->virtualChannelClose(gAuthToken,SessionId,virtualName);
+	//std::string virtualName(pVirtualName);
+	//return gClient->virtualChannelClose(gAuthToken,SessionId,virtualName);
 }
 
 
