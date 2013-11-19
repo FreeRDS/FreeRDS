@@ -91,7 +91,7 @@ namespace freerds
 			if (!currentSession)
 				mLoggedOff = false;
 
-			currentSession->setConnectState(WTSDisconnected);
+			currentSession->stopModule();
 
 			mLoggedOff = true;
 			return 0;

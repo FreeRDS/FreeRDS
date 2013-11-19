@@ -272,12 +272,16 @@ namespace freerds
 			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.xres",1024);
 			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.yres",768);
 			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.colordepth",24);
-			mPropertyManager.setPropertyString(Global, 0, "module","x11");
+			mPropertyManager.setPropertyString(Global, 0, "module","X11");
+			mPropertyManager.setPropertyString(Global, 0, "auth.module","PAM");
+			mPropertyManager.setPropertyString(Global, 0, "auth.greater","Qt");
+
+
 			mPropertyManager.setPropertyNumber(User, 0, "module.x11.xres",800,"demo1");
 			mPropertyManager.setPropertyNumber(User, 0, "module.x11.yres",600,"demo1");
 			mPropertyManager.setPropertyNumber(User, 0, "module.x11.xres",800,"demo2");
 			mPropertyManager.setPropertyNumber(User, 0, "module.x11.yres",600,"demo2");
-			mPropertyManager.setPropertyString(User, 0, "module","x11","demo2");
+			mPropertyManager.setPropertyString(User, 0, "module","X11","demo2");
 		}
 	}
 }

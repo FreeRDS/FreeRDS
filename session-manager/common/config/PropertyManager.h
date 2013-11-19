@@ -64,9 +64,9 @@ namespace freerds
 				PropertyManager();
 				~PropertyManager();
 
-				bool getPropertyBool(long sessionID, std::string path, bool &value);
-				bool getPropertyNumber(long sessionID, std::string path, long &value);
-				bool getPropertyString(long sessionID, std::string path, std::string &value);
+				bool getPropertyBool(long sessionID, std::string path, bool &value, std::string username="");
+				bool getPropertyNumber(long sessionID, std::string path, long &value, std::string username="");
+				bool getPropertyString(long sessionID, std::string path, std::string &value, std::string username="");
 
 				int setPropertyBool(PROPERTY_LEVEL level, long sessionID, std::string path, bool value, std::string username="");
 				int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, std::string path, long value, std::string username="");
@@ -78,7 +78,7 @@ namespace freerds
 			private:
 				int parsePropertyGlobal(std::string parentPath, const boost::property_tree::ptree& tree, PROPERTY_LEVEL level);
 				int setPropertyInternal(PROPERTY_LEVEL level, long sessionID, std::string path, PROPERTY_STORE_HELPER helper, std::string username);
-				bool getPropertyInternal(long sessionID, std::string path, PROPERTY_STORE_HELPER & helper);
+				bool getPropertyInternal(long sessionID, std::string path, PROPERTY_STORE_HELPER & helper, std::string username);
 
 				TPropertyMap mPropertyGlobalMap;
 				TPropertyPropertyMap mPropertyUserMap;

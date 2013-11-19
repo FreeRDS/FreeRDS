@@ -53,10 +53,12 @@ namespace freerds
 			bool generateEnvBlockAndModify();
 			char** getPEnvBlock();
 
-			bool isAuthenticated();
+			bool isAuthSession();
+			void setAuthSession(bool authSession);
 			int authenticate(std::string username, std::string domain, std::string password);
 
 			void setModuleName(std::string moduleName);
+			std::string getModuleName();
 			bool startModule(std::string & pipeName);
 			bool stopModule();
 
@@ -65,7 +67,7 @@ namespace freerds
 
 		private:
 			UINT32 mSessionID;
-			bool mAuthenticated;
+			bool mAuthSession;
 			bool mSessionStarted;
 
 			std::string mUsername;

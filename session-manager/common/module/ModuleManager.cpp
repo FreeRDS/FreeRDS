@@ -47,53 +47,12 @@ namespace freerds
 
 			ModuleManager::ModuleManager()
 			{
-				getDefaultModuleName();
 				this->pathSeparator = PathGetSeparatorA(PATH_STYLE_NATIVE);
 			}
 
 			ModuleManager::~ModuleManager()
 			{
 				free(this->defaultModuleName);
-			}
-
-			char* ModuleManager::getDefaultModuleName()
-			{
-				if (!this->defaultModuleName)
-				{
-					DWORD nSize = GetEnvironmentVariableA("FREERDS_DEFAULT_MODULE", NULL, 0);
-
-					if (nSize)
-					{
-						this->defaultModuleName = (LPSTR) malloc(nSize);
-						nSize = GetEnvironmentVariableA("FREERDS_DEFAULT_MODULE", this->defaultModuleName, nSize);
-					}
-					else
-					{
-						this->defaultModuleName = _strdup("X11");
-					}
-				}
-
-				return this->defaultModuleName;
-			}
-
-			char* ModuleManager::getDefaultGreeterModuleName()
-			{
-				if (!this->defaultGreeterModuleName)
-				{
-					DWORD nSize = GetEnvironmentVariableA("FREERDS_DEFAULT_GREETER_MODULE", NULL, 0);
-
-					if (nSize)
-					{
-						this->defaultGreeterModuleName = (LPSTR) malloc(nSize);
-						nSize = GetEnvironmentVariableA("FREERDS_DEFAULT_GREETER_MODULE", this->defaultGreeterModuleName, nSize);
-					}
-					else
-					{
-						this->defaultGreeterModuleName = _strdup("Qt");
-					}
-				}
-
-				return this->defaultGreeterModuleName;
 			}
 
 			int ModuleManager::loadModulesFromPathAndEnv(std::string path, std::string pattern)

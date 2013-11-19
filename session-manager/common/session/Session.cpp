@@ -47,7 +47,7 @@ namespace freerds
 			Session::Session(long sessionID): mSessionID(sessionID),
 					mSessionStarted(false), mpEnvBlock(NULL),
 					mCurrentState(WTSDown), mUserToken(NULL),
-					mCurrentModuleContext(NULL), mAuthenticated(false)
+					mCurrentModuleContext(NULL), mAuthSession(false)
 			{
 
 			}
@@ -82,43 +82,14 @@ namespace freerds
 				return mSessionID;
 			}
 
-			bool Session::isAuthenticated()
-			{
-				return mAuthenticated;
+			bool Session::isAuthSession() {
+				return mAuthSession;
 			}
 
-			int Session::authenticate(std::string username, std::string domain, std::string password)
-			{
-				int status;
-				this->mUsername = username;
-				this->mDomain = domain;
-
-				moduleNS::AuthModule* auth = moduleNS::AuthModule::loadFromName("PAM");
-
-				if (!auth)
-					return -1;
-
-				status = auth->logonUser(username, domain, password);
-
-				if (status == 0)
-				{
-					mAuthenticated = true;
-
-					if (!generateUserToken())
-					{
-						return -1;
-					}
-
-					if (!generateEnvBlockAndModify())
-					{
-						return -1;
-					}
-				}
-
-				delete auth;
-
-				return status;
+			void Session::setAuthSession(bool authSession) {
+				mAuthSession = authSession;
 			}
+
 
 			bool Session::generateUserToken()
 			{
@@ -174,6 +145,10 @@ namespace freerds
 			void Session::setModuleName(std::string moduleName)
 			{
 				mModuleName = moduleName;
+			}
+
+			std::string Session::getModuleName() {
+				return mModuleName;
 			}
 
 			bool Session::startModule(std::string& pipeName)
@@ -262,4 +237,5 @@ namespace freerds
 		}
 	}
 }
+
 

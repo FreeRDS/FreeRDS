@@ -55,14 +55,25 @@ namespace freerds
 
 			};
 
-			bool PropertyManager::getPropertyInternal(long sessionID, std::string path, PROPERTY_STORE_HELPER & helper) {
+			bool PropertyManager::getPropertyInternal(long sessionID, std::string path, PROPERTY_STORE_HELPER & helper, std::string username) {
 				// first try to resolve the sessionID
 				bool found = false;
-				sessionNS::Session * session = APP_CONTEXT.getSessionStore()->getSession(sessionID);
-				if (session == NULL) {
-					return -1;
+				std::string currentUserName;
+				if (sessionID == 0) {
+					// for no session, use username if its present
+					if (username.size() == 0) {
+						return -1;
+					}
+					currentUserName = username;
+				} else {
+					// for a given sessionID we try to get the username from the sessionstore
+					sessionNS::Session * session = APP_CONTEXT.getSessionStore()->getSession(sessionID);
+					if (session == NULL) {
+						return -1;
+					}
+					currentUserName = session->getUserName();
 				}
-				std::string currentUserName = session->getUserName();
+
 				if (mPropertyUserMap.find(currentUserName) != mPropertyUserMap.end()) {
 					TPropertyMap * uPropMap = mPropertyUserMap[currentUserName];
 					if (uPropMap->find(path) != uPropMap->end()) {
@@ -79,11 +90,11 @@ namespace freerds
 			}
 
 
-			bool PropertyManager::getPropertyBool(long sessionID, std::string path, bool &value)
+			bool PropertyManager::getPropertyBool(long sessionID, std::string path, bool &value, std::string username)
 			{
 				PROPERTY_STORE_HELPER internStore;
 
-				if (!getPropertyInternal(sessionID,path,internStore)) {
+				if (!getPropertyInternal(sessionID,path,internStore,username)) {
 					return false;
 				}
 
@@ -98,11 +109,11 @@ namespace freerds
 				}
 			}
 
-			bool PropertyManager::getPropertyNumber(long sessionID, std::string path, long &value)
+			bool PropertyManager::getPropertyNumber(long sessionID, std::string path, long &value, std::string username)
 			{
 				PROPERTY_STORE_HELPER internStore;
 
-				if (!getPropertyInternal(sessionID,path,internStore)) {
+				if (!getPropertyInternal(sessionID,path,internStore,username)) {
 					return false;
 				}
 
@@ -117,11 +128,11 @@ namespace freerds
 				}
 			}
 
-			bool PropertyManager::getPropertyString(long sessionID, std::string path, std::string &value)
+			bool PropertyManager::getPropertyString(long sessionID, std::string path, std::string &value, std::string username)
 			{
 				PROPERTY_STORE_HELPER internStore;
 
-				if (!getPropertyInternal(sessionID,path,internStore)) {
+				if (!getPropertyInternal(sessionID,path,internStore,username)) {
 					return false;
 				}
 

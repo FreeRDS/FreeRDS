@@ -45,6 +45,11 @@ namespace freerds
 				virtual int doStuff();
 
 			private:
+
+				int authenticateUser();
+				int getAuthSession();
+				int getUserSession();
+
 				std::string mUserName;
 				std::string mDomainName;
 				std::string mPassword;

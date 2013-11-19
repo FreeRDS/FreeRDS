@@ -23,6 +23,7 @@
 
 #include "CallInLogonUser.h"
 #include <appcontext/ApplicationContext.h>
+#include <module/AuthModule.h>
 
 using freerds::icp::LogonUserRequest;
 using freerds::icp::LogonUserResponse;
@@ -33,6 +34,10 @@ namespace freerds
 	{
 		namespace call
 		{
+
+		static wLog* logger_CallInLogonUser = WLog_Get("freerds.SessionManager.call.callinlogonuser");
+
+
 		CallInLogonUser::CallInLogonUser()
 			: mSessionId(0), mAuthStatus(0)
 		{
@@ -63,11 +68,11 @@ namespace freerds
 
 			mUserName = req.username();
 
-			if (req.has_domain())
-				mDomainName = req.domain();
+			mSessionId = req.sessionid();
 
-			if (req.has_password())
-				mPassword = req.password();
+			mDomainName = req.domain();
+
+			mPassword = req.password();
 
 			return 0;
 		};
@@ -92,56 +97,137 @@ namespace freerds
 			return 0;
 		};
 
-		int CallInLogonUser::doStuff()
-		{
-			std::string pipeName;
+		int CallInLogonUser::authenticateUser() {
 
-			mAuthStatus = 0;
+			std::string authModule;
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.module",authModule,mUserName)) {
+				authModule = "PAM";
+			}
 
-			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
+			moduleNS::AuthModule* auth = moduleNS::AuthModule::loadFromName(authModule);
+
+			if (!auth) {
+				mResult = 1;
+				return 1;
+			}
+
+			mAuthStatus = auth->logonUser(mUserName, mDomainName, mPassword);
+
+			delete auth;
+			return 0;
+
+		}
+
+		int CallInLogonUser::getUserSession() {
+
+			sessionNS::Session* currentSession;
+
+			if (mSessionId != 0) {
+				// we had an auth session before ...
+				if (currentSession->isAuthSession()) {
+					currentSession->stopModule();
+					APP_CONTEXT.getSessionStore()->removeSession(mSessionId);
+				} else {
+					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Expected session to be an authsession with sessionId = %d",mSessionId);
+				}
+			}
+
+			// check if there is an running session, which is disconnected
+			currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{
-				char* moduleName;
-
+				// create new Session for this request
 				currentSession = APP_CONTEXT.getSessionStore()->createSession();
+				currentSession->setUserName(mUserName);
+				currentSession->setDomain(mDomainName);
 
-				if (!currentSession->isAuthenticated())
+				if (!currentSession->generateUserToken())
 				{
-					int status;
-
-					status = currentSession->authenticate(mUserName, mDomainName, mPassword);
-
-					mAuthStatus = status;
+					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "generateUserToken failed for user %s with domain %s",mUserName.c_str(),mDomainName.c_str());
+					mResult = 1;// will report error with answer
+					return 1;
 				}
 
-				if (mAuthStatus == 0)
+				if (!currentSession->generateEnvBlockAndModify())
 				{
-					moduleName = APP_CONTEXT.getModuleManager()->getDefaultModuleName();
+					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "generateEnvBlockAndModify failed for user %s with domain %s",mUserName.c_str(),mDomainName.c_str());
+					mResult = 1;// will report error with answer
+					return 1;
 				}
-				else
-				{
-					moduleName = APP_CONTEXT.getModuleManager()->getDefaultGreeterModuleName();
-				}
+				std::string moduleName;
 
+				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(currentSession->getSessionID(),"module",moduleName)) {
+					moduleName = "X11";
+				}
 				currentSession->setModuleName(moduleName);
 			}
 
 			if (currentSession->getConnectState() == WTSDown)
 			{
+				std::string pipeName;
 				if (!currentSession->startModule(pipeName))
 				{
+					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Module %s does not start properly for user %s in domain %s",currentSession->getModuleName().c_str(),mUserName.c_str(),mDomainName.c_str());
 					mResult = 1;// will report error with answer
 					return 1;
 				}
 			}
 
 			mSessionId = currentSession->getSessionID();
-
 			mPipeName = currentSession->getPipeName();
-
 			return 0;
 		}
+
+		int CallInLogonUser::getAuthSession() {
+			// authentication failed, start up greater module
+			sessionNS::Session* currentSession;
+			if (mSessionId != 0) {
+				// we had a session for authentication before ... use this session
+				currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
+				if (currentSession == NULL) {
+					mResult = 1;
+					return -1;
+				}
+			} else {
+				currentSession = APP_CONTEXT.getSessionStore()->createSession();
+				std::string greater;
+
+				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.greater",greater,mUserName)) {
+					greater = "Qt";
+				}
+				currentSession->setModuleName(greater);
+				if (!currentSession->startModule(greater))
+				{
+					mResult = 1;// will report error with answer
+					return 1;
+				}
+			}
+			currentSession->setAuthSession(true);
+			mSessionId = currentSession->getSessionID();
+			mPipeName = currentSession->getPipeName();
+			return 0;
+		}
+
+		int CallInLogonUser::doStuff()
+		{
+
+			if (authenticateUser() != 0) {
+				return 1;
+			}
+			if (mAuthStatus != 0) {
+				if (getAuthSession() != 0 ) {
+					return 1;
+				}
+			} else {
+				// user is authenticated
+				if (getUserSession() != 0) {
+					return 1;
+				}
+			}
+			return 0;
+		}
+
 		}
 	}
 }

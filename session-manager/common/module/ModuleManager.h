@@ -43,9 +43,6 @@ namespace freerds
 
 				Module* getModule(std::string moduleName);
 
-				char* getDefaultModuleName();
-				char* getDefaultGreeterModuleName();
-
 			private:
 				char pathSeparator;
 				char* defaultModuleName;
