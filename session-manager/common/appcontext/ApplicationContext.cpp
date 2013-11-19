@@ -176,8 +176,6 @@ namespace freerds
 			int index;
 			DWORD nSize;
 
-			initPaths();
-
 			nSize = GetEnvironmentVariableA("PATH", NULL, 0);
 
 			if (nSize)
