@@ -56,6 +56,8 @@ int freerds_listener_main_loop(rdsListener* self);
 rdsModuleConnector* freerds_module_new(rdsConnection* connection);
 void freerds_module_free(rdsModuleConnector* connector);
 
+int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s);
+
 void* freerds_client_thread(void* arg);
 int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount);
 int freerds_client_check_event_handles(rdsModuleConnector* connector);

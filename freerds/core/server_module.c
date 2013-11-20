@@ -32,6 +32,11 @@
 
 #include "freerds.h"
 
+#include <freerds/auth.h>
+#include <freerds/freerds.h>
+#include <freerds/module_connector.h>
+#include <freerds/icp_client_stubs.h>
+
 int freerds_client_inbound_begin_update(rdsModuleConnector* connector, RDS_MSG_BEGIN_UPDATE* msg)
 {
 	freerds_orders_begin_paint(connector->connection);
@@ -272,7 +277,7 @@ int freerds_client_inbound_logon_user(rdsModuleConnector* module, RDS_MSG_LOGON_
 	endPoint = NULL;
 	sessionId = module->SessionId;
 
-	icpStatus = freerds_icp_LogonUser(&sessionId,
+	icpStatus = freerds_icp_LogonUser((UINT32*) &sessionId,
 			msg->User, msg->Domain, msg->Password, &authStatus, &endPoint);
 
 	if (icpStatus != 0)
@@ -282,6 +287,53 @@ int freerds_client_inbound_logon_user(rdsModuleConnector* module, RDS_MSG_LOGON_
 	}
 
 	fprintf(stderr, "Logon Status: %d\n", authStatus);
+
+	connection->connector = freerds_module_connector_new(connection);
+
+	connection->connector->Endpoint = endPoint;
+	connection->connector->SessionId = sessionId;
+
+	hClientPipe = freerds_named_pipe_connect(connection->connector->Endpoint, 20);
+
+	if (hClientPipe == INVALID_HANDLE_VALUE)
+	{
+		fprintf(stderr, "Failed to create named pipe %s\n", connection->connector->Endpoint);
+		return FALSE;
+	}
+
+	printf("Connected to session %d\n", (int) connection->connector->SessionId);
+
+	if (freerds_init_client(hClientPipe, connection->settings, connection->connector->OutboundStream) < 0)
+	{
+		fprintf(stderr, "Error sending initial packet with %s\n", connection->connector->Endpoint);
+		return FALSE;
+	}
+
+	connection->connector->hClientPipe = hClientPipe;
+	connection->connector->GetEventHandles = freerds_client_get_event_handles;
+	connection->connector->CheckEventHandles = freerds_client_check_event_handles;
+
+	connection->connector->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) freerds_client_thread,
+			(void*) connection->connector, CREATE_SUSPENDED, NULL);
+
+	freerds_client_inbound_connector_init(connection->connector);
+
+	ResumeThread(connection->connector->ServerThread);
+
+	if (authStatus != 0)
+	{
+		RDS_MSG_LOGON_USER logonUser;
+
+		ZeroMemory(&logonUser, sizeof(RDS_MSG_LOGON_USER));
+		logonUser.type = RDS_CLIENT_LOGON_USER;
+
+		logonUser.Flags = 0;
+		logonUser.User = msg->User;
+		logonUser.Domain = msg->Domain;
+		logonUser.Password = msg->Password;
+
+		connection->connector->client->LogonUser(connection->connector, &logonUser);
+	}
 
 	return 0;
 }

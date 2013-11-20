@@ -152,7 +152,7 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	return TRUE;
 }
 
-static int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
+int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
 {
 	RDS_MSG_CAPABILITIES capabilities;
 
