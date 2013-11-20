@@ -112,7 +112,7 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 			"/opt/freerds/lib64/plugins");
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -platform freerds",
-			"simple_greeter");
+			"nice_greeter");
 
 	WLog_Print(qt->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
