@@ -256,10 +256,32 @@ int freerds_client_inbound_window_delete(rdsModuleConnector* connector, RDS_MSG_
 
 int freerds_client_inbound_logon_user(rdsModuleConnector* module, RDS_MSG_LOGON_USER* msg)
 {
+	int icpStatus;
+	int authStatus;
+	char* endPoint;
+	DWORD sessionId;
+	HANDLE hClientPipe;
+	rdsConnection* connection = module->connection;
+
 	if (msg->Domain)
 		fprintf(stderr, "LogonUser: %s\\%s | %s", msg->Domain, msg->User, msg->Password);
 	else
 		fprintf(stderr, "LogonUser: %s | %s", msg->User, msg->Password);
+
+	authStatus = 0;
+	endPoint = NULL;
+	sessionId = module->SessionId;
+
+	icpStatus = freerds_icp_LogonUser(&sessionId,
+			msg->User, msg->Domain, msg->Password, &authStatus, &endPoint);
+
+	if (icpStatus != 0)
+	{
+		printf("freerds_icp_LogonUser failed %d\n", icpStatus);
+		return -1;
+	}
+
+	fprintf(stderr, "Logon Status: %d\n", authStatus);
 
 	return 0;
 }
