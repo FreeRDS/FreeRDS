@@ -105,10 +105,10 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 
 	qPipeName = (char*) malloc(256);
 	sprintf_s(qPipeName, 256, "/tmp/.pipe/FreeRDS_%d_%s", (int) SessionId, endpoint);
-	SetEnvironmentVariableEBA(qt->commonModule.envBlock, "FREERDS_PIPE_PATH", qPipeName);
+	SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_PIPE_PATH", qPipeName);
 	free(qPipeName);
 
-	SetEnvironmentVariableEBA(qt->commonModule.envBlock, "QT_PLUGIN_PATH",
+	SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "QT_PLUGIN_PATH",
 			"/opt/freerds/lib64/plugins");
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -platform freerds",
@@ -117,7 +117,7 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	WLog_Print(qt->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
 	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, *(qt->commonModule.envBlock), NULL,
+			NULL, NULL, FALSE, 0, qt->commonModule.envBlock, NULL,
 			&(qt->si), &(qt->pi));
 
 	WLog_Print(qt->log, WLOG_DEBUG, "Process created with status: %d", status);

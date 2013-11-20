@@ -66,6 +66,9 @@ namespace freerds
 			void setConnectState(WTS_CONNECTSTATE_CLASS state);
 
 		private:
+
+			char * dupEnv(char * orgBlock);
+
 			UINT32 mSessionID;
 			bool mAuthSession;
 			bool mSessionStarted;

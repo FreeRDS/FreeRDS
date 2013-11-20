@@ -98,8 +98,8 @@ void x11_rds_module_free(RDS_MODULE_COMMON* module)
 	if (moduleCon->commonModule.authToken)
 		free(moduleCon->commonModule.authToken);
 
-	if (moduleCon->commonModule.userToken)
-		CloseHandle(moduleCon->commonModule.userToken);
+	/*if (moduleCon->commonModule.userToken)
+		CloseHandle(moduleCon->commonModule.userToken);*/
 
 	free(module);
 }
@@ -139,7 +139,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	pwnam = getpwnam(x11->commonModule.userName);
 
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (displayNum));
-	SetEnvironmentVariableEBA(x11->commonModule.envBlock, "DISPLAY", envstr);
+	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
 	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.xres", &xres))
 		xres = 1024;
@@ -156,7 +156,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) colordepth);
 
 	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, *(x11->commonModule.envBlock), NULL,
+			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
 	fprintf(stderr, "Process started: %d\n", status);
@@ -180,7 +180,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken,
 			NULL, "startwm.sh",
-			NULL, NULL, FALSE, 0, *(x11->commonModule.envBlock), NULL,
+			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->WMStartupInfo), &(x11->WMProcessInformation));
 
 	fprintf(stderr, "User process started: %d\n", status);

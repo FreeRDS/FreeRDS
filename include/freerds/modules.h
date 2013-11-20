@@ -31,7 +31,7 @@ struct _RDS_MODULE_COMMON
 	char* authToken;
 	char* userName;
 	HANDLE userToken;
-	char** envBlock;
+	char* envBlock;
 };
 typedef struct _RDS_MODULE_COMMON RDS_MODULE_COMMON;
 

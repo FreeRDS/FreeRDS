@@ -119,7 +119,7 @@ char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 	WLog_Print(rdp->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
 	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, *(rdp->commonModule.envBlock), NULL,
+			NULL, NULL, FALSE, 0, rdp->commonModule.envBlock, NULL,
 			&(rdp->si), &(rdp->pi));
 
 	WLog_Print(rdp->log, WLOG_DEBUG, "Process created with status: %d", status);

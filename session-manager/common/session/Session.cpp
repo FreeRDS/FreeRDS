@@ -151,6 +151,29 @@ namespace freerds
 				return mModuleName;
 			}
 
+			char * Session::dupEnv(char * orgBlock) {
+
+				char * penvb = orgBlock;
+				int length;
+				int currentLength;
+				char *lpszEnvironmentBlock;
+				if (orgBlock == NULL) {
+					return NULL;
+				} else {
+					length = 0;
+					while (*penvb && *(penvb+1))
+					{
+						currentLength = strlen(penvb) + 1;
+						length += currentLength;
+						penvb += (currentLength);
+					}
+					lpszEnvironmentBlock = (char *) malloc((length + 2) * sizeof(CHAR));
+					memcpy(lpszEnvironmentBlock,orgBlock,length + 1);
+
+				}
+				return lpszEnvironmentBlock;
+			}
+
 			bool Session::startModule(std::string& pipeName)
 			{
 				std::string pName;
@@ -175,7 +198,7 @@ namespace freerds
 				mCurrentModuleContext->userName = _strdup(mUsername.c_str());
 
 				mCurrentModuleContext->userToken = mUserToken;
-				mCurrentModuleContext->envBlock = &mpEnvBlock;
+				mCurrentModuleContext->envBlock = dupEnv(mpEnvBlock);
 
 				pName = currentModule->start(mCurrentModuleContext);
 

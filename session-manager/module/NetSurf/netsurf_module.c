@@ -107,7 +107,7 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 	WLog_Print(ns->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
 	status = CreateProcessA(NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, *(ns->commonModule.envBlock), NULL,
+			NULL, NULL, FALSE, 0, ns->commonModule.envBlock, NULL,
 			&(ns->si), &(ns->pi));
 
 	WLog_Print(ns->log, WLOG_DEBUG, "Process created with status: %d", status);
