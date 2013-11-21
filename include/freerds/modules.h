@@ -21,6 +21,7 @@
 #define MODULES_H_
 
 #include <freerds/properties.h>
+#include <winpr/wtypes.h>
 
 typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;
 typedef RDS_MODULE_ENTRY_POINTS_V1 RDS_MODULE_ENTRY_POINTS;
