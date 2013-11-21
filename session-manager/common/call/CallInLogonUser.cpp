@@ -187,7 +187,7 @@ namespace freerds
 		}
 
 		int CallInLogonUser::getAuthSession() {
-			// authentication failed, start up greater module
+			// authentication failed, start up greeter module
 			sessionNS::Session* currentSession;
 			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
 
@@ -200,13 +200,13 @@ namespace freerds
 				}
 			} else {
 				currentSession = APP_CONTEXT.getSessionStore()->createSession();
-				std::string greater;
+				std::string greeter;
 
-				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.greater",greater,mUserName)) {
-					greater = "Qt";
+				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.greeter",greeter,mUserName)) {
+					greeter = "Qt";
 				}
-				currentSession->setModuleName(greater);
-				if (!currentSession->startModule(greater))
+				currentSession->setModuleName(greeter);
+				if (!currentSession->startModule(greeter))
 				{
 					mResult = 1;// will report error with answer
 					return 1;
