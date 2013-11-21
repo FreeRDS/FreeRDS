@@ -122,7 +122,10 @@ namespace freerds
 
 			sessionNS::Session* currentSession;
 
+
+
 			if (mSessionId != 0) {
+				currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
 				// we had an auth session before ...
 				if (currentSession->isAuthSession()) {
 					currentSession->stopModule();
@@ -130,10 +133,11 @@ namespace freerds
 				} else {
 					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Expected session to be an authsession with sessionId = %d",mSessionId);
 				}
+			} else {
+				// check if there is an running session, which is disconnected
+				currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 			}
 
-			// check if there is an running session, which is disconnected
-			currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{
