@@ -454,7 +454,7 @@ void* freerds_connection_main_thread(void* arg)
 		{
 			connector = (rdsModuleConnector*) connection->connector;
 
-			if (connector)
+			if (connector && connector->GetEventHandles)
 				connector->GetEventHandles(connection->connector, events, &nCount);
 		}
 
@@ -492,7 +492,7 @@ void* freerds_connection_main_thread(void* arg)
 		{
 			connector = (rdsModuleConnector*) connection->connector;
 
-			if (connector)
+			if (connector && connector->CheckEventHandles)
 			{
 				if (connector->CheckEventHandles(connection->connector) < 0)
 				{
@@ -505,9 +505,12 @@ void* freerds_connection_main_thread(void* arg)
 
 	fprintf(stderr, "Client %s disconnected.\n", client->hostname);
 
-	freerds_icp_DisconnectUserSession(connector->SessionId, &disconnected);
+	if (connector)
+	{
+		freerds_icp_DisconnectUserSession(connector->SessionId, &disconnected);
+		CloseHandle(connector->hClientPipe);
+	}
 	client->Disconnect(client);
-	CloseHandle(connector->hClientPipe);
 
 	freerdp_peer_context_free(client);
 	freerdp_peer_free(client);
