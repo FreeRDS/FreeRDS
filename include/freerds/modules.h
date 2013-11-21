@@ -20,7 +20,7 @@
 #ifndef MODULES_H_
 #define MODULES_H_
 
-#include "../common/config/PropertyCWrapper.h"
+#include <freerds/properties.h>
 
 typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;
 typedef RDS_MODULE_ENTRY_POINTS_V1 RDS_MODULE_ENTRY_POINTS;

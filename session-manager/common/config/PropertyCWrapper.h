@@ -27,16 +27,13 @@
 #define PROPERTYCWRAPPER_H_
 
 #include "PropertyLevel.h"
+#include <freerds/properties.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdbool.h>
-
-typedef bool (*pgetPropertyBool)(long sessionID, char* path, bool* value);
-typedef bool (*pgetPropertyNumber)(long sessionID, char* path, long* value);
-typedef bool (*pgetPropertyString)(long sessionID, char* path, char* value, unsigned int valueLength);
 
 bool getPropertyBool(long sessionID, char* path, bool* value);
 bool getPropertyNumber(long sessionID, char* path, long* value);
