@@ -277,7 +277,7 @@ int freerds_client_inbound_logon_user(rdsModuleConnector* module, RDS_MSG_LOGON_
 	endPoint = NULL;
 	sessionId = module->SessionId;
 
-	icpStatus = freerds_icp_LogonUser((UINT32*) &sessionId,
+	icpStatus = freerds_icp_LogonUser((UINT32) sessionId,
 			msg->User, msg->Domain, msg->Password, &authStatus, &endPoint);
 
 	if (icpStatus != 0)

@@ -23,12 +23,11 @@
 
 #include <winpr/wtypes.h>
 
-int freerds_icp_IsChannelAllowed(int sessionId, char* channelName, BOOL* isAllowed);
+int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed);
 int freerds_icp_Ping(BOOL* pong);
-int freerds_icp_GetUserSession(char* username, char* domain, UINT32* sessionId, char** serviceEndpoint);
-int freerds_icp_DisconnectUserSession(UINT32 sessionId, BOOL* disconnected);
-int freerds_icp_LogOffUserSession(UINT32 sessionId, BOOL* loggedoff);
-int freerds_icp_LogonUser(UINT32* sessionId, char* username, char* domain,
+int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected);
+int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff);
+int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
 		char* password, int* authStatus, char** serviceEndpoint);
 
 #endif // _ICP_CLIENT_STUBS_H

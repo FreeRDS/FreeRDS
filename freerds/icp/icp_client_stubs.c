@@ -61,7 +61,7 @@
 	freerds__icp__##expanded ##_response__free_unpacked(response, NULL);
 
 
-int freerds_icp_IsChannelAllowed(int sessionId, char* channelName, BOOL* isAllowed)
+int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed)
 {
 	ICP_CLIENT_STUB_SETUP(IsChannelAllowed, is_channel_allowed)
 
@@ -128,49 +128,13 @@ int freerds_icp_Ping(BOOL* pong)
 	return PBRPC_SUCCESS;
 }
 
-int freerds_icp_GetUserSession(char* username, char* domain, UINT32* sessionId, char** serviceEndpoint)
-{
-	ICP_CLIENT_STUB_SETUP(GetUserSession, get_user_session)
-
-	request.domainname = domain;
-	request.username = username;
-
-	ICP_CLIENT_STUB_CALL(GetUserSession, get_user_session)
-
-	if (ret != 0)
-	{
-		// handle function specific frees
-		return ret;
-	}
-
-	ICP_CLIENT_STUB_UNPACK_RESPONSE(GetUserSession, get_user_session)
-
-	if (NULL == response)
-	{
-		// unpack error
-		// free function specific stuff
-		return PBRPC_BAD_RESPONSE;
-	}
-
-	// assign returned stuff here!
-	// don't use pointers since response get's freed (copy might be required..)
-	*sessionId = response->sessionid;
-	*serviceEndpoint = _strdup(response->serviceendpoint);
-
-	// free function specific stuff
-
-	ICP_CLIENT_STUB_CLEANUP(GetUserSession, get_user_session)
-
-	return PBRPC_SUCCESS;
-}
-
-int freerds_icp_DisconnectUserSession(UINT32 sessionId, BOOL* disconnected)
+int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected)
 {
 	ICP_CLIENT_STUB_SETUP(DisconnectUserSession, disconnect_user_session)
 
-	request.sessionid = sessionId;
+	request.connectionid = connectionId;
 
-	ICP_CLIENT_STUB_CALL(GetUserSession, disconnect_user_session)
+	ICP_CLIENT_STUB_CALL(DisconnectUserSession, disconnect_user_session)
 
 	if (ret != 0)
 	{
@@ -193,11 +157,11 @@ int freerds_icp_DisconnectUserSession(UINT32 sessionId, BOOL* disconnected)
 	return PBRPC_SUCCESS;
 }
 
-int freerds_icp_LogOffUserSession(UINT32 sessionId, BOOL* loggedoff)
+int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff)
 {
 	ICP_CLIENT_STUB_SETUP(LogOffUserSession, log_off_user_session)
 
-	request.sessionid = sessionId;
+	request.connectionid = connectionId;
 
 	ICP_CLIENT_STUB_CALL(LogOffUserSession, log_off_user_session)
 
@@ -222,12 +186,12 @@ int freerds_icp_LogOffUserSession(UINT32 sessionId, BOOL* loggedoff)
 	return PBRPC_SUCCESS;
 }
 
-int freerds_icp_LogonUser(UINT32* sessionId, char* username, char* domain,
+int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
 		char* password, int* authStatus, char** serviceEndpoint)
 {
 	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
 
-	request.sessionid = *sessionId;
+	request.connectionid = connectionId;
 	request.domain = domain;
 	request.username = username;
 	request.password = password;
@@ -251,7 +215,6 @@ int freerds_icp_LogonUser(UINT32* sessionId, char* username, char* domain,
 
 	// assign returned stuff here!
 	// don't use pointers since response get's freed (copy might be required..)
-	*sessionId = response->sessionid;
 	*authStatus = response->authstatus;
 	*serviceEndpoint = _strdup(response->serviceendpoint);
 
