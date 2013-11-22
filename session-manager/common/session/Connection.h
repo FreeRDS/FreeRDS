@@ -27,7 +27,7 @@
 #include <winpr/crt.h>
 #include <winpr/wtsapi.h>
 
-#include <freerds/modules.h>
+#include <freerds/module.h>
 
 #include <freerds/freerds.h>
 #include <freerds/module_connector.h>

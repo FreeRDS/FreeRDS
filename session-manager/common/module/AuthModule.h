@@ -25,7 +25,7 @@
 #include <freerds/auth.h>
 
 #include <winpr/wtypes.h>
-#include <freerds/modules.h>
+#include <freerds/module.h>
 #include <string>
 
 namespace freerds

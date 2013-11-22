@@ -21,9 +21,8 @@
 #define MODULE_H_
 
 #include "Module.h"
-//#include <freerds/freerds.h>
 #include <winpr/wtypes.h>
-#include <freerds/modules.h>
+#include <freerds/module.h>
 #include <string>
 
 namespace freerds
