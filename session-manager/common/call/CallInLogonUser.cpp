@@ -136,11 +136,9 @@ namespace freerds
 				} else {
 					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Expected session to be an authsession with sessionId = %d",currentSession->getSessionID());
 				}
-			} else {
-				// check if there is an running session, which is disconnected
-				currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 			}
 
+			currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{
