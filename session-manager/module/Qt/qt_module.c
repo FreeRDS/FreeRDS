@@ -51,6 +51,7 @@ struct rds_module_qt
 };
 typedef struct rds_module_qt rdsModuleQt;
 
+
 RDS_MODULE_COMMON* qt_rds_module_new(void)
 {
 	rdsModuleQt* qt = (rdsModuleQt*) malloc(sizeof(rdsModuleQt));
@@ -85,6 +86,7 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	const char* endpoint = "Qt";
 	rdsModuleQt* qt = (rdsModuleQt*) module;
 	DWORD SessionId = qt->commonModule.sessionId;
+	char *appName = "nice_greeter";
 
 	WLog_Print(qt->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
 			(int) SessionId, endpoint);
@@ -112,15 +114,20 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 			"/opt/freerds/lib64/plugins");
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -platform freerds",
-			"nice_greeter");
+			appName);
 
 	WLog_Print(qt->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
 	status = CreateProcessA(NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, qt->commonModule.envBlock, NULL,
 			&(qt->si), &(qt->pi));
+	if (0 == status)
+	{
+		WLog_Print(qt->log, WLOG_ERROR, "Could not start qt application %s", appName);
+		return NULL;
+	}
 
-	WLog_Print(qt->log, WLOG_DEBUG, "Process created with status: %d", status);
+	WLog_Print(qt->log, WLOG_DEBUG, "Process %d/%d created with status: %d", qt->pi.dwProcessId,qt->pi.dwThreadId, status);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
@@ -134,8 +141,19 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 int qt_rds_module_stop(RDS_MODULE_COMMON* module)
 {
 	rdsModuleQt* qt = (rdsModuleQt*) module;
+	DWORD ret;
 
 	WLog_Print(qt->log, WLOG_DEBUG, "RdsModuleStop");
+	TerminateProcess(qt->pi.hProcess,0);
+
+	 // Wait until child process exits.
+	WaitForSingleObject(qt->pi.hProcess, INFINITE);
+
+	GetExitCodeProcess(qt->pi.hProcess, &ret);
+	WLog_Print(qt->log, WLOG_DEBUG, "terminated process returned %d", ret);
+
+	CloseHandle(qt->pi.hProcess);
+	CloseHandle(qt->pi.hThread);
 
 	return 0;
 }
