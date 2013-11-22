@@ -23,6 +23,7 @@
 #include <utils/SingletonBase.h>
 #include <utils/SignalingQueue.h>
 #include <session/SessionStore.h>
+#include <session/ConnectionStore.h>
 #include <pbRPC/RpcEngine.h>
 #include <winpr/wlog.h>
 #include <call/CallOut.h>
@@ -43,6 +44,7 @@ namespace freerds
 		{
 		public:
 			sessionNS::SessionStore* getSessionStore();
+			sessionNS::ConnectionStore* getConnectionStore();
 			configNS::PropertyManager* getPropertyManager();
 			moduleNS::ModuleManager* getModuleManager();
 			int startRPCEngine();
@@ -71,6 +73,8 @@ namespace freerds
 			void configureExecutableSearchPath();
 
 			sessionNS::SessionStore mSessionStore;
+			sessionNS::ConnectionStore mConnectionStore;
+
 			configNS::PropertyManager mPropertyManager;
 			pbRPC::RpcEngine mRpcEngine;
 			SignalingQueue<callNS::Call> mRpcOutgoingCalls;

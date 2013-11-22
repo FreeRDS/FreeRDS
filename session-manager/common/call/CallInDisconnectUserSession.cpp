@@ -36,7 +36,7 @@ namespace freerds
 
 		CallInDisconnectUserSession::CallInDisconnectUserSession()
 		{
-			mSessionID = 0;
+			mConnectionId = 0;
 			mDisconnected = false;
 		};
 
@@ -60,7 +60,7 @@ namespace freerds
 				mResult = 1;// will report error with answer
 				return -1;
 			}
-			mSessionID = req.sessionid();
+			mConnectionId = req.connectionid();
 			return 0;
 		};
 
@@ -84,7 +84,13 @@ namespace freerds
 
 		int CallInDisconnectUserSession::doStuff()
 		{
-			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionID);
+			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+			if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
+				mDisconnected = false;
+				return -1;
+			}
+
+			sessionNS::Session * currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
 
 			if (!currentSession)
 			{
@@ -93,7 +99,7 @@ namespace freerds
 			}
 
 			currentSession->setConnectState(WTSDisconnected);
-
+			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
 			mDisconnected = true;
 			return 0;
 		}

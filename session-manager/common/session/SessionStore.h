@@ -17,11 +17,8 @@
  * limitations under the License.
  */
 
-
-		// TODO USE SMART POINTERS to guard the Sesison objects
-
-#ifndef SESSIONSTORE_H_
-#define SESSIONSTORE_H_
+#ifndef __SESSIONSTORE_H_
+#define __SESSIONSTORE_H_
 
 #include <config.h>
 
@@ -46,10 +43,10 @@ namespace freerds
 			SessionStore();
 			~SessionStore();
 
-			Session* getSession(long sessionID);
+			Session* getSession(long sessionId);
 			Session* getFirstSessionUserName(std::string username, std::string domain);
 			Session* createSession();
-			int removeSession(long sessionID);
+			int removeSession(long sessionId);
 
 		private:
 			TSessionMap mSessionMap;
@@ -62,4 +59,4 @@ namespace freerds
 
 namespace sessionNS = freerds::sessionmanager::session;
 
-#endif
+#endif //__SESSIONSTORE_H_

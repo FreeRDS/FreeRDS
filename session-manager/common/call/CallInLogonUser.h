@@ -55,7 +55,7 @@ namespace freerds
 				std::string mPassword;
 
 				int mAuthStatus;
-				UINT32 mSessionId;
+				UINT32 mConnectionId;
 				std::string mPipeName;
 			};
 

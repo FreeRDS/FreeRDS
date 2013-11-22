@@ -43,7 +43,7 @@ namespace freerds
 			~Session();
 
 			std::string getDomain();
-			void setDomain(std::string groupname);
+			void setDomain(std::string domainName);
 			std::string getUserName();
 			void setUserName(std::string username);
 			UINT32 getSessionID();

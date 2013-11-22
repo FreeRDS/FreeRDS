@@ -62,9 +62,9 @@ namespace freerds
 				return mDomain;
 			}
 
-			void Session::setDomain(std::string domain)
+			void Session::setDomain(std::string domainName)
 			{
-				mDomain = domain;
+				mDomain = domainName;
 			}
 
 			std::string Session::getUserName()

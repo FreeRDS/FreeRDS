@@ -86,13 +86,7 @@ namespace freerds
 				*p = '\0';
 
 				mHomePath.assign(moduleFileName);
-
-//				length = strlen(moduleFileName);
-	//			this->homePath = (char*) malloc(length + 1);
-		//		CopyMemory(this->homePath, moduleFileName, length);
-			//	this->homePath[length] = '\0';
 			}
-
 			return mHomePath;
 		}
 
@@ -103,9 +97,7 @@ namespace freerds
 				mLibraryPath = getHomePath();
 				mLibraryPath += "/";
 				mLibraryPath += FREERDS_INSTALL_LIBDIR;
-				//this->libraryPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_LIBDIR);
 			}
-
 			return mLibraryPath;
 		}
 
@@ -116,9 +108,7 @@ namespace freerds
 				mExecutablePath = getHomePath();
 				mExecutablePath += "/";
 				mExecutablePath += FREERDS_INSTALL_BINDIR;
-				//this->executablePath = GetCombinedPath(this->homePath, FREERDS_INSTALL_BINDIR);
 			}
-
 			return mExecutablePath;
 		}
 
@@ -126,18 +116,12 @@ namespace freerds
 		{
 			if (mShareDataPath.size() == 0)
 			{
-				//char* rootShareDataPath;
-
 				mShareDataPath = getHomePath();
 				mShareDataPath += "/";
 				mShareDataPath += FREERDS_INSTALL_DATAROOTDIR;
 				mShareDataPath += "/";
 				mShareDataPath += "freerds";
-				//rootShareDataPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_DATAROOTDIR);
-				//this->shareDataPath = GetCombinedPath(rootShareDataPath, "freerds");
-				//free(rootShareDataPath);
 			}
-
 			return mShareDataPath;
 		}
 
@@ -145,19 +129,13 @@ namespace freerds
 		{
 			if (mSystemConfigPath.size() == 0)
 			{
-				//char* rootSystemConfigPath;
 
 				mSystemConfigPath = getHomePath();
 				mSystemConfigPath += "/";
 				mSystemConfigPath += FREERDS_INSTALL_SYSCONFDIR;
 				mSystemConfigPath += "/";
 				mSystemConfigPath += "freerds";
-
-				//rootSystemConfigPath = GetCombinedPath(this->homePath, FREERDS_INSTALL_SYSCONFDIR);
-				//this->systemConfigPath = GetCombinedPath(rootSystemConfigPath, "freerds");
-				//free(rootSystemConfigPath);
 			}
-
 			return mSystemConfigPath;
 		}
 
@@ -221,6 +199,11 @@ namespace freerds
 		sessionNS::SessionStore* ApplicationContext::getSessionStore()
 		{
 			return &mSessionStore;
+		}
+
+		sessionNS::ConnectionStore* ApplicationContext::getConnectionStore()
+		{
+			return &mConnectionStore;
 		}
 
 		configNS::PropertyManager* ApplicationContext::getPropertyManager()

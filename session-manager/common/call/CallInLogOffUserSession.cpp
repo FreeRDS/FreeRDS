@@ -35,7 +35,7 @@ namespace freerds
 		{
 		CallInLogOffUserSession::CallInLogOffUserSession()
 		{
-			mSessionID = 0;
+			mConnectionId = 0;
 			mLoggedOff = false;
 		};
 
@@ -61,7 +61,7 @@ namespace freerds
 				return -1;
 			}
 
-			mSessionID = req.sessionid();
+			mConnectionId = req.connectionid();
 
 			return 0;
 		};
@@ -86,13 +86,26 @@ namespace freerds
 
 		int CallInLogOffUserSession::doStuff()
 		{
-			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionID);
 
-			if (!currentSession)
+			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+			if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
 				mLoggedOff = false;
+				return -1;
+			}
+			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
+
+			if (currentSession == NULL) {
+				mLoggedOff = false;
+				return -1;
+			}
+
 
 			currentSession->stopModule();
 
+			// TODO check if more than 1 connection is connected to this session
+
+			APP_CONTEXT.getSessionStore()->removeSession(currentConnection->getSessionId());
+			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
 			mLoggedOff = true;
 			return 0;
 		}

@@ -42,7 +42,7 @@ namespace freerds
 				virtual int doStuff();
 
 			private:
-				long mSessionID;
+				long mConnectionId;
 				bool mDisconnected;
 			};
 

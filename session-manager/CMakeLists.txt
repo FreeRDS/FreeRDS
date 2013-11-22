@@ -68,6 +68,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/appcontext/ApplicationContext.cpp 
 	common/session/SessionStore.cpp
 	common/session/Session.cpp
+	common/session/ConnectionStore.cpp
 	common/session/Connection.cpp
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp

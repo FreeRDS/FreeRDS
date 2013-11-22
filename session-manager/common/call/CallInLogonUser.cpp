@@ -39,7 +39,7 @@ namespace freerds
 
 
 		CallInLogonUser::CallInLogonUser()
-			: mSessionId(0), mAuthStatus(0)
+			: mConnectionId(0), mAuthStatus(0)
 		{
 
 		};
@@ -68,7 +68,7 @@ namespace freerds
 
 			mUserName = req.username();
 
-			mSessionId = req.sessionid();
+			mConnectionId = req.connectionid();
 
 			mDomainName = req.domain();
 
@@ -83,7 +83,6 @@ namespace freerds
 			LogonUserResponse resp;
 			// stup do stuff here
 
-			resp.set_sessionid(mSessionId);
 			resp.set_authstatus(mAuthStatus);
 			resp.set_serviceendpoint(mPipeName);
 
@@ -121,17 +120,21 @@ namespace freerds
 		int CallInLogonUser::getUserSession() {
 
 			sessionNS::Session* currentSession;
+			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
 
-
-
-			if (mSessionId != 0) {
-				currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
+			if (currentConnection->getSessionId() != 0) {
+				currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
+				if (currentSession == NULL) {
+					mResult = 1;
+					return -1;
+				}
 				// we had an auth session before ...
 				if (currentSession->isAuthSession()) {
 					currentSession->stopModule();
-					APP_CONTEXT.getSessionStore()->removeSession(mSessionId);
+					APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
+					currentConnection->setSessionId(0);
 				} else {
-					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Expected session to be an authsession with sessionId = %d",mSessionId);
+					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Expected session to be an authsession with sessionId = %d",currentSession->getSessionID());
 				}
 			} else {
 				// check if there is an running session, which is disconnected
@@ -178,7 +181,7 @@ namespace freerds
 				}
 			}
 
-			mSessionId = currentSession->getSessionID();
+			currentConnection->setSessionId(currentSession->getSessionID());
 			mPipeName = currentSession->getPipeName();
 			return 0;
 		}
@@ -186,9 +189,11 @@ namespace freerds
 		int CallInLogonUser::getAuthSession() {
 			// authentication failed, start up greater module
 			sessionNS::Session* currentSession;
-			if (mSessionId != 0) {
+			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
+
+			if (currentConnection->getSessionId() != 0 ){
 				// we had a session for authentication before ... use this session
-				currentSession = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
+				currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
 				if (currentSession == NULL) {
 					mResult = 1;
 					return -1;
@@ -206,9 +211,9 @@ namespace freerds
 					mResult = 1;// will report error with answer
 					return 1;
 				}
+				currentConnection->setSessionId(currentSession->getSessionID());
 			}
 			currentSession->setAuthSession(true);
-			mSessionId = currentSession->getSessionID();
 			mPipeName = currentSession->getPipeName();
 			return 0;
 		}

@@ -43,19 +43,12 @@ namespace freerds
 	{
 		namespace session
 		{
-			static DWORD gConnectionId = 1;
 
 			static wLog* logger_Connection = WLog_Get("freerds.sessionmanager.session.connection");
 
 			Connection::Connection(DWORD connectionId)
-				: mConnectionId(connectionId),
-				  mServerPipeConnected(false),
-				  mClientPipeConnected(false)
+				: mConnectionId(connectionId),mSessionId(0)
 			{
-				std::ostringstream os;
-
-				os << "\\\\.\\pipe\\FreeRDS_Connection_" << mConnectionId;
-				mServerPipeName = os.str();
 			}
 
 			Connection::~Connection()
@@ -63,58 +56,29 @@ namespace freerds
 
 			}
 
-			std::string Connection::getServerPipeName()
-			{
-				return mServerPipeName;
+			std::string Connection::getDomain() {
+				return mDomain;
 			}
 
-			std::string Connection::getClientPipeName()
-			{
-				return mClientPipeName;
+			void Connection::setDomain(std::string domainName) {
+				mDomain = domainName;
 			}
 
-			HANDLE Connection::createServerPipe()
-			{
-				DWORD dwPipeMode;
-				HANDLE hNamedPipe;
-
-				freerds_named_pipe_clean(mServerPipeName.c_str());
-
-				dwPipeMode = PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT;
-
-				hNamedPipe = CreateNamedPipeA(mServerPipeName.c_str(), PIPE_ACCESS_DUPLEX,
-						dwPipeMode, 1, PIPE_BUFFER_SIZE, PIPE_BUFFER_SIZE, 0, NULL);
-
-				if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
-				{
-					WLog_Print(logger_Connection, WLOG_ERROR, "failed to create server named pipe");
-					return NULL;
-				}
-
-				return hNamedPipe;
+			std::string Connection::getUserName() {
+				return mUsername;
+			}
+			void Connection::setUserName(std::string username) {
+				mUsername = username;
 			}
 
-			HANDLE Connection::connectClientPipe(std::string clientPipeName)
-			{
-				HANDLE hNamedPipe;
-				mClientPipeName = clientPipeName;
-
-				hNamedPipe = freerds_named_pipe_connect(mClientPipeName.c_str(), 20);
-
-				if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
-				{
-					WLog_Print(logger_Connection, WLOG_ERROR, "failed to connect to client named pipe");
-					return NULL;
-				}
-
-				return hNamedPipe;
+			void Connection::setSessionId(long sessionId) {
+				mSessionId = sessionId;
 			}
 
-			Connection* Connection::create()
-			{
-				Connection* connection = new Connection(gConnectionId++);
-				return connection;
+			long Connection::getSessionId() {
+				return mSessionId;
 			}
+
 		}
 	}
 }

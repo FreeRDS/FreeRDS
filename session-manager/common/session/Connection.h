@@ -1,5 +1,5 @@
 /**
- * Session class
+ * Connection class
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -44,23 +44,23 @@ namespace freerds
 			Connection(DWORD connectionId);
 			~Connection();
 
-			HANDLE createServerPipe();
-			HANDLE connectClientPipe(std::string clientPipeName);
+			std::string getDomain();
+			void setDomain(std::string domainName);
+			std::string getUserName();
+			void setUserName(std::string username);
 
-			std::string getServerPipeName();
-			std::string getClientPipeName();
+			void setSessionId(long sessionId);
+			long getSessionId();
 
-			static Connection* create();
+
 
 		private:
 			DWORD mConnectionId;
-			HANDLE mListenPipe;
-			HANDLE mServerPipe;
-			HANDLE mClientPipe;
-			bool mServerPipeConnected;
-			bool mClientPipeConnected;
-			std::string mServerPipeName;
-			std::string mClientPipeName;
+			DWORD mSessionId;
+
+			std::string mUsername;
+			std::string mDomain;
+
 		};
 		}
 	}

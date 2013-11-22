@@ -1,5 +1,5 @@
 /**
- * Class for rpc call LogOffUserSession (freerds to session manager)
+ * Connection store class
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,40 +17,49 @@
  * limitations under the License.
  */
 
-#ifndef CALL_IN_LOGOFF_USER_SESSION_H_
-#define CALL_IN_LOGOFF_USER_SESSION_H_
-#include "CallFactory.h"
+
+#ifndef __CONNECTION_STORE_H_
+#define __CONNECTION_STORE_H_
+
+#include <config.h>
+
+#include "Connection.h"
+
 #include <string>
-#include "CallIn.h"
-#include <ICP.pb.h>
+#include <winpr/synch.h>
+#include <map>
 
 namespace freerds
 {
 	namespace sessionmanager
 	{
-		namespace call
+		namespace session
 		{
-			class CallInLogOffUserSession: public CallIn
-			{
-			public:
-				CallInLogOffUserSession();
-				virtual ~CallInLogOffUserSession();
 
-				virtual unsigned long getCallType();
-				virtual int decodeRequest();
-				virtual int encodeResponse();
-				virtual int doStuff();
+		typedef std::map<long , Connection*> TConnectionMap;
+		typedef std::pair<long, Connection*> TConnectionPair;
 
-			private:
-				long mConnectionId;
-				bool mLoggedOff;
-			};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInLogOffUserSession,freerds::icp::LogOffUserSession);
+		class ConnectionStore
+		{
+		public:
+			ConnectionStore();
+			~ConnectionStore();
+
+			Connection* getOrCreateConnection(long connectionID);
+			Connection* getConnection(long connectionID);
+			int removeConnection(long connectionID);
+
+
+
+		private:
+			TConnectionMap mConnectionMap;
+			CRITICAL_SECTION mCSection;
+		};
 		}
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace sessionNS = freerds::sessionmanager::session;
 
-#endif
+#endif //__CONNECTION_STORE_H_

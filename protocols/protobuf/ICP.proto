@@ -3,7 +3,7 @@ package freerds.icp;
 enum MSGTYPE {
 	IsChannelAllowed = 1;
 	Ping             = 2;
-	GetUserSession   = 3;
+	//GetUserSession   = 3;
 	DisconnectUserSession = 4;
 	LogOffUserSession = 5;
 	FdsApiVirtualChannelOpen = 6;
@@ -24,18 +24,8 @@ message PingResponse {
 	required bool pong = 1;
 }
 
-message GetUserSessionRequest {
-	required string username = 1;
-	optional string domainname = 2;
-}
-
-message GetUserSessionResponse {
-	required uint32 SessionID = 1;
-	required string ServiceEndpoint = 2;
-}
-
 message DisconnectUserSessionRequest {
-	required uint32 SessionID = 1;
+	required uint32 ConnectionId = 1;
 }
 
 message DisconnectUserSessionResponse {
@@ -43,7 +33,7 @@ message DisconnectUserSessionResponse {
 }
 
 message LogOffUserSessionRequest {
-	required uint32 SessionID = 1;
+	required uint32 ConnectionId = 1;
 }
 
 message LogOffUserSessionResponse {
@@ -60,14 +50,13 @@ message FdsApiVirtualChannelOpenResponse {
 }
 
 message LogonUserRequest {
-	required uint32 SessionId = 1;
+	required uint32 ConnectionId = 1;
 	required string Username = 2;
 	required string Password = 3;
 	required string Domain = 4;
 }
 
 message LogonUserResponse {
-	required uint32 SessionId = 1;
 	required int32 AuthStatus = 2;
 	required string ServiceEndpoint = 3;
 }

@@ -46,10 +46,10 @@ namespace freerds
 				DeleteCriticalSection(&mCSection);
 			}
 
-			Session* SessionStore::getSession(long sessionID)
+			Session* SessionStore::getSession(long sessionId)
 			{
 				EnterCriticalSection(&mCSection);
-				Session* session = mSessionMap[sessionID];
+				Session* session = mSessionMap[sessionId];
 				LeaveCriticalSection(&mCSection);
 				return session;
 			}
@@ -85,11 +85,11 @@ namespace freerds
 				return session;
 			}
 
-			int SessionStore::removeSession(long sessionID)
+			int SessionStore::removeSession(long sessionId)
 			{
 				EnterCriticalSection(&mCSection);
-				Session * session = mSessionMap[sessionID];
-				mSessionMap.erase(sessionID);
+				Session * session = mSessionMap[sessionId];
+				mSessionMap.erase(sessionId);
 				delete session;
 				LeaveCriticalSection(&mCSection);
 				return 0;
