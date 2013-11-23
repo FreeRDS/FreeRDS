@@ -3,6 +3,7 @@
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.at>
+ * Copyright 2013 Hardening <contact@hardening-consulting.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,31 +32,34 @@
 #include "pbrpc_utils.h"
 #include "pbRPC.pb-c.h"
 
+
 struct pbrpc_transaction
 {
-	HANDLE Event;
-	Freerds__Pbrpc__RPCBase* response;
-	UINT32 errorReason;
+	pbRpcResponseCallback responseCallback;
+	void *callbackArg;
+	BOOL freeAfterResponse;
 };
 typedef struct pbrpc_transaction pbRPCTransaction;
 
-pbRPCTransaction* pbrpc_transaction_new()
+
+static pbRPCTransaction* pbrpc_transaction_new()
 {
 	pbRPCTransaction* ta = malloc(sizeof(pbRPCTransaction));
 	ZeroMemory(ta, sizeof(pbRPCTransaction));
+	ta->freeAfterResponse = TRUE;
 	return ta;
 }
 
+
 void pbrpc_transaction_free(pbRPCTransaction* ta)
 {
-	if (!ta)
-		return;
-	free(ta);
+	if (ta)
+		free(ta);
 }
 
-static void queu_item_free(void* obj)
+static void queue_item_free(void* obj)
 {
-	pbrpc_message_free((Freerds__Pbrpc__RPCBase*) obj, FALSE);
+	pbrpc_message_free((Freerds__Pbrpc__RPCBase*)obj, FALSE);
 }
 
 static void list_dictionary_item_free(void* item)
@@ -73,7 +77,7 @@ pbRPCContext* pbrpc_server_new(pbRPCTransportContext* transport)
 	context->transactions = ListDictionary_New(TRUE);
 	context->transactions->object.fnObjectFree = list_dictionary_item_free;
 	context->writeQueue = Queue_New(TRUE, -1, -1);
-	context->writeQueue->object.fnObjectFree = queu_item_free;
+	context->writeQueue->object.fnObjectFree = queue_item_free;
 	return context;
 }
 
@@ -139,25 +143,28 @@ static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase
 		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
 		return 1;
 	}
+
 	ListDictionary_Remove(context->transactions, (void *)((UINT_PTR)rpcmessage->tag));
-	ta->response = rpcmessage;
-	SetEvent(ta->Event);
+	if (ta->responseCallback)
+	ta->responseCallback(PBRPC_SUCCESS, rpcmessage, ta->callbackArg);
+	if (ta->freeAfterResponse)
+		free(ta);
 	return 0;
 }
 
 int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCBase *msg)
 {
+	int ret;
 	char msgLen = freerds__pbrpc__rpcbase__get_packed_size(msg);
 	char *buf = malloc(msgLen);
-	int ret;
+
 	ret = freerds__pbrpc__rpcbase__pack(msg, (uint8_t *)buf);
 	// packing failed..
 	if (ret != msgLen)
-	{
-		free(buf);
-		return 1;
-	}
-	ret = pbrpc_send_message(context, buf, msgLen);
+		ret = 1;
+	else
+		ret = pbrpc_send_message(context, buf, msgLen);
+
 	free(buf);
 	return ret;
 }
@@ -284,8 +291,9 @@ static void pbrpc_reconnect(pbRPCContext* context)
 
 	while ((ta = ListDictionary_Remove_Head(context->transactions)))
 	{
-		ta->errorReason  = PBRCP_TRANSPORT_ERROR;
-		SetEvent(ta->Event);
+		ta->responseCallback(PBRCP_TRANSPORT_ERROR, 0, ta->callbackArg);
+		if (ta->freeAfterResponse)
+			free(ta);
 	}
 
 	if (0 != pbrpc_transport_open(context))
@@ -368,13 +376,30 @@ int pbrpc_server_stop(pbRPCContext* context)
 	return 0;
 }
 
+/** @brief contextual data to handle a local call */
+struct pbrpc_local_call_context {
+	HANDLE event;
+	Freerds__Pbrpc__RPCBase *response;
+	PBRPCSTATUS status;
+};
+
+static void pbrpc_response_local_cb(PBRPCSTATUS reason, Freerds__Pbrpc__RPCBase* response, void *args) {
+	struct pbrpc_local_call_context *context = (struct pbrpc_local_call_context *)args;
+	context->response = response;
+	context->status = reason;
+	SetEvent(context->event);
+}
+
+
 int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request, pbRPCPayload** response)
 {
 	Freerds__Pbrpc__RPCBase* message;
-	pbRPCTransaction *ta = NULL;
+	pbRPCTransaction ta;
 	UINT32 ret = PBRPC_FAILED;
 	UINT32 tag;
 	DWORD wait_ret;
+
+	struct pbrpc_local_call_context local_context;
 
 	if (!context->isConnected)
 	{
@@ -389,45 +414,58 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	message->msgtype = type;
 	tag = message->tag;
 
-	ta = pbrpc_transaction_new();
-	ta->Event = CreateEvent(NULL, TRUE, FALSE, NULL);
-	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(message->tag)), ta);
+	ZeroMemory(&local_context, sizeof(local_context));
+	local_context.event = CreateEvent(NULL, TRUE, FALSE, NULL);
+	local_context.status = PBRCP_CALL_TIMEOUT;
+
+	ta.responseCallback = pbrpc_response_local_cb;
+	ta.callbackArg = &local_context;
+	ta.freeAfterResponse = 0;
+
+	// TODO: the funky case can occur because an equivalent of pthread_condition is
+	//		not used, unfortunately this kind of primitive does not exists under win32
+	//      nor with winpr
+	// 	the clean case should be:
+	//
+	//  Lock(context->transactions)
+	//    ....
+	//  pthread_cond_wait(local_context.event, context->transactions.lock)
+	//    ...
+	// 	Unlock(context->transactions)
+
+	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(message->tag)), &ta);
 	Queue_Enqueue(context->writeQueue, message);
 
-	wait_ret = WaitForSingleObject(ta->Event, PBRPC_TIMEOUT);
+	wait_ret = WaitForSingleObject(local_context.event, PBRPC_TIMEOUT);
 	if (wait_ret != WAIT_OBJECT_0)
 	{
 		if(!ListDictionary_Remove(context->transactions, (void*)((UINT_PTR)(tag))))
 		{
-			// special case - timeout occurred but request is already processing
-			WaitForSingleObject(ta->Event, INFINITE);
+			// special case - timeout occurred but request is already processing, see comment above
+			WaitForSingleObject(local_context.event, INFINITE);
 		}
 		else
 		{
-			CloseHandle(ta->Event);
-			pbrpc_transaction_free(ta);
-			return PBRCP_CALL_TIMEOUT;
+			ret = PBRCP_CALL_TIMEOUT;
 		}
 	}
 
-	CloseHandle(ta->Event);
-	message = ta->response;
+	CloseHandle(local_context.event);
+	message = local_context.response;
 
 	if (!message)
 	{
-		if (ta->errorReason)
-
-			ret = ta->errorReason;
+		if (local_context.status)
+			ret = local_context.status;
 		else
 			ret = PBRPC_FAILED;
-		pbrpc_transaction_free(ta);
-		return ret;
 	}
-
-	*response = pbrpc_fill_payload(message);
-	ret = message->status;
-	pbrpc_transaction_free(ta);
-	pbrpc_message_free(message, FALSE);
+	else
+	{
+		*response = pbrpc_fill_payload(message);
+		ret = message->status;
+		pbrpc_message_free(message, FALSE);
+	}
 
 	return ret;
 }
@@ -435,4 +473,13 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 void pbrpc_register_methods(pbRPCContext* context, pbRPCMethod *methods)
 {
 	context->methods = methods;
+}
+
+void pbrcp_register_transaction(pbRPCContext* context, UINT32 tag, pbRpcResponseCallback callback, void *callback_args)
+{
+	pbRPCTransaction *ta = pbrpc_transaction_new();
+	ta->callbackArg = callback_args;
+	ta->callbackArg = callback_args;
+
+	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(tag)), ta);
 }
