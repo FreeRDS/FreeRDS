@@ -418,6 +418,10 @@ void* freerds_connection_main_thread(void* arg)
 	rdsBackendConnector* connector;
 	freerdp_peer* client = (freerdp_peer*) arg;
 	BOOL disconnected = FALSE;
+#ifndef WIN32
+	sigset_t set;
+	int ret;
+#endif
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
 
@@ -446,6 +450,13 @@ void* freerds_connection_main_thread(void* arg)
 	GlobalTermEvent = g_get_term_event();
 	LocalTermEvent = connection->TermEvent;
 
+#ifndef WIN32
+	sigemptyset(&set);
+	sigaddset(&set, SIGPIPE);
+  ret = pthread_sigmask(SIG_BLOCK, &set, NULL);
+	if (0 != ret)
+		fprintf(stderr, "couldn't block SIGPIPE\n");
+#endif
 	while (1)
 	{
 		nCount = 0;
