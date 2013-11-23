@@ -33,10 +33,10 @@
 
 #include <winpr/crt.h>
 #include <winpr/stream.h>
+#include <freerds/backend.h>
 
-#include <freerds/freerds.h>
 
-#include "freerds.h"
+typedef struct rds_backend_connector rdsBackendConnector;
 
 struct rds_rect
 {
@@ -52,7 +52,7 @@ struct rds_connection
 	rdpContext context;
 
 	long id;
-	rdsModuleConnector* connector;
+	rdsBackendConnector* connector;
 	HANDLE Thread;
 	HANDLE TermEvent;
 	freerdp_peer* client;
@@ -78,6 +78,22 @@ struct rds_connection
 	RdpdrServerContext* rdpdr;
 	RdpsndServerContext* rdpsnd;
 	DrdynvcServerContext* drdynvc;
+};
+
+
+struct rds_backend_connector
+{
+	DEFINE_BACKEND_COMMON();
+
+	DWORD ConnectionId;
+	int MaxFps;
+	int fps;
+	wLinkedList* ServerList;
+	wMessageQueue* ServerQueue;
+	rdsServerInterface* ServerProxy;
+	freerdp* instance;
+	rdpSettings* settings;
+	rdsConnection* connection;
 };
 
 #ifdef __cplusplus
@@ -160,6 +176,7 @@ FREERDP_API int freerds_orders_send_frame_marker(rdsConnection* connection, UINT
 FREERDP_API int freerds_window_new_update(rdsConnection* connection, RDS_MSG_WINDOW_NEW_UPDATE* msg);
 
 FREERDP_API int freerds_window_delete(rdsConnection* connection, RDS_MSG_WINDOW_DELETE* msg);
+
 
 #ifdef __cplusplus
 }

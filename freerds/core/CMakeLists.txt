@@ -30,13 +30,14 @@ set(${MODULE_PREFIX}_SRCS
 	listener.c
 	pipeline.c
 	process.c
+	backend.c
 	client_module.c
 	server_module.c)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-auth)
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS

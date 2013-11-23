@@ -22,8 +22,6 @@
 
 #include "freerds.h"
 
-#include <freerds/freerds.h>
-
 int freerds_channels_post_connect(rdsConnection* session);
 
 #endif /* RDS_NG_CHANNELS_H */

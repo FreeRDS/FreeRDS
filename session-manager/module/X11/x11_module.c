@@ -45,7 +45,7 @@
 #include <winpr/stream.h>
 #include <winpr/sspicli.h>
 #include <winpr/environment.h>
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
 #include "x11_module.h"
 

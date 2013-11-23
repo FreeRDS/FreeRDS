@@ -95,8 +95,6 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MODULE winpr
 	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-path winpr-pipe winpr-library winpr-sspicli)
 
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
-
 list(APPEND ${MODULE_PREFIX}_LIBS ${PROTOBUF_LIBRARY})
 	
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY} ${THRIFT_STATIC_LIB})

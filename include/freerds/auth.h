@@ -20,7 +20,7 @@
 #ifndef FREERDS_AUTH_H
 #define FREERDS_AUTH_H
 
-#include <freerds/freerds.h>
+#include <winpr/wtypes.h>
 
 typedef struct rds_auth_module_entry_points_v1 RDS_AUTH_MODULE_ENTRY_POINTS_V1;
 typedef RDS_AUTH_MODULE_ENTRY_POINTS_V1 RDS_AUTH_MODULE_ENTRY_POINTS;

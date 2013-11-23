@@ -28,9 +28,7 @@
 #include <winpr/wtsapi.h>
 
 #include <freerds/module.h>
-
-#include <freerds/freerds.h>
-#include <freerds/module_connector.h>
+//#include <freerds/module_connector.h>
 
 namespace freerds
 {

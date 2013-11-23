@@ -21,7 +21,7 @@
 #include "config.h"
 #endif
 
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
 #include "protocol.h"
 

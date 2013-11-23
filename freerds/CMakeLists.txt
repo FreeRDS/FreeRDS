@@ -16,5 +16,5 @@
 
 add_subdirectory(auth)
 add_subdirectory(core)
-add_subdirectory(module-connector)
+add_subdirectory(backend)
 add_subdirectory(icp)

@@ -1,6 +1,5 @@
 /**
  * FreeRDP: A Remote Desktop Protocol Implementation
- * xrdp-ng interface
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
@@ -17,9 +16,9 @@
  * limitations under the License.
  */
 
-#ifndef RDS_NG_OUTBOUND_H
-#define RDS_NG_OUTBOUND_H
+#ifndef FREERDS_NG_OUTBOUND_H
+#define FREERDS_NG_OUTBOUND_H
 
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
-#endif /* RDS_NG_OUTBOUND_H */
+#endif /* FREERDS_OUTBOUND_H */

@@ -69,7 +69,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
 #define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
 

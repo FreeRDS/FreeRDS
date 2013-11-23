@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <winpr/pipe.h>
 #include <winpr/synch.h>
 
-#include <freerds/service_helper.h>
+#include <freerds/backend.h>
 
 #define LOG_LEVEL 1
 #define LLOG(_level, _args) \
@@ -34,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
 static int g_clientfd = -1;
-static rdsService* g_Service;
+static rdsBackendService* g_service;
 static int g_connected = 0;
 
 static int g_button_mask = 0;
@@ -235,7 +235,6 @@ int rdpup_end_update(void)
 int rdpup_update(RDS_MSG_COMMON* msg)
 {
 	int status;
-	rdsModuleConnector* connector = (rdsModuleConnector*) g_Service;
 
 	if (g_connected)
 	{
@@ -245,7 +244,7 @@ int rdpup_update(RDS_MSG_COMMON* msg)
 			return 0;
 		}
 
-		status = freerds_server_outbound_write_message(connector, (RDS_MSG_COMMON*) msg);
+		status = freerds_server_outbound_write_message((rdsBackend *)g_service, (RDS_MSG_COMMON*) msg);
 
 		LLOGLN(0, ("rdpup_update: adding %s message (%d)", freerds_server_message_name(msg->type), msg->type));
 	}
@@ -540,30 +539,30 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 	rdpup_update((RDS_MSG_COMMON*) &msg);
 }
 
-int rds_client_synchronize_keyboard_event(rdsModuleConnector* connector, DWORD flags)
+int rds_client_synchronize_keyboard_event(rdsBackend* backend, DWORD flags)
 {
 	return 0;
 }
 
-int rds_client_scancode_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code, DWORD keyboardType)
+int rds_client_scancode_keyboard_event(rdsBackend* backend, DWORD flags, DWORD code, DWORD keyboardType)
 {
 	KbdAddScancodeEvent(flags, code, keyboardType);
 	return 0;
 }
 
-int rds_client_virtual_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code)
+int rds_client_virtual_keyboard_event(rdsBackend* backend, DWORD flags, DWORD code)
 {
 	KbdAddVirtualKeyCodeEvent(flags, code);
 	return 0;
 }
 
-int rds_client_unicode_keyboard_event(rdsModuleConnector* connector, DWORD flags, DWORD code)
+int rds_client_unicode_keyboard_event(rdsBackend* backend, DWORD flags, DWORD code)
 {
 	KbdAddUnicodeEvent(flags, code);
 	return 0;
 }
 
-int rds_client_mouse_event(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y)
+int rds_client_mouse_event(rdsBackend* backend, DWORD flags, DWORD x, DWORD y)
 {
 	if (x > g_rdpScreen.width - 2)
 		x = g_rdpScreen.width - 2;
@@ -638,7 +637,7 @@ int rds_client_mouse_event(rdsModuleConnector* connector, DWORD flags, DWORD x, 
 	return 0;
 }
 
-int rds_client_extended_mouse_event(rdsModuleConnector* connector, DWORD flags, DWORD x, DWORD y)
+int rds_client_extended_mouse_event(rdsBackend* backend, DWORD flags, DWORD x, DWORD y)
 {
 	if (x > g_rdpScreen.width - 2)
 		x = g_rdpScreen.width - 2;
@@ -681,23 +680,22 @@ int rds_client_extended_mouse_event(rdsModuleConnector* connector, DWORD flags, 
 	return 0;
 }
 
-int rds_service_accept(rdsService* service)
+int rds_service_accept(rdsBackendService* service)
 {
 	HANDLE hServerPipe;
-	rdsModuleConnector* connector = (rdsModuleConnector*) service;
-	hServerPipe = connector->hServerPipe;
+	hServerPipe = service->hServerPipe;
 	RemoveEnabledDevice(GetNamePipeFileDescriptor(hServerPipe));
 
-	connector->hServerPipe = freerds_named_pipe_create_endpoint(connector->SessionId, connector->Endpoint);
-	if (!connector->hServerPipe)
+	service->hServerPipe = freerds_named_pipe_create_endpoint(service->SessionId, service->Endpoint);
+	if (!service->hServerPipe)
 	{
 		fprintf(stderr, "server pipe failed?!\n");
 		return 1;
 	}
-	AddEnabledDevice(GetNamePipeFileDescriptor(connector->hServerPipe));
-	connector->hClientPipe = freerds_named_pipe_accept(hServerPipe);
+	AddEnabledDevice(GetNamePipeFileDescriptor(service->hServerPipe));
+	service->hClientPipe = freerds_named_pipe_accept(hServerPipe);
 
-	g_clientfd = GetNamePipeFileDescriptor(connector->hClientPipe);
+	g_clientfd = GetNamePipeFileDescriptor(service->hClientPipe);
 
 	g_con_number++;
 	g_connected = 1;
@@ -708,12 +706,11 @@ int rds_service_accept(rdsService* service)
 	return 0;
 }
 
-int rds_service_disconnect(rdsService* service)
+int rds_service_disconnect(rdsBackendService* service)
 {
-	rdsModuleConnector* connector = (rdsModuleConnector*) service;
 	RemoveEnabledDevice(g_clientfd);
-	CloseHandle(connector->hClientPipe);
-	connector->hClientPipe = NULL;
+	CloseHandle(service->hClientPipe);
+	service->hClientPipe = NULL;
 	fprintf(stderr, "RdsServiceDisconnect\n");
 	g_connected = 0;
 	g_rdpScreen.fbAttached = 0;
@@ -724,8 +721,7 @@ int rds_service_disconnect(rdsService* service)
 int rdpup_init(void)
 {
 	int DisplayId;
-	rdsModuleConnector* connector;
-	rdsService* service;
+	rdsBackendService* service;
 
 	DisplayId = atoi(display);
 
@@ -738,24 +734,24 @@ int rdpup_init(void)
 
 	pfbBackBufferMemory = (BYTE*) malloc(g_rdpScreen.sizeInBytes);
 
-	if (!g_Service)
-	{
-		g_Service = freerds_service_new(DisplayId, "X11");
 
-		service = g_Service;
-		connector = (rdsModuleConnector*) service;
+	if (!g_service)
+	{
+		g_service = freerds_service_new(DisplayId, "X11");
+
+		service = g_service;
 
 		service->Accept = (pRdsServiceAccept) rds_service_accept;
 
-		connector->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
-		connector->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
-		connector->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;
-		connector->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
-		connector->client->MouseEvent = rds_client_mouse_event;
-		connector->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
+		service->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
+		service->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
+		service->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;
+		service->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
+		service->client->MouseEvent = rds_client_mouse_event;
+		service->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
 
-		connector->hServerPipe = freerds_named_pipe_create_endpoint(connector->SessionId, connector->Endpoint);
-		AddEnabledDevice(GetNamePipeFileDescriptor(connector->hServerPipe));
+		service->hServerPipe = freerds_named_pipe_create_endpoint(service->SessionId, service->Endpoint);
+		AddEnabledDevice(GetNamePipeFileDescriptor(service->hServerPipe));
 	}
 
 	return 1;
@@ -763,16 +759,13 @@ int rdpup_init(void)
 
 int rdpup_check(void)
 {
-	rdsModuleConnector* connector;
-	rdsService* service = g_Service;
+	rdsBackendService* service = g_service;
 
-	connector = (rdsModuleConnector*) service;
-
-	if (connector->hClientPipe)
+	if (service->hClientPipe)
 	{
-		if (WaitForSingleObject(connector->hClientPipe, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(service->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			if (freerds_transport_receive(connector) < 0)
+			if (freerds_transport_receive((rdsBackend *)service) < 0)
 			{
 				rds_service_disconnect(service);
 			}
@@ -780,7 +773,7 @@ int rdpup_check(void)
 	}
 	else
 	{
-		if (WaitForSingleObject(connector->hServerPipe, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(service->hServerPipe, 0) == WAIT_OBJECT_0)
 		{
 			service->Accept(service);
 		}

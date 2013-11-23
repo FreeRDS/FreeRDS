@@ -42,7 +42,6 @@
 #include <winpr/cmdline.h>
 #include <winpr/library.h>
 
-#include <freerds/freerds.h>
 #include <freerds/icp_client_stubs.h>
 
 char* RdsModuleName = NULL;

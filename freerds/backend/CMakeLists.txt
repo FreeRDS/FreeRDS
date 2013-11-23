@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "freerds-module-connector")
+set(MODULE_NAME "freerds-backend")
 set(MODULE_PREFIX "FREERDS_MODULE")
 
 set(${MODULE_PREFIX}_SRCS
@@ -26,8 +26,7 @@ set(${MODULE_PREFIX}_SRCS
 	outbound.h
 	transport.c
 	transport.h
-	service_helper.c
-	module_connector.c
+	service.c
 	)
 
 include_directories(../core)
@@ -41,6 +40,3 @@ set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR} EXPORT FreeRDSTargets)
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${MODULE_NAME}.pc.in ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

@@ -1,6 +1,6 @@
 /**
  * FreeRDP: A Remote Desktop Protocol Implementation
- * xrdp-ng interface
+ * xrdp-ng interprocess communication protocol
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
@@ -17,11 +17,34 @@
  * limitations under the License.
  */
 
-#ifndef RDS_NG_TRANSPORT_H
-#define RDS_NG_TRANSPORT_H
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
-#define PIPE_BUFFER_SIZE	0xFFFF
+#include "inbound.h"
 
-#endif /* RDS_NG_TRANSPORT_H */
+rdsServerInterface* freerds_client_inbound_interface_new()
+{
+	rdsServerInterface* server = (rdsServerInterface*) malloc(sizeof(rdsServerInterface));
+
+	if (server)
+	{
+		ZeroMemory(server, sizeof(rdsServerInterface));
+	}
+
+	return server;
+}
+
+rdsClientInterface* freerds_server_inbound_interface_new()
+{
+	rdsClientInterface* client = (rdsClientInterface*) malloc(sizeof(rdsClientInterface));
+
+	if (client)
+	{
+		ZeroMemory(client, sizeof(rdsClientInterface));
+	}
+
+	return client;
+}

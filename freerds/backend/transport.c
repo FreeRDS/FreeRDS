@@ -21,8 +21,6 @@
 #include "config.h"
 #endif
 
-#include <freerds/freerds.h>
-
 #include <winpr/crt.h>
 #include <winpr/file.h>
 #include <winpr/pipe.h>
@@ -187,12 +185,12 @@ HANDLE freerds_named_pipe_accept(HANDLE hServerPipe)
 	return hClientPipe;
 }
 
-int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RDS_MSG_COMMON* common)
+int freerds_receive_server_message(rdsBackend* backend, wStream* s, RDS_MSG_COMMON* common)
 {
 	int status = 0;
 	rdsServerInterface* server;
 
-	server = connector->server;
+	server = backend->server;
 
 	switch (common->type)
 	{
@@ -201,7 +199,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_BEGIN_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->BeginUpdate(connector, &msg);
+				status = server->BeginUpdate(backend, &msg);
 			}
 			break;
 
@@ -210,7 +208,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_END_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->EndUpdate(connector, &msg);
+				status = server->EndUpdate(backend, &msg);
 			}
 			break;
 
@@ -219,7 +217,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_OPAQUE_RECT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->OpaqueRect(connector, &msg);
+				status = server->OpaqueRect(backend, &msg);
 			}
 			break;
 
@@ -228,7 +226,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_SCREEN_BLT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->ScreenBlt(connector, &msg);
+				status = server->ScreenBlt(backend, &msg);
 			}
 			break;
 
@@ -237,7 +235,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_PATBLT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->PatBlt(connector, &msg);
+				status = server->PatBlt(backend, &msg);
 			}
 			break;
 
@@ -246,7 +244,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_DSTBLT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->DstBlt(connector, &msg);
+				status = server->DstBlt(backend, &msg);
 			}
 			break;
 
@@ -262,9 +260,9 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
 
 				if (msg.fbSegmentId)
-					msg.framebuffer = &(connector->framebuffer);
+					msg.framebuffer = &(backend->framebuffer);
 
-				status = server->PaintRect(connector, &msg);
+				status = server->PaintRect(backend, &msg);
 			}
 			break;
 
@@ -273,7 +271,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_SET_CLIPPING_REGION msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->SetClippingRegion(connector, &msg);
+				status = server->SetClippingRegion(backend, &msg);
 			}
 			break;
 
@@ -282,7 +280,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_LINE_TO msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->LineTo(connector, &msg);
+				status = server->LineTo(backend, &msg);
 			}
 			break;
 
@@ -291,7 +289,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_SET_POINTER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->SetPointer(connector, &msg);
+				status = server->SetPointer(backend, &msg);
 			}
 			break;
 
@@ -300,7 +298,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_SET_SYSTEM_POINTER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->SetSystemPointer(connector, &msg);
+				status = server->SetSystemPointer(backend, &msg);
 			}
 			break;
 
@@ -309,7 +307,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_CREATE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->CreateOffscreenSurface(connector, &msg);
+				status = server->CreateOffscreenSurface(backend, &msg);
 			}
 			break;
 
@@ -318,7 +316,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_SWITCH_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->SwitchOffscreenSurface(connector, &msg);
+				status = server->SwitchOffscreenSurface(backend, &msg);
 			}
 			break;
 
@@ -327,7 +325,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_DELETE_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->DeleteOffscreenSurface(connector, &msg);
+				status = server->DeleteOffscreenSurface(backend, &msg);
 			}
 			break;
 
@@ -336,7 +334,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_PAINT_OFFSCREEN_SURFACE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->PaintOffscreenSurface(connector, &msg);
+				status = server->PaintOffscreenSurface(backend, &msg);
 			}
 			break;
 
@@ -345,7 +343,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_WINDOW_NEW_UPDATE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->WindowNewUpdate(connector, &msg);
+				status = server->WindowNewUpdate(backend, &msg);
 			}
 			break;
 
@@ -354,7 +352,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_WINDOW_DELETE msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->WindowDelete(connector, &msg);
+				status = server->WindowDelete(backend, &msg);
 			}
 			break;
 
@@ -363,7 +361,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_SHARED_FRAMEBUFFER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->SharedFramebuffer(connector, &msg);
+				status = server->SharedFramebuffer(backend, &msg);
 			}
 			break;
 
@@ -372,7 +370,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_LOGON_USER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->LogonUser(connector, &msg);
+				status = server->LogonUser(backend, &msg);
 			}
 			break;
 
@@ -381,7 +379,7 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_LOGOFF_USER msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
-				status = server->LogoffUser(connector, &msg);
+				status = server->LogoffUser(backend, &msg);
 			}
 			break;
 
@@ -393,12 +391,12 @@ int freerds_receive_server_message(rdsModuleConnector* connector, wStream* s, RD
 	return status;
 }
 
-int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RDS_MSG_COMMON* common)
+int freerds_receive_client_message(rdsBackend* backend, wStream* s, RDS_MSG_COMMON* common)
 {
 	int status = 0;
 	rdsClientInterface* client;
 
-	client = connector->client;
+	client = backend->client;
 
 	switch (common->type)
 	{
@@ -407,7 +405,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_read_synchronize_keyboard_event(s, &msg);
-				status = client->SynchronizeKeyboardEvent(connector, msg.flags);
+				status = client->SynchronizeKeyboardEvent(backend, msg.flags);
 			}
 			break;
 
@@ -416,7 +414,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_SCANCODE_KEYBOARD_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_read_scancode_keyboard_event(s, &msg);
-				status = client->ScancodeKeyboardEvent(connector, msg.flags, msg.code, msg.keyboardType);
+				status = client->ScancodeKeyboardEvent(backend, msg.flags, msg.code, msg.keyboardType);
 			}
 			break;
 
@@ -425,7 +423,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_VIRTUAL_KEYBOARD_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_read_virtual_keyboard_event(s, &msg);
-				status = client->VirtualKeyboardEvent(connector, msg.flags, msg.code);
+				status = client->VirtualKeyboardEvent(backend, msg.flags, msg.code);
 			}
 			break;
 
@@ -434,7 +432,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_UNICODE_KEYBOARD_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_read_unicode_keyboard_event(s, &msg);
-				status = client->UnicodeKeyboardEvent(connector, msg.flags, msg.code);
+				status = client->UnicodeKeyboardEvent(backend, msg.flags, msg.code);
 			}
 			break;
 
@@ -443,7 +441,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_MOUSE_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_read_mouse_event(s, &msg);
-				status = client->MouseEvent(connector, msg.flags, msg.x, msg.y);
+				status = client->MouseEvent(backend, msg.flags, msg.x, msg.y);
 			}
 			break;
 
@@ -452,7 +450,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 				RDS_MSG_EXTENDED_MOUSE_EVENT msg;
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_read_extended_mouse_event(s, &msg);
-				status = client->ExtendedMouseEvent(connector, msg.flags, msg.x, msg.y);
+				status = client->ExtendedMouseEvent(backend, msg.flags, msg.x, msg.y);
 			}
 			break;
 
@@ -462,7 +460,7 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
 				freerds_read_vblank_event(s, &msg);
 				if (client->VBlankEvent)
-					status = client->VBlankEvent(connector);
+					status = client->VBlankEvent(backend);
 				else
 					status = 0;
 			}
@@ -476,15 +474,15 @@ int freerds_receive_client_message(rdsModuleConnector* connector, wStream* s, RD
 	return status;
 }
 
-int freerds_receive_message(rdsModuleConnector* connector, wStream* s, RDS_MSG_COMMON* common)
+int freerds_receive_message(rdsBackend* backend, wStream* s, RDS_MSG_COMMON* common)
 {
-	if (connector->ServerMode)
-		return freerds_receive_client_message(connector, s, common);
+	if (backend->ServerMode)
+		return freerds_receive_client_message(backend, s, common);
 	else
-		return freerds_receive_server_message(connector, s, common);
+		return freerds_receive_server_message(backend, s, common);
 }
 
-int freerds_transport_receive(rdsModuleConnector* connector)
+int freerds_transport_receive(rdsBackend* backend)
 {
 	wStream* s;
 	int status;
@@ -492,11 +490,11 @@ int freerds_transport_receive(rdsModuleConnector* connector)
 	UINT32 length;
 	RDS_MSG_COMMON common;
 
-	s = connector->InboundStream;
+	s = backend->InboundStream;
 
 	if (Stream_GetPosition(s) < RDS_ORDER_HEADER_LENGTH)
 	{
-		status = freerds_named_pipe_read(connector->hClientPipe, Stream_Pointer(s),
+		status = freerds_named_pipe_read(backend->hClientPipe, Stream_Pointer(s),
 				RDS_ORDER_HEADER_LENGTH - Stream_GetPosition(s));
 
 		if (status < 0)
@@ -512,7 +510,7 @@ int freerds_transport_receive(rdsModuleConnector* connector)
 
 		if (length - Stream_GetPosition(s))
 		{
-			status = freerds_named_pipe_read(connector->hClientPipe, Stream_Pointer(s),
+			status = freerds_named_pipe_read(backend->hClientPipe, Stream_Pointer(s),
 				length - Stream_GetPosition(s));
 
 			if (status < 0)
@@ -534,7 +532,7 @@ int freerds_transport_receive(rdsModuleConnector* connector)
 			Stream_SetPosition(s, 0);
 			freerds_read_common_header(s, &common);
 
-			status = freerds_receive_message(connector, s, &common);
+			status = freerds_receive_message(backend, s, &common);
 			Stream_SetPosition(s, 0);
 		}
 	}

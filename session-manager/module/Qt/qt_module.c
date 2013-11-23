@@ -32,8 +32,8 @@
 #include <unistd.h>
 #endif
 
-#include <freerds/freerds.h>
-#include <freerds/module_connector.h>
+#include <freerds/module.h>
+#include <freerds/backend.h>
 
 #include "qt_module.h"
 

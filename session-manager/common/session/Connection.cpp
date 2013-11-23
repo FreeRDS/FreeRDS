@@ -31,8 +31,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <freerds/freerds.h>
-
 #include <appcontext/ApplicationContext.h>
 
 #include "Connection.h"

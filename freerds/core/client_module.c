@@ -40,7 +40,7 @@ void* freerds_client_thread(void* arg)
 	HANDLE events[8];
 	HANDLE PackTimer;
 	LARGE_INTEGER due;
-	rdsModuleConnector* connector = (rdsModuleConnector*) arg;
+	rdsBackendConnector* connector = (rdsBackendConnector*) arg;
 
 	fps = connector->fps;
 	PackTimer = CreateWaitableTimer(NULL, TRUE, NULL);
@@ -64,7 +64,7 @@ void* freerds_client_thread(void* arg)
 
 		if (WaitForSingleObject(connector->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			if (freerds_transport_receive(connector) < 0)
+			if (freerds_transport_receive((rdsBackend *)connector) < 0)
 				break;
 		}
 
@@ -86,8 +86,10 @@ void* freerds_client_thread(void* arg)
 	return NULL;
 }
 
-int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount)
+int freerds_client_get_event_handles(rdsBackend* backend, HANDLE* events, DWORD* nCount)
 {
+
+	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
 	if (connector)
 	{
 		if (connector->ServerQueue)
@@ -100,10 +102,11 @@ int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* even
 	return 0;
 }
 
-int freerds_client_check_event_handles(rdsModuleConnector* connector)
+int freerds_client_check_event_handles(rdsBackend* backend)
 {
 	int status = 0;
 
+	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
 	if (!connector)
 		return 0;
 

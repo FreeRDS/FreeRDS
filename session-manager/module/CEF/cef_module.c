@@ -31,7 +31,7 @@
 #include <unistd.h>
 #endif
 
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
 #include "cef_module.h"
 
