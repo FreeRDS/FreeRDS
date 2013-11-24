@@ -23,19 +23,15 @@
 #include "config.h"
 #endif
 
-#include <pwd.h>
-#include <grp.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/shm.h>
-#include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
 
-#include <sys/ioctl.h>
-#include <sys/socket.h>
+
 
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
@@ -53,7 +49,6 @@ pgetPropertyBool gGetPropertyBool;
 pgetPropertyNumber gGetPropertyNumber;
 pgetPropertyString gGetPropertyString;
 
-
 struct rds_module_x11
 {
 	RDS_MODULE_COMMON commonModule;
@@ -61,20 +56,51 @@ struct rds_module_x11
 	STARTUPINFO X11StartupInfo;
 	PROCESS_INFORMATION X11ProcessInformation;
 
-	STARTUPINFO WMStartupInfo;
-	PROCESS_INFORMATION WMProcessInformation;
-
+	HANDLE monitorThread;
+	HANDLE wmEvent;
+	BOOL wmstarted;
 };
+
 typedef struct rds_module_x11 rdsModuleX11;
 
-void x11_rds_module_reset_process_informations(rdsModuleX11* module)
+void x11_rds_module_reset_process_informations(STARTUPINFO *si, PROCESS_INFORMATION *pi)
 {
-	ZeroMemory(&(module->X11StartupInfo), sizeof(STARTUPINFO));
-	module->X11StartupInfo.cb = sizeof(STARTUPINFO);
-	ZeroMemory(&(module->X11ProcessInformation), sizeof(PROCESS_INFORMATION));
-	ZeroMemory(&(module->WMStartupInfo), sizeof(STARTUPINFO));
-	module->WMStartupInfo.cb = sizeof(STARTUPINFO);
-	ZeroMemory(&(module->WMProcessInformation), sizeof(PROCESS_INFORMATION));
+	ZeroMemory(si, sizeof(STARTUPINFO));
+	si->cb = sizeof(STARTUPINFO);
+	ZeroMemory(pi, sizeof(PROCESS_INFORMATION));
+}
+
+void monitoring_thread(void *arg)
+{
+	STARTUPINFO WMStartupInfo;
+	PROCESS_INFORMATION WMProcessInformation;
+	BOOL status;
+	char startupname[256];
+	DWORD ret = 0;
+	rdsModuleX11 *x11 = (rdsModuleX11*)arg;
+
+	x11_rds_module_reset_process_informations(&WMStartupInfo, &WMProcessInformation);
+
+	if (!gGetPropertyString(x11->commonModule.sessionId, "module.x11.startwm", startupname, 256))
+		strcpy(startupname, "startwm.sh");
+
+
+	status = CreateProcessAsUserA(x11->commonModule.userToken,
+			NULL, startupname,
+			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
+			&(WMStartupInfo), &(WMProcessInformation));
+
+	fprintf(stderr, "WM process started: %d (pid %d)\n", status, WMProcessInformation.dwProcessId);
+
+	WaitForSingleObject(WMProcessInformation.hProcess, INFINITE);
+
+	x11->wmstarted = FALSE;
+	GetExitCodeProcess(WMProcessInformation.hProcess, &ret);
+
+	CloseHandle(WMProcessInformation.hProcess);
+	CloseHandle(WMProcessInformation.hThread);
+	fprintf(stderr, "WM process stopped with return value %d\n", ret);
+	return;
 }
 
 RDS_MODULE_COMMON* x11_rds_module_new(void)
@@ -82,7 +108,7 @@ RDS_MODULE_COMMON* x11_rds_module_new(void)
 	rdsModuleX11* module = (rdsModuleX11*) malloc(sizeof(rdsModuleX11));
 	ZeroMemory(module, sizeof(rdsModuleX11));
 
-	x11_rds_module_reset_process_informations(module);
+	x11_rds_module_reset_process_informations(&(module->X11StartupInfo),&(module->X11ProcessInformation));
 
 	module->commonModule.sessionId = 0;
 	module->commonModule.userToken = NULL;
@@ -150,8 +176,6 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", &colordepth))
 		colordepth = 24;
 
-	x11_rds_module_reset_process_informations(x11);
-
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
 			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) colordepth);
 
@@ -159,31 +183,14 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
-	fprintf(stderr, "Process started: %d\n", status);
+	fprintf(stderr, "X11 Process started: %d (pid %d)\n", status, x11->X11ProcessInformation.dwProcessId);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
 		fprintf(stderr, "WaitNamedPipe failure: %s\n", pipeName);
 		return NULL;
 	}
-#if 0
-	hClientPipe = CreateFileA(pipeName,
-			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-
-	if ((!hClientPipe) || (hClientPipe == INVALID_HANDLE_VALUE))
-	{
-		fprintf(stderr, "Failed to create named pipe %s\n", pipeName);
-		return NULL;
-	}
-	CloseHandle(hClientPipe);
-#endif
-
-	status = CreateProcessAsUserA(x11->commonModule.userToken,
-			NULL, "startwm.sh",
-			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
-			&(x11->WMStartupInfo), &(x11->WMProcessInformation));
-
-	fprintf(stderr, "User process started: %d\n", status);
+	x11->monitorThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) monitoring_thread, x11, 0, NULL);
 
 	return pipeName;
 }
