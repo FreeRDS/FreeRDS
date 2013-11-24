@@ -33,16 +33,10 @@ DWORD pbrpc_getTag(pbRPCContext *context)
 Freerds__Pbrpc__RPCBase* pbrpc_message_new()
 {
 	Freerds__Pbrpc__RPCBase* msg = malloc(sizeof(Freerds__Pbrpc__RPCBase));
+	if (!msg)
+		return msg;
 
-	if (msg)
-	{
-		freerds__pbrpc__rpcbase__init(msg);
-	}
-	else
-	{
-		return NULL;
-	}
-
+	freerds__pbrpc__rpcbase__init(msg);
 	return msg;
 }
 

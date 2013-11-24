@@ -475,11 +475,28 @@ void pbrpc_register_methods(pbRPCContext* context, pbRPCMethod *methods)
 	context->methods = methods;
 }
 
-void pbrcp_register_transaction(pbRPCContext* context, UINT32 tag, pbRpcResponseCallback callback, void *callback_args)
+void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
+		pbRpcResponseCallback callback, void *callback_args)
 {
+	Freerds__Pbrpc__RPCBase* message;
+
+	if (!context->isConnected)
+	{
+		callback(PBRCP_TRANSPORT_ERROR, 0, callback_args);
+		return;
+	}
+
 	pbRPCTransaction *ta = pbrpc_transaction_new();
-	ta->callbackArg = callback_args;
+	ta->responseCallback = callback;
 	ta->callbackArg = callback_args;
 
-	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(tag)), ta);
+	message = pbrpc_message_new();
+	pbrpc_prepare_request(context, message);
+	message->payload.data = (unsigned char*)request->data;
+	message->payload.len = request->dataLen;
+	message->has_payload = 1;
+	message->msgtype = type;
+
+	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(message->tag)), ta);
+	Queue_Enqueue(context->writeQueue, message);
 }

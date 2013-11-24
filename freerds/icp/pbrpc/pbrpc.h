@@ -79,7 +79,9 @@ void pbrpc_server_free(pbRPCContext* context);
 int pbrpc_server_start(pbRPCContext* context);
 int pbrpc_server_stop(pbRPCContext* context);
 int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request, pbRPCPayload** response);
+void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
+		pbRpcResponseCallback callback, void *callback_args);
 void pbrpc_register_methods(pbRPCContext* context, pbRPCMethod* methods);
-void pbrcp_register_transaction(pbRPCContext* context, UINT32 tag, pbRpcResponseCallback callback, void *callback_args);
+
 
 #endif //_PBRPC_H
