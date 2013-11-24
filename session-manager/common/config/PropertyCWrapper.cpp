@@ -44,6 +44,9 @@ bool getPropertyString(long sessionID, char* path, char* value, unsigned int val
 	std::string stdvalue;
 	bool retValue = APP_CONTEXT.getPropertyManager()->getPropertyString(sessionID, std::string(path), stdvalue);
 
+	if (!retValue)
+		return false;
+
 	if (stdvalue.size() > valueLength)
 	{
 		return false;
