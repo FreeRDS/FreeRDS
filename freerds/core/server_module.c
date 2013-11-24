@@ -273,7 +273,6 @@ int freerds_client_inbound_logon_user(rdsBackend* backend, RDS_MSG_LOGON_USER* m
 	int icpStatus;
 	int authStatus;
 	char* endPoint;
-	DWORD connectionId;
 	HANDLE hClientPipe;
 	rdsBackendConnector* connector = (rdsBackendConnector*)backend;
 	rdsConnection* connection = connector->connection;
@@ -285,9 +284,8 @@ int freerds_client_inbound_logon_user(rdsBackend* backend, RDS_MSG_LOGON_USER* m
 
 	authStatus = 0;
 	endPoint = NULL;
-	connectionId = connector->ConnectionId;
 
-	icpStatus = freerds_icp_LogonUser((UINT32) connectionId,
+	icpStatus = freerds_icp_LogonUser(connection->id,
 			msg->User, msg->Domain, msg->Password, &authStatus, &endPoint);
 
 	if (icpStatus != 0)
@@ -301,7 +299,6 @@ int freerds_client_inbound_logon_user(rdsBackend* backend, RDS_MSG_LOGON_USER* m
 	freerds_connector_free(connector);
 	connection->connector = freerds_connector_new(connection);
 	connector->Endpoint = endPoint;
-	connector->ConnectionId = connectionId;
 
 	hClientPipe = freerds_named_pipe_connect(connector->Endpoint, 20);
 

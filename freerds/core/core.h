@@ -85,7 +85,6 @@ struct rds_backend_connector
 {
 	DEFINE_BACKEND_COMMON();
 
-	DWORD ConnectionId;
 	int MaxFps;
 	int fps;
 	wLinkedList* ServerList;

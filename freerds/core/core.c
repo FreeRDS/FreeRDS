@@ -32,6 +32,8 @@
 
 #include <pixman.h>
 
+static long gConnectionId = 0;
+
 /**
  * Custom helpers
  */
@@ -61,6 +63,7 @@ int freerds_set_bounds_rect(rdsConnection* connection, rdsRect* rect)
 
 int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
 {
+	connection->id = ++gConnectionId;
 	connection->settings = settings;
 
 	connection->bytesPerPixel = 4;

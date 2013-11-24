@@ -44,8 +44,6 @@
 
 #include "channels.h"
 
-static unsigned int g_ConnectionId = 0;
-
 void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
 	rdpSettings* settings = client->settings;
@@ -194,9 +192,8 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	connector = (rdsBackendConnector *)connection->connector;
 
 	authStatus = 0;
-	connector->ConnectionId = ++g_ConnectionId;
 
-	error_code = freerds_icp_LogonUser((UINT32)(connector->ConnectionId),
+	error_code = freerds_icp_LogonUser((UINT32)(connection->id),
 			settings->Username, settings->Domain, settings->Password, &authStatus,
 			&(connector->Endpoint));
 
@@ -521,7 +518,7 @@ void* freerds_connection_main_thread(void* arg)
 
 	if (connection->connector)
 	{
-		freerds_icp_DisconnectUserSession(connection->connector->ConnectionId, &disconnected);
+		freerds_icp_DisconnectUserSession(connection->id, &disconnected);
 		CloseHandle(connection->connector->hClientPipe);
 	}
 	client->Disconnect(client);
