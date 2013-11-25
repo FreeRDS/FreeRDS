@@ -62,7 +62,7 @@ else()
 												COMMAND cd external/Source/xorg-server && ./debian/rules build)
 			add_custom_target(all DEPENDS xorg-debian)
 			message(NOTE: " run the following command after build: 
-			cp ${CMAKE_CURRENT_SOURCE_DIR}/scripts/LocalConfigSettings.cmake ${CMAKE_CURRENT_SOURCE_DIR}/../rdp/")
+			cp ${CMAKE_CURRENT_SOURCE_DIR}/scripts/LocalConfigSettings.cmake ${CMAKE_CURRENT_SOURCE_DIR}/../")
 		else()
 			message(STATUS "Using xorg-server sources version ${XORG_SERVER_VERSION}")
 
