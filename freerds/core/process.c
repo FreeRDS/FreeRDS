@@ -450,7 +450,7 @@ void* freerds_connection_main_thread(void* arg)
 #ifndef WIN32
 	sigemptyset(&set);
 	sigaddset(&set, SIGPIPE);
-  ret = pthread_sigmask(SIG_BLOCK, &set, NULL);
+	ret = pthread_sigmask(SIG_BLOCK, &set, NULL);
 	if (0 != ret)
 		fprintf(stderr, "couldn't block SIGPIPE\n");
 #endif

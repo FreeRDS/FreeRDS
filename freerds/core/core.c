@@ -152,6 +152,18 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	MaxRegionWidth = 64 * 4;
 	MaxRegionHeight = 64 * 1;
 
+	if ((msg->nLeftRect % 4) != 0)
+	{
+		msg->nWidth += (msg->nLeftRect % 4);
+		msg->nLeftRect -= (msg->nLeftRect % 4);
+	}
+
+	if ((msg->nTopRect % 4) != 0)
+	{
+		msg->nHeight += (msg->nTopRect % 4);
+		msg->nTopRect -= (msg->nTopRect % 4);
+	}
+
 	if ((msg->nWidth * msg->nHeight) > (MaxRegionWidth * MaxRegionHeight))
 	{
 		RDS_MSG_PAINT_RECT subMsg;
@@ -174,7 +186,7 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 				subMsg.nWidth = (i < (rows - 1)) ? MaxRegionWidth : msg->nWidth - (i * MaxRegionWidth);
 				subMsg.nHeight = (j < (cols - 1)) ? MaxRegionHeight : msg->nHeight - (j * MaxRegionHeight);
 
-				//printf("\t[%d, %d]: x: %d y: %d width: %d height; %d\n",
+				//printf("\t[%d, %d]: x: %d y: %d width: %d height: %d\n",
 				//		i, j, subMsg.nLeftRect, subMsg.nTopRect, subMsg.nWidth, subMsg.nHeight);
 
 				if ((subMsg.nWidth * subMsg.nHeight) > 0)
@@ -195,6 +207,18 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	bitmapUpdate.count = bitmapUpdate.number = rows * cols;
 	bitmapData = (BITMAP_DATA*) malloc(sizeof(BITMAP_DATA) * bitmapUpdate.number);
 	bitmapUpdate.rectangles = bitmapData;
+
+	if ((msg->nWidth % 4) != 0)
+	{
+		msg->nLeftRect -= (msg->nWidth % 4);
+		msg->nWidth += (msg->nWidth % 4);
+	}
+
+	if ((msg->nHeight % 4) != 0)
+	{
+		msg->nTopRect -= (msg->nHeight % 4);
+		msg->nHeight += (msg->nHeight % 4);
+	}
 
 	for (i = 0; i < rows; i++)
 	{

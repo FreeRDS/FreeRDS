@@ -85,10 +85,10 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 	connection = connector->connection;
 	settings = connection->settings;
 
-	bpp = msg->framebuffer->fbBitsPerPixel;
-
 	if (connection->codecMode)
 	{
+		bpp = msg->framebuffer->fbBitsPerPixel;
+
 		inFlightFrames = ListDictionary_Count(connection->FrameList);
 
 		if (inFlightFrames > settings->FrameAcknowledge)
@@ -110,6 +110,7 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 	}
 	else
 	{
+		bpp = settings->ColorDepth;
 		freerds_send_bitmap_update(connection, bpp, msg);
 	}
 
@@ -189,8 +190,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 	if (!backend->framebuffer.fbAttached && msg->attach)
 	{
-		RDS_MSG_PAINT_RECT fm;// = malloc(sizeof(RDS_MSG_PAINT_RECT;
-
+		RDS_MSG_PAINT_RECT fm;
 
 		backend->framebuffer.fbSharedMemory = (BYTE*) shmat(backend->framebuffer.fbSegmentId, 0, 0);
 		backend->framebuffer.fbAttached = TRUE;
@@ -213,6 +213,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		fm.nXSrc = 0;
 		fm.nYSrc = 0;
 		fm.framebuffer = &(backend->framebuffer);
+
 		freerds_client_inbound_paint_rect(backend, &fm);
 	}
 
