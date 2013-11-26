@@ -83,7 +83,7 @@ namespace freerds
 			LogonUserResponse resp;
 			// stup do stuff here
 
-			resp.set_authstatus(mAuthStatus);
+			//resp.set_authstatus(mAuthStatus);
 			resp.set_serviceendpoint(mPipeName);
 
 			if (!resp.SerializeToString(&mEncodedResponse))

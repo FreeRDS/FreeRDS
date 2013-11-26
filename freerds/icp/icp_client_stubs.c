@@ -215,7 +215,7 @@ int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
 
 	// assign returned stuff here!
 	// don't use pointers since response get's freed (copy might be required..)
-	*authStatus = response->authstatus;
+	//*authStatus = response->authstatus;
 	*serviceEndpoint = _strdup(response->serviceendpoint);
 
 	// free function specific stuff
