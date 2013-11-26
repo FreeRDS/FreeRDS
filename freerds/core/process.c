@@ -194,8 +194,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	authStatus = 0;
 
 	error_code = freerds_icp_LogonUser((UINT32)(connection->id),
-			settings->Username, settings->Domain, settings->Password, &authStatus,
-			&(connector->Endpoint));
+			settings->Username, settings->Domain, settings->Password, &(connector->Endpoint));
 
 	if (error_code != 0)
 	{

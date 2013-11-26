@@ -28,6 +28,6 @@ int freerds_icp_Ping(BOOL* pong);
 int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected);
 int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff);
 int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
-		char* password, int* authStatus, char** serviceEndpoint);
+		char* password, char** serviceEndpoint);
 
 #endif // _ICP_CLIENT_STUBS_H

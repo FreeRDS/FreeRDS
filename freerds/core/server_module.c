@@ -290,7 +290,7 @@ int freerds_client_inbound_logon_user(rdsBackend* backend, RDS_MSG_LOGON_USER* m
 	endPoint = NULL;
 
 	icpStatus = freerds_icp_LogonUser(connection->id,
-			msg->User, msg->Domain, msg->Password, &authStatus, &endPoint);
+			msg->User, msg->Domain, msg->Password, &endPoint);
 
 	if (icpStatus != 0)
 	{

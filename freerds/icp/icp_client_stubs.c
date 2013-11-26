@@ -187,7 +187,7 @@ int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff)
 }
 
 int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
-		char* password, int* authStatus, char** serviceEndpoint)
+		char* password, char** serviceEndpoint)
 {
 	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
 
@@ -215,7 +215,6 @@ int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
 
 	// assign returned stuff here!
 	// don't use pointers since response get's freed (copy might be required..)
-	//*authStatus = response->authstatus;
 	*serviceEndpoint = _strdup(response->serviceendpoint);
 
 	// free function specific stuff
