@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/icp)
 add_subdirectory(auth)
 add_subdirectory(core)
 add_subdirectory(backend)
