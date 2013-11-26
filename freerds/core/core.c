@@ -32,6 +32,8 @@
 
 #include <pixman.h>
 
+//#define WITH_RDP6_BITMAP_COMPRESSION	1
+
 static long gConnectionId = 0;
 
 /**
@@ -259,29 +261,53 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 
 				scanline = msg->framebuffer->fbScanline;
 
-				image = pixman_image_create_bits(PIXMAN_r5g6b5, nWidth, nHeight, (uint32_t*) tile, nWidth * 2);
+#ifdef WITH_RDP6_BITMAP_COMPRESSION
+				if (bpp > 16)
+				{
+					int dstSize;
+					UINT32 format;
 
-				pixman_image_composite(PIXMAN_OP_OVER, fbImage, NULL, image,
-						bitmapData[k].destLeft, bitmapData[k].destTop, 0, 0, 0, 0, nWidth, nHeight);
+					format = FREERDP_PIXEL_FORMAT(msg->framebuffer->fbBitsPerPixel,
+							FREERDP_PIXEL_FORMAT_TYPE_ARGB, FREERDP_PIXEL_FLIP_NONE);
 
-				lines = freerdp_bitmap_compress((char*) pixman_image_get_data(image),
-						nWidth, nHeight, s, 16, 16384, nHeight - 1, ts, e);
-				Stream_SealLength(s);
+					buffer = freerdp_bitmap_compress_planar(data,
+							format, nWidth, nHeight, scanline, NULL, &dstSize);
 
-				bitmapData[k].bitmapDataStream = Stream_Buffer(s);
-				bitmapData[k].bitmapLength = Stream_Length(s);
+					bitmapData[k].bitmapDataStream = buffer;
+					bitmapData[k].bitmapLength = dstSize;
 
-				buffer = (BYTE*) malloc(bitmapData[k].bitmapLength);
-				CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
+					bitmapData[k].bitsPerPixel = 32;
+					bitmapData[k].cbScanWidth = nWidth * 4;
+					bitmapData[k].cbUncompressedSize = nWidth * nHeight * 4;
+				}
+				else
+#endif
+				{
+					image = pixman_image_create_bits(PIXMAN_r5g6b5, nWidth, nHeight, (uint32_t*) tile, nWidth * 2);
 
-				bitmapData[k].bitmapDataStream = buffer;
+					pixman_image_composite(PIXMAN_OP_OVER, fbImage, NULL, image,
+							bitmapData[k].destLeft, bitmapData[k].destTop, 0, 0, 0, 0, nWidth, nHeight);
+
+					lines = freerdp_bitmap_compress((char*) pixman_image_get_data(image),
+							nWidth, nHeight, s, 16, 16384, nHeight - 1, ts, e);
+					Stream_SealLength(s);
+
+					bitmapData[k].bitmapDataStream = Stream_Buffer(s);
+					bitmapData[k].bitmapLength = Stream_Length(s);
+
+					buffer = (BYTE*) malloc(bitmapData[k].bitmapLength);
+					CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
+					bitmapData[k].bitmapDataStream = buffer;
+
+					bitmapData[k].bitsPerPixel = 16;
+					bitmapData[k].cbScanWidth = nWidth * 2;
+					bitmapData[k].cbUncompressedSize = nWidth * nHeight * 2;
+
+					pixman_image_unref(image);
+				}
 
 				bitmapData[k].cbCompFirstRowSize = 0;
 				bitmapData[k].cbCompMainBodySize = bitmapData[k].bitmapLength;
-				bitmapData[k].cbScanWidth = nWidth * 2;
-				bitmapData[k].cbUncompressedSize = nWidth * nHeight * 2;
-
-				pixman_image_unref(image);
 
 				k++;
 			}
