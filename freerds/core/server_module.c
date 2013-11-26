@@ -34,6 +34,10 @@
 
 #include <freerds/backend.h>
 #include <freerds/icp_client_stubs.h>
+#include <freerds/icp.h>
+#include "../icp/pbrpc/pbrpc.h"
+#include "../icp/pbRPC.pb-c.h"
+#include "../icp/ICPS.pb-c.h"
 
 int freerds_client_inbound_begin_update(rdsBackend* backend, RDS_MSG_BEGIN_UPDATE* msg)
 {
@@ -350,36 +354,110 @@ int freerds_client_inbound_logoff_user(rdsBackend* backend, RDS_MSG_LOGOFF_USER*
 	return 0;
 }
 
+
+struct _icps_context {
+	rdsBackend* backend;
+};
+typedef struct _icps_context IcpsContext;
+
+static IcpsContext *IcpsContext_new(rdsBackend* backend)
+{
+	IcpsContext *ret = (IcpsContext *)malloc(sizeof(IcpsContext));
+	ret->backend = backend;
+	return ret;
+}
+
+void icpsCallback(UINT32 reason, Freerds__Pbrpc__RPCBase* response, void *args) {
+	IcpsContext *context = (IcpsContext *)args;
+	RDS_MSG_ICPS_REPLY icps;
+	rdsBackend *backend = context->backend;
+
+	ZeroMemory(&icps, sizeof(icps));
+
+	switch(reason) {
+	case PBRPC_SUCCESS:
+		if (!response)
+		{
+			fprintf(stderr, "%s: expecting a response and don't have one\n", __FUNCTION__);
+			goto cleanup_exit;
+		}
+
+		/*
+		if (response->msgtype < FREERDS__ICPS__MSGTYPE__FirstMessage ||
+				response->msgtype > FREERDS__ICPS__MSGTYPE__LastMessage)
+		{
+			fprintf(stderr, "received message is not an ICPS message, not forwarding\n");
+			goto cleanup_exit;
+		}*/
+
+		icps.status = ICPS_REPLY_SUCCESS;
+		icps.icpsType = response->msgtype;
+		icps.dataLen = response->payload.len;
+		icps.data = (char *)response->payload.data;
+		break;
+
+	case PBRCP_TRANSPORT_ERROR:
+	default:
+		icps.status = ICPS_REPLY_TRANSPORT_ERROR;
+		break;
+	}
+
+	backend->client->Icps(backend, &icps);
+
+cleanup_exit:
+	free(context);
+}
+
+int freerds_client_inbound_icps(rdsBackend* backend, RDS_MSG_ICPS_REQUEST* msg)
+{
+	IcpsContext *icpsContext = IcpsContext_new(backend);
+
+	pbRPCPayload payload;
+	payload.data = msg->data;
+	payload.dataLen = msg->dataLen;
+	payload.errorDescription = 0;
+
+	pbRPCContext *pbContext = (pbRPCContext *)freerds_icp_get_context();
+
+	pbrcp_call_method_async(pbContext, msg->icpsType, &payload, icpsCallback, (void *)icpsContext);
+	return 0;
+}
+
+
 int freerds_client_inbound_connector_init(rdsBackendConnector* connector)
 {
+	rdsServerInterface *serverInter;
+
 	if (connector->server)
 	{
-		connector->server->BeginUpdate = freerds_client_inbound_begin_update;
-		connector->server->EndUpdate = freerds_client_inbound_end_update;
-		connector->server->Beep = freerds_client_inbound_beep;
-		connector->server->IsTerminated = freerds_client_inbound_is_terminated;
-		connector->server->OpaqueRect = freerds_client_inbound_opaque_rect;
-		connector->server->ScreenBlt = freerds_client_inbound_screen_blt;
-		connector->server->PaintRect = freerds_client_inbound_paint_rect;
-		connector->server->PatBlt = freerds_client_inbound_patblt;
-		connector->server->DstBlt = freerds_client_inbound_dstblt;
-		connector->server->SetPointer = freerds_client_inbound_set_pointer;
-		connector->server->SetSystemPointer = freerds_client_inbound_set_system_pointer;
-		connector->server->SetPalette = freerds_client_inbound_set_palette;
-		connector->server->SetClippingRegion = freerds_client_inbound_set_clipping_region;
-		connector->server->LineTo = freerds_client_inbound_line_to;
-		connector->server->CacheGlyph = freerds_client_inbound_cache_glyph;
-		connector->server->GlyphIndex = freerds_client_inbound_glyph_index;
-		connector->server->SharedFramebuffer = freerds_client_inbound_shared_framebuffer;
-		connector->server->Reset = freerds_client_inbound_reset;
-		connector->server->CreateOffscreenSurface = freerds_client_inbound_create_offscreen_surface;
-		connector->server->SwitchOffscreenSurface = freerds_client_inbound_switch_offscreen_surface;
-		connector->server->DeleteOffscreenSurface = freerds_client_inbound_delete_offscreen_surface;
-		connector->server->PaintOffscreenSurface = freerds_client_inbound_paint_offscreen_surface;
-		connector->server->WindowNewUpdate = freerds_client_inbound_window_new_update;
-		connector->server->WindowDelete = freerds_client_inbound_window_delete;
-		connector->server->LogonUser = freerds_client_inbound_logon_user;
-		connector->server->LogoffUser = freerds_client_inbound_logoff_user;
+		serverInter = connector->server;
+		serverInter->BeginUpdate = freerds_client_inbound_begin_update;
+		serverInter->EndUpdate = freerds_client_inbound_end_update;
+		serverInter->Beep = freerds_client_inbound_beep;
+		serverInter->IsTerminated = freerds_client_inbound_is_terminated;
+		serverInter->OpaqueRect = freerds_client_inbound_opaque_rect;
+		serverInter->ScreenBlt = freerds_client_inbound_screen_blt;
+		serverInter->PaintRect = freerds_client_inbound_paint_rect;
+		serverInter->PatBlt = freerds_client_inbound_patblt;
+		serverInter->DstBlt = freerds_client_inbound_dstblt;
+		serverInter->SetPointer = freerds_client_inbound_set_pointer;
+		serverInter->SetSystemPointer = freerds_client_inbound_set_system_pointer;
+		serverInter->SetPalette = freerds_client_inbound_set_palette;
+		serverInter->SetClippingRegion = freerds_client_inbound_set_clipping_region;
+		serverInter->LineTo = freerds_client_inbound_line_to;
+		serverInter->CacheGlyph = freerds_client_inbound_cache_glyph;
+		serverInter->GlyphIndex = freerds_client_inbound_glyph_index;
+		serverInter->SharedFramebuffer = freerds_client_inbound_shared_framebuffer;
+		serverInter->Reset = freerds_client_inbound_reset;
+		serverInter->CreateOffscreenSurface = freerds_client_inbound_create_offscreen_surface;
+		serverInter->SwitchOffscreenSurface = freerds_client_inbound_switch_offscreen_surface;
+		serverInter->DeleteOffscreenSurface = freerds_client_inbound_delete_offscreen_surface;
+		serverInter->PaintOffscreenSurface = freerds_client_inbound_paint_offscreen_surface;
+		serverInter->WindowNewUpdate = freerds_client_inbound_window_new_update;
+		serverInter->WindowDelete = freerds_client_inbound_window_delete;
+		serverInter->LogonUser = freerds_client_inbound_logon_user;
+		serverInter->LogoffUser = freerds_client_inbound_logoff_user;
+		serverInter->Icps = freerds_client_inbound_icps;
 	}
 
 	freerds_message_server_connector_init(connector);

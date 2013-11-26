@@ -382,6 +382,19 @@ int freerds_receive_server_message(rdsBackend* backend, wStream* s, RDS_MSG_COMM
 				status = server->LogoffUser(backend, &msg);
 			}
 			break;
+		case RDS_SERVER_ICPS_REQUEST:
+			{
+				RDS_MSG_ICPS_REQUEST msg;
+				CopyMemory(&msg, common, sizeof(RDS_MSG_COMMON));
+				status = freerds_server_message_read(s, (RDS_MSG_COMMON*) &msg);
+				if (status < 0)
+				{
+					fprintf(stderr, "invalid ICPS message\n");
+					return status;
+				}
+				status = server->Icps(backend, &msg);
+			}
+			break;
 
 		default:
 			status = 0;
@@ -463,6 +476,11 @@ int freerds_receive_client_message(rdsBackend* backend, wStream* s, RDS_MSG_COMM
 					status = client->VBlankEvent(backend);
 				else
 					status = 0;
+			}
+			break;
+
+		case RDS_CLIENT_ICPS_REPLY:
+			{
 			}
 			break;
 
