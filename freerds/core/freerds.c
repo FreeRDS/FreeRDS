@@ -44,7 +44,6 @@
 
 #include <freerds/icp_client_stubs.h>
 
-char* RdsModuleName = NULL;
 static HANDLE g_TermEvent = NULL;
 static rdsListener* g_listen = NULL;
 static char* freerds_home_path = NULL;
@@ -155,10 +154,6 @@ int main(int argc, char** argv)
 		CommandLineSwitchCase(arg, "nodaemon")
 		{
 			no_daemon = 1;
-		}
-		CommandLineSwitchCase(arg, "module")
-		{
-			RdsModuleName = _strdup(arg->Value);
 		}
 
 		CommandLineSwitchEnd(arg)
@@ -299,14 +294,13 @@ int main(int argc, char** argv)
 	freerds_listener_delete(g_listen);
 
 	CloseHandle(g_TermEvent);
+	freerds_icp_shutdown();
 
 	/* only main process should delete pid file */
 	if ((!no_daemon) && (pid == GetCurrentProcessId()))
 	{
 		DeleteFileA(pid_file);
 	}
-
-	freerds_icp_shutdown();
 
 	return 0;
 }
