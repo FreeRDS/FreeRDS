@@ -76,6 +76,31 @@ namespace freerds
 				LeaveCriticalSection(&mCSection);
 				return 0;
 			}
+
+			long ConnectionStore::getConnectionIdForSessionId(long mSessionId) {
+				EnterCriticalSection(&mCSection);
+
+				long connectionId = 0;
+
+				Connection* session = NULL;
+				TConnectionMap::iterator iter;
+
+				for (iter = mConnectionMap.begin(); iter != mConnectionMap.end();iter++)
+				{
+					if(iter->second->getSessionId() == mSessionId)
+					{
+						connectionId = iter->first;
+						break;
+					}
+				}
+
+				LeaveCriticalSection(&mCSection);
+
+				return connectionId;
+			}
+
+
 		}
 	}
 }
+

@@ -77,6 +77,11 @@ namespace freerds
 				return mSessionId;
 			}
 
+			long Connection::getConnectionId() {
+				return mConnectionId;
+			}
+
+
 		}
 	}
 }

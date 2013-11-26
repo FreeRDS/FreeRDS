@@ -1,5 +1,7 @@
 /**
- * Class for the LogonUser call.
+ * Class for authenticating a user. This call comes not from the
+ * 		FreeRDS, but it comes from the service instead and is only
+ * 		tunneled at FreeRDS.
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,15 +19,15 @@
  * limitations under the License.
  */
 
-#ifndef __CALL_IN_LOGON_USER_H_
-#define __CALL_IN_LOGON_USER_H_
+#ifndef __CALL_IN_AUTHENTICATE_USER_H_
+#define __CALL_IN_AUTHENTICATE_USER_H_
 
 #include <winpr/crt.h>
 
 #include "CallFactory.h"
 #include <string>
 #include "CallIn.h"
-#include <ICP.pb.h>
+#include <ICPS.pb.h>
 
 namespace freerds
 {
@@ -33,11 +35,11 @@ namespace freerds
 	{
 		namespace call
 		{
-			class CallInLogonUser: public CallIn
+			class CallInAuthenticateUser: public CallIn
 			{
 			public:
-				CallInLogonUser();
-				virtual ~CallInLogonUser();
+				CallInAuthenticateUser();
+				virtual ~CallInAuthenticateUser();
 
 				virtual unsigned long getCallType();
 				virtual int decodeRequest();
@@ -55,15 +57,15 @@ namespace freerds
 				std::string mPassword;
 
 				int mAuthStatus;
-				UINT32 mConnectionId;
+				UINT32 mSessionId;
 				std::string mPipeName;
 			};
 
-			FACTORY_REGISTER_DWORD(CallFactory, CallInLogonUser, freerds::icp::LogonUser);
+			FACTORY_REGISTER_DWORD(CallFactory, CallInAuthenticateUser, freerds::icps::AuthenticateUser);
 		}
 	}
 }
 
 namespace callNS = freerds::sessionmanager::call;
 
-#endif //__CALL_IN_LOGON_USER_H_
+#endif// __CALL_IN_AUTHENTICATE_USER_H_

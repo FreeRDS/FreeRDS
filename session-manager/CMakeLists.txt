@@ -25,6 +25,7 @@ find_feature(Protobuf REQUIRED "RPC" "Remote Procedure Call")
 
 PROTOBUF_GENERATE_CPP(PBRPC_PROTOBUF_SRC PBRPC_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/pbRPC.proto)
 PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICP.proto)
+PROTOBUF_GENERATE_CPP(ICPS_PROTOBUF_SRC ICPS_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICPS.proto)
 
 if(WITH_FDSAPI)
 	include(ThriftExternalProject)
@@ -60,6 +61,8 @@ set(ICP_SOURCES
 	common/call/CallInDisconnectUserSession.cpp
 	common/call/CallInLogOffUserSession.cpp
 	common/call/CallOutFdsApiVirtualChannelOpen.cpp
+	common/call/CallInAuthenticateUser.cpp
+	common/call/CallOutSwitchTo.cpp
 	common/pbRPC/RpcEngine.cpp
 )
 
@@ -82,6 +85,8 @@ set(${MODULE_PREFIX}_SRCS
 	${PBRPC_PROTOBUF_HEADERS}
 	${ICP_PROTOBUF_SRC}
 	${ICP_PROTOBUF_HEADERS}
+	${ICPS_PROTOBUF_SRC}
+	${ICPS_PROTOBUF_HEADERS}
 	${THRIFT_FILES}
 	)
  

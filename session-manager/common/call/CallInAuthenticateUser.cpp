@@ -1,5 +1,5 @@
 /**
- * Class for the LogonUser call.
+ * Class for rpc call LogonUser (freerds to session manager)
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -21,12 +21,13 @@
 #include "config.h"
 #endif
 
-#include "CallInLogonUser.h"
+#include "CallInAuthenticateUser.h"
+#include "CallOutSwitchTo.h"
 #include <appcontext/ApplicationContext.h>
 #include <module/AuthModule.h>
 
-using freerds::icp::LogonUserRequest;
-using freerds::icp::LogonUserResponse;
+using freerds::icps::AuthenticateUserRequest;
+using freerds::icps::AuthenticateUserResponse;
 
 namespace freerds
 {
@@ -35,29 +36,29 @@ namespace freerds
 		namespace call
 		{
 
-		static wLog* logger_CallInLogonUser = WLog_Get("freerds.SessionManager.call.callinlogonuser");
+		static wLog* logger_CallInLogonUser = WLog_Get("freerds.SessionManager.call.callinauthenticateuser");
 
 
-		CallInLogonUser::CallInLogonUser()
-			: mConnectionId(0), mAuthStatus(0)
+		CallInAuthenticateUser::CallInAuthenticateUser()
+			: mSessionId(0), mAuthStatus(0)
 		{
 
 		};
 
-		CallInLogonUser::~CallInLogonUser()
+		CallInAuthenticateUser::~CallInAuthenticateUser()
 		{
 
 		};
 
-		unsigned long CallInLogonUser::getCallType()
+		unsigned long CallInAuthenticateUser::getCallType()
 		{
-			return freerds::icp::LogonUser;
+			return freerds::icps::AuthenticateUser;
 		};
 
-		int CallInLogonUser::decodeRequest()
+		int CallInAuthenticateUser::decodeRequest()
 		{
 			// decode protocol buffers
-			LogonUserRequest req;
+			AuthenticateUserRequest req;
 
 			if (!req.ParseFromString(mEncodedRequest))
 			{
@@ -68,7 +69,7 @@ namespace freerds
 
 			mUserName = req.username();
 
-			mConnectionId = req.connectionid();
+			mSessionId = req.sessionid();
 
 			mDomainName = req.domain();
 
@@ -77,14 +78,17 @@ namespace freerds
 			return 0;
 		};
 
-		int CallInLogonUser::encodeResponse()
+		int CallInAuthenticateUser::encodeResponse()
 		{
 			// encode protocol buffers
-			LogonUserResponse resp;
+			AuthenticateUserResponse resp;
 			// stup do stuff here
 
-			resp.set_authstatus(mAuthStatus);
-			resp.set_serviceendpoint(mPipeName);
+			if (mAuthStatus == 0) {
+				resp.set_authstatus(freerds::icps::AuthenticateUserResponse_AUTH_STATUS_AUTH_SUCCESSFULL);
+			} else {
+				resp.set_authstatus(freerds::icps::AuthenticateUserResponse_AUTH_STATUS_AUTH_BAD_CREDENTIAL);
+			}
 
 			if (!resp.SerializeToString(&mEncodedResponse))
 			{
@@ -96,7 +100,7 @@ namespace freerds
 			return 0;
 		};
 
-		int CallInLogonUser::authenticateUser() {
+		int CallInAuthenticateUser::authenticateUser() {
 
 			std::string authModule;
 			if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.module",authModule,mUserName)) {
@@ -117,10 +121,8 @@ namespace freerds
 
 		}
 
-		int CallInLogonUser::getUserSession() {
+		int CallInAuthenticateUser::getUserSession() {
 
-
-			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
 			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
@@ -162,46 +164,28 @@ namespace freerds
 				}
 			}
 
-			currentConnection->setSessionId(currentSession->getSessionID());
-			mPipeName = currentSession->getPipeName();
+			CallOutSwitchTo * switchToCall = new CallOutSwitchTo();
+			switchToCall->setServiceEndpoint(currentSession->getPipeName());
+			switchToCall->setOldSessionId(mSessionId);
+			switchToCall->setNewSessionId(currentSession->getSessionID());
+			switchToCall->setConnectionId(APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId));
+
+			APP_CONTEXT.getRpcOutgoingQueue()->addElement(switchToCall);
+
 			return 0;
 		}
 
-		int CallInLogonUser::getAuthSession() {
-			// authentication failed, start up greeter module
-			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
-			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->createSession();
 
-			std::string greeter;
 
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.greeter",greeter,mUserName)) {
-				greeter = "Qt";
-			}
-			currentSession->setModuleName(greeter);
-
-			if (!currentSession->startModule(greeter))
-			{
-				mResult = 1;// will report error with answer
-				return 1;
-			}
-
-			currentConnection->setSessionId(currentSession->getSessionID());
-			currentSession->setAuthSession(true);
-			mPipeName = currentSession->getPipeName();
-			return 0;
-		}
-
-		int CallInLogonUser::doStuff()
+		int CallInAuthenticateUser::doStuff()
 		{
-
-			if (authenticateUser() != 0) {
-				return 1;
+			if (authenticateUser() == 0) {
+				if (mAuthStatus == 0) {
+					// user is authenticated
+					return getUserSession();
+				}
 			}
-			if (mAuthStatus != 0) {
-				return getAuthSession();
-			} else {
-				return getUserSession();
-			}
+			return 1;
 		}
 
 		}

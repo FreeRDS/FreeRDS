@@ -1,5 +1,5 @@
- /**
- * Baseclass for outgoing rpc calls (session manager to freerds)
+/**
+ * Class for rpc call SwitchTo (session manager to freerds)
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,11 +17,12 @@
  * limitations under the License.
  */
 
-#ifndef CALLOUT_H_
-#define CALLOUT_H_
+#ifndef CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_
+#define CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_
 
-#include <call/Call.h>
-#include <winpr/synch.h>
+#include <string>
+#include "CallOut.h"
+#include <ICP.pb.h>
 
 namespace freerds
 {
@@ -29,31 +30,35 @@ namespace freerds
 	{
 		namespace call
 		{
-			class CallOut:public Call
+			class CallOutSwitchTo: public CallOut
 			{
 			public:
-				CallOut();
-				~CallOut();
-				virtual unsigned long getDerivedType();
+				CallOutSwitchTo();
+				virtual ~CallOutSwitchTo();
 
-				virtual int encodeRequest() = 0;
-				std::string getEncodedRequest();
+				virtual unsigned long getCallType();
 
-				void setEncodedeResponse(std::string encodedResponse);
-				virtual int decodeResponse() = 0;
+				virtual int encodeRequest();
+				virtual int decodeResponse();
 
-				void   initAnswerHandle();
-				HANDLE getAnswerHandle();
-
-				void	setResult(uint32_t result);
-				void	setErrorDescription(std::string error);
+				void setConnectionId(long connectionId);
+				void setServiceEndpoint(std::string serviceEndpoint);
 
 				bool	hasAnswerCallback();
 				virtual void answerCallback();
 
+				// functions needed for callback
+				void setOldSessionId(long sessionId);
+				void setNewSessionId(long sessionId);
 
-			private :
-				HANDLE mAnswer;
+			private:
+				long mConnectionId;
+				std::string mServiceEndpoint;
+				bool mSuccess;
+
+				// variables needed for the callback
+				long mOldSessionId;
+				long mNewSessionId;
 			};
 		}
 	}
@@ -61,5 +66,4 @@ namespace freerds
 
 namespace callNS = freerds::sessionmanager::call;
 
-
-#endif /* CALLOUT_H_ */
+#endif //CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_

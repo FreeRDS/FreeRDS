@@ -289,6 +289,10 @@ int RpcEngine::processData()
 			{
 				foundCallOut->setResult(2);
 			}
+
+			if (foundCallOut->hasAnswerCallback()) {
+				delete foundCallOut;
+			}
 		}
 	}
 	else

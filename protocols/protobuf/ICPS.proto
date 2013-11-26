@@ -6,9 +6,9 @@ enum MSGTYPE {
 
 message AuthenticateUserRequest {
 	required uint32 sessionId = 1;
-	required bytes username = 2;
-	required bytes password = 3;
-	required bytes domain = 4;
+	required string username = 2;
+	required string password = 3;
+	required string domain = 4;
 }
 
 message AuthenticateUserResponse {
@@ -17,7 +17,7 @@ message AuthenticateUserResponse {
 		AUTH_BAD_CREDENTIAL = 1;
 	}
 
-	required AUTH_STATUS authStatus = 2;
-	required string serviceEndpoint = 3;
+	required AUTH_STATUS authStatus = 1;
+	optional string serviceEndpoint = 2; 
 }
 

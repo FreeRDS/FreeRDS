@@ -50,6 +50,8 @@ namespace freerds
 			void setSessionId(long sessionId);
 			long getSessionId();
 
+			long getConnectionId();
+
 
 
 		private:

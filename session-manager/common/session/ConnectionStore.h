@@ -50,6 +50,8 @@ namespace freerds
 			Connection* getConnection(long connectionID);
 			int removeConnection(long connectionID);
 
+			long getConnectionIdForSessionId(long mSessionId);
+
 
 
 		private:
