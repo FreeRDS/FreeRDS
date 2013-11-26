@@ -110,6 +110,8 @@ struct _RDS_MSG_LOGOFF_USER
 };
 typedef struct _RDS_MSG_LOGOFF_USER RDS_MSG_LOGOFF_USER;
 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -142,6 +144,7 @@ int freerds_write_logoff_user(wStream* s, RDS_MSG_LOGOFF_USER* msg);
 #define RDS_CLIENT_VBLANK_EVENT			110
 #define RDS_CLIENT_LOGON_USER			111
 #define RDS_CLIENT_LOGOFF_USER			112
+#define RDS_CLIENT_ICPS_REPLY			113
 
 struct _RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT
 {
@@ -227,6 +230,24 @@ struct _RDS_MSG_VBLANK_EVENT
 };
 typedef struct _RDS_MSG_VBLANK_EVENT RDS_MSG_VBLANK_EVENT;
 
+enum _ICPS_REPLY_STATUS {
+	ICPS_REPLY_SUCCESS = 0,
+	ICPS_REPLY_TRANSPORT_ERROR = 1,
+	ICPS_REPLY_TIMEOUT = 2,
+	ICPS_REPLY_NOT_FOUND = 3,
+};
+typedef enum _ICPS_REPLY_STATUS ICPS_REPLY_STATUS;
+
+struct _RDS_MSG_ICPS_REPLY
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 icpsType;
+	ICPS_REPLY_STATUS status;
+	UINT32 dataLen;
+	char *data;
+};
+typedef struct _RDS_MSG_ICPS_REPLY RDS_MSG_ICPS_REPLY;
 
 #ifdef __cplusplus
 extern "C" {
@@ -259,6 +280,9 @@ int freerds_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
 int freerds_read_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
 int freerds_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
 
+int freerds_read_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg);
+int freerds_write_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg);
+
 #ifdef __cplusplus
 }
 #endif
@@ -268,13 +292,13 @@ int freerds_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
 
 #define RDS_SERVER_BEGIN_UPDATE			1
 #define RDS_SERVER_END_UPDATE			2
-#define RDS_SERVER_SET_CLIPPING_REGION		3
+#define RDS_SERVER_SET_CLIPPING_REGION	3
 #define RDS_SERVER_OPAQUE_RECT			4
 #define RDS_SERVER_SCREEN_BLT			5
 #define RDS_SERVER_PAINT_RECT			6
-#define RDS_SERVER_PATBLT			7
-#define RDS_SERVER_DSTBLT			8
-#define RDS_SERVER_LINE_TO			9
+#define RDS_SERVER_PATBLT				7
+#define RDS_SERVER_DSTBLT				8
+#define RDS_SERVER_LINE_TO				9
 #define RDS_SERVER_CREATE_OFFSCREEN_SURFACE	10
 #define RDS_SERVER_SWITCH_OFFSCREEN_SURFACE	11
 #define RDS_SERVER_DELETE_OFFSCREEN_SURFACE	12
@@ -283,14 +307,15 @@ int freerds_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
 #define RDS_SERVER_CACHE_GLYPH			15
 #define RDS_SERVER_GLYPH_INDEX			16
 #define RDS_SERVER_SET_POINTER			17
-#define RDS_SERVER_SHARED_FRAMEBUFFER		18
-#define RDS_SERVER_BEEP				19
-#define RDS_SERVER_RESET			20
-#define RDS_SERVER_WINDOW_NEW_UPDATE		21
+#define RDS_SERVER_SHARED_FRAMEBUFFER	18
+#define RDS_SERVER_BEEP					19
+#define RDS_SERVER_RESET				20
+#define RDS_SERVER_WINDOW_NEW_UPDATE	21
 #define RDS_SERVER_WINDOW_DELETE		22
-#define RDS_SERVER_SET_SYSTEM_POINTER		23
+#define RDS_SERVER_SET_SYSTEM_POINTER	23
 #define RDS_SERVER_LOGON_USER			24
 #define RDS_SERVER_LOGOFF_USER			25
+#define RDS_SERVER_ICPS_REQUEST			26
 
 struct _RDS_MSG_BEGIN_UPDATE
 {
@@ -596,6 +621,16 @@ struct _RDS_MSG_SHARED_FRAMEBUFFER
 };
 typedef struct _RDS_MSG_SHARED_FRAMEBUFFER RDS_MSG_SHARED_FRAMEBUFFER;
 
+struct _RDS_MSG_ICPS_REQUEST
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 icpsType;
+	UINT32 dataLen;
+	char *data;
+};
+typedef struct _RDS_MSG_ICPS_REQUEST RDS_MSG_ICPS_REQUEST;
+
 union _RDS_MSG_SERVER
 {
 	RDS_MSG_BEGIN_UPDATE BeginUpdate;
@@ -640,6 +675,7 @@ typedef int (*pRdsClientExtendedMouseEvent)(rdsBackend* backend, DWORD flags, DW
 typedef int (*pRdsClientVBlankEvent)(rdsBackend* backend);
 typedef int (*pRdsClientLogonUser)(rdsBackend* backend, RDS_MSG_LOGON_USER* msg);
 typedef int (*pRdsClientLogoffUser)(rdsBackend* backend, RDS_MSG_LOGOFF_USER* msg);
+typedef int (*pRdsClientIcps)(rdsBackend* backend, RDS_MSG_ICPS_REPLY* msg);
 
 struct rds_client_interface
 {
@@ -652,6 +688,7 @@ struct rds_client_interface
 	pRdsClientVBlankEvent VBlankEvent;
 	pRdsClientLogonUser LogonUser;
 	pRdsClientLogoffUser LogoffUser;
+	pRdsClientIcps Icps;
 };
 typedef struct rds_client_interface rdsClientInterface;
 
@@ -684,6 +721,8 @@ typedef int (*pRdsServerWindowDelete)(rdsBackend* backend, RDS_MSG_WINDOW_DELETE
 
 typedef int (*pRdsServerLogonUser)(rdsBackend* backend, RDS_MSG_LOGON_USER* msg);
 typedef int (*pRdsServerLogoffUser)(rdsBackend* backend, RDS_MSG_LOGOFF_USER* msg);
+typedef int (*pRdsServerIcps)(rdsBackend* backend, RDS_MSG_ICPS_REQUEST* msg);
+
 
 struct rds_server_interface
 {
@@ -713,6 +752,7 @@ struct rds_server_interface
 	pRdsServerWindowDelete WindowDelete;
 	pRdsServerLogonUser LogonUser;
 	pRdsServerLogoffUser LogoffUser;
+	pRdsServerIcps Icps;
 };
 typedef struct rds_server_interface rdsServerInterface;
 #define DEFINE_BACKEND_COMMON() \
