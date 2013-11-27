@@ -99,6 +99,21 @@ namespace freerds
 				return connectionId;
 			}
 
+			void ConnectionStore::reset() {
+				EnterCriticalSection(&mCSection);
+
+				Connection* session = NULL;
+				TConnectionMap::iterator iter;
+
+				for (iter = mConnectionMap.begin(); iter != mConnectionMap.end();iter++)
+				{
+					delete iter->second;
+				}
+
+				mConnectionMap.clear();
+				LeaveCriticalSection(&mCSection);
+			}
+
 
 		}
 	}

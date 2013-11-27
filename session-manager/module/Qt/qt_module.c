@@ -84,6 +84,8 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	long xres, yres;
 	char lpCommandLine[256];
 	const char* endpoint = "Qt";
+	char envstr[256];
+
 	rdsModuleQt* qt = (rdsModuleQt*) module;
 	DWORD SessionId = qt->commonModule.sessionId;
 	char *appName = "nice_greeter";
@@ -98,6 +100,10 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	ZeroMemory(&(qt->si), sizeof(STARTUPINFO));
 	qt->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(qt->pi), sizeof(PROCESS_INFORMATION));
+
+	sprintf_s(envstr, sizeof(envstr), "%d", (int) (qt->commonModule.sessionId));
+	SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "SESSIONID", envstr);
+
 
 	if (!gGetPropertyNumber(qt->commonModule.sessionId, "module.rdp.xres", &xres))
 		xres = 1024;

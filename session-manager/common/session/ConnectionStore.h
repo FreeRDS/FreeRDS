@@ -52,6 +52,8 @@ namespace freerds
 
 			long getConnectionIdForSessionId(long mSessionId);
 
+			void reset();
+
 
 
 		private:
