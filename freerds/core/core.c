@@ -29,12 +29,12 @@
 #include <freerdp/codec/bitmap.h>
 
 #include "core.h"
+#include "app_context.h"
 
 #include <pixman.h>
 
 //#define WITH_RDP6_BITMAP_COMPRESSION	1
 
-static long gConnectionId = 0;
 
 /**
  * Custom helpers
@@ -65,7 +65,7 @@ int freerds_set_bounds_rect(rdsConnection* connection, rdsRect* rect)
 
 int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
 {
-	connection->id = ++gConnectionId;
+	connection->id = app_context_get_connectionid();
 	connection->settings = settings;
 
 	connection->bytesPerPixel = 4;

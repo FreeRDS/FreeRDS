@@ -43,6 +43,7 @@
 #include "makecert.h"
 
 #include "channels.h"
+#include "app_context.h"
 
 void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
@@ -424,6 +425,7 @@ void* freerds_connection_main_thread(void* arg)
 	connection = (rdsConnection*) client->context;
 	settings = client->settings;
 
+	app_context_add_connection(connection);
 	freerds_generate_certificate(settings);
 
 	settings->RdpSecurity = FALSE;
@@ -521,6 +523,7 @@ void* freerds_connection_main_thread(void* arg)
 		CloseHandle(connection->connector->hClientPipe);
 	}
 	client->Disconnect(client);
+	app_context_remove_connection(connection->id);
 
 	freerdp_peer_context_free(client);
 	freerdp_peer_free(client);

@@ -23,6 +23,7 @@ include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 set(${MODULE_PREFIX}_SRCS
 	freerds.c
 	freerds.h
+	app_context.c
 	core.c
 	core.h
 	channels.c

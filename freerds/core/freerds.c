@@ -43,6 +43,7 @@
 #include <winpr/library.h>
 
 #include <freerds/icp_client_stubs.h>
+#include "app_context.h"
 
 static HANDLE g_TermEvent = NULL;
 static rdsListener* g_listen = NULL;
@@ -284,8 +285,9 @@ int main(int argc, char** argv)
 	pid = GetCurrentProcessId();
 
 	freerds_get_home_path();
-
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	app_context_init();
+
 	printf("starting icp and waiting for session manager \n");
 	freerds_icp_start();
 	printf("connected to session manager\n");
@@ -295,6 +297,7 @@ int main(int argc, char** argv)
 
 	CloseHandle(g_TermEvent);
 	freerds_icp_shutdown();
+	app_context_uninit();
 
 	/* only main process should delete pid file */
 	if ((!no_daemon) && (pid == GetCurrentProcessId()))
