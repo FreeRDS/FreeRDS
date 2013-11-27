@@ -243,6 +243,7 @@ struct _RDS_MSG_ICPS_REPLY
 	DEFINE_MSG_COMMON();
 
 	UINT32 icpsType;
+	UINT32 tag;
 	ICPS_REPLY_STATUS status;
 	UINT32 dataLen;
 	char *data;
@@ -626,6 +627,7 @@ struct _RDS_MSG_ICPS_REQUEST
 	DEFINE_MSG_COMMON();
 
 	UINT32 icpsType;
+	UINT32 tag;
 	UINT32 dataLen;
 	char *data;
 };
