@@ -102,7 +102,7 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	ZeroMemory(&(qt->pi), sizeof(PROCESS_INFORMATION));
 
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (qt->commonModule.sessionId));
-	SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "SESSIONID", envstr);
+	SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_SID", envstr);
 
 
 	if (!gGetPropertyNumber(qt->commonModule.sessionId, "module.rdp.xres", &xres))
