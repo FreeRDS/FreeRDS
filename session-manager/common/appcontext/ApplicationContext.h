@@ -29,6 +29,7 @@
 #include <call/CallOut.h>
 #include <module/ModuleManager.h>
 #include <config/PropertyManager.h>
+#include <task/Executor.h>
 
 #ifdef WITH_FDSAPI
 #include <fdsapi/FDSApiServer.h>
@@ -49,6 +50,10 @@ namespace freerds
 			moduleNS::ModuleManager* getModuleManager();
 			int startRPCEngine();
 			int stopRPCEngine();
+
+			void startTaskExecutor();
+			void stopTaskExecutor();
+			void addTask(taskNS::Task * task);
 
 			std::string getHomePath();
 			std::string getLibraryPath();
@@ -72,6 +77,7 @@ namespace freerds
 
 			void configureExecutableSearchPath();
 
+			taskNS::Executor mTaskExecutor;
 			sessionNS::SessionStore mSessionStore;
 			sessionNS::ConnectionStore mConnectionStore;
 

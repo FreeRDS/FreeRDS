@@ -79,6 +79,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/config/PropertyManager.cpp
 	common/config/PropertyCWrapper.cpp
 	common/utils/StringHelpers.cpp
+	common/task/Executor.cpp
 	${ICP_SOURCES}
 	${FDSAPI_SRC}
 	${PBRPC_PROTOBUF_SRC}

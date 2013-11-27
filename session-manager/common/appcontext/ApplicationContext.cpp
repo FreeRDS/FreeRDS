@@ -264,5 +264,20 @@ namespace freerds
 			mPropertyManager.setPropertyNumber(User, 0, "module.x11.yres",600,"demo2");
 			mPropertyManager.setPropertyString(User, 0, "module","X11","demo2");
 		}
+
+		void ApplicationContext::startTaskExecutor() {
+			mTaskExecutor.start();
+		}
+
+		void ApplicationContext::stopTaskExecutor() {
+			mTaskExecutor.stop();
+		}
+
+		void ApplicationContext::addTask(taskNS::Task * task) {
+			mTaskExecutor.addTask(task);
+		}
+
 	}
 }
+
+
