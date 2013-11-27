@@ -168,7 +168,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
-	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "SESSIONID", envstr);
+	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
 
 	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.xres", &xres))
