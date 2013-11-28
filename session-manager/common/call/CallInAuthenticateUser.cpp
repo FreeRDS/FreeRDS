@@ -169,7 +169,7 @@ namespace freerds
 			switchToCall->setOldSessionId(mSessionId);
 			switchToCall->setNewSessionId(currentSession->getSessionID());
 			switchToCall->setConnectionId(APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId));
-
+			switchToCall->encodeRequest();
 			APP_CONTEXT.getRpcOutgoingQueue()->addElement(switchToCall);
 
 			return 0;
