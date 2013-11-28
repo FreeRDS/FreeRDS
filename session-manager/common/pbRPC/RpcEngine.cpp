@@ -134,6 +134,7 @@ void* RpcEngine::listenerThread(void* arg)
 		}
 
 		engine->resetStatus();
+		APP_CONTEXT.getConnectionStore()->reset();
 	}
 
 	return NULL;
@@ -436,7 +437,6 @@ void RpcEngine::resetStatus()
 	mPacktLength = 0;
 	mHeaderRead = 0;
 	mPayloadRead = 0;
-	APP_CONTEXT.getConnectionStore()->reset();
 }
 
 int RpcEngine::serveClient()
