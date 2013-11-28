@@ -146,7 +146,7 @@ static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase
 
 	ListDictionary_Remove(context->transactions, (void *)((UINT_PTR)rpcmessage->tag));
 	if (ta->responseCallback)
-	ta->responseCallback(PBRPC_SUCCESS, rpcmessage, ta->callbackArg);
+		ta->responseCallback(PBRPC_SUCCESS, rpcmessage, ta->callbackArg);
 	if (ta->freeAfterResponse)
 		free(ta);
 	return 0;
