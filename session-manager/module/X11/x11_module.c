@@ -99,6 +99,7 @@ void monitoring_thread(void *arg)
 	CloseHandle(WMProcessInformation.hProcess);
 	CloseHandle(WMProcessInformation.hThread);
 	fprintf(stderr, "WM process stopped with return value %lu\n", ret);
+	gStatus.shutdown(x11->commonModule.sessionId);
 	return;
 }
 
