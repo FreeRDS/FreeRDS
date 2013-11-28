@@ -278,6 +278,7 @@ int RpcEngine::processData()
 			if (mpbRPC.status() == RPCBase_RPCSTATUS_SUCCESS)
 			{
 				foundCallOut->setEncodedeResponse(mpbRPC.payload());
+				foundCallOut->decodeResponse();
 				foundCallOut->setResult(0);
 			}
 			else if (mpbRPC.status() == RPCBase_RPCSTATUS_FAILED)
@@ -502,6 +503,7 @@ int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call)
 	{
 			// this is a CallOut
 			callNS::CallOut* callOut = (callNS::CallOut*) call;
+			callOut->encodeRequest();
 
 			if (send(call) == CLIENT_SUCCESS)
 			{

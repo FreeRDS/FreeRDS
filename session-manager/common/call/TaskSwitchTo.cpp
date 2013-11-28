@@ -41,10 +41,9 @@ namespace freerds
 				switchToCall.setServiceEndpoint(mServiceEndpoint);
 				switchToCall.setConnectionId(mConnectionId);
 
-				switchToCall.encodeRequest();
 				APP_CONTEXT.getRpcOutgoingQueue()->addElement(&switchToCall);
 				WaitForSingleObject(switchToCall.getAnswerHandle(),INFINITE);
-				switchToCall.decodeResponse();
+
 
 				if (switchToCall.getResult() != 0) {
 					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo answer: RPC error %d!",switchToCall.getResult());

@@ -43,12 +43,10 @@ namespace freerds
 				} else {
 					callNS::CallOutLogOffUserSession logoffSession;
 					logoffSession.setConnectionId(connectionId);
-					logoffSession.encodeRequest();
 					APP_CONTEXT.getRpcOutgoingQueue()->addElement(&logoffSession);
 					WaitForSingleObject(logoffSession.getAnswerHandle(),INFINITE);
 					if (logoffSession.getResult() == 0) {
 						// no error
-						logoffSession.decodeResponse();
 						if (logoffSession.isLoggedOff()) {
 							stopSession();
 							APP_CONTEXT.getConnectionStore()->removeConnection(connectionId);
