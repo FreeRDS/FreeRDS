@@ -23,6 +23,7 @@
 
 #include "SessionStore.h"
 #include <winpr/wlog.h>
+#include <utils/CSGuard.h>
 
 namespace freerds
 {
@@ -48,24 +49,21 @@ namespace freerds
 
 			SessionPtr SessionStore::getSession(long sessionId)
 			{
-				EnterCriticalSection(&mCSection);
-				SessionPtr session = mSessionMap[sessionId];
-				LeaveCriticalSection(&mCSection);
-				return session;
+				CSGuard guard(&mCSection);
+				return mSessionMap[sessionId];
 			}
 
 			SessionPtr SessionStore::createSession()
 			{
-				EnterCriticalSection(&mCSection);
+				CSGuard guard(&mCSection);
 				SessionPtr session(new Session(mNextSessionId++));
 				mSessionMap[session->getSessionID()] = session;
-				LeaveCriticalSection(&mCSection);
 				return session;
 			}
 
 			SessionPtr SessionStore::getFirstSessionUserName(std::string username,std::string domain)
 			{
-				EnterCriticalSection(&mCSection);
+				CSGuard guard(&mCSection);
 
 				SessionPtr session;
 				TSessionMap::iterator iter;
@@ -80,16 +78,13 @@ namespace freerds
 					}
 				}
 
-				LeaveCriticalSection(&mCSection);
-
 				return session;
 			}
 
 			int SessionStore::removeSession(long sessionId)
 			{
-				EnterCriticalSection(&mCSection);
+				CSGuard guard(&mCSection);
 				mSessionMap.erase(sessionId);
-				LeaveCriticalSection(&mCSection);
 				return 0;
 			}
 		}

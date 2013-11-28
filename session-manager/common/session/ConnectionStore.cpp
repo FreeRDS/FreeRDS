@@ -23,6 +23,7 @@
 
 #include "ConnectionStore.h"
 #include <winpr/wlog.h>
+#include <utils/CSGuard.h>
 
 namespace freerds
 {
@@ -47,36 +48,32 @@ namespace freerds
 
 			ConnectionPtr ConnectionStore::getOrCreateConnection(long connectionID)
 			{
-				EnterCriticalSection(&mCSection);
+				CSGuard guard(&mCSection);
 				ConnectionPtr connection = mConnectionMap[connectionID];
 				if (!connection) {
 					connection = ConnectionPtr(new Connection(connectionID));
 					mConnectionMap[connectionID] = connection;
 
 				}
-				LeaveCriticalSection(&mCSection);
 				return connection;
 			}
 
 			ConnectionPtr ConnectionStore::getConnection(long connectionID)
 			{
-				EnterCriticalSection(&mCSection);
-				ConnectionPtr connection = mConnectionMap[connectionID];
-				LeaveCriticalSection(&mCSection);
-				return connection;
+				CSGuard guard(&mCSection);
+				return mConnectionMap[connectionID];
 			}
 
 
 			int ConnectionStore::removeConnection(long connectionID)
 			{
-				EnterCriticalSection(&mCSection);
+				CSGuard guard(&mCSection);
 				mConnectionMap.erase(connectionID);
-				LeaveCriticalSection(&mCSection);
 				return 0;
 			}
 
 			long ConnectionStore::getConnectionIdForSessionId(long mSessionId) {
-				EnterCriticalSection(&mCSection);
+				CSGuard guard(&mCSection);
 
 				long connectionId = 0;
 
@@ -91,15 +88,12 @@ namespace freerds
 					}
 				}
 
-				LeaveCriticalSection(&mCSection);
-
 				return connectionId;
 			}
 
 			void ConnectionStore::reset() {
-				EnterCriticalSection(&mCSection);
+				CSGuard guard(&mCSection);
 				mConnectionMap.clear();
-				LeaveCriticalSection(&mCSection);
 			}
 
 
