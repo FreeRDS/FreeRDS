@@ -120,8 +120,8 @@ namespace freerds
 		int CallInLogonUser::getUserSession() {
 
 
-			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
-			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
+			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
+			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{
@@ -169,8 +169,8 @@ namespace freerds
 
 		int CallInLogonUser::getAuthSession() {
 			// authentication failed, start up greeter module
-			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
-			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->createSession();
+			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
+			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->createSession();
 
 			std::string greeter;
 

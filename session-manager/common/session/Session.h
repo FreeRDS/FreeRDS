@@ -27,6 +27,7 @@
 #include <winpr/handle.h>
 #include <freerds/module.h>
 #include <winpr/wtsapi.h>
+#include <boost/shared_ptr.hpp>
 
 #include "Connection.h"
 
@@ -86,9 +87,13 @@ namespace freerds
 			WTS_CONNECTSTATE_CLASS mCurrentState;
 		};
 
+		typedef boost::shared_ptr<Session> SessionPtr;
+
 		}
 	}
 }
+
+
 
 namespace sessionNS = freerds::sessionmanager::session;
 

@@ -34,8 +34,8 @@ namespace freerds
 	{
 		namespace session
 		{
-		typedef std::map<long , Session*> TSessionMap;
-		typedef std::pair<long, Session*> TSessionPair;
+		typedef std::map<long , SessionPtr> TSessionMap;
+		typedef std::pair<long, SessionPtr> TSessionPair;
 
 		class SessionStore
 		{
@@ -43,9 +43,9 @@ namespace freerds
 			SessionStore();
 			~SessionStore();
 
-			Session* getSession(long sessionId);
-			Session* getFirstSessionUserName(std::string username, std::string domain);
-			Session* createSession();
+			SessionPtr getSession(long sessionId);
+			SessionPtr getFirstSessionUserName(std::string username, std::string domain);
+			SessionPtr createSession();
 			int removeSession(long sessionId);
 
 		private:

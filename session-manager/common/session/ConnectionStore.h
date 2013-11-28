@@ -36,8 +36,8 @@ namespace freerds
 		namespace session
 		{
 
-		typedef std::map<long , Connection*> TConnectionMap;
-		typedef std::pair<long, Connection*> TConnectionPair;
+		typedef std::map<long , ConnectionPtr> TConnectionMap;
+		typedef std::pair<long, ConnectionPtr> TConnectionPair;
 
 
 		class ConnectionStore
@@ -46,8 +46,8 @@ namespace freerds
 			ConnectionStore();
 			~ConnectionStore();
 
-			Connection* getOrCreateConnection(long connectionID);
-			Connection* getConnection(long connectionID);
+			ConnectionPtr getOrCreateConnection(long connectionID);
+			ConnectionPtr getConnection(long connectionID);
 			int removeConnection(long connectionID);
 
 			long getConnectionIdForSessionId(long mSessionId);

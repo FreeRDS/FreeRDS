@@ -67,7 +67,7 @@ namespace freerds
 					currentUserName = username;
 				} else {
 					// for a given sessionID we try to get the username from the sessionstore
-					sessionNS::Session * session = APP_CONTEXT.getSessionStore()->getSession(sessionID);
+					sessionNS::SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(sessionID);
 					if (session == NULL) {
 						return -1;
 					}
@@ -162,7 +162,7 @@ namespace freerds
 						currentUserName = username;
 					} else {
 						// for a given sessionID we try to get the username from the sessionstore
-						sessionNS::Session * session = APP_CONTEXT.getSessionStore()->getSession(sessionID);
+						sessionNS::SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(sessionID);
 						if (session == NULL) {
 							return -1;
 						}

@@ -45,12 +45,12 @@ namespace freerds
 				DeleteCriticalSection(&mCSection);
 			}
 
-			Connection* ConnectionStore::getOrCreateConnection(long connectionID)
+			ConnectionPtr ConnectionStore::getOrCreateConnection(long connectionID)
 			{
 				EnterCriticalSection(&mCSection);
-				Connection* connection = mConnectionMap[connectionID];
-				if (connection == NULL) {
-					connection = new Connection(connectionID);
+				ConnectionPtr connection = mConnectionMap[connectionID];
+				if (!connection) {
+					connection = ConnectionPtr(new Connection(connectionID));
 					mConnectionMap[connectionID] = connection;
 
 				}
@@ -58,10 +58,10 @@ namespace freerds
 				return connection;
 			}
 
-			Connection* ConnectionStore::getConnection(long connectionID)
+			ConnectionPtr ConnectionStore::getConnection(long connectionID)
 			{
 				EnterCriticalSection(&mCSection);
-				Connection* connection = mConnectionMap[connectionID];
+				ConnectionPtr connection = mConnectionMap[connectionID];
 				LeaveCriticalSection(&mCSection);
 				return connection;
 			}
@@ -70,9 +70,7 @@ namespace freerds
 			int ConnectionStore::removeConnection(long connectionID)
 			{
 				EnterCriticalSection(&mCSection);
-				Connection * connection = mConnectionMap[connectionID];
 				mConnectionMap.erase(connectionID);
-				delete connection;
 				LeaveCriticalSection(&mCSection);
 				return 0;
 			}
@@ -82,7 +80,6 @@ namespace freerds
 
 				long connectionId = 0;
 
-				Connection* session = NULL;
 				TConnectionMap::iterator iter;
 
 				for (iter = mConnectionMap.begin(); iter != mConnectionMap.end();iter++)
@@ -101,15 +98,6 @@ namespace freerds
 
 			void ConnectionStore::reset() {
 				EnterCriticalSection(&mCSection);
-
-				Connection* session = NULL;
-				TConnectionMap::iterator iter;
-
-				for (iter = mConnectionMap.begin(); iter != mConnectionMap.end();iter++)
-				{
-					delete iter->second;
-				}
-
 				mConnectionMap.clear();
 				LeaveCriticalSection(&mCSection);
 			}

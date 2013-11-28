@@ -87,14 +87,14 @@ namespace freerds
 		int CallInLogOffUserSession::doStuff()
 		{
 
-			sessionNS::Connection * currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
 			if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
 				mLoggedOff = false;
 				return -1;
 			}
-			sessionNS::Session* currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
+			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
 
-			if (currentSession == NULL) {
+			if (!currentSession) {
 				mLoggedOff = false;
 				return -1;
 			}

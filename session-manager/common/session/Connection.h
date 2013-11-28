@@ -26,9 +26,9 @@
 
 #include <winpr/crt.h>
 #include <winpr/wtsapi.h>
+#include <boost/shared_ptr.hpp>
 
 #include <freerds/module.h>
-//#include <freerds/module_connector.h>
 
 namespace freerds
 {
@@ -62,6 +62,9 @@ namespace freerds
 			std::string mDomain;
 
 		};
+
+		typedef boost::shared_ptr<Connection> ConnectionPtr;
+
 		}
 	}
 }

@@ -111,11 +111,11 @@ namespace freerds
 				WLog_Print(logger_CallOutSwitchTo, WLOG_ERROR, "CallOutSwitchTo answercallback: switching in FreeRDS failed!");
 				return;
 			}
-			sessionNS::Session* currentSession;
+			sessionNS::SessionPtr currentSession;
 
 			if (mOldSessionId != 0) {
 				currentSession = APP_CONTEXT.getSessionStore()->getSession(mOldSessionId);
-				if (currentSession != NULL) {
+				if (!currentSession) {
 					currentSession->stopModule();
 					APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
 					WLog_Print(logger_CallOutSwitchTo, WLOG_INFO, "CallOutSwitchTo answercallback: session with sessionId %d was stopped!",mOldSessionId);
