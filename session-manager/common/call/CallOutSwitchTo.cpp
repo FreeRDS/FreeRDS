@@ -40,8 +40,6 @@ namespace freerds
 		{
 			mConnectionId = 0;
 			mSuccess = false;
-			mOldSessionId = 0;
-			mNewSessionId = 0;
 		};
 
 		CallOutSwitchTo::~CallOutSwitchTo()
@@ -91,55 +89,12 @@ namespace freerds
 			mServiceEndpoint = serviceEndpoint;
 		}
 
-		bool CallOutSwitchTo::hasAnswerCallback() {
-			return true;
+		bool CallOutSwitchTo::isSuccess() {
+			return mSuccess;
 		}
 
-		void CallOutSwitchTo::answerCallback() {
-
-			if (mResult != 0) {
-				WLog_Print(logger_CallOutSwitchTo, WLOG_ERROR, "CallOutSwitchTo answercallback: RPC error %d!",mResult);
-				return;
-			}
-			// first unpack the answer
-			if (decodeResponse()) {
-				//
-				WLog_Print(logger_CallOutSwitchTo, WLOG_ERROR, "CallOutSwitchTo answercallback: decoding failed!");
-				return;
-			}
-			if (!mSuccess) {
-				WLog_Print(logger_CallOutSwitchTo, WLOG_ERROR, "CallOutSwitchTo answercallback: switching in FreeRDS failed!");
-				return;
-			}
-			sessionNS::SessionPtr currentSession;
-
-			if (mOldSessionId != 0) {
-				currentSession = APP_CONTEXT.getSessionStore()->getSession(mOldSessionId);
-				if (!currentSession) {
-					currentSession->stopModule();
-					APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
-					WLog_Print(logger_CallOutSwitchTo, WLOG_INFO, "CallOutSwitchTo answercallback: session with sessionId %d was stopped!",mOldSessionId);
-				} else {
-					WLog_Print(logger_CallOutSwitchTo, WLOG_ERROR, "CallOutSwitchTo answercallback: no session was found for sessionId %d!",mOldSessionId);
-				}
-			} else {
-				WLog_Print(logger_CallOutSwitchTo, WLOG_ERROR, "CallOutSwitchTo answercallback: no oldSessionId was set!");
-			}
-
-			APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId)->setSessionId(mNewSessionId);
-			return;
-		}
-
-		void CallOutSwitchTo::setOldSessionId(long sessionId) {
-			mOldSessionId = sessionId;
-		}
-
-		void CallOutSwitchTo::setNewSessionId(long sessionId) {
-			mNewSessionId = sessionId;
-		}
 
 		}
 	}
 }
-
 

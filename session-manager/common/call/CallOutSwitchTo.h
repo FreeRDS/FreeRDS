@@ -44,21 +44,12 @@ namespace freerds
 				void setConnectionId(long connectionId);
 				void setServiceEndpoint(std::string serviceEndpoint);
 
-				bool	hasAnswerCallback();
-				virtual void answerCallback();
-
-				// functions needed for callback
-				void setOldSessionId(long sessionId);
-				void setNewSessionId(long sessionId);
+				bool isSuccess();
 
 			private:
 				long mConnectionId;
 				std::string mServiceEndpoint;
 				bool mSuccess;
-
-				// variables needed for the callback
-				long mOldSessionId;
-				long mNewSessionId;
 			};
 		}
 	}

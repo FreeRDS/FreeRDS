@@ -1,5 +1,5 @@
- /**
- * Baseclass for outgoing rpc calls (session manager to freerds)
+/**
+ * Task for switching a Module
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef CALLOUT_H_
-#define CALLOUT_H_
+#ifndef __TASK_MODULE_SWITCH_TO_
+#define __TASK_MODULE_SWITCH_TO_
 
-#include <call/Call.h>
-#include <winpr/synch.h>
+#include <task/Task.h>
+#include <string>
 
 namespace freerds
 {
@@ -29,33 +29,28 @@ namespace freerds
 	{
 		namespace call
 		{
-			class CallOut:public Call
-			{
-			public:
-				CallOut();
-				~CallOut();
-				virtual unsigned long getDerivedType();
 
-				virtual int encodeRequest() = 0;
-				std::string getEncodedRequest();
+		class TaskSwitchTo: public taskNS::Task {
+		public:
+			virtual void run();
 
-				void setEncodedeResponse(std::string encodedResponse);
-				virtual int decodeResponse() = 0;
+			void setConnectionId(long connectionId);
+			void setServiceEndpoint(std::string serviceEndpoint);
 
-				void   initAnswerHandle();
-				HANDLE getAnswerHandle();
+			void setOldSessionId(long sessionId);
+			void setNewSessionId(long sessionId);
 
-				void	setResult(uint32_t result);
-				void	setErrorDescription(std::string error);
+		private:
+			long mConnectionId;
+			std::string mServiceEndpoint;
+			long mOldSessionId;
+			long mNewSessionId;
 
-			private :
-				HANDLE mAnswer;
-			};
+		};
 		}
 	}
 }
 
 namespace callNS = freerds::sessionmanager::call;
 
-
-#endif /* CALLOUT_H_ */
+#endif /* __TASK_MODULE_SWITCH_TO_ */

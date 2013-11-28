@@ -22,7 +22,7 @@
 #endif
 
 #include "CallInAuthenticateUser.h"
-#include "CallOutSwitchTo.h"
+#include "TaskSwitchTo.h"
 #include <appcontext/ApplicationContext.h>
 #include <module/AuthModule.h>
 
@@ -164,14 +164,12 @@ namespace freerds
 				}
 			}
 
-			CallOutSwitchTo * switchToCall = new CallOutSwitchTo();
-			switchToCall->setServiceEndpoint(currentSession->getPipeName());
-			switchToCall->setOldSessionId(mSessionId);
-			switchToCall->setNewSessionId(currentSession->getSessionID());
-			switchToCall->setConnectionId(APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId));
-
-			APP_CONTEXT.getRpcOutgoingQueue()->addElement(switchToCall);
-
+			TaskSwitchTo * switchToTask = new TaskSwitchTo();
+			switchToTask->setConnectionId(APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId));
+			switchToTask->setServiceEndpoint(currentSession->getPipeName());
+			switchToTask->setOldSessionId(mSessionId);
+			switchToTask->setNewSessionId(currentSession->getSessionID());
+			APP_CONTEXT.addTask(switchToTask);
 			return 0;
 		}
 

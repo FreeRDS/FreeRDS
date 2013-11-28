@@ -74,26 +74,13 @@ namespace freerds
 		void CallOut::setResult(uint32_t result)
 		{
 			mResult = result;
-			if (hasAnswerCallback()) {
-				answerCallback();
-			} else {
-				SetEvent(mAnswer);
-			}
-
+			SetEvent(mAnswer);
 		}
 
 		void CallOut::setErrorDescription(std::string error)
 		{
 			mErrorDescription = error;
 		}
-
-		bool CallOut::hasAnswerCallback() {
-			return false;
-		}
-
-		void CallOut::answerCallback() {
-		}
-
 
 		}
 	}
