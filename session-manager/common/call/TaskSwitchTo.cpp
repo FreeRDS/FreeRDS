@@ -40,6 +40,7 @@ namespace freerds
 				CallOutSwitchTo switchToCall;
 				switchToCall.setServiceEndpoint(mServiceEndpoint);
 				switchToCall.setConnectionId(mConnectionId);
+				switchToCall.initAnswerHandle();
 
 				APP_CONTEXT.getRpcOutgoingQueue()->addElement(&switchToCall);
 				WaitForSingleObject(switchToCall.getAnswerHandle(),INFINITE);
