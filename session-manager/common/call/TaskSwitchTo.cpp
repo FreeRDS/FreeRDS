@@ -47,23 +47,23 @@ namespace freerds
 
 				if (switchToCall.getResult() != 0) {
 					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo answer: RPC error %d!",switchToCall.getResult());
-					return;
+					return cleanUpOnError();
 				}
 				// first unpack the answer
 				if (switchToCall.decodeResponse()) {
 					//
 					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo: decoding of switchto answer failed!");
-					return;
+					return cleanUpOnError();
 				}
 				if (!switchToCall.isSuccess()) {
 					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo: switching in FreeRDS failed!");
-					return;
+					return cleanUpOnError();
 				}
 				sessionNS::SessionPtr currentSession;
 
 				if (mOldSessionId != 0) {
 					currentSession = APP_CONTEXT.getSessionStore()->getSession(mOldSessionId);
-					if (!currentSession) {
+					if (currentSession != NULL) {
 						currentSession->stopModule();
 						APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
 						WLog_Print(logger_CallBacks, WLOG_INFO, "TaskSwitchTo: session with sessionId %d was stopped!",mOldSessionId);
@@ -75,10 +75,8 @@ namespace freerds
 				}
 
 				APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId)->setSessionId(mNewSessionId);
+
 				return;
-
-
-
 			}
 
 			void TaskSwitchTo::setConnectionId(long connectionId) {
@@ -97,7 +95,18 @@ namespace freerds
 				mNewSessionId = sessionId;
 			}
 
-}
+			void TaskSwitchTo::cleanUpOnError() {
+				sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(mNewSessionId);
+				if (currentSession != NULL) {
+					currentSession->stopModule();
+					APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
+					WLog_Print(logger_CallBacks, WLOG_INFO, "TaskSwitchTo: cleaning up session with sessionId %d",mNewSessionId);
+				} else {
+					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mNewSessionId);
+				}
+			}
+
+		}
 	}
 }
 

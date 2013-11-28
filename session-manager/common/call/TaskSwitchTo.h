@@ -41,6 +41,7 @@ namespace freerds
 			void setNewSessionId(long sessionId);
 
 		private:
+			void cleanUpOnError();
 			long mConnectionId;
 			std::string mServiceEndpoint;
 			long mOldSessionId;
