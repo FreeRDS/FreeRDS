@@ -170,6 +170,7 @@ namespace freerds
 			switchToTask->setOldSessionId(mSessionId);
 			switchToTask->setNewSessionId(currentSession->getSessionID());
 			APP_CONTEXT.addTask(switchToTask);
+
 			return 0;
 		}
 

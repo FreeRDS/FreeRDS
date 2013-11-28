@@ -69,6 +69,8 @@ public:
 	QueueElement* getElementLockFree()
 	{
 		QueueElement* element;
+		if (mlist.empty())
+			return NULL;
 		element = mlist.front();
 		mlist.pop_front();
 		return element;
