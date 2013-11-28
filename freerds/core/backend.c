@@ -68,5 +68,43 @@ void freerds_connector_free(rdsBackendConnector* connector)
         CloseHandle(connector->StopEvent);
         CloseHandle(connector->hClientPipe);
 
+				if (connector->Endpoint)
+					free(connector->Endpoint);
+
         free(connector);
+}
+
+BOOL freerds_connector_connect(rdsBackendConnector* connector)
+{
+
+	HANDLE hClientPipe;
+
+	hClientPipe = freerds_named_pipe_connect(connector->Endpoint, 20);
+
+	if (hClientPipe == INVALID_HANDLE_VALUE)
+	{
+		fprintf(stderr, "Failed to create named pipe %s\n", connector->Endpoint);
+		return FALSE;
+	}
+
+	printf("Connected to endpoint %s\n", connector->Endpoint);
+
+	if (freerds_init_client(hClientPipe, connector->connection->settings, connector->OutboundStream) < 0)
+	{
+		fprintf(stderr, "Error sending initial packet with %s\n", connector->Endpoint);
+		return FALSE;
+	}
+
+	connector->hClientPipe = hClientPipe;
+	connector->GetEventHandles = freerds_client_get_event_handles;
+	connector->CheckEventHandles = freerds_client_check_event_handles;
+
+	connector->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) freerds_client_thread,
+			(void*) connector, CREATE_SUSPENDED, NULL);
+
+	freerds_client_inbound_connector_init(connector);
+
+	ResumeThread(connector->ServerThread);
+
+	return TRUE;
 }

@@ -20,6 +20,7 @@
 #include "icp_server_stubs.h"
 #include "ICP.pb-c.h"
 #include "pbrpc_utils.h"
+#include "../core/app_context.h"
 
 #define ICP_SERVER_STUB_SETUP(camel, expanded) \
 	Freerds__Icp__##camel ##Request *request; \
@@ -57,5 +58,30 @@ int ping(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 
 	// freeup response data if necessary
 
+	return PBRPC_SUCCESS;
+}
+
+int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
+{
+	rdsConnection *connection = NULL;
+	ICP_SERVER_STUB_SETUP(SwitchTo, switch_to)
+	connection = app_context_get_connection(request->connectionid);
+	if (connection)
+	{
+		struct rds_notification_msg_switch *msg = malloc(sizeof(struct rds_notification_msg_switch));
+		msg->tag = tag;
+		msg->endpoint = _strdup(request->serviceendpoint);
+		MessageQueue_Post(connection->notifications, (void *)connection, NOTIFY_SWITCHTO, (void*) msg, NULL);
+		freerds__icp__switch_to_request__free_unpacked(request, NULL);
+		// response is sent after processing the notification
+		return 0;
+	}
+	else
+	{
+		fprintf(stderr, "something went wrong\n");
+		response.success = FALSE;
+	}
+
+	ICP_SERVER_STUB_RESPOND(SwitchTo, switch_to)
 	return PBRPC_SUCCESS;
 }

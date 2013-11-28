@@ -235,7 +235,7 @@ static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase 
 
 	if (NULL == cb)
 	{
-		printf("server callback not found %d\n", rpcmessage->msgtype);
+		fprintf(stderr, "server callback not found %d\n", rpcmessage->msgtype);
 		ret = pbrpc_send_response(context, NULL, FREERDS__PBRPC__RPCBASE__RPCSTATUS__NOTFOUND, rpcmessage->msgtype, rpcmessage->tag);
 		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
 		return ret;

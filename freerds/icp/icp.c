@@ -35,6 +35,7 @@ static struct icp_context* icpContext = NULL;
 static pbRPCMethod icpMethods[] =
 {
 	{ FREERDS__ICP__MSGTYPE__Ping, ping },
+	{ FREERDS__ICP__MSGTYPE__SwitchTo, switchTo},
 	{ 0, NULL }
 };
 

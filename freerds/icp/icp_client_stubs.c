@@ -26,6 +26,7 @@
 #include "ICP.pb-c.h"
 #include "pbrpc.h"
 #include "pbrpc_utils.h"
+#include "../core/core.h"
 
 #define ICP_CLIENT_STUB_SETUP(camel, expanded) \
 	UINT32 type = FREERDS__ICP__MSGTYPE__##camel ; \
@@ -65,13 +66,13 @@
 			freerds__icp__##expanded ##_response__init(&response);
 
 #define ICP_CLIENT_SEND_PACK(camel, expanded) \
-			pbresponse.dataLen = freerds__icp__##expanded ##_response__get_packed_size(&response); \
-			pbresponse.data = malloc(pbresponse.dataLen); \
-			ret = freerds__icp__##expanded ##_response__pack(&response, (uint8_t*) pbresponse.data);
+			pbresponse->dataLen = freerds__icp__##expanded ##_response__get_packed_size(&response); \
+			pbresponse->data = malloc(pbresponse->dataLen); \
+			ret = freerds__icp__##expanded ##_response__pack(&response, (uint8_t*) pbresponse->data);
 
 int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success)
 {
-	pbRPCPayload pbresponse;;
+	pbRPCPayload *pbresponse = pbrpc_payload_new();
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 	int ret = 0;
 
@@ -80,7 +81,7 @@ int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL succes
 
 	switch (type)
 	{
-		case FREERDS__ICP__MSGTYPE__SwitchTo:
+		case NOTIFY_SWITCHTO:
 			{
 				type = FREERDS__ICP__MSGTYPE__SwitchTo;
 				ICP_CLIENT_SEND_PREPARE(SwitchTo, switch_to)
@@ -93,7 +94,7 @@ int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL succes
 			return -1;
 			break;
 	}
-	return  pbrpc_send_response(context, &pbresponse, status, type, tag);
+	return  pbrpc_send_response(context, pbresponse, status, type, tag);
 }
 
 int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed)
@@ -227,6 +228,7 @@ int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
 	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
 
 	request.connectionid = connectionId;
+	fprintf(stderr, "connection id setn %d\n", connectionId);
 	request.domain = domain;
 	request.username = username;
 	request.password = password;

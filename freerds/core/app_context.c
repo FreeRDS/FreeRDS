@@ -53,3 +53,8 @@ void app_context_remove_connection(long id)
 	ListDictionary_Remove(gAppContext->connections, (void *)id);
 	printf("removed connection %d\n", id);
 }
+
+rdsConnection *app_context_get_connection(long id)
+{
+	return ListDictionary_GetItemValue(gAppContext->connections, (void*) id);
+}

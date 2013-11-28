@@ -36,4 +36,5 @@ void app_context_uninit();
 long app_context_get_connectionid();
 void app_context_add_connection(rdsConnection *connection);
 void app_context_remove_connection(long id);
+rdsConnection* app_context_get_connection(long id);
 #endif //FREERDS_APPCONTEXT_H

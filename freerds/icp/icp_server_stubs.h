@@ -22,4 +22,5 @@
 #include "pbrpc.h"
 
 int ping(LONG tag, pbRPCPayload *request, pbRPCPayload **response);
+int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
 #endif //_ICP_SERVER_STUBS_H

@@ -53,7 +53,8 @@ void freerds_listener_delete(rdsListener* self);
 int freerds_listener_main_loop(rdsListener* self);
 
 rdsBackendConnector* freerds_connector_new(rdsConnection* connection);
-void freerds_connector_free(rdsBackendConnector* backend);
+void freerds_connector_free(rdsBackendConnector* connector);
+BOOL freerds_connector_connect(rdsBackendConnector* connector);
 
 int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s);
 

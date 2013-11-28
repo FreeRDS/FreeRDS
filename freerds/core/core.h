@@ -78,6 +78,7 @@ struct rds_connection
 	RdpdrServerContext* rdpdr;
 	RdpsndServerContext* rdpsnd;
 	DrdynvcServerContext* drdynvc;
+	wMessageQueue* notifications;
 };
 
 
@@ -93,6 +94,22 @@ struct rds_backend_connector
 	freerdp* instance;
 	rdpSettings* settings;
 	rdsConnection* connection;
+};
+
+struct rds_notification_msg_switch
+{
+	UINT32 tag;
+	char *endpoint;
+};
+
+struct rds_notification_msg_disconnect
+{
+	UINT32 tag;
+};
+
+enum notifications
+{
+	NOTIFY_SWITCHTO = 0,
 };
 
 #ifdef __cplusplus

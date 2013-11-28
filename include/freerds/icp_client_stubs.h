@@ -19,7 +19,7 @@
  */
 
 #ifndef _ICP_CLIENT_STUBS_H
-#define  _ICP_CLIENT_STUBS_H
+#define _ICP_CLIENT_STUBS_H
 
 #include <winpr/wtypes.h>
 
@@ -29,5 +29,6 @@ int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected);
 int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff);
 int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
 		char* password, char** serviceEndpoint);
+int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success);
 
 #endif // _ICP_CLIENT_STUBS_H
