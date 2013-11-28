@@ -139,6 +139,9 @@ if(${CMAKE_VERSION} VERSION_GREATER "2.8.10")
 
 endif()
 
+FILE(GLOB protobuf_files "${CMAKE_CURRENT_SOURCE_DIR}/protocols/protobuf/*.proto")
+INSTALL(FILES ${protobuf_files} DESTINATION share/freerds/protobuf)
+
 if(NOT MSVC)
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/freerds-backend.pc.in ${CMAKE_CURRENT_BINARY_DIR}/freerds-backend.pc @ONLY)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/freerds-backend.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

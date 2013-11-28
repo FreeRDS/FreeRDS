@@ -357,13 +357,17 @@ int freerds_client_inbound_logoff_user(rdsBackend* backend, RDS_MSG_LOGOFF_USER*
 
 struct _icps_context {
 	rdsBackend* backend;
+	UINT32		originalTag;
+	UINT32		originalType;
 };
 typedef struct _icps_context IcpsContext;
 
-static IcpsContext *IcpsContext_new(rdsBackend* backend)
+static IcpsContext *IcpsContext_new(rdsBackend* backend, UINT32 tag, UINT32 type)
 {
 	IcpsContext *ret = (IcpsContext *)malloc(sizeof(IcpsContext));
 	ret->backend = backend;
+	ret->originalTag = tag;
+	ret->originalType = type;
 	return ret;
 }
 
@@ -373,6 +377,8 @@ void icpsCallback(UINT32 reason, Freerds__Pbrpc__RPCBase* response, void *args) 
 	rdsBackend *backend = context->backend;
 
 	ZeroMemory(&icps, sizeof(icps));
+	icps.tag = context->originalTag;
+	icps.type = context->originalType;
 
 	switch(reason) {
 	case PBRPC_SUCCESS:
@@ -410,7 +416,7 @@ cleanup_exit:
 
 int freerds_client_inbound_icps(rdsBackend* backend, RDS_MSG_ICPS_REQUEST* msg)
 {
-	IcpsContext *icpsContext = IcpsContext_new(backend);
+	IcpsContext *icpsContext = IcpsContext_new(backend, msg->tag, msg->icpsType);
 
 	pbRPCPayload payload;
 	payload.data = msg->data;

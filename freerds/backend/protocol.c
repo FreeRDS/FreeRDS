@@ -353,10 +353,11 @@ int freerds_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 
 int freerds_read_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg)
 {
-	if (Stream_GetRemainingLength(s) < 12)
+	if (Stream_GetRemainingLength(s) < 16)
 		return -1;
 
 	Stream_Read_UINT32(s, msg->status);
+	Stream_Read_UINT32(s, msg->tag);
 	Stream_Read_UINT32(s, msg->icpsType);
 	Stream_Read_UINT32(s, msg->dataLen);
 
@@ -371,7 +372,7 @@ int freerds_read_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg)
 int freerds_write_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg)
 {
 	msg->msgFlags = 0;
-	msg->length = freerds_write_common_header(0, (RDS_MSG_COMMON*) msg) + 12 +
+	msg->length = freerds_write_common_header(0, (RDS_MSG_COMMON*) msg) + 16 +
 			msg->dataLen;
 
 	if (!s)
@@ -380,6 +381,7 @@ int freerds_write_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg)
 	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
 
 	Stream_Write_UINT32(s, msg->status);
+	Stream_Write_UINT32(s, msg->tag);
 	Stream_Write_UINT32(s, msg->icpsType);
 	Stream_Write_UINT32(s, msg->dataLen);
 	Stream_Write(s, msg->data, msg->dataLen);
@@ -2131,10 +2133,11 @@ static RDS_MSG_DEFINITION RDS_MSG_LOGOFF_USER_DEFINITION =
 
 int freerds_read_icps_request(wStream* s, RDS_MSG_ICPS_REQUEST* msg)
 {
-	if (Stream_GetRemainingLength(s) < 8)
+	if (Stream_GetRemainingLength(s) < 12)
 		return -1;
 
 	Stream_Read_UINT32(s, msg->icpsType);
+	Stream_Read_UINT32(s, msg->tag);
 	Stream_Read_UINT32(s, msg->dataLen);
 	if (Stream_GetRemainingLength(s) < msg->dataLen)
 		return -1;
@@ -2148,7 +2151,7 @@ int freerds_write_icps_request(wStream* s, RDS_MSG_ICPS_REQUEST* msg)
 	msg->msgFlags = 0;
 
 	msg->length = freerds_write_common_header(NULL, (RDS_MSG_COMMON*) msg) +
-			8 + msg->dataLen;
+			12 + msg->dataLen;
 
 	if (!s)
 		return msg->length;
@@ -2156,6 +2159,7 @@ int freerds_write_icps_request(wStream* s, RDS_MSG_ICPS_REQUEST* msg)
 	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
 
 	Stream_Write_UINT32(s, msg->icpsType);
+	Stream_Write_UINT32(s, msg->tag);
 	Stream_Write_UINT32(s, msg->dataLen);
 	Stream_Write(s, msg->data, msg->dataLen);
 	return 0;
