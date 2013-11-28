@@ -37,6 +37,22 @@ struct _RDS_MODULE_COMMON
 typedef struct _RDS_MODULE_COMMON RDS_MODULE_COMMON;
 
 
+struct _RDS_MODULE_CONFIG_CALLBACKS
+{
+	pgetPropertyBool getPropertyBool;
+	pgetPropertyNumber getPropertyNumber;
+	pgetPropertyString getPropertyString;
+};
+typedef struct _RDS_MODULE_CONFIG_CALLBACKS RDS_MODULE_CONFIG_CALLBACKS;
+
+typedef int (*pShutdown)(long sessionID);
+
+struct _RDS_MODULE_STATUS_CALLBACKS
+{
+	pShutdown shutdown;
+};
+typedef struct _RDS_MODULE_STATUS_CALLBACKS RDS_MODULE_STATUS_CALLBACKS;
+
 /**
  * Module Entry Points
  */
@@ -58,9 +74,8 @@ struct rds_module_entry_points_v1
 	pRdsModuleStop Stop;
 	char* Name;
 
-	pgetPropertyBool getPropertyBool;
-	pgetPropertyNumber getPropertyNumber;
-	pgetPropertyString getPropertyString;
+	RDS_MODULE_CONFIG_CALLBACKS config;
+	RDS_MODULE_STATUS_CALLBACKS status;
 };
 
 #define RDS_MODULE_INTERFACE_VERSION	1

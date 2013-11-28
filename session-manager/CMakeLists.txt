@@ -76,6 +76,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp
 	common/module/AuthModule.cpp
+	common/module/CallBacks.cpp
 	common/config/PropertyManager.cpp
 	common/config/PropertyCWrapper.cpp
 	common/utils/StringHelpers.cpp

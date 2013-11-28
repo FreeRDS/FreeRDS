@@ -36,6 +36,7 @@
 #include <vector>
 
 #include <config/PropertyCWrapper.h>
+#include "CallBacks.h"
 
 namespace freerds
 {
@@ -145,9 +146,10 @@ namespace freerds
 					// found entrypoint
 					ZeroMemory(&entrypoints, sizeof(RDS_MODULE_ENTRY_POINTS));
 					// setting the property callbacks
-					entrypoints.getPropertyBool = getPropertyBool;
-					entrypoints.getPropertyNumber = getPropertyNumber;
-					entrypoints.getPropertyString = getPropertyString;
+					entrypoints.config.getPropertyBool = getPropertyBool;
+					entrypoints.config.getPropertyNumber = getPropertyNumber;
+					entrypoints.config.getPropertyString = getPropertyString;
+					entrypoints.status.shutdown = CallBacks::shutdown;
 					result = entry(&entrypoints);
 
 					if (result == 0)

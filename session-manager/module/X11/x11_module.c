@@ -45,9 +45,8 @@
 
 #include "x11_module.h"
 
-pgetPropertyBool gGetPropertyBool;
-pgetPropertyNumber gGetPropertyNumber;
-pgetPropertyString gGetPropertyString;
+RDS_MODULE_CONFIG_CALLBACKS gConfig;
+RDS_MODULE_STATUS_CALLBACKS gStatus;
 
 struct rds_module_x11
 {
@@ -81,7 +80,7 @@ void monitoring_thread(void *arg)
 
 	x11_rds_module_reset_process_informations(&WMStartupInfo, &WMProcessInformation);
 
-	if (!gGetPropertyString(x11->commonModule.sessionId, "module.x11.startwm", startupname, 256))
+	if (!gConfig.getPropertyString(x11->commonModule.sessionId, "module.x11.startwm", startupname, 256))
 		strcpy(startupname, "startwm.sh");
 
 
@@ -90,7 +89,7 @@ void monitoring_thread(void *arg)
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(WMStartupInfo), &(WMProcessInformation));
 
-	fprintf(stderr, "WM process started: %d (pid %d)\n", status, WMProcessInformation.dwProcessId);
+	fprintf(stderr, "WM process started: %d (pid %lu)\n", status, WMProcessInformation.dwProcessId);
 
 	WaitForSingleObject(WMProcessInformation.hProcess, INFINITE);
 
@@ -99,7 +98,7 @@ void monitoring_thread(void *arg)
 
 	CloseHandle(WMProcessInformation.hProcess);
 	CloseHandle(WMProcessInformation.hThread);
-	fprintf(stderr, "WM process stopped with return value %d\n", ret);
+	fprintf(stderr, "WM process stopped with return value %lu\n", ret);
 	return;
 }
 
@@ -171,13 +170,13 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
 
-	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.xres", &xres))
+	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.xres", &xres))
 		xres = 1024;
 
-	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.yres", &yres))
+	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.yres", &yres))
 		yres = 768;
 
-	if (!gGetPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", &colordepth))
+	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", &colordepth))
 		colordepth = 24;
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
@@ -187,7 +186,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
-	fprintf(stderr, "X11 Process started: %d (pid %d)\n", status, x11->X11ProcessInformation.dwProcessId);
+	fprintf(stderr, "X11 Process started: %d (pid %lu)\n", status, x11->X11ProcessInformation.dwProcessId);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
@@ -232,13 +231,8 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 
 	pEntryPoints->Name = "X11";
 
-	gGetPropertyBool = pEntryPoints->getPropertyBool;
-	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
-	gGetPropertyString = pEntryPoints->getPropertyString;
-
-	gGetPropertyBool = pEntryPoints->getPropertyBool;
-	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
-	gGetPropertyString = pEntryPoints->getPropertyString;
+	gStatus = pEntryPoints->status;
+	gConfig = pEntryPoints->config;
 
 	return 0;
 }

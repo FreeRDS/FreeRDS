@@ -3,6 +3,8 @@
  * Qt Server Module
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013 Thinstuff Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +39,8 @@
 
 #include "qt_module.h"
 
-pgetPropertyBool gGetPropertyBool;
-pgetPropertyNumber gGetPropertyNumber;
-pgetPropertyString gGetPropertyString;
+RDS_MODULE_CONFIG_CALLBACKS gConfig;
+RDS_MODULE_STATUS_CALLBACKS gStatus;
 
 struct rds_module_qt
 {
@@ -105,10 +106,10 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_SID", envstr);
 
 
-	if (!gGetPropertyNumber(qt->commonModule.sessionId, "module.rdp.xres", &xres))
+	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.xres", &xres))
 		xres = 1024;
 
-	if (!gGetPropertyNumber(qt->commonModule.sessionId, "module.rdp.yres", &yres))
+	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.yres", &yres))
 		yres = 768;
 
 	qPipeName = (char*) malloc(256);
@@ -175,9 +176,8 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Start = qt_rds_module_start;
 	pEntryPoints->Stop = qt_rds_module_stop;
 
-	gGetPropertyBool = pEntryPoints->getPropertyBool;
-	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
-	gGetPropertyString = pEntryPoints->getPropertyString;
+	gStatus = pEntryPoints->status;
+	gConfig = pEntryPoints->config;
 
 	return 0;
 }

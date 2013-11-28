@@ -3,6 +3,8 @@
  * CEF Server Module
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013 Thinstuff Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +36,10 @@
 #include <freerds/backend.h>
 
 #include "cef_module.h"
+
+RDS_MODULE_CONFIG_CALLBACKS gConfig;
+RDS_MODULE_STATUS_CALLBACKS gStatus;
+
 
 struct rds_module_cef
 {
@@ -135,6 +141,10 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 
 	pEntryPoints->Start = cef_rds_module_start;
 	pEntryPoints->Stop = cef_rds_module_stop;
+
+	gStatus = pEntryPoints->status;
+	gConfig = pEntryPoints->config;
+
 
 	return 0;
 }

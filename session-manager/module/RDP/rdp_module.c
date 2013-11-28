@@ -3,6 +3,9 @@
  * RDP Server Module
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013 Thinstuff Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ *
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +39,8 @@
 
 #include "rdp_module.h"
 
-pgetPropertyBool gGetPropertyBool;
-pgetPropertyNumber gGetPropertyNumber;
-pgetPropertyString gGetPropertyString;
+RDS_MODULE_CONFIG_CALLBACKS gConfig;
+RDS_MODULE_STATUS_CALLBACKS gStatus;
 
 struct rds_module_rdp
 {
@@ -107,10 +109,10 @@ char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 	rdp->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(rdp->pi), sizeof(PROCESS_INFORMATION));
 
-	if (!gGetPropertyNumber(rdp->commonModule.sessionId, "module.rdp.xres", &xres))
+	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.xres", &xres))
 		xres = 1024;
 
-	if (!gGetPropertyNumber(rdp->commonModule.sessionId, "module.rdp.yres", &yres))
+	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.yres", &yres))
 		yres = 768;
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /size:%dx%d",
@@ -154,9 +156,8 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Start = rdp_rds_module_start;
 	pEntryPoints->Stop = rdp_rds_module_stop;
 
-	gGetPropertyBool = pEntryPoints->getPropertyBool;
-	gGetPropertyNumber = pEntryPoints->getPropertyNumber;
-	gGetPropertyString = pEntryPoints->getPropertyString;
+	gStatus = pEntryPoints->status;
+	gConfig = pEntryPoints->config;
 
 	return 0;
 }
