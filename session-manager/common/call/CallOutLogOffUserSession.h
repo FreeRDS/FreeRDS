@@ -1,5 +1,5 @@
 /**
- * Callback Handlers for Modules
+ * Class for rpc call LogOffUserSession (session manager to freerds)
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,32 +17,39 @@
  * limitations under the License.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "CallBacks.h"
-#include "TaskModuleShutdown.h"
-#include <winpr/wlog.h>
-#include <appcontext/ApplicationContext.h>
+#ifndef __CALL_OUT_LOGOFF_USER_SESSION_H_
+#define __CALL_OUT_LOGOFF_USER_SESSION_H_
+#include <string>
+#include "CallOut.h"
+#include <ICP.pb.h>
 
 namespace freerds
 {
 	namespace sessionmanager
 	{
-		namespace module
+		namespace call
 		{
-			static wLog* logger_CallBacks = WLog_Get("freerds.SessionManager.module.callbacks");
+			class CallOutLogOffUserSession: public CallOut
+			{
+			public:
+				CallOutLogOffUserSession();
+				virtual ~CallOutLogOffUserSession();
 
-			int CallBacks::shutdown(long sessionId) {
-				moduleNS::TaskModuleShutdown  * task = new moduleNS::TaskModuleShutdown();
-				task->setSessionId(sessionId);
-				APP_CONTEXT.addTask(task);
-				return 0;
-			}
+				virtual unsigned long getCallType();
+				virtual int encodeRequest();
+				virtual int decodeResponse();
 
+				void setConnectionId(long connectionId);
+				bool isLoggedOff();
 
+			private:
+				long mConnectionId;
+				bool mLoggedOff;
+			};
 		}
 	}
 }
 
+namespace callNS = freerds::sessionmanager::call;
+
+#endif //__CALL_OUT_LOGOFF_USER_SESSION_H_

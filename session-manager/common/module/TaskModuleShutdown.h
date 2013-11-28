@@ -1,5 +1,5 @@
 /**
- * Task Object for the Executor
+ * Task for shutdown of a module
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -17,23 +17,30 @@
  * limitations under the License.
  */
 
-#ifndef __TASK_H_
-#define __TASK_H_
+#ifndef __TASK_MODULE_SHUTDOWN_
+#define __TASK_MODULE_SHUTDOWN_
+
+#include <task/Task.h>
 
 namespace freerds
 {
-	namespace task
+	namespace sessionmanager
 	{
-		class Task
+		namespace module
 		{
+
+		class TaskModuleShutdown: public taskNS::Task {
 		public:
-			Task() {};
-			virtual ~Task() {};
-			virtual void run() = 0;
+			virtual void run();
+			void setSessionId(long sessionId);
+		private:
+			void stopSession();
+			long mSessionId;
 		};
+		}
 	}
 }
 
-namespace taskNS = freerds::task;
+namespace moduleNS = freerds::sessionmanager::module;
 
-#endif /* __TASK_H_ */
+#endif /* __TASK_MODULE_SHUTDOWN_ */

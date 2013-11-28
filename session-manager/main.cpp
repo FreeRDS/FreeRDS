@@ -221,6 +221,7 @@ int main(int argc, char** argv)
 
 	//APP_CONTEXT.getPropertyManager()->saveProperties(APP_CONTEXT.getSystemConfigPath() + "/config.ini");
 	APP_CONTEXT.getPropertyManager()->loadProperties(APP_CONTEXT.getSystemConfigPath() + "/config.ini");
+	APP_CONTEXT.startTaskExecutor();
 
 
 	cout << "Hello session manager" << endl;
@@ -229,6 +230,7 @@ int main(int argc, char** argv)
 	WaitForSingleObject(gTermEvent, INFINITE);
 	CloseHandle(gTermEvent);
 
+	APP_CONTEXT.stopTaskExecutor();
 	APP_CONTEXT.stopRPCEngine();
 
 	/* only main process should delete pid file */

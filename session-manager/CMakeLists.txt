@@ -63,6 +63,7 @@ set(ICP_SOURCES
 	common/call/CallOutFdsApiVirtualChannelOpen.cpp
 	common/call/CallInAuthenticateUser.cpp
 	common/call/CallOutSwitchTo.cpp
+	common/call/CallOutLogOffUserSession.cpp
 	common/pbRPC/RpcEngine.cpp
 )
 
@@ -77,6 +78,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/module/Module.cpp
 	common/module/AuthModule.cpp
 	common/module/CallBacks.cpp
+	common/module/TaskModuleShutdown.cpp
 	common/config/PropertyManager.cpp
 	common/config/PropertyCWrapper.cpp
 	common/utils/StringHelpers.cpp
