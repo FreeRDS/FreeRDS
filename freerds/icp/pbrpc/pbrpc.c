@@ -159,6 +159,7 @@ static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCB
 	char *buf = malloc(msgLen);
 
 	ret = freerds__pbrpc__rpcbase__pack(msg, (uint8_t *)buf);
+	//fprintf(stderr, "sending tag %d, type %d\n", msg->tag, msg->msgtype);
 	// packing failed..
 	if (ret != msgLen)
 		ret = 1;

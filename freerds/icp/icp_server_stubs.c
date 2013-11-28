@@ -74,6 +74,7 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 		MessageQueue_Post(connection->notifications, (void *)connection, NOTIFY_SWITCHTO, (void*) msg, NULL);
 		freerds__icp__switch_to_request__free_unpacked(request, NULL);
 		// response is sent after processing the notification
+		*pbresponse = NULL;
 		return 0;
 	}
 	else

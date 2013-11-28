@@ -72,6 +72,7 @@
 
 int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success)
 {
+	int rtype = 0;
 	pbRPCPayload *pbresponse = pbrpc_payload_new();
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 	int ret = 0;
@@ -83,7 +84,7 @@ int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL succes
 	{
 		case NOTIFY_SWITCHTO:
 			{
-				type = FREERDS__ICP__MSGTYPE__SwitchTo;
+				rtype = FREERDS__ICP__MSGTYPE__SwitchTo;
 				ICP_CLIENT_SEND_PREPARE(SwitchTo, switch_to)
 				response.success = success;
 				ICP_CLIENT_SEND_PACK(SwitchTo, switch_to)
@@ -94,7 +95,13 @@ int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL succes
 			return -1;
 			break;
 	}
-	return  pbrpc_send_response(context, pbresponse, status, type, tag);
+	if (ret != pbresponse->dataLen)
+	{
+		fprintf(stderr, "%s pack error for %d", __FUNCTION__, type);
+		pbrpc_free_payload(pbresponse);
+		return -1;
+	}
+	return  pbrpc_send_response(context, pbresponse, status, rtype, tag);
 }
 
 int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed)
@@ -228,7 +235,6 @@ int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
 	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
 
 	request.connectionid = connectionId;
-	fprintf(stderr, "connection id setn %d\n", connectionId);
 	request.domain = domain;
 	request.username = username;
 	request.password = password;
