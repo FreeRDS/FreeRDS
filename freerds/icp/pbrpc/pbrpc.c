@@ -152,7 +152,7 @@ static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase
 	return 0;
 }
 
-int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCBase *msg)
+static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCBase *msg)
 {
 	int ret;
 	char msgLen = freerds__pbrpc__rpcbase__get_packed_size(msg);
@@ -169,7 +169,7 @@ int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCBase *ms
 	return ret;
 }
 
-pbRPCCallback pbrpc_callback_find(pbRPCContext* context, UINT32 type)
+static pbRPCCallback pbrpc_callback_find(pbRPCContext* context, UINT32 type)
 {
 	pbRPCMethod *cb = NULL;
 	int i = 0;
@@ -194,46 +194,66 @@ static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase *message)
 	return pl;
 }
 
+int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 status, UINT32 type, UINT32 tag)
+{
+	int ret;
+	Freerds__Pbrpc__RPCBase *pbresponse = pbrpc_message_new();
+	pbrpc_prepare_response(pbresponse, tag);
+	pbresponse->msgtype = type;
+	pbresponse->status = status;
+
+	if (response)
+	{
+		if (status == 0)
+		{
+			pbresponse->has_payload = 1;
+			pbresponse->payload.data = (unsigned char*) response->data;
+			pbresponse->payload.len = response->dataLen;
+		}
+		else
+		{
+			pbresponse->errordescription = response->errorDescription;
+		}
+	}
+
+	ret = pbrpc_process_message_out(context, pbresponse);
+	if (response)
+		pbrpc_free_payload(response);
+	pbrpc_message_free(pbresponse, FALSE);
+	return ret;
+}
+
 static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase *rpcmessage)
 {
 	int ret = 0;
 	pbRPCCallback cb;
 	pbRPCPayload *request = NULL;
 	pbRPCPayload *response = NULL;
-	Freerds__Pbrpc__RPCBase *pbresponse = pbrpc_message_new();
-	pbrpc_prepare_response(pbresponse, rpcmessage->tag);
-	pbresponse->msgtype = rpcmessage->msgtype;
+
+
 	cb = pbrpc_callback_find(context, rpcmessage->msgtype);
 
 	if (NULL == cb)
 	{
-		pbresponse->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__NOTFOUND;
-		ret = pbrpc_process_message_out(context, pbresponse);
-		pbrpc_message_free(pbresponse, TRUE);
+		printf("server callback not found %d\n", rpcmessage->msgtype);
+		ret = pbrpc_send_response(context, NULL, FREERDS__PBRPC__RPCBASE__RPCSTATUS__NOTFOUND, rpcmessage->msgtype, rpcmessage->tag);
 		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
 		return ret;
 	}
 
 	request = pbrpc_fill_payload(rpcmessage);
-	ret = cb(request, &response);
+	ret = cb(rpcmessage->tag, request, &response);
 	free(request);
+
+	/* If callback doesn't set a respond response needs to be sent ansync */
+	if (NULL == response)
+	{
+		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
+		return 0;
+	}
+
+	ret = pbrpc_send_response(context, response, ret, rpcmessage->msgtype, rpcmessage->tag);
 	freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
-	pbresponse->status = ret;
-
-	if (ret == 0)
-	{
-		pbresponse->has_payload = 1;
-		pbresponse->payload.data = (unsigned char*) response->data;
-		pbresponse->payload.len = response->dataLen;
-	}
-	else
-	{
-		pbresponse->errordescription = response->errorDescription;
-	}
-
-	ret = pbrpc_process_message_out(context, pbresponse);
-	pbrpc_free_payload(response);
-	pbrpc_message_free(pbresponse, FALSE);
 	return ret;
 }
 

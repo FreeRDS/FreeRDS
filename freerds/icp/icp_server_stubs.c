@@ -46,7 +46,7 @@
 	} \
 	*pbresponse = payload;
 
-int ping(pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
+int ping(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
 	ICP_SERVER_STUB_SETUP(Ping, ping)
 

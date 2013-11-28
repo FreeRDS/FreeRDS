@@ -51,7 +51,7 @@ struct pbrpc_payload
 };
 typedef struct pbrpc_payload pbRPCPayload;
 
-typedef int (*pbRPCCallback)(pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
+typedef int (*pbRPCCallback)(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
 
 struct pbrpc_method
 {
@@ -82,6 +82,8 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 		pbRpcResponseCallback callback, void *callback_args);
 void pbrpc_register_methods(pbRPCContext* context, pbRPCMethod* methods);
+int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 status, UINT32 type,
+UINT32 tag);
 
 
 #endif //_PBRPC_H

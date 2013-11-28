@@ -21,5 +21,5 @@
 #define _ICP_SERVER_STUBS_H
 #include "pbrpc.h"
 
-int ping(pbRPCPayload *request, pbRPCPayload **response);
+int ping(LONG tag, pbRPCPayload *request, pbRPCPayload **response);
 #endif //_ICP_SERVER_STUBS_H

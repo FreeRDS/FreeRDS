@@ -60,6 +60,41 @@
 #define ICP_CLIENT_STUB_CLEANUP(camel, expanded) \
 	freerds__icp__##expanded ##_response__free_unpacked(response, NULL);
 
+#define ICP_CLIENT_SEND_PREPARE(camel, expanded) \
+			Freerds__Icp__##camel ##Response response; \
+			freerds__icp__##expanded ##_response__init(&response);
+
+#define ICP_CLIENT_SEND_PACK(camel, expanded) \
+			pbresponse.dataLen = freerds__icp__##expanded ##_response__get_packed_size(&response); \
+			pbresponse.data = malloc(pbresponse.dataLen); \
+			ret = freerds__icp__##expanded ##_response__pack(&response, (uint8_t*) pbresponse.data);
+
+int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success)
+{
+	pbRPCPayload pbresponse;;
+	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
+	int ret = 0;
+
+	if (!context)
+		return -1;
+
+	switch (type)
+	{
+		case FREERDS__ICP__MSGTYPE__SwitchTo:
+			{
+				type = FREERDS__ICP__MSGTYPE__SwitchTo;
+				ICP_CLIENT_SEND_PREPARE(SwitchTo, switch_to)
+				response.success = success;
+				ICP_CLIENT_SEND_PACK(SwitchTo, switch_to)
+			}
+			break;
+		default:
+			/* type not found */
+			return -1;
+			break;
+	}
+	return  pbrpc_send_response(context, &pbresponse, status, type, tag);
+}
 
 int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed)
 {
