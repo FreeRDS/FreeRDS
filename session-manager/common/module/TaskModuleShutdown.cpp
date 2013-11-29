@@ -66,7 +66,7 @@ namespace freerds
 
 			void TaskModuleShutdown::stopSession() {
 				sessionNS::SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
-				if (!session) {
+				if (session) {
 					session->stopModule();
 					APP_CONTEXT.getSessionStore()->removeSession(mSessionId);
 				} else {
