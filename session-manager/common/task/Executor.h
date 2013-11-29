@@ -41,7 +41,7 @@ namespace freerds
 
 			void runExecutor();
 
-			void addTask(Task * task);
+			void addTask(TaskPtr task);
 
 
 		private:
@@ -51,7 +51,7 @@ namespace freerds
 			HANDLE mhStopEvent;
 			HANDLE mhServerThread;
 			CRITICAL_SECTION mCSection;
-			SignalingQueue<Task> mTasks;
+			SignalingQueue<TaskPtr> mTasks;
 		};
 	}
 }

@@ -48,6 +48,9 @@ namespace freerds
 			long mNewSessionId;
 
 		};
+
+		typedef boost::shared_ptr<TaskSwitchTo> TaskSwitchToPtr;
+
 		}
 	}
 }

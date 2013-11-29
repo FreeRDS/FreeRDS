@@ -47,7 +47,7 @@ public:
 		return mSignalHandle;
 	}
 
-	void addElement(QueueElement * element)
+	void addElement(QueueElement element)
 	{
 		EnterCriticalSection(&mCSection);
 		mlist.push_back(element);
@@ -66,11 +66,11 @@ public:
 		EnterCriticalSection(&mCSection);
 	}
 
-	QueueElement* getElementLockFree()
+	QueueElement getElementLockFree()
 	{
-		QueueElement* element;
+		QueueElement element;
 		if (mlist.empty())
-			return NULL;
+			return QueueElement();
 		element = mlist.front();
 		mlist.pop_front();
 		return element;
@@ -84,7 +84,7 @@ public:
 private:
 	HANDLE mSignalHandle;
 	CRITICAL_SECTION mCSection;
-	std::list<QueueElement *> mlist;
+	std::list<QueueElement> mlist;
 };
 
 #endif /* SIGNALINGQUEUE_H_ */

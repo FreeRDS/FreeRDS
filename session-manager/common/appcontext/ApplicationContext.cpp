@@ -227,7 +227,7 @@ namespace freerds
 			return mRpcEngine.stopEngine();
 		}
 
-		SignalingQueue<callNS::Call> * ApplicationContext::getRpcOutgoingQueue()
+		SignalingQueue<callNS::Call *> * ApplicationContext::getRpcOutgoingQueue()
 		{
 			return &mRpcOutgoingCalls;
 		}
@@ -273,7 +273,7 @@ namespace freerds
 			mTaskExecutor.stop();
 		}
 
-		void ApplicationContext::addTask(taskNS::Task * task) {
+		void ApplicationContext::addTask(taskNS::TaskPtr task) {
 			mTaskExecutor.addTask(task);
 		}
 

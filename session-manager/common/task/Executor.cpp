@@ -91,12 +91,12 @@ namespace task {
 				if (WaitForSingleObject(queueHandle, 0) == WAIT_OBJECT_0)
 				{
 					mTasks.resetEventAndLockQueue();
-					Task * currentTask = mTasks.getElementLockFree();
+					TaskPtr currentTask = mTasks.getElementLockFree();
 
 					while (currentTask)
 					{
 						currentTask->run();
-						delete currentTask;
+						currentTask.reset();
 						currentTask = mTasks.getElementLockFree();
 					}
 
@@ -106,7 +106,7 @@ namespace task {
 			}
 		}
 
-		void Executor::addTask(Task* task) {
+		void Executor::addTask(TaskPtr task) {
 			mTasks.addElement(task);
 		}
 

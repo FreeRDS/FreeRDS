@@ -53,7 +53,7 @@ namespace freerds
 
 			void startTaskExecutor();
 			void stopTaskExecutor();
-			void addTask(taskNS::Task * task);
+			void addTask(taskNS::TaskPtr task);
 
 			std::string getHomePath();
 			std::string getLibraryPath();
@@ -61,7 +61,7 @@ namespace freerds
 			std::string getShareDataPath();
 			std::string getSystemConfigPath();
 
-			SignalingQueue<callNS::Call> * getRpcOutgoingQueue();
+			SignalingQueue<callNS::Call *> * getRpcOutgoingQueue();
 
 			int loadModulesFromPath(std::string path);
 			void setupTestingPropValues();
@@ -83,7 +83,7 @@ namespace freerds
 
 			configNS::PropertyManager mPropertyManager;
 			pbRPC::RpcEngine mRpcEngine;
-			SignalingQueue<callNS::Call> mRpcOutgoingCalls;
+			SignalingQueue<callNS::Call *> mRpcOutgoingCalls;
 			wLog* mWLogRoot;
 			moduleNS::ModuleManager mModuleManager;
 #ifdef WITH_FDSAPI

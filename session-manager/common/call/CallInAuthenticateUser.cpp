@@ -164,7 +164,7 @@ namespace freerds
 				}
 			}
 
-			TaskSwitchTo * switchToTask = new TaskSwitchTo();
+			TaskSwitchToPtr switchToTask = TaskSwitchToPtr(new TaskSwitchTo());
 			switchToTask->setConnectionId(APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId));
 			switchToTask->setServiceEndpoint(currentSession->getPipeName());
 			switchToTask->setOldSessionId(mSessionId);

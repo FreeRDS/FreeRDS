@@ -37,6 +37,9 @@ namespace freerds
 			void stopSession();
 			long mSessionId;
 		};
+
+		typedef boost::shared_ptr<TaskModuleShutdown> TaskModuleShutdownPtr;
+
 		}
 	}
 }

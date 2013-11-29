@@ -35,7 +35,7 @@ namespace freerds
 			static wLog* logger_CallBacks = WLog_Get("freerds.SessionManager.module.callbacks");
 
 			int CallBacks::shutdown(long sessionId) {
-				moduleNS::TaskModuleShutdown  * task = new moduleNS::TaskModuleShutdown();
+				moduleNS::TaskModuleShutdownPtr task = moduleNS::TaskModuleShutdownPtr(new moduleNS::TaskModuleShutdown());
 				task->setSessionId(sessionId);
 				APP_CONTEXT.addTask(task);
 				return 0;

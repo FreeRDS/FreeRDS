@@ -443,7 +443,7 @@ int RpcEngine::serveClient()
 {
 	DWORD status;
 	DWORD nCount;
-	SignalingQueue<callNS::Call>* outgoingQueue = APP_CONTEXT.getRpcOutgoingQueue();
+	SignalingQueue<callNS::Call *>* outgoingQueue = APP_CONTEXT.getRpcOutgoingQueue();
 	HANDLE queueHandle = outgoingQueue->getSignalHandle();
 	HANDLE events[3];
 

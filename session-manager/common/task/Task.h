@@ -20,6 +20,8 @@
 #ifndef __TASK_H_
 #define __TASK_H_
 
+#include <boost/shared_ptr.hpp>
+
 namespace freerds
 {
 	namespace task
@@ -31,6 +33,10 @@ namespace freerds
 			virtual ~Task() {};
 			virtual void run() = 0;
 		};
+
+		typedef boost::shared_ptr<Task> TaskPtr;
+
+
 	}
 }
 
