@@ -26,6 +26,7 @@
 
 #include <winpr/crt.h>
 #include <winpr/wtsapi.h>
+#include <winpr/synch.h>
 #include <boost/shared_ptr.hpp>
 
 #include <freerds/module.h>
@@ -43,23 +44,27 @@ namespace freerds
 			~Connection();
 
 			std::string getDomain();
-			void setDomain(std::string domainName);
+			//void setDomain(std::string domainName);
 			std::string getUserName();
-			void setUserName(std::string username);
+			//void setUserName(std::string username);
 
 			void setSessionId(long sessionId);
 			long getSessionId();
 
 			long getConnectionId();
 
+			int authenticateUser(std::string username, std::string domain, std::string password);
 
 
 		private:
 			DWORD mConnectionId;
 			DWORD mSessionId;
 
+			int mAuthStatus;
+
 			std::string mUsername;
 			std::string mDomain;
+			CRITICAL_SECTION mCSection;
 
 		};
 

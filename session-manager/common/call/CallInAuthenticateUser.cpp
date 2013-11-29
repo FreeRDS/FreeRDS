@@ -24,7 +24,6 @@
 #include "CallInAuthenticateUser.h"
 #include "TaskSwitchTo.h"
 #include <appcontext/ApplicationContext.h>
-#include <module/AuthModule.h>
 
 using freerds::icps::AuthenticateUserRequest;
 using freerds::icps::AuthenticateUserResponse;
@@ -102,22 +101,15 @@ namespace freerds
 
 		int CallInAuthenticateUser::authenticateUser() {
 
-			std::string authModule;
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.module",authModule,mUserName)) {
-				authModule = "PAM";
+			long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(connectionId);
+			if (currentConnection == NULL) {
+				WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Cannot get Connection for sessionId %lu for resolved connectionId %lu",mSessionId,connectionId);
+				mAuthStatus = -1;
+				return -1;
 			}
-
-			moduleNS::AuthModule* auth = moduleNS::AuthModule::loadFromName(authModule);
-
-			if (!auth) {
-				mResult = 1;
-				return 1;
-			}
-
-			mAuthStatus = auth->logonUser(mUserName, mDomainName, mPassword);
-
-			delete auth;
-			return 0;
+			mAuthStatus = currentConnection->authenticateUser(mUserName,mDomainName,mPassword);
+			return mAuthStatus;
 
 		}
 

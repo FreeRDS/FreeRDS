@@ -32,6 +32,9 @@
 #include <sstream>
 
 #include <appcontext/ApplicationContext.h>
+#include <module/AuthModule.h>
+#include <utils/CSGuard.h>
+
 
 #include "Connection.h"
 
@@ -45,8 +48,13 @@ namespace freerds
 			static wLog* logger_Connection = WLog_Get("freerds.sessionmanager.session.connection");
 
 			Connection::Connection(DWORD connectionId)
-				: mConnectionId(connectionId),mSessionId(0)
+				: mConnectionId(connectionId),mSessionId(0),mAuthStatus(-1)
 			{
+				if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
+				{
+					 WLog_Print(logger_Connection, WLOG_FATAL, "cannot init SessionStore critical section!");
+				}
+
 			}
 
 			Connection::~Connection()
@@ -58,16 +66,16 @@ namespace freerds
 				return mDomain;
 			}
 
-			void Connection::setDomain(std::string domainName) {
+			/*void Connection::setDomain(std::string domainName) {
 				mDomain = domainName;
-			}
+			}*/
 
 			std::string Connection::getUserName() {
 				return mUsername;
 			}
-			void Connection::setUserName(std::string username) {
+			/*void Connection::setUserName(std::string username) {
 				mUsername = username;
-			}
+			}*/
 
 			void Connection::setSessionId(long sessionId) {
 				mSessionId = sessionId;
@@ -79,6 +87,36 @@ namespace freerds
 
 			long Connection::getConnectionId() {
 				return mConnectionId;
+			}
+
+			int Connection::authenticateUser(std::string username, std::string domain, std::string password) {
+
+				CSGuard guard(&mCSection);
+				if (mAuthStatus == 0) {
+					// a Connection can only be authorized once
+					return -1;
+				}
+
+				std::string authModule;
+				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.module",authModule,username)) {
+					authModule = "PAM";
+				}
+
+				moduleNS::AuthModule* auth = moduleNS::AuthModule::loadFromName(authModule);
+
+				if (!auth) {
+					return 1;
+				}
+
+				mAuthStatus = auth->logonUser(username, domain, password);
+
+				delete auth;
+				if (mAuthStatus == 0) {
+					mUsername = username;
+					mDomain = domain;
+				}
+				return mAuthStatus;
+
 			}
 
 
