@@ -382,6 +382,16 @@ BOOL freerds_client_process_switch_session(rdsConnection *connection, wMessage *
 
 	return TRUE;
 }
+BOOL freerds_client_process_logoff(rdsConnection *connection, wMessage *message)
+{
+	int error = 0;
+	struct rds_notification_msg_logoff *notification = (struct rds_notification_msg_logoff *)message->wParam;
+	freerds_connector_free(connection->connector);
+	connection->connector = NULL;
+	error = freerds_icp_sendResponse(notification->tag, message->id, 0, TRUE);
+	free(notification);
+	return FALSE;
+}
 
 BOOL freerds_client_process_notification(rdsConnection *connection, wMessage *message)
 {
@@ -391,6 +401,8 @@ BOOL freerds_client_process_notification(rdsConnection *connection, wMessage *me
 		case NOTIFY_SWITCHTO:
 			ret = freerds_client_process_switch_session(connection, message);
 			break;
+		case NOTIFY_LOGOFF:
+			ret = freerds_client_process_logoff(connection, message);
 		default:
 			break;
 	}
@@ -505,7 +517,7 @@ void* freerds_connection_main_thread(void* arg)
 			{
 				if (connector->CheckEventHandles((rdsBackend *)connector) < 0)
 				{
-					printf(stderr, "ModuleClient->CheckEventHandles failure\n");
+					fprintf(stderr, "ModuleClient->CheckEventHandles failure\n");
 					break;
 				}
 			}

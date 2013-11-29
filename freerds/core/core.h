@@ -102,7 +102,7 @@ struct rds_notification_msg_switch
 	char *endpoint;
 };
 
-struct rds_notification_msg_disconnect
+struct rds_notification_msg_logoff
 {
 	UINT32 tag;
 };
@@ -110,6 +110,7 @@ struct rds_notification_msg_disconnect
 enum notifications
 {
 	NOTIFY_SWITCHTO = 0,
+	NOTIFY_LOGOFF,
 };
 
 #ifdef __cplusplus

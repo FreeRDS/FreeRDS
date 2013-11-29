@@ -86,3 +86,28 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 	ICP_SERVER_STUB_RESPOND(SwitchTo, switch_to)
 	return PBRPC_SUCCESS;
 }
+
+int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
+{
+	rdsConnection *connection = NULL;
+	ICP_SERVER_STUB_SETUP(LogOffUserSession, log_off_user_session)
+	connection = app_context_get_connection(request->connectionid);
+	if (connection)
+	{
+		struct rds_notification_msg_logoff *msg = malloc(sizeof(struct rds_notification_msg_logoff));
+		msg->tag = tag;
+		MessageQueue_Post(connection->notifications, (void *)connection, NOTIFY_LOGOFF, (void*) msg, NULL);
+		freerds__icp__log_off_user_session_request__free_unpacked(request, NULL);
+		// response is sent after processing the notification
+		*pbresponse = NULL;
+		return 0;
+	}
+	else
+	{
+		fprintf(stderr, "something went wrong\n");
+		response.loggedoff = FALSE;
+	}
+
+	ICP_SERVER_STUB_RESPOND(LogOffUserSession, log_off_user_session)
+	return PBRPC_SUCCESS;
+}

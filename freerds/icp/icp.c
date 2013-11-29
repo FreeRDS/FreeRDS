@@ -36,6 +36,7 @@ static pbRPCMethod icpMethods[] =
 {
 	{ FREERDS__ICP__MSGTYPE__Ping, ping },
 	{ FREERDS__ICP__MSGTYPE__SwitchTo, switchTo},
+	{ FREERDS__ICP__MSGTYPE__LogOffUserSession, logOffUserSession},
 	{ 0, NULL }
 };
 
