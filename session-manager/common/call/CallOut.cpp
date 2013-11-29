@@ -33,7 +33,7 @@ namespace freerds
 		{
 		CallOut::CallOut():mAnswer(NULL)
 		{
-
+			initAnswerHandle();
 		};
 
 		CallOut::~CallOut()
@@ -58,7 +58,9 @@ namespace freerds
 
 		void CallOut::initAnswerHandle()
 		{
-			mAnswer = CreateEvent(NULL,FALSE,FALSE,NULL);
+			if (mAnswer == NULL) {
+				mAnswer = CreateEvent(NULL,FALSE,FALSE,NULL);
+			}
 		}
 
 		HANDLE CallOut::getAnswerHandle()
