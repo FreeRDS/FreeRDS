@@ -2,6 +2,7 @@ package freerds.icps;
 
 enum MSGTYPE {
 	AuthenticateUser = 200;	
+	EndSession = 201;
 }
 
 message AuthenticateUserRequest {
@@ -21,3 +22,10 @@ message AuthenticateUserResponse {
 	optional string serviceEndpoint = 2; 
 }
 
+message EndSessionRequest {
+	required uint32 sessionId = 1;
+}
+
+message EndSessionResponse {
+	required bool success = 1;
+}
