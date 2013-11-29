@@ -59,7 +59,7 @@ namespace freerds
 		void CallOut::initAnswerHandle()
 		{
 			if (mAnswer == NULL) {
-				mAnswer = CreateEvent(NULL,FALSE,FALSE,NULL);
+				mAnswer = CreateEvent(NULL,TRUE,FALSE,NULL);
 			}
 		}
 
