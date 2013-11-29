@@ -187,10 +187,11 @@ namespace freerds
 
 			authenticateUser();
 			if (mAuthStatus != 0) {
-				return getAuthSession();
+				getAuthSession();
 			} else {
-				return getUserSession();
+				getUserSession();
 			}
+			return 0;
 		}
 
 		}

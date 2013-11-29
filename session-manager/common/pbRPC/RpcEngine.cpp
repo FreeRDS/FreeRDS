@@ -318,10 +318,9 @@ int RpcEngine::processData()
 			// call the implementation ...
 			createdCallIn->decodeRequest();
 
-			if (!createdCallIn->doStuff())
-			{
-				createdCallIn->encodeResponse();
-			}
+			createdCallIn->doStuff();
+
+			createdCallIn->encodeResponse();
 			// send the result
 			send(createdCall);
 			delete createdCall;

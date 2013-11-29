@@ -176,7 +176,7 @@ namespace freerds
 					return getUserSession();
 				}
 			}
-			return 1;
+			return 0;
 		}
 
 		}
