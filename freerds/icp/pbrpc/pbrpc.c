@@ -146,7 +146,7 @@ static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase
 
 	ListDictionary_Remove(context->transactions, (void *)((UINT_PTR)rpcmessage->tag));
 	if (ta->responseCallback)
-		ta->responseCallback(PBRPC_SUCCESS, rpcmessage, ta->callbackArg);
+		ta->responseCallback(rpcmessage->status, rpcmessage, ta->callbackArg);
 	if (ta->freeAfterResponse)
 		free(ta);
 	return 0;
@@ -275,6 +275,7 @@ int pbrpc_process_message_in(pbRPCContext* context)
 	if (rpcmessage == NULL)
 		return 1;
 
+	//fprintf(stderr, "pbrpc tag %d size %d, type %d status %d \n", rpcmessage->tag, rpcmessage->payload.len, rpcmessage->msgtype, rpcmessage->status);
 	if (rpcmessage->isresponse)
 		ret = pbrpc_process_response(context, rpcmessage);
 	else
@@ -441,7 +442,7 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 
 	ta.responseCallback = pbrpc_response_local_cb;
 	ta.callbackArg = &local_context;
-	ta.freeAfterResponse = 0;
+	ta.freeAfterResponse = FALSE;
 
 	// TODO: the funky case can occur because an equivalent of pthread_condition is
 	//		not used, unfortunately this kind of primitive does not exists under win32
