@@ -98,7 +98,7 @@ namespace freerds
 
 		int CallInLogonUser::authenticateUser() {
 
-			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
 			if (currentConnection == NULL) {
 				WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Cannot get Connection for connectionId %lu",mConnectionId);
 				mAuthStatus = -1;
@@ -185,9 +185,7 @@ namespace freerds
 		int CallInLogonUser::doStuff()
 		{
 
-			if (authenticateUser() != 0) {
-				return 1;
-			}
+			authenticateUser();
 			if (mAuthStatus != 0) {
 				return getAuthSession();
 			} else {
