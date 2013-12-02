@@ -64,6 +64,8 @@ set(ICP_SOURCES
 	common/call/CallInAuthenticateUser.cpp
 	common/call/CallOutSwitchTo.cpp
 	common/call/CallOutLogOffUserSession.cpp
+	common/call/CallInEndSession.cpp
+	common/call/TaskEndSession.cpp
 	common/call/TaskSwitchTo.cpp	
 	common/pbRPC/RpcEngine.cpp
 )
