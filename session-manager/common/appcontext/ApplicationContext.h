@@ -66,6 +66,8 @@ namespace freerds
 			int loadModulesFromPath(std::string path);
 			void setupTestingPropValues();
 
+			void rpcDisconnected();
+
 		private:
 			std::string mHomePath;
 			std::string mLibraryPath;

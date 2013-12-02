@@ -49,6 +49,10 @@ namespace freerds
 					mCurrentState(WTSDown), mUserToken(NULL),
 					mCurrentModuleContext(NULL), mAuthSession(false)
 			{
+				if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
+				{
+					 WLog_Print(logger_Session, WLOG_FATAL, "cannot init Session critical section!");
+				}
 
 			}
 

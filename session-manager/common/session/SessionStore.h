@@ -25,6 +25,7 @@
 #include "Session.h"
 
 #include <string>
+#include <list>
 #include <winpr/synch.h>
 #include <map>
 
@@ -46,6 +47,7 @@ namespace freerds
 			SessionPtr getSession(long sessionId);
 			SessionPtr getFirstSessionUserName(std::string username, std::string domain);
 			SessionPtr createSession();
+			std::list<SessionPtr> getAllSessions();
 			int removeSession(long sessionId);
 
 		private:

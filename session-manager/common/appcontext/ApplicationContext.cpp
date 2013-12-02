@@ -26,7 +26,7 @@
 #include <winpr/library.h>
 #include <winpr/environment.h>
 
-#include <vector>
+#include <list>
 #include <utils/StringHelpers.h>
 
 #include "ApplicationContext.h"
@@ -275,6 +275,22 @@ namespace freerds
 
 		void ApplicationContext::addTask(taskNS::TaskPtr task) {
 			mTaskExecutor.addTask(task);
+		}
+
+		void ApplicationContext::rpcDisconnected() {
+			// remove all connections
+			getConnectionStore()->reset();
+			// iterate over the session and disconnect them if they are auth sessions.
+			std::list<sessionNS::SessionPtr> allSessions = getSessionStore()->getAllSessions();
+
+			std::list<sessionNS::SessionPtr>::const_iterator iterator;
+			for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator) {
+				sessionNS::SessionPtr currentSession = *iterator;
+				if (currentSession->isAuthSession()) {
+					currentSession->stopModule();
+					getSessionStore()->removeSession(currentSession->getSessionID());
+				}
+			}
 		}
 
 

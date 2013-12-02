@@ -85,6 +85,7 @@ namespace freerds
 			std::string mModuleName;
 			RDS_MODULE_COMMON* mCurrentModuleContext;
 			WTS_CONNECTSTATE_CLASS mCurrentState;
+			CRITICAL_SECTION mCSection;
 		};
 
 		typedef boost::shared_ptr<Session> SessionPtr;

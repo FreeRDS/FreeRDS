@@ -87,6 +87,17 @@ namespace freerds
 				mSessionMap.erase(sessionId);
 				return 0;
 			}
+
+			std::list<SessionPtr> SessionStore::getAllSessions() {
+				CSGuard guard(&mCSection);
+				std::list<SessionPtr> list;
+				for (TSessionMap::const_iterator it=mSessionMap.begin(); it!=mSessionMap.end(); ++it) {
+					list.push_back( it->second );
+				}
+			}
+
+
 		}
 	}
 }
+

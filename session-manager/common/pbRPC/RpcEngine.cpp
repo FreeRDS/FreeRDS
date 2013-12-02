@@ -134,7 +134,7 @@ void* RpcEngine::listenerThread(void* arg)
 		}
 
 		engine->resetStatus();
-		APP_CONTEXT.getConnectionStore()->reset();
+		APP_CONTEXT.rpcDisconnected();
 	}
 
 	return NULL;
