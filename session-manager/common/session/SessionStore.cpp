@@ -94,6 +94,7 @@ namespace freerds
 				for (TSessionMap::const_iterator it=mSessionMap.begin(); it!=mSessionMap.end(); ++it) {
 					list.push_back( it->second );
 				}
+				return list;
 			}
 
 
