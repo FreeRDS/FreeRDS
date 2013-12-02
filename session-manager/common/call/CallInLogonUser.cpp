@@ -170,6 +170,17 @@ namespace freerds
 			}
 			currentSession->setModuleName(greeter);
 
+			currentSession->setUserName(mUserName);
+			currentSession->setDomain(mDomainName);
+
+			if (!currentSession->generateAuthEnvBlockAndModify())
+			{
+				WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "generateEnvBlockAndModify failed for user %s with domain %s",mUserName.c_str(),mDomainName.c_str());
+				mResult = 1;// will report error with answer
+				return 1;
+			}
+
+
 			if (!currentSession->startModule(greeter))
 			{
 				mResult = 1;// will report error with answer

@@ -52,6 +52,8 @@ namespace freerds
 
 			bool generateUserToken();
 			bool generateEnvBlockAndModify();
+			bool generateAuthEnvBlockAndModify();
+
 			char** getPEnvBlock();
 
 			bool isAuthSession();

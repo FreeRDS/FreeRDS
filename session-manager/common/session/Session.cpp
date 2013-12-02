@@ -141,6 +141,30 @@ namespace freerds
 				return true;
 			}
 
+			bool Session::generateAuthEnvBlockAndModify()
+			{
+				struct passwd* pwnam;
+				char envstr[256];
+
+				if (mpEnvBlock)
+				{
+					free(mpEnvBlock);
+					mpEnvBlock = NULL;
+				}
+
+				if (mUsername.length() != 0)
+				{
+					SetEnvironmentVariableEBA(&mpEnvBlock, "FREERDS_USER", mUsername.c_str());
+				}
+
+				if (mDomain.length() != 0)
+				{
+					SetEnvironmentVariableEBA(&mpEnvBlock, "FREERDS_DOMAIN", mDomain.c_str());
+				}
+
+				return true;
+			}
+
 			char** Session::getPEnvBlock()
 			{
 				return &mpEnvBlock;
