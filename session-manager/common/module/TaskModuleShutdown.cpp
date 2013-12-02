@@ -1,5 +1,5 @@
 /**
- * Callback Handlers for Modules
+ * Task for ModuleShutdown callback.
  *
  * Copyright 2013 Thinstuff Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
@@ -33,7 +33,7 @@ namespace freerds
 	{
 		namespace module
 		{
-			static wLog* logger_CallBacks = WLog_Get("freerds.SessionManager.module.taskshutdown");
+			static wLog* logger_TaskModuleShutdown = WLog_Get("freerds.SessionManager.module.taskshutdown");
 
 			void TaskModuleShutdown::run() {
 				long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
@@ -51,11 +51,11 @@ namespace freerds
 							stopSession();
 							APP_CONTEXT.getConnectionStore()->removeConnection(connectionId);
 						} else {
-							WLog_Print(logger_CallBacks, WLOG_ERROR, "CallOutLogOffUserSession reported that logoff in freerds was not successful!");
+							WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "CallOutLogOffUserSession reported that logoff in freerds was not successful!");
 						}
 					} else {
 						// report error
-						WLog_Print(logger_CallBacks, WLOG_ERROR, "CallOutLogOffUserSession reported error %d!", logoffSession.getResult());
+						WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "CallOutLogOffUserSession reported error %d!", logoffSession.getResult());
 					}
 				}
 			}
@@ -70,7 +70,7 @@ namespace freerds
 					session->stopModule();
 					APP_CONTEXT.getSessionStore()->removeSession(mSessionId);
 				} else {
-					WLog_Print(logger_CallBacks, WLOG_ERROR, "session for id %d was not found!",mSessionId);
+					WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "session for id %d was not found!",mSessionId);
 				}
 			}
 
