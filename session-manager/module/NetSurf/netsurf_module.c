@@ -28,6 +28,7 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/pipe.h>
+#include <winpr/environment.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -75,6 +76,33 @@ void netsurf_rds_module_free(RDS_MODULE_COMMON * module)
 	free(module);
 }
 
+void initMaxMinRes(rdsModuleNetSurf * ns) {
+	char tempstr[256];
+
+	long maxXRes, maxYRes, minXRes, minYRes = 0;
+
+	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.maxXRes", &maxXRes)) {
+		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.maxYRes", &maxYRes)) {
+		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.minXRes", &minXRes)) {
+		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.minYRes", &minYRes)){
+		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+
+	if ((maxXRes != 0) && (maxYRes != 0) && (minXRes != 0) && (minYRes != 0)) {
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
+		SetEnvironmentVariableEBA(&ns->commonModule.envBlock, "FREERDS_SMAX", tempstr);
+
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
+		SetEnvironmentVariableEBA(&ns->commonModule.envBlock, "FREERDS_SMIN", tempstr);
+	}
+}
+
 char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
@@ -101,6 +129,8 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 
 	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.yres", &yres))
 		yres = 768;
+
+	initMaxMinRes(ns);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -f freerds -b 32 -w %d -h %d",
 			"netsurf", (int) xres, (int) yres);

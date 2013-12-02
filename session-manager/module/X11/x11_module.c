@@ -147,6 +147,33 @@ int x11_rds_stop_process(PROCESS_INFORMATION *pi)
 	return ret;
 }
 
+void initMaxMinRes(rdsModuleX11 * x11) {
+	char tempstr[256];
+
+	long maxXRes, maxYRes, minXRes, minYRes = 0;
+
+	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.maxXRes", &maxXRes)) {
+		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.maxYRes", &maxYRes)) {
+		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.minXRes", &minXRes)) {
+		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.minYRes", &minYRes)){
+		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+
+	if ((maxXRes != 0) && (maxYRes != 0) && (minXRes != 0) && (minYRes != 0)) {
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
+		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SMAX", tempstr);
+
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
+		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SMIN", tempstr);
+	}
+}
+
 char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 {
 	BOOL status = TRUE;
@@ -190,6 +217,8 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", &colordepth))
 		colordepth = 24;
+
+	initMaxMinRes(x11);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
 			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) colordepth);

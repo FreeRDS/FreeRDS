@@ -29,6 +29,7 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/pipe.h>
+#include <winpr/environment.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -86,6 +87,34 @@ void rdp_rds_module_free(RDS_MODULE_COMMON* module)
 	free(rdp);
 }
 
+void initMaxMinRes(rdsModuleRdp * rdp) {
+	char tempstr[256];
+
+	long maxXRes, maxYRes, minXRes, minYRes = 0;
+
+	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.maxXRes", &maxXRes)) {
+		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.maxYRes", &maxYRes)) {
+		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.minXRes", &minXRes)) {
+		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.minYRes", &minYRes)){
+		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+
+	if ((maxXRes != 0) && (maxYRes != 0) && (minXRes != 0) && (minYRes != 0)) {
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
+		SetEnvironmentVariableEBA(&rdp->commonModule.envBlock, "FREERDS_SMAX", tempstr);
+
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
+		SetEnvironmentVariableEBA(&rdp->commonModule.envBlock, "FREERDS_SMIN", tempstr);
+	}
+}
+
+
 char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
@@ -114,6 +143,8 @@ char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 
 	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.yres", &yres))
 		yres = 768;
+
+	initMaxMinRes(rdp);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /size:%dx%d",
 			"freerds-rdp", (int) xres, (int) yres);

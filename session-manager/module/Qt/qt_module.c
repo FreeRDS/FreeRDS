@@ -77,6 +77,33 @@ void qt_rds_module_free(RDS_MODULE_COMMON* module)
 	free(module);
 }
 
+void initMaxMinRes(rdsModuleQt * qt) {
+	char tempstr[256];
+
+	long maxXRes, maxYRes, minXRes, minYRes = 0;
+
+	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.maxXRes", &maxXRes)) {
+		WLog_Print(qt->log, WLOG_ERROR, "Setting: module.qt.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.maxYRes", &maxYRes)) {
+		WLog_Print(qt->log, WLOG_ERROR, "Setting: module.qt.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.minXRes", &minXRes)) {
+		WLog_Print(qt->log, WLOG_ERROR, "Setting: module.qt.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.minYRes", &minYRes)){
+		WLog_Print(qt->log, WLOG_ERROR, "Setting: module.qt.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+
+	if ((maxXRes != 0) && (maxYRes != 0) && (minXRes != 0) && (minYRes != 0)) {
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
+		SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_SMAX", tempstr);
+
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
+		SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_SMIN", tempstr);
+	}
+}
+
 char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
@@ -111,6 +138,8 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 
 	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.yres", &yres))
 		yres = 768;
+
+	initMaxMinRes(qt);
 
 	qPipeName = (char*) malloc(256);
 	sprintf_s(qPipeName, 256, "/tmp/.pipe/FreeRDS_%d_%s", (int) SessionId, endpoint);
