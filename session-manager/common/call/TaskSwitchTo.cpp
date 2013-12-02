@@ -33,7 +33,7 @@ namespace freerds
 	{
 		namespace call
 		{
-			static wLog* logger_CallBacks = WLog_Get("freerds.SessionManager.module.taskshutdown");
+			static wLog* logger_taskSwitchTo = WLog_Get("freerds.SessionManager.call.taskswitchto");
 
 			void TaskSwitchTo::run() {
 
@@ -46,17 +46,17 @@ namespace freerds
 
 
 				if (switchToCall.getResult() != 0) {
-					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo answer: RPC error %d!",switchToCall.getResult());
+					WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo answer: RPC error %d!",switchToCall.getResult());
 					return cleanUpOnError();
 				}
 				// first unpack the answer
 				if (switchToCall.decodeResponse()) {
 					//
-					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo: decoding of switchto answer failed!");
+					WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: decoding of switchto answer failed!");
 					return cleanUpOnError();
 				}
 				if (!switchToCall.isSuccess()) {
-					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo: switching in FreeRDS failed!");
+					WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: switching in FreeRDS failed!");
 					return cleanUpOnError();
 				}
 				sessionNS::SessionPtr currentSession;
@@ -66,12 +66,12 @@ namespace freerds
 					if (currentSession != NULL) {
 						currentSession->stopModule();
 						APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
-						WLog_Print(logger_CallBacks, WLOG_INFO, "TaskSwitchTo: session with sessionId %d was stopped!",mOldSessionId);
+						WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: session with sessionId %d was stopped!",mOldSessionId);
 					} else {
-						WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mOldSessionId);
+						WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mOldSessionId);
 					}
 				} else {
-					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo: no oldSessionId was set!");
+					WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no oldSessionId was set!");
 				}
 
 				APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId)->setSessionId(mNewSessionId);
@@ -100,9 +100,9 @@ namespace freerds
 				if (currentSession != NULL) {
 					currentSession->stopModule();
 					APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
-					WLog_Print(logger_CallBacks, WLOG_INFO, "TaskSwitchTo: cleaning up session with sessionId %d",mNewSessionId);
+					WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: cleaning up session with sessionId %d",mNewSessionId);
 				} else {
-					WLog_Print(logger_CallBacks, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mNewSessionId);
+					WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mNewSessionId);
 				}
 			}
 
