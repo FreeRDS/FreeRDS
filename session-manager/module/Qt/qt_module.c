@@ -37,6 +37,9 @@
 #include <freerds/module.h>
 #include <freerds/backend.h>
 
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "qt_module.h"
 
 RDS_MODULE_CONFIG_CALLBACKS gConfig;
@@ -49,8 +52,41 @@ struct rds_module_qt
 	wLog* log;
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
+	HANDLE monitorThread;
+	HANDLE monitorStopEvent;
+	BOOL isRunning;
 };
 typedef struct rds_module_qt rdsModuleQt;
+
+void monitoring_thread(void *arg)
+{
+	DWORD ret = 0;
+	int status;
+	rdsModuleQt *qt = (rdsModuleQt*)arg;
+
+	while (1)
+	{
+		ret = waitpid(qt->pi.dwProcessId, &status, WNOHANG);
+		if (ret != 0)
+		{
+			break;
+		}
+		if (WaitForSingleObject(qt->monitorStopEvent, 200) == WAIT_OBJECT_0)
+		{
+			// monitorStopEvent triggered
+			WLog_Print(qt->log, WLOG_DEBUG, "s %d: monitor stop event", qt->commonModule.sessionId);
+			return;
+		}
+	}
+
+	qt->isRunning = FALSE;
+	GetExitCodeProcess(qt->pi.hProcess, &ret);
+	CloseHandle(qt->pi.hProcess);
+	CloseHandle(qt->pi.hThread);
+	WLog_Print(qt->log, WLOG_DEBUG, "s %d: QT process exited with %d (monitoring thread)", qt->commonModule.sessionId, ret);
+	gStatus.shutdown(qt->commonModule.sessionId);
+	return;
+}
 
 
 RDS_MODULE_COMMON* qt_rds_module_new(void)
@@ -117,6 +153,7 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	rdsModuleQt* qt = (rdsModuleQt*) module;
 	DWORD SessionId = qt->commonModule.sessionId;
 	char *appName = "nice_greeter";
+	qt->monitorStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	WLog_Print(qt->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
 			(int) SessionId, endpoint);
@@ -163,6 +200,7 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 		return NULL;
 	}
 
+	qt->isRunning = TRUE;
 	WLog_Print(qt->log, WLOG_DEBUG, "Process %d/%d created with status: %d", qt->pi.dwProcessId,qt->pi.dwThreadId, status);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
@@ -171,6 +209,7 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 		return NULL;
 	}
 
+	qt->monitorThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) monitoring_thread, qt, 0, NULL);
 	return pipeName;
 }
 
@@ -180,6 +219,15 @@ int qt_rds_module_stop(RDS_MODULE_COMMON* module)
 	DWORD ret;
 
 	WLog_Print(qt->log, WLOG_DEBUG, "RdsModuleStop");
+
+	if (!qt->isRunning)
+	{
+		return 0;
+	}
+
+	SetEvent(qt->monitorStopEvent);
+	WaitForSingleObject(qt->monitorThread, INFINITE);
+
 	TerminateProcess(qt->pi.hProcess,0);
 
 	 // Wait until child process exits.
