@@ -359,6 +359,15 @@ void freerds_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
 	}
 }
 
+void freerds_suppress_output(rdpContext* context, BYTE allow, RECTANGLE_16* area)
+{
+	rdsConnection* connection = (rdsConnection*) context;
+	rdsBackend* backend = (rdsBackend *)connection->connector;
+
+	if (backend && backend->client && backend->client->SuppressOutput)
+		backend->client->SuppressOutput(backend, allow);
+}
+
 BOOL freerds_client_process_switch_session(rdsConnection *connection, wMessage *message)
 {
 	struct rds_notification_msg_switch *notification = (struct rds_notification_msg_switch *)message->wParam;
@@ -450,6 +459,7 @@ void* freerds_connection_main_thread(void* arg)
 	freerds_input_register_callbacks(client->input);
 
 	client->update->SurfaceFrameAcknowledge = freerds_update_frame_acknowledge;
+	client->update->SuppressOutput = freerds_suppress_output;
 
 	ClientEvent = client->GetEventHandle(client);
 	ChannelEvent = WTSVirtualChannelManagerGetEventHandle(connection->vcm);
