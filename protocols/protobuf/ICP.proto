@@ -55,6 +55,9 @@ message LogonUserRequest {
 	required string Username = 2;
 	required string Password = 3;
 	required string Domain = 4;
+	required uint32 Width = 5;
+	required uint32 Height = 6;
+	required uint32 ColorDepth = 7;
 }
 
 message LogonUserResponse {
