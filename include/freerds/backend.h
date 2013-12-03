@@ -145,6 +145,7 @@ int freerds_write_logoff_user(wStream* s, RDS_MSG_LOGOFF_USER* msg);
 #define RDS_CLIENT_LOGON_USER			111
 #define RDS_CLIENT_LOGOFF_USER			112
 #define RDS_CLIENT_ICPS_REPLY			113
+#define RDS_CLIENT_SUPPRESS_OUTPUT		114
 
 struct _RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT
 {
@@ -250,6 +251,14 @@ struct _RDS_MSG_ICPS_REPLY
 };
 typedef struct _RDS_MSG_ICPS_REPLY RDS_MSG_ICPS_REPLY;
 
+struct _RDS_MSG_SUPPRESS_OUTPUT
+{
+	DEFINE_MSG_COMMON();
+
+	UINT32 suppressOutput;
+};
+typedef struct _RDS_MSG_SUPPRESS_OUTPUT RDS_MSG_SUPPRESS_OUTPUT;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -283,6 +292,9 @@ int freerds_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
 
 int freerds_read_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg);
 int freerds_write_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg);
+
+int freerds_read_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg);
+int freerds_write_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg);
 
 #ifdef __cplusplus
 }
@@ -678,6 +690,7 @@ typedef int (*pRdsClientVBlankEvent)(rdsBackend* backend);
 typedef int (*pRdsClientLogonUser)(rdsBackend* backend, RDS_MSG_LOGON_USER* msg);
 typedef int (*pRdsClientLogoffUser)(rdsBackend* backend, RDS_MSG_LOGOFF_USER* msg);
 typedef int (*pRdsClientIcps)(rdsBackend* backend, RDS_MSG_ICPS_REPLY* msg);
+typedef int (*pRdsClientSuppressOutput)(rdsBackend* backend, UINT32 suppress_output);
 
 struct rds_client_interface
 {
@@ -691,6 +704,7 @@ struct rds_client_interface
 	pRdsClientLogonUser LogonUser;
 	pRdsClientLogoffUser LogoffUser;
 	pRdsClientIcps Icps;
+	pRdsClientSuppressOutput SuppressOutput;
 };
 typedef struct rds_client_interface rdsClientInterface;
 

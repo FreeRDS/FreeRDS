@@ -388,6 +388,29 @@ int freerds_write_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg)
 	return 0;
 }
 
+int freerds_read_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg)
+{
+	if (Stream_GetRemainingLength(s) < 4)
+		return -1;
+
+	Stream_Read_UINT32(s, msg->suppressOutput);
+	return 0;
+}
+
+int freerds_write_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg)
+{
+	msg->msgFlags = 0;
+	msg->length = freerds_write_common_header(0, (RDS_MSG_COMMON*) msg) + 4;
+
+	if (!s)
+		return msg->length;
+
+	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
+
+	Stream_Write_UINT32(s, msg->suppressOutput);
+	return 0;
+}
+
 
 /**
  * Server Messages
@@ -2227,6 +2250,22 @@ void freerds_icps_reply_free(RDS_MSG_ICPS_REPLY* msg)
 	free(msg);
 }
 
+void* freerds_suppress_output_copy(RDS_MSG_SUPPRESS_OUTPUT* msg)
+{
+	RDS_MSG_SUPPRESS_OUTPUT* dup = NULL;
+
+	dup = (RDS_MSG_SUPPRESS_OUTPUT *)malloc(sizeof(RDS_MSG_SUPPRESS_OUTPUT));
+	CopyMemory(dup, msg, sizeof(RDS_MSG_SUPPRESS_OUTPUT));
+
+	return (void *)dup;
+}
+
+void freerds_suppress_output_free(RDS_MSG_SUPPRESS_OUTPUT* msg)
+{
+	free(msg);
+}
+
+
 static RDS_MSG_DEFINITION RDS_MSG_ICPS_REPLY_DEFINITION =
 {
 		sizeof(RDS_MSG_ICPS_REPLY), "ICPS reply",
@@ -2234,6 +2273,16 @@ static RDS_MSG_DEFINITION RDS_MSG_ICPS_REPLY_DEFINITION =
 		(pRdsMessageWrite) freerds_write_icps_reply,
 		(pRdsMessageCopy) freerds_icps_reply_copy,
 		(pRdsMessageFree) freerds_icps_reply_free
+};
+
+
+static RDS_MSG_DEFINITION RDS_MSG_SUPPRESS_OUTPUT_DEFINITION =
+{
+		sizeof(RDS_MSG_SUPPRESS_OUTPUT), "Suppress output",
+		(pRdsMessageRead) freerds_read_suppress_output,
+		(pRdsMessageWrite) freerds_write_suppress_output,
+		(pRdsMessageCopy) freerds_suppress_output_copy,
+		(pRdsMessageFree) freerds_suppress_output_free
 };
 
 
@@ -2254,7 +2303,7 @@ static RDS_MSG_DEFINITION* RDS_CLIENT_MSG_DEFINITIONS[32] =
 	&RDS_MSG_LOGON_USER_DEFINITION, /* 11 */
 	&RDS_MSG_LOGOFF_USER_DEFINITION, /* 12 */
 	&RDS_MSG_ICPS_REPLY_DEFINITION, /* 13 */
-	NULL, /* 14 */
+	&RDS_MSG_SUPPRESS_OUTPUT_DEFINITION, /* 14 */
 	NULL, /* 15 */
 	NULL, /* 16 */
 	NULL, /* 17 */

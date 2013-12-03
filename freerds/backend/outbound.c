@@ -226,6 +226,28 @@ int freerds_client_outbound_icps_reply(rdsBackend* backend, RDS_MSG_ICPS_REPLY* 
 	return freerds_client_outbound_write_message(backend, (RDS_MSG_COMMON*) msg);
 }
 
+int freerds_client_outbound_suppress_output(rdsBackend* backend, UINT32 suppress_output)
+{
+	int length;
+	int status;
+	wStream* s;
+	RDS_MSG_SUPPRESS_OUTPUT msg;
+
+	msg.msgFlags = 0;
+	msg.type = RDS_CLIENT_SUPPRESS_OUTPUT;
+	msg.suppressOutput = suppress_output;
+
+	s = backend->OutboundStream;
+	Stream_SetPosition(s, 0);
+
+	length = freerds_write_suppress_output(NULL, &msg);
+	freerds_write_suppress_output(s, &msg);
+
+	status = freerds_named_pipe_write(backend->hClientPipe, Stream_Buffer(s), length);
+
+	return status;
+}
+
 rdsClientInterface* freerds_client_outbound_interface_new()
 {
 	rdsClientInterface* client;
@@ -246,6 +268,7 @@ rdsClientInterface* freerds_client_outbound_interface_new()
 		client->LogonUser = freerds_client_outbound_logon_user;
 		client->LogoffUser = freerds_client_outbound_logoff_user;
 		client->Icps = freerds_client_outbound_icps_reply;
+		client->SuppressOutput = freerds_client_outbound_suppress_output;
 	}
 
 	return client;
