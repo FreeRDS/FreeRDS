@@ -82,17 +82,17 @@ namespace freerds
 					std::string actualPath = path.substr(gConnectionPrefix.size());
 					sessionNS::SessionPtr currentSession =APP_CONTEXT.getSessionStore()->getSession(sessionID);
 					if (currentSession == NULL) {
-						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get Session for sessionID %ul",sessionID);
+						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get Session for sessionID %lu",sessionID);
 						return false;
 					}
 					long connectionID = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(currentSession->getSessionID());
 					if (connectionID == 0) {
-						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get ConnectionId for sessionID %ul",sessionID);
+						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get ConnectionId for sessionID %lu",sessionID);
 						return false;
 					}
 					sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(connectionID);
 					if (currentConnection == NULL) {
-						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get Connection for connectionId %ul",connectionID);
+						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get Connection for connectionId %lu",connectionID);
 						return false;
 					}
 					return currentConnection->getProperty(actualPath,helper);

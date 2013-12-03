@@ -251,7 +251,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	initResolutions(x11,&xres,&yres,&colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
-			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) colordepth);
+			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) 24);
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 	status = CreateProcessA(NULL, lpCommandLine,
