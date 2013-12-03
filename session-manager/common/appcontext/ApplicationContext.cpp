@@ -300,6 +300,9 @@ namespace freerds
 				if (currentSession->isAuthSession()) {
 					currentSession->stopModule();
 					getSessionStore()->removeSession(currentSession->getSessionID());
+				} else {
+					// disconnect the session
+					currentSession->setConnectState(WTSDisconnected);
 				}
 			}
 		}
