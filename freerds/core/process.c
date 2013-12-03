@@ -194,7 +194,8 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 		connection->codecMode = TRUE;
 
 	error_code = freerds_icp_LogonUser((UINT32)(connection->id),
-			settings->Username, settings->Domain, settings->Password, &endpoint);
+			settings->Username, settings->Domain, settings->Password, settings->DesktopWidth,
+			settings->DesktopHeight, settings->ColorDepth, &endpoint);
 
 	if (error_code != 0)
 	{

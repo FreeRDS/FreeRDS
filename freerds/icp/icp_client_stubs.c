@@ -238,7 +238,7 @@ int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff)
 }
 
 int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
-		char* password, char** serviceEndpoint)
+		char* password, UINT32 width, UINT32 height, UINT32 bbp, char** serviceEndpoint)
 {
 	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
 
@@ -246,6 +246,9 @@ int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
 	request.domain = domain;
 	request.username = username;
 	request.password = password;
+	request.width = width;
+	request.height = height;
+	request.colordepth = bbp;
 
 	ICP_CLIENT_STUB_CALL(LogonUser, logon_user)
 
