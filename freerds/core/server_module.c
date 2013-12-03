@@ -194,6 +194,11 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 	if (!backend->framebuffer.fbAttached && msg->attach)
 	{
 		RDS_MSG_PAINT_RECT fm;
+		rdsBackendConnector *connector = (rdsBackendConnector *)backend;
+		rdpSettings *settings = connector->settings;
+		UINT32 DesktopWidth = msg->width;
+		UINT32 DesktopHeight = msg->height;
+
 
 		backend->framebuffer.fbSharedMemory = (BYTE*) shmat(backend->framebuffer.fbSegmentId, 0, 0);
 		backend->framebuffer.fbAttached = TRUE;
@@ -204,6 +209,22 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		backend->framebuffer.image = (void*) pixman_image_create_bits(PIXMAN_x8r8g8b8,
 				backend->framebuffer.fbWidth, backend->framebuffer.fbHeight,
 				(uint32_t*) backend->framebuffer.fbSharedMemory, backend->framebuffer.fbScanline);
+
+		if ((DesktopWidth % 4) != 0)
+			DesktopWidth += (DesktopWidth % 4);
+
+		if ((DesktopHeight % 4) != 0)
+			DesktopHeight += (DesktopHeight % 4);
+
+		if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight))
+		{
+			fprintf(stderr, "Resizing client to %dx%d\n", DesktopWidth, DesktopHeight);
+
+			settings->DesktopWidth = DesktopWidth;
+			settings->DesktopHeight = DesktopHeight;
+
+			connector->connection->client->update->DesktopResize(connector->connection->client->update->context);
+		}
 
 		fm.type = RDS_SERVER_PAINT_RECT;
 		fm.nTopRect = 0;

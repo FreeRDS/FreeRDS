@@ -178,6 +178,12 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	rdsBackendConnector* connector = connection->connector;
 	char *endpoint;
 
+	if (connector)
+	{
+		printf("reactivation\n");
+		return TRUE;
+	}
+
 	settings = client->settings;
 	settings->BitmapCacheVersion = 2;
 
@@ -495,11 +501,13 @@ void* freerds_connection_main_thread(void* arg)
 
 		if (WaitForSingleObject(GlobalTermEvent, 0) == WAIT_OBJECT_0)
 		{
+			fprintf(stderr, "GlobalTermEvent\n");
 			break;
 		}
 
 		if (WaitForSingleObject(LocalTermEvent, 0) == WAIT_OBJECT_0)
 		{
+			fprintf(stderr, "LocalTermEvent\n");
 			break;
 		}
 
