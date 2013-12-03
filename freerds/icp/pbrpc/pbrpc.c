@@ -1,8 +1,8 @@
 /**
  * pbRPC - a simple, protocol buffer based RCP mechanism
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
  * Copyright 2013 Hardening <contact@hardening-consulting.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
