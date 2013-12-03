@@ -54,8 +54,6 @@ namespace freerds
 
 			void reset();
 
-
-
 		private:
 			TConnectionMap mConnectionMap;
 			CRITICAL_SECTION mCSection;

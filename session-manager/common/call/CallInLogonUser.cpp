@@ -39,7 +39,7 @@ namespace freerds
 
 
 		CallInLogonUser::CallInLogonUser()
-			: mConnectionId(0), mAuthStatus(0)
+			: mConnectionId(0), mAuthStatus(0),mWidth(0),mHeight(0),mColorDepth(0)
 		{
 
 		};
@@ -74,6 +74,12 @@ namespace freerds
 
 			mPassword = req.password();
 
+			mWidth = req.width();
+
+			mHeight = req.height();
+
+			mColorDepth = req.colordepth();
+
 			return 0;
 		};
 
@@ -81,9 +87,7 @@ namespace freerds
 		{
 			// encode protocol buffers
 			LogonUserResponse resp;
-			// stup do stuff here
 
-			//resp.set_authstatus(mAuthStatus);
 			resp.set_serviceendpoint(mPipeName);
 
 			if (!resp.SerializeToString(&mEncodedResponse))
@@ -142,6 +146,13 @@ namespace freerds
 				currentSession->setModuleName(moduleName);
 			}
 
+			currentConnection->setSessionId(currentSession->getSessionID());
+
+			currentConnection->getClientInformation()->with = mWidth;
+			currentConnection->getClientInformation()->height = mHeight;
+			currentConnection->getClientInformation()->colordepth = mColorDepth;
+
+
 			if (currentSession->getConnectState() == WTSDown)
 			{
 				std::string pipeName;
@@ -153,7 +164,6 @@ namespace freerds
 				}
 			}
 
-			currentConnection->setSessionId(currentSession->getSessionID());
 			mPipeName = currentSession->getPipeName();
 			return 0;
 		}
@@ -180,6 +190,15 @@ namespace freerds
 				return 1;
 			}
 
+			currentConnection->setSessionId(currentSession->getSessionID());
+
+			currentConnection->getClientInformation()->with = mWidth;
+			currentConnection->getClientInformation()->height = mHeight;
+			currentConnection->getClientInformation()->colordepth = mColorDepth;
+
+			currentSession->setAuthSession(true);
+
+
 
 			if (!currentSession->startModule(greeter))
 			{
@@ -187,8 +206,6 @@ namespace freerds
 				return 1;
 			}
 
-			currentConnection->setSessionId(currentSession->getSessionID());
-			currentSession->setAuthSession(true);
 			mPipeName = currentSession->getPipeName();
 			return 0;
 		}

@@ -31,12 +31,21 @@
 
 #include <freerds/module.h>
 
+#include <config/PropertyLevel.h>
+
 namespace freerds
 {
 	namespace sessionmanager
 	{
 		namespace session
 		{
+
+		typedef struct _CLIENT_INFORMATION {
+			long with;
+			long height;
+			long colordepth;
+		}CLIENT_INFORMATION, * pCLIENT_INFORMATION;
+
 		class Connection
 		{
 		public:
@@ -51,9 +60,13 @@ namespace freerds
 			void setSessionId(long sessionId);
 			long getSessionId();
 
+			pCLIENT_INFORMATION getClientInformation();
+
 			long getConnectionId();
 
 			int authenticateUser(std::string username, std::string domain, std::string password);
+
+			bool getProperty(std::string path, PROPERTY_STORE_HELPER & helper);
 
 
 		private:
@@ -62,9 +75,13 @@ namespace freerds
 
 			int mAuthStatus;
 
+			CLIENT_INFORMATION mClientInformation;
+
 			std::string mUsername;
 			std::string mDomain;
 			CRITICAL_SECTION mCSection;
+
+
 
 		};
 

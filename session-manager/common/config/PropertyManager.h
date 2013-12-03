@@ -37,20 +37,6 @@ namespace freerds
 	{
 		namespace config
 		{
-			typedef enum _PROPERTY_STORE_TYPE
-			{
-				BoolType = 1,
-				NumberType = 2,
-				StringType = 3
-			} PROPERTY_STORE_TYPE, *PPROPERTY_STORE_TYPE;
-
-
-			typedef struct _PROPERTY_STORE_HELPER {
-				PROPERTY_STORE_TYPE type;
-				bool boolValue;
-				long numberValue;
-				std::string stringValue;
-			}PROPERTY_STORE_HELPER, *PPROPERTY_STORE_HELPER;
 
 			typedef std::map<std::string, PROPERTY_STORE_HELPER> TPropertyMap;
 			typedef std::pair<std::string, PROPERTY_STORE_HELPER> TPropertyPair;

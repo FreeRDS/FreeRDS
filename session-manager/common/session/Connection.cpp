@@ -55,6 +55,7 @@ namespace freerds
 					 WLog_Print(logger_Connection, WLOG_FATAL, "cannot init SessionStore critical section!");
 				}
 
+				memset(&mClientInformation, 0, sizeof(mClientInformation));
 			}
 
 			Connection::~Connection()
@@ -117,6 +118,29 @@ namespace freerds
 				}
 				return mAuthStatus;
 
+			}
+
+			pCLIENT_INFORMATION Connection::getClientInformation() {
+				return &mClientInformation;
+			}
+
+
+			bool Connection::getProperty(std::string path,
+					PROPERTY_STORE_HELPER& helper) {
+				if (path.compare("xres") == 0) {
+					helper.type = NumberType;
+					helper.numberValue = mClientInformation.with;
+					return true;
+				} else if (path.compare("yres") == 0) {
+					helper.type = NumberType;
+					helper.numberValue = mClientInformation.height;
+					return true;
+				} else if (path.compare("colordepth") == 0) {
+					helper.type = NumberType;
+					helper.numberValue = mClientInformation.colordepth;
+					return true;
+				}
+				return false;
 			}
 
 

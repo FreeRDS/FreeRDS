@@ -17,8 +17,10 @@
  * limitations under the License.
  */
 
-#ifndef PROPERTYLEVEL_H_
-#define PROPERTYLEVEL_H_
+#ifndef __PROPERTYLEVEL_H_
+#define __PROPERTYLEVEL_H_
+
+#include <string>
 
 typedef enum _PROPERTY_LEVEL
 {
@@ -28,4 +30,19 @@ typedef enum _PROPERTY_LEVEL
 }
 PROPERTY_LEVEL, *PPROPERTY_LEVEL;
 
-#endif /* PROPERTYLEVEL_H_ */
+typedef enum _PROPERTY_STORE_TYPE
+{
+	BoolType = 1,
+	NumberType = 2,
+	StringType = 3
+} PROPERTY_STORE_TYPE, *PPROPERTY_STORE_TYPE;
+
+
+typedef struct _PROPERTY_STORE_HELPER {
+	PROPERTY_STORE_TYPE type;
+	bool boolValue;
+	long numberValue;
+	std::string stringValue;
+}PROPERTY_STORE_HELPER, *PPROPERTY_STORE_HELPER;
+
+#endif /* __PROPERTYLEVEL_H_ */

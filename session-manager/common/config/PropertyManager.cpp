@@ -45,6 +45,9 @@ namespace freerds
 		{
 			static wLog* logger_PropertyManager = WLog_Get("freerds.SessionManager.config.propertymanager");
 
+			std::string gConnectionPrefix = "connection.";
+
+
 			PropertyManager::PropertyManager()
 			{
 
@@ -73,6 +76,28 @@ namespace freerds
 					}
 					currentUserName = session->getUserName();
 				}
+
+				if(path.substr(0, gConnectionPrefix.size()) == gConnectionPrefix) {
+				    // requesting session values
+					std::string actualPath = path.substr(gConnectionPrefix.size());
+					sessionNS::SessionPtr currentSession =APP_CONTEXT.getSessionStore()->getSession(sessionID);
+					if (currentSession == NULL) {
+						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get Session for sessionID %ul",sessionID);
+						return false;
+					}
+					long connectionID = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(currentSession->getSessionID());
+					if (connectionID == 0) {
+						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get ConnectionId for sessionID %ul",sessionID);
+						return false;
+					}
+					sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(connectionID);
+					if (currentConnection == NULL) {
+						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get Connection for connectionId %ul",connectionID);
+						return false;
+					}
+					return currentConnection->getProperty(actualPath,helper);
+				}
+
 
 				if (mPropertyUserMap.find(currentUserName) != mPropertyUserMap.end()) {
 					TPropertyMap * uPropMap = mPropertyUserMap[currentUserName];

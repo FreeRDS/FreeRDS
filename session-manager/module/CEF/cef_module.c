@@ -104,6 +104,68 @@ void initMaxMinRes(rdsModuleCef * cef) {
 	}
 }
 
+void initResolutions(rdsModuleCef * cef,  long * xres, long * yres, long * colordepth) {
+	char tempstr[256];
+
+	long maxXRes, maxYRes, minXRes, minYRes = 0;
+	long connectionXRes, connectionYRes, connectionColorDepth = 0;
+
+	if (!gConfig.getPropertyNumber(cef->commonModule.sessionId, "module.cef.maxXRes", &maxXRes)) {
+		WLog_Print(cef->log, WLOG_ERROR, "Setting: module.cef.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(cef->commonModule.sessionId, "module.cef.maxYRes", &maxYRes)) {
+		WLog_Print(cef->log, WLOG_ERROR, "Setting: module.cef.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(cef->commonModule.sessionId, "module.cef.minXRes", &minXRes)) {
+		WLog_Print(cef->log, WLOG_ERROR, "Setting: module.cef.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+	if (!gConfig.getPropertyNumber(cef->commonModule.sessionId, "module.cef.minYRes", &minYRes)){
+		WLog_Print(cef->log, WLOG_ERROR, "Setting: module.cef.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
+	}
+
+	if ((maxXRes != 0) && (maxYRes != 0) && (minXRes != 0) && (minYRes != 0)) {
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
+		SetEnvironmentVariableEBA(&cef->commonModule.envBlock, "FREERDS_SMAX", tempstr);
+
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
+		SetEnvironmentVariableEBA(&cef->commonModule.envBlock, "FREERDS_SMIN", tempstr);
+	}
+
+	gConfig.getPropertyNumber(cef->commonModule.sessionId, "connection.xres", &connectionXRes);
+	gConfig.getPropertyNumber(cef->commonModule.sessionId, "connection.yres", &connectionYRes);
+	gConfig.getPropertyNumber(cef->commonModule.sessionId, "connection.colordepth", &connectionColorDepth);
+
+	if ((connectionXRes == 0) || (connectionYRes == 0)) {
+		WLog_Print(cef->log, WLOG_ERROR, "got no XRes or YRes from client, using config values");
+
+		if (!gConfig.getPropertyNumber(cef->commonModule.sessionId, "module.cef.xres", xres))
+			*xres = 1024;
+
+		if (!gConfig.getPropertyNumber(cef->commonModule.sessionId, "module.cef.yres", yres))
+			*yres = 768;
+
+		if (!gConfig.getPropertyNumber(cef->commonModule.sessionId, "module.cef.colordepth", colordepth))
+			*colordepth = 24;
+		return;
+	}
+
+	if ((maxXRes > 0 ) && (connectionXRes > maxXRes)) {
+		*xres = maxXRes;
+	} else if ((minXRes > 0 ) && (connectionXRes < minXRes)) {
+		*xres = minXRes;
+	} else {
+		*xres = connectionXRes;
+	}
+
+	if ((maxYRes > 0 ) && (connectionYRes > maxYRes)) {
+		*yres = maxYRes;
+	} else if ((minYRes > 0 ) && (connectionYRes < minYRes)) {
+		*yres = minYRes;
+	} else {
+		*yres = connectionYRes;
+	}
+}
+
 char * cef_rds_module_start(RDS_MODULE_COMMON * module)
 {
 	BOOL status;

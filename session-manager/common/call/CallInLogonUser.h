@@ -54,6 +54,10 @@ namespace freerds
 				std::string mDomainName;
 				std::string mPassword;
 
+				long mWidth;
+				long mHeight;
+				long mColorDepth;
+
 				int mAuthStatus;
 				UINT32 mConnectionId;
 				std::string mPipeName;

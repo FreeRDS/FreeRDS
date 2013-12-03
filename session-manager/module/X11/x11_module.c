@@ -147,10 +147,11 @@ int x11_rds_stop_process(PROCESS_INFORMATION *pi)
 	return ret;
 }
 
-void initMaxMinRes(rdsModuleX11 * x11) {
+void initResolutions(rdsModuleX11 * x11,  long * xres, long * yres, long * colordepth) {
 	char tempstr[256];
 
 	long maxXRes, maxYRes, minXRes, minYRes = 0;
+	long connectionXRes, connectionYRes, connectionColorDepth = 0;
 
 	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.maxXRes", &maxXRes)) {
 		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
@@ -171,6 +172,40 @@ void initMaxMinRes(rdsModuleX11 * x11) {
 
 		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
 		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SMIN", tempstr);
+	}
+
+	gConfig.getPropertyNumber(x11->commonModule.sessionId, "connection.xres", &connectionXRes);
+	gConfig.getPropertyNumber(x11->commonModule.sessionId, "connection.yres", &connectionYRes);
+	gConfig.getPropertyNumber(x11->commonModule.sessionId, "connection.colordepth", &connectionColorDepth);
+
+	if ((connectionXRes == 0) || (connectionYRes == 0)) {
+		WLog_Print(gModuleLog, WLOG_ERROR, "got no XRes or YRes from client, using config values");
+
+		if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.xres", xres))
+			*xres = 1024;
+
+		if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.yres", yres))
+			*yres = 768;
+
+		if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", colordepth))
+			*colordepth = 24;
+		return;
+	}
+
+	if ((maxXRes > 0 ) && (connectionXRes > maxXRes)) {
+		*xres = maxXRes;
+	} else if ((minXRes > 0 ) && (connectionXRes < minXRes)) {
+		*xres = minXRes;
+	} else {
+		*xres = connectionXRes;
+	}
+
+	if ((maxYRes > 0 ) && (connectionYRes > maxYRes)) {
+		*yres = maxYRes;
+	} else if ((minYRes > 0 ) && (connectionYRes < minYRes)) {
+		*yres = minYRes;
+	} else {
+		*yres = connectionYRes;
 	}
 }
 
@@ -209,16 +244,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (displayNum));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
-	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.xres", &xres))
-		xres = 1024;
-
-	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.yres", &yres))
-		yres = 768;
-
-	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", &colordepth))
-		colordepth = 24;
-
-	initMaxMinRes(x11);
+	initResolutions(x11,&xres,&yres,&colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
 			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) colordepth);
