@@ -76,34 +76,6 @@ void netsurf_rds_module_free(RDS_MODULE_COMMON * module)
 	free(module);
 }
 
-void initMaxMinRes(rdsModuleNetSurf * ns) {
-	char tempstr[256];
-
-	long maxXRes, maxYRes, minXRes, minYRes = 0;
-
-	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.maxXRes", &maxXRes)) {
-		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.maxYRes", &maxYRes)) {
-		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.minXRes", &minXRes)) {
-		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.minYRes", &minYRes)){
-		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-
-	if ((maxXRes != 0) && (maxYRes != 0) && (minXRes != 0) && (minYRes != 0)) {
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
-		SetEnvironmentVariableEBA(&ns->commonModule.envBlock, "FREERDS_SMAX", tempstr);
-
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
-		SetEnvironmentVariableEBA(&ns->commonModule.envBlock, "FREERDS_SMIN", tempstr);
-	}
-}
-
-
 void initResolutions(rdsModuleNetSurf * ns,  long * xres, long * yres, long * colordepth) {
 	char tempstr[256];
 
@@ -164,6 +136,12 @@ void initResolutions(rdsModuleNetSurf * ns,  long * xres, long * yres, long * co
 	} else {
 		*yres = connectionYRes;
 	}
+
+	if (connectionColorDepth == 0) {
+		connectionColorDepth = 16;
+	}
+	*colordepth = connectionColorDepth;
+
 }
 
 char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)

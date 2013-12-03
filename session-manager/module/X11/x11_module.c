@@ -207,6 +207,10 @@ void initResolutions(rdsModuleX11 * x11,  long * xres, long * yres, long * color
 	} else {
 		*yres = connectionYRes;
 	}
+	if (connectionColorDepth == 0) {
+		connectionColorDepth = 16;
+	}
+	*colordepth = connectionColorDepth;
 }
 
 char* x11_rds_module_start(RDS_MODULE_COMMON * module)

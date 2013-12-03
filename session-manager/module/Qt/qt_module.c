@@ -173,6 +173,12 @@ void initResolutions(rdsModuleQt * qt,  long * xres, long * yres, long * colorde
 	} else {
 		*yres = connectionYRes;
 	}
+
+	if (connectionColorDepth == 0) {
+		connectionColorDepth = 16;
+	}
+	*colordepth = connectionColorDepth;
+
 }
 
 char* qt_rds_module_start(RDS_MODULE_COMMON* module)

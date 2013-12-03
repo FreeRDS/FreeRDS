@@ -147,6 +147,11 @@ void initResolutions(rdsModuleRdp * rdp,  long * xres, long * yres, long * color
 	} else {
 		*yres = connectionYRes;
 	}
+
+	if (connectionColorDepth == 0) {
+		connectionColorDepth = 16;
+	}
+	*colordepth = connectionColorDepth;
 }
 
 
