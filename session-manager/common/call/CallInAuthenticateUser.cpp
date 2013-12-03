@@ -145,6 +145,10 @@ namespace freerds
 				currentSession->setModuleName(moduleName);
 			}
 
+			long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+			APP_CONTEXT.getConnectionStore()->getOrCreateConnection(connectionId)->setSessionId(currentSession->getSessionID());
+
+
 			if (currentSession->getConnectState() == WTSDown)
 			{
 				std::string pipeName;
@@ -157,7 +161,7 @@ namespace freerds
 			}
 
 			TaskSwitchToPtr switchToTask = TaskSwitchToPtr(new TaskSwitchTo());
-			switchToTask->setConnectionId(APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId));
+			switchToTask->setConnectionId(connectionId);
 			switchToTask->setServiceEndpoint(currentSession->getPipeName());
 			switchToTask->setOldSessionId(mSessionId);
 			switchToTask->setNewSessionId(currentSession->getSessionID());
