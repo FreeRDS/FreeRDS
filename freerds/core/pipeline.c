@@ -23,12 +23,12 @@
 
 #include "freerds.h"
 
-int freerds_server_message_enqueue(rdsModuleConnector* connector, RDS_MSG_COMMON* msg)
+int freerds_server_message_enqueue(rdsBackend* backend, RDS_MSG_COMMON* msg)
 {
 	void* dup = NULL;
 	dup = freerds_server_message_copy(msg);
 
-	LinkedList_AddLast(connector->ServerList, (void*) dup);
+	LinkedList_AddLast(((rdsBackendConnector *)backend)->ServerList, (void*) dup);
 
 	return 0;
 }
@@ -37,155 +37,156 @@ int freerds_server_message_enqueue(rdsModuleConnector* connector, RDS_MSG_COMMON
  * Server Callbacks
  */
 
-int freerds_message_server_is_terminated(rdsModuleConnector* connector)
+int freerds_message_server_is_terminated(rdsBackend* backend)
 {
 	int status;
-	status = connector->ServerProxy->IsTerminated(connector);
+	status = ((rdsBackendConnector *)backend)->ServerProxy->IsTerminated(backend);
 	return status;
 }
 
-int freerds_message_server_begin_update(rdsModuleConnector* connector, RDS_MSG_BEGIN_UPDATE* msg)
+int freerds_message_server_begin_update(rdsBackend* backend, RDS_MSG_BEGIN_UPDATE* msg)
 {
 	msg->type = RDS_SERVER_BEGIN_UPDATE;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_end_update(rdsModuleConnector* connector, RDS_MSG_END_UPDATE* msg)
+int freerds_message_server_end_update(rdsBackend* backend, RDS_MSG_END_UPDATE* msg)
 {
 	msg->type = RDS_SERVER_END_UPDATE;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_beep(rdsModuleConnector* connector, RDS_MSG_BEEP* msg)
+int freerds_message_server_beep(rdsBackend* backend, RDS_MSG_BEEP* msg)
 {
 	msg->type = RDS_SERVER_BEEP;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_opaque_rect(rdsModuleConnector* connector, RDS_MSG_OPAQUE_RECT* msg)
+int freerds_message_server_opaque_rect(rdsBackend* backend, RDS_MSG_OPAQUE_RECT* msg)
 {
 	msg->type = RDS_SERVER_OPAQUE_RECT;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_screen_blt(rdsModuleConnector* connector, RDS_MSG_SCREEN_BLT* msg)
+int freerds_message_server_screen_blt(rdsBackend* backend, RDS_MSG_SCREEN_BLT* msg)
 {
 	msg->type = RDS_SERVER_SCREEN_BLT;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_paint_rect(rdsModuleConnector* connector, RDS_MSG_PAINT_RECT* msg)
+int freerds_message_server_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* msg)
 {
 	msg->type = RDS_SERVER_PAINT_RECT;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_patblt(rdsModuleConnector* connector, RDS_MSG_PATBLT* msg)
+int freerds_message_server_patblt(rdsBackend* backend, RDS_MSG_PATBLT* msg)
 {
 	msg->type = RDS_SERVER_PATBLT;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_dstblt(rdsModuleConnector* connector, RDS_MSG_DSTBLT* msg)
+int freerds_message_server_dstblt(rdsBackend* backend, RDS_MSG_DSTBLT* msg)
 {
 	msg->type = RDS_SERVER_DSTBLT;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_set_pointer(rdsModuleConnector* connector, RDS_MSG_SET_POINTER* msg)
+int freerds_message_server_set_pointer(rdsBackend* backend, RDS_MSG_SET_POINTER* msg)
 {
 	msg->type = RDS_SERVER_SET_POINTER;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_set_system_pointer(rdsModuleConnector* connector, RDS_MSG_SET_SYSTEM_POINTER* msg)
+int freerds_message_server_set_system_pointer(rdsBackend* backend, RDS_MSG_SET_SYSTEM_POINTER* msg)
 {
 	msg->type = RDS_SERVER_SET_SYSTEM_POINTER;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_set_palette(rdsModuleConnector* connector, RDS_MSG_SET_PALETTE* msg)
+int freerds_message_server_set_palette(rdsBackend* backend, RDS_MSG_SET_PALETTE* msg)
 {
 	msg->type = RDS_SERVER_SET_PALETTE;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_set_clipping_region(rdsModuleConnector* connector, RDS_MSG_SET_CLIPPING_REGION* msg)
+int freerds_message_server_set_clipping_region(rdsBackend* backend, RDS_MSG_SET_CLIPPING_REGION* msg)
 {
 	msg->type = RDS_SERVER_SET_CLIPPING_REGION;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_line_to(rdsModuleConnector* connector, RDS_MSG_LINE_TO* msg)
+int freerds_message_server_line_to(rdsBackend* backend, RDS_MSG_LINE_TO* msg)
 {
 	msg->type = RDS_SERVER_LINE_TO;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_cache_glyph(rdsModuleConnector* connector, RDS_MSG_CACHE_GLYPH* msg)
+int freerds_message_server_cache_glyph(rdsBackend* backend, RDS_MSG_CACHE_GLYPH* msg)
 {
 	msg->type = RDS_SERVER_CACHE_GLYPH;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_glyph_index(rdsModuleConnector* connector, RDS_MSG_GLYPH_INDEX* msg)
+int freerds_message_glyph_index(rdsBackend* backend, RDS_MSG_GLYPH_INDEX* msg)
 {
 	msg->type = RDS_SERVER_GLYPH_INDEX;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_shared_framebuffer(rdsModuleConnector* connector, RDS_MSG_SHARED_FRAMEBUFFER* msg)
+int freerds_message_server_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	msg->type = RDS_SERVER_SHARED_FRAMEBUFFER;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_reset(rdsModuleConnector* connector, RDS_MSG_RESET* msg)
+int freerds_message_server_reset(rdsBackend* backend, RDS_MSG_RESET* msg)
 {
 	msg->type = RDS_SERVER_RESET;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_create_offscreen_surface(rdsModuleConnector* connector, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg)
+int freerds_message_server_create_offscreen_surface(rdsBackend* backend, RDS_MSG_CREATE_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = RDS_SERVER_CREATE_OFFSCREEN_SURFACE;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_switch_offscreen_surface(rdsModuleConnector* connector, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
+int freerds_message_server_switch_offscreen_surface(rdsBackend* backend, RDS_MSG_SWITCH_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = RDS_SERVER_SWITCH_OFFSCREEN_SURFACE;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_delete_offscreen_surface(rdsModuleConnector* connector, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg)
+int freerds_message_server_delete_offscreen_surface(rdsBackend* backend, RDS_MSG_DELETE_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = RDS_SERVER_DELETE_OFFSCREEN_SURFACE;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_paint_offscreen_surface(rdsModuleConnector* connector, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg)
+int freerds_message_server_paint_offscreen_surface(rdsBackend* backend, RDS_MSG_PAINT_OFFSCREEN_SURFACE* msg)
 {
 	msg->type = RDS_SERVER_PAINT_OFFSCREEN_SURFACE;
-	return freerds_server_message_enqueue(connector, (RDS_MSG_COMMON*) msg);
+	return freerds_server_message_enqueue(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_message_server_window_new_update(rdsModuleConnector* connector, RDS_MSG_WINDOW_NEW_UPDATE* msg)
+int freerds_message_server_window_new_update(rdsBackend* backend, RDS_MSG_WINDOW_NEW_UPDATE* msg)
 {
 	//mod->ServerProxy->WindowNewUpdate(mod, msg);
 	return 0;
 }
 
-int freerds_message_server_window_delete(rdsModuleConnector* connector, RDS_MSG_WINDOW_DELETE* msg)
+int freerds_message_server_window_delete(rdsBackend* backend, RDS_MSG_WINDOW_DELETE* msg)
 {
 	//mod->ServerProxy->WindowDelete(mod, msg);
 	return 0;
 }
 
-int freerds_message_server_queue_process_message(rdsModuleConnector* connector, wMessage* message)
+int freerds_message_server_queue_process_message(rdsBackendConnector* connector, wMessage* message)
 {
 	int status;
 	rdsServerInterface* ServerProxy;
+	rdsBackend *backend = (rdsBackend *)connector;
 
 	ServerProxy = connector->ServerProxy;
 
@@ -195,87 +196,87 @@ int freerds_message_server_queue_process_message(rdsModuleConnector* connector, 
 	switch (message->id)
 	{
 		case RDS_SERVER_BEGIN_UPDATE:
-			status = ServerProxy->BeginUpdate(connector, (RDS_MSG_BEGIN_UPDATE*) message->wParam);
+			status = ServerProxy->BeginUpdate(backend, (RDS_MSG_BEGIN_UPDATE*) message->wParam);
 			break;
 
 		case RDS_SERVER_END_UPDATE:
-			status = ServerProxy->EndUpdate(connector, (RDS_MSG_END_UPDATE*) message->wParam);
+			status = ServerProxy->EndUpdate(backend, (RDS_MSG_END_UPDATE*) message->wParam);
 			break;
 
 		case RDS_SERVER_BEEP:
-			status = ServerProxy->Beep(connector, (RDS_MSG_BEEP*) message->wParam);
+			status = ServerProxy->Beep(backend, (RDS_MSG_BEEP*) message->wParam);
 			break;
 
 		case RDS_SERVER_OPAQUE_RECT:
-			status = ServerProxy->OpaqueRect(connector, (RDS_MSG_OPAQUE_RECT*) message->wParam);
+			status = ServerProxy->OpaqueRect(backend, (RDS_MSG_OPAQUE_RECT*) message->wParam);
 			break;
 
 		case RDS_SERVER_SCREEN_BLT:
-			status = ServerProxy->ScreenBlt(connector, (RDS_MSG_SCREEN_BLT*) message->wParam);
+			status = ServerProxy->ScreenBlt(backend, (RDS_MSG_SCREEN_BLT*) message->wParam);
 			break;
 
 		case RDS_SERVER_PAINT_RECT:
-			status = ServerProxy->PaintRect(connector, (RDS_MSG_PAINT_RECT*) message->wParam);
+			status = ServerProxy->PaintRect(backend, (RDS_MSG_PAINT_RECT*) message->wParam);
 			break;
 
 		case RDS_SERVER_PATBLT:
-			status = ServerProxy->PatBlt(connector, (RDS_MSG_PATBLT*) message->wParam);
+			status = ServerProxy->PatBlt(backend, (RDS_MSG_PATBLT*) message->wParam);
 			break;
 
 		case RDS_SERVER_DSTBLT:
-			status = ServerProxy->DstBlt(connector, (RDS_MSG_DSTBLT*) message->wParam);
+			status = ServerProxy->DstBlt(backend, (RDS_MSG_DSTBLT*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_POINTER:
-			status = ServerProxy->SetPointer(connector, (RDS_MSG_SET_POINTER*) message->wParam);
+			status = ServerProxy->SetPointer(backend, (RDS_MSG_SET_POINTER*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_SYSTEM_POINTER:
-			status = ServerProxy->SetSystemPointer(connector, (RDS_MSG_SET_SYSTEM_POINTER*) message->wParam);
+			status = ServerProxy->SetSystemPointer(backend, (RDS_MSG_SET_SYSTEM_POINTER*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_PALETTE:
-			status = ServerProxy->SetPalette(connector, (RDS_MSG_SET_PALETTE*) message->wParam);
+			status = ServerProxy->SetPalette(backend, (RDS_MSG_SET_PALETTE*) message->wParam);
 			break;
 
 		case RDS_SERVER_SET_CLIPPING_REGION:
-			status = ServerProxy->SetClippingRegion(connector, (RDS_MSG_SET_CLIPPING_REGION*) message->wParam);
+			status = ServerProxy->SetClippingRegion(backend, (RDS_MSG_SET_CLIPPING_REGION*) message->wParam);
 			break;
 
 		case RDS_SERVER_LINE_TO:
-			status = ServerProxy->LineTo(connector, (RDS_MSG_LINE_TO*) message->wParam);
+			status = ServerProxy->LineTo(backend, (RDS_MSG_LINE_TO*) message->wParam);
 			break;
 
 		case RDS_SERVER_CACHE_GLYPH:
-			status = ServerProxy->CacheGlyph(connector, (RDS_MSG_CACHE_GLYPH*) message->wParam);
+			status = ServerProxy->CacheGlyph(backend, (RDS_MSG_CACHE_GLYPH*) message->wParam);
 			break;
 
 		case RDS_SERVER_GLYPH_INDEX:
-			status = ServerProxy->GlyphIndex(connector, (RDS_MSG_GLYPH_INDEX*) message->wParam);
+			status = ServerProxy->GlyphIndex(backend, (RDS_MSG_GLYPH_INDEX*) message->wParam);
 			break;
 
 		case RDS_SERVER_SHARED_FRAMEBUFFER:
-			status = ServerProxy->SharedFramebuffer(connector, (RDS_MSG_SHARED_FRAMEBUFFER*) message->wParam);
+			status = ServerProxy->SharedFramebuffer(backend, (RDS_MSG_SHARED_FRAMEBUFFER*) message->wParam);
 			break;
 
 		case RDS_SERVER_RESET:
-			status = ServerProxy->Reset(connector, (RDS_MSG_RESET*) message->wParam);
+			status = ServerProxy->Reset(backend, (RDS_MSG_RESET*) message->wParam);
 			break;
 
 		case RDS_SERVER_CREATE_OFFSCREEN_SURFACE:
-			status = ServerProxy->CreateOffscreenSurface(connector, (RDS_MSG_CREATE_OFFSCREEN_SURFACE*) message->wParam);
+			status = ServerProxy->CreateOffscreenSurface(backend, (RDS_MSG_CREATE_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case RDS_SERVER_SWITCH_OFFSCREEN_SURFACE:
-			status = ServerProxy->SwitchOffscreenSurface(connector, (RDS_MSG_SWITCH_OFFSCREEN_SURFACE*) message->wParam);
+			status = ServerProxy->SwitchOffscreenSurface(backend, (RDS_MSG_SWITCH_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case RDS_SERVER_DELETE_OFFSCREEN_SURFACE:
-			status = ServerProxy->DeleteOffscreenSurface(connector, (RDS_MSG_DELETE_OFFSCREEN_SURFACE*) message->wParam);
+			status = ServerProxy->DeleteOffscreenSurface(backend, (RDS_MSG_DELETE_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		case RDS_SERVER_PAINT_OFFSCREEN_SURFACE:
-			status = ServerProxy->PaintOffscreenSurface(connector, (RDS_MSG_PAINT_OFFSCREEN_SURFACE*) message->wParam);
+			status = ServerProxy->PaintOffscreenSurface(backend, (RDS_MSG_PAINT_OFFSCREEN_SURFACE*) message->wParam);
 			break;
 
 		default:
@@ -294,7 +295,7 @@ int freerds_message_server_queue_process_message(rdsModuleConnector* connector, 
 	return 0;
 }
 
-int freerds_message_server_align_rect(rdsModuleConnector* connector, RDS_RECT* rect)
+int freerds_message_server_align_rect(rdsBackendConnector* connector, RDS_RECT* rect)
 {
 	rdpSettings* settings;
 	settings = connector->settings;
@@ -333,7 +334,7 @@ int freerds_message_server_align_rect(rdsModuleConnector* connector, RDS_RECT* r
 	return 0;
 }
 
-int freerds_message_server_queue_pack(rdsModuleConnector* connector)
+int freerds_message_server_queue_pack(rdsBackendConnector* connector)
 {
 	RDS_RECT rect;
 	int ChainedMode;
@@ -411,7 +412,7 @@ int freerds_message_server_queue_pack(rdsModuleConnector* connector)
 	return 0;
 }
 
-int freerds_message_server_queue_process_pending_messages(rdsModuleConnector* connector)
+int freerds_message_server_queue_process_pending_messages(rdsBackendConnector* connector)
 {
 	int count;
 	int status;
@@ -435,8 +436,9 @@ int freerds_message_server_queue_process_pending_messages(rdsModuleConnector* co
 	return status;
 }
 
-int freerds_message_server_connector_init(rdsModuleConnector* connector)
+int freerds_message_server_connector_init(rdsBackendConnector* backend)
 {
+	rdsBackendConnector* connector = (rdsBackendConnector *)backend;
 	connector->ServerProxy = (rdsServerInterface*) malloc(sizeof(rdsServerInterface));
 
 	//mod->ServerProxy = NULL; /* disable */

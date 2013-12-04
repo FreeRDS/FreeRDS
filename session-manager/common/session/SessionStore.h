@@ -1,8 +1,8 @@
 /**
  * Session store class
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,47 +17,49 @@
  * limitations under the License.
  */
 
-
-		// TODO USE SMART POINTERS to guard the Sesison objects
-
-#ifndef SESSIONSTORE_H_
-#define SESSIONSTORE_H_
+#ifndef __SESSIONSTORE_H_
+#define __SESSIONSTORE_H_
 
 #include <config.h>
 
 #include "Session.h"
 
 #include <string>
+#include <list>
 #include <winpr/synch.h>
 #include <map>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace session{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace session
+		{
+		typedef std::map<long , SessionPtr> TSessionMap;
+		typedef std::pair<long, SessionPtr> TSessionPair;
 
-		typedef std::map<long , Session*> TSessionMap;
-		typedef std::pair<long, Session*> TSessionPair;
-
-
-		class SessionStore{
+		class SessionStore
+		{
 		public:
 			SessionStore();
 			~SessionStore();
 
-			Session *getSession(long sessionID);
-			Session *createSession();
-			int removeSession(long sessionID);
+			SessionPtr getSession(long sessionId);
+			SessionPtr getFirstSessionUserName(std::string username, std::string domain);
+			SessionPtr getFirstDisconnectedSessionUserName(std::string username, std::string domain);
+			SessionPtr createSession();
+			std::list<SessionPtr> getAllSessions();
+			int removeSession(long sessionId);
 
 		private:
 			TSessionMap mSessionMap;
 			long mNextSessionId;
 			CRITICAL_SECTION mCSection;
 		};
-
 		}
 	}
 }
 
 namespace sessionNS = freerds::sessionmanager::session;
 
-#endif
+#endif //__SESSIONSTORE_H_

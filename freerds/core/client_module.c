@@ -1,7 +1,27 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: A Remote Desktop Protocol server.
  *
  * Copyright (C) Jay Sorg 2004-2013
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Short description
+ * optional longer/detailed description
+ *
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +60,7 @@ void* freerds_client_thread(void* arg)
 	HANDLE events[8];
 	HANDLE PackTimer;
 	LARGE_INTEGER due;
-	rdsModuleConnector* connector = (rdsModuleConnector*) arg;
+	rdsBackendConnector* connector = (rdsBackendConnector*) arg;
 
 	fps = connector->fps;
 	PackTimer = CreateWaitableTimer(NULL, TRUE, NULL);
@@ -64,7 +84,7 @@ void* freerds_client_thread(void* arg)
 
 		if (WaitForSingleObject(connector->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			if (freerds_transport_receive(connector) < 0)
+			if (freerds_transport_receive((rdsBackend *)connector) < 0)
 				break;
 		}
 
@@ -86,9 +106,10 @@ void* freerds_client_thread(void* arg)
 	return NULL;
 }
 
-
-int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount)
+int freerds_client_get_event_handles(rdsBackend* backend, HANDLE* events, DWORD* nCount)
 {
+
+	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
 	if (connector)
 	{
 		if (connector->ServerQueue)
@@ -101,11 +122,11 @@ int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* even
 	return 0;
 }
 
-int freerds_client_check_event_handles(rdsModuleConnector* connector)
+int freerds_client_check_event_handles(rdsBackend* backend)
 {
 	int status = 0;
 
-
+	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
 	if (!connector)
 		return 0;
 

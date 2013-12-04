@@ -29,14 +29,18 @@
 #include <freerdp/codec/bitmap.h>
 
 #include "core.h"
+#include "app_context.h"
 
 #include <pixman.h>
+
+//#define WITH_RDP6_BITMAP_COMPRESSION	1
+
 
 /**
  * Custom helpers
  */
 
-int freerds_set_bounds_rect(rdsConnection* connection, xrdpRect* rect)
+int freerds_set_bounds_rect(rdsConnection* connection, rdsRect* rect)
 {
 	rdpUpdate* update = connection->client->update;
 
@@ -61,6 +65,7 @@ int freerds_set_bounds_rect(rdsConnection* connection, xrdpRect* rect)
 
 int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
 {
+	connection->id = app_context_get_connectionid();
 	connection->settings = settings;
 
 	connection->bytesPerPixel = 4;
@@ -149,6 +154,18 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	MaxRegionWidth = 64 * 4;
 	MaxRegionHeight = 64 * 1;
 
+	if ((msg->nLeftRect % 4) != 0)
+	{
+		msg->nWidth += (msg->nLeftRect % 4);
+		msg->nLeftRect -= (msg->nLeftRect % 4);
+	}
+
+	if ((msg->nTopRect % 4) != 0)
+	{
+		msg->nHeight += (msg->nTopRect % 4);
+		msg->nTopRect -= (msg->nTopRect % 4);
+	}
+
 	if ((msg->nWidth * msg->nHeight) > (MaxRegionWidth * MaxRegionHeight))
 	{
 		RDS_MSG_PAINT_RECT subMsg;
@@ -171,7 +188,7 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 				subMsg.nWidth = (i < (rows - 1)) ? MaxRegionWidth : msg->nWidth - (i * MaxRegionWidth);
 				subMsg.nHeight = (j < (cols - 1)) ? MaxRegionHeight : msg->nHeight - (j * MaxRegionHeight);
 
-				//printf("\t[%d, %d]: x: %d y: %d width: %d height; %d\n",
+				//printf("\t[%d, %d]: x: %d y: %d width: %d height: %d\n",
 				//		i, j, subMsg.nLeftRect, subMsg.nTopRect, subMsg.nWidth, subMsg.nHeight);
 
 				if ((subMsg.nWidth * subMsg.nHeight) > 0)
@@ -192,6 +209,18 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	bitmapUpdate.count = bitmapUpdate.number = rows * cols;
 	bitmapData = (BITMAP_DATA*) malloc(sizeof(BITMAP_DATA) * bitmapUpdate.number);
 	bitmapUpdate.rectangles = bitmapData;
+
+	if ((msg->nWidth % 4) != 0)
+	{
+		msg->nLeftRect -= (msg->nWidth % 4);
+		msg->nWidth += (msg->nWidth % 4);
+	}
+
+	if ((msg->nHeight % 4) != 0)
+	{
+		msg->nTopRect -= (msg->nHeight % 4);
+		msg->nHeight += (msg->nHeight % 4);
+	}
 
 	for (i = 0; i < rows; i++)
 	{
@@ -232,29 +261,53 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 
 				scanline = msg->framebuffer->fbScanline;
 
-				image = pixman_image_create_bits(PIXMAN_r5g6b5, nWidth, nHeight, (uint32_t*) tile, nWidth * 2);
+#ifdef WITH_RDP6_BITMAP_COMPRESSION
+				if (bpp > 16)
+				{
+					int dstSize;
+					UINT32 format;
 
-				pixman_image_composite(PIXMAN_OP_OVER, fbImage, NULL, image,
-						bitmapData[k].destLeft, bitmapData[k].destTop, 0, 0, 0, 0, nWidth, nHeight);
+					format = FREERDP_PIXEL_FORMAT(msg->framebuffer->fbBitsPerPixel,
+							FREERDP_PIXEL_FORMAT_TYPE_ARGB, FREERDP_PIXEL_FLIP_NONE);
 
-				lines = freerdp_bitmap_compress((char*) pixman_image_get_data(image),
-						nWidth, nHeight, s, 16, 16384, nHeight - 1, ts, e);
-				Stream_SealLength(s);
+					buffer = freerdp_bitmap_compress_planar(data,
+							format, nWidth, nHeight, scanline, NULL, &dstSize);
 
-				bitmapData[k].bitmapDataStream = Stream_Buffer(s);
-				bitmapData[k].bitmapLength = Stream_Length(s);
+					bitmapData[k].bitmapDataStream = buffer;
+					bitmapData[k].bitmapLength = dstSize;
 
-				buffer = (BYTE*) malloc(bitmapData[k].bitmapLength);
-				CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
+					bitmapData[k].bitsPerPixel = 32;
+					bitmapData[k].cbScanWidth = nWidth * 4;
+					bitmapData[k].cbUncompressedSize = nWidth * nHeight * 4;
+				}
+				else
+#endif
+				{
+					image = pixman_image_create_bits(PIXMAN_r5g6b5, nWidth, nHeight, (uint32_t*) tile, nWidth * 2);
 
-				bitmapData[k].bitmapDataStream = buffer;
+					pixman_image_composite(PIXMAN_OP_OVER, fbImage, NULL, image,
+							bitmapData[k].destLeft, bitmapData[k].destTop, 0, 0, 0, 0, nWidth, nHeight);
+
+					lines = freerdp_bitmap_compress((char*) pixman_image_get_data(image),
+							nWidth, nHeight, s, 16, 16384, nHeight - 1, ts, e);
+					Stream_SealLength(s);
+
+					bitmapData[k].bitmapDataStream = Stream_Buffer(s);
+					bitmapData[k].bitmapLength = Stream_Length(s);
+
+					buffer = (BYTE*) malloc(bitmapData[k].bitmapLength);
+					CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
+					bitmapData[k].bitmapDataStream = buffer;
+
+					bitmapData[k].bitsPerPixel = 16;
+					bitmapData[k].cbScanWidth = nWidth * 2;
+					bitmapData[k].cbUncompressedSize = nWidth * nHeight * 2;
+
+					pixman_image_unref(image);
+				}
 
 				bitmapData[k].cbCompFirstRowSize = 0;
 				bitmapData[k].cbCompMainBodySize = bitmapData[k].bitmapLength;
-				bitmapData[k].cbScanWidth = nWidth * 2;
-				bitmapData[k].cbUncompressedSize = nWidth * nHeight * 2;
-
-				pixman_image_unref(image);
 
 				k++;
 			}
@@ -351,7 +404,7 @@ int freerds_orders_end_paint(rdsConnection* connection)
 }
 
 int freerds_orders_rect(rdsConnection* connection, int x, int y,
-		int cx, int cy, int color, xrdpRect* rect)
+		int cx, int cy, int color, rdsRect* rect)
 {
 	OPAQUE_RECT_ORDER opaqueRect;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -372,7 +425,7 @@ int freerds_orders_rect(rdsConnection* connection, int x, int y,
 }
 
 int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
-		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect)
+		int cx, int cy, int srcx, int srcy, int rop, rdsRect* rect)
 {
 	SCRBLT_ORDER scrblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -396,7 +449,7 @@ int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
 
 int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
-		xrdpBrush* brush, xrdpRect* rect)
+		rdpBrush* brush, rdsRect* rect)
 {
 	PATBLT_ORDER patblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -411,11 +464,11 @@ int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 	patblt.backColor = (UINT32) fg_color;
 	patblt.foreColor = (UINT32) bg_color;
 
-	patblt.brush.x = brush->x_orgin;
-	patblt.brush.y = brush->y_orgin;
+	patblt.brush.x = brush->x;
+	patblt.brush.y = brush->y;
 	patblt.brush.style = brush->style;
 	patblt.brush.data = patblt.brush.p8x8;
-	CopyMemory(patblt.brush.data, brush->pattern, 8);
+	CopyMemory(patblt.brush.data, brush->data, 8);
 	patblt.brush.hatch = patblt.brush.data[0];
 
 	freerds_set_bounds_rect(connection, rect);
@@ -426,7 +479,7 @@ int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 }
 
 int freerds_orders_dest_blt(rdsConnection* connection,
-		int x, int y, int cx, int cy, int rop, xrdpRect* rect)
+		int x, int y, int cx, int cy, int rop, rdsRect* rect)
 {
 	DSTBLT_ORDER dstblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -446,7 +499,7 @@ int freerds_orders_dest_blt(rdsConnection* connection,
 	return 0;
 }
 
-int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRect* rect)
+int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, rdsRect* rect)
 {
 	LINE_TO_ORDER lineTo;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -473,7 +526,7 @@ int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRec
 
 int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
-		int srcy, int cache_idx, xrdpRect* rect)
+		int srcy, int cache_idx, rdsRect* rect)
 {
 	MEMBLT_ORDER memblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -499,7 +552,7 @@ int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 	return 0;
 }
 
-int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect)
+int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, rdsRect* rect)
 {
 	GLYPH_INDEX_ORDER glyphIndex;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;

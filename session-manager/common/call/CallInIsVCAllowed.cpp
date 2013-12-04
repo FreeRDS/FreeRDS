@@ -1,8 +1,8 @@
 /**
  * Class for rpc call IsVirtualChannelAllowed (freerds to session manager)
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,54 +26,66 @@
 using freerds::icp::IsChannelAllowedRequest;
 using freerds::icp::IsChannelAllowedResponse;
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
-		CallInIsVCAllowed::CallInIsVCAllowed() {
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+		CallInIsVCAllowed::CallInIsVCAllowed()
+		{
 
 		};
 
-		CallInIsVCAllowed::~CallInIsVCAllowed() {
+		CallInIsVCAllowed::~CallInIsVCAllowed()
+		{
 
 		};
 
-		unsigned long CallInIsVCAllowed::getCallType() {
+		unsigned long CallInIsVCAllowed::getCallType()
+		{
 			return freerds::icp::IsChannelAllowed;
 		};
 
-		int CallInIsVCAllowed::decodeRequest() {
+		int CallInIsVCAllowed::decodeRequest()
+		{
 			// decode protocol buffers
 			IsChannelAllowedRequest req;
-			if (!req.ParseFromString(mEncodedRequest)) {
+
+			if (!req.ParseFromString(mEncodedRequest))
+			{
 				// failed to parse
 				mResult = 1;// will report error with answer
 				return -1;
 			}
+
 			mVirtualChannelName = req.channelname();
+
 			return 0;
 		};
 
-		int CallInIsVCAllowed::encodeResponse() {
+		int CallInIsVCAllowed::encodeResponse()
+		{
 			// encode protocol buffers
 			IsChannelAllowedResponse resp;
 			resp.set_channelallowed(mVirtualChannelAllowed);
 
-			if (!resp.SerializeToString(&mEncodedResponse)) {
+			if (!resp.SerializeToString(&mEncodedResponse))
+			{
 				// failed to serialize
 				mResult = 1;
 				return -1;
 			}
+
 			return 0;
 		};
 
-		int CallInIsVCAllowed::doStuff() {
+		int CallInIsVCAllowed::doStuff()
+		{
 			// find out if Virtual Channel is allowed
 			mVirtualChannelAllowed = true;
 			return 0;
 		}
-
-
 		}
 	}
 }

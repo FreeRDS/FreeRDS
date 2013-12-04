@@ -1,5 +1,4 @@
-# FreeRDP X11 Server Next Generation
-# xrdp-ng cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
@@ -18,21 +17,13 @@
 set(MODULE_NAME "freerds")
 set(MODULE_PREFIX "FREERDS_CORE")
 
-set(PAM_FEATURE_TYPE "REQUIRED")
-set(PAM_FEATURE_PURPOSE "authentication")
-set(PAM_FEATURE_DESCRIPTION "user authentication")
-
-find_feature(PAM ${PAM_FEATURE_TYPE} ${PAM_FEATURE_PURPOSE} ${PAM_FEATURE_DESCRIPTION})
-
-include_directories(${PAM_INCLUDE_DIR})
-
 include_directories(".")
 include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
 set(${MODULE_PREFIX}_SRCS
 	freerds.c
 	freerds.h
-	auth.c
+	app_context.c
 	core.c
 	core.h
 	channels.c
@@ -40,20 +31,20 @@ set(${MODULE_PREFIX}_SRCS
 	listener.c
 	pipeline.c
 	process.c
+	backend.c
 	client_module.c
 	server_module.c)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
-
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-auth)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
 	MODULE winpr
-	MODULES winpr-thread winpr-synch winpr-file winpr-path winpr-sysinfo winpr-pipe winpr-environment winpr-sspicli winpr-utils winpr-crt)
+	MODULES winpr-thread winpr-synch winpr-file winpr-path winpr-sysinfo winpr-pipe winpr-environment winpr-library winpr-sspicli winpr-utils winpr-crt)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}
@@ -68,4 +59,4 @@ list(APPEND ${MODULE_PREFIX}_LIBS winpr-makecert-tool)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_SBINDIR})
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -1,5 +1,4 @@
-# FreeRDS: FreeRDP Remote Desktop Services
-# FreeRDS cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
@@ -28,7 +27,7 @@ add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set_target_properties(${MODULE_NAME} PROPERTIES OUTPUT_NAME "freerds-cef" RUNTIME_OUTPUT_DIRECTORY "..")
 
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
 list(APPEND ${MODULE_PREFIX}_LIBS ${CEF_LIBRARIES})
 

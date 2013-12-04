@@ -1,0 +1,31 @@
+package freerds.icps;
+
+enum MSGTYPE {
+	AuthenticateUser = 200;	
+	EndSession = 201;
+}
+
+message AuthenticateUserRequest {
+	required uint32 sessionId = 1;
+	required string username = 2;
+	required string password = 3;
+	required string domain = 4;
+}
+
+message AuthenticateUserResponse {
+	enum AUTH_STATUS {
+		AUTH_SUCCESSFULL = 0;
+		AUTH_BAD_CREDENTIAL = 1;
+	}
+
+	required AUTH_STATUS authStatus = 1;
+	optional string serviceEndpoint = 2; 
+}
+
+message EndSessionRequest {
+	required uint32 sessionId = 1;
+}
+
+message EndSessionResponse {
+	required bool success = 1;
+}

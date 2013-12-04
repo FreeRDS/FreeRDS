@@ -3,8 +3,8 @@
  * X11 Server Module
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,8 @@
 #ifndef FREERDS_MODULE_X11_H
 #define FREERDS_MODULE_X11_H
 
-#include "../modules.h"
-
-#define X11_MODULE_NAME "x11module"
+#include <freerds/module.h>
 
 int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints);
-
-
 
 #endif /* FREERDS_MODULE_X11_H */

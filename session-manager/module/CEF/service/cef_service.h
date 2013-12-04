@@ -25,8 +25,7 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 
-#include <freerds/freerds.h>
-#include <freerds/service_helper.h>
+#include <freerds/backend.h>
 
 typedef struct rds_context_cef rdsContextCef;
 
@@ -34,7 +33,7 @@ struct rds_context_cef
 {
 	wLog* log;
 	DWORD SessionId;
-	rdsService* service;
+	rdsBackendService* service;
 
 	int framebufferSize;
 	RDS_FRAMEBUFFER framebuffer;

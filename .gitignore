@@ -26,6 +26,7 @@ Makefile.in
 missing
 NEWS
 *.o
+*.a
 *.so
 config.h
 README
@@ -40,6 +41,8 @@ cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
 CMakeScripts/
-
+FreeRDSConfig.cmake
 Debug/
 Release/
+
+*.pc

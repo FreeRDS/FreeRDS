@@ -40,12 +40,40 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/cmdline.h>
+#include <winpr/library.h>
 
 #include <freerds/icp_client_stubs.h>
+#include "app_context.h"
 
-char* RdsModuleName = NULL;
 static HANDLE g_TermEvent = NULL;
-static xrdpListener* g_listen = NULL;
+static rdsListener* g_listen = NULL;
+static char* freerds_home_path = NULL;
+
+char* freerds_get_home_path()
+{
+	if (!freerds_home_path)
+	{
+		char* p;
+		int length;
+		char separator;
+		char moduleFileName[4096];
+
+		separator = PathGetSeparatorA(PATH_STYLE_NATIVE);
+		GetModuleFileNameA(NULL, moduleFileName, sizeof(moduleFileName));
+
+		p = strrchr(moduleFileName, separator);
+		*p = '\0';
+		p = strrchr(moduleFileName, separator);
+		*p = '\0';
+
+		length = strlen(moduleFileName);
+		freerds_home_path = (char*) malloc(length + 1);
+		CopyMemory(freerds_home_path, moduleFileName, length);
+		freerds_home_path[length] = '\0';
+	}
+
+	return freerds_home_path;
+}
 
 COMMAND_LINE_ARGUMENT_A freerds_args[] =
 {
@@ -127,10 +155,6 @@ int main(int argc, char** argv)
 		CommandLineSwitchCase(arg, "nodaemon")
 		{
 			no_daemon = 1;
-		}
-		CommandLineSwitchCase(arg, "module")
-		{
-			RdsModuleName = _strdup(arg->Value);
 		}
 
 		CommandLineSwitchEnd(arg)
@@ -257,11 +281,13 @@ int main(int argc, char** argv)
 	signal(SIGINT, freerds_shutdown);
 	signal(SIGKILL, freerds_shutdown);
 	signal(SIGPIPE, pipe_sig);
-	signal(SIGPIPE, freerds_shutdown);
 
 	pid = GetCurrentProcessId();
 
+	freerds_get_home_path();
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	app_context_init();
+
 	printf("starting icp and waiting for session manager \n");
 	freerds_icp_start();
 	printf("connected to session manager\n");
@@ -270,14 +296,14 @@ int main(int argc, char** argv)
 	freerds_listener_delete(g_listen);
 
 	CloseHandle(g_TermEvent);
+	freerds_icp_shutdown();
+	app_context_uninit();
 
 	/* only main process should delete pid file */
 	if ((!no_daemon) && (pid == GetCurrentProcessId()))
 	{
 		DeleteFileA(pid_file);
 	}
-
-	freerds_icp_shutdown();
 
 	return 0;
 }

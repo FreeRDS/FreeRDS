@@ -1,5 +1,4 @@
-# FreeRDS: FreeRDP Remote Desktop Services
-# FreeRDS cmake build script
+# FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
 # Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
@@ -22,10 +21,10 @@ set(${MODULE_PREFIX}_SRCS
 	x11_module.c
 	x11_module.h)
 
-add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-module-connector)
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
 set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
 	MONOLITHIC ${MONOLITHIC_BUILD}

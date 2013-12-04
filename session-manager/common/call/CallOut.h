@@ -1,8 +1,8 @@
  /**
  * Baseclass for outgoing rpc calls (session manager to freerds)
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,18 @@
 #include <call/Call.h>
 #include <winpr/synch.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
-			class CallOut:public Call {
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallOut:public Call
+			{
 			public:
 				CallOut();
 				~CallOut();
 				virtual unsigned long getDerivedType();
-
 
 				virtual int encodeRequest() = 0;
 				std::string getEncodedRequest();
@@ -47,13 +48,9 @@ namespace freerds{
 				void	setResult(uint32_t result);
 				void	setErrorDescription(std::string error);
 
-
 			private :
 				HANDLE mAnswer;
-
-
 			};
-
 		}
 	}
 }

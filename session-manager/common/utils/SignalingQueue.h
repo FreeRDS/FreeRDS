@@ -1,8 +1,8 @@
 /**
  * Signaling queue template
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@
 #include <list>
 #include <winpr/synch.h>
 
-template<typename QueueElement> class SignalingQueue {
+template<typename QueueElement> class SignalingQueue
+{
 public:
-	SignalingQueue() {
-		if (!InitializeCriticalSectionAndSpinCount(&mCSection,
-		        0x00000400) )
+	SignalingQueue()
+{
+		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 		{
 			// todo report error
 		}
@@ -35,51 +36,55 @@ public:
 		mSignalHandle = CreateEvent(NULL,TRUE,FALSE,NULL);
 	}
 
-	~SignalingQueue() {
+	~SignalingQueue()
+	{
 		CloseHandle(mSignalHandle);
 		DeleteCriticalSection(&mCSection);
 	}
 
-	HANDLE getSignalHandle() {
+	HANDLE getSignalHandle()
+	{
 		return mSignalHandle;
 	}
 
-	void addElement(QueueElement * element) {
+	void addElement(QueueElement element)
+	{
 		EnterCriticalSection(&mCSection);
 		mlist.push_back(element);
 		SetEvent(mSignalHandle);
 		LeaveCriticalSection(&mCSection);
 	}
 
-	void lockQueue() {
+	void lockQueue()
+	{
 		EnterCriticalSection(&mCSection);
 	}
 
-	void resetEventAndLockQueue() {
+	void resetEventAndLockQueue()
+	{
 		ResetEvent(mSignalHandle);
 		EnterCriticalSection(&mCSection);
 	}
 
-
-	QueueElement * getElementLockFree() {
-		QueueElement * element;
+	QueueElement getElementLockFree()
+	{
+		QueueElement element;
+		if (mlist.empty())
+			return QueueElement();
 		element = mlist.front();
 		mlist.pop_front();
 		return element;
 	}
 
-	void unlockQueue () {
+	void unlockQueue()
+	{
 		LeaveCriticalSection(&mCSection);
 	}
 
 private:
 	HANDLE mSignalHandle;
-	//HANDLE mMutex;
 	CRITICAL_SECTION mCSection;
-	std::list<QueueElement *> mlist;
+	std::list<QueueElement> mlist;
 };
-
-
-
 
 #endif /* SIGNALINGQUEUE_H_ */

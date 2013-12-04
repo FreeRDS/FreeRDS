@@ -1,9 +1,9 @@
 /**
  * Class for rpc call Ping (freerds to session manager)
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
- * Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
+ * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,20 @@
 
 #ifndef _CALL_IN_PING_H_
 #define _CALL_IN_PING_H_
+
 #include "CallFactory.h"
 #include <string>
 #include "CallIn.h"
 #include <ICP.pb.h>
 
-
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-			class CallInPing: public CallIn{
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+			class CallInPing: public CallIn
+			{
 			public:
 				CallInPing();
 				virtual ~CallInPing();
@@ -39,8 +42,6 @@ namespace freerds{
 				virtual int decodeRequest();
 				virtual int encodeResponse();
 				virtual int doStuff();
-
-
 
 			private:
 

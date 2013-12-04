@@ -1,8 +1,8 @@
 /**
  * Module
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,28 +21,29 @@
 #define MODULE_H_
 
 #include "Module.h"
-//#include <freerds/freerds.h>
 #include <winpr/wtypes.h>
-#include <module/modules.h>
+#include <freerds/module.h>
 #include <string>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace module{
-			class Module {
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace module
+		{
+			class Module
+			{
 			public:
 				Module();
-				int initModule(HMODULE libHandle,std::string moduleFileName,RDS_MODULE_ENTRY_POINTS * entrypoints);
+				int initModule(HMODULE libHandle, std::string moduleFileName, RDS_MODULE_ENTRY_POINTS* entrypoints);
 				virtual ~Module();
 				std::string getName();
 
-				RDS_MODULE_COMMON * newContext();
-				void freeContext(RDS_MODULE_COMMON * context);
+				RDS_MODULE_COMMON* newContext();
+				void freeContext(RDS_MODULE_COMMON* context);
 
-				std::string start(RDS_MODULE_COMMON * context);
-				int stop(RDS_MODULE_COMMON * context);
-
-
+				std::string start(RDS_MODULE_COMMON* context);
+				int stop(RDS_MODULE_COMMON* context);
 
 			private:
 				pRdsModuleNew mfpNew;
@@ -52,15 +53,11 @@ namespace freerds{
 				pRdsModuleStop mfpStop;
 				std::string mModuleFile;
 				std::string mModuleName;
-
 			};
-
 		}
 	}
 }
+
 namespace moduleNS = freerds::sessionmanager::module;
-
-
-
 
 #endif /* MODULE_H_ */
