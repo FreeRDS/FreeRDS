@@ -81,6 +81,29 @@ namespace freerds
 				return session;
 			}
 
+			SessionPtr SessionStore::getFirstDisconnectedSessionUserName(
+					std::string username, std::string domain) {
+				CSGuard guard(&mCSection);
+
+				SessionPtr session;
+				TSessionMap::iterator iter;
+
+				for (iter = mSessionMap.begin(); iter != mSessionMap.end();iter++)
+				{
+					if((iter->second->getUserName().compare(username) == 0) &&
+							(iter->second->getDomain().compare(domain) == 0))
+					{
+						if (iter->second->getConnectState() == WTSDisconnected) {
+							session = iter->second;
+							break;
+						}
+					}
+				}
+
+				return session;
+			}
+
+
 			int SessionStore::removeSession(long sessionId)
 			{
 				CSGuard guard(&mCSection);

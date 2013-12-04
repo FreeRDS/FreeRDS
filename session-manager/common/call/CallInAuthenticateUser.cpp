@@ -115,7 +115,7 @@ namespace freerds
 
 		int CallInAuthenticateUser::getUserSession() {
 
-			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getFirstSessionUserName(mUserName, mDomainName);
+			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{

@@ -46,6 +46,7 @@ namespace freerds
 
 			SessionPtr getSession(long sessionId);
 			SessionPtr getFirstSessionUserName(std::string username, std::string domain);
+			SessionPtr getFirstDisconnectedSessionUserName(std::string username, std::string domain);
 			SessionPtr createSession();
 			std::list<SessionPtr> getAllSessions();
 			int removeSession(long sessionId);
