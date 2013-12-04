@@ -75,6 +75,8 @@ namespace freerds
 
 			RPCBase mpbRPC;
 			std::list<callNS::CallOut*> mAnswerWaitingQueue;
+
+			long mNextOutCall;
 		};
 	}
 }

@@ -41,7 +41,7 @@ namespace pbrpc {
 static wLog* logger_RPCEngine = WLog_Get("freerds.pbrpc.RpcEngine");
 
 RpcEngine::RpcEngine() :
-		mPacktLength(0), mHeaderRead(0), mPayloadRead(0)
+		mPacktLength(0), mHeaderRead(0), mPayloadRead(0),mNextOutCall(1)
 {
 	mhStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
 	WLog_SetLogLevel(logger_RPCEngine, WLOG_ERROR);
@@ -503,6 +503,7 @@ int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call)
 			// this is a CallOut
 			callNS::CallOut* callOut = (callNS::CallOut*) call;
 			callOut->encodeRequest();
+			callOut->setTag(mNextOutCall++);
 
 			if (send(call) == CLIENT_SUCCESS)
 			{
