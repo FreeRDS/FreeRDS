@@ -81,7 +81,7 @@ namespace freerds
 
 				for (iter = mConnectionMap.begin(); iter != mConnectionMap.end();iter++)
 				{
-					if(iter->second->getSessionId() == mSessionId)
+					if((iter->second->getSessionId() == mSessionId) || (iter->second->getAbout2SwitchSessionId() == mSessionId))
 					{
 						connectionId = iter->first;
 						break;

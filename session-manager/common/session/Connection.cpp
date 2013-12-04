@@ -48,7 +48,7 @@ namespace freerds
 			static wLog* logger_Connection = WLog_Get("freerds.sessionmanager.session.connection");
 
 			Connection::Connection(DWORD connectionId)
-				: mConnectionId(connectionId),mSessionId(0),mAuthStatus(-1)
+				: mConnectionId(connectionId),mSessionId(0),mAuthStatus(-1),mAbout2SwitchSessionId(0)
 			{
 				if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 				{
@@ -142,6 +142,15 @@ namespace freerds
 				}
 				return false;
 			}
+
+			long Connection::getAbout2SwitchSessionId() {
+				return mAbout2SwitchSessionId;
+			}
+
+			void Connection::setAbout2SwitchSessionId(long switchSessionId) {
+				mAbout2SwitchSessionId = switchSessionId;
+			}
+
 
 
 		}

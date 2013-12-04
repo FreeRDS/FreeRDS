@@ -60,6 +60,10 @@ namespace freerds
 			void setSessionId(long sessionId);
 			long getSessionId();
 
+			long getAbout2SwitchSessionId();
+			void setAbout2SwitchSessionId(long switchSessionId);
+
+
 			pCLIENT_INFORMATION getClientInformation();
 
 			long getConnectionId();
@@ -72,6 +76,7 @@ namespace freerds
 		private:
 			DWORD mConnectionId;
 			DWORD mSessionId;
+			DWORD mAbout2SwitchSessionId;
 
 			int mAuthStatus;
 

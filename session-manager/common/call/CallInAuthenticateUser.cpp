@@ -146,7 +146,7 @@ namespace freerds
 			}
 
 			long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
-			APP_CONTEXT.getConnectionStore()->getOrCreateConnection(connectionId)->setSessionId(currentSession->getSessionID());
+			APP_CONTEXT.getConnectionStore()->getOrCreateConnection(connectionId)->setAbout2SwitchSessionId(currentSession->getSessionID());
 
 
 			if (currentSession->getConnectState() == WTSDown)

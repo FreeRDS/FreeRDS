@@ -74,7 +74,11 @@ namespace freerds
 					WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no oldSessionId was set!");
 				}
 
-				APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId)->setSessionId(mNewSessionId);
+				sessionNS::ConnectionPtr connection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+				if (connection != NULL) {
+					connection->setSessionId(mNewSessionId);
+					connection->setAbout2SwitchSessionId(0);
+				}
 
 				return;
 			}
@@ -104,6 +108,11 @@ namespace freerds
 				} else {
 					WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mNewSessionId);
 				}
+				sessionNS::ConnectionPtr connection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+				if (connection != NULL) {
+					connection->setAbout2SwitchSessionId(0);
+				}
+
 			}
 
 		}
