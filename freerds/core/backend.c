@@ -68,9 +68,12 @@ void freerds_connector_free(rdsBackendConnector* connector)
         CloseHandle(connector->StopEvent);
         CloseHandle(connector->hClientPipe);
 
-				if (connector->Endpoint)
-					free(connector->Endpoint);
-
+        if (connector->ServerList)
+          LinkedList_Free(connector->ServerList);
+        if (connector->ServerQueue)
+          MessageQueue_Free(connector->ServerQueue);
+        if (connector->Endpoint)
+          free(connector->Endpoint);
         free(connector);
 }
 
