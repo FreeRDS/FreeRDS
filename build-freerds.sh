@@ -115,6 +115,9 @@ make
 cd ..
 cp xorg-build/scripts/LocalConfigSettings.cmake .
 ln -s xorg-build/external/Source/xorg-server .
+# For some reason, it's looking for xorg-server in both X11 and X11/service
+cd ..
+ln -s service/xorg-build/external/Source/xorg-server .
 popd
 popd
 
@@ -124,5 +127,5 @@ popd
 pushd $GIT_ROOT_DIR/FreeRDP
 cmake -DCMAKE_INSTALL_PREFIX=$FREERDS_INSTALL_DIR -DCMAKE_BUILD_TYPE=Debug -DSTATIC_CHANNELS=on -DMONOLITHIC_BUILD=on -DWITH_FDSAPI=off -DWITH_SERVER=on -DWITH_X11RDP=on .
 make
-#sudo make install
+sudo make install
 popd
