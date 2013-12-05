@@ -31,6 +31,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #endif
 
 #include <winpr/pipe.h>
@@ -41,15 +42,16 @@
 #include <winpr/environment.h>
 
 #include <freerds/backend.h>
+#include <limits.h>
 
 #include "x11_module.h"
 
 RDS_MODULE_CONFIG_CALLBACKS gConfig;
 RDS_MODULE_STATUS_CALLBACKS gStatus;
 
-#define X11_OFFSET 10
-#define LOCKFILE_FORMAT "/tmp/.X%d-lock"
-#define DISPLAY_MAX 1024
+#define X11_DISPLAY_OFFSET 10
+#define X11_LOCKFILE_FORMAT "/tmp/.X%d-lock"
+#define X11_DISPLAY_MAX 1024
 
 static wLog *gModuleLog;
 
@@ -231,11 +233,27 @@ void initResolutions(rdsModuleX11 * x11,  long * xres, long * yres, long * color
 	*colordepth = connectionColorDepth;
 }
 
+unsigned int detect_free_display()
+{
+	struct stat tstats;
+	unsigned int i = 0;
+	char buf[256];
+	for (i = X11_DISPLAY_OFFSET; i <= X11_DISPLAY_MAX; i++)
+	{
+		snprintf(buf,256, X11_LOCKFILE_FORMAT, i);
+		if(stat (buf, &tstats) != 0)
+		{
+			break;
+		}
+	}
+	return i;
+}
+
 char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 {
 	BOOL status = TRUE;
 	DWORD SessionId;
-	DWORD displayNum;
+	unsigned int displayNum;
 	char envstr[256];
 	rdsModuleX11* x11;
 	char lpCommandLine[256];
@@ -248,8 +266,9 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	x11->monitorStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	SessionId = x11->commonModule.sessionId;
-	displayNum = SessionId + 10;
+	displayNum = detect_free_display();
 
+	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, using display %d\n", SessionId, displayNum);
 	pipeName = (char*) malloc(256);
 	freerds_named_pipe_get_endpoint_name(displayNum, "X11", pipeName, 256);
 
@@ -279,7 +298,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	if (!status)
 	{
-		WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, problem startin X11rdp (status %d - cmd %s)\n",
+		WLog_Print(gModuleLog, WLOG_ERROR , "s %d, problem startin X11rdp (status %d - cmd %s)\n",
 		SessionId, status, lpCommandLine);
 		free(pipeName);
 		return NULL;
