@@ -254,7 +254,8 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) 24);
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
-	status = CreateProcessA(NULL, lpCommandLine,
+	status = CreateProcessAsUserA(x11->commonModule.userToken,
+			NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
