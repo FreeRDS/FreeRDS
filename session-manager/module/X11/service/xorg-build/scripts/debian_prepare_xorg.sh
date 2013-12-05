@@ -14,7 +14,9 @@ echo "suffix=${SUFFIX}"
 mkdir -p external/Source
 cd external/Source
 
-if [ "foo" == "foo" ]; then
+USE_APT_GET=1
+
+if [ ${USE_APT_GET} == 1 ]; then
 sudo apt-get build-dep xorg-server${SUFFIX} ${PACKAGE}
 apt-get source xorg-server${SUFFIX}
 ln -s xorg-server${SUFFIX}-${VERSION} xorg-server
@@ -24,4 +26,5 @@ XORG_NAME=xorg-server-${VERSION}
 wget http://xorg.freedesktop.org/releases/individual/xserver/${XORG_NAME}.tar.gz
 tar zxvf ${XORG_NAME}.tar.gz
 ln -s ${XORG_NAME} xorg-server
+rm ${XORG_NAME}.tar.gz
 fi
