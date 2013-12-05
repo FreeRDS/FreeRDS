@@ -47,6 +47,10 @@
 RDS_MODULE_CONFIG_CALLBACKS gConfig;
 RDS_MODULE_STATUS_CALLBACKS gStatus;
 
+#define X11_OFFSET 10
+#define LOCKFILE_FORMAT "/tmp/.X%d-lock"
+#define DISPLAY_MAX 1024
+
 static wLog *gModuleLog;
 
 struct rds_module_x11
@@ -60,7 +64,6 @@ struct rds_module_x11
 	HANDLE monitorStopEvent;
 	STARTUPINFO WMStartupInfo;
 	PROCESS_INFORMATION WMProcessInformation;
-	BOOL wmRunning;
 };
 
 typedef struct rds_module_x11 rdsModuleX11;
@@ -72,17 +75,33 @@ void x11_rds_module_reset_process_informations(STARTUPINFO *si, PROCESS_INFORMAT
 	ZeroMemory(pi, sizeof(PROCESS_INFORMATION));
 }
 
-void monitoring_thread(void *arg)
+int clean_up_process(PROCESS_INFORMATION *pi)
 {
 	DWORD ret = 0;
+	GetExitCodeProcess(pi->hProcess, &ret);
+	CloseHandle(pi->hProcess);
+	CloseHandle(pi->hThread);
+	return ret;
+}
+
+void monitoring_thread(void *arg)
+{
 	int status;
+	int ret;
 	rdsModuleX11 *x11 = (rdsModuleX11*)arg;
 	
 	while (1)
 	{
-		ret = waitpid(x11->WMProcessInformation.dwProcessId, &status, WNOHANG);
-		if (ret != 0)
+		if (waitpid(x11->X11ProcessInformation.dwProcessId, &status, WNOHANG) != 0)
 		{
+			ret = clean_up_process(&(x11->X11ProcessInformation));
+			WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: X11 process exited with %d (monitoring thread)", x11->commonModule.sessionId, ret);
+			break;
+		}
+		if (waitpid(x11->WMProcessInformation.dwProcessId, &status, WNOHANG) != 0)
+		{
+			ret = clean_up_process(&(x11->WMProcessInformation));
+			WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: WM process exited with %d (monitoring thread)", x11->commonModule.sessionId, ret);
 			break;
 		}
 		if (WaitForSingleObject(x11->monitorStopEvent, 200) == WAIT_OBJECT_0)
@@ -93,11 +112,6 @@ void monitoring_thread(void *arg)
 		}
 	}
 
-	x11->wmRunning = FALSE;
-	GetExitCodeProcess(x11->WMProcessInformation.hProcess, &ret);
-	CloseHandle(x11->WMProcessInformation.hProcess);
-	CloseHandle(x11->WMProcessInformation.hThread);
-	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: WM process exited with %d (monitoring thread)", x11->commonModule.sessionId, ret);
 	gStatus.shutdown(x11->commonModule.sessionId);
 	return;
 }
@@ -126,32 +140,35 @@ int x11_rds_stop_process(PROCESS_INFORMATION *pi)
 
 	 // Wait until child process exits.
 	WaitForSingleObject(pi->hProcess, 5);
-	GetExitCodeProcess(pi->hProcess, &ret);
 #else
 	int ret = 0, status = 0;
 	int wait = 10;
-	kill(pi->dwProcessId, SIGTERM);
-	while (wait > 0)
+	/* check if child is still alive */
+	status = waitpid(pi->dwProcessId, &ret, WNOHANG);
+	if (status == 0)
 	{
-		status = waitpid(pi->dwProcessId, &ret, WNOHANG);
-		if (status == pi->dwProcessId)
-			break;
-		usleep(500000);
-		wait--;
+		kill(pi->dwProcessId, SIGTERM);
+		while (wait > 0)
+		{
+			status = waitpid(pi->dwProcessId, &ret, WNOHANG);
+			if (status != 0)
+				break;
+			usleep(500000);
+			wait--;
+		}
+		if (status == 0)
+			kill(pi->dwProcessId, SIGKILL);
 	}
-	if (!status)
-		kill(pi->dwProcessId, SIGKILL);
 #endif
-	CloseHandle(pi->hProcess);
-	CloseHandle(pi->hThread);
+	clean_up_process(pi);
 	return ret;
 }
 
 void initResolutions(rdsModuleX11 * x11,  long * xres, long * yres, long * colordepth) {
 	char tempstr[256];
 
-	long maxXRes, maxYRes, minXRes, minYRes = 0;
-	long connectionXRes, connectionYRes, connectionColorDepth = 0;
+	long maxXRes = 0 , maxYRes = 0, minXRes = 0, minYRes = 0;
+	long connectionXRes = 0, connectionYRes = 0, connectionColorDepth = 0;
 
 	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.maxXRes", &maxXRes)) {
 		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
@@ -189,6 +206,7 @@ void initResolutions(rdsModuleX11 * x11,  long * xres, long * yres, long * color
 
 		if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", colordepth))
 			*colordepth = 24;
+
 		return;
 	}
 
@@ -250,7 +268,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	initResolutions(x11,&xres,&yres,&colordepth);
 
-	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -uds -terminate",
+	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d",
 			"X11rdp", (int) (displayNum), (int) xres, (int) yres, (int) 24);
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
@@ -261,16 +279,19 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	if (!status)
 	{
-		WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, problem startin X11rdp (status %d)\n", SessionId, status);
+		WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, problem startin X11rdp (status %d - cmd %s)\n",
+		SessionId, status, lpCommandLine);
+		free(pipeName);
 		return NULL;
 	}
-	x11->wmRunning = TRUE;
 
-	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, X11rdp Process started: %d (pid %d)\n", SessionId, status, x11->X11ProcessInformation.dwProcessId);
+	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, X11rdp Process started: %d (pid %d - cmd %s)\n",
+	SessionId, status, x11->X11ProcessInformation.dwProcessId, lpCommandLine);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
 		WLog_Print(gModuleLog, WLOG_ERROR, "s %d: WaitNamedPipe failure: %s\n", SessionId, pipeName);
+		free(pipeName);
 		return NULL;
 	}
 
@@ -287,26 +308,29 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->WMStartupInfo), &(x11->WMProcessInformation));
 
+	if (!status)
+	{
+		WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, problem starting %s (status %d)\n", SessionId, startupname, status);
+		x11_rds_stop_process(&(x11->X11ProcessInformation));
+		free(pipeName);
+		return NULL;
+	}
+
 	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: WM process started: %d (pid %d)", SessionId, status, x11->WMProcessInformation.dwProcessId);
 	x11->monitorThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) monitoring_thread, x11, 0, NULL);
-
 	return pipeName;
 }
 
 int x11_rds_module_stop(RDS_MODULE_COMMON * module)
 {
 	rdsModuleX11 *x11 = (rdsModuleX11*)module;
-	int ret;
+	int ret = 0;
 	WLog_Print(gModuleLog, WLOG_TRACE, "Stop called");
 
 	SetEvent(x11->monitorStopEvent);
 	WaitForSingleObject(x11->monitorThread, INFINITE);
 
-	if (x11->wmRunning)
-	{
-		x11_rds_stop_process(&(x11->WMProcessInformation));
-	}
-
+	ret = x11_rds_stop_process(&(x11->WMProcessInformation));
 	ret = x11_rds_stop_process(&(x11->X11ProcessInformation));
 	return ret;
 }
