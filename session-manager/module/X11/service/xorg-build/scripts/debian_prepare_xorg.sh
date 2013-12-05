@@ -27,7 +27,6 @@ if [ ${USE_APT_GET} == 1 ]; then
 #
 # Use apt-get to grab sources
 #
-#sudo apt-get build-dep xorg-server${SUFFIX} ${PACKAGE}
 sudo apt-get build-dep xorg-server${SUFFIX}
 apt-get source xorg-server${SUFFIX}
 ln -s xorg-server${SUFFIX}-${VERSION} xorg-server
