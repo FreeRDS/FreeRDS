@@ -163,6 +163,7 @@ namespace freerds
 					return 1;
 				}
 			}
+			currentSession->setConnectState(WTSConnected);
 
 			mPipeName = currentSession->getPipeName();
 			return 0;
@@ -198,13 +199,13 @@ namespace freerds
 
 			currentSession->setAuthSession(true);
 
-
-
 			if (!currentSession->startModule(greeter))
 			{
 				mResult = 1;// will report error with answer
 				return 1;
 			}
+
+			currentSession->setConnectState(WTSConnected);
 
 			mPipeName = currentSession->getPipeName();
 			return 0;

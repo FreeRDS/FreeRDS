@@ -143,6 +143,8 @@ namespace freerds
 					moduleName = "X11";
 				}
 				currentSession->setModuleName(moduleName);
+			} else {
+				currentSession->setConnectState(WTSConnectQuery);
 			}
 
 			long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
