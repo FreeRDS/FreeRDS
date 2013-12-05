@@ -15,7 +15,13 @@ mkdir -p external/Source
 cd external/Source
 
 #sudo apt-get build-dep xorg-server${SUFFIX} ${PACKAGE}
-apt-get source xorg-server${SUFFIX}
-ln -s xorg-server${SUFFIX}-${VERSION} xorg-server
+#apt-get source xorg-server${SUFFIX}
+#ln -s xorg-server${SUFFIX}-${VERSION} xorg-server
+
+XORG_NAME=xorg-server-${VERSION}
+
+wget http://xorg.freedesktop.org/releases/individual/xserver/{XORG_NAME}.tar.gz
+tar zxvf ${XORG_NAME}.tar.gz
+ln -s ${XORG_NAME} xorg-server
 
 cd ../..
