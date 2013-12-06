@@ -235,7 +235,7 @@ int freerds_client_outbound_suppress_output(rdsBackend* backend, UINT32 suppress
 
 	msg.msgFlags = 0;
 	msg.type = RDS_CLIENT_SUPPRESS_OUTPUT;
-	msg.suppressOutput = suppress_output;
+	msg.activeOutput = suppress_output;
 
 	s = backend->OutboundStream;
 	Stream_SetPosition(s, 0);

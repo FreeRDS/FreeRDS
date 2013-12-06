@@ -393,7 +393,7 @@ int freerds_read_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg)
 	if (Stream_GetRemainingLength(s) < 4)
 		return -1;
 
-	Stream_Read_UINT32(s, msg->suppressOutput);
+	Stream_Read_UINT32(s, msg->activeOutput);
 	return 0;
 }
 
@@ -407,7 +407,7 @@ int freerds_write_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg)
 
 	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
 
-	Stream_Write_UINT32(s, msg->suppressOutput);
+	Stream_Write_UINT32(s, msg->activeOutput);
 	return 0;
 }
 

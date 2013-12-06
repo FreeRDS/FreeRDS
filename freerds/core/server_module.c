@@ -188,7 +188,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 	backend->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
 	backend->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
 
-	printf("received shared framebuffer message: mod->framebuffer.fbAttached: %d msg->attach: %d\n",
+	fprintf(stderr, "received shared framebuffer message: mod->framebuffer.fbAttached: %d msg->attach: %d\n",
 			backend->framebuffer.fbAttached, msg->attach);
 
 	if (!backend->framebuffer.fbAttached && msg->attach)
@@ -203,7 +203,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		backend->framebuffer.fbSharedMemory = (BYTE*) shmat(backend->framebuffer.fbSegmentId, 0, 0);
 		backend->framebuffer.fbAttached = TRUE;
 
-		printf("attached segment %d to %p\n",
+		fprintf(stderr, "attached segment %d to %p\n",
 				backend->framebuffer.fbSegmentId, backend->framebuffer.fbSharedMemory);
 
 		backend->framebuffer.image = (void*) pixman_image_create_bits(PIXMAN_x8r8g8b8,
@@ -243,7 +243,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 	if (backend->framebuffer.fbAttached && !msg->attach)
 	{
-		printf("detaching segment %d to %p\n",
+		fprintf(stderr, "detaching segment %d to %p\n",
 				backend->framebuffer.fbSegmentId, backend->framebuffer.fbSharedMemory);
 		shmdt(backend->framebuffer.fbSharedMemory);
 		backend->framebuffer.fbAttached = FALSE;
@@ -337,14 +337,6 @@ void icpsCallback(UINT32 reason, Freerds__Pbrpc__RPCBase* response, void *args) 
 			fprintf(stderr, "%s: expecting a response and don't have one\n", __FUNCTION__);
 			goto cleanup_exit;
 		}
-
-		/*
-		if (response->msgtype < FREERDS__ICPS__MSGTYPE__FirstMessage ||
-				response->msgtype > FREERDS__ICPS__MSGTYPE__LastMessage)
-		{
-			fprintf(stderr, "received message is not an ICPS message, not forwarding\n");
-			goto cleanup_exit;
-		}*/
 
 		icps.status = ICPS_REPLY_SUCCESS;
 		icps.icpsType = response->msgtype;
