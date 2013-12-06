@@ -255,7 +255,7 @@ struct _RDS_MSG_SUPPRESS_OUTPUT
 {
 	DEFINE_MSG_COMMON();
 
-	UINT32 suppressOutput;
+	UINT32 activeOutput;
 };
 typedef struct _RDS_MSG_SUPPRESS_OUTPUT RDS_MSG_SUPPRESS_OUTPUT;
 
