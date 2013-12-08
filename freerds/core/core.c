@@ -33,9 +33,6 @@
 
 #include <pixman.h>
 
-//#define WITH_RDP6_BITMAP_COMPRESSION	1
-
-
 /**
  * Custom helpers
  */
@@ -65,6 +62,8 @@ int freerds_set_bounds_rect(rdsConnection* connection, rdsRect* rect)
 
 int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
 {
+	DWORD planarFlags;
+
 	connection->id = app_context_get_connectionid();
 	connection->settings = settings;
 
@@ -82,6 +81,11 @@ int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
 
 	connection->nsc_s = Stream_New(NULL, 16384);
 	connection->nsc_context = nsc_context_new();
+
+	planarFlags = PLANAR_FORMAT_HEADER_NA;
+	//planarFlags |= PLANAR_FORMAT_HEADER_RLE;
+
+	connection->planar_context = freerdp_bitmap_planar_context_new(planarFlags, 64, 64);
 
 	if (connection->bytesPerPixel == 4)
 	{
@@ -109,6 +113,8 @@ void freerds_connection_uninit(rdsConnection* connection)
 
 	Stream_Free(connection->nsc_s, TRUE);
 	nsc_context_free(connection->nsc_context);
+
+	freerdp_bitmap_planar_context_free(connection->planar_context);
 
 	ListDictionary_Free(connection->FrameList);
 }
@@ -261,7 +267,6 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 
 				scanline = msg->framebuffer->fbScanline;
 
-#ifdef WITH_RDP6_BITMAP_COMPRESSION
 				if (bpp > 16)
 				{
 					int dstSize;
@@ -270,8 +275,8 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 					format = FREERDP_PIXEL_FORMAT(msg->framebuffer->fbBitsPerPixel,
 							FREERDP_PIXEL_FORMAT_TYPE_ARGB, FREERDP_PIXEL_FLIP_NONE);
 
-					buffer = freerdp_bitmap_compress_planar(data,
-							format, nWidth, nHeight, scanline, NULL, &dstSize);
+					buffer = freerdp_bitmap_compress_planar(connection->planar_context,
+							data, format, nWidth, nHeight, scanline, NULL, &dstSize);
 
 					bitmapData[k].bitmapDataStream = buffer;
 					bitmapData[k].bitmapLength = dstSize;
@@ -281,7 +286,6 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 					bitmapData[k].cbUncompressedSize = nWidth * nHeight * 4;
 				}
 				else
-#endif
 				{
 					image = pixman_image_create_bits(PIXMAN_r5g6b5, nWidth, nHeight, (uint32_t*) tile, nWidth * 2);
 

@@ -24,6 +24,7 @@
 #include <freerdp/freerdp.h>
 #include <freerdp/codec/rfx.h>
 #include <freerdp/codec/nsc.h>
+#include <freerdp/codec/bitmap.h>
 
 #include <freerdp/channels/wtsvc.h>
 #include <freerdp/server/cliprdr.h>
@@ -69,6 +70,8 @@ struct rds_connection
 
 	wStream* nsc_s;
 	NSC_CONTEXT* nsc_context;
+
+	BITMAP_PLANAR_CONTEXT* planar_context;
 
 	UINT32 frameId;
 	wListDictionary* FrameList;
