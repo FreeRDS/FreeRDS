@@ -327,14 +327,14 @@ int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 	XkbRMLVOSet set;
 
 	DEBUG_OUT_INPUT(("rdpKeybdProc\n"));
-	pDev = (DevicePtr)pDevice;
+	pDev = (DevicePtr) pDevice;
 
 	switch (onoff)
 	{
 		case DEVICE_INIT:
 			KbdDeviceInit(pDevice, &keySyms, modMap);
-			memset(&set, 0, sizeof(set));
-			set.rules = "base";
+			ZeroMemory(&set, sizeof(set));
+			set.rules = "evdev";
 			set.model = "pc104";
 			set.layout = "us";
 			set.variant = "";
