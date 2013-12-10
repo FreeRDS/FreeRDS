@@ -71,7 +71,10 @@ typedef enum pbrpc_status
 	PBRCP_CALL_TIMEOUT = 103 // problem with transport
 } PBRPCSTATUS;
 
+
+#ifndef PROTOBUF_C_pbRPC_2eproto__INCLUDED
 typedef struct _Freerds__Pbrpc__RPCBase Freerds__Pbrpc__RPCBase;
+#endif
 typedef void (*pbRpcResponseCallback)(UINT32 reason, Freerds__Pbrpc__RPCBase* response, void *args);
 
 pbRPCContext* pbrpc_server_new(pbRPCTransportContext* transport);

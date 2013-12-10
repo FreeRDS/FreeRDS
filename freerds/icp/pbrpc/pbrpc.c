@@ -27,10 +27,10 @@
 #include <Winsock2.h>
 #endif //WIN32
 
-#include "pbrpc.h"
 #include "pbrpc_transport.h"
-#include "pbrpc_utils.h"
 #include "pbRPC.pb-c.h"
+#include "pbrpc_utils.h"
+#include "pbrpc.h"
 
 
 struct pbrpc_transaction
