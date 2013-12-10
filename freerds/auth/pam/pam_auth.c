@@ -107,7 +107,9 @@ long freerds_authenticate_pam(char* username, char* password, int* errorcode)
 	auth_info = malloc(sizeof(struct t_auth_info));
 	ZeroMemory(auth_info, sizeof(struct t_auth_info));
 	strcpy(auth_info->user_pass.user, username);
-	strcpy(auth_info->user_pass.pass, password);
+	if (password) {
+		strcpy(auth_info->user_pass.pass, password);
+	}
 	auth_info->pamc.conv = &verify_pam_conv;
 	auth_info->pamc.appdata_ptr = &(auth_info->user_pass);
 	error = pam_start(service_name, 0, &(auth_info->pamc), &(auth_info->ph));
