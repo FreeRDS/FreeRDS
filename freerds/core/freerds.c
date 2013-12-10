@@ -32,6 +32,9 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef WIN32
+#include <signal.h>
+#endif
 
 #include "freerds.h"
 
@@ -132,6 +135,9 @@ int main(int argc, char** argv)
 	char text[256];
 	char pid_file[256];
 	COMMAND_LINE_ARGUMENT_A* arg;
+#ifndef WIN32
+	sigset_t set;
+#endif
 
 	no_daemon = kill_process = 0;
 
@@ -233,6 +239,12 @@ int main(int argc, char** argv)
 		DeleteFileA(pid_file);
 	}
 
+#ifndef WIN32
+	/* block all signals per default */
+	sigfillset(&set);
+	sigprocmask(SIG_BLOCK, &set, NULL);
+#endif
+
 	if (!no_daemon)
 	{
 		/* start of daemonizing code */
@@ -277,11 +289,19 @@ int main(int argc, char** argv)
 		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		/* end of daemonizing code */
 	}
+#ifndef WIN32
+	/* unbock required signals */
+	sigemptyset(&set);
+	sigaddset(&set, SIGINT);
+	sigaddset(&set, SIGPIPE);
+	sigaddset(&set, SIGTERM);
+	sigprocmask(SIG_UNBLOCK, &set, NULL);
+#endif
 
 	g_listen = freerds_listener_create();
 
 	signal(SIGINT, freerds_shutdown);
-	signal(SIGKILL, freerds_shutdown);
+	signal(SIGTERM, freerds_shutdown);
 	signal(SIGPIPE, pipe_sig);
 
 	pid = GetCurrentProcessId();
