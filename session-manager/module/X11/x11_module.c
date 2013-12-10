@@ -185,10 +185,11 @@ void initResolutions(rdsModuleX11 * x11,  long * xres, long * yres, long * color
 		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
 	}
 
-	if ((maxXRes != 0) && (maxYRes != 0) && (minXRes != 0) && (minYRes != 0)) {
+	if ((maxXRes != 0) && (maxYRes != 0)){
 		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
 		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SMAX", tempstr);
-
+	}
+	if ((minXRes != 0) && (minYRes != 0)) {
 		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
 		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SMIN", tempstr);
 	}

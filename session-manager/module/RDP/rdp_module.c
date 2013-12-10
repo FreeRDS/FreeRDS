@@ -90,8 +90,8 @@ void rdp_rds_module_free(RDS_MODULE_COMMON* module)
 void initResolutions(rdsModuleRdp * rdp,  long * xres, long * yres, long * colordepth) {
 	char tempstr[256];
 
-	long maxXRes, maxYRes, minXRes, minYRes = 0;
-	long connectionXRes, connectionYRes, connectionColorDepth = 0;
+	long maxXRes = 0, maxYRes = 0, minXRes = 0, minYRes = 0;
+	long connectionXRes = 0, connectionYRes = 0, connectionColorDepth = 0;
 
 	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.maxXRes", &maxXRes)) {
 		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
@@ -106,10 +106,11 @@ void initResolutions(rdsModuleRdp * rdp,  long * xres, long * yres, long * color
 		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
 	}
 
-	if ((maxXRes != 0) && (maxYRes != 0) && (minXRes != 0) && (minYRes != 0)) {
+	if ((maxXRes != 0) && (maxYRes != 0)){
 		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
 		SetEnvironmentVariableEBA(&rdp->commonModule.envBlock, "FREERDS_SMAX", tempstr);
-
+	}
+	if ((minXRes != 0) && (minYRes != 0)) {
 		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
 		SetEnvironmentVariableEBA(&rdp->commonModule.envBlock, "FREERDS_SMIN", tempstr);
 	}
