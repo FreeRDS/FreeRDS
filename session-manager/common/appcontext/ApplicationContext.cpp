@@ -274,6 +274,7 @@ namespace freerds
 			mPropertyManager.setPropertyNumber(User, 0, "module.x11.xres",800,"demo2");
 			mPropertyManager.setPropertyNumber(User, 0, "module.x11.yres",600,"demo2");
 			mPropertyManager.setPropertyString(User, 0, "module","X11","demo2");
+
 		}
 
 		void ApplicationContext::startTaskExecutor() {
@@ -284,8 +285,8 @@ namespace freerds
 			mTaskExecutor.stop();
 		}
 
-		void ApplicationContext::addTask(taskNS::TaskPtr task) {
-			mTaskExecutor.addTask(task);
+		bool ApplicationContext::addTask(taskNS::TaskPtr task) {
+			return mTaskExecutor.addTask(task);
 		}
 
 		void ApplicationContext::rpcDisconnected() {

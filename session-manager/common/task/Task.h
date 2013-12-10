@@ -21,6 +21,7 @@
 #define __TASK_H_
 
 #include <boost/shared_ptr.hpp>
+#include <winpr/synch.h>
 
 namespace freerds
 {
@@ -29,9 +30,22 @@ namespace freerds
 		class Task
 		{
 		public:
-			Task() {};
+			Task():mhStop(0),mhStarted(0) {};
 			virtual ~Task() {};
 			virtual void run() = 0;
+			virtual bool isThreaded() {
+				return false;
+			}
+			void setHandles(HANDLE stopHandle,HANDLE startedHandle) {
+				mhStop = stopHandle;
+				mhStarted = startedHandle;
+			}
+			void informStarted() {
+				SetEvent(mhStarted);
+			}
+		private:
+			HANDLE mhStop;
+			HANDLE mhStarted;
 		};
 
 		typedef boost::shared_ptr<Task> TaskPtr;

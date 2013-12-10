@@ -41,15 +41,27 @@ namespace freerds
 
 			void runExecutor();
 
-			void addTask(TaskPtr task);
+			bool addTask(TaskPtr task);
 
 
 		private:
 			static void* execThread(void* arg);
+			static void* execTask(void* arg);
+
+			bool checkThreadHandles(const HANDLE value) const;
+			bool waitThreadHandles(const HANDLE value) const;
+
 
 		private:
 			HANDLE mhStopEvent;
 			HANDLE mhServerThread;
+
+			HANDLE mhStopThreads;
+			HANDLE mhTaskThreadStarted;
+
+			bool mRunning;
+
+			std::list<HANDLE> mTaskThreadList;
 			CRITICAL_SECTION mCSection;
 			SignalingQueue<TaskPtr> mTasks;
 		};
