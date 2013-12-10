@@ -34,10 +34,10 @@ Sets up the  functions
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
 
-#if 1
-#define DEBUG_OUT(arg)
+#if 0
+#define DEBUG_OUT(fmt, ...) ErrorF(fmt, ##__VA_ARGS__)
 #else
-#define DEBUG_OUT(arg) ErrorF arg
+#define DEBUG_OUT(fmt, ...)
 #endif
 
 rdpScreenInfoRec g_rdpScreen; /* the one screen */
@@ -188,14 +188,14 @@ static void rdpWakeupHandler1(pointer blockData, int result, pointer pReadmask)
 static Bool
 rdpDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScreen)
 {
-	ErrorF("rdpDeviceCursorInitializeProcPtr:\n");
+	DEBUG_OUT("rdpDeviceCursorInitializeProcPtr:\n");
 	return 1;
 }
 
 static void
 rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
 {
-	ErrorF("rdpDeviceCursorCleanupProcPtr:\n");
+	DEBUG_OUT("rdpDeviceCursorCleanupProcPtr:\n");
 }
 #endif
 
@@ -203,14 +203,14 @@ rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
 Bool
 rdpCreateColormap(ColormapPtr pCmap)
 {
-	ErrorF("rdpCreateColormap:\n");
+	DEBUG_OUT("rdpCreateColormap:\n");
 	return 1;
 }
 
 static void
 rdpDestroyColormap(ColormapPtr pColormap)
 {
-	ErrorF("rdpDestroyColormap:\n");
+	DEBUG_OUT("rdpDestroyColormap:\n");
 }
 #endif
 
@@ -240,10 +240,11 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
 	g_rdpScreen.bitsPerPixel = rdpBitsPerPixel(g_rdpScreen.depth);
 
-	ErrorF("\n");
+	DEBUG_OUT("\n");
 	ErrorF("X11rdp, an X server for xrdp\n");
 	ErrorF("Version %s\n", X11RDPVER);
 	ErrorF("Copyright (C) 2005-2012 Jay Sorg\n");
+	ErrorF("Copyright (C) 2013 Thincast Technologies GmbH\n");
 	ErrorF("See http://xrdp.sf.net for information on xrdp.\n");
 #if defined(XORG_VERSION_CURRENT) && defined (XVENDORNAME)
 	ErrorF("Underlying X server release %d, %s\n",
@@ -271,7 +272,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 			/* attach the shared memory segment */
 			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);
 
-			ErrorF("sizeInBytes %d segmentId: %d pfbMemory: %p\n",
+			DEBUG_OUT("sizeInBytes %d segmentId: %d pfbMemory: %p\n",
 					g_rdpScreen.sizeInBytes, g_rdpScreen.segmentId, g_rdpScreen.pfbMemory);
 		}
 		else
@@ -326,13 +327,13 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 			break;
 
 		default:
-			ErrorF("rdpScreenInit: error\n");
+			DEBUG_OUT("rdpScreenInit: error\n");
 			return 0;
 	}
 
 	if (!ret)
 	{
-		ErrorF("rdpScreenInit: error\n");
+		DEBUG_OUT("rdpScreenInit: error\n");
 		return 0;
 	}
 
@@ -496,7 +497,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 		if (!ret)
 		{
-			ErrorF("rdpScreenInit: fbCreateDefColormap failed\n");
+			DEBUG_OUT("rdpScreenInit: fbCreateDefColormap failed\n");
 		}
 	}
 
@@ -506,7 +507,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 		if (!ret)
 		{
-			ErrorF("rdpScreenInit: rdpup_init failed\n");
+			DEBUG_OUT("rdpScreenInit: rdpup_init failed\n");
 		}
 	}
 
@@ -517,12 +518,12 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	if (!RRScreenInit(pScreen))
 	{
-		ErrorF("rdpmain.c: RRScreenInit: screen init failed\n");
+		DEBUG_OUT("rdpmain.c: RRScreenInit: screen init failed\n");
 	}
 	else
 	{
 		pRRScrPriv = rrGetScrPriv(pScreen);
-		ErrorF("pRRScrPriv %p\n", pRRScrPriv);
+		DEBUG_OUT("pRRScrPriv %p\n", pRRScrPriv);
 
 		pRRScrPriv->rrSetConfig = rdpRRSetConfig;
 
@@ -542,7 +543,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	}
 
-	ErrorF("rdpScreenInit: ret %d\n", ret);
+	DEBUG_OUT("rdpScreenInit: ret %d\n", ret);
 
 	return ret;
 }
@@ -575,7 +576,7 @@ int ddxProcessArgument(int argc, char **argv, int i)
 		if (sscanf(argv[i + 1], "%dx%d", &g_rdpScreen.width,
 				&g_rdpScreen.height) != 2)
 		{
-			ErrorF("Invalid geometry %s\n", argv[i + 1]);
+			DEBUG_OUT("Invalid geometry %s\n", argv[i + 1]);
 			UseMsg();
 		}
 
@@ -618,19 +619,19 @@ void ddxInitGlobals(void)
 
 int XkbDDXSwitchScreen(DeviceIntPtr dev, KeyCode key, XkbAction *act)
 {
-	ErrorF("XkbDDXSwitchScreen:\n");
+	DEBUG_OUT("XkbDDXSwitchScreen:\n");
 	return 1;
 }
 
 int XkbDDXPrivate(DeviceIntPtr dev, KeyCode key, XkbAction *act)
 {
-	ErrorF("XkbDDXPrivate:\n");
+	DEBUG_OUT("XkbDDXPrivate:\n");
 	return 0;
 }
 
 int XkbDDXTerminateServer(DeviceIntPtr dev, KeyCode key, XkbAction *act)
 {
-	ErrorF("XkbDDXTerminateServer:\n");
+	DEBUG_OUT("XkbDDXTerminateServer:\n");
 	GiveUp(1);
 	return 0;
 }
@@ -659,7 +660,7 @@ void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
 {
 	int i;
 
-	ErrorF("InitOutput:\n");
+	DEBUG_OUT("InitOutput:\n");
 	g_initOutputCalled = 1;
 
 	rdpExtensionInit();
@@ -688,14 +689,14 @@ void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
 		FatalError("Couldn't add screen\n");
 	}
 
-	ErrorF("InitOutput: out\n");
+	DEBUG_OUT("InitOutput: out\n");
 }
 
 void InitInput(int argc, char **argv)
 {
 	int rc;
 
-	ErrorF("InitInput:\n");
+	DEBUG_OUT("InitInput:\n");
 	rc = AllocDevicePair(serverClient, "X11rdp", &g_pointer, &g_keyboard,
 			rdpMouseProc, rdpKeybdProc, 0);
 
@@ -712,7 +713,7 @@ void ddxGiveUp(enum ExitCode error)
 {
 	char unixSocketName[128];
 
-	ErrorF("ddxGiveUp:\n");
+	DEBUG_OUT("ddxGiveUp:\n");
 
 	if (g_rdpScreen.sharedMemory)
 	{
@@ -785,15 +786,15 @@ void OsVendorPreInit(void)
 
 void CloseInput(void)
 {
-	ErrorF("CloseInput\n");
+	DEBUG_OUT("CloseInput\n");
 }
 
 void DDXRingBell(int volume, int pitch, int duration)
 {
-	ErrorF("DDXRingBell\n");
+	DEBUG_OUT("DDXRingBell\n");
 }
 
 void DeleteInputDeviceRequest(DeviceIntPtr dev)
 {
-	ErrorF("DeleteInputDeviceRequest\n");
+	DEBUG_OUT("DeleteInputDeviceRequest\n");
 }
