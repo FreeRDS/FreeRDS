@@ -38,6 +38,7 @@
 #include <freerds/backend.h>
 
 #include "netsurf_module.h"
+#include "../common/module_helper.h"
 
 RDS_MODULE_CONFIG_CALLBACKS gConfig;
 RDS_MODULE_STATUS_CALLBACKS gStatus;
@@ -76,75 +77,6 @@ void netsurf_rds_module_free(RDS_MODULE_COMMON * module)
 	free(module);
 }
 
-void initResolutions(rdsModuleNetSurf * ns,  long * xres, long * yres, long * colordepth) {
-	char tempstr[256];
-
-	long maxXRes = 0, maxYRes = 0, minXRes = 0, minYRes = 0;
-	long connectionXRes = 0, connectionYRes = 0, connectionColorDepth = 0;
-
-	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.maxXRes", &maxXRes)) {
-		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.maxYRes", &maxYRes)) {
-		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.minXRes", &minXRes)) {
-		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.minYRes", &minYRes)){
-		WLog_Print(ns->log, WLOG_ERROR, "Setting: module.netsurf.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-
-	if ((maxXRes != 0) && (maxYRes != 0)){
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
-		SetEnvironmentVariableEBA(&ns->commonModule.envBlock, "FREERDS_SMAX", tempstr);
-	}
-	if ((minXRes != 0) && (minYRes != 0)) {
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
-		SetEnvironmentVariableEBA(&ns->commonModule.envBlock, "FREERDS_SMIN", tempstr);
-	}
-
-	gConfig.getPropertyNumber(ns->commonModule.sessionId, "current.connection.xres", &connectionXRes);
-	gConfig.getPropertyNumber(ns->commonModule.sessionId, "current.connection.yres", &connectionYRes);
-	gConfig.getPropertyNumber(ns->commonModule.sessionId, "current.connection.colordepth", &connectionColorDepth);
-
-	if ((connectionXRes == 0) || (connectionYRes == 0)) {
-		WLog_Print(ns->log, WLOG_ERROR, "got no XRes or YRes from client, using config values");
-
-		if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.xres", xres))
-			*xres = 1024;
-
-		if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.yres", yres))
-			*yres = 768;
-
-		if (!gConfig.getPropertyNumber(ns->commonModule.sessionId, "module.netsurf.colordepth", colordepth))
-			*colordepth = 24;
-		return;
-	}
-
-	if ((maxXRes > 0 ) && (connectionXRes > maxXRes)) {
-		*xres = maxXRes;
-	} else if ((minXRes > 0 ) && (connectionXRes < minXRes)) {
-		*xres = minXRes;
-	} else {
-		*xres = connectionXRes;
-	}
-
-	if ((maxYRes > 0 ) && (connectionYRes > maxYRes)) {
-		*yres = maxYRes;
-	} else if ((minYRes > 0 ) && (connectionYRes < minYRes)) {
-		*yres = minYRes;
-	} else {
-		*yres = connectionYRes;
-	}
-
-	if (connectionColorDepth == 0) {
-		connectionColorDepth = 16;
-	}
-	*colordepth = connectionColorDepth;
-
-}
-
 char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
@@ -166,7 +98,9 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 	ns->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(ns->pi), sizeof(PROCESS_INFORMATION));
 
-	initResolutions(ns,&xres,&yres,&colordepth);
+	initResolutions(ns->commonModule.baseConfigPath , &gConfig , ns->commonModule.sessionId
+			, &ns->commonModule.envBlock , &xres , &yres , &colordepth);
+
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -f freerds -b 32 -w %d -h %d",
 			"netsurf", (int) xres, (int) yres);

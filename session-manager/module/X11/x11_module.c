@@ -45,6 +45,7 @@
 #include <limits.h>
 
 #include "x11_module.h"
+#include "../common/module_helper.h"
 
 RDS_MODULE_CONFIG_CALLBACKS gConfig;
 RDS_MODULE_STATUS_CALLBACKS gStatus;
@@ -134,6 +135,9 @@ void x11_rds_module_free(RDS_MODULE_COMMON* module)
 	if (moduleCon->commonModule.authToken)
 		free(moduleCon->commonModule.authToken);
 
+	if (moduleCon->commonModule.baseConfigPath) {
+		free(moduleCon->commonModule.baseConfigPath);
+	}
 	free(module);
 }
 
@@ -166,74 +170,6 @@ int x11_rds_stop_process(PROCESS_INFORMATION *pi)
 #endif
 	clean_up_process(pi);
 	return ret;
-}
-
-void initResolutions(rdsModuleX11 * x11,  long * xres, long * yres, long * colordepth) {
-	char tempstr[256];
-
-	long maxXRes = 0 , maxYRes = 0, minXRes = 0, minYRes = 0;
-	long connectionXRes = 0, connectionYRes = 0, connectionColorDepth = 0;
-
-	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.maxXRes", &maxXRes)) {
-		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.maxYRes", &maxYRes)) {
-		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.minXRes", &minXRes)) {
-		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.minYRes", &minYRes)){
-		WLog_Print(gModuleLog, WLOG_ERROR, "Setting: module.x11.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-
-	if ((maxXRes != 0) && (maxYRes != 0)){
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
-		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SMAX", tempstr);
-	}
-	if ((minXRes != 0) && (minYRes != 0)) {
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
-		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SMIN", tempstr);
-	}
-
-	gConfig.getPropertyNumber(x11->commonModule.sessionId, "current.connection.xres", &connectionXRes);
-	gConfig.getPropertyNumber(x11->commonModule.sessionId, "current.connection.yres", &connectionYRes);
-	gConfig.getPropertyNumber(x11->commonModule.sessionId, "current.connection.colordepth", &connectionColorDepth);
-
-	if ((connectionXRes == 0) || (connectionYRes == 0)) {
-		WLog_Print(gModuleLog, WLOG_ERROR, "got no XRes or YRes from client, using config values");
-
-		if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.xres", xres))
-			*xres = 1024;
-
-		if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.yres", yres))
-			*yres = 768;
-
-		if (!gConfig.getPropertyNumber(x11->commonModule.sessionId, "module.x11.colordepth", colordepth))
-			*colordepth = 24;
-
-		return;
-	}
-
-	if ((maxXRes > 0 ) && (connectionXRes > maxXRes)) {
-		*xres = maxXRes;
-	} else if ((minXRes > 0 ) && (connectionXRes < minXRes)) {
-		*xres = minXRes;
-	} else {
-		*xres = connectionXRes;
-	}
-
-	if ((maxYRes > 0 ) && (connectionYRes > maxYRes)) {
-		*yres = maxYRes;
-	} else if ((minYRes > 0 ) && (connectionYRes < minYRes)) {
-		*yres = minYRes;
-	} else {
-		*yres = connectionYRes;
-	}
-	if (connectionColorDepth == 0) {
-		connectionColorDepth = 16;
-	}
-	*colordepth = connectionColorDepth;
 }
 
 unsigned int detect_free_display()
@@ -289,7 +225,9 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (x11->displayNum));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
-	initResolutions(x11,&xres,&yres,&colordepth);
+
+	initResolutions(x11->commonModule.baseConfigPath , &gConfig , x11->commonModule.sessionId
+			, &x11->commonModule.envBlock , &xres , &yres , &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -dpi 120",
 			"X11rdp", (int) (x11->displayNum), (int) xres, (int) yres, (int) 24);
@@ -323,7 +261,8 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
-	if (!gConfig.getPropertyString(x11->commonModule.sessionId, "module.x11.startwm", startupname, 256))
+
+	if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath,&gConfig, x11->commonModule.sessionId, "startwm", startupname, 256))
 		strcpy(startupname, "startwm.sh");
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken,

@@ -41,6 +41,7 @@
 #include <sys/wait.h>
 
 #include "qt_module.h"
+#include "../common/module_helper.h"
 
 RDS_MODULE_CONFIG_CALLBACKS gConfig;
 RDS_MODULE_STATUS_CALLBACKS gStatus;
@@ -113,75 +114,6 @@ void qt_rds_module_free(RDS_MODULE_COMMON* module)
 	free(module);
 }
 
-void initResolutions(rdsModuleQt * qt,  long * xres, long * yres, long * colordepth) {
-	char tempstr[256];
-
-	long maxXRes = 0, maxYRes = 0, minXRes = 0, minYRes = 0;
-	long connectionXRes = 0, connectionYRes = 0, connectionColorDepth = 0;
-
-	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.maxXRes", &maxXRes)) {
-		WLog_Print(qt->log, WLOG_ERROR, "Setting: module.qt.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.maxYRes", &maxYRes)) {
-		WLog_Print(qt->log, WLOG_ERROR, "Setting: module.qt.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.minXRes", &minXRes)) {
-		WLog_Print(qt->log, WLOG_ERROR, "Setting: module.qt.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.minYRes", &minYRes)){
-		WLog_Print(qt->log, WLOG_ERROR, "Setting: module.qt.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-
-	if ((maxXRes != 0) && (maxYRes != 0)){
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
-		SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_SMAX", tempstr);
-	}
-	if ((minXRes != 0) && (minYRes != 0)) {
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
-		SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_SMIN", tempstr);
-	}
-
-	gConfig.getPropertyNumber(qt->commonModule.sessionId, "current.connection.xres", &connectionXRes);
-	gConfig.getPropertyNumber(qt->commonModule.sessionId, "current.connection.yres", &connectionYRes);
-	gConfig.getPropertyNumber(qt->commonModule.sessionId, "current.connection.colordepth", &connectionColorDepth);
-
-	if ((connectionXRes == 0) || (connectionYRes == 0)) {
-		WLog_Print(qt->log, WLOG_ERROR, "got no XRes or YRes from client, using config values");
-
-		if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.xres", xres))
-			*xres = 1024;
-
-		if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.yres", yres))
-			*yres = 768;
-
-		if (!gConfig.getPropertyNumber(qt->commonModule.sessionId, "module.qt.colordepth", colordepth))
-			*colordepth = 24;
-		return;
-	}
-
-	if ((maxXRes > 0 ) && (connectionXRes > maxXRes)) {
-		*xres = maxXRes;
-	} else if ((minXRes > 0 ) && (connectionXRes < minXRes)) {
-		*xres = minXRes;
-	} else {
-		*xres = connectionXRes;
-	}
-
-	if ((maxYRes > 0 ) && (connectionYRes > maxYRes)) {
-		*yres = maxYRes;
-	} else if ((minYRes > 0 ) && (connectionYRes < minYRes)) {
-		*yres = minYRes;
-	} else {
-		*yres = connectionYRes;
-	}
-
-	if (connectionColorDepth == 0) {
-		connectionColorDepth = 16;
-	}
-	*colordepth = connectionColorDepth;
-
-}
-
 char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
@@ -191,10 +123,10 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	char lpCommandLine[256];
 	const char* endpoint = "Qt";
 	char envstr[256];
+	char cmd[256];
 
 	rdsModuleQt* qt = (rdsModuleQt*) module;
 	DWORD SessionId = qt->commonModule.sessionId;
-	char *appName = "nice_greeter";
 	qt->monitorStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	WLog_Print(qt->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
@@ -211,7 +143,9 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (qt->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_SID", envstr);
 
-	initResolutions(qt,&xres,&yres,&colordepth);
+	initResolutions(qt->commonModule.baseConfigPath , &gConfig , qt->commonModule.sessionId
+			, &qt->commonModule.envBlock , &xres , &yres , &colordepth);
+
 
 	qPipeName = (char*) malloc(256);
 	sprintf_s(qPipeName, 256, "/tmp/.pipe/FreeRDS_%d_%s", (int) SessionId, endpoint);
@@ -221,8 +155,14 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 	SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "QT_PLUGIN_PATH",
 			"/opt/freerds/lib64/plugins");
 
+	if (!getPropertyStringWrapper(qt->commonModule.baseConfigPath,&gConfig, qt->commonModule.sessionId, "cmd", cmd, 256)){
+		WLog_Print(qt->log, WLOG_FATAL, "Could not query %s.cmd, stopping qt module again, because of missing command ", qt->commonModule.baseConfigPath);
+		return NULL;
+	}
+
+
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -platform freerds",
-			appName);
+			cmd);
 
 	WLog_Print(qt->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
@@ -231,7 +171,7 @@ char* qt_rds_module_start(RDS_MODULE_COMMON* module)
 			&(qt->si), &(qt->pi));
 	if (0 == status)
 	{
-		WLog_Print(qt->log, WLOG_ERROR, "Could not start qt application %s", appName);
+		WLog_Print(qt->log, WLOG_FATAL, "Could not start qt application %s", cmd);
 		return NULL;
 	}
 

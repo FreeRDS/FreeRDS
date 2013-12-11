@@ -60,8 +60,8 @@ namespace freerds
 			void setAuthSession(bool authSession);
 			int authenticate(std::string username, std::string domain, std::string password);
 
-			void setModuleName(std::string moduleName);
-			std::string getModuleName();
+			void setModuleConfigName(std::string configName);
+			std::string getModuleConfigName();
 			bool startModule(std::string & pipeName);
 			bool stopModule();
 
@@ -84,6 +84,7 @@ namespace freerds
 			HANDLE mUserToken;
 			char* mpEnvBlock;
 
+			std::string mModuleConfigName;
 			std::string mModuleName;
 			RDS_MODULE_COMMON* mCurrentModuleContext;
 			WTS_CONNECTSTATE_CLASS mCurrentState;

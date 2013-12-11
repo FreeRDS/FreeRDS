@@ -19,7 +19,10 @@ set(MODULE_PREFIX "FREERDS_MODULE_NETSURF")
 
 set(${MODULE_PREFIX}_SRCS
 	netsurf_module.c
-	netsurf_module.h)
+	netsurf_module.h
+	../common/module_helper.c
+	../common/module_helper.h)
+	
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 

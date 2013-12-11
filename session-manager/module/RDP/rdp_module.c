@@ -38,6 +38,8 @@
 #include <freerds/module.h>
 #include <freerds/backend.h>
 
+#include "../common/module_helper.h"
+
 #include "rdp_module.h"
 
 RDS_MODULE_CONFIG_CALLBACKS gConfig;
@@ -87,75 +89,6 @@ void rdp_rds_module_free(RDS_MODULE_COMMON* module)
 	free(rdp);
 }
 
-void initResolutions(rdsModuleRdp * rdp,  long * xres, long * yres, long * colordepth) {
-	char tempstr[256];
-
-	long maxXRes = 0, maxYRes = 0, minXRes = 0, minYRes = 0;
-	long connectionXRes = 0, connectionYRes = 0, connectionColorDepth = 0;
-
-	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.maxXRes", &maxXRes)) {
-		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.maxYRes", &maxYRes)) {
-		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.minXRes", &minXRes)) {
-		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-	if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.minYRes", &minYRes)){
-		WLog_Print(rdp->log, WLOG_ERROR, "Setting: module.rdp.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n");
-	}
-
-	if ((maxXRes != 0) && (maxYRes != 0)){
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
-		SetEnvironmentVariableEBA(&rdp->commonModule.envBlock, "FREERDS_SMAX", tempstr);
-	}
-	if ((minXRes != 0) && (minYRes != 0)) {
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
-		SetEnvironmentVariableEBA(&rdp->commonModule.envBlock, "FREERDS_SMIN", tempstr);
-	}
-
-	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "current.connection.xres", &connectionXRes);
-	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "current.connection.yres", &connectionYRes);
-	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "current.connection.colordepth", &connectionColorDepth);
-
-	if ((connectionXRes == 0) || (connectionYRes == 0)) {
-		WLog_Print(rdp->log, WLOG_ERROR, "got no XRes or YRes from client, using config values");
-
-		if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.xres", xres))
-			*xres = 1024;
-
-		if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.yres", yres))
-			*yres = 768;
-
-		if (!gConfig.getPropertyNumber(rdp->commonModule.sessionId, "module.rdp.colordepth", colordepth))
-			*colordepth = 24;
-		return;
-	}
-
-	if ((maxXRes > 0 ) && (connectionXRes > maxXRes)) {
-		*xres = maxXRes;
-	} else if ((minXRes > 0 ) && (connectionXRes < minXRes)) {
-		*xres = minXRes;
-	} else {
-		*xres = connectionXRes;
-	}
-
-	if ((maxYRes > 0 ) && (connectionYRes > maxYRes)) {
-		*yres = maxYRes;
-	} else if ((minYRes > 0 ) && (connectionYRes < minYRes)) {
-		*yres = minYRes;
-	} else {
-		*yres = connectionYRes;
-	}
-
-	if (connectionColorDepth == 0) {
-		connectionColorDepth = 16;
-	}
-	*colordepth = connectionColorDepth;
-}
-
-
 char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status;
@@ -179,7 +112,7 @@ char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 	rdp->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(rdp->pi), sizeof(PROCESS_INFORMATION));
 
-	initResolutions(rdp,&xres,&yres,&colordepth);
+	initResolutions(rdp->commonModule.baseConfigPath , &gConfig , rdp->commonModule.sessionId , &rdp->commonModule.envBlock , &xres , &yres , &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /size:%dx%d",
 			"freerds-rdp", (int) xres, (int) yres);
