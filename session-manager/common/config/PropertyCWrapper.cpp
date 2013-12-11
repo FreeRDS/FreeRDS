@@ -47,13 +47,13 @@ bool getPropertyString(long sessionID, char* path, char* value, unsigned int val
 	if (!retValue)
 		return false;
 
-	if (stdvalue.size() > valueLength)
+	if (stdvalue.size()+1 > valueLength)
 	{
 		return false;
 	}
 	else
 	{
-		memcpy(value,stdvalue.c_str(), stdvalue.size());
+		memcpy(value,stdvalue.c_str(), stdvalue.size()+1);
 		return true;
 	}
 }
