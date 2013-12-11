@@ -104,9 +104,9 @@ void initResolutions(rdsModuleNetSurf * ns,  long * xres, long * yres, long * co
 		SetEnvironmentVariableEBA(&ns->commonModule.envBlock, "FREERDS_SMIN", tempstr);
 	}
 
-	gConfig.getPropertyNumber(ns->commonModule.sessionId, "connection.xres", &connectionXRes);
-	gConfig.getPropertyNumber(ns->commonModule.sessionId, "connection.yres", &connectionYRes);
-	gConfig.getPropertyNumber(ns->commonModule.sessionId, "connection.colordepth", &connectionColorDepth);
+	gConfig.getPropertyNumber(ns->commonModule.sessionId, "current.connection.xres", &connectionXRes);
+	gConfig.getPropertyNumber(ns->commonModule.sessionId, "current.connection.yres", &connectionYRes);
+	gConfig.getPropertyNumber(ns->commonModule.sessionId, "current.connection.colordepth", &connectionColorDepth);
 
 	if ((connectionXRes == 0) || (connectionYRes == 0)) {
 		WLog_Print(ns->log, WLOG_ERROR, "got no XRes or YRes from client, using config values");

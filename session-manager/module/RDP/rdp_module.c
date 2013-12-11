@@ -115,9 +115,9 @@ void initResolutions(rdsModuleRdp * rdp,  long * xres, long * yres, long * color
 		SetEnvironmentVariableEBA(&rdp->commonModule.envBlock, "FREERDS_SMIN", tempstr);
 	}
 
-	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "connection.xres", &connectionXRes);
-	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "connection.yres", &connectionYRes);
-	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "connection.colordepth", &connectionColorDepth);
+	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "current.connection.xres", &connectionXRes);
+	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "current.connection.yres", &connectionYRes);
+	gConfig.getPropertyNumber(rdp->commonModule.sessionId, "current.connection.colordepth", &connectionColorDepth);
 
 	if ((connectionXRes == 0) || (connectionYRes == 0)) {
 		WLog_Print(rdp->log, WLOG_ERROR, "got no XRes or YRes from client, using config values");

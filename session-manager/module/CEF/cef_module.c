@@ -105,9 +105,9 @@ void initResolutions(rdsModuleCef * cef,  long * xres, long * yres, long * color
 		SetEnvironmentVariableEBA(&cef->commonModule.envBlock, "FREERDS_SMIN", tempstr);
 	}
 
-	gConfig.getPropertyNumber(cef->commonModule.sessionId, "connection.xres", &connectionXRes);
-	gConfig.getPropertyNumber(cef->commonModule.sessionId, "connection.yres", &connectionYRes);
-	gConfig.getPropertyNumber(cef->commonModule.sessionId, "connection.colordepth", &connectionColorDepth);
+	gConfig.getPropertyNumber(cef->commonModule.sessionId, "current.connection.xres", &connectionXRes);
+	gConfig.getPropertyNumber(cef->commonModule.sessionId, "current.connection.yres", &connectionYRes);
+	gConfig.getPropertyNumber(cef->commonModule.sessionId, "current.connection.colordepth", &connectionColorDepth);
 
 	if ((connectionXRes == 0) || (connectionYRes == 0)) {
 		WLog_Print(cef->log, WLOG_ERROR, "got no XRes or YRes from client, using config values");

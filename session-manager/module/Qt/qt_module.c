@@ -141,9 +141,9 @@ void initResolutions(rdsModuleQt * qt,  long * xres, long * yres, long * colorde
 		SetEnvironmentVariableEBA(&qt->commonModule.envBlock, "FREERDS_SMIN", tempstr);
 	}
 
-	gConfig.getPropertyNumber(qt->commonModule.sessionId, "connection.xres", &connectionXRes);
-	gConfig.getPropertyNumber(qt->commonModule.sessionId, "connection.yres", &connectionYRes);
-	gConfig.getPropertyNumber(qt->commonModule.sessionId, "connection.colordepth", &connectionColorDepth);
+	gConfig.getPropertyNumber(qt->commonModule.sessionId, "current.connection.xres", &connectionXRes);
+	gConfig.getPropertyNumber(qt->commonModule.sessionId, "current.connection.yres", &connectionYRes);
+	gConfig.getPropertyNumber(qt->commonModule.sessionId, "current.connection.colordepth", &connectionColorDepth);
 
 	if ((connectionXRes == 0) || (connectionYRes == 0)) {
 		WLog_Print(qt->log, WLOG_ERROR, "got no XRes or YRes from client, using config values");
