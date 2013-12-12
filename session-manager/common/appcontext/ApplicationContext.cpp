@@ -254,6 +254,8 @@ namespace freerds
 			mPropertyManager.setPropertyString(Global, 0, "module","xsession");
 			mPropertyManager.setPropertyString(Global, 0, "auth.module","PAM");
 			mPropertyManager.setPropertyString(Global, 0, "auth.greeter","greeter");
+			mPropertyManager.setPropertyBool(Global, 0, "session.reconnect",true);
+
 
 			mPropertyManager.setPropertyString(Global, 0, "module.xsession.modulename","X11");
 			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.maxXRes",1920);
@@ -279,6 +281,7 @@ namespace freerds
 			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.yres",600,"demo1");
 			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.xres",800,"demo2");
 			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.yres",600,"demo2");
+			mPropertyManager.setPropertyBool(User, 0, "session.reconnect",false,"demo1");
 			mPropertyManager.setPropertyString(User, 0, "module","xsession","demo2");
 
 		}

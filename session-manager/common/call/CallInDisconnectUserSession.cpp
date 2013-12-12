@@ -23,6 +23,7 @@
 
 #include "CallInDisconnectUserSession.h"
 #include <appcontext/ApplicationContext.h>
+#include <call/TaskEndSession.h>
 
 using freerds::icp::DisconnectUserSessionRequest;
 using freerds::icp::DisconnectUserSessionResponse;
@@ -100,6 +101,20 @@ namespace freerds
 
 			currentSession->setConnectState(WTSDisconnected);
 			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
+
+			bool reconnectAllowd;
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyBool(currentSession->getSessionID(),"session.reconnect",reconnectAllowd)) {
+				reconnectAllowd = true;
+			}
+
+			if (!reconnectAllowd) {
+				// shutdown the user session ... because no reconnect is possible
+				// TODO: remove this after adding session timeouts and let the timeout handle the session termination
+				callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
+				task->setSessionId(currentSession->getSessionID());
+				APP_CONTEXT.addTask(task);
+			}
+
 			mDisconnected = true;
 			return 0;
 		}

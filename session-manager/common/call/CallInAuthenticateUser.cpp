@@ -115,7 +115,15 @@ namespace freerds
 
 		int CallInAuthenticateUser::getUserSession() {
 
-			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
+			sessionNS::SessionPtr currentSession;
+			bool reconnectAllowd;
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyBool(0,"session.reconnect",reconnectAllowd,mUserName)) {
+				reconnectAllowd = true;
+			}
+
+			if (reconnectAllowd) {
+				currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
+			}
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{
