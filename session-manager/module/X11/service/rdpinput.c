@@ -479,13 +479,13 @@ void rdpPointerNewEventScreen(DeviceIntPtr pDev, ScreenPtr pScr, Bool fromDIX)
 
 Bool rdpSpriteRealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs)
 {
-	DEBUG_OUT_INPUT(("rdpSpriteRealizeCursor\n"));
+	DEBUG_OUT_INPUT(("rdpSpriteRealizeCursor xid %d\n", pCurs->id));
 	return 1;
 }
 
 Bool rdpSpriteUnrealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs)
 {
-	DEBUG_OUT_INPUT(("hi rdpSpriteUnrealizeCursor\n"));
+	DEBUG_OUT_INPUT(("hi rdpSpriteUnrealizeCursor xid %d\n", pCurs->id));
 	return 1;
 }
 
@@ -535,6 +535,20 @@ int get_pixel_safe(char *data, int x, int y, int width, int height, int bpp)
 	}
 
 	return 0;
+}
+
+static int GetBit(unsigned char *line, int x)
+{
+    unsigned char mask;
+
+    if (screenInfo.bitmapBitOrder == LSBFirst)
+        mask = (1 << (x & 7));
+    else
+        mask = (0x80 >> (x & 7));
+    line += (x >> 3);
+    if (*line & mask)
+        return 1;
+    return 0;
 }
 
 void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp, int pixel)
@@ -593,16 +607,12 @@ void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp, in
 
 void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int x, int y)
 {
-	char cur_data[32 * (32 * 4)];
+	char cur_data[32 * 32 * 4];
 	char cur_mask[32 * (32 / 8)];
-	char* data;
-	int i;
-	int j;
+	int i, j;
 	int w;
 	int h;
-	int p;
-	int paddedRowBytes;
-	int bpp;
+	int bpp = 32;
 	RDS_MSG_SET_POINTER msg;
 
 	if (!pCurs)
@@ -614,15 +624,19 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 	w = pCurs->bits->width;
 	h = pCurs->bits->height;
 
+	msg.xPos = pCurs->bits->xhot;
+	msg.yPos = pCurs->bits->yhot;
+	ZeroMemory(cur_data, sizeof(cur_data));
+	ZeroMemory(cur_mask, sizeof(cur_mask));
+
 	if (pCurs->bits->argb)
 	{
-		bpp = 32;
-		paddedRowBytes = PixmapBytePad(w, 32);
-		msg.xPos = pCurs->bits->xhot;
-		msg.yPos = pCurs->bits->yhot;
+		int paddedRowBytes;
+		int p;
+		char* data;
+
 		data = (char*)(pCurs->bits->argb);
-		ZeroMemory(cur_data, sizeof(cur_data));
-		ZeroMemory(cur_mask, sizeof(cur_mask));
+		paddedRowBytes = PixmapBytePad(w, 32);
 
 		for (j = 0; j < 32; j++)
 		{
@@ -633,7 +647,39 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 			}
 		}
 	}
-
+	else
+	{
+		unsigned char *srcLine = pCurs->bits->source;
+		unsigned char *mskLine = pCurs->bits->mask;
+		int stride = BitmapBytePad(w);
+		CARD32 fg, bg;
+		if (!pCurs->bits->source)
+		{
+			ErrorF(("cursor bits are zero\n"));
+			return;
+		}
+#define ABGR32(_a, _r, _g, _b)  \
+				(_a << 24) | (_b << 16) | (_g << 8) | _r
+		fg = ARGB32(0xff, pCurs->foreRed, pCurs->foreGreen, pCurs->foreBlue);
+		bg = ARGB32(0xff, pCurs->backRed, pCurs->backGreen, pCurs->backBlue);
+		for (i = 0; i < h; i++) {
+			for (j = 0; j < w; j++) {
+				if (GetBit(mskLine, j))
+				{
+					if (GetBit(srcLine, j))
+						set_pixel_safe(cur_data, j, 31 - i, 32, 32, 32, fg);
+					else
+						set_pixel_safe(cur_data, j, 31 - i, 32, 32, 32, bg);
+				}
+				else
+				{
+					set_pixel_safe(cur_data, j, 31 - i, 32, 32, 32, ARGB32(0,0,0,0));
+				}
+			}
+			srcLine += stride;
+			mskLine += stride;
+		}
+	}
 	rdpup_begin_update();
 
 	msg.xorBpp = bpp;
