@@ -45,7 +45,7 @@ namespace freerds
 		{
 			static wLog* logger_PropertyManager = WLog_Get("freerds.SessionManager.config.propertymanager");
 
-			std::string gConnectionPrefix = "connection.";
+			std::string gConnectionPrefix = "current.connection.";
 
 
 			PropertyManager::PropertyManager()

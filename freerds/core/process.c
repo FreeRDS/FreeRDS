@@ -437,7 +437,7 @@ void* freerds_connection_main_thread(void* arg)
 	HANDLE NotificationEvent;
 	rdsConnection* connection;
 	rdpSettings* settings;
-	rdsBackendConnector* connector;
+	rdsBackendConnector* connector = NULL;
 	freerdp_peer* client = (freerdp_peer*) arg;
 	BOOL disconnected = FALSE;
 #ifndef WIN32

@@ -250,30 +250,40 @@ namespace freerds
 
 		void ApplicationContext::setupTestingPropValues()
 		{
-			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.xres",1024);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.yres",768);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.colordepth",24);
-			mPropertyManager.setPropertyString(Global, 0, "module","X11");
+
+			mPropertyManager.setPropertyString(Global, 0, "module","xsession");
 			mPropertyManager.setPropertyString(Global, 0, "auth.module","PAM");
-			mPropertyManager.setPropertyString(Global, 0, "auth.greater","Qt");
-
-			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.maxXRes",1920);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.maxYRes",1200);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.minXRes",640);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.x11.minYRes",480);
-
-			mPropertyManager.setPropertyNumber(Global, 0, "module.qt.maxXRes",1920);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.qt.maxYRes",1200);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.qt.minXRes",640);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.qt.minYRes",480);
+			mPropertyManager.setPropertyString(Global, 0, "auth.greeter","greeter");
+			mPropertyManager.setPropertyBool(Global, 0, "session.reconnect",true);
 
 
+			mPropertyManager.setPropertyString(Global, 0, "module.xsession.modulename","X11");
+			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.maxXRes",1920);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.maxYRes",1200);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.minXRes",320);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.minYRes",200);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.xres",1024);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.yres",768);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.colordepth",24);
+			mPropertyManager.setPropertyString(Global, 0, "module.xsession.startwm","startwm.sh");
 
-			mPropertyManager.setPropertyNumber(User, 0, "module.x11.xres",800,"demo1");
-			mPropertyManager.setPropertyNumber(User, 0, "module.x11.yres",600,"demo1");
-			mPropertyManager.setPropertyNumber(User, 0, "module.x11.xres",800,"demo2");
-			mPropertyManager.setPropertyNumber(User, 0, "module.x11.yres",600,"demo2");
-			mPropertyManager.setPropertyString(User, 0, "module","X11","demo2");
+			mPropertyManager.setPropertyString(Global, 0, "module.greeter.modulename","Qt");
+			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.maxXRes",1920);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.maxYRes",1200);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.minXRes",320);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.minYRes",200);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.xres",1024);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.yres",768);
+			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.colordepth",24);
+			mPropertyManager.setPropertyString(Global, 0, "module.greeter.cmd","nice_greeter");
+
+			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.xres",800,"demo1");
+			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.yres",600,"demo1");
+			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.xres",800,"demo2");
+			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.yres",600,"demo2");
+			mPropertyManager.setPropertyBool(User, 0, "session.reconnect",false,"demo1");
+			mPropertyManager.setPropertyString(User, 0, "module","xsession","demo2");
+
 		}
 
 		void ApplicationContext::startTaskExecutor() {
@@ -284,8 +294,8 @@ namespace freerds
 			mTaskExecutor.stop();
 		}
 
-		void ApplicationContext::addTask(taskNS::TaskPtr task) {
-			mTaskExecutor.addTask(task);
+		bool ApplicationContext::addTask(taskNS::TaskPtr task) {
+			return mTaskExecutor.addTask(task);
 		}
 
 		void ApplicationContext::rpcDisconnected() {

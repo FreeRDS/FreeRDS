@@ -24,10 +24,10 @@ RandR extension implementation
 #include "rdp.h"
 #include "rdprandr.h"
 
-#if 1
-#define DEBUG_OUT(arg)
+#if 0
+#define DEBUG_OUT(fmt, ...) ErrorF(fmt, ##__VA_ARGS__)
 #else
-#define DEBUG_OUT(arg) ErrorF arg
+#define DEBUG_OUT(fmt,...)
 #endif
 
 extern rdpScreenInfoRec g_rdpScreen;
@@ -42,7 +42,7 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 	int mmheight;
 	RRScreenSizePtr pSize;
 
-	ErrorF("rdpRRRegisterSize: width %d height %d\n", width, height);
+	DEBUG_OUT("rdpRRRegisterSize: width %d height %d\n", width, height);
 	mmwidth = PixelToMM(width);
 	mmheight = PixelToMM(height);
 	pSize = RRRegisterSize(pScreen, width, height, mmwidth, mmheight);
@@ -54,7 +54,7 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
 		RRScreenSizePtr pSize)
 {
-	ErrorF("rdpRRSetConfig:\n");
+	DEBUG_OUT("rdpRRSetConfig:\n");
 	return TRUE;
 }
 
@@ -63,7 +63,7 @@ Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation *pRotations)
 	int width;
 	int height;
 
-	ErrorF("rdpRRGetInfo:\n");
+	DEBUG_OUT("rdpRRGetInfo:\n");
 	*pRotations = RR_Rotate_0;
 
 	width = g_rdpScreen.width;
@@ -117,12 +117,12 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 	PixmapPtr screenPixmap;
 	BoxRec box;
 
-	ErrorF("rdpRRScreenSetSize: width %d height %d mmWidth %d mmHeight %d\n",
+	DEBUG_OUT("rdpRRScreenSetSize: width %d height %d mmWidth %d mmHeight %d\n",
 			width, height, (int)mmWidth, (int)mmHeight);
 
 	if ((width < 1) || (height < 1))
 	{
-		ErrorF("  error width %d height %d\n", width, height);
+		DEBUG_OUT("  error width %d height %d\n", width, height);
 		return FALSE;
 	}
 
@@ -141,18 +141,18 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 
 	if (screenPixmap != 0)
 	{
-		ErrorF("  resizing screenPixmap [%p] to %dx%d, currently at %dx%d\n",
+		DEBUG_OUT("  resizing screenPixmap [%p] to %dx%d, currently at %dx%d\n",
 				(void *)screenPixmap, width, height,
 				screenPixmap->drawable.width, screenPixmap->drawable.height);
 		pScreen->ModifyPixmapHeader(screenPixmap, width, height,
 				g_rdpScreen.depth, g_rdpScreen.bitsPerPixel,
 				g_rdpScreen.paddedWidthInBytes,
 				g_rdpScreen.pfbMemory);
-		ErrorF("  pixmap resized to %dx%d\n",
+		DEBUG_OUT("  pixmap resized to %dx%d\n",
 				screenPixmap->drawable.width, screenPixmap->drawable.height);
 	}
 
-	DEBUG_OUT(("  root window %p\n", (void *)pScreen->root));
+	DEBUG_OUT("  root window %p\n", (void *)pScreen->root);
 	box.x1 = 0;
 	box.y1 = 0;
 	box.x2 = width;
@@ -166,7 +166,7 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 	ResizeChildrenWinSize(pScreen->root, 0, 0, 0, 0);
 	RRGetInfo(pScreen, 1);
 	rdpInvalidateArea(g_pScreen, 0, 0, g_rdpScreen.width, g_rdpScreen.height);
-	ErrorF("  screen resized to %dx%d\n",
+	DEBUG_OUT("  screen resized to %dx%d\n",
 			pScreen->width, pScreen->height);
 	return TRUE;
 }
@@ -175,51 +175,51 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		int x, int y, Rotation rotation, int numOutputs,
 		RROutputPtr *outputs)
 {
-	ErrorF("rdpRRCrtcSet:\n");
+	DEBUG_OUT("rdpRRCrtcSet:\n");
 	return TRUE;
 }
 
 Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
-	ErrorF("rdpRRCrtcSetGamma:\n");
+	DEBUG_OUT("rdpRRCrtcSetGamma:\n");
 	return TRUE;
 }
 
 Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
-	ErrorF("rdpRRCrtcGetGamma:\n");
+	DEBUG_OUT("rdpRRCrtcGetGamma:\n");
 	return TRUE;
 }
 
 Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property,
 		RRPropertyValuePtr value)
 {
-	ErrorF("rdpRROutputSetProperty:\n");
+	DEBUG_OUT("rdpRROutputSetProperty:\n");
 	return TRUE;
 }
 
 Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output,
 		RRModePtr mode)
 {
-	ErrorF("rdpRROutputValidateMode:\n");
+	DEBUG_OUT("rdpRROutputValidateMode:\n");
 	return TRUE;
 }
 
 void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode)
 {
-	ErrorF("rdpRRModeDestroy:\n");
+	DEBUG_OUT("rdpRRModeDestroy:\n");
 }
 
 Bool rdpRROutputGetProperty(ScreenPtr   pScreen, RROutputPtr output, Atom property)
 {
-	ErrorF("rdpRROutputGetProperty:\n");
+	DEBUG_OUT("rdpRROutputGetProperty:\n");
 	return TRUE;
 }
 
 Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 		BoxPtr trackingArea, INT16 *border)
 {
-	ErrorF("rdpRRGetPanning:\n");
+	DEBUG_OUT("rdpRRGetPanning:\n");
 
 	if (totalArea != 0)
 	{
@@ -251,6 +251,6 @@ Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 Bool rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 		BoxPtr trackingArea, INT16 *border)
 {
-	ErrorF("rdpRRSetPanning:\n");
+	DEBUG_OUT("rdpRRSetPanning:\n");
 	return TRUE;
 }

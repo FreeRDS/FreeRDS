@@ -23,6 +23,7 @@
 #include <winpr/interlocked.h>
 #include <winpr/memory.h>
 
+#include "pbRPC.pb-c.h"
 #include "pbrpc_utils.h"
 
 DWORD pbrpc_getTag(pbRPCContext *context)

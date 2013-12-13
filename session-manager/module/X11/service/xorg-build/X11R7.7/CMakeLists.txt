@@ -673,6 +673,30 @@ set(${EXTERNAL_PROJECT}_MAKE "")
 set(${EXTERNAL_PROJECT}_DEPENDS "xcb-proto;libXdmcp;libXau")
 list(APPEND EXTERNAL_PROJECTS_X11_XCB ${EXTERNAL_PROJECT})
 
+set(EXTERNAL_PROJECT "xcb-util-keysyms")
+set(${EXTERNAL_PROJECT}_VERSION "0.3.9")
+set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}")
+set(${EXTERNAL_PROJECT}_EXT ".tar.bz2")
+set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
+set(${EXTERNAL_PROJECT}_URL "http://xcb.freedesktop.org/dist/${${EXTERNAL_PROJECT}_FILE}")
+set(${EXTERNAL_PROJECT}_CONFIGURE "${COMMON_CONFIGURE_OPTS}")
+set(${EXTERNAL_PROJECT}_UPDATE "")
+set(${EXTERNAL_PROJECT}_MAKE "")
+set(${EXTERNAL_PROJECT}_DEPENDS "xcb-proto;libxcb")
+list(APPEND EXTERNAL_PROJECTS_X11_XCB ${EXTERNAL_PROJECT})
+
+set(EXTERNAL_PROJECT "xcb-util-wm")
+set(${EXTERNAL_PROJECT}_VERSION "0.3.9")
+set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}")
+set(${EXTERNAL_PROJECT}_EXT ".tar.bz2")
+set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
+set(${EXTERNAL_PROJECT}_URL "http://xcb.freedesktop.org/dist/${${EXTERNAL_PROJECT}_FILE}")
+set(${EXTERNAL_PROJECT}_CONFIGURE "${COMMON_CONFIGURE_OPTS}")
+set(${EXTERNAL_PROJECT}_UPDATE "")
+set(${EXTERNAL_PROJECT}_MAKE "")
+set(${EXTERNAL_PROJECT}_DEPENDS "xcb-proto;libxcb")
+list(APPEND EXTERNAL_PROJECTS_X11_XCB ${EXTERNAL_PROJECT})
+
 list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECTS_X11_XCB})
 
 # End of XCB
@@ -1546,6 +1570,24 @@ list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECTS_X11_FONTS})
 
 # End of X11 Fonts
 
+# X11 additional
+set(EXTERNAL_PROJECT "libxkbcommon")
+set(${EXTERNAL_PROJECT}_VERSION "0.3.2")
+set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}")
+set(${EXTERNAL_PROJECT}_EXT ".tar.bz2")
+set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
+# use a repackaged version of libxkbcommon hosted on pub.freerdp.com since
+# upstream only provides .xz compressed archives
+set(${EXTERNAL_PROJECT}_URL "http://pub.freerdp.com/downloads/${${EXTERNAL_PROJECT}_FILE}")
+set(${EXTERNAL_PROJECT}_CONFIGURE "${COMMON_CONFIGURE_OPTS}")
+set(${EXTERNAL_PROJECT}_UPDATE "")
+set(${EXTERNAL_PROJECT}_MAKE "")
+set(${EXTERNAL_PROJECT}_DEPENDS "xproto;util-macros;xkeyboard-config")
+list(APPEND EXTERNAL_PROJECTS_X11_ADDITIONAL ${EXTERNAL_PROJECT})
+
+list(APPEND EXTERNAL_PROJECTS ${EXTERNAL_PROJECTS_X11_ADDITIONAL})
+# End of X11 additional
+
 foreach(EXTERNAL_PROJECT ${EXTERNAL_PROJECTS})
 	message(STATUS "Adding External Project: ${EXTERNAL_PROJECT}")
 	list(APPEND ${EXTERNAL_PROJECT}_CONFIGURE ${EXTERNAL_PROJECTS_CONFIGURE_EXTRA})
@@ -1573,8 +1615,9 @@ add_custom_target(x11-xcb DEPENDS ${EXTERNAL_PROJECTS_X11_XCB} x11-libs)
 add_custom_target(x11-mesa DEPENDS ${EXTERNAL_PROJECTS_X11_MESA} x11-xcb)
 add_custom_target(x11-xserver DEPENDS ${EXTERNAL_PROJECTS_X11_SERVER} x11-mesa)
 add_custom_target(x11-fonts DEPENDS ${EXTERNAL_PROJECTS_X11_FONTS} x11-xserver)
+add_custom_target(x11-additional DEPENDS ${EXTERNAL_PROJECTS_X11_ADDITIONAL})
 
-add_custom_target(all DEPENDS x11-docs x11-proto x11-utils x11-base-libs x11-libs x11-xcb x11-mesa x11-xserver x11-fonts)
+add_custom_target(all DEPENDS x11-docs x11-proto x11-utils x11-base-libs x11-libs x11-xcb x11-mesa x11-xserver x11-fonts x11-additional)
 
 set(MAKE_ALL "make")
 

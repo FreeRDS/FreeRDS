@@ -33,6 +33,7 @@ struct _RDS_MODULE_COMMON
 	char* userName;
 	HANDLE userToken;
 	char* envBlock;
+	char* baseConfigPath;
 };
 typedef struct _RDS_MODULE_COMMON RDS_MODULE_COMMON;
 

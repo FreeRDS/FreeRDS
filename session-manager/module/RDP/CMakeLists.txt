@@ -19,7 +19,10 @@ set(MODULE_PREFIX "FREERDS_MODULE_RDP")
 
 set(${MODULE_PREFIX}_SRCS
 	rdp_module.c
-	rdp_module.h)
+	rdp_module.h
+	../common/module_helper.c
+	../common/module_helper.h)
+	
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
