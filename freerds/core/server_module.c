@@ -107,9 +107,11 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 		frame->frameId = ++connection->frameId;
 		ListDictionary_Add(connection->FrameList, (void*) (size_t) frame->frameId, frame);
 
-		freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
+		if (settings->SurfaceFrameMarkerEnabled)
+			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
 		freerds_send_surface_bits(connection, bpp, msg);
-		freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_END, frame->frameId);
+		if (settings->SurfaceFrameMarkerEnabled)
+			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_END, frame->frameId);
 	}
 	else
 	{

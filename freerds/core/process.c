@@ -49,10 +49,13 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
 	rdpSettings* settings = client->settings;
 
+	settings->OsMajorType = OSMAJORTYPE_UNIX;
+	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
 	settings->ColorDepth = 32;
 	settings->RemoteFxCodec = TRUE;
 	settings->BitmapCacheV3Enabled = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
+	settings->SurfaceFrameMarkerEnabled = TRUE;
 
 	freerds_connection_init(context, settings);
 	context->client = client;
@@ -180,7 +183,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 
 	if (connector)
 	{
-		printf("reactivation\n");
+		fprintf(stderr, "reactivation\n");
 		return TRUE;
 	}
 
@@ -190,8 +193,10 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	if (settings->Password)
 		settings->AutoLogonEnabled = 1;
 
-	if (settings->RemoteFxCodec || settings->NSCodec)
-		connection->codecMode = TRUE;
+	// TODO: add NS codec in the candidates as soon as the encoder will be able
+	//  	to create pdu that fit in fastpath pdu max size
+	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
+							settings->SurfaceFrameMarkerEnabled);
 
 	error_code = freerds_icp_LogonUser((UINT32)(connection->id),
 			settings->Username, settings->Domain, settings->Password, settings->DesktopWidth,
@@ -199,7 +204,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 
 	if (error_code != 0)
 	{
-		printf("freerds_icp_LogonUser failed %d\n", error_code);
+		fprintf(stderr, "freerds_icp_LogonUser failed %d\n", error_code);
 		return FALSE;
 	}
 
@@ -211,7 +216,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	if (!freerds_connector_connect(connector))
 		return FALSE;
 
-	printf("Client Activated\n");
+	fprintf(stderr, "Client Activated\n");
 
 	return TRUE;
 }
@@ -419,7 +424,9 @@ BOOL freerds_client_process_notification(rdsConnection *connection, wMessage *me
 			break;
 		case NOTIFY_LOGOFF:
 			ret = freerds_client_process_logoff(connection, message);
+			break;
 		default:
+			fprintf(stderr, "%s: unhandled message 0x%x\n", __FUNCTION__, message->id);
 			break;
 	}
 	return ret;
@@ -545,7 +552,7 @@ void* freerds_connection_main_thread(void* arg)
 		{
 			wMessage message;
 			MessageQueue_Peek(connection->notifications, (void *)(&message), TRUE);
-			if (TRUE != freerds_client_process_notification(connection, &message))
+			if (!freerds_client_process_notification(connection, &message))
 				break;
 		}
 	}
@@ -554,8 +561,10 @@ void* freerds_connection_main_thread(void* arg)
 
 	if (connection->connector)
 	{
+		freerds_connector_free(connection->connector);
+		connection->connector = 0;
+
 		freerds_icp_DisconnectUserSession(connection->id, &disconnected);
-		CloseHandle(connection->connector->hClientPipe);
 	}
 	client->Disconnect(client);
 	app_context_remove_connection(connection->id);
