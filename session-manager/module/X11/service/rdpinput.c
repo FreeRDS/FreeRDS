@@ -21,21 +21,6 @@ keyboard and mouse stuff
 
  */
 
-/* control notes */
-/* rdesktop sends control before scan code 69 but it doesn't set the
-   flags right so control down is used to determine between pause and
-   num lock */
-/* this should be fixed in rdesktop */
-/* g_pause_spe flag for specal control sent by ms client before scan code
-   69 is sent to tell that its pause, not num lock.  both pause and num
-   lock use scan code 69 */
-
-/* tab notes */
-/* mstsc send tab up without a tab down to mark the mstsc has gained focus
-   this should have sure control alt and shift are all up
-   rdesktop does not do this */
-/* this should be fixed in rdesktop */
-
 #include "rdp.h"
 
 #include "events.h"
@@ -57,14 +42,6 @@ extern DeviceIntPtr g_keyboard;
 extern rdpScreenInfoRec g_rdpScreen;
 
 static int g_old_button_mask = 0;
-static int g_pause_spe = 0;
-static int g_ctrl_down = 0;
-static int g_alt_down = 0;
-static int g_shift_down = 0;
-static int g_tab_down = 0;
-/* this is toggled every time num lock key is released, not like the
-   above *_down vars */
-static int g_scroll_lock_down = 0;
 
 #define MIN_KEY_CODE 8
 #define MAX_KEY_CODE 255
@@ -93,165 +70,157 @@ static int g_scroll_lock_down = 0;
 /* Copied from Xvnc/lib/font/util/utilbitmap.c */
 static unsigned char g_reverse_byte[0x100] =
 {
-		0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
-		0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
-		0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
-		0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
-		0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4,
-		0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
-		0x0c, 0x8c, 0x4c, 0xcc, 0x2c, 0xac, 0x6c, 0xec,
-		0x1c, 0x9c, 0x5c, 0xdc, 0x3c, 0xbc, 0x7c, 0xfc,
-		0x02, 0x82, 0x42, 0xc2, 0x22, 0xa2, 0x62, 0xe2,
-		0x12, 0x92, 0x52, 0xd2, 0x32, 0xb2, 0x72, 0xf2,
-		0x0a, 0x8a, 0x4a, 0xca, 0x2a, 0xaa, 0x6a, 0xea,
-		0x1a, 0x9a, 0x5a, 0xda, 0x3a, 0xba, 0x7a, 0xfa,
-		0x06, 0x86, 0x46, 0xc6, 0x26, 0xa6, 0x66, 0xe6,
-		0x16, 0x96, 0x56, 0xd6, 0x36, 0xb6, 0x76, 0xf6,
-		0x0e, 0x8e, 0x4e, 0xce, 0x2e, 0xae, 0x6e, 0xee,
-		0x1e, 0x9e, 0x5e, 0xde, 0x3e, 0xbe, 0x7e, 0xfe,
-		0x01, 0x81, 0x41, 0xc1, 0x21, 0xa1, 0x61, 0xe1,
-		0x11, 0x91, 0x51, 0xd1, 0x31, 0xb1, 0x71, 0xf1,
-		0x09, 0x89, 0x49, 0xc9, 0x29, 0xa9, 0x69, 0xe9,
-		0x19, 0x99, 0x59, 0xd9, 0x39, 0xb9, 0x79, 0xf9,
-		0x05, 0x85, 0x45, 0xc5, 0x25, 0xa5, 0x65, 0xe5,
-		0x15, 0x95, 0x55, 0xd5, 0x35, 0xb5, 0x75, 0xf5,
-		0x0d, 0x8d, 0x4d, 0xcd, 0x2d, 0xad, 0x6d, 0xed,
-		0x1d, 0x9d, 0x5d, 0xdd, 0x3d, 0xbd, 0x7d, 0xfd,
-		0x03, 0x83, 0x43, 0xc3, 0x23, 0xa3, 0x63, 0xe3,
-		0x13, 0x93, 0x53, 0xd3, 0x33, 0xb3, 0x73, 0xf3,
-		0x0b, 0x8b, 0x4b, 0xcb, 0x2b, 0xab, 0x6b, 0xeb,
-		0x1b, 0x9b, 0x5b, 0xdb, 0x3b, 0xbb, 0x7b, 0xfb,
-		0x07, 0x87, 0x47, 0xc7, 0x27, 0xa7, 0x67, 0xe7,
-		0x17, 0x97, 0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7,
-		0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
-		0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
+	0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
+	0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
+	0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
+	0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
+	0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4,
+	0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
+	0x0c, 0x8c, 0x4c, 0xcc, 0x2c, 0xac, 0x6c, 0xec,
+	0x1c, 0x9c, 0x5c, 0xdc, 0x3c, 0xbc, 0x7c, 0xfc,
+	0x02, 0x82, 0x42, 0xc2, 0x22, 0xa2, 0x62, 0xe2,
+	0x12, 0x92, 0x52, 0xd2, 0x32, 0xb2, 0x72, 0xf2,
+	0x0a, 0x8a, 0x4a, 0xca, 0x2a, 0xaa, 0x6a, 0xea,
+	0x1a, 0x9a, 0x5a, 0xda, 0x3a, 0xba, 0x7a, 0xfa,
+	0x06, 0x86, 0x46, 0xc6, 0x26, 0xa6, 0x66, 0xe6,
+	0x16, 0x96, 0x56, 0xd6, 0x36, 0xb6, 0x76, 0xf6,
+	0x0e, 0x8e, 0x4e, 0xce, 0x2e, 0xae, 0x6e, 0xee,
+	0x1e, 0x9e, 0x5e, 0xde, 0x3e, 0xbe, 0x7e, 0xfe,
+	0x01, 0x81, 0x41, 0xc1, 0x21, 0xa1, 0x61, 0xe1,
+	0x11, 0x91, 0x51, 0xd1, 0x31, 0xb1, 0x71, 0xf1,
+	0x09, 0x89, 0x49, 0xc9, 0x29, 0xa9, 0x69, 0xe9,
+	0x19, 0x99, 0x59, 0xd9, 0x39, 0xb9, 0x79, 0xf9,
+	0x05, 0x85, 0x45, 0xc5, 0x25, 0xa5, 0x65, 0xe5,
+	0x15, 0x95, 0x55, 0xd5, 0x35, 0xb5, 0x75, 0xf5,
+	0x0d, 0x8d, 0x4d, 0xcd, 0x2d, 0xad, 0x6d, 0xed,
+	0x1d, 0x9d, 0x5d, 0xdd, 0x3d, 0xbd, 0x7d, 0xfd,
+	0x03, 0x83, 0x43, 0xc3, 0x23, 0xa3, 0x63, 0xe3,
+	0x13, 0x93, 0x53, 0xd3, 0x33, 0xb3, 0x73, 0xf3,
+	0x0b, 0x8b, 0x4b, 0xcb, 0x2b, 0xab, 0x6b, 0xeb,
+	0x1b, 0x9b, 0x5b, 0xdb, 0x3b, 0xbb, 0x7b, 0xfb,
+	0x07, 0x87, 0x47, 0xc7, 0x27, 0xa7, 0x67, 0xe7,
+	0x17, 0x97, 0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7,
+	0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
+	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
 
 static KeySym g_kbdMap[] =
 {
-		NoSymbol,        NoSymbol,        /* 8 */
-		XK_Escape,       NoSymbol,        /* 9 */
-		XK_1,            XK_exclam,       /* 10 */
-		XK_2,            XK_at,
-		XK_3,            XK_numbersign,
-		XK_4,            XK_dollar,
-		XK_5,            XK_percent,
-		XK_6,            XK_asciicircum,
-		XK_7,            XK_ampersand,
-		XK_8,            XK_asterisk,
-		XK_9,            XK_parenleft,
-		XK_0,            XK_parenright,
-		XK_minus,        XK_underscore,   /* 20 */
-		XK_equal,        XK_plus,
-		XK_BackSpace,    NoSymbol,
-		XK_Tab,          XK_ISO_Left_Tab,
-		XK_Q,            NoSymbol,
-		XK_W,            NoSymbol,
-		XK_E,            NoSymbol,
-		XK_R,            NoSymbol,
-		XK_T,            NoSymbol,
-		XK_Y,            NoSymbol,
-		XK_U,            NoSymbol,        /* 30 */
-		XK_I,            NoSymbol,
-		XK_O,            NoSymbol,
-		XK_P,            NoSymbol,
-		XK_bracketleft,  XK_braceleft,
-		XK_bracketright, XK_braceright,
-		XK_Return,       NoSymbol,
-		XK_Control_L,    NoSymbol,
-		XK_A,            NoSymbol,
-		XK_S,            NoSymbol,
-		XK_D,            NoSymbol,        /* 40 */
-		XK_F,            NoSymbol,
-		XK_G,            NoSymbol,
-		XK_H,            NoSymbol,
-		XK_J,            NoSymbol,
-		XK_K,            NoSymbol,
-		XK_L,            NoSymbol,
-		XK_semicolon,    XK_colon,
-		XK_apostrophe,   XK_quotedbl,
-		XK_grave,    XK_asciitilde,
-		XK_Shift_L,      NoSymbol,        /* 50 */
-		XK_backslash,    XK_bar,
-		XK_Z,            NoSymbol,
-		XK_X,            NoSymbol,
-		XK_C,            NoSymbol,
-		XK_V,            NoSymbol,
-		XK_B,            NoSymbol,
-		XK_N,            NoSymbol,
-		XK_M,            NoSymbol,
-		XK_comma,        XK_less,
-		XK_period,       XK_greater,      /* 60 */
-		XK_slash,        XK_question,
-		XK_Shift_R,      NoSymbol,
-		XK_KP_Multiply,  NoSymbol,
-		XK_Alt_L,        NoSymbol,
-		XK_space,        NoSymbol,
-		XK_Caps_Lock,    NoSymbol,
-		XK_F1,           NoSymbol,
-		XK_F2,           NoSymbol,
-		XK_F3,           NoSymbol,
-		XK_F4,           NoSymbol,        /* 70 */
-		XK_F5,           NoSymbol,
-		XK_F6,           NoSymbol,
-		XK_F7,           NoSymbol,
-		XK_F8,           NoSymbol,
-		XK_F9,           NoSymbol,
-		XK_F10,          NoSymbol,
-		XK_Num_Lock,     NoSymbol,
-		XK_Scroll_Lock,  NoSymbol,
-		XK_KP_Home,      XK_KP_7,
-		XK_KP_Up,        XK_KP_8,         /* 80 */
-		XK_KP_Prior,     XK_KP_9,
-		XK_KP_Subtract,  NoSymbol,
-		XK_KP_Left,      XK_KP_4,
-		XK_KP_Begin,     XK_KP_5,
-		XK_KP_Right,     XK_KP_6,
-		XK_KP_Add,       NoSymbol,
-		XK_KP_End,       XK_KP_1,
-		XK_KP_Down,      XK_KP_2,
-		XK_KP_Next,      XK_KP_3,
-		XK_KP_Insert,    XK_KP_0,         /* 90 */
-		XK_KP_Delete,    XK_KP_Decimal,
-		NoSymbol,        NoSymbol,
-		NoSymbol,        NoSymbol,
-		NoSymbol,        NoSymbol,
-		XK_F11,          NoSymbol,
-		XK_F12,          NoSymbol,
-		XK_Home,         NoSymbol,
-		XK_Up,           NoSymbol,
-		XK_Prior,        NoSymbol,
-		XK_Left,         NoSymbol,        /* 100 */
-		XK_Print,        NoSymbol,
-		XK_Right,        NoSymbol,
-		XK_End,          NoSymbol,
-		XK_Down,         NoSymbol,
-		XK_Next,         NoSymbol,
-		XK_Insert,       NoSymbol,
-		XK_Delete,       NoSymbol,
-		XK_KP_Enter,     NoSymbol,
-		XK_Control_R,    NoSymbol,
-		XK_Pause,        NoSymbol,        /* 110 */
-		XK_Print,        NoSymbol,
-		XK_KP_Divide,    NoSymbol,
-		XK_Alt_R,        NoSymbol,
-		NoSymbol,        NoSymbol,
-		XK_Super_L,      NoSymbol,
-		XK_Super_R,      NoSymbol,
-		XK_Menu,         NoSymbol,
-		NoSymbol,        NoSymbol,
-		NoSymbol,        NoSymbol,
-		NoSymbol,        NoSymbol,        /* 120 */
-		NoSymbol,        NoSymbol
+	NoSymbol,        NoSymbol,        /* 8 */
+	XK_Escape,       NoSymbol,        /* 9 */
+	XK_1,            XK_exclam,       /* 10 */
+	XK_2,            XK_at,
+	XK_3,            XK_numbersign,
+	XK_4,            XK_dollar,
+	XK_5,            XK_percent,
+	XK_6,            XK_asciicircum,
+	XK_7,            XK_ampersand,
+	XK_8,            XK_asterisk,
+	XK_9,            XK_parenleft,
+	XK_0,            XK_parenright,
+	XK_minus,        XK_underscore,   /* 20 */
+	XK_equal,        XK_plus,
+	XK_BackSpace,    NoSymbol,
+	XK_Tab,          XK_ISO_Left_Tab,
+	XK_Q,            NoSymbol,
+	XK_W,            NoSymbol,
+	XK_E,            NoSymbol,
+	XK_R,            NoSymbol,
+	XK_T,            NoSymbol,
+	XK_Y,            NoSymbol,
+	XK_U,            NoSymbol,        /* 30 */
+	XK_I,            NoSymbol,
+	XK_O,            NoSymbol,
+	XK_P,            NoSymbol,
+	XK_bracketleft,  XK_braceleft,
+	XK_bracketright, XK_braceright,
+	XK_Return,       NoSymbol,
+	XK_Control_L,    NoSymbol,
+	XK_A,            NoSymbol,
+	XK_S,            NoSymbol,
+	XK_D,            NoSymbol,        /* 40 */
+	XK_F,            NoSymbol,
+	XK_G,            NoSymbol,
+	XK_H,            NoSymbol,
+	XK_J,            NoSymbol,
+	XK_K,            NoSymbol,
+	XK_L,            NoSymbol,
+	XK_semicolon,    XK_colon,
+	XK_apostrophe,   XK_quotedbl,
+	XK_grave,    XK_asciitilde,
+	XK_Shift_L,      NoSymbol,        /* 50 */
+	XK_backslash,    XK_bar,
+	XK_Z,            NoSymbol,
+	XK_X,            NoSymbol,
+	XK_C,            NoSymbol,
+	XK_V,            NoSymbol,
+	XK_B,            NoSymbol,
+	XK_N,            NoSymbol,
+	XK_M,            NoSymbol,
+	XK_comma,        XK_less,
+	XK_period,       XK_greater,      /* 60 */
+	XK_slash,        XK_question,
+	XK_Shift_R,      NoSymbol,
+	XK_KP_Multiply,  NoSymbol,
+	XK_Alt_L,        NoSymbol,
+	XK_space,        NoSymbol,
+	XK_Caps_Lock,    NoSymbol,
+	XK_F1,           NoSymbol,
+	XK_F2,           NoSymbol,
+	XK_F3,           NoSymbol,
+	XK_F4,           NoSymbol,        /* 70 */
+	XK_F5,           NoSymbol,
+	XK_F6,           NoSymbol,
+	XK_F7,           NoSymbol,
+	XK_F8,           NoSymbol,
+	XK_F9,           NoSymbol,
+	XK_F10,          NoSymbol,
+	XK_Num_Lock,     NoSymbol,
+	XK_Scroll_Lock,  NoSymbol,
+	XK_KP_Home,      XK_KP_7,
+	XK_KP_Up,        XK_KP_8,         /* 80 */
+	XK_KP_Prior,     XK_KP_9,
+	XK_KP_Subtract,  NoSymbol,
+	XK_KP_Left,      XK_KP_4,
+	XK_KP_Begin,     XK_KP_5,
+	XK_KP_Right,     XK_KP_6,
+	XK_KP_Add,       NoSymbol,
+	XK_KP_End,       XK_KP_1,
+	XK_KP_Down,      XK_KP_2,
+	XK_KP_Next,      XK_KP_3,
+	XK_KP_Insert,    XK_KP_0,         /* 90 */
+	XK_KP_Delete,    XK_KP_Decimal,
+	NoSymbol,        NoSymbol,
+	NoSymbol,        NoSymbol,
+	NoSymbol,        NoSymbol,
+	XK_F11,          NoSymbol,
+	XK_F12,          NoSymbol,
+	XK_Home,         NoSymbol,
+	XK_Up,           NoSymbol,
+	XK_Prior,        NoSymbol,
+	XK_Left,         NoSymbol,        /* 100 */
+	XK_Print,        NoSymbol,
+	XK_Right,        NoSymbol,
+	XK_End,          NoSymbol,
+	XK_Down,         NoSymbol,
+	XK_Next,         NoSymbol,
+	XK_Insert,       NoSymbol,
+	XK_Delete,       NoSymbol,
+	XK_KP_Enter,     NoSymbol,
+	XK_Control_R,    NoSymbol,
+	XK_Pause,        NoSymbol,        /* 110 */
+	XK_Print,        NoSymbol,
+	XK_KP_Divide,    NoSymbol,
+	XK_Alt_R,        NoSymbol,
+	NoSymbol,        NoSymbol,
+	XK_Super_L,      NoSymbol,
+	XK_Super_R,      NoSymbol,
+	XK_Menu,         NoSymbol,
+	NoSymbol,        NoSymbol,
+	NoSymbol,        NoSymbol,
+	NoSymbol,        NoSymbol,        /* 120 */
+	NoSymbol,        NoSymbol
 };
-
-#if 0
-static void
-rdpSendBell(void)
-{
-	DEBUG_OUT_INPUT(("rdpSendBell\n"));
-}
-#endif
 
 void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 {
@@ -539,16 +508,19 @@ int get_pixel_safe(char *data, int x, int y, int width, int height, int bpp)
 
 static int GetBit(unsigned char *line, int x)
 {
-    unsigned char mask;
+	unsigned char mask;
 
-    if (screenInfo.bitmapBitOrder == LSBFirst)
-        mask = (1 << (x & 7));
-    else
-        mask = (0x80 >> (x & 7));
-    line += (x >> 3);
-    if (*line & mask)
-        return 1;
-    return 0;
+	if (screenInfo.bitmapBitOrder == LSBFirst)
+		mask = (1 << (x & 7));
+	else
+		mask = (0x80 >> (x & 7));
+
+	line += (x >> 3);
+
+	if (*line & mask)
+		return 1;
+
+	return 0;
 }
 
 void set_pixel_safe(char *data, int x, int y, int width, int height, int bpp, int pixel)
@@ -809,41 +781,6 @@ void PtrAddEvent(int buttonMask, int x, int y)
 	g_old_button_mask = buttonMask;
 }
 
-void check_keysa(void)
-{
-	if (g_ctrl_down != 0)
-	{
-		rdpEnqueueKey(KeyRelease, g_ctrl_down);
-		g_ctrl_down = 0;
-	}
-
-	if (g_alt_down != 0)
-	{
-		rdpEnqueueKey(KeyRelease, g_alt_down);
-		g_alt_down = 0;
-	}
-
-	if (g_shift_down != 0)
-	{
-		rdpEnqueueKey(KeyRelease, g_shift_down);
-		g_shift_down = 0;
-	}
-}
-
-void sendDownUpKeyEvent(int type, int x_scancode)
-{
-	/* if type is keydown, send keyup + keydown */
-	if (type == KeyPress)
-	{
-		rdpEnqueueKey(KeyRelease, x_scancode);
-		rdpEnqueueKey(KeyPress, x_scancode);
-	}
-	else
-	{
-		rdpEnqueueKey(KeyRelease, x_scancode);
-	}
-}
-
 void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType)
 {
 	int type;
@@ -872,229 +809,4 @@ void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode)
 void KbdAddUnicodeEvent(DWORD flags, DWORD code)
 {
 	/* TODO: unicode input */
-}
-
-/**
- * @param down   - true for KeyDown events, false otherwise
- * @param param1 - ASCII code of pressed key
- * @param param2 -
- * @param param3 - scancode of pressed key
- * @param param4 -
- */
-void KbdAddEvent(int down, int param1, int param2, int param3, int param4)
-{
-	int rdp_scancode;
-	int x_scancode;
-	int is_ext;
-	int is_spe;
-	int type;
-
-#if 0
-	fprintf(stderr, "down=0x%x param1=0x%x param2=0x%x param3=0x%x "
-			"param4=0x%x\n", down, param1, param2, param3, param4);
-#endif
-
-	type = down ? KeyPress : KeyRelease;
-	rdp_scancode = param3;
-	is_ext = param4 & 256; /* 0x100 */
-	is_spe = param4 & 512; /* 0x200 */
-	x_scancode = 0;
-
-	switch (rdp_scancode)
-	{
-		case 58: /* caps lock             */
-		case 42: /* left shift            */
-		case 54: /* right shift           */
-		case 70: /* scroll lock           */
-			x_scancode = rdp_scancode + MIN_KEY_CODE;
-
-			if (x_scancode > 0)
-			{
-				rdpEnqueueKey(type, x_scancode);
-			}
-
-			break;
-
-		case 56: /* left - right alt button */
-
-			if (is_ext)
-			{
-				x_scancode = 113; /* right alt button */
-			}
-			else
-			{
-				x_scancode = 64;  /* left alt button   */
-			}
-
-			rdpEnqueueKey(type, x_scancode);
-			break;
-
-		case 15: /* tab */
-
-			if (!down && !g_tab_down)
-			{
-				check_keysa(); /* leave x_scancode 0 here, we don't want the tab key up */
-			}
-			else
-			{
-				sendDownUpKeyEvent(type, 23);
-			}
-
-			g_tab_down = down;
-			break;
-
-		case 29: /* left or right ctrl */
-
-			/* this is to handle special case with pause key sending control first */
-			if (is_spe)
-			{
-				if (down)
-				{
-					g_pause_spe = 1;
-					/* leave x_scancode 0 here, we don't want the control key down */
-				}
-			}
-			else
-			{
-				x_scancode = is_ext ? 109 : 37;
-				g_ctrl_down = down ? x_scancode : 0;
-				rdpEnqueueKey(type, x_scancode);
-			}
-
-			break;
-
-		case 69: /* Pause or Num Lock */
-
-			if (g_pause_spe)
-			{
-				x_scancode = 110;
-
-				if (!down)
-				{
-					g_pause_spe = 0;
-				}
-			}
-			else
-			{
-				x_scancode = g_ctrl_down ? 110 : 77;
-			}
-
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 28: /* Enter or Return */
-			x_scancode = is_ext ? 108 : 36;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 53: /* / */
-			x_scancode = is_ext ? 112 : 61;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 55: /* * on KP or Print Screen */
-			x_scancode = is_ext ? 111 : 63;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 71: /* 7 or Home */
-			x_scancode = is_ext ? 97 : 79;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 72: /* 8 or Up */
-			x_scancode = is_ext ? 98 : 80;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 73: /* 9 or PgUp */
-			x_scancode = is_ext ? 99 : 81;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 75: /* 4 or Left */
-			x_scancode = is_ext ? 100 : 83;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 77: /* 6 or Right */
-			x_scancode = is_ext ? 102 : 85;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 79: /* 1 or End */
-			x_scancode = is_ext ? 103 : 87;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 80: /* 2 or Down */
-			x_scancode = is_ext ? 104 : 88;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 81: /* 3 or PgDn */
-			x_scancode = is_ext ? 105 : 89;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 82: /* 0 or Insert */
-			x_scancode = is_ext ? 106 : 90;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 83: /* . or Delete */
-			x_scancode = is_ext ? 107 : 91;
-			sendDownUpKeyEvent(type, x_scancode);
-			break;
-
-		case 91: /* left win key */
-			rdpEnqueueKey(type, 115);
-			break;
-
-		case 92: /* right win key */
-			rdpEnqueueKey(type, 116);
-			break;
-
-		case 93: /* menu key */
-			rdpEnqueueKey(type, 117);
-			break;
-
-		default:
-			x_scancode = rdp_scancode + MIN_KEY_CODE;
-
-			if (x_scancode > 0)
-			{
-				sendDownUpKeyEvent(type, x_scancode);
-			}
-
-			break;
-	}
-}
-
-void KbdSync(int param1)
-{
-	int xkb_state;
-
-	xkb_state = XkbStateFieldFromRec(&(g_keyboard->key->xkbInfo->state));
-
-	if ((!(xkb_state & 0x02)) != (!(param1 & 4))) /* caps lock */
-	{
-		ErrorF("KbdSync: toggling caps lock\n");
-		KbdAddEvent(1, 58, 0, 58, 0);
-		KbdAddEvent(0, 58, 49152, 58, 49152);
-	}
-
-	if ((!(xkb_state & 0x10)) != (!(param1 & 2))) /* num lock */
-	{
-		ErrorF("KbdSync: toggling num lock\n");
-		KbdAddEvent(1, 69, 0, 69, 0);
-		KbdAddEvent(0, 69, 49152, 69, 49152);
-	}
-
-	if ((!(g_scroll_lock_down)) != (!(param1 & 1))) /* scroll lock */
-	{
-		ErrorF("KbdSync: toggling scroll lock\n");
-		KbdAddEvent(1, 70, 0, 70, 0);
-		KbdAddEvent(0, 70, 49152, 70, 49152);
-	}
 }

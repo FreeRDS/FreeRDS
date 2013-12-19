@@ -257,8 +257,6 @@ void rdpSpriteMoveCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y);
 Bool rdpSpriteDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScr);
 void rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr);
 void PtrAddEvent(int buttonMask, int x, int y);
-void KbdAddEvent(int down, int param1, int param2, int param3, int param4);
-void KbdSync(int param1);
 
 void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType);
 void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode);
