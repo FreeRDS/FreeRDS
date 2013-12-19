@@ -786,11 +786,21 @@ void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType)
 	int type;
 	int keycode;
 	DWORD vkcode;
+	DWORD vkcodeWithFlags;
+	DWORD scancodeWithFlags;
 
 	type = (flags & KBD_FLAGS_DOWN) ? KeyPress : KeyRelease;
 
-	vkcode = GetVirtualKeyCodeFromVirtualScanCode(scancode, keyboardType);
-	keycode = GetKeycodeFromVirtualKeyCode(vkcode, KEYCODE_TYPE_EVDEV);
+	scancodeWithFlags = scancode;
+	scancodeWithFlags |= (flags & KBD_FLAGS_EXTENDED) ? KBDEXT : 0;
+
+	vkcode = GetVirtualKeyCodeFromVirtualScanCode(scancodeWithFlags, keyboardType);
+	vkcodeWithFlags = vkcode | ((flags & KBD_FLAGS_EXTENDED) ? KBDEXT : 0);
+
+	keycode = GetKeycodeFromVirtualKeyCode(vkcodeWithFlags, KEYCODE_TYPE_EVDEV);
+
+	//fprintf(stderr, "KbdAddScancodeEvent: flags: 0x%04X scancode: 0x%04X vkcode: %s (0x%04X) keycode: %d\n",
+	//		flags, scancode, GetVirtualKeyName(vkcode), vkcode, keycode);
 
 	rdpEnqueueKey(type, keycode);
 }
@@ -799,9 +809,13 @@ void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode)
 {
 	int type;
 	int keycode;
+	DWORD vkcodeWithFlags;
 
 	type = (flags & KBD_FLAGS_DOWN) ? KeyPress : KeyRelease;
-	keycode = GetKeycodeFromVirtualKeyCode(vkcode, KEYCODE_TYPE_EVDEV);
+
+	vkcodeWithFlags = vkcode | ((flags & KBD_FLAGS_EXTENDED) ? KBDEXT : 0);
+
+	keycode = GetKeycodeFromVirtualKeyCode(vkcodeWithFlags, KEYCODE_TYPE_EVDEV);
 
 	rdpEnqueueKey(type, keycode);
 }
