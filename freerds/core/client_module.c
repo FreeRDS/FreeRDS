@@ -84,20 +84,20 @@ void* freerds_client_thread(void* arg)
 
 		if (WaitForSingleObject(connector->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			if (freerds_transport_receive((rdsBackend *)connector) < 0)
+			if (freerds_transport_receive((rdsBackend*) connector) < 0)
 				break;
 		}
 
 		if (status == WAIT_OBJECT_0)
 		{
 			freerds_message_server_queue_pack(connector);
-		}
 
-		if (connector->fps != fps)
-		{
-			fps = connector->fps;
-			due.QuadPart = 0;
-			SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+			if (connector->fps != fps)
+			{
+				fps = connector->fps;
+				due.QuadPart = 0;
+				SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+			}
 		}
 	}
 
@@ -108,8 +108,8 @@ void* freerds_client_thread(void* arg)
 
 int freerds_client_get_event_handles(rdsBackend* backend, HANDLE* events, DWORD* nCount)
 {
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 
-	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
 	if (connector)
 	{
 		if (connector->ServerQueue)
@@ -126,7 +126,8 @@ int freerds_client_check_event_handles(rdsBackend* backend)
 {
 	int status = 0;
 
-	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
+
 	if (!connector)
 		return 0;
 
