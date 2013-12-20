@@ -49,6 +49,11 @@ struct rds_bitmap_encoder
 
 	wStream* nsc_s;
 	NSC_CONTEXT* nsc_context;
+
+	BYTE** grid;
+	int gridWidth;
+	int gridHeight;
+	BYTE* gridBuffer;
 };
 typedef struct rds_bitmap_encoder rdsBitmapEncoder;
 

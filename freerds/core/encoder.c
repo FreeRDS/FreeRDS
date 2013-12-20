@@ -25,6 +25,53 @@
 
 #include <winpr/crt.h>
 
+int freerds_bitmap_encoder_grid_init(rdsBitmapEncoder* encoder)
+{
+	int i, j, k;
+	int tileSize;
+	int tileCount;
+
+	encoder->gridWidth = ((encoder->desktopWidth + (encoder->maxWidth - 1)) / encoder->maxWidth);
+	encoder->gridHeight = ((encoder->desktopHeight + (encoder->maxHeight - 1)) / encoder->maxHeight);
+
+	tileSize = encoder->maxWidth * encoder->maxHeight * 4;
+	tileCount = encoder->gridWidth * encoder->gridHeight;
+
+	encoder->gridBuffer = (BYTE*) malloc(tileSize * tileCount);
+	encoder->grid = (BYTE**) malloc(tileCount * sizeof(BYTE*));
+
+	for (i = 0; i < encoder->gridHeight; i++)
+	{
+		for (j = 0; j < encoder->gridWidth; j++)
+		{
+			k = (i * encoder->gridHeight) + j;
+			encoder->grid[k] = &(encoder->gridBuffer[k * tileSize]);
+		}
+	}
+
+	return 0;
+}
+
+int freerds_bitmap_encoder_grid_uninit(rdsBitmapEncoder* encoder)
+{
+	if (encoder->gridBuffer)
+	{
+		free(encoder->gridBuffer);
+		encoder->gridBuffer = NULL;
+	}
+
+	if (encoder->grid)
+	{
+		free(encoder->grid);
+		encoder->grid = NULL;
+	}
+
+	encoder->gridWidth = 0;
+	encoder->gridHeight = 0;
+
+	return 0;
+}
+
 rdsBitmapEncoder* freerds_bitmap_encoder_new(int desktopWidth, int desktopHeight, int colorDepth)
 {
 	DWORD planarFlags;
@@ -73,6 +120,8 @@ rdsBitmapEncoder* freerds_bitmap_encoder_new(int desktopWidth, int desktopHeight
 			rfx_context_set_pixel_format(encoder->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
 			nsc_context_set_pixel_format(encoder->nsc_context, RDP_PIXEL_FORMAT_B8G8R8);
 		}
+
+		freerds_bitmap_encoder_grid_init(encoder);
 	}
 
 	return encoder;
@@ -92,6 +141,8 @@ void freerds_bitmap_encoder_free(rdsBitmapEncoder* encoder)
 		nsc_context_free(encoder->nsc_context);
 
 		freerdp_bitmap_planar_context_free(encoder->planar_context);
+
+		freerds_bitmap_encoder_grid_uninit(encoder);
 
 		free(encoder);
 	}

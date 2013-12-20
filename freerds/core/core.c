@@ -237,8 +237,10 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 					format = FREERDP_PIXEL_FORMAT(msg->framebuffer->fbBitsPerPixel,
 							FREERDP_PIXEL_FORMAT_TYPE_ARGB, FREERDP_PIXEL_FLIP_NONE);
 
+					buffer = connection->encoder->grid[k];
+
 					buffer = freerdp_bitmap_compress_planar(connection->encoder->planar_context,
-							data, format, nWidth, nHeight, scanline, NULL, &dstSize);
+							data, format, nWidth, nHeight, scanline, buffer, &dstSize);
 
 					bitmapData[k].bitmapDataStream = buffer;
 					bitmapData[k].bitmapLength = dstSize;
@@ -261,7 +263,7 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 					bitmapData[k].bitmapDataStream = Stream_Buffer(s);
 					bitmapData[k].bitmapLength = Stream_Length(s);
 
-					buffer = (BYTE*) malloc(bitmapData[k].bitmapLength);
+					buffer = connection->encoder->grid[k];
 					CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
 					bitmapData[k].bitmapDataStream = buffer;
 
@@ -283,11 +285,6 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	bitmapUpdate.count = bitmapUpdate.number = k;
 
 	IFCALL(update->BitmapUpdate, (rdpContext*) connection, &bitmapUpdate);
-
-	for (k = 0; k < bitmapUpdate.number; k++)
-	{
-		free(bitmapData[k].bitmapDataStream);
-	}
 
 	free(bitmapData);
 	free(tile);
