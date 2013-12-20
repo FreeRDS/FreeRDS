@@ -1,7 +1,7 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright (C) Jay Sorg 2004-2013
+ * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * module interface
  */
 
 #ifdef HAVE_CONFIG_H
@@ -83,7 +81,7 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 	SURFACE_FRAME* frame;
 	rdsConnection* connection;
 	rdpSettings* settings;
-	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 
 	connection = connector->connection;
 	settings = connection->settings;
@@ -109,7 +107,9 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 
 		if (settings->SurfaceFrameMarkerEnabled)
 			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
+
 		freerds_send_surface_bits(connection, bpp, msg);
+
 		if (settings->SurfaceFrameMarkerEnabled)
 			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_END, frame->frameId);
 	}

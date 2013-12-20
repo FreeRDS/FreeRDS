@@ -26,6 +26,8 @@ set(${MODULE_PREFIX}_SRCS
 	app_context.c
 	core.c
 	core.h
+	encoder.c
+	encoder.h
 	channels.c
 	channels.h
 	listener.c

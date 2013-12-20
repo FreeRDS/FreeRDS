@@ -1,5 +1,5 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  * Graphics Pipeline
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>

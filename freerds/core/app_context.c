@@ -1,6 +1,6 @@
 /**
- * FreeRDS
- * Application context
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ * Application Context
  *
  * Copyright 2013 Thincast Technologies GmbH
  * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
@@ -21,7 +21,7 @@
 #include "app_context.h"
 #include <winpr/interlocked.h>
 
-static rdsAppContext *gAppContext = NULL;
+static rdsAppContext* gAppContext = NULL;
 
 void app_context_init()
 {
@@ -54,7 +54,7 @@ void app_context_remove_connection(long id)
 	printf("removed connection %d\n", id);
 }
 
-rdsConnection *app_context_get_connection(long id)
+rdsConnection* app_context_get_connection(long id)
 {
 	return ListDictionary_GetItemValue(gAppContext->connections, (void*) id);
 }

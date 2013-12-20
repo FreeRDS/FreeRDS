@@ -1,6 +1,6 @@
 /**
- * FreeRDS
- * Application context
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ * Application Context
  *
  * Copyright 2013 Thincast Technologies GmbH
  * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
@@ -20,7 +20,9 @@
 
 #ifndef FREERDS_APPCONTEXT_H
 #define FREERDS_APPCONTEXT_H
+
 #include <winpr/collections.h>
+
 #include "freerds.h"
 
 struct application_context 
@@ -37,4 +39,5 @@ long app_context_get_connectionid();
 void app_context_add_connection(rdsConnection *connection);
 void app_context_remove_connection(long id);
 rdsConnection* app_context_get_connection(long id);
-#endif //FREERDS_APPCONTEXT_H
+
+#endif /* FREERDS_APPCONTEXT_H */

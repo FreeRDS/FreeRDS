@@ -1,6 +1,5 @@
- /**
- * FreeRDP: A Remote Desktop Protocol Implementation
- * xrdp-ng channels
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
