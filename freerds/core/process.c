@@ -409,6 +409,9 @@ BOOL freerds_client_process_logoff(rdsConnection *connection, wMessage *message)
 	struct rds_notification_msg_logoff *notification = (struct rds_notification_msg_logoff *)message->wParam;
 	freerds_connector_free(connection->connector);
 	connection->connector = NULL;
+
+	connection->client->Close(connection->client);
+
 	error = freerds_icp_sendResponse(notification->tag, message->id, 0, TRUE);
 	free(notification);
 	return FALSE;
