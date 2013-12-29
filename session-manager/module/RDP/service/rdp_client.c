@@ -136,7 +136,7 @@ int rds_check_shared_framebuffer(rdsContext* rds)
 	{
 		RDS_MSG_SHARED_FRAMEBUFFER msg;
 
-		msg.attach = 1;
+		msg.flags = RDS_FRAMEBUFFER_FLAG_ATTACH;
 		msg.width = rds->framebuffer.fbWidth;
 		msg.height = rds->framebuffer.fbHeight;
 		msg.scanline = rds->framebuffer.fbScanline;

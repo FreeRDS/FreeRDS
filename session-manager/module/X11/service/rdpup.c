@@ -262,7 +262,7 @@ int rdpup_check_attach_framebuffer()
 	{
 		RDS_MSG_SHARED_FRAMEBUFFER msg;
 
-		msg.attach = 1;
+		msg.flags = RDS_FRAMEBUFFER_FLAG_ATTACH;
 		msg.width = g_rdpScreen.width;
 		msg.height = g_rdpScreen.height;
 		msg.scanline = g_rdpScreen.paddedWidthInBytes;
@@ -274,6 +274,29 @@ int rdpup_check_attach_framebuffer()
 		rdpup_update((RDS_MSG_COMMON*) &msg);
 
 		g_rdpScreen.fbAttached = 1;
+	}
+
+	return 0;
+}
+
+int rdpup_detach_framebuffer()
+{
+	if (g_rdpScreen.sharedMemory && g_rdpScreen.fbAttached)
+	{
+		RDS_MSG_SHARED_FRAMEBUFFER msg;
+
+		msg.flags = 0;
+		msg.width = g_rdpScreen.width;
+		msg.height = g_rdpScreen.height;
+		msg.scanline = g_rdpScreen.paddedWidthInBytes;
+		msg.segmentId = g_rdpScreen.segmentId;
+		msg.bitsPerPixel = g_rdpScreen.depth;
+		msg.bytesPerPixel = g_Bpp;
+
+		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
+		rdpup_update((RDS_MSG_COMMON*) &msg);
+
+		g_rdpScreen.fbAttached = 0;
 	}
 
 	return 0;
@@ -423,23 +446,7 @@ void rdpup_send_area(int x, int y, int w, int h)
 
 	bitmapLength = w * h * g_Bpp;
 
-	if (g_rdpScreen.sharedMemory && !g_rdpScreen.fbAttached)
-	{
-		RDS_MSG_SHARED_FRAMEBUFFER msg;
-
-		msg.attach = 1;
-		msg.width = g_rdpScreen.width;
-		msg.height = g_rdpScreen.height;
-		msg.scanline = g_rdpScreen.paddedWidthInBytes;
-		msg.segmentId = g_rdpScreen.segmentId;
-		msg.bitsPerPixel = g_rdpScreen.depth;
-		msg.bytesPerPixel = g_Bpp;
-
-		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
-		rdpup_update((RDS_MSG_COMMON*) &msg);
-
-		g_rdpScreen.fbAttached = 1;
-	}
+	rdpup_check_attach_framebuffer();
 
 	msg.nLeftRect = x;
 	msg.nTopRect = y;

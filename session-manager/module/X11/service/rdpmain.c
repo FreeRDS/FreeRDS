@@ -702,12 +702,15 @@ void ddxGiveUp(enum ExitCode error)
 
 	if (g_rdpScreen.sharedMemory)
 	{
-		/* detach shared memory segment */
-		shmdt(g_rdpScreen.pfbMemory);
-		g_rdpScreen.pfbMemory = NULL;
+		if (g_rdpScreen.pfbMemory)
+		{
+			/* detach shared memory segment */
+			shmdt(g_rdpScreen.pfbMemory);
+			g_rdpScreen.pfbMemory = NULL;
 
-		/* deallocate shared memory segment */
-		shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
+			/* deallocate shared memory segment */
+			shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
+		}
 	}
 	else
 	{

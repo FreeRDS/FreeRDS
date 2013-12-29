@@ -22,21 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RDPRANDR_H
 #define _RDPRANDR_H
 
-Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height);
-Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations);
-Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSizePtr pSize);
-Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 mmWidth, CARD32 mmHeight);
-Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
-		int x, int y, Rotation rotation, int numOutputs, RROutputPtr* outputs);
-Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc);
-Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc);
-Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property, RRPropertyValuePtr value);
-Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output, RRModePtr mode);
-void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode);
-Bool rdpRROutputGetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property);
-Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border);
-Bool rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border);
-
 int rdpRRInit(rrScrPrivPtr pRRScrPriv);
 
 #endif

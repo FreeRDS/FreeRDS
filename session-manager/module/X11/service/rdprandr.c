@@ -24,6 +24,10 @@ RandR extension implementation
 #include "rdp.h"
 #include "rdprandr.h"
 
+#include <stdio.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+
 extern rdpScreenInfoRec g_rdpScreen;
 extern ScreenPtr g_pScreen;
 extern WindowPtr g_invalidate_window;
@@ -108,6 +112,8 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 
 Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSizePtr pSize)
 {
+	fprintf(stderr, "rdpRRSetConfig\n");
+
 	return TRUE;
 }
 
@@ -127,15 +133,17 @@ Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 	return TRUE;
 }
 
-/* for lack of a better way, a window is created that covers the area and
-   when its deleted, it's invalidated */
+/**
+ * for lack of a better way, a window is created that covers
+ * the area and when its deleted, it's invalidated
+ */
 static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int width, int height)
 {
-	WindowPtr pWin;
-	int result;
 	int attri;
-	XID attributes[4];
 	Mask mask;
+	int result;
+	WindowPtr pWin;
+	XID attributes[4];
 
 	mask = 0;
 	attri = 0;
@@ -165,25 +173,62 @@ static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int width, int hei
 	return 0;
 }
 
-Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
-		CARD32 mmWidth, CARD32 mmHeight)
+Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 mmWidth, CARD32 mmHeight)
 {
+	int status;
 	BoxRec box;
 	PixmapPtr screenPixmap;
+
+	fprintf(stderr, "rdpRRScreenSetSize: width: %d height: %d\n", width, height);
 
 	if ((width < 1) || (height < 1))
 	{
 		return FALSE;
 	}
 
+	rdpup_detach_framebuffer();
+
 	g_rdpScreen.width = width;
 	g_rdpScreen.height = height;
 	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
 	g_rdpScreen.sizeInBytes = g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height;
+
 	pScreen->width = width;
 	pScreen->height = height;
 	pScreen->mmWidth = mmWidth;
 	pScreen->mmHeight = mmHeight;
+
+	if (g_rdpScreen.pfbMemory)
+	{
+		if (g_rdpScreen.sharedMemory)
+		{
+			/* detach shared memory segment */
+			shmdt(g_rdpScreen.pfbMemory);
+			g_rdpScreen.pfbMemory = NULL;
+
+			/* deallocate shared memory segment */
+			shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
+
+			/* allocate shared memory segment */
+			g_rdpScreen.segmentId = shmget(IPC_PRIVATE, g_rdpScreen.sizeInBytes,
+					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+
+			/* attach the shared memory segment */
+			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);
+		}
+		else
+		{
+			g_rdpScreen.pfbMemory = (char*) malloc(g_rdpScreen.sizeInBytes);
+		}
+
+		if (!g_rdpScreen.pfbMemory)
+		{
+			rdpLog("rdpScreenInit pfbMemory malloc failed\n");
+			return 0;
+		}
+
+		ZeroMemory(g_rdpScreen.pfbMemory, g_rdpScreen.sizeInBytes);
+	}
 
 	screenPixmap = pScreen->GetScreenPixmap(pScreen);
 

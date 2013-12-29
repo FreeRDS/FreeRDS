@@ -271,6 +271,7 @@ int rdpup_check(void);
 int rdpup_begin_update(void);
 int rdpup_end_update(void);
 int rdpup_check_attach_framebuffer();
+int rdpup_detach_framebuffer();
 int rdpup_opaque_rect(RDS_MSG_OPAQUE_RECT* msg);
 int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy);
 int rdpup_patblt(RDS_MSG_PATBLT* msg);

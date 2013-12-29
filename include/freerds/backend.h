@@ -620,13 +620,15 @@ struct _RDS_MSG_WINDOW_DELETE
 };
 typedef struct _RDS_MSG_WINDOW_DELETE RDS_MSG_WINDOW_DELETE;
 
+#define RDS_FRAMEBUFFER_FLAG_ATTACH		0x00000001
+
 struct _RDS_MSG_SHARED_FRAMEBUFFER
 {
 	DEFINE_MSG_COMMON();
 
+	UINT32 flags;
 	int width;
 	int height;
-	int attach;
 	int scanline;
 	int segmentId;
 	int bitsPerPixel;
