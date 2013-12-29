@@ -86,6 +86,9 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 	connection = connector->connection;
 	settings = connection->settings;
 
+	if (!msg->framebuffer->fbAttached)
+		return 0;
+
 	if (connection->codecMode)
 	{
 		bpp = msg->framebuffer->fbBitsPerPixel;

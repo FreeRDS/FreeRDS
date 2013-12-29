@@ -682,6 +682,7 @@ typedef union _RDS_MSG_SERVER RDS_MSG_SERVER;
 typedef int (*pRdsGetEventHandles)(rdsBackend *backend, HANDLE* events, DWORD* nCount);
 typedef int (*pRdsCheckEventHandles)(rdsBackend* backend);
 
+typedef int (*pRdsClientCapabilities)(rdsBackend* backend, RDS_MSG_CAPABILITIES* capabilities);
 typedef int (*pRdsClientSynchronizeKeyboardEvent)(rdsBackend* backend, DWORD flags);
 typedef int (*pRdsClientScancodeKeyboardEvent)(rdsBackend* backend, DWORD flags, DWORD code, DWORD keyboardType);
 typedef int (*pRdsClientVirtualKeyboardEvent)(rdsBackend* backend, DWORD flags, DWORD code);
@@ -696,6 +697,7 @@ typedef int (*pRdsClientSuppressOutput)(rdsBackend* backend, UINT32 suppress_out
 
 struct rds_client_interface
 {
+	pRdsClientCapabilities Capabilities;
 	pRdsClientSynchronizeKeyboardEvent SynchronizeKeyboardEvent;
 	pRdsClientScancodeKeyboardEvent ScancodeKeyboardEvent;
 	pRdsClientVirtualKeyboardEvent VirtualKeyboardEvent;

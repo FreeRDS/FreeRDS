@@ -89,8 +89,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define X11RDPVER "0.7.7"
 
-#define PixelDPI 100
-#define PixelToMM(_size) (((_size) * 254 + (PixelDPI) * 5) / ((PixelDPI) * 10))
+#define PixelDPI 96
+#define PixelToMM(_size) ((int)(((((double)(_size)) / PixelDPI) * 25.4 + 0.5)))
 
 struct image_data
 {
@@ -203,7 +203,6 @@ typedef rdpPixmapRec* rdpPixmapPtr;
 void rdpLog(char *format, ...);
 int rdpBitsPerPixel(int depth);
 void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt);
-void RegionAroundSegs(RegionPtr reg, xSegment* segs, int nseg);
 
 /* rdpdraw.c */
 Bool rdpCloseScreen(int i, ScreenPtr pScreen);

@@ -90,6 +90,7 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 			cIndex = index;
 
 		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
+		RRRegisterRate(pScreen, pSizes[index], 60);
 	}
 
 	width = cWidth;
@@ -103,17 +104,16 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 		mmHeight = PixelToMM(height);
 
 		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
+		RRRegisterRate(pScreen, pSizes[index], 60);
 	}
 
-	RRSetCurrentConfig(pScreen, RR_Rotate_0, 0, pSizes[cIndex]);
+	RRSetCurrentConfig(pScreen, RR_Rotate_0, 60, pSizes[cIndex]);
 
 	return TRUE;
 }
 
 Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSizePtr pSize)
 {
-	fprintf(stderr, "rdpRRSetConfig\n");
-
 	return TRUE;
 }
 
@@ -178,8 +178,6 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	int status;
 	BoxRec box;
 	PixmapPtr screenPixmap;
-
-	fprintf(stderr, "rdpRRScreenSetSize: width: %d height: %d\n", width, height);
 
 	if ((width < 1) || (height < 1))
 	{
@@ -258,6 +256,8 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	RRGetInfo(pScreen, 1);
 
 	rdpInvalidateArea(g_pScreen, 0, 0, g_rdpScreen.width, g_rdpScreen.height);
+
+	RRTellChanged(g_pScreen);
 
 	return TRUE;
 }

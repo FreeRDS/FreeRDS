@@ -849,6 +849,9 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 	SURFACE_BITS_COMMAND cmd;
 	rdpUpdate* update = ((rdpContext*) connection)->update;
 
+	if (!msg->framebuffer->fbAttached)
+		return 0;
+
 	if ((bpp == 24) || (bpp == 32))
 	{
 		bytesPerPixel = 4;

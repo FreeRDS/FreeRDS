@@ -25,6 +25,10 @@ the rest
 
 #include <sys/un.h>
 
+#ifdef DPMSExtension
+#include "dpmsproc.h"
+#endif
+
 Bool noFontCacheExtension = 1;
 
 /* print a time-stamped message to the log file (stderr). */
@@ -70,22 +74,28 @@ void rdpClientStateChange(CallbackListPtr *cbl, pointer myData, pointer clt)
 
 /* DPMS */
 
+#ifdef DPMSExtension
+
 Bool DPMSSupported(void)
 {
-    return FALSE;
+	return TRUE;
 }
 
 int DPMSSet(ClientPtr client, int level)
 {
-    return Success;
+	return Success;
 }
+
+#endif
 
 void AddOtherInputDevices(void)
 {
+
 }
 
 void OpenInputDevice(DeviceIntPtr dev, ClientPtr client, int *status)
 {
+
 }
 
 int SetDeviceValuators(register ClientPtr client, DeviceIntPtr dev,
@@ -117,6 +127,7 @@ int ChangePointerDevice(DeviceIntPtr old_dev, DeviceIntPtr new_dev,
 
 void CloseInputDevice(DeviceIntPtr d, ClientPtr client)
 {
+
 }
 
 /*
@@ -140,58 +151,20 @@ int PrinterOptions(int argc, char **argv, int i)
 
 void PrinterInitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 {
+
 }
 
 void PrinterUseMsg(void)
 {
+
 }
 
 void PrinterInitGlobals(void)
 {
+
 }
 
 void FontCacheExtensionInit(INITARGS)
 {
-}
 
-void RegionAroundSegs(RegionPtr reg, xSegment *segs, int nseg)
-{
-	int index;
-	BoxRec box;
-	RegionRec treg;
-
-	index = 0;
-
-	while (index < nseg)
-	{
-		if (segs[index].x1 < segs[index].x2)
-		{
-			box.x1 = segs[index].x1;
-			box.x2 = segs[index].x2;
-		}
-		else
-		{
-			box.x1 = segs[index].x2;
-			box.x2 = segs[index].x1;
-		}
-
-		box.x2++;
-
-		if (segs[index].y1 < segs[index].y2)
-		{
-			box.y1 = segs[index].y1;
-			box.y2 = segs[index].y2;
-		}
-		else
-		{
-			box.y1 = segs[index].y2;
-			box.y2 = segs[index].y1;
-		}
-
-		box.y2++;
-		RegionInit(&treg, &box, 0);
-		RegionUnion(reg, reg, &treg);
-		RegionUninit(&treg);
-		index++;
-	}
 }

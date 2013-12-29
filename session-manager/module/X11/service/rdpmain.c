@@ -225,12 +225,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	dpix = PixelDPI;
 	dpiy = PixelDPI;
-
-	if (monitorResolution != 0)
-	{
-		dpix = monitorResolution;
-		dpiy = monitorResolution;
-	}
+	monitorResolution = PixelDPI;
 
 	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
 	g_rdpScreen.bitsPerPixel = rdpBitsPerPixel(g_rdpScreen.depth);
