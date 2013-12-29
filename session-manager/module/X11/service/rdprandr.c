@@ -24,57 +24,112 @@ RandR extension implementation
 #include "rdp.h"
 #include "rdprandr.h"
 
-#if 0
-#define DEBUG_OUT(fmt, ...) ErrorF(fmt, ##__VA_ARGS__)
-#else
-#define DEBUG_OUT(fmt,...)
-#endif
-
 extern rdpScreenInfoRec g_rdpScreen;
 extern ScreenPtr g_pScreen;
 extern WindowPtr g_invalidate_window;
 
 static XID g_wid = 0;
 
+#define DEFINE_SCREEN_SIZE(_width, _height) ((_width << 16) | _height)
+
+#define SCREEN_SIZE_WIDTH(_size) ((_size >> 16) & 0xFFFF)
+#define SCREEN_SIZE_HEIGHT(_size) ((_size) & 0xFFFF)
+
+static UINT32 g_StandardSizes[] =
+{
+	DEFINE_SCREEN_SIZE(8192, 4608),
+	DEFINE_SCREEN_SIZE(4096, 2560),
+	DEFINE_SCREEN_SIZE(4096, 2160),
+	DEFINE_SCREEN_SIZE(3840, 2160),
+	DEFINE_SCREEN_SIZE(2560, 1600),
+	DEFINE_SCREEN_SIZE(2560, 1440),
+	DEFINE_SCREEN_SIZE(2048, 1152),
+	DEFINE_SCREEN_SIZE(2048, 1080),
+	DEFINE_SCREEN_SIZE(1920, 1080),
+	DEFINE_SCREEN_SIZE(1680, 1050),
+	DEFINE_SCREEN_SIZE(1600, 1200),
+	DEFINE_SCREEN_SIZE(1600, 900),
+	DEFINE_SCREEN_SIZE(1440, 900),
+	DEFINE_SCREEN_SIZE(1400, 1050),
+	DEFINE_SCREEN_SIZE(1366, 768),
+	DEFINE_SCREEN_SIZE(1280, 1024),
+	DEFINE_SCREEN_SIZE(1280, 960),
+	DEFINE_SCREEN_SIZE(1280, 800),
+	DEFINE_SCREEN_SIZE(1280, 720),
+	DEFINE_SCREEN_SIZE(1152, 864),
+	DEFINE_SCREEN_SIZE(1024, 768),
+	DEFINE_SCREEN_SIZE(800, 600),
+	DEFINE_SCREEN_SIZE(640, 480)
+};
+
 Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 {
-	int mmwidth;
-	int mmheight;
-	RRScreenSizePtr pSize;
+	int index;
+	int cIndex;
+	int cWidth, cHeight;
+	int mmWidth, mmHeight;
+	RRScreenSizePtr pSizes[32];
 
-	DEBUG_OUT("rdpRRRegisterSize: width %d height %d\n", width, height);
-	mmwidth = PixelToMM(width);
-	mmheight = PixelToMM(height);
-	pSize = RRRegisterSize(pScreen, width, height, mmwidth, mmheight);
-	/* Tell RandR what the current config is */
-	RRSetCurrentConfig(pScreen, RR_Rotate_0, 0, pSize);
+	cIndex = -1;
+	cWidth = width;
+	cHeight = height;
+
+	for (index = 0; index < sizeof(g_StandardSizes) / sizeof(UINT32); index++)
+	{
+		width = SCREEN_SIZE_WIDTH(g_StandardSizes[index]);
+		height = SCREEN_SIZE_HEIGHT(g_StandardSizes[index]);
+
+		mmWidth = PixelToMM(width);
+		mmHeight = PixelToMM(height);
+
+		if ((width == cWidth) && (height == cHeight))
+			cIndex = index;
+
+		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
+	}
+
+	width = cWidth;
+	height = cHeight;
+
+	if (cIndex < 0)
+	{
+		cIndex = index;
+
+		mmWidth = PixelToMM(width);
+		mmHeight = PixelToMM(height);
+
+		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
+	}
+
+	RRSetCurrentConfig(pScreen, RR_Rotate_0, 0, pSizes[cIndex]);
+
 	return TRUE;
 }
 
-Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
-		RRScreenSizePtr pSize)
+Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSizePtr pSize)
 {
-	DEBUG_OUT("rdpRRSetConfig:\n");
 	return TRUE;
 }
 
-Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation *pRotations)
+Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 {
 	int width;
 	int height;
 
-	DEBUG_OUT("rdpRRGetInfo:\n");
-	*pRotations = RR_Rotate_0;
+	if (pRotations)
+		*pRotations = RR_Rotate_0;
 
 	width = g_rdpScreen.width;
 	height = g_rdpScreen.height;
+
 	rdpRRRegisterSize(pScreen, width, height);
+
 	return TRUE;
 }
 
 /* for lack of a better way, a window is created that covers the area and
    when its deleted, it's invalidated */
-static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
+static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int width, int height)
 {
 	WindowPtr pWin;
 	int result;
@@ -82,7 +137,6 @@ static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
 	XID attributes[4];
 	Mask mask;
 
-	DEBUG_OUT(("rdpInvalidateArea:\n"));
 	mask = 0;
 	attri = 0;
 	attributes[attri++] = pScreen->blackPixel;
@@ -96,7 +150,7 @@ static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
 	}
 
 	pWin = CreateWindow(g_wid, pScreen->root,
-			x, y, cx, cy, 0, InputOutput, mask,
+			x, y, width, height, 0, InputOutput, mask,
 			attributes, 0, serverClient,
 			wVisual(pScreen->root), &result);
 
@@ -114,24 +168,18 @@ static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
 Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 		CARD32 mmWidth, CARD32 mmHeight)
 {
-	PixmapPtr screenPixmap;
 	BoxRec box;
-
-	DEBUG_OUT("rdpRRScreenSetSize: width %d height %d mmWidth %d mmHeight %d\n",
-			width, height, (int)mmWidth, (int)mmHeight);
+	PixmapPtr screenPixmap;
 
 	if ((width < 1) || (height < 1))
 	{
-		DEBUG_OUT("  error width %d height %d\n", width, height);
 		return FALSE;
 	}
 
 	g_rdpScreen.width = width;
 	g_rdpScreen.height = height;
-	g_rdpScreen.paddedWidthInBytes =
-			PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
-	g_rdpScreen.sizeInBytes =
-			g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height;
+	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
+	g_rdpScreen.sizeInBytes = g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height;
 	pScreen->width = width;
 	pScreen->height = height;
 	pScreen->mmWidth = mmWidth;
@@ -139,88 +187,74 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height,
 
 	screenPixmap = pScreen->GetScreenPixmap(pScreen);
 
-	if (screenPixmap != 0)
+	if (screenPixmap)
 	{
-		DEBUG_OUT("  resizing screenPixmap [%p] to %dx%d, currently at %dx%d\n",
-				(void *)screenPixmap, width, height,
-				screenPixmap->drawable.width, screenPixmap->drawable.height);
 		pScreen->ModifyPixmapHeader(screenPixmap, width, height,
 				g_rdpScreen.depth, g_rdpScreen.bitsPerPixel,
 				g_rdpScreen.paddedWidthInBytes,
 				g_rdpScreen.pfbMemory);
-		DEBUG_OUT("  pixmap resized to %dx%d\n",
-				screenPixmap->drawable.width, screenPixmap->drawable.height);
 	}
 
-	DEBUG_OUT("  root window %p\n", (void *)pScreen->root);
 	box.x1 = 0;
 	box.y1 = 0;
 	box.x2 = width;
 	box.y2 = height;
+
 	RegionInit(&pScreen->root->winSize, &box, 1);
 	RegionInit(&pScreen->root->borderSize, &box, 1);
 	RegionReset(&pScreen->root->borderClip, &box);
 	RegionBreak(&pScreen->root->clipList);
+
 	pScreen->root->drawable.width = width;
 	pScreen->root->drawable.height = height;
+
 	ResizeChildrenWinSize(pScreen->root, 0, 0, 0, 0);
+
 	RRGetInfo(pScreen, 1);
+
 	rdpInvalidateArea(g_pScreen, 0, 0, g_rdpScreen.width, g_rdpScreen.height);
-	DEBUG_OUT("  screen resized to %dx%d\n",
-			pScreen->width, pScreen->height);
+
 	return TRUE;
 }
 
 Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
-		int x, int y, Rotation rotation, int numOutputs,
-		RROutputPtr *outputs)
+		int x, int y, Rotation rotation, int numOutputs, RROutputPtr* outputs)
 {
-	DEBUG_OUT("rdpRRCrtcSet:\n");
 	return TRUE;
 }
 
 Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
-	DEBUG_OUT("rdpRRCrtcSetGamma:\n");
 	return TRUE;
 }
 
 Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
-	DEBUG_OUT("rdpRRCrtcGetGamma:\n");
 	return TRUE;
 }
 
-Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property,
-		RRPropertyValuePtr value)
+Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property, RRPropertyValuePtr value)
 {
-	DEBUG_OUT("rdpRROutputSetProperty:\n");
 	return TRUE;
 }
 
-Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output,
-		RRModePtr mode)
+Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output, RRModePtr mode)
 {
-	DEBUG_OUT("rdpRROutputValidateMode:\n");
 	return TRUE;
 }
 
 void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode)
 {
-	DEBUG_OUT("rdpRRModeDestroy:\n");
+
 }
 
-Bool rdpRROutputGetProperty(ScreenPtr   pScreen, RROutputPtr output, Atom property)
+Bool rdpRROutputGetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property)
 {
-	DEBUG_OUT("rdpRROutputGetProperty:\n");
 	return TRUE;
 }
 
-Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
-		BoxPtr trackingArea, INT16 *border)
+Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border)
 {
-	DEBUG_OUT("rdpRRGetPanning:\n");
-
 	if (totalArea != 0)
 	{
 		totalArea->x1 = 0;
@@ -248,9 +282,28 @@ Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
 	return TRUE;
 }
 
-Bool rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea,
-		BoxPtr trackingArea, INT16 *border)
+Bool rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border)
 {
-	DEBUG_OUT("rdpRRSetPanning:\n");
 	return TRUE;
+}
+
+int rdpRRInit(rrScrPrivPtr pRRScrPriv)
+{
+	pRRScrPriv->rrSetConfig = rdpRRSetConfig;
+
+	pRRScrPriv->rrGetInfo = rdpRRGetInfo;
+
+	pRRScrPriv->rrScreenSetSize = rdpRRScreenSetSize;
+	pRRScrPriv->rrCrtcSet = rdpRRCrtcSet;
+	pRRScrPriv->rrCrtcSetGamma = rdpRRCrtcSetGamma;
+	pRRScrPriv->rrCrtcGetGamma = rdpRRCrtcGetGamma;
+	pRRScrPriv->rrOutputSetProperty = rdpRROutputSetProperty;
+	pRRScrPriv->rrOutputValidateMode = rdpRROutputValidateMode;
+	pRRScrPriv->rrModeDestroy = rdpRRModeDestroy;
+
+	pRRScrPriv->rrOutputGetProperty = rdpRROutputGetProperty;
+	pRRScrPriv->rrGetPanning = rdpRRGetPanning;
+	pRRScrPriv->rrSetPanning = rdpRRSetPanning;
+
+	return 0;
 }

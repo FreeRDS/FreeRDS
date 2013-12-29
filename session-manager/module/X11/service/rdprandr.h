@@ -33,8 +33,10 @@ Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc);
 Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property, RRPropertyValuePtr value);
 Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output, RRModePtr mode);
 void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode);
-Bool rdpRROutputGetProperty(ScreenPtr   pScreen, RROutputPtr output, Atom property);
+Bool rdpRROutputGetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property);
 Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border);
 Bool rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border);
+
+int rdpRRInit(rrScrPrivPtr pRRScrPriv);
 
 #endif

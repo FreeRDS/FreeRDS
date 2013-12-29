@@ -32,7 +32,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 extern DevPrivateKeyRec g_rdpGCIndex;
 extern DevPrivateKeyRec g_rdpPixmapIndex;
-extern int g_do_dirty_os;
 
 extern GCOps g_rdpGCOps;
 

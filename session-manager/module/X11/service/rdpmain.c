@@ -63,10 +63,6 @@ int g_con_number = 0; /* increments for each connection */
 
 WindowPtr g_invalidate_window = 0;
 
-/* if true, use a unix domain socket instead of a tcp socket */
-char g_uds_data[256] = ""; /* data */
-char g_uds_cont[256] = ""; /* control */
-
 /* set all these at once, use function set_bpp */
 int g_bpp = 16;
 int g_Bpp = 2;
@@ -223,7 +219,6 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	Bool vis_found;
 	VisualPtr vis;
 	PictureScreenPtr ps;
-	rrScrPrivPtr pRRScrPriv;
 
 	g_pScreen = pScreen;
 	ZeroMemory(&g_screenPriv, sizeof(g_screenPriv));
@@ -522,25 +517,12 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	}
 	else
 	{
+		rrScrPrivPtr pRRScrPriv;
+
 		pRRScrPriv = rrGetScrPriv(pScreen);
-		DEBUG_OUT("pRRScrPriv %p\n", pRRScrPriv);
+		rdpRRInit(pRRScrPriv);
 
-		pRRScrPriv->rrSetConfig = rdpRRSetConfig;
-
-		pRRScrPriv->rrGetInfo = rdpRRGetInfo;
-
-		pRRScrPriv->rrScreenSetSize = rdpRRScreenSetSize;
-		pRRScrPriv->rrCrtcSet = rdpRRCrtcSet;
-		pRRScrPriv->rrCrtcGetGamma = rdpRRCrtcGetGamma;
-		pRRScrPriv->rrCrtcSetGamma = rdpRRCrtcSetGamma;
-		pRRScrPriv->rrOutputSetProperty = rdpRROutputSetProperty;
-		pRRScrPriv->rrOutputValidateMode = rdpRROutputValidateMode;
-		pRRScrPriv->rrModeDestroy = rdpRRModeDestroy;
-
-		pRRScrPriv->rrOutputGetProperty = rdpRROutputGetProperty;
-		pRRScrPriv->rrGetPanning = rdpRRGetPanning;
-		pRRScrPriv->rrSetPanning = rdpRRSetPanning;
-
+		RRScreenSetSizeRange(pScreen, 640, 480, 8192, 8192);
 	}
 
 	DEBUG_OUT("rdpScreenInit: ret %d\n", ret);
@@ -551,7 +533,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 /* this is the first function called, it can be called many times
    returns the number or parameters processed
    if it dosen't apply to the rdp part, return 0 */
-int ddxProcessArgument(int argc, char **argv, int i)
+int ddxProcessArgument(int argc, char** argv, int i)
 {
 	if (g_firstTime)
 	{
@@ -563,7 +545,7 @@ int ddxProcessArgument(int argc, char **argv, int i)
 		g_rdpScreen.blackPixel = 1;
 		g_firstTime = 0;
 
-		RRExtensionInit(); /* RANDER */
+		RRExtensionInit(); /* RANDR */
 	}
 
 	if (strcmp(argv[i], "-geometry") == 0)
@@ -610,11 +592,13 @@ int ddxProcessArgument(int argc, char **argv, int i)
 
 void OsVendorInit(void)
 {
+
 }
 
 /* ddxInitGlobals - called by |InitGlobals| from os/util.c */
 void ddxInitGlobals(void)
 {
+
 }
 
 int XkbDDXSwitchScreen(DeviceIntPtr dev, KeyCode key, XkbAction *act)
@@ -692,15 +676,16 @@ void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
 	DEBUG_OUT("InitOutput: out\n");
 }
 
-void InitInput(int argc, char **argv)
+void InitInput(int argc, char** argv)
 {
-	int rc;
+	int status;
 
 	DEBUG_OUT("InitInput:\n");
-	rc = AllocDevicePair(serverClient, "X11rdp", &g_pointer, &g_keyboard,
+
+	status = AllocDevicePair(serverClient, "X11rdp", &g_pointer, &g_keyboard,
 			rdpMouseProc, rdpKeybdProc, 0);
 
-	if (rc != Success)
+	if (status != Success)
 	{
 		FatalError("Failed to init X11rdp default devices.\n");
 	}
@@ -734,13 +719,6 @@ void ddxGiveUp(enum ExitCode error)
 	{
 		sprintf(unixSocketName, "/tmp/.X11-unix/X%s", display);
 		unlink(unixSocketName);
-		sprintf(unixSocketName, "/tmp/.pipe/xrdp_disconnect_display_%s", display);
-		unlink(unixSocketName);
-
-		if (g_uds_data[0] != 0)
-		{
-			unlink(g_uds_data);
-		}
 	}
 }
 
@@ -758,6 +736,7 @@ void ProcessInputEvents(void)
    needs to be rfb */
 void rfbRootPropertyChange(PropertyPtr pProp)
 {
+
 }
 
 void AbortDDX(enum ExitCode error)
@@ -767,6 +746,7 @@ void AbortDDX(enum ExitCode error)
 
 void OsVendorFatalError(const char *f, va_list args)
 {
+
 }
 
 /* print the command list parameters and exit the program */
@@ -782,6 +762,7 @@ void ddxUseMsg(void)
 
 void OsVendorPreInit(void)
 {
+
 }
 
 void CloseInput(void)

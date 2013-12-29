@@ -268,7 +268,7 @@ void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n
 
 static void rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
 {
-	rdpGCRec *priv;
+	rdpGCRec* priv;
 	int wrap;
 	RegionPtr pRegion;
 
@@ -311,7 +311,7 @@ static void rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
 
 static void rdpChangeGC(GCPtr pGC, unsigned long mask)
 {
-	rdpGCRec *priv;
+	rdpGCRec* priv;
 
 	LLOGLN(10, ("in rdpChangeGC"));
 	GC_FUNC_PROLOGUE(pGC);
@@ -321,7 +321,7 @@ static void rdpChangeGC(GCPtr pGC, unsigned long mask)
 
 static void rdpCopyGC(GCPtr src, unsigned long mask, GCPtr dst)
 {
-	rdpGCRec *priv;
+	rdpGCRec* priv;
 
 	LLOGLN(10, ("in rdpCopyGC"));
 	GC_FUNC_PROLOGUE(dst);
@@ -331,7 +331,7 @@ static void rdpCopyGC(GCPtr src, unsigned long mask, GCPtr dst)
 
 static void rdpDestroyGC(GCPtr pGC)
 {
-	rdpGCRec *priv;
+	rdpGCRec* priv;
 
 	LLOGLN(10, ("in rdpDestroyGC"));
 	GC_FUNC_PROLOGUE(pGC);
@@ -341,7 +341,7 @@ static void rdpDestroyGC(GCPtr pGC)
 
 static void rdpChangeClip(GCPtr pGC, int type, pointer pValue, int nrects)
 {
-	rdpGCRec *priv;
+	rdpGCRec* priv;
 
 	LLOGLN(10, ("in rdpChangeClip"));
 	GC_FUNC_PROLOGUE(pGC);
@@ -351,7 +351,7 @@ static void rdpChangeClip(GCPtr pGC, int type, pointer pValue, int nrects)
 
 static void rdpDestroyClip(GCPtr pGC)
 {
-	rdpGCRec *priv;
+	rdpGCRec* priv;
 
 	LLOGLN(10, ("in rdpDestroyClip"));
 	GC_FUNC_PROLOGUE(pGC);
@@ -361,7 +361,7 @@ static void rdpDestroyClip(GCPtr pGC)
 
 static void rdpCopyClip(GCPtr dst, GCPtr src)
 {
-	rdpGCRec *priv;
+	rdpGCRec* priv;
 
 	LLOGLN(0, ("in rdpCopyClip"));
 	GC_FUNC_PROLOGUE(dst);
@@ -370,19 +370,19 @@ static void rdpCopyClip(GCPtr dst, GCPtr src)
 }
 
 #define GC_OP_PROLOGUE(_pGC) \
-		{ \
+{ \
 	priv = (rdpGCPtr)dixGetPrivateAddr(&(pGC->devPrivates), &g_rdpGCIndex); \
 	oldFuncs = _pGC->funcs; \
 	(_pGC)->funcs = priv->funcs; \
 	(_pGC)->ops = priv->ops; \
-		}
+}
 
 #define GC_OP_EPILOGUE(_pGC) \
-		{ \
+{ \
 	priv->ops = (_pGC)->ops; \
 	(_pGC)->funcs = oldFuncs; \
 	(_pGC)->ops = &g_rdpGCOps; \
-		}
+}
 
 Bool rdpCloseScreen(int i, ScreenPtr pScreen)
 {
@@ -612,7 +612,7 @@ void rdpWindowExposures(WindowPtr pWindow, RegionPtr pRegion, RegionPtr pBSRegio
 
 Bool rdpCreateGC(GCPtr pGC)
 {
-	rdpGCRec *priv;
+	rdpGCRec* priv;
 	Bool rv;
 
 	LLOGLN(10, ("in rdpCreateGC\n"));
@@ -814,14 +814,15 @@ void rdpUninstallColormap(ColormapPtr pmap)
 	}
 }
 
-int rdpListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
+int rdpListInstalledColormaps(ScreenPtr pScreen, Colormap* pmaps)
 {
 	*pmaps = g_rdpInstalledColormap->mid;
 	return 1;
 }
 
-void rdpStoreColors(ColormapPtr pmap, int ndef, xColorItem *pdefs)
+void rdpStoreColors(ColormapPtr pmap, int ndef, xColorItem* pdefs)
 {
+
 }
 
 Bool rdpSaveScreen(ScreenPtr pScreen, int on)
@@ -991,7 +992,7 @@ void GlyphExtents(int nlist, GlyphListPtr list, GlyphPtr* glyphs, BoxPtr extents
 }
 
 void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFormat,
-		INT16 xSrc, INT16 ySrc, int nlists, GlyphListPtr lists, GlyphPtr *glyphs)
+		INT16 xSrc, INT16 ySrc, int nlists, GlyphListPtr lists, GlyphPtr* glyphs)
 {
 	int index;
 	BoxRec box;
