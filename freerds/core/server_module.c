@@ -93,9 +93,16 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 		inFlightFrames = ListDictionary_Count(connection->FrameList);
 
 		if (inFlightFrames > settings->FrameAcknowledge)
+		{
 			connector->fps = (100 / (inFlightFrames + 1) * connector->MaxFps) / 100;
+		}
 		else
-			connector->fps = connector->MaxFps;
+		{
+			connector->fps += 2;
+
+			if (connector->fps > connector->MaxFps)
+				connector->fps = connector->MaxFps;
+		}
 
 		if (connector->fps < 1)
 			connector->fps = 1;
