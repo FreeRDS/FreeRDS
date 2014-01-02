@@ -363,10 +363,10 @@ static void rdpMouseCtrl(DeviceIntPtr pDevice, PtrCtrl *pCtrl)
 
 int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 {
-	BYTE map[6];
+	BYTE map[10];
 	DevicePtr pDev;
-	Atom btn_labels[6];
-	Atom axes_labels[2];
+	Atom btn_labels[10];
+	Atom axes_labels[3];
 
 	DEBUG_OUT_INPUT(("rdpMouseProc\n"));
 	pDev = (DevicePtr)pDevice;
@@ -375,25 +375,43 @@ int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 	{
 		case DEVICE_INIT:
 			PtrDeviceInit();
+			// 0 = deactivated
 			map[0] = 0;
+			// left
 			map[1] = 1;
+			// middle
 			map[2] = 2;
+			// right
 			map[3] = 3;
+			// vertical scroll
 			map[4] = 4;
 			map[5] = 5;
+			// horizontal scroll
+			map[6] = 6;
+			map[7] = 7;
+			// others
+			map[8] = 8;
+			map[9] = 9;
 
-			btn_labels[0] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_LEFT);
-			btn_labels[1] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_MIDDLE);
-			btn_labels[2] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_RIGHT);
-			btn_labels[3] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_WHEEL_UP);
+			btn_labels[1] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_LEFT);
+			btn_labels[2] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_MIDDLE);
+			btn_labels[3] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_RIGHT);
 			btn_labels[4] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_WHEEL_DOWN);
+			btn_labels[5] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_WHEEL_UP);
+			btn_labels[6] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_HWHEEL_LEFT);
+			btn_labels[7] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_HWHEEL_RIGHT);
+			btn_labels[8] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_8);
+			btn_labels[9] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_9);
 
 			axes_labels[0] = XIGetKnownProperty(AXIS_LABEL_PROP_REL_X);
 			axes_labels[1] = XIGetKnownProperty(AXIS_LABEL_PROP_REL_Y);
+			axes_labels[2] = XIGetKnownProperty(AXIS_LABEL_PROP_REL_WHEEL);
 
-			InitPointerDeviceStruct(pDev, map, 5, btn_labels, rdpMouseCtrl,
-					GetMotionHistorySize(), 2, axes_labels);
-
+			InitPointerDeviceStruct(pDev, map, 10, btn_labels, rdpMouseCtrl, GetMotionHistorySize(), 3, axes_labels);
+			InitValuatorAxisStruct(pDevice, 0, axes_labels[0], NO_AXIS_LIMITS, NO_AXIS_LIMITS, 1, 0, 1, Relative);
+			InitValuatorAxisStruct(pDevice, 1, axes_labels[1], NO_AXIS_LIMITS, NO_AXIS_LIMITS, 1, 0, 1, Relative);
+			InitValuatorAxisStruct(pDevice, 2, axes_labels[2], NO_AXIS_LIMITS, NO_AXIS_LIMITS, 1, 0, 1, Relative);
+		    SetScrollValuator(pDevice, 2, SCROLL_TYPE_VERTICAL, -1.0, SCROLL_FLAG_PREFERRED);
 			break;
 
 		case DEVICE_ON:
@@ -697,7 +715,6 @@ static void rdpEnqueueMotion(int x, int y)
 	
 #if (XORG_VERSION_CURRENT > XORG_VERSION(1,14,0))
 	miPointerSetPosition(g_pointer, Absolute, &dx, &dy, &nevents, rdp_events);
-#else
 #endif
 
 	valuators[0] = dx;
@@ -719,7 +736,7 @@ static void rdpEnqueueButton(int type, int buttons)
 	int nevents;
 	ValuatorMask mask;
 	InternalEvent* rdp_events;
-	int valuators[MAX_VALUATORS] = { 0 };
+	int valuators[MAX_VALUATORS] = {0};
 
 	nevents = GetMaximumEventsNum();
 	rdp_events = InitEventList(nevents);
@@ -751,15 +768,24 @@ static void rdpEnqueueKey(int type, int scancode)
 	FreeEventList(rdp_events, GetMaximumEventsNum());
 }
 
-void PtrAddEvent(int buttonMask, int x, int y)
+void PtrAddMotionEvent(int x, int y)
+{
+	static int sx = 0;
+	static int sy = 0;
+
+	if (sx != x || sy != y)
+		rdpEnqueueMotion(x, y);
+	sx = x;
+	sy = y;
+}
+
+void PtrAddButtonEvent(int buttonMask)
 {
 	int i;
 	int type;
 	int buttons;
 
-	rdpEnqueueMotion(x, y);
-
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 10; i++)
 	{
 		if ((buttonMask ^ g_old_button_mask) & (1 << i))
 		{

@@ -597,9 +597,9 @@ int rds_client_mouse_event(rdsBackend* backend, DWORD flags, DWORD x, DWORD y)
 	if (y > g_rdpScreen.height - 2)
 		y = g_rdpScreen.height - 2;
 
-	if (flags & PTR_FLAGS_MOVE)
+	if ((flags & PTR_FLAGS_MOVE) || (flags & PTR_FLAGS_DOWN))
 	{
-		PtrAddEvent(g_button_mask, x, y);
+		PtrAddMotionEvent(x, y);
 	}
 
 	if (flags & PTR_FLAGS_WHEEL)
@@ -607,18 +607,18 @@ int rds_client_mouse_event(rdsBackend* backend, DWORD flags, DWORD x, DWORD y)
 		if (flags & PTR_FLAGS_WHEEL_NEGATIVE)
 		{
 			g_button_mask = g_button_mask | 16;
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 
 			g_button_mask = g_button_mask & (~16);
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 		}
 		else
 		{
 			g_button_mask = g_button_mask | 8;
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 
 			g_button_mask = g_button_mask & (~8);
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 		}
 	}
 	else if (flags & PTR_FLAGS_BUTTON1)
@@ -626,12 +626,12 @@ int rds_client_mouse_event(rdsBackend* backend, DWORD flags, DWORD x, DWORD y)
 		if (flags & PTR_FLAGS_DOWN)
 		{
 			g_button_mask = g_button_mask | 1;
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 		}
 		else
 		{
 			g_button_mask = g_button_mask & (~1);
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 		}
 	}
 	else if (flags & PTR_FLAGS_BUTTON2)
@@ -639,12 +639,12 @@ int rds_client_mouse_event(rdsBackend* backend, DWORD flags, DWORD x, DWORD y)
 		if (flags & PTR_FLAGS_DOWN)
 		{
 			g_button_mask = g_button_mask | 4;
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 		}
 		else
 		{
 			g_button_mask = g_button_mask & (~4);
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 		}
 	}
 	else if (flags & PTR_FLAGS_BUTTON3)
@@ -652,12 +652,12 @@ int rds_client_mouse_event(rdsBackend* backend, DWORD flags, DWORD x, DWORD y)
 		if (flags & PTR_FLAGS_DOWN)
 		{
 			g_button_mask = g_button_mask | 2;
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 		}
 		else
 		{
 			g_button_mask = g_button_mask & (~2);
-			PtrAddEvent(g_button_mask, x, y);
+			PtrAddButtonEvent(g_button_mask);
 		}
 	}
 
@@ -672,35 +672,35 @@ int rds_client_extended_mouse_event(rdsBackend* backend, DWORD flags, DWORD x, D
 	if (y > g_rdpScreen.height - 2)
 		y = g_rdpScreen.height - 2;
 
-	if (flags & PTR_FLAGS_MOVE)
+	if ((flags & PTR_FLAGS_MOVE) || (flags & PTR_XFLAGS_DOWN))
 	{
-		PtrAddEvent(g_button_mask, x, y);
+		PtrAddMotionEvent(x, y);
 	}
 
 	if (flags & PTR_XFLAGS_BUTTON1)
 	{
 		if (flags & PTR_XFLAGS_DOWN)
 		{
-			g_button_mask = g_button_mask | 8;
-			PtrAddEvent(g_button_mask, x, y);
+			g_button_mask = g_button_mask | (1<<7);
+			PtrAddButtonEvent(g_button_mask);
 		}
 		else
 		{
-			g_button_mask = g_button_mask & (~8);
-			PtrAddEvent(g_button_mask, x, y);
+			g_button_mask = g_button_mask & (~(1<<7));
+			PtrAddButtonEvent(g_button_mask);
 		}
 	}
 	else if (flags & PTR_XFLAGS_BUTTON2)
 	{
 		if (flags & PTR_XFLAGS_DOWN)
 		{
-			g_button_mask = g_button_mask | 16;
-			PtrAddEvent(g_button_mask, x, y);
+			g_button_mask = g_button_mask | (1<<8);
+			PtrAddButtonEvent(g_button_mask);
 		}
 		else
 		{
-			g_button_mask = g_button_mask & (~16);
-			PtrAddEvent(g_button_mask, x, y);
+			g_button_mask = g_button_mask & (~(1<<8));
+			PtrAddButtonEvent(g_button_mask);
 		}
 	}
 
@@ -783,7 +783,6 @@ int rdpup_init(void)
 		service->client->UnicodeKeyboardEvent = rds_client_unicode_keyboard_event;
 		service->client->MouseEvent = rds_client_mouse_event;
 		service->client->ExtendedMouseEvent = rds_client_extended_mouse_event;
-
 		service->hServerPipe = freerds_named_pipe_create_endpoint(service->SessionId, service->Endpoint);
 		AddEnabledDevice(GetNamePipeFileDescriptor(service->hServerPipe));
 	}
