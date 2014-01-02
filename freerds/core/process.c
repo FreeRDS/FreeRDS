@@ -380,22 +380,23 @@ void freerds_suppress_output(rdpContext* context, BYTE allow, RECTANGLE_16* area
 		backend->client->SuppressOutput(backend, allow);
 }
 
-BOOL freerds_client_process_switch_session(rdsConnection *connection, wMessage *message)
+BOOL freerds_client_process_switch_session(rdsConnection* connection, wMessage* message)
 {
-	struct rds_notification_msg_switch *notification = (struct rds_notification_msg_switch *)message->wParam;
-	BOOL ret = FALSE;
 	int error = 0;
-	rdsBackendConnector *connector = NULL;
+	BOOL status = FALSE;
+	rdsBackendConnector* connector = NULL;
+	struct rds_notification_msg_switch *notification = (struct rds_notification_msg_switch*) message->wParam;
+
 	freerds_connector_free(connection->connector);
 	connection->connector = connector = freerds_connector_new(connection);
 	connector->Endpoint = notification->endpoint;
 
-	ret = freerds_connector_connect(connector);
+	status = freerds_connector_connect(connector);
 
-	error = freerds_icp_sendResponse(notification->tag, message->id, 0, ret);
+	error = freerds_icp_sendResponse(notification->tag, message->id, 0, status);
 	free(notification);
 
-	if(error != 0)
+	if (error != 0)
 	{
 		fprintf(stderr, "problem occured while switching session \n");
 		return FALSE;
@@ -403,10 +404,10 @@ BOOL freerds_client_process_switch_session(rdsConnection *connection, wMessage *
 
 	return TRUE;
 }
-BOOL freerds_client_process_logoff(rdsConnection *connection, wMessage *message)
+BOOL freerds_client_process_logoff(rdsConnection* connection, wMessage* message)
 {
 	int error = 0;
-	struct rds_notification_msg_logoff *notification = (struct rds_notification_msg_logoff *)message->wParam;
+	struct rds_notification_msg_logoff *notification = (struct rds_notification_msg_logoff*) message->wParam;
 	freerds_connector_free(connection->connector);
 	connection->connector = NULL;
 
@@ -417,22 +418,26 @@ BOOL freerds_client_process_logoff(rdsConnection *connection, wMessage *message)
 	return FALSE;
 }
 
-BOOL freerds_client_process_notification(rdsConnection *connection, wMessage *message)
+BOOL freerds_client_process_notification(rdsConnection* connection, wMessage* message)
 {
-	BOOL ret = FALSE;
-	switch(message->id)
+	BOOL status = FALSE;
+
+	switch (message->id)
 	{
 		case NOTIFY_SWITCHTO:
-			ret = freerds_client_process_switch_session(connection, message);
+			status = freerds_client_process_switch_session(connection, message);
 			break;
+
 		case NOTIFY_LOGOFF:
-			ret = freerds_client_process_logoff(connection, message);
+			status = freerds_client_process_logoff(connection, message);
 			break;
+
 		default:
 			fprintf(stderr, "%s: unhandled message 0x%x\n", __FUNCTION__, message->id);
 			break;
 	}
-	return ret;
+
+	return status;
 }
 
 void* freerds_connection_main_thread(void* arg)
@@ -465,7 +470,7 @@ void* freerds_connection_main_thread(void* arg)
 
 	settings->RdpSecurity = FALSE;
 	settings->TlsSecurity = TRUE;
-	settings->NlaSecurity = FALSE;
+	settings->NlaSecurity = TRUE;
 
 	client->Capabilities = freerds_peer_capabilities;
 	client->PostConnect = freerds_peer_post_connect;
@@ -554,7 +559,9 @@ void* freerds_connection_main_thread(void* arg)
 		if (WaitForSingleObject(NotificationEvent, 0) == WAIT_OBJECT_0)
 		{
 			wMessage message;
+
 			MessageQueue_Peek(connection->notifications, (void *)(&message), TRUE);
+
 			if (!freerds_client_process_notification(connection, &message))
 				break;
 		}

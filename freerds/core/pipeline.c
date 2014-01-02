@@ -1,5 +1,5 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  * Graphics Pipeline
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
@@ -473,7 +473,9 @@ int freerds_message_server_connector_init(rdsBackendConnector* backend)
 		connector->server->WindowDelete = freerds_message_server_window_delete;
 	}
 
-	connector->MaxFps = connector->fps = 60;
+	connector->fps = 10;
+	connector->MaxFps = 30;
+
 	connector->ServerList = LinkedList_New();
 	connector->ServerQueue = MessageQueue_New(NULL);
 

@@ -1554,9 +1554,9 @@ int freerds_read_shared_framebuffer(wStream* s, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 	if (Stream_GetRemainingLength(s) < 4 * 7)
 		return -1;
 
+	Stream_Read_UINT32(s, msg->flags);
 	Stream_Read_UINT32(s, msg->width);
 	Stream_Read_UINT32(s, msg->height);
-	Stream_Read_UINT32(s, msg->attach);
 	Stream_Read_UINT32(s, msg->scanline);
 	Stream_Read_UINT32(s, msg->segmentId);
 	Stream_Read_UINT32(s, msg->bitsPerPixel);
@@ -1575,9 +1575,9 @@ int freerds_write_shared_framebuffer(wStream* s, RDS_MSG_SHARED_FRAMEBUFFER* msg
 
 	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
 
+	Stream_Write_UINT32(s, msg->flags);
 	Stream_Write_UINT32(s, msg->width);
 	Stream_Write_UINT32(s, msg->height);
-	Stream_Write_UINT32(s, msg->attach);
 	Stream_Write_UINT32(s, msg->scanline);
 	Stream_Write_UINT32(s, msg->segmentId);
 	Stream_Write_UINT32(s, msg->bitsPerPixel);

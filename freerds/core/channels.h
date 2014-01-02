@@ -1,6 +1,5 @@
- /**
- * FreeRDP: A Remote Desktop Protocol Implementation
- * xrdp-ng channels
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
@@ -17,11 +16,11 @@
  * limitations under the License.
  */
 
-#ifndef RDS_NG_CHANNELS_H
-#define RDS_NG_CHANNELS_H
+#ifndef FREERDS_CHANNELS_H
+#define FREERDS_CHANNELS_H
 
 #include "freerds.h"
 
 int freerds_channels_post_connect(rdsConnection* session);
 
-#endif /* RDS_NG_CHANNELS_H */
+#endif /* FREERDS_CHANNELS_H */

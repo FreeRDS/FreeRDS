@@ -1,7 +1,7 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright (C) Jay Sorg 2004-2013
+ * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * module interface
  */
 
 #ifdef HAVE_CONFIG_H
@@ -83,10 +81,13 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 	SURFACE_FRAME* frame;
 	rdsConnection* connection;
 	rdpSettings* settings;
-	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 
 	connection = connector->connection;
 	settings = connection->settings;
+
+	if (!msg->framebuffer->fbAttached)
+		return 0;
 
 	if (connection->codecMode)
 	{
@@ -95,9 +96,16 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 		inFlightFrames = ListDictionary_Count(connection->FrameList);
 
 		if (inFlightFrames > settings->FrameAcknowledge)
+		{
 			connector->fps = (100 / (inFlightFrames + 1) * connector->MaxFps) / 100;
+		}
 		else
-			connector->fps = connector->MaxFps;
+		{
+			connector->fps += 2;
+
+			if (connector->fps > connector->MaxFps)
+				connector->fps = connector->MaxFps;
+		}
 
 		if (connector->fps < 1)
 			connector->fps = 1;
@@ -109,7 +117,9 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 
 		if (settings->SurfaceFrameMarkerEnabled)
 			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
+
 		freerds_send_surface_bits(connection, bpp, msg);
+
 		if (settings->SurfaceFrameMarkerEnabled)
 			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_END, frame->frameId);
 	}
@@ -183,24 +193,24 @@ int freerds_client_inbound_glyph_index(rdsBackend* backend, RDS_MSG_GLYPH_INDEX*
 
 int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 {
-	backend->framebuffer.fbWidth = msg->width;
-	backend->framebuffer.fbHeight = msg->height;
-	backend->framebuffer.fbScanline = msg->scanline;
-	backend->framebuffer.fbSegmentId = msg->segmentId;
-	backend->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
-	backend->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
+	int attach;
 
-	fprintf(stderr, "received shared framebuffer message: mod->framebuffer.fbAttached: %d msg->attach: %d\n",
-			backend->framebuffer.fbAttached, msg->attach);
+	attach = (msg->flags & RDS_FRAMEBUFFER_FLAG_ATTACH) ? TRUE : FALSE;
 
-	if (!backend->framebuffer.fbAttached && msg->attach)
+	if (!backend->framebuffer.fbAttached && attach)
 	{
 		RDS_MSG_PAINT_RECT fm;
-		rdsBackendConnector *connector = (rdsBackendConnector *)backend;
-		rdpSettings *settings = connector->settings;
+		rdsBackendConnector* connector = (rdsBackendConnector*) backend;
+		rdpSettings* settings = connector->settings;
 		UINT32 DesktopWidth = msg->width;
 		UINT32 DesktopHeight = msg->height;
 
+		backend->framebuffer.fbWidth = msg->width;
+		backend->framebuffer.fbHeight = msg->height;
+		backend->framebuffer.fbScanline = msg->scanline;
+		backend->framebuffer.fbSegmentId = msg->segmentId;
+		backend->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
+		backend->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
 
 		backend->framebuffer.fbSharedMemory = (BYTE*) shmat(backend->framebuffer.fbSegmentId, 0, 0);
 		backend->framebuffer.fbAttached = TRUE;
@@ -243,13 +253,14 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		freerds_client_inbound_paint_rect(backend, &fm);
 	}
 
-	if (backend->framebuffer.fbAttached && !msg->attach)
+	if (backend->framebuffer.fbAttached && !attach)
 	{
-		fprintf(stderr, "detaching segment %d to %p\n",
+		fprintf(stderr, "detaching segment %d from %p\n",
 				backend->framebuffer.fbSegmentId, backend->framebuffer.fbSharedMemory);
+
 		shmdt(backend->framebuffer.fbSharedMemory);
-		backend->framebuffer.fbAttached = FALSE;
-		backend->framebuffer.fbSharedMemory = 0;
+
+		ZeroMemory(&(backend->framebuffer), sizeof(RDS_FRAMEBUFFER));
 	}
 
 	backend->client->VBlankEvent(backend);
@@ -259,7 +270,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 int freerds_client_inbound_reset(rdsBackend* backend, RDS_MSG_RESET* msg)
 {
-	if (freerds_reset(((rdsBackendConnector *)backend)->connection, msg) != 0)
+	if (freerds_reset(((rdsBackendConnector*) backend)->connection, msg) != 0)
 		return 0;
 
 	return 0;

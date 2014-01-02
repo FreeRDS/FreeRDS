@@ -262,7 +262,7 @@ int rdpup_check_attach_framebuffer()
 	{
 		RDS_MSG_SHARED_FRAMEBUFFER msg;
 
-		msg.attach = 1;
+		msg.flags = RDS_FRAMEBUFFER_FLAG_ATTACH;
 		msg.width = g_rdpScreen.width;
 		msg.height = g_rdpScreen.height;
 		msg.scanline = g_rdpScreen.paddedWidthInBytes;
@@ -274,6 +274,29 @@ int rdpup_check_attach_framebuffer()
 		rdpup_update((RDS_MSG_COMMON*) &msg);
 
 		g_rdpScreen.fbAttached = 1;
+	}
+
+	return 0;
+}
+
+int rdpup_detach_framebuffer()
+{
+	if (g_rdpScreen.sharedMemory && g_rdpScreen.fbAttached)
+	{
+		RDS_MSG_SHARED_FRAMEBUFFER msg;
+
+		msg.flags = 0;
+		msg.width = g_rdpScreen.width;
+		msg.height = g_rdpScreen.height;
+		msg.scanline = g_rdpScreen.paddedWidthInBytes;
+		msg.segmentId = g_rdpScreen.segmentId;
+		msg.bitsPerPixel = g_rdpScreen.depth;
+		msg.bytesPerPixel = g_Bpp;
+
+		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
+		rdpup_update((RDS_MSG_COMMON*) &msg);
+
+		g_rdpScreen.fbAttached = 0;
 	}
 
 	return 0;
@@ -423,23 +446,7 @@ void rdpup_send_area(int x, int y, int w, int h)
 
 	bitmapLength = w * h * g_Bpp;
 
-	if (g_rdpScreen.sharedMemory && !g_rdpScreen.fbAttached)
-	{
-		RDS_MSG_SHARED_FRAMEBUFFER msg;
-
-		msg.attach = 1;
-		msg.width = g_rdpScreen.width;
-		msg.height = g_rdpScreen.height;
-		msg.scanline = g_rdpScreen.paddedWidthInBytes;
-		msg.segmentId = g_rdpScreen.segmentId;
-		msg.bitsPerPixel = g_rdpScreen.depth;
-		msg.bytesPerPixel = g_Bpp;
-
-		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
-		rdpup_update((RDS_MSG_COMMON*) &msg);
-
-		g_rdpScreen.fbAttached = 1;
-	}
+	rdpup_check_attach_framebuffer();
 
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
@@ -537,6 +544,26 @@ void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
 
 	msg.type = RDS_SERVER_WINDOW_DELETE;
 	rdpup_update((RDS_MSG_COMMON*) &msg);
+}
+
+int rds_client_capabilities(rdsBackend* backend, RDS_MSG_CAPABILITIES* capabilities)
+{
+	int width;
+	int height;
+	int mmWidth;
+	int mmHeight;
+
+	width = capabilities->DesktopWidth;
+	height = capabilities->DesktopHeight;
+
+	mmWidth = PixelToMM(width);
+	mmHeight = PixelToMM(height);
+
+	RRScreenSizeSet(g_pScreen, width, height, mmWidth, mmHeight);
+
+	RRTellChanged(g_pScreen);
+
+	return 0;
 }
 
 int rds_client_synchronize_keyboard_event(rdsBackend* backend, DWORD flags)
@@ -687,6 +714,7 @@ int rds_service_accept(rdsBackendService* service)
 	RemoveEnabledDevice(GetNamePipeFileDescriptor(hServerPipe));
 
 	service->hServerPipe = freerds_named_pipe_create_endpoint(service->SessionId, service->Endpoint);
+
 	if (!service->hServerPipe)
 	{
 		fprintf(stderr, "server pipe failed?!\n");
@@ -700,21 +728,27 @@ int rds_service_accept(rdsBackendService* service)
 	g_con_number++;
 	g_connected = 1;
 	g_rdpScreen.fbAttached = 0;
+
 	AddEnabledDevice(g_clientfd);
-	rdpup_check_attach_framebuffer();
+
 	fprintf(stderr, "RdsServiceAccept\n");
+
 	return 0;
 }
 
 int rds_service_disconnect(rdsBackendService* service)
 {
 	RemoveEnabledDevice(g_clientfd);
+
 	CloseHandle(service->hClientPipe);
 	service->hClientPipe = NULL;
+
 	fprintf(stderr, "RdsServiceDisconnect\n");
+
 	g_connected = 0;
 	g_rdpScreen.fbAttached = 0;
 	g_clientfd = 0;
+
 	return 0;
 }
 
@@ -734,7 +768,6 @@ int rdpup_init(void)
 
 	pfbBackBufferMemory = (BYTE*) malloc(g_rdpScreen.sizeInBytes);
 
-
 	if (!g_service)
 	{
 		g_service = freerds_service_new(DisplayId, "X11");
@@ -743,6 +776,7 @@ int rdpup_init(void)
 
 		service->Accept = (pRdsServiceAccept) rds_service_accept;
 
+		service->client->Capabilities = rds_client_capabilities;
 		service->client->SynchronizeKeyboardEvent = rds_client_synchronize_keyboard_event;
 		service->client->ScancodeKeyboardEvent = rds_client_scancode_keyboard_event;
 		service->client->VirtualKeyboardEvent = rds_client_virtual_keyboard_event;

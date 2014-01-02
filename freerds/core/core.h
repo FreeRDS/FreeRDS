@@ -1,6 +1,5 @@
 /**
- * FreeRDP: A Remote Desktop Protocol Implementation
- * FreeRDP X11 Server
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
@@ -17,8 +16,8 @@
  * limitations under the License.
  */
 
-#ifndef FREERDP_RDS_NG_CORE_H
-#define FREERDP_RDS_NG_CORE_H
+#ifndef FREERDS_CORE_H
+#define FREERDS_CORE_H
 
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
@@ -34,8 +33,10 @@
 
 #include <winpr/crt.h>
 #include <winpr/stream.h>
+
 #include <freerds/backend.h>
 
+#include "encoder.h"
 
 typedef struct rds_backend_connector rdsBackendConnector;
 
@@ -61,17 +62,7 @@ struct rds_connection
 
 	BOOL codecMode;
 	int bytesPerPixel;
-
-	wStream* bs;
-	wStream* bts;
-
-	wStream* rfx_s;
-	RFX_CONTEXT* rfx_context;
-
-	wStream* nsc_s;
-	NSC_CONTEXT* nsc_context;
-
-	BITMAP_PLANAR_CONTEXT* planar_context;
+	rdsBitmapEncoder* encoder;
 
 	UINT32 frameId;
 	wListDictionary* FrameList;
@@ -203,4 +194,4 @@ FREERDP_API int freerds_window_delete(rdsConnection* connection, RDS_MSG_WINDOW_
 #endif
 
 
-#endif /* FREERDP_RDS_NG_CORE_H */
+#endif /* FREERDS_CORE_H */
