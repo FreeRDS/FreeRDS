@@ -214,7 +214,7 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 
 			/* allocate shared memory segment */
 			g_rdpScreen.segmentId = shmget(IPC_PRIVATE, g_rdpScreen.sizeInBytes,
-					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 			/* attach the shared memory segment */
 			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);

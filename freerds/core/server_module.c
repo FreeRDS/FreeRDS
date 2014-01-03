@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <errno.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
 
@@ -38,20 +39,20 @@
 
 int freerds_client_inbound_begin_update(rdsBackend* backend, RDS_MSG_BEGIN_UPDATE* msg)
 {
-	freerds_orders_begin_paint(((rdsBackendConnector *)backend)->connection);
+	freerds_orders_begin_paint(((rdsBackendConnector*) backend)->connection);
 	return 0;
 }
 
 int freerds_client_inbound_end_update(rdsBackend* backend, RDS_MSG_END_UPDATE* msg)
 {
-	freerds_orders_end_paint(((rdsBackendConnector *)backend)->connection);
+	freerds_orders_end_paint(((rdsBackendConnector*) backend)->connection);
 	backend->client->VBlankEvent(backend);
 	return 0;
 }
 
 int freerds_client_inbound_beep(rdsBackend* backend, RDS_MSG_BEEP* msg)
 {
-	freerds_send_bell(((rdsBackendConnector *)backend)->connection);
+	freerds_send_bell(((rdsBackendConnector*) backend)->connection);
 	return 0;
 }
 
@@ -148,13 +149,13 @@ int freerds_client_inbound_dstblt(rdsBackend* backend, RDS_MSG_DSTBLT* msg)
 
 int freerds_client_inbound_set_pointer(rdsBackend* backend, RDS_MSG_SET_POINTER* msg)
 {
-	freerds_set_pointer(((rdsBackendConnector *)backend)->connection, msg);
+	freerds_set_pointer(((rdsBackendConnector*) backend)->connection, msg);
 	return 0;
 }
 
 int freerds_client_inbound_set_system_pointer(rdsBackend* backend, RDS_MSG_SET_SYSTEM_POINTER* msg)
 {
-	freerds_set_system_pointer(((rdsBackendConnector *)backend)->connection, msg);
+	freerds_set_system_pointer(((rdsBackendConnector*) backend)->connection, msg);
 	return 0;
 }
 
@@ -181,7 +182,7 @@ int freerds_client_inbound_line_to(rdsBackend* backend, RDS_MSG_LINE_TO* msg)
 
 int freerds_client_inbound_cache_glyph(rdsBackend* backend, RDS_MSG_CACHE_GLYPH* msg)
 {
-	return freerds_orders_send_font(((rdsBackendConnector *)backend)->connection, msg);
+	return freerds_orders_send_font(((rdsBackendConnector*) backend)->connection, msg);
 }
 
 int freerds_client_inbound_glyph_index(rdsBackend* backend, RDS_MSG_GLYPH_INDEX* msg)
@@ -199,6 +200,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 	if (!backend->framebuffer.fbAttached && attach)
 	{
+		void* addr;
 		RDS_MSG_PAINT_RECT fm;
 		rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 		rdpSettings* settings = connector->settings;
@@ -212,7 +214,15 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		backend->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
 		backend->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
 
-		backend->framebuffer.fbSharedMemory = (BYTE*) shmat(backend->framebuffer.fbSegmentId, 0, 0);
+		addr = shmat(backend->framebuffer.fbSegmentId, 0, SHM_RDONLY);
+
+		if (addr == ((void*) (size_t) (-1)))
+		{
+			fprintf(stderr, "failed to attach to segment %d, errno: %d\n",
+					backend->framebuffer.fbSegmentId, errno);
+		}
+
+		backend->framebuffer.fbSharedMemory = (BYTE*) addr;
 		backend->framebuffer.fbAttached = TRUE;
 
 		fprintf(stderr, "attached segment %d to %p\n",
@@ -298,12 +308,12 @@ int freerds_client_inbound_paint_offscreen_surface(rdsBackend* backend, RDS_MSG_
 
 int freerds_client_inbound_window_new_update(rdsBackend* backend, RDS_MSG_WINDOW_NEW_UPDATE* msg)
 {
-	return freerds_window_new_update(((rdsBackendConnector *)backend)->connection, msg);
+	return freerds_window_new_update(((rdsBackendConnector*) backend)->connection, msg);
 }
 
 int freerds_client_inbound_window_delete(rdsBackend* backend, RDS_MSG_WINDOW_DELETE* msg)
 {
-	return freerds_window_delete(((rdsBackendConnector *)backend)->connection, msg);
+	return freerds_window_delete(((rdsBackendConnector*) backend)->connection, msg);
 }
 
 int freerds_client_inbound_logon_user(rdsBackend* backend, RDS_MSG_LOGON_USER* msg)

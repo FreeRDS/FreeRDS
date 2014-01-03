@@ -257,7 +257,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 		{
 			/* allocate shared memory segment */
 			g_rdpScreen.segmentId = shmget(IPC_PRIVATE, g_rdpScreen.sizeInBytes,
-					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 			/* attach the shared memory segment */
 			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);

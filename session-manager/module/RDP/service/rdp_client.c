@@ -310,7 +310,7 @@ BOOL rds_post_connect(freerdp* instance)
 	rds->framebufferSize = rds->framebuffer.fbScanline * rds->framebuffer.fbHeight;
 
 	rds->framebuffer.fbSegmentId = shmget(IPC_PRIVATE, rds->framebufferSize,
-			IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+			IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 	rds->framebuffer.fbSharedMemory = (BYTE*) shmat(rds->framebuffer.fbSegmentId, 0, 0);
 
