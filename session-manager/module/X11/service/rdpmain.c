@@ -517,7 +517,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 		pRRScrPriv = rrGetScrPriv(pScreen);
 		rdpRRInit(pRRScrPriv);
 
-		RRScreenSetSizeRange(pScreen, 640, 480, 8192, 8192);
+		RRScreenSetSizeRange(pScreen, 8, 8, 16384, 16384);
 	}
 
 	DEBUG_OUT("rdpScreenInit: ret %d\n", ret);
@@ -635,7 +635,7 @@ static void rdpExtensionInit(void)
 /* InitOutput is called every time the server resets.  It should call
    AddScreen for each screen (but we only ever have one), and in turn this
    will call rdpScreenInit. */
-void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
+void InitOutput(ScreenInfo* pScreenInfo, int argc, char** argv)
 {
 	int i;
 
@@ -645,15 +645,15 @@ void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
 	rdpExtensionInit();
 
 	/* initialize pixmap formats */
-	screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
-	screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-	screenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
-	screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
-	screenInfo->numPixmapFormats = g_numFormats;
+	pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
+	pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
+	pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
+	pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+	pScreenInfo->numPixmapFormats = g_numFormats;
 
 	for (i = 0; i < g_numFormats; i++)
 	{
-		screenInfo->formats[i] = g_formats[i];
+		pScreenInfo->formats[i] = g_formats[i];
 	}
 
 	if (!AddCallback(&ClientStateCallback, rdpClientStateChange, NULL))

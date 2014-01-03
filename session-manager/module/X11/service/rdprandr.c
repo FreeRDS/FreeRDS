@@ -191,10 +191,17 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
 	g_rdpScreen.sizeInBytes = g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height;
 
+	pScreen->x = 0;
+	pScreen->y = 0;
 	pScreen->width = width;
 	pScreen->height = height;
 	pScreen->mmWidth = mmWidth;
 	pScreen->mmHeight = mmHeight;
+
+	screenInfo.x = 0;
+	screenInfo.y = 0;
+	screenInfo.width = width;
+	screenInfo.height = height;
 
 	if (g_rdpScreen.pfbMemory)
 	{
@@ -255,9 +262,10 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 
 	RRGetInfo(pScreen, 1);
 
-	rdpInvalidateArea(g_pScreen, 0, 0, g_rdpScreen.width, g_rdpScreen.height);
+	rdpInvalidateArea(pScreen, 0, 0, pScreen->width, pScreen->height);
 
-	RRTellChanged(g_pScreen);
+	RRScreenSizeNotify(pScreen);
+	RRTellChanged(pScreen);
 
 	return TRUE;
 }
