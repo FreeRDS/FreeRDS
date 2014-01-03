@@ -90,6 +90,12 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 	if (!msg->framebuffer->fbAttached)
 		return 0;
 
+	if ((msg->nXSrc + msg->nWidth) > msg->framebuffer->fbWidth)
+		msg->nWidth = msg->framebuffer->fbWidth - msg->nXSrc;
+
+	if ((msg->nYSrc + msg->nHeight) > msg->framebuffer->fbHeight)
+		msg->nHeight = msg->framebuffer->fbHeight - msg->nYSrc;
+
 	if (connection->codecMode)
 	{
 		bpp = msg->framebuffer->fbBitsPerPixel;
