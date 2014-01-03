@@ -22,6 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RDPRANDR_H
 #define _RDPRANDR_H
 
-int rdpRRInit(rrScrPrivPtr pRRScrPriv);
+int rdpRRInit(ScreenPtr pScreen);
 
 #endif

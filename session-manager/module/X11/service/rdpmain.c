@@ -166,9 +166,9 @@ static int set_bpp(int bpp)
 
 static void rdpWakeupHandler(ScreenPtr pScreen, unsigned long result, pointer pReadmask)
 {
-	g_pScreen->WakeupHandler = g_rdpScreen.WakeupHandler;
-	g_pScreen->WakeupHandler(pScreen, result, pReadmask);
-	g_pScreen->WakeupHandler = rdpWakeupHandler;
+	pScreen->WakeupHandler = g_rdpScreen.WakeupHandler;
+	pScreen->WakeupHandler(pScreen, result, pReadmask);
+	pScreen->WakeupHandler = rdpWakeupHandler;
 }
 
 static void rdpBlockHandler1(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
@@ -331,7 +331,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	//miInitializeBackingStore(pScreen);
 
 	/* this is for rgb, not bgr, just doing rgb for now */
-	vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
+	vis = pScreen->visuals + (pScreen->numVisuals - 1);
 
 	while (vis >= pScreen->visuals)
 	{
@@ -410,7 +410,8 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	pScreen->whitePixel = g_rdpScreen.whitePixel;
 
 	/* Random screen procedures */
-	//pScreen->CloseScreen = rdpCloseScreen;
+	pScreen->CloseScreen = rdpCloseScreen;
+	pScreen->QueryBestSize = rdpQueryBestSize;
 	pScreen->WakeupHandler = rdpWakeupHandler;
 
 	if (ps)
@@ -461,7 +462,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 #endif
 
 	vis_found = 0;
-	vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
+	vis = pScreen->visuals + (pScreen->numVisuals - 1);
 
 	while (vis >= pScreen->visuals)
 	{
@@ -506,19 +507,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 		RegisterBlockAndWakeupHandlers(rdpBlockHandler1, rdpWakeupHandler1, NULL);
 	}
 
-	if (!RRScreenInit(pScreen))
-	{
-		DEBUG_OUT("rdpmain.c: RRScreenInit: screen init failed\n");
-	}
-	else
-	{
-		rrScrPrivPtr pRRScrPriv;
-
-		pRRScrPriv = rrGetScrPriv(pScreen);
-		rdpRRInit(pRRScrPriv);
-
-		RRScreenSetSizeRange(pScreen, 640, 480, 8192, 8192);
-	}
+	rdpRRInit(pScreen);
 
 	DEBUG_OUT("rdpScreenInit: ret %d\n", ret);
 
@@ -635,7 +624,7 @@ static void rdpExtensionInit(void)
 /* InitOutput is called every time the server resets.  It should call
    AddScreen for each screen (but we only ever have one), and in turn this
    will call rdpScreenInit. */
-void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
+void InitOutput(ScreenInfo* pScreenInfo, int argc, char** argv)
 {
 	int i;
 
@@ -645,15 +634,15 @@ void InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
 	rdpExtensionInit();
 
 	/* initialize pixmap formats */
-	screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
-	screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-	screenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
-	screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
-	screenInfo->numPixmapFormats = g_numFormats;
+	pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
+	pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
+	pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
+	pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+	pScreenInfo->numPixmapFormats = g_numFormats;
 
 	for (i = 0; i < g_numFormats; i++)
 	{
-		screenInfo->formats[i] = g_formats[i];
+		pScreenInfo->formats[i] = g_formats[i];
 	}
 
 	if (!AddCallback(&ClientStateCallback, rdpClientStateChange, NULL))

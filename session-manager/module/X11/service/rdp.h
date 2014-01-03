@@ -205,7 +205,8 @@ int rdpBitsPerPixel(int depth);
 void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt);
 
 /* rdpdraw.c */
-Bool rdpCloseScreen(int i, ScreenPtr pScreen);
+Bool rdpCloseScreen(ScreenPtr pScreen);
+void rdpQueryBestSize(int xclass, unsigned short* pWidth, unsigned short* pHeight, ScreenPtr pScreen);
 
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint);
 Bool rdpDestroyPixmap(PixmapPtr pPixmap);

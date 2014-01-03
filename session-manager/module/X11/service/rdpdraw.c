@@ -384,7 +384,7 @@ static void rdpCopyClip(GCPtr dst, GCPtr src)
 	(_pGC)->ops = &g_rdpGCOps; \
 }
 
-Bool rdpCloseScreen(int i, ScreenPtr pScreen)
+Bool rdpCloseScreen(ScreenPtr pScreen)
 {
 	LLOGLN(10, ("in rdpCloseScreen"));
 	pScreen->CloseScreen = g_rdpScreen.CloseScreen;
@@ -394,7 +394,38 @@ Bool rdpCloseScreen(int i, ScreenPtr pScreen)
 	pScreen->CopyWindow = g_rdpScreen.CopyWindow;
 	pScreen->ClearToBackground = g_rdpScreen.ClearToBackground;
 	//pScreen->RestoreAreas = g_rdpScreen.RestoreAreas;
-	return 1;
+	return TRUE;
+}
+
+void rdpQueryBestSize(int xclass, unsigned short* pWidth, unsigned short* pHeight, ScreenPtr pScreen)
+{
+	unsigned short w;
+
+	switch (xclass)
+	{
+		case CursorShape:
+
+			*pWidth = 96;
+			*pHeight = 96;
+
+			if (*pWidth > pScreen->width)
+				*pWidth = pScreen->width;
+			if (*pHeight > pScreen->height)
+				*pHeight = pScreen->height;
+
+			break;
+
+		case TileShape:
+		case StippleShape:
+
+			w = *pWidth;
+
+			if ((w & (w - 1)) && w < FB_UNIT)
+			{
+				for (w = 1; w < *pWidth; w <<= 1);
+					*pWidth = w;
+			}
+	}
 }
 
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint)
