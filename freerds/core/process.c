@@ -166,6 +166,7 @@ int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
 	capabilities.DesktopWidth = settings->DesktopWidth;
 	capabilities.DesktopHeight = settings->DesktopHeight;
 	capabilities.KeyboardLayout = settings->KeyboardLayout;
+	capabilities.KeyboardType = settings->KeyboardType;
 	capabilities.KeyboardSubType = settings->KeyboardSubType;
 
 	freerds_write_capabilities(s, &capabilities);
