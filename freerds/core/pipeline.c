@@ -40,7 +40,7 @@ int freerds_server_message_enqueue(rdsBackend* backend, RDS_MSG_COMMON* msg)
 int freerds_message_server_is_terminated(rdsBackend* backend)
 {
 	int status;
-	status = ((rdsBackendConnector *)backend)->ServerProxy->IsTerminated(backend);
+	status = ((rdsBackendConnector*) backend)->ServerProxy->IsTerminated(backend);
 	return status;
 }
 
