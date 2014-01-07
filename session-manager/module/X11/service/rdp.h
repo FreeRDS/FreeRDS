@@ -262,6 +262,7 @@ void PtrAddButtonEvent(int buttonMask);
 void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType);
 void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode);
 void KbdAddUnicodeEvent(DWORD flags, DWORD code);
+void KbdAddSyncEvent(DWORD flags);
 
 /* rdpup.c */
 UINT32 rdpup_convert_color(UINT32 color);

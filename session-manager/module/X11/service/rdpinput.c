@@ -820,6 +820,7 @@ void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType)
 	scancodeWithFlags = scancode;
 	scancodeWithFlags |= (flags & KBD_FLAGS_EXTENDED) ? KBDEXT : 0;
 
+
 	vkcode = GetVirtualKeyCodeFromVirtualScanCode(scancodeWithFlags, keyboardType);
 	vkcodeWithFlags = vkcode | ((flags & KBD_FLAGS_EXTENDED) ? KBDEXT : 0);
 
@@ -849,4 +850,46 @@ void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode)
 void KbdAddUnicodeEvent(DWORD flags, DWORD code)
 {
 	/* TODO: unicode input */
+}
+
+static void kbdSyncState(int xkb_flags, int rdp_flags, int keycode)
+{
+	unsigned char rdp_state = rdp_flags ? 1 : 0;
+	unsigned char xkb_state = xkb_flags ? 1 : 0;
+	if (xkb_state != rdp_state)
+	{
+		rdpEnqueueKey(KeyPress, keycode);
+		rdpEnqueueKey(KeyRelease, keycode);
+	}
+}
+
+void KbdAddSyncEvent(DWORD flags)
+{
+	DeviceIntPtr pDev = g_keyboard;
+	DeviceIntPtr master = pDev->key->xkbInfo->device->master;
+	KeyClassPtr keyc;
+	char numLock = -1, scrollLock = -1;
+	int i;
+	int xkb_state;
+	if (!master)
+		/* no master device */
+		return;
+	keyc = master->key;
+	xkb_state = XkbStateFieldFromRec(&master->key->xkbInfo->state);
+
+	/* figure out which virtual modifier NumLock and ScrollLock are
+	 * and get the the mapped real modifiers */
+	for (i=0 ; i < XkbNumVirtualMods; ++i)
+	{
+		Atom mod = keyc->xkbInfo->desc->names->vmods[i];
+		if ( mod == NULL)
+			continue;
+		if (!strcmp(NameForAtom(mod),"NumLock"))
+			numLock = keyc->xkbInfo->desc->server->vmods[i];
+		else if (!strcmp(NameForAtom(mod),"ScrollLock"))
+			scrollLock = keyc->xkbInfo->desc->server->vmods[i];
+	}
+	kbdSyncState(xkb_state & LockMask, flags & KBD_SYNC_CAPS_LOCK, 66);
+	kbdSyncState(xkb_state & numLock, flags & KBD_SYNC_NUM_LOCK, 77);
+	kbdSyncState(xkb_state & scrollLock, flags & KBD_SYNC_SCROLL_LOCK, 78);
 }

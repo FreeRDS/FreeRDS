@@ -568,6 +568,7 @@ int rds_client_capabilities(rdsBackend* backend, RDS_MSG_CAPABILITIES* capabilit
 
 int rds_client_synchronize_keyboard_event(rdsBackend* backend, DWORD flags)
 {
+	KbdAddSyncEvent(flags);
 	return 0;
 }
 
