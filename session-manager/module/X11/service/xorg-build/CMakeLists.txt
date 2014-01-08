@@ -23,6 +23,8 @@ project(external-xorg-build)
 include(GNUInstallDirs)
 include(ExternalProject)
 
+set(UBUNTU_DETECTION 1)
+
 if(UBUNTU_DETECTION)
 	if(EXISTS "/etc/os-release")
 		file(STRINGS /etc/os-release OS_RELEASE)
@@ -55,32 +57,32 @@ if ((${XORG_SERVER_VERSION} VERSION_LESS "1.12.99.904") OR FULL_X11_STACK)
 	message(STATUS "Using ${XORG_TO_BUILD} - overwrite by setting  -DXORG_TO_BUILD=X11Rx.y")
 	add_subdirectory(${XORG_TO_BUILD})
 else()
-		if (EXISTS "/etc/debian_version" AND NOT UBUNTU_LINUX)
-			message("/etc/debian_version found - trying debian build")
-			execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/debian_prepare_xorg.sh)
-			add_custom_target(xorg-debian
-												COMMAND cd external/Source/xorg-server && ./debian/rules build)
-			add_custom_target(all DEPENDS xorg-debian)
-			message(NOTE: " run the following command after build: 
-			cp ${CMAKE_CURRENT_SOURCE_DIR}/scripts/LocalConfigSettings.cmake ${CMAKE_CURRENT_SOURCE_DIR}/../")
-		else()
-			message(STATUS "Using xorg-server sources version ${XORG_SERVER_VERSION}")
+	if (EXISTS "/etc/debian_version" AND NOT UBUNTU_LINUX)
+		message("/etc/debian_version found - trying debian build")
+		execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/debian_prepare_xorg.sh)
+		add_custom_target(xorg-debian
+				COMMAND cd external/Source/xorg-server && ./debian/rules build)
+		add_custom_target(all DEPENDS xorg-debian)
+		message(NOTE: " run the following command after build: 
+		cp ${CMAKE_CURRENT_SOURCE_DIR}/scripts/LocalConfigSettings.cmake ${CMAKE_CURRENT_SOURCE_DIR}/../")
+	else()
+		message(STATUS "Using xorg-server sources version ${XORG_SERVER_VERSION}")
 
-			set(EXTERNAL_PROJECT "xorg-server")
-			set(${EXTERNAL_PROJECT}_VERSION "${XORG_SERVER_VERSION}")
-			set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}")
-			set(${EXTERNAL_PROJECT}_EXT ".tar.bz2")
-			set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
-			set(${EXTERNAL_PROJECT}_URL "http://xorg.freedesktop.org/releases/individual/xserver/${${EXTERNAL_PROJECT}_FILE}")
-			set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=/usr;--with-sha1=libcrypto;--disable-dpms")
-			set(${EXTERNAL_PROJECT}_UPDATE "")
-			set(${EXTERNAL_PROJECT}_MAKE "")
+		set(EXTERNAL_PROJECT "xorg-server")
+		set(${EXTERNAL_PROJECT}_VERSION "${XORG_SERVER_VERSION}")
+		set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}")
+		set(${EXTERNAL_PROJECT}_EXT ".tar.bz2")
+		set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
+		set(${EXTERNAL_PROJECT}_URL "http://xorg.freedesktop.org/releases/individual/xserver/${${EXTERNAL_PROJECT}_FILE}")
+		set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=/usr;--with-sha1=libcrypto;--disable-dpms")
+		set(${EXTERNAL_PROJECT}_UPDATE "")
+		set(${EXTERNAL_PROJECT}_MAKE "")
 
-			ExternalProject_Add(${EXTERNAL_PROJECT}
-				URL ${${EXTERNAL_PROJECT}_URL}
-				UPDATE_COMMAND ${${EXTERNAL_PROJECT}_UPDATE}
-				CONFIGURE_COMMAND "${EXTERNAL_PROJECTS_BASE}/Source/${EXTERNAL_PROJECT}/configure" ${${EXTERNAL_PROJECT}_CONFIGURE}
-				BUILD_IN_SOURCE 1
-				INSTALL_COMMAND "")
+		ExternalProject_Add(${EXTERNAL_PROJECT}
+			URL ${${EXTERNAL_PROJECT}_URL}
+			UPDATE_COMMAND ${${EXTERNAL_PROJECT}_UPDATE}
+			CONFIGURE_COMMAND "${EXTERNAL_PROJECTS_BASE}/Source/${EXTERNAL_PROJECT}/configure" ${${EXTERNAL_PROJECT}_CONFIGURE}
+			BUILD_IN_SOURCE 1
+			INSTALL_COMMAND "")
 	endif()
 endif()
