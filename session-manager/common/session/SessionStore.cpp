@@ -50,7 +50,10 @@ namespace freerds
 			SessionPtr SessionStore::getSession(long sessionId)
 			{
 				CSGuard guard(&mCSection);
-				return mSessionMap[sessionId];
+				if (mSessionMap.find(sessionId) != mSessionMap.end()) {
+					return mSessionMap[sessionId];
+				}
+				return SessionPtr();
 			}
 
 			SessionPtr SessionStore::createSession()

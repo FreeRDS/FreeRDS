@@ -49,19 +49,22 @@ namespace freerds
 			ConnectionPtr ConnectionStore::getOrCreateConnection(long connectionID)
 			{
 				CSGuard guard(&mCSection);
-				ConnectionPtr connection = mConnectionMap[connectionID];
-				if (!connection) {
-					connection = ConnectionPtr(new Connection(connectionID));
+				if (mConnectionMap.find(connectionID) != mConnectionMap.end()) {
+					return mConnectionMap[connectionID];
+				} else {
+					ConnectionPtr connection = ConnectionPtr(new Connection(connectionID));
 					mConnectionMap[connectionID] = connection;
-
+					return connection;
 				}
-				return connection;
 			}
 
 			ConnectionPtr ConnectionStore::getConnection(long connectionID)
 			{
 				CSGuard guard(&mCSection);
-				return mConnectionMap[connectionID];
+				if (mConnectionMap.find(connectionID) != mConnectionMap.end()) {
+					return mConnectionMap[connectionID];
+				}
+				return ConnectionPtr();
 			}
 
 
