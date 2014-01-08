@@ -60,12 +60,16 @@ namespace freerds
 
 			bool PropertyManager::getPropertyInternal(long sessionID, std::string path, PROPERTY_STORE_HELPER & helper, std::string username) {
 				// first try to resolve the sessionID
-				bool found = false;
 				std::string currentUserName;
 				if (sessionID == 0) {
 					// for no session, use username if its present
 					if (username.size() == 0) {
-						return -1;
+						if ((mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end())) {
+							helper = mPropertyGlobalMap[path];
+							return true;
+						} else {
+							return false;
+						}
 					}
 					currentUserName = username;
 				} else {
@@ -107,7 +111,7 @@ namespace freerds
 						return true;
 					}
 				}
-				if ((!found) && (mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end())) {
+				if ((mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end())) {
 					helper = mPropertyGlobalMap[path];
 					return true;
 				}
