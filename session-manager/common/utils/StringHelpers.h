@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <string>
+#include <boost/lexical_cast.hpp>
 
 template<typename T>
 std::vector<T>
@@ -44,6 +45,15 @@ split(const T & str, const T & delimiters) {
 namespace std{
 
 	bool stringEndsWith(const string& compString, const string& suffix);
+	bool stringStartsWith(const string& string2comp, const string& startswith);
+}
+
+namespace boost {
+	template<>
+        bool lexical_cast<bool, std::string>(const std::string& arg);
+
+    template<>
+    std::string lexical_cast<std::string, bool>(const bool& b);
 }
 
 #endif

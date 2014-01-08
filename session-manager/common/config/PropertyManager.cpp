@@ -34,8 +34,8 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/foreach.hpp>
-#include <utils/StringHelpers.h>
 #include <boost/lexical_cast.hpp>
+#include <utils/StringHelpers.h>
 
 namespace freerds
 {
@@ -219,6 +219,12 @@ namespace freerds
 				helper.type = BoolType;
 				helper.boolValue = value;
 
+				if (username.size() == 0) {
+					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %s in global scope",path.c_str(),value ? "true" :"false");
+				} else {
+					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %s for user %s",path.c_str(),value ? "true" :"false",username.c_str());
+				}
+
 				return setPropertyInternal(level,sessionID,path,helper,username);
 			}
 
@@ -229,6 +235,12 @@ namespace freerds
 				PROPERTY_STORE_HELPER helper;
 				helper.type = NumberType;
 				helper.numberValue = value;
+
+				if (username.size() == 0) {
+					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %d in global scope",path.c_str(),value);
+				} else {
+					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %d for user %s",path.c_str(),value,username.c_str());
+				}
 
 				return setPropertyInternal(level,sessionID,path,helper,username);
 			}
@@ -241,6 +253,12 @@ namespace freerds
 				helper.type = StringType;
 				helper.stringValue = value;
 
+				if (username.size() == 0) {
+					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %s in global scope",path.c_str(),value.c_str());
+				} else {
+					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %s for user %s",path.c_str(),value.c_str(),username.c_str());
+				}
+
 				return setPropertyInternal(level,sessionID,path,helper,username);
 			}
 
@@ -248,31 +266,50 @@ namespace freerds
 
 			int PropertyManager::parsePropertyGlobal(std::string parentPath, const boost::property_tree::ptree& tree,PROPERTY_LEVEL level) {
 
+				bool useParentPath = false;
+				std::string username;
+
+				if (parentPath.size() != 0) {
+					// check if it is global
+					if (stringStartsWith(parentPath,"user")) {
+						username = parentPath;
+						username.erase(0,5);
+					}else if (!stringStartsWith(parentPath,"global")){
+						useParentPath = true;
+					}
+				}
+
 				BOOST_FOREACH(boost::property_tree::ptree::value_type const &v, tree)
 				{
 					boost::property_tree::ptree subtree = v.second;
-					//assert(v.first.empty()); // array elements have no names
 					if (v.second.data().size() != 0) {
-						std::string fullPath = parentPath + "." + v.first;
+						std::string fullPath;
+						if (useParentPath) {
+							fullPath = parentPath + "." + v.first;
+						} else {
+							fullPath =v.first;
+						}
 
 						if (std::stringEndsWith(fullPath,"_number")) {
 							std::string propertyName = fullPath.substr(0,fullPath.size() - strlen("_number"));
 	    					std::replace(propertyName.begin(), propertyName.end(),'_','.');
 							try {
-								long test = boost::lexical_cast<long>(v.second.data());
-								setPropertyNumber(level,0,propertyName,12);
+								long number = boost::lexical_cast<long>(v.second.data());
+								setPropertyNumber(level,0,propertyName,number,username);
 							} catch (boost::bad_lexical_cast &){
 								WLog_Print(logger_PropertyManager, WLOG_ERROR, "Could not cast %s to a number, property % ignored!",v.second.data().c_str(),propertyName.c_str());
 							}
 						} else if (std::stringEndsWith(fullPath,"_string")) {
 							std::string propertyName = fullPath.substr(0,fullPath.size() - strlen("_string"));
-							setPropertyString(level,0,propertyName,v.second.data());
+	    					std::replace(propertyName.begin(), propertyName.end(),'_','.');
+							setPropertyString(level,0,propertyName,v.second.data(),username);
 						} else if (std::stringEndsWith(fullPath,"_bool")) {
-							std::string propertyName = fullPath.substr(0,fullPath.size() - strlen("_number"));
+							std::string propertyName = fullPath.substr(0,fullPath.size() - strlen("_bool"));
+	    					std::replace(propertyName.begin(), propertyName.end(),'_','.');
 							try {
-								setPropertyBool(level,0,propertyName,boost::lexical_cast<bool>(v.second.data()));
+								setPropertyBool(level,0,propertyName,boost::lexical_cast<bool>(v.second.data()),username);
 							} catch (boost::bad_lexical_cast &){
-								WLog_Print(logger_PropertyManager, WLOG_ERROR, "Could not cast %s to a bool, property % ignored!",v.second.data().c_str(), propertyName.c_str());
+								WLog_Print(logger_PropertyManager, WLOG_ERROR, "Could not cast %s to a bool, property %s ignored!",v.second.data().c_str(), propertyName.c_str());
 							}
 						}
 					}
@@ -290,7 +327,7 @@ namespace freerds
 					//boost::property_tree::read_json(filename, pt);
 					boost::property_tree::read_ini(filename, pt);
 					//boost::property_tree::read_xml(filename, pt);
-					parsePropertyGlobal("",pt.get_child("global"),Global);
+					parsePropertyGlobal("",pt,Global);
 				} catch (boost::property_tree::file_parser_error & e) {
 					WLog_Print(logger_PropertyManager, WLOG_ERROR, "Could not parse config file %s",filename.c_str());
 				}
@@ -298,7 +335,6 @@ namespace freerds
 			}
 
 			int PropertyManager::saveProperties(std::string filename) {
-	            // Create an empty property tree object
 	            using boost::property_tree::ptree;
 	            ptree pt;
 

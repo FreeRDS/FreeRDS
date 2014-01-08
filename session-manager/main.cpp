@@ -46,6 +46,7 @@ COMMAND_LINE_ARGUMENT_A freerds_session_manager_args[] =
 {
 	{ "kill", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "kill daemon" },
 	{ "nodaemon", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "no daemon" },
+	{ "config", COMMAND_LINE_VALUE_REQUIRED, "<configfile>", "1024x768", NULL, -1, NULL, "set config file" },
 	{ NULL, 0, NULL, NULL, NULL, -1, NULL, NULL }
 };
 
@@ -62,11 +63,15 @@ int main(int argc, char** argv)
 	char text[256];
 	char pid_file[256];
 	COMMAND_LINE_ARGUMENT_A* arg;
+	char * configFileName = 0;
 
 	no_daemon = kill_process = 0;
 
-	flags = COMMAND_LINE_SEPARATOR_SPACE;
-	flags |= COMMAND_LINE_SIGIL_DASH | COMMAND_LINE_SIGIL_DOUBLE_DASH;
+	flags = 0;
+	flags |= COMMAND_LINE_SIGIL_DASH;
+	flags |= COMMAND_LINE_SIGIL_DOUBLE_DASH;
+	flags |= COMMAND_LINE_SIGIL_ENABLE_DISABLE;
+	flags |= COMMAND_LINE_SEPARATOR_COLON;
 
 	status = CommandLineParseArgumentsA(argc, (const char**) argv,
 			freerds_session_manager_args, flags, NULL, NULL, NULL);
@@ -87,6 +92,10 @@ int main(int argc, char** argv)
 		CommandLineSwitchCase(arg, "nodaemon")
 		{
 			no_daemon = 1;
+		}
+		CommandLineSwitchCase(arg, "config")
+		{
+			configFileName = arg->Value;
 		}
 		CommandLineSwitchEnd(arg)
 	}
@@ -218,9 +227,15 @@ int main(int argc, char** argv)
 	APP_CONTEXT.startRPCEngine();
 	APP_CONTEXT.loadModulesFromPath(APP_CONTEXT.getLibraryPath());
 
+	if (configFileName) {
+		std::string name(configFileName);
+		APP_CONTEXT.getPropertyManager()->loadProperties(configFileName);
 
+	} else {
+		APP_CONTEXT.getPropertyManager()->loadProperties(APP_CONTEXT.getSystemConfigPath() + "/config.ini");
+	}
 	//APP_CONTEXT.getPropertyManager()->saveProperties(APP_CONTEXT.getSystemConfigPath() + "/config.ini");
-	APP_CONTEXT.getPropertyManager()->loadProperties(APP_CONTEXT.getSystemConfigPath() + "/config.ini");
+
 	APP_CONTEXT.startTaskExecutor();
 
 
