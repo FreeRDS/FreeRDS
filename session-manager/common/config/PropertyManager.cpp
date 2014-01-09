@@ -200,15 +200,15 @@ namespace freerds
 					// we have the username now
 					if (mPropertyUserMap.find(currentUserName) != mPropertyUserMap.end()) {
 						TPropertyMap * uPropMap = mPropertyUserMap[currentUserName];
-						uPropMap->insert(std::make_pair(path, helper));
+						(*uPropMap)[path] = helper;
 					} else {
 						TPropertyMap * uPropMap = new TPropertyMap();
-						uPropMap->insert(std::make_pair(path, helper));
-						mPropertyUserMap.insert(std::make_pair(currentUserName, uPropMap));
+						(*uPropMap)[path] = helper;
+						mPropertyUserMap[currentUserName] = uPropMap;
 					}
 					return 0;
 				} else if (level == Global) {
-					mPropertyGlobalMap.insert(std::make_pair(path, helper));
+					mPropertyGlobalMap[path]= helper;
 					return 0;
 				}
 				return -1;
