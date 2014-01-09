@@ -28,6 +28,10 @@ RandR extension implementation
 #include <sys/shm.h>
 #include <sys/stat.h>
 
+#define LOG_LEVEL 0
+#define LLOGLN(_level, _args) \
+		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
+
 extern rdpScreenInfoRec g_rdpScreen;
 extern WindowPtr g_invalidate_window;
 
@@ -38,26 +42,35 @@ static XID g_wid = 0;
 #define SCREEN_SIZE_WIDTH(_size) ((_size >> 16) & 0xFFFF)
 #define SCREEN_SIZE_HEIGHT(_size) ((_size) & 0xFFFF)
 
+#if 0
+#define MAX_SCREEN_SIZE_WIDTH	0xFFFF
+#define MAX_SCREEN_SIZE_HEIGHT	0xFFFF
+#else
+#define MAX_SCREEN_SIZE_WIDTH	1920
+#define MAX_SCREEN_SIZE_HEIGHT	1080
+#endif
+
 static UINT32 g_StandardSizes[] =
 {
 	DEFINE_SCREEN_SIZE(8192, 4608),
 	DEFINE_SCREEN_SIZE(4096, 2560),
 	DEFINE_SCREEN_SIZE(4096, 2160),
 	DEFINE_SCREEN_SIZE(3840, 2160),
-	DEFINE_SCREEN_SIZE(2560, 1600),
+	DEFINE_SCREEN_SIZE(2560, 1600), /* 16:10 */
 	DEFINE_SCREEN_SIZE(2560, 1440),
 	DEFINE_SCREEN_SIZE(2048, 1152),
 	DEFINE_SCREEN_SIZE(2048, 1080),
+	DEFINE_SCREEN_SIZE(1920, 1200), /* 16:10 */
 	DEFINE_SCREEN_SIZE(1920, 1080),
-	DEFINE_SCREEN_SIZE(1680, 1050),
+	DEFINE_SCREEN_SIZE(1680, 1050), /* 16:10 */
 	DEFINE_SCREEN_SIZE(1600, 1200),
 	DEFINE_SCREEN_SIZE(1600, 900),
-	DEFINE_SCREEN_SIZE(1440, 900),
+	DEFINE_SCREEN_SIZE(1440, 900), /* 16:10 */
 	DEFINE_SCREEN_SIZE(1400, 1050),
 	DEFINE_SCREEN_SIZE(1366, 768),
 	DEFINE_SCREEN_SIZE(1280, 1024),
 	DEFINE_SCREEN_SIZE(1280, 960),
-	DEFINE_SCREEN_SIZE(1280, 800),
+	DEFINE_SCREEN_SIZE(1280, 800), /* 16:10 */
 	DEFINE_SCREEN_SIZE(1280, 720),
 	DEFINE_SCREEN_SIZE(1152, 864),
 	DEFINE_SCREEN_SIZE(1024, 768),
@@ -65,22 +78,52 @@ static UINT32 g_StandardSizes[] =
 	DEFINE_SCREEN_SIZE(640, 480)
 };
 
+static int get_max_shared_memory_segment_size(void)
+{
+#ifdef _GNU_SOURCE
+	struct shminfo info;
+
+	if ((shmctl(0, IPC_INFO, (struct shmid_ds*)(void*)&info)) == -1)
+		return -1;
+
+	return info.shmmax;
+#else
+	return -1;
+#endif
+}
+
 Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 {
+	int k;
 	int index;
 	int cIndex;
+	int shmmax;
 	int cWidth, cHeight;
 	int mmWidth, mmHeight;
 	RRScreenSizePtr pSizes[32];
 
+	LLOGLN(0, ("rdpRRRegisterSize width: %d height: %d", width, height));
+
+	index = 0;
 	cIndex = -1;
 	cWidth = width;
 	cHeight = height;
 
-	for (index = 0; index < sizeof(g_StandardSizes) / sizeof(UINT32); index++)
+	shmmax = get_max_shared_memory_segment_size();
+
+	for (k = 0; k < sizeof(g_StandardSizes) / sizeof(UINT32); k++)
 	{
-		width = SCREEN_SIZE_WIDTH(g_StandardSizes[index]);
-		height = SCREEN_SIZE_HEIGHT(g_StandardSizes[index]);
+		width = SCREEN_SIZE_WIDTH(g_StandardSizes[k]);
+		height = SCREEN_SIZE_HEIGHT(g_StandardSizes[k]);
+
+		if ((width > MAX_SCREEN_SIZE_WIDTH) || (height > MAX_SCREEN_SIZE_HEIGHT))
+			continue; /* screen size is too large */
+
+		if (shmmax > 0)
+		{
+			if ((width * height * 4) > shmmax)
+				continue; /* required buffer size is too large */
+		}
 
 		mmWidth = PixelToMM(width);
 		mmHeight = PixelToMM(height);
@@ -90,6 +133,8 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 
 		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
 		RRRegisterRate(pScreen, pSizes[index], 60);
+
+		index++;
 	}
 
 	width = cWidth;
@@ -113,22 +158,26 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 
 Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSizePtr pSize)
 {
+	LLOGLN(0, ("rdpRRSetConfig: rate: %d id: %d width: %d height: %d mmWidth: %d mmHeight: %d",
+			rate, pSize->id, pSize->width, pSize->height, pSize->mmWidth, pSize->mmHeight));
+
 	return TRUE;
 }
 
 Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 {
-	int width;
-	int height;
+	LLOGLN(0, ("rdpRRGetInfo"));
 
 	if (pRotations)
 		*pRotations = RR_Rotate_0;
 
-	width = g_rdpScreen.width;
-	height = g_rdpScreen.height;
+	rdpRRRegisterSize(pScreen, pScreen->width, pScreen->height);
 
-	rdpRRRegisterSize(pScreen, width, height);
+	return TRUE;
+}
 
+Bool rdpRRSetInfo(ScreenPtr pScreen)
+{
 	return TRUE;
 }
 
@@ -176,6 +225,9 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 {
 	BoxRec box;
 	PixmapPtr screenPixmap;
+
+	LLOGLN(0, ("rdpRRScreenSetSize: width: %d height: %d mmWidth: %d mmHeight: %d",
+			width, height, mmWidth, mmHeight));
 
 	if ((width < 1) || (height < 1))
 	{
@@ -271,58 +323,96 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		int x, int y, Rotation rotation, int numOutputs, RROutputPtr* outputs)
 {
-	return TRUE;
+	LLOGLN(0, ("rdpRRCrtcSet: x: %d y: %d numOutputs: %d",
+			x, y, numOutputs));
+
+	return RRCrtcNotify(crtc, mode, x, y, rotation, NULL, numOutputs, outputs);
 }
 
 Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
+	LLOGLN(0, ("rdpRRCrtcSetGamma"));
+
 	return TRUE;
 }
 
 Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
+	LLOGLN(0, ("rdpRRCrtcGetGamma"));
+
 	return TRUE;
 }
 
 Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property, RRPropertyValuePtr value)
 {
+	LLOGLN(0, ("rdpRROutputSetProperty"));
+
 	return TRUE;
 }
 
 Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output, RRModePtr mode)
 {
+	LLOGLN(0, ("rdpRROutputValidateMode"));
+
 	return TRUE;
 }
 
 void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode)
 {
-
+	LLOGLN(0, ("rdpRRModeDestroy"));
 }
 
 Bool rdpRROutputGetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property)
 {
+	const char* name;
+
+	name = NameForAtom(property);
+
+	LLOGLN(0, ("rdpRROutputGetProperty: Atom: %s", name));
+
+	if (!name)
+		return FALSE;
+
+	if (strcmp(name, "EDID"))
+	{
+
+	}
+
 	return TRUE;
 }
 
-Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border)
+Bool rdpRRGetPanning(ScreenPtr pScreen, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border)
 {
-	if (totalArea != 0)
+	LLOGLN(100, ("rdpRRGetPanning"));
+
+	if (crtc)
+	{
+		LLOGLN(100, ("rdpRRGetPanning: ctrc->id: %d", crtc->id));
+	}
+
+	if (totalArea)
 	{
 		totalArea->x1 = 0;
 		totalArea->y1 = 0;
-		totalArea->x2 = g_rdpScreen.width;
-		totalArea->y2 = g_rdpScreen.height;
+		totalArea->x2 = pScreen->width;
+		totalArea->y2 = pScreen->height;
+
+		LLOGLN(100, ("rdpRRGetPanning: totalArea: x1: %d y1: %d x2: %d y2: %d",
+				totalArea->x1, totalArea->y1, totalArea->x1, totalArea->y2));
 	}
 
-	if (trackingArea != 0)
+	if (trackingArea)
 	{
 		trackingArea->x1 = 0;
 		trackingArea->y1 = 0;
-		trackingArea->x2 = g_rdpScreen.width;
-		trackingArea->y2 = g_rdpScreen.height;
+		trackingArea->x2 = pScreen->width;
+		trackingArea->y2 = pScreen->height;
+
+		LLOGLN(100, ("rdpRRGetPanning: trackingArea: x1: %d y1: %d x2: %d y2: %d",
+				trackingArea->x1, trackingArea->y1, trackingArea->x1, trackingArea->y2));
 	}
 
-	if (border != 0)
+	if (border)
 	{
 		border[0] = 0;
 		border[1] = 0;
@@ -335,8 +425,54 @@ Bool rdpRRGetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr t
 
 Bool rdpRRSetPanning(ScreenPtr pScrn, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr trackingArea, INT16* border)
 {
+	LLOGLN(0, ("rdpRRSetPanning"));
+
 	return TRUE;
 }
+
+#if (RANDR_INTERFACE_VERSION >= 0x0104)
+
+Bool rdpRRCrtcSetScanoutPixmap(RRCrtcPtr crtc, PixmapPtr pixmap)
+{
+	LLOGLN(0, ("rdpRRCrtcSetScanoutPixmap"));
+
+	return TRUE;
+}
+
+Bool rdpRRProviderSetOutputSource(ScreenPtr pScreen, RRProviderPtr provider, RRProviderPtr output_source)
+{
+	LLOGLN(0, ("rdpRRProviderSetOutputSource"));
+
+	return TRUE;
+}
+
+Bool rdpRRProviderSetOffloadSink(ScreenPtr pScreen, RRProviderPtr provider, RRProviderPtr offload_sink)
+{
+	LLOGLN(0, ("rdpRRProviderSetOffloadSink"));
+
+	return TRUE;
+}
+
+Bool rdpRRProviderGetProperty(ScreenPtr pScreen, RRProviderPtr provider, Atom property)
+{
+	LLOGLN(0, ("rdpRRProviderGetProperty"));
+
+	return TRUE;
+}
+
+Bool rdpRRProviderSetProperty(ScreenPtr pScreen, RRProviderPtr provider, Atom property, RRPropertyValuePtr value)
+{
+	LLOGLN(0, ("rdpRRProviderGetProperty"));
+
+	return TRUE;
+}
+
+void rdpRRProviderDestroy(ScreenPtr pScreen, RRProviderPtr provider)
+{
+	LLOGLN(0, ("rdpRRProviderDestroy"));
+}
+
+#endif
 
 int rdpRRInit(ScreenPtr pScreen)
 {
@@ -346,8 +482,14 @@ int rdpRRInit(ScreenPtr pScreen)
 	RRCrtcPtr crtc;
 	RROutputPtr output;
 	xRRModeInfo modeInfo;
+#if (RANDR_INTERFACE_VERSION >= 0x0104)
+	RRProviderPtr provider;
+	uint32_t capabilities;
+#endif
 #endif
 	rrScrPrivPtr pScrPriv;
+
+	LLOGLN(0, ("rdpRRInit"));
 
 	if (!RRScreenInit(pScreen))
 		return -1;
@@ -368,17 +510,68 @@ int rdpRRInit(ScreenPtr pScreen)
 	pScrPriv->rrOutputValidateMode = rdpRROutputValidateMode;
 	pScrPriv->rrModeDestroy = rdpRRModeDestroy;
 
+#if RANDR_13_INTERFACE
 	pScrPriv->rrOutputGetProperty = rdpRROutputGetProperty;
 	pScrPriv->rrGetPanning = rdpRRGetPanning;
 	pScrPriv->rrSetPanning = rdpRRSetPanning;
+#endif
+
+#if (RANDR_INTERFACE_VERSION >= 0x0104)
+	pScrPriv->rrCrtcSetScanoutPixmap = rdpRRCrtcSetScanoutPixmap;
+	pScrPriv->rrProviderSetOutputSource = rdpRRProviderSetOutputSource;
+	pScrPriv->rrProviderSetOffloadSink = rdpRRProviderSetOffloadSink;
+	pScrPriv->rrProviderGetProperty = rdpRRProviderGetProperty;
+	pScrPriv->rrProviderSetProperty = rdpRRProviderSetProperty;
+	pScrPriv->rrProviderDestroy = rdpRRProviderDestroy;
+#endif
 
 	RRScreenSetSizeRange(pScreen, 8, 8, 16384, 16384);
 
+	/**
+	 * Refer to the VESA Generalized Timing Formula (GTF): GTF_V1R1.xls
+	 *
+	 * Modeline "String description" Dot-Clock HDisp HSyncStart HSyncEnd HTotal VDisp VSyncStart VSyncEnd VTotal [options]
+	 *
+	 * # 1024x768 @ 60.00 Hz (GTF) hsync: 47.70 kHz; pclk: 64.11 MHz
+	 * Modeline "1024x768_60.00"  64.11  1024 1080 1184 1344  768 769 772 795  -HSync +Vsync
+	 *
+	 * When most of the modeline information is set to zero, xorg-server appears to be populating it with default values
+	 *
+	 */
+
 	sprintf(name, "%dx%d", pScreen->width, pScreen->height);
 	ZeroMemory(&modeInfo, sizeof(xRRModeInfo));
+
+	modeInfo.id = 0;
+
 	modeInfo.width = pScreen->width;
+	modeInfo.hSyncStart = 0;
+	modeInfo.hSyncEnd = 0;
+	modeInfo.hTotal = 0;
+
 	modeInfo.height = pScreen->height;
-	modeInfo.nameLength = strlen (name);
+	modeInfo.vSyncStart = 0;
+	modeInfo.vSyncEnd = 0;
+	modeInfo.vTotal = 0;
+
+	/* DotClock = RefreshRate * HTotal * VTotal */
+	modeInfo.dotClock = 60 * modeInfo.hTotal * modeInfo.vTotal;
+
+	modeInfo.hSkew = 0;
+	modeInfo.nameLength = strlen(name);
+
+	/**
+	 * Sample EDID:
+	 *
+	 * 00ffffffffffff001e6d8d5736210100
+	 * 0a140103e0301b78ea3337a5554d9d25
+	 * 115052a54b00b3008180818f714f0101
+	 * 010101010101023a801871382d40582c
+	 * 4500dd0c1100001a000000fd00384b1e
+	 * 530f000a202020202020000000fc0045
+	 * 323235300a20202020202020000000ff
+	 * 003031304e44524632363033380a00a2
+	 */
 
 	mode = RRModeGet(&modeInfo, name);
 
@@ -389,6 +582,8 @@ int rdpRRInit(ScreenPtr pScreen)
 
 	if (!crtc)
 		return FALSE;
+
+	RRCrtcGammaSetSize(crtc, 256);
 
 	output = RROutputCreate(pScreen, "RDP-0", strlen("RDP-0"), NULL);
 
@@ -404,14 +599,26 @@ int rdpRRInit(ScreenPtr pScreen)
 	if (!RROutputSetCrtcs(output, &crtc, 1))
 		return -1;
 
-	if (!RROutputSetConnection(output, RR_Connected))
-		return -1;
-
-	if (!RROutputSetSubpixelOrder(output, SubPixelHorizontalRGB))
+	if (!RROutputSetSubpixelOrder(output, SubPixelUnknown))
 		return -1;
 
 	if (!RROutputSetPhysicalSize(output, 521, 293))
 		return -1;
+
+	if (!RROutputSetConnection(output, RR_Connected))
+		return -1;
+
+#if (RANDR_INTERFACE_VERSION >= 0x0104)
+	provider = RRProviderCreate(pScreen, "RDP", strlen("RDP"));
+
+	capabilities = RR_Capability_None;
+	capabilities |= RR_Capability_SourceOutput;
+	capabilities |= RR_Capability_SinkOutput;
+	capabilities |= RR_Capability_SourceOffload;
+	capabilities |= RR_Capability_SinkOffload;
+
+	RRProviderSetCapabilities(provider, capabilities);
+#endif
 
 	RRCrtcNotify(crtc, mode, 0, 0, RR_Rotate_0, NULL, 1, &output);
 #endif
