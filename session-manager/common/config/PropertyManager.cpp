@@ -278,8 +278,10 @@ namespace freerds
 					if (stringStartsWith(parentPath,"user")) {
 						username = parentPath;
 						username.erase(0,5);
+						level = User;
 					}else if (!stringStartsWith(parentPath,"global")){
 						useParentPath = true;
+						level = Global;
 					}
 				}
 
