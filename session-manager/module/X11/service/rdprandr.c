@@ -78,6 +78,209 @@ static UINT32 g_StandardSizes[] =
 	DEFINE_SCREEN_SIZE(640, 480)
 };
 
+struct _EDID
+{
+	BYTE Header[8];
+	UINT16 ManufacturerId;
+	UINT16 ManufacturerProductCode;
+	UINT32 ManufacturerSerialNumber;
+	BYTE WeekOfManufacture;
+	BYTE YearOfManufacture;
+	BYTE EdidVersion;
+	BYTE EdidRevision;
+	BYTE DisplayParameters[4];
+	BYTE ChromacityCoordinates[10];
+	BYTE BitmapTiming[4];
+	BYTE StandardTiming[16];
+	BYTE Descriptor1[18];
+	BYTE Descriptor2[18];
+	BYTE Descriptor3[18];
+	BYTE Descriptor4[18];
+	BYTE NumberOfExtensions;
+	BYTE Checksum;
+};
+typedef struct _EDID EDID;
+
+EDID* rdpConstructScreenEdid(ScreenPtr pScreen)
+{
+	EDID* edid;
+
+	edid = (EDID*) malloc(sizeof(EDID));
+
+	if (!edid)
+		return NULL;
+
+	/**
+	 * 00 ff ff ff ff ff ff 00 Header
+	 * 1e 6d ManufacturerId
+	 * 8d 57 ManufaturerProductCode
+	 * 36 21 01 00 ManufacturerSerialNumber
+	 * 0a WeekOfManufacture
+	 * 14 YearOfManufacture
+	 * 01 EdidVersion
+	 * 03 EdidRevision
+	 * e0 30 1b 78 DisplayParameters
+	 * ea 33 37 a5 55 4d 9d 25 11 50 ChromacityCoordinates
+	 * 52 a5 4b 00 BitmapTiming
+	 * b3 00 81 80 81 8f 71 4f 01 01 01 01 01 01 01 01 StandardTiming
+	 * 02 3a 80 18 71 38 2d 40 58 2c 45 00 dd 0c 11 00 00 1a Descriptor1
+	 * 00 00 00 fd 00 38 4b 1e 53 0f 00 0a 20 20 20 20 20 20 Descriptor2
+	 * 00 00 00 fc 00 45 32 32 35 30 0a 20 20 20 20 20 20 20 Descriptor3
+	 * 00 00 00 ff 00 30 31 30 4e 44 52 46 32 36 30 33 38 0a Descriptor4
+	 * 00 NumberOfExtensions
+	 * a2 Checksum
+	 */
+
+	ZeroMemory(edid, sizeof(EDID));
+
+	edid->Header[0] = 0x00;
+	edid->Header[1] = 0xFF;
+	edid->Header[2] = 0xFF;
+	edid->Header[3] = 0xFF;
+	edid->Header[4] = 0xFF;
+	edid->Header[5] = 0xFF;
+	edid->Header[6] = 0xFF;
+	edid->Header[7] = 0x00;
+
+	edid->ManufacturerId = 0x6D1E; /* 1e 6d */
+	edid->ManufacturerProductCode = 0x578D; /* 8d 57 */
+	edid->ManufacturerSerialNumber = 0x21360001; /* 36 21 01 00 */
+
+	edid->WeekOfManufacture = 10; /* 0x0A */
+	edid->YearOfManufacture = 20; /* 0x14 */
+
+	edid->EdidVersion = 1;
+	edid->EdidRevision = 3;
+
+	/* e0 30 1b 78 */
+	edid->DisplayParameters[0] = 0xE0;
+	edid->DisplayParameters[1] = 0x30;
+	edid->DisplayParameters[2] = 0x1B;
+	edid->DisplayParameters[3] = 0x78;
+
+	/* ea 33 37 a5 55 4d 9d 25 11 50 */
+	edid->ChromacityCoordinates[0] = 0xEA;
+	edid->ChromacityCoordinates[1] = 0x33;
+	edid->ChromacityCoordinates[2] = 0x37;
+	edid->ChromacityCoordinates[3] = 0xA5;
+	edid->ChromacityCoordinates[4] = 0x55;
+	edid->ChromacityCoordinates[5] = 0x4D;
+	edid->ChromacityCoordinates[6] = 0x9D;
+	edid->ChromacityCoordinates[7] = 0x25;
+	edid->ChromacityCoordinates[8] = 0x11;
+	edid->ChromacityCoordinates[9] = 0x50;
+
+	/* 52 a5 4b 00 */
+	edid->BitmapTiming[0] = 0x52;
+	edid->BitmapTiming[1] = 0xA5;
+	edid->BitmapTiming[2] = 0x4B;
+	edid->BitmapTiming[3] = 0x00;
+
+	/* b3 00 81 80 81 8f 71 4f 01 01 01 01 01 01 01 01 */
+	edid->StandardTiming[0] = 0xB3;
+	edid->StandardTiming[1] = 0x00;
+	edid->StandardTiming[2] = 0x81;
+	edid->StandardTiming[3] = 0x80;
+	edid->StandardTiming[4] = 0x81;
+	edid->StandardTiming[5] = 0x8F;
+	edid->StandardTiming[6] = 0x71;
+	edid->StandardTiming[7] = 0x4F;
+	edid->StandardTiming[8] = 0x01;
+	edid->StandardTiming[9] = 0x01;
+	edid->StandardTiming[10] = 0x01;
+	edid->StandardTiming[11] = 0x01;
+	edid->StandardTiming[12] = 0x01;
+	edid->StandardTiming[13] = 0x01;
+	edid->StandardTiming[14] = 0x01;
+	edid->StandardTiming[15] = 0x01;
+
+	/* 02 3a 80 18 71 38 2d 40 58 2c 45 00 dd 0c 11 00 00 1a */
+	edid->Descriptor1[0] = 0x02;
+	edid->Descriptor1[1] = 0x3A;
+	edid->Descriptor1[2] = 0x80;
+	edid->Descriptor1[3] = 0x18;
+	edid->Descriptor1[4] = 0x71;
+	edid->Descriptor1[5] = 0x38;
+	edid->Descriptor1[6] = 0x2D;
+	edid->Descriptor1[7] = 0x40;
+	edid->Descriptor1[8] = 0x58;
+	edid->Descriptor1[9] = 0x2C;
+	edid->Descriptor1[10] = 0x45;
+	edid->Descriptor1[11] = 0x00;
+	edid->Descriptor1[12] = 0xDD;
+	edid->Descriptor1[13] = 0x0C;
+	edid->Descriptor1[14] = 0x11;
+	edid->Descriptor1[15] = 0x00;
+	edid->Descriptor1[16] = 0x00;
+	edid->Descriptor1[17] = 0x1A;
+
+	/* 00 00 00 fd 00 38 4b 1e 53 0f 00 0a 20 20 20 20 20 20 */
+	edid->Descriptor2[0] = 0x00;
+	edid->Descriptor2[1] = 0x00;
+	edid->Descriptor2[2] = 0x00;
+	edid->Descriptor2[3] = 0xFD;
+	edid->Descriptor2[4] = 0x00;
+	edid->Descriptor2[5] = 0x38;
+	edid->Descriptor2[6] = 0x4B;
+	edid->Descriptor2[7] = 0x1E;
+	edid->Descriptor2[8] = 0x53;
+	edid->Descriptor2[9] = 0x0F;
+	edid->Descriptor2[10] = 0x00;
+	edid->Descriptor2[11] = 0x0A;
+	edid->Descriptor2[12] = 0x20;
+	edid->Descriptor2[13] = 0x20;
+	edid->Descriptor2[14] = 0x20;
+	edid->Descriptor2[15] = 0x20;
+	edid->Descriptor2[16] = 0x20;
+	edid->Descriptor2[17] = 0x20;
+
+	/* 00 00 00 fc 00 45 32 32 35 30 0a 20 20 20 20 20 20 20 */
+	edid->Descriptor3[0] = 0x00;
+	edid->Descriptor3[1] = 0x00;
+	edid->Descriptor3[2] = 0x00;
+	edid->Descriptor3[3] = 0xFC;
+	edid->Descriptor3[4] = 0x00;
+	edid->Descriptor3[5] = 0x45;
+	edid->Descriptor3[6] = 0x32;
+	edid->Descriptor3[7] = 0x32;
+	edid->Descriptor3[8] = 0x35;
+	edid->Descriptor3[9] = 0x30;
+	edid->Descriptor3[10] = 0x0A;
+	edid->Descriptor3[11] = 0x20;
+	edid->Descriptor3[12] = 0x20;
+	edid->Descriptor3[13] = 0x20;
+	edid->Descriptor3[14] = 0x20;
+	edid->Descriptor3[15] = 0x20;
+	edid->Descriptor3[16] = 0x20;
+	edid->Descriptor3[17] = 0x20;
+
+	/* 00 00 00 ff 00 30 31 30 4e 44 52 46 32 36 30 33 38 0a */
+	edid->Descriptor4[0] = 0x00;
+	edid->Descriptor4[1] = 0x00;
+	edid->Descriptor4[2] = 0x00;
+	edid->Descriptor4[3] = 0xFF;
+	edid->Descriptor4[4] = 0x00;
+	edid->Descriptor4[5] = 0x30;
+	edid->Descriptor4[6] = 0x31;
+	edid->Descriptor4[7] = 0x30;
+	edid->Descriptor4[8] = 0x4E;
+	edid->Descriptor4[9] = 0x44;
+	edid->Descriptor4[10] = 0x52;
+	edid->Descriptor4[11] = 0x46;
+	edid->Descriptor4[12] = 0x32;
+	edid->Descriptor4[13] = 0x36;
+	edid->Descriptor4[14] = 0x30;
+	edid->Descriptor4[15] = 0x33;
+	edid->Descriptor4[16] = 0x38;
+	edid->Descriptor4[17] = 0x0A;
+
+	edid->NumberOfExtensions = 0;
+
+	edid->Checksum = 0xA2;
+
+	return edid;
+}
+
 static int get_max_shared_memory_segment_size(void)
 {
 #ifdef _GNU_SOURCE
