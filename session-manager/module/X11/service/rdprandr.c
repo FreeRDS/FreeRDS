@@ -328,6 +328,9 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 				continue; /* required buffer size is too large */
 		}
 
+		if (((width % 4) != 0) || ((height % 4) != 0))
+			continue; /* disable resolutions unaligned to 4 bytes for now */
+
 		mmWidth = PixelToMM(width);
 		mmHeight = PixelToMM(height);
 
@@ -384,53 +387,18 @@ Bool rdpRRSetInfo(ScreenPtr pScreen)
 	return TRUE;
 }
 
-/**
- * for lack of a better way, a window is created that covers
- * the area and when its deleted, it's invalidated
- */
-static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int width, int height)
-{
-	int attri;
-	Mask mask;
-	int result;
-	WindowPtr pWin;
-	XID attributes[4];
-
-	mask = 0;
-	attri = 0;
-	attributes[attri++] = pScreen->blackPixel;
-	mask |= CWBackPixel;
-	attributes[attri++] = xTrue;
-	mask |= CWOverrideRedirect;
-
-	if (g_wid == 0)
-	{
-		g_wid = FakeClientID(0);
-	}
-
-	pWin = CreateWindow(g_wid, pScreen->root,
-			x, y, width, height, 0, InputOutput, mask,
-			attributes, 0, serverClient,
-			wVisual(pScreen->root), &result);
-
-	if (result == 0)
-	{
-		g_invalidate_window = pWin;
-		MapWindow(pWin, serverClient);
-		DeleteWindow(pWin, None);
-		g_invalidate_window = pWin;
-	}
-
-	return 0;
-}
-
 Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 mmWidth, CARD32 mmHeight)
 {
 	BoxRec box;
+	WindowPtr pRoot;
 	PixmapPtr screenPixmap;
 
 	LLOGLN(0, ("rdpRRScreenSetSize: width: %d height: %d mmWidth: %d mmHeight: %d",
 			width, height, mmWidth, mmHeight));
+
+	SetRootClip(pScreen, FALSE);
+
+	pRoot = pScreen->root;
 
 	if ((width < 1) || (height < 1))
 	{
@@ -503,22 +471,23 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	box.x2 = width;
 	box.y2 = height;
 
-	RegionInit(&pScreen->root->winSize, &box, 1);
-	RegionInit(&pScreen->root->borderSize, &box, 1);
-	RegionReset(&pScreen->root->borderClip, &box);
-	RegionBreak(&pScreen->root->clipList);
+	RegionInit(&pRoot->winSize, &box, 1);
+	RegionInit(&pRoot->borderSize, &box, 1);
+	RegionReset(&pRoot->borderClip, &box);
+	RegionBreak(&pRoot->clipList);
 
-	pScreen->root->drawable.width = width;
-	pScreen->root->drawable.height = height;
+	pRoot->drawable.width = width;
+	pRoot->drawable.height = height;
 
-	ResizeChildrenWinSize(pScreen->root, 0, 0, 0, 0);
+	ResizeChildrenWinSize(pRoot, 0, 0, 0, 0);
 
 	RRGetInfo(pScreen, 1);
 
-	rdpInvalidateArea(pScreen, 0, 0, pScreen->width, pScreen->height);
+	SetRootClip(pScreen, TRUE);
+
+	miPaintWindow(pRoot, &pRoot->borderClip, PW_BACKGROUND);
 
 	RRScreenSizeNotify(pScreen);
-	RRTellChanged(pScreen);
 
 	return TRUE;
 }
