@@ -575,12 +575,7 @@ Bool rdpUnrealizeWindow(WindowPtr pWindow)
 
 	if (g_use_rail)
 	{
-		if (priv->status == 1)
-		{
-			LLOGLN(10, ("rdpUnrealizeWindow:"));
-			priv->status = 0;
-			rdpup_delete_window(pWindow, priv);
-		}
+
 	}
 
 	return rv;
@@ -663,6 +658,7 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 	int num_reg_rects;
 	BoxRec box1;
 	BoxRec box2;
+	RDS_MSG_SCREEN_BLT msg;
 
 	LLOGLN(10, ("in rdpCopyWindow"));
 	RegionInit(&reg, NullBox, 0);
@@ -689,8 +685,16 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 			for (i = 0; i < num_reg_rects; i++)
 			{
 				box2 = REGION_RECTS(&reg)[i];
-				rdpup_screen_blt(box2.x1 + dx, box2.y1 + dy, box2.x2 - box2.x1,
-						box2.y2 - box2.y1, box2.x1, box2.y1);
+
+				msg.type = RDS_SERVER_SCREEN_BLT;
+				msg.nLeftRect = box2.x1 + dx;
+				msg.nTopRect = box2.y1 + dy;
+				msg.nWidth = box2.x2 - box2.x1;
+				msg.nHeight = box2.y2 - box2.y1;
+				msg.nXSrc = box2.x1;
+				msg.nYSrc = box2.y1;
+
+				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
 		}
 	}
@@ -704,8 +708,16 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 			for (i = num_reg_rects - 1; i >= 0; i--)
 			{
 				box2 = REGION_RECTS(&reg)[i];
-				rdpup_screen_blt(box2.x1 + dx, box2.y1 + dy, box2.x2 - box2.x1,
-						box2.y2 - box2.y1, box2.x1, box2.y1);
+
+				msg.type = RDS_SERVER_SCREEN_BLT;
+				msg.nLeftRect = box2.x1 + dx;
+				msg.nTopRect = box2.y1 + dy;
+				msg.nWidth = box2.x2 - box2.x1;
+				msg.nHeight = box2.y2 - box2.y1;
+				msg.nXSrc = box2.x1;
+				msg.nYSrc = box2.y1;
+
+				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
 		}
 	}

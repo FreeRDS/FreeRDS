@@ -265,24 +265,14 @@ void KbdAddUnicodeEvent(DWORD flags, DWORD code);
 void KbdAddSyncEvent(DWORD flags);
 
 /* rdpup.c */
-int rdpup_update(RDS_MSG_COMMON* msg);
+int rdp_send_update(RDS_MSG_COMMON* msg);
 UINT32 rdpup_convert_color(UINT32 color);
 UINT32 rdpup_convert_opcode(int opcode);
 UINT32 rdp_dstblt_rop(int opcode);
 int rdpup_init(void);
 int rdpup_check(void);
-int rdpup_check_attach_framebuffer();
 int rdpup_detach_framebuffer();
-int rdpup_opaque_rect(RDS_MSG_OPAQUE_RECT* msg);
-int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy);
-int rdpup_patblt(RDS_MSG_PATBLT* msg);
-int rdpup_dstblt(RDS_MSG_DSTBLT* msg);
-int rdpup_set_clipping_region(RDS_MSG_SET_CLIPPING_REGION* msg);
 int rdpup_set_clip(short x, short y, int cx, int cy);
 int rdpup_reset_clip(void);
 void rdpup_send_area(int x, int y, int w, int h);
-int rdpup_set_pointer(RDS_MSG_SET_POINTER* msg);
-void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);
-void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec* priv);
-void rdpup_shared_framebuffer(RDS_MSG_SHARED_FRAMEBUFFER* msg);
 

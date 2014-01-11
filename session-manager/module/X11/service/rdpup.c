@@ -221,26 +221,10 @@ UINT32 rdp_dstblt_rop(int opcode)
 	return rop;
 }
 
-int rdpup_update(RDS_MSG_COMMON* msg)
+int rdpup_attach_framebuffer()
 {
 	int status;
 
-	if (g_connected && g_active)
-	{
-		status = freerds_server_outbound_write_message((rdsBackend*) g_service, (RDS_MSG_COMMON*) msg);
-
-		LLOGLN(0, ("rdpup_update: adding %s message (%d)", freerds_server_message_name(msg->type), msg->type));
-	}
-	else
-	{
-		LLOGLN(0, ("rdpup_update: discarding %s message (%d)", freerds_server_message_name(msg->type), msg->type));
-	}
-
-	return 0;
-}
-
-int rdpup_check_attach_framebuffer()
-{
 	if (!g_active)
 		return 0;
 
@@ -257,7 +241,7 @@ int rdpup_check_attach_framebuffer()
 		msg.bytesPerPixel = g_Bpp;
 
 		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
-		rdpup_update((RDS_MSG_COMMON*) &msg);
+		status = freerds_server_outbound_write_message((rdsBackend*) g_service, (RDS_MSG_COMMON*) &msg);
 
 		g_rdpScreen.fbAttached = 1;
 	}
@@ -280,7 +264,7 @@ int rdpup_detach_framebuffer()
 		msg.bytesPerPixel = g_Bpp;
 
 		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
-		rdpup_update((RDS_MSG_COMMON*) &msg);
+		rdp_send_update((RDS_MSG_COMMON*) &msg);
 
 		g_rdpScreen.fbAttached = 0;
 	}
@@ -288,59 +272,15 @@ int rdpup_detach_framebuffer()
 	return 0;
 }
 
-int rdpup_opaque_rect(RDS_MSG_OPAQUE_RECT* msg)
+int rdp_send_update(RDS_MSG_COMMON* msg)
 {
-	rdpup_check_attach_framebuffer();
+	int status;
 
-	msg->type = RDS_SERVER_OPAQUE_RECT;
-	rdpup_update((RDS_MSG_COMMON*) msg);
-
-	return 0;
-}
-
-int rdpup_screen_blt(short x, short y, int cx, int cy, short srcx, short srcy)
-{
-	RDS_MSG_SCREEN_BLT msg;
-
-	rdpup_check_attach_framebuffer();
-
-	msg.nLeftRect = x;
-	msg.nTopRect = y;
-	msg.nWidth = cx;
-	msg.nHeight = cy;
-	msg.nXSrc = srcx;
-	msg.nYSrc = srcy;
-
-	msg.type = RDS_SERVER_SCREEN_BLT;
-	rdpup_update((RDS_MSG_COMMON*) &msg);
-
-	return 0;
-}
-
-int rdpup_patblt(RDS_MSG_PATBLT* msg)
-{
-	rdpup_check_attach_framebuffer();
-
-	msg->type = RDS_SERVER_PATBLT;
-	rdpup_update((RDS_MSG_COMMON*) msg);
-
-	return 0;
-}
-
-int rdpup_dstblt(RDS_MSG_DSTBLT* msg)
-{
-	rdpup_check_attach_framebuffer();
-
-	msg->type = RDS_SERVER_DSTBLT;
-	rdpup_update((RDS_MSG_COMMON*) msg);
-
-	return 0;
-}
-
-int rdpup_set_clipping_region(RDS_MSG_SET_CLIPPING_REGION* msg)
-{
-	msg->type = RDS_SERVER_SET_CLIPPING_REGION;
-	rdpup_update((RDS_MSG_COMMON*) msg);
+	if (g_connected && g_active)
+	{
+		rdpup_attach_framebuffer();
+		status = freerds_server_outbound_write_message((rdsBackend*) g_service, (RDS_MSG_COMMON*) msg);
+	}
 
 	return 0;
 }
@@ -349,13 +289,14 @@ int rdpup_set_clip(short x, short y, int cx, int cy)
 {
 	RDS_MSG_SET_CLIPPING_REGION msg;
 
+	msg.type = RDS_SERVER_SET_CLIPPING_REGION;
 	msg.bNullRegion = 0;
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
 	msg.nWidth = cx;
 	msg.nHeight = cy;
 
-	rdpup_set_clipping_region(&msg);
+	rdp_send_update((RDS_MSG_COMMON*) &msg);
 
 	return 0;
 }
@@ -364,21 +305,14 @@ int rdpup_reset_clip(void)
 {
 	RDS_MSG_SET_CLIPPING_REGION msg;
 
+	msg.type = RDS_SERVER_SET_CLIPPING_REGION;
 	msg.bNullRegion = 1;
 	msg.nLeftRect = 0;
 	msg.nTopRect = 0;
 	msg.nWidth = 0;
 	msg.nHeight = 0;
 
-	rdpup_set_clipping_region(&msg);
-
-	return 0;
-}
-
-int rdpup_set_pointer(RDS_MSG_SET_POINTER* msg)
-{
-	msg->type = RDS_SERVER_SET_POINTER;
-	rdpup_update((RDS_MSG_COMMON*) msg);
+	rdp_send_update((RDS_MSG_COMMON*) &msg);
 
 	return 0;
 }
@@ -424,8 +358,6 @@ void rdpup_send_area(int x, int y, int w, int h)
 
 	bitmapLength = w * h * g_Bpp;
 
-	rdpup_check_attach_framebuffer();
-
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
 	msg.nWidth = w;
@@ -438,90 +370,7 @@ void rdpup_send_area(int x, int y, int w, int h)
 	msg.bitmapDataLength = 0;
 
 	msg.type = RDS_SERVER_PAINT_RECT;
-	rdpup_update((RDS_MSG_COMMON*) &msg);
-}
-
-void rdpup_shared_framebuffer(RDS_MSG_SHARED_FRAMEBUFFER* msg)
-{
-	msg->type = RDS_SERVER_SHARED_FRAMEBUFFER;
-	rdpup_update((RDS_MSG_COMMON*) msg);
-}
-
-void rdpup_create_window(WindowPtr pWindow, rdpWindowRec *priv)
-{
-	RECTANGLE_16 windowRects;
-	RECTANGLE_16 visibilityRects;
-	RDS_MSG_WINDOW_NEW_UPDATE msg;
-
-	msg.rootParentHandle = (UINT32) pWindow->drawable.pScreen->root->drawable.id;
-
-	if (pWindow->overrideRedirect)
-	{
-		msg.style = XR_STYLE_TOOLTIP;
-		msg.extendedStyle = XR_EXT_STYLE_TOOLTIP;
-	}
-	else
-	{
-		msg.style = XR_STYLE_NORMAL;
-		msg.extendedStyle = XR_EXT_STYLE_NORMAL;
-	}
-
-	msg.titleInfo.string = (BYTE*) _strdup("title");
-	msg.titleInfo.length = strlen((char*) msg.titleInfo.string);
-
-	msg.windowId = (UINT32) pWindow->drawable.id;
-	msg.ownerWindowId = (UINT32) pWindow->parent->drawable.id;
-
-	msg.showState = 0;
-
-	msg.clientOffsetX = 0;
-	msg.clientOffsetY = 0;
-
-	msg.clientAreaWidth = pWindow->drawable.width;
-	msg.clientAreaHeight = pWindow->drawable.height;
-
-	msg.RPContent = 0;
-
-	msg.windowOffsetX = pWindow->drawable.x;
-	msg.windowOffsetY = pWindow->drawable.y;
-
-	msg.windowClientDeltaX = 0;
-	msg.windowClientDeltaY = 0;
-
-	msg.windowWidth = pWindow->drawable.width;
-	msg.windowHeight = pWindow->drawable.height;
-
-	msg.numWindowRects = 1;
-	msg.windowRects = (RECTANGLE_16*) &windowRects;
-	msg.windowRects[0].left = 0;
-	msg.windowRects[0].top = 0;
-	msg.windowRects[0].right = pWindow->drawable.width;
-	msg.windowRects[0].bottom = pWindow->drawable.height;
-
-	msg.numVisibilityRects = 1;
-	msg.visibilityRects = (RECTANGLE_16*) &visibilityRects;
-	msg.visibilityRects[0].left = 0;
-	msg.visibilityRects[0].top = 0;
-	msg.visibilityRects[0].right = pWindow->drawable.width;
-	msg.visibilityRects[0].bottom = pWindow->drawable.height;
-
-	msg.visibleOffsetX = pWindow->drawable.x;
-	msg.visibleOffsetY = pWindow->drawable.y;
-
-	msg.type = RDS_SERVER_WINDOW_NEW_UPDATE;
-	rdpup_update((RDS_MSG_COMMON*) &msg);
-
-	free(msg.titleInfo.string);
-}
-
-void rdpup_delete_window(WindowPtr pWindow, rdpWindowRec *priv)
-{
-	RDS_MSG_WINDOW_DELETE msg;
-
-	msg.windowId = (UINT32) pWindow->drawable.id;
-
-	msg.type = RDS_SERVER_WINDOW_DELETE;
-	rdpup_update((RDS_MSG_COMMON*) &msg);
+	rdp_send_update((RDS_MSG_COMMON*) &msg);
 }
 
 int rds_client_capabilities(rdsBackend* backend, RDS_MSG_CAPABILITIES* capabilities)

@@ -614,6 +614,8 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 	w = pCurs->bits->width;
 	h = pCurs->bits->height;
 
+	msg.type = RDS_SERVER_SET_POINTER;
+
 	msg.xPos = pCurs->bits->xhot;
 	msg.yPos = pCurs->bits->yhot;
 	ZeroMemory(cur_data, sizeof(cur_data));
@@ -677,7 +679,7 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 	msg.andMaskData = (BYTE*) cur_mask;
 	msg.lengthAndMask = 0;
 
-	rdpup_set_pointer(&msg);
+	rdp_send_update((RDS_MSG_COMMON*) &msg);
 }
 
 void rdpSpriteMoveCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y)
@@ -862,30 +864,37 @@ static void kbdSyncState(int xkb_flags, int rdp_flags, int keycode)
 
 void KbdAddSyncEvent(DWORD flags)
 {
-	DeviceIntPtr pDev = g_keyboard;
-	DeviceIntPtr master = pDev->key->xkbInfo->device->master;
-	KeyClassPtr keyc;
-	char numLock = -1, scrollLock = -1;
 	int i;
 	int xkb_state;
+	KeyClassPtr keyc;
+	char numLock = -1;
+	char scrollLock = -1;
+	DeviceIntPtr pDev = g_keyboard;
+	DeviceIntPtr master = pDev->key->xkbInfo->device->master;
+
 	if (!master)
-		/* no master device */
-		return;
+		return; /* no master device */
+
 	keyc = master->key;
 	xkb_state = XkbStateFieldFromRec(&master->key->xkbInfo->state);
 
-	/* figure out which virtual modifier NumLock and ScrollLock are
-	 * and get the the mapped real modifiers */
-	for (i=0 ; i < XkbNumVirtualMods; ++i)
+	/**
+	 * figure out which virtual modifier NumLock and ScrollLock
+	 * are and get the the mapped real modifiers
+	 */
+	for (i = 0; i < XkbNumVirtualMods; ++i)
 	{
 		Atom mod = keyc->xkbInfo->desc->names->vmods[i];
-		if ( mod == NULL)
+
+		if (!mod)
 			continue;
+
 		if (!strcmp(NameForAtom(mod),"NumLock"))
 			numLock = keyc->xkbInfo->desc->server->vmods[i];
 		else if (!strcmp(NameForAtom(mod),"ScrollLock"))
 			scrollLock = keyc->xkbInfo->desc->server->vmods[i];
 	}
+
 	kbdSyncState(xkb_state & LockMask, flags & KBD_SYNC_CAPS_LOCK, 66);
 	kbdSyncState(xkb_state & numLock, flags & KBD_SYNC_NUM_LOCK, 77);
 	kbdSyncState(xkb_state & scrollLock, flags & KBD_SYNC_SCROLL_LOCK, 78);

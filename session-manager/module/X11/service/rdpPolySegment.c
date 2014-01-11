@@ -128,7 +128,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 				msg.nXEnd = segs[i].x2;
 				msg.nYEnd = segs[i].y2;
 
-				rdpup_update((RDS_MSG_COMMON*) &msg);
+				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
 		}
 	}
@@ -156,7 +156,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 					msg.nXEnd = segs[i].x2;
 					msg.nYEnd = segs[i].y2;
 
-					rdpup_update((RDS_MSG_COMMON*) &msg);
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 

@@ -109,13 +109,14 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 			{
 				box = REGION_RECTS(fill_reg)[j];
 
+				msg.type = RDS_SERVER_DSTBLT;
 				msg.nLeftRect = box.x1;
 				msg.nTopRect = box.y1;
 				msg.nWidth = box.x2 - box.x1;
 				msg.nHeight = box.y2 - box.y1;
 				msg.bRop = dstblt_rop;
 
-				rdpup_dstblt(&msg);
+				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
 		}
 		else
@@ -144,13 +145,14 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 				{
 					box = REGION_RECTS(&clip_reg)[j];
 
+					msg.type = RDS_SERVER_DSTBLT;
 					msg.nLeftRect = box.x1;
 					msg.nTopRect = box.y1;
 					msg.nWidth = box.x2 - box.x1;
 					msg.nHeight = box.y2 - box.y1;
 					msg.bRop = dstblt_rop;
 
-					rdpup_dstblt(&msg);
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 			else

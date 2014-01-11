@@ -159,7 +159,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 				msg.nXEnd = segs[i].x2;
 				msg.nYEnd = segs[i].y2;
 
-				rdpup_update((RDS_MSG_COMMON*) &msg);
+				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
 		}
 	}
@@ -189,7 +189,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 					msg.nXEnd = segs[i].x2;
 					msg.nYEnd = segs[i].y2;
 
-					rdpup_update((RDS_MSG_COMMON*) &msg);
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 

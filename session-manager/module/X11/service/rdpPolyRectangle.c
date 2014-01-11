@@ -161,13 +161,14 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 				{
 					r = regRects + i;
 
+					msg.type = RDS_SERVER_OPAQUE_RECT;
 					msg.nLeftRect = r->x;
 					msg.nTopRect = r->y;
 					msg.nWidth = r->width;
 					msg.nHeight = r->height;
 					msg.color = rdpup_convert_color(pGC->fgPixel);
 
-					rdpup_opaque_rect(&msg);
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 			else
@@ -198,13 +199,14 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 					{
 						box = REGION_RECTS(&clip_reg)[j];
 
+						msg.type = RDS_SERVER_OPAQUE_RECT;
 						msg.nLeftRect = box.x1;
 						msg.nTopRect = box.y1;
 						msg.nWidth = box.x2 - box.x1;
 						msg.nHeight = box.y2 - box.y1;
 						msg.color = rdpup_convert_color(pGC->fgPixel);
 
-						rdpup_opaque_rect(&msg);
+						rdp_send_update((RDS_MSG_COMMON*) &msg);
 					}
 				}
 				else

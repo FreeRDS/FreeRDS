@@ -64,6 +64,7 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 	BoxRec box;
 	RegionPtr rv;
 	RegionRec clip_reg;
+	RDS_MSG_SCREEN_BLT msg;
 
 	LLOGLN(10, ("rdpCopyAreaWndToWnd:"));
 
@@ -79,7 +80,15 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 
 	if (cd == 1)
 	{
-		rdpup_screen_blt(ldstx, ldsty, w, h, lsrcx, lsrcy);
+		msg.type = RDS_SERVER_SCREEN_BLT;
+		msg.nLeftRect = ldstx;
+		msg.nTopRect = ldsty;
+		msg.nWidth = w;
+		msg.nHeight = h;
+		msg.nXSrc = lsrcx;
+		msg.nYSrc = lsrcy;
+
+		rdp_send_update((RDS_MSG_COMMON*) &msg);
 	}
 	else if (cd == 2)
 	{
@@ -96,7 +105,16 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 				{
 					box = REGION_RECTS(&clip_reg)[j];
 					rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-					rdpup_screen_blt(ldstx, ldsty, w, h, lsrcx, lsrcy);
+
+					msg.type = RDS_SERVER_SCREEN_BLT;
+					msg.nLeftRect = ldstx;
+					msg.nTopRect = ldsty;
+					msg.nWidth = w;
+					msg.nHeight = h;
+					msg.nXSrc = lsrcx;
+					msg.nYSrc = lsrcy;
+
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 			else
@@ -105,7 +123,16 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 				{
 					box = REGION_RECTS(&clip_reg)[j];
 					rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-					rdpup_screen_blt(ldstx, ldsty, w, h, lsrcx, lsrcy);
+
+					msg.type = RDS_SERVER_SCREEN_BLT;
+					msg.nLeftRect = ldstx;
+					msg.nTopRect = ldsty;
+					msg.nWidth = w;
+					msg.nHeight = h;
+					msg.nXSrc = lsrcx;
+					msg.nYSrc = lsrcy;
+
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 
@@ -114,6 +141,7 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 	}
 
 	RegionUninit(&clip_reg);
+
 	return rv;
 }
 

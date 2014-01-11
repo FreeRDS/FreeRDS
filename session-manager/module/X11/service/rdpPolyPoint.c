@@ -148,13 +148,14 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 			for (i = 0; i < npt; i++)
 			{
+				msg.type = RDS_SERVER_OPAQUE_RECT;
 				msg.nLeftRect = pts[i].x;
 				msg.nTopRect = pts[i].y;
 				msg.nWidth = 1;
 				msg.nHeight = 1;
 				msg.color = rdpup_convert_color(pGC->fgPixel);
 
-				rdpup_opaque_rect(&msg);
+				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
 		}
 	}
@@ -173,13 +174,14 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 				for (i = 0; i < npt; i++)
 				{
+					msg.type = RDS_SERVER_OPAQUE_RECT;
 					msg.nLeftRect = pts[i].x;
 					msg.nTopRect = pts[i].y;
 					msg.nWidth = 1;
 					msg.nHeight = 1;
 					msg.color = rdpup_convert_color(pGC->fgPixel);
 
-					rdpup_opaque_rect(&msg);
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 
