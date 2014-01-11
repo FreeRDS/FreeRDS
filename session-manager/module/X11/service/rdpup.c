@@ -160,7 +160,7 @@ int convert_pixel(int in_pixel)
 	return rv;
 }
 
-int rdpup_process_refresh_rect_msg(wStream* s, RDS_MSG_REFRESH_RECT* msg)
+int rdp_process_refresh_rect_msg(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 {
 	int index;
 
@@ -179,14 +179,14 @@ int rdpup_process_refresh_rect_msg(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 	return 0;
 }
 
-UINT32 rdpup_convert_color(UINT32 color)
+UINT32 rdp_convert_color(UINT32 color)
 {
 	color = color & g_Bpp_mask;
 	color = convert_pixel(color) & g_rdpScreen.rdp_Bpp_mask;
 	return color;
 }
 
-UINT32 rdpup_convert_opcode(int opcode)
+UINT32 rdp_convert_opcode(int opcode)
 {
 	return g_rdp_opcodes[opcode & 0xF];
 }
@@ -221,7 +221,7 @@ UINT32 rdp_dstblt_rop(int opcode)
 	return rop;
 }
 
-int rdpup_attach_framebuffer()
+int rdp_attach_framebuffer()
 {
 	int status;
 
@@ -249,7 +249,7 @@ int rdpup_attach_framebuffer()
 	return 0;
 }
 
-int rdpup_detach_framebuffer()
+int rdp_detach_framebuffer()
 {
 	if (g_rdpScreen.sharedMemory && g_rdpScreen.fbAttached)
 	{
@@ -278,14 +278,14 @@ int rdp_send_update(RDS_MSG_COMMON* msg)
 
 	if (g_connected && g_active)
 	{
-		rdpup_attach_framebuffer();
+		rdp_attach_framebuffer();
 		status = freerds_server_outbound_write_message((rdsBackend*) g_service, (RDS_MSG_COMMON*) msg);
 	}
 
 	return 0;
 }
 
-int rdpup_set_clip(short x, short y, int cx, int cy)
+int rdp_set_clip(int x, int y, int width, int height)
 {
 	RDS_MSG_SET_CLIPPING_REGION msg;
 
@@ -293,15 +293,15 @@ int rdpup_set_clip(short x, short y, int cx, int cy)
 	msg.bNullRegion = 0;
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
-	msg.nWidth = cx;
-	msg.nHeight = cy;
+	msg.nWidth = width;
+	msg.nHeight = height;
 
 	rdp_send_update((RDS_MSG_COMMON*) &msg);
 
 	return 0;
 }
 
-int rdpup_reset_clip(void)
+int rdp_reset_clip(void)
 {
 	RDS_MSG_SET_CLIPPING_REGION msg;
 
@@ -317,7 +317,7 @@ int rdpup_reset_clip(void)
 	return 0;
 }
 
-void rdpup_send_area(int x, int y, int w, int h)
+void rdp_send_area_update(int x, int y, int w, int h)
 {
 	int bitmapLength;
 	RDS_MSG_PAINT_RECT msg;
@@ -552,6 +552,7 @@ int rds_service_accept(rdsBackendService* service)
 		fprintf(stderr, "server pipe failed?!\n");
 		return 1;
 	}
+
 	AddEnabledDevice(GetNamePipeFileDescriptor(service->hServerPipe));
 	service->hClientPipe = freerds_named_pipe_accept(hServerPipe);
 
@@ -585,14 +586,14 @@ int rds_service_disconnect(rdsBackendService* service)
 	return 0;
 }
 
-int rdpup_init(void)
+int rdp_init(void)
 {
 	int DisplayId;
 	rdsBackendService* service;
 
 	DisplayId = atoi(display);
 
-	LLOGLN(0, ("rdpup_init: display: %d", DisplayId));
+	LLOGLN(0, ("rdp_init: display: %d", DisplayId));
 
 	if (DisplayId < 1)
 	{
@@ -623,7 +624,7 @@ int rdpup_init(void)
 	return 1;
 }
 
-int rdpup_check(void)
+int rdp_check(void)
 {
 	rdsBackendService* service = g_service;
 

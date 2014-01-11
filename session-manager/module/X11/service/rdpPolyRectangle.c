@@ -166,7 +166,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 					msg.nTopRect = r->y;
 					msg.nWidth = r->width;
 					msg.nHeight = r->height;
-					msg.color = rdpup_convert_color(pGC->fgPixel);
+					msg.color = rdp_convert_color(pGC->fgPixel);
 
 					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
@@ -176,7 +176,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 				for (i = 0; i < nrects * 4; i++)
 				{
 					r = regRects + i;
-					rdpup_send_area(r->x, r->y, r->width, r->height);
+					rdp_send_area_update(r->x, r->y, r->width, r->height);
 				}
 			}
 		}
@@ -204,7 +204,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 						msg.nTopRect = box.y1;
 						msg.nWidth = box.x2 - box.x1;
 						msg.nHeight = box.y2 - box.y1;
-						msg.color = rdpup_convert_color(pGC->fgPixel);
+						msg.color = rdp_convert_color(pGC->fgPixel);
 
 						rdp_send_update((RDS_MSG_COMMON*) &msg);
 					}
@@ -214,7 +214,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 					for (j = num_clips - 1; j >= 0; j--)
 					{
 						box = REGION_RECTS(&clip_reg)[j];
-						rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+						rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 					}
 				}
 			}

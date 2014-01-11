@@ -424,7 +424,7 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 
 	pRoot = pScreen->root;
 
-	rdpup_detach_framebuffer();
+	rdp_detach_framebuffer();
 
 	shmmin = get_min_shared_memory_segment_size();
 

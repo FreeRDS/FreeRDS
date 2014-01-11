@@ -104,7 +104,7 @@ void rdpImageText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, ch
 
 	if (cd == 1)
 	{
-		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+		rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 	}
 	else if (cd == 2)
 	{
@@ -117,7 +117,7 @@ void rdpImageText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, ch
 			for (j = num_clips - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&reg)[j];
-				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1,
+				rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1,
 						box.y2 - box.y1);
 			}
 		}

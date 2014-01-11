@@ -124,7 +124,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 			for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(fill_reg)[j];
-				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
 		}
 	}
@@ -160,7 +160,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 				for (j = num_clips - 1; j >= 0; j--)
 				{
 					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+					rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 			}
 		}

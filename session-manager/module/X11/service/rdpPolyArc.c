@@ -134,7 +134,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 				for (i = num_clips - 1; i >= 0; i--)
 				{
 					box = REGION_RECTS(tmpRegion)[i];
-					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1,
+					rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1,
 							box.y2 - box.y1);
 				}
 			}
@@ -155,7 +155,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 				for (i = num_clips - 1; i >= 0; i--)
 				{
 					box = REGION_RECTS(tmpRegion)[i];
-					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1,
+					rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1,
 							box.y2 - box.y1);
 				}
 			}

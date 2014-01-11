@@ -42,16 +42,16 @@ long app_context_get_connectionid()
 	return InterlockedIncrement(&(gAppContext->connectionId));
 }
 
-void app_context_add_connection(rdsConnection *connection)
+void app_context_add_connection(rdsConnection* connection)
 {
-	ListDictionary_Add(gAppContext->connections, (void *)connection->id, connection);
-	printf("added connection %d\n", connection->id);
+	ListDictionary_Add(gAppContext->connections, (void*) connection->id, connection);
+	printf("added connection %d\n", (int) connection->id);
 }
 
 void app_context_remove_connection(long id)
 {
-	ListDictionary_Remove(gAppContext->connections, (void *)id);
-	printf("removed connection %d\n", id);
+	ListDictionary_Remove(gAppContext->connections, (void*) id);
+	printf("removed connection %d\n", (int) id);
 }
 
 rdsConnection* app_context_get_connection(long id)

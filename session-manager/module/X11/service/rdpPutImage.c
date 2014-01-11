@@ -91,18 +91,18 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 
 	if (cd == 1)
 	{
-		rdpup_send_area(pDst->x + x, pDst->y + y, w, h);
+		rdp_send_area_update(pDst->x + x, pDst->y + y, w, h);
 	}
 	else if (cd == 2)
 	{
 		for (j = REGION_NUM_RECTS(&clip_reg) - 1; j >= 0; j--)
 		{
 			box = REGION_RECTS(&clip_reg)[j];
-			rdpup_set_clip(box.x1, box.y1, (box.x2 - box.x1), (box.y2 - box.y1));
-			rdpup_send_area(pDst->x + x, pDst->y + y, w, h);
+			rdp_set_clip(box.x1, box.y1, (box.x2 - box.x1), (box.y2 - box.y1));
+			rdp_send_area_update(pDst->x + x, pDst->y + y, w, h);
 		}
 
-		rdpup_reset_clip();
+		rdp_reset_clip();
 	}
 
 	RegionUninit(&clip_reg);

@@ -116,8 +116,8 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 			RDS_MSG_LINE_TO msg;
 
 			msg.type = RDS_SERVER_LINE_TO;
-			msg.bRop2 = rdpup_convert_opcode(pGC->alu);
-			msg.penColor = rdpup_convert_color(pGC->fgPixel);
+			msg.bRop2 = rdp_convert_opcode(pGC->alu);
+			msg.penColor = rdp_convert_color(pGC->fgPixel);
 			msg.penWidth = pGC->lineWidth;
 			msg.penStyle = 0;
 
@@ -139,15 +139,15 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 			RDS_MSG_LINE_TO msg;
 
 			msg.type = RDS_SERVER_LINE_TO;
-			msg.bRop2 = rdpup_convert_opcode(pGC->alu);
-			msg.penColor = rdpup_convert_color(pGC->fgPixel);
+			msg.bRop2 = rdp_convert_opcode(pGC->alu);
+			msg.penColor = rdp_convert_color(pGC->fgPixel);
 			msg.penWidth = pGC->lineWidth;
 			msg.penStyle = 0;
 
 			for (j = REGION_NUM_RECTS(&clip_reg) - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&clip_reg)[j];
-				rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdp_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
 				for (i = 0; i < nseg; i++)
 				{
@@ -160,7 +160,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 				}
 			}
 
-			rdpup_reset_clip();
+			rdp_reset_clip();
 		}
 	}
 

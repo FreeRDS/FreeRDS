@@ -153,7 +153,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 				msg.nTopRect = pts[i].y;
 				msg.nWidth = 1;
 				msg.nHeight = 1;
-				msg.color = rdpup_convert_color(pGC->fgPixel);
+				msg.color = rdp_convert_color(pGC->fgPixel);
 
 				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
@@ -170,7 +170,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 			for (j = num_clips - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&clip_reg)[j];
-				rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdp_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
 				for (i = 0; i < npt; i++)
 				{
@@ -179,13 +179,13 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 					msg.nTopRect = pts[i].y;
 					msg.nWidth = 1;
 					msg.nHeight = 1;
-					msg.color = rdpup_convert_color(pGC->fgPixel);
+					msg.color = rdp_convert_color(pGC->fgPixel);
 
 					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 
-			rdpup_reset_clip();
+			rdp_reset_clip();
 		}
 	}
 

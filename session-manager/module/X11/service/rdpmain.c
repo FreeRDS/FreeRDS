@@ -175,7 +175,7 @@ static void rdpBlockHandler1(pointer blockData, OSTimePtr pTimeout, pointer pRea
 
 static void rdpWakeupHandler1(pointer blockData, int result, pointer pReadmask)
 {
-	rdpup_check();
+	rdp_check();
 }
 
 #if 0
@@ -488,7 +488,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	if (ret)
 	{
-		ret = rdpup_init();
+		ret = rdp_init();
 
 		if (!ret)
 		{

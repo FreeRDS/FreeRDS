@@ -98,7 +98,7 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 	if (cd == 1)
 	{
-		rdpup_send_area(pDst->x + dstx, pDst->y + dsty, w, h);
+		rdp_send_area_update(pDst->x + dstx, pDst->y + dsty, w, h);
 	}
 	else if (cd == 2)
 	{
@@ -119,13 +119,13 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 				for (j = num_clips - 1; j >= 0; j--)
 				{
 					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+					rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 			}
 			else
 			{
 				pbox = RegionExtents(&clip_reg);
-				rdpup_send_area(pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+				rdp_send_area_update(pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
 			}
 
 			RegionUninit(&box_reg);
