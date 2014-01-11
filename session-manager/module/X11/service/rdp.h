@@ -1,23 +1,28 @@
-/*
-Copyright 2005-2013 Jay Sorg
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ *
+ * Copyright 2005-2013 Jay Sorg
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+#ifndef FREERDS_X11RDP_MAIN_H
+#define FREERDS_X11RDP_MAIN_H
 
 #include "xorg-config.h"
 
@@ -169,73 +174,8 @@ void rdpLog(char *format, ...);
 int rdpBitsPerPixel(int depth);
 void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt);
 
-/* rdpdraw.c */
-Bool rdpCloseScreen(ScreenPtr pScreen);
-void rdpQueryBestSize(int xclass, unsigned short* pWidth, unsigned short* pHeight, ScreenPtr pScreen);
+#include "rdpDraw.h"
+#include "rdpInput.h"
+#include "rdpUpdate.h"
 
-PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint);
-Bool rdpDestroyPixmap(PixmapPtr pPixmap);
-Bool rdpCreateWindow(WindowPtr pWindow);
-Bool rdpDestroyWindow(WindowPtr pWindow);
-Bool rdpPositionWindow(WindowPtr pWindow, int x, int y);
-Bool rdpRealizeWindow(WindowPtr pWindow);
-Bool rdpUnrealizeWindow(WindowPtr pWindow);
-Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask);
-void rdpWindowExposures(WindowPtr pWindow, RegionPtr pRegion, RegionPtr pBSRegion);
-
-Bool rdpCreateGC(GCPtr pGC);
-void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion);
-void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool generateExposures);
-RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed);
-void rdpInstallColormap(ColormapPtr pmap);
-void rdpUninstallColormap(ColormapPtr pmap);
-int rdpListInstalledColormaps(ScreenPtr pScreen, Colormap* pmaps);
-void rdpStoreColors(ColormapPtr pmap, int ndef, xColorItem* pdefs);
-Bool rdpSaveScreen(ScreenPtr pScreen, int on);
-Bool rdpRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
-Bool rdpUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
-void rdpCursorLimits(ScreenPtr pScreen, CursorPtr pCursor, BoxPtr pHotBox, BoxPtr pTopLeftBox);
-void rdpConstrainCursor(ScreenPtr pScreen, BoxPtr pBox);
-Bool rdpSetCursorPosition(ScreenPtr pScreen, int x, int y, Bool generateEvent);
-Bool rdpDisplayCursor(ScreenPtr pScreen, CursorPtr pCursor);
-void rdpRecolorCursor(ScreenPtr pScreen, CursorPtr pCursor, Bool displayed);
-void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
-		INT16 xSrc, INT16 ySrc, INT16 xMask, INT16 yMask, INT16 xDst,
-		INT16 yDst, CARD16 width, CARD16 height);
-void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFormat,
-		INT16 xSrc, INT16 ySrc, int nlists, GlyphListPtr lists, GlyphPtr* glyphs);
-
-/* rdpinput.c */
-int rdpKeybdProc(DeviceIntPtr pDevice, int onoff);
-int rdpMouseProc(DeviceIntPtr pDevice, int onoff);
-Bool rdpCursorOffScreen(ScreenPtr* ppScreen, int* x, int* y);
-void rdpCrossScreen(ScreenPtr pScreen, Bool entering);
-void rdpPointerWarpCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y);
-void rdpPointerEnqueueEvent(DeviceIntPtr pDev, InternalEvent* event);
-void rdpPointerNewEventScreen(DeviceIntPtr pDev, ScreenPtr pScr, Bool fromDIX);
-Bool rdpSpriteRealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs);
-Bool rdpSpriteUnrealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs);
-void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int x, int y);
-void rdpSpriteMoveCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y);
-Bool rdpSpriteDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScr);
-void rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr);
-void PtrAddMotionEvent(int x, int y);
-void PtrAddButtonEvent(int buttonMask);
-
-void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType);
-void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode);
-void KbdAddUnicodeEvent(DWORD flags, DWORD code);
-void KbdAddSyncEvent(DWORD flags);
-
-/* rdpup.c */
-int rdp_send_update(RDS_MSG_COMMON* msg);
-UINT32 rdp_convert_color(UINT32 color);
-UINT32 rdp_convert_opcode(int opcode);
-UINT32 rdp_dstblt_rop(int opcode);
-int rdp_init(void);
-int rdp_check(void);
-int rdp_detach_framebuffer();
-int rdp_set_clip(int x, int y, int width, int height);
-int rdp_reset_clip(void);
-void rdp_send_area_update(int x, int y, int width, int height);
-
+#endif /* FREERDS_X11RDP_MAIN_H */

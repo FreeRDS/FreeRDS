@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "rdp.h"
-#include "rdpdraw.h"
+#include "rdpDraw.h"
 
 #define LDEBUG 0
 
