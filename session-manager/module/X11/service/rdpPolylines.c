@@ -146,6 +146,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		{
 			RDS_MSG_LINE_TO msg;
 
+			msg.type = RDS_SERVER_LINE_TO;
 			msg.bRop2 = rdpup_convert_opcode(pGC->alu);
 			msg.penColor = rdpup_convert_color(pGC->fgPixel);
 			msg.penWidth = pGC->lineWidth;
@@ -158,7 +159,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 				msg.nXEnd = segs[i].x2;
 				msg.nYEnd = segs[i].y2;
 
-				rdpup_draw_line(&msg);
+				rdpup_update((RDS_MSG_COMMON*) &msg);
 			}
 		}
 	}
@@ -170,6 +171,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		{
 			RDS_MSG_LINE_TO msg;
 
+			msg.type = RDS_SERVER_LINE_TO;
 			msg.bRop2 = rdpup_convert_opcode(pGC->alu);
 			msg.penColor = rdpup_convert_color(pGC->fgPixel);
 			msg.penWidth = pGC->lineWidth;
@@ -187,7 +189,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 					msg.nXEnd = segs[i].x2;
 					msg.nYEnd = segs[i].y2;
 
-					rdpup_draw_line(&msg);
+					rdpup_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 

@@ -160,8 +160,6 @@ int convert_pixel(int in_pixel)
 	return rv;
 }
 
-int rdpup_update(RDS_MSG_COMMON* msg);
-
 int rdpup_process_refresh_rect_msg(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 {
 	int index;
@@ -373,14 +371,6 @@ int rdpup_reset_clip(void)
 	msg.nHeight = 0;
 
 	rdpup_set_clipping_region(&msg);
-
-	return 0;
-}
-
-int rdpup_draw_line(RDS_MSG_LINE_TO* msg)
-{
-	msg->type = RDS_SERVER_LINE_TO;
-	rdpup_update((RDS_MSG_COMMON*) msg);
 
 	return 0;
 }

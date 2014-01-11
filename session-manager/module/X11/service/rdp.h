@@ -265,6 +265,7 @@ void KbdAddUnicodeEvent(DWORD flags, DWORD code);
 void KbdAddSyncEvent(DWORD flags);
 
 /* rdpup.c */
+int rdpup_update(RDS_MSG_COMMON* msg);
 UINT32 rdpup_convert_color(UINT32 color);
 UINT32 rdpup_convert_opcode(int opcode);
 UINT32 rdp_dstblt_rop(int opcode);
@@ -279,7 +280,6 @@ int rdpup_dstblt(RDS_MSG_DSTBLT* msg);
 int rdpup_set_clipping_region(RDS_MSG_SET_CLIPPING_REGION* msg);
 int rdpup_set_clip(short x, short y, int cx, int cy);
 int rdpup_reset_clip(void);
-int rdpup_draw_line(RDS_MSG_LINE_TO* msg);
 void rdpup_send_area(int x, int y, int w, int h);
 int rdpup_set_pointer(RDS_MSG_SET_POINTER* msg);
 void rdpup_create_window(WindowPtr pWindow, rdpWindowRec* priv);
