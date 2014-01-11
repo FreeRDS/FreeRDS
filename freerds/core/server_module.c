@@ -403,7 +403,7 @@ int freerds_client_inbound_icps(rdsBackend* backend, RDS_MSG_ICPS_REQUEST* msg)
 
 int freerds_client_inbound_connector_init(rdsBackendConnector* connector)
 {
-	rdsServerInterface *serverInter;
+	rdsServerInterface* serverInter;
 
 	if (connector->server)
 	{

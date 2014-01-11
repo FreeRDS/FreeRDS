@@ -58,7 +58,6 @@ extern DevPrivateKeyRec g_rdpWindowIndex;
 extern DevPrivateKeyRec g_rdpPixmapIndex;
 extern ScreenPtr g_pScreen;
 extern Bool g_wrapPixmap;
-extern WindowPtr g_invalidate_window;
 extern int g_use_rail;
 extern int g_con_number;
 
@@ -555,21 +554,7 @@ Bool rdpRealizeWindow(WindowPtr pWindow)
 
 	if (g_use_rail)
 	{
-		if ((pWindow != g_invalidate_window) && (pWindow->parent != 0))
-		{
-			if (XR_IS_ROOT(pWindow->parent))
-			{
-				LLOGLN(10, ("rdpRealizeWindow:"));
-				LLOGLN(10, ("  pWindow %p id 0x%x pWindow->parent %p id 0x%x x %d "
-						"y %d width %d height %d",
-						pWindow, (int)(pWindow->drawable.id),
-						pWindow->parent, (int)(pWindow->parent->drawable.id),
-						pWindow->drawable.x, pWindow->drawable.y,
-						pWindow->drawable.width, pWindow->drawable.height));
-				priv->status = 1;
-				rdpup_create_window(pWindow, priv);
-			}
-		}
+
 	}
 
 	return rv;

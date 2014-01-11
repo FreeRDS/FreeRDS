@@ -36,6 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static int g_clientfd = -1;
 static rdsBackendService* g_service;
 static int g_connected = 0;
+static int g_active = 0;
 
 static int g_button_mask = 0;
 static BYTE* pfbBackBufferMemory = NULL;
@@ -236,15 +237,15 @@ int rdpup_update(RDS_MSG_COMMON* msg)
 {
 	int status;
 
-	if (g_connected)
+	if (g_connected && g_active)
 	{
-		if ((msg->type == RDS_SERVER_BEGIN_UPDATE) ||
-				(msg->type == RDS_SERVER_END_UPDATE))
-		{
+		if ((msg->type == RDS_SERVER_BEGIN_UPDATE) || (msg->type == RDS_SERVER_END_UPDATE))
 			return 0;
-		}
 
-		status = freerds_server_outbound_write_message((rdsBackend *)g_service, (RDS_MSG_COMMON*) msg);
+		fprintf(stderr, "rdpup_update: g_active: %d msg->type: %d\n",
+				g_active, msg->type);
+
+		status = freerds_server_outbound_write_message((rdsBackend*) g_service, (RDS_MSG_COMMON*) msg);
 
 		LLOGLN(0, ("rdpup_update: adding %s message (%d)", freerds_server_message_name(msg->type), msg->type));
 	}
@@ -258,6 +259,9 @@ int rdpup_update(RDS_MSG_COMMON* msg)
 
 int rdpup_check_attach_framebuffer()
 {
+	if (!g_active)
+		return 0;
+
 	if (g_rdpScreen.sharedMemory && !g_rdpScreen.fbAttached)
 	{
 		RDS_MSG_SHARED_FRAMEBUFFER msg;
@@ -559,9 +563,13 @@ int rds_client_capabilities(rdsBackend* backend, RDS_MSG_CAPABILITIES* capabilit
 	mmWidth = PixelToMM(width);
 	mmHeight = PixelToMM(height);
 
-	RRScreenSizeSet(g_pScreen, width, height, mmWidth, mmHeight);
+	if ((g_pScreen->width != width) || (g_pScreen->height != height))
+	{
+		RRScreenSizeSet(g_pScreen, width, height, mmWidth, mmHeight);
+		RRTellChanged(g_pScreen);
+	}
 
-	RRTellChanged(g_pScreen);
+	g_active = 1;
 
 	return 0;
 }
@@ -746,6 +754,7 @@ int rds_service_disconnect(rdsBackendService* service)
 
 	fprintf(stderr, "RdsServiceDisconnect\n");
 
+	g_active = 0;
 	g_connected = 0;
 	g_rdpScreen.fbAttached = 0;
 	g_clientfd = 0;
@@ -799,7 +808,7 @@ int rdpup_check(void)
 	{
 		if (WaitForSingleObject(service->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			if (freerds_transport_receive((rdsBackend *)service) < 0)
+			if (freerds_transport_receive((rdsBackend*) service) < 0)
 			{
 				rds_service_disconnect(service);
 			}

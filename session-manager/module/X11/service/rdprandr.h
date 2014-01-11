@@ -24,4 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 int rdpRRInit(ScreenPtr pScreen);
 
+int get_min_shared_memory_segment_size(void);
+int get_max_shared_memory_segment_size(void);
+
 #endif

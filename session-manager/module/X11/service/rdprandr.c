@@ -28,14 +28,11 @@ RandR extension implementation
 #include <sys/shm.h>
 #include <sys/stat.h>
 
-#define LOG_LEVEL 0
+#define LOG_LEVEL 10
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
 extern rdpScreenInfoRec g_rdpScreen;
-extern WindowPtr g_invalidate_window;
-
-static XID g_wid = 0;
 
 #define DEFINE_SCREEN_SIZE(_width, _height) ((_width << 16) | _height)
 
@@ -281,7 +278,21 @@ EDID* rdpConstructScreenEdid(ScreenPtr pScreen)
 	return edid;
 }
 
-static int get_max_shared_memory_segment_size(void)
+int get_min_shared_memory_segment_size(void)
+{
+#ifdef _GNU_SOURCE
+	struct shminfo info;
+
+	if ((shmctl(0, IPC_INFO, (struct shmid_ds*)(void*)&info)) == -1)
+		return -1;
+
+	return info.shmmin;
+#else
+	return -1;
+#endif
+}
+
+int get_max_shared_memory_segment_size(void)
 {
 #ifdef _GNU_SOURCE
 	struct shminfo info;
@@ -389,6 +400,7 @@ Bool rdpRRSetInfo(ScreenPtr pScreen)
 
 Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 mmWidth, CARD32 mmHeight)
 {
+	int shmmin;
 	BoxRec box;
 	WindowPtr pRoot;
 	PixmapPtr screenPixmap;
@@ -396,21 +408,27 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	LLOGLN(0, ("rdpRRScreenSetSize: width: %d height: %d mmWidth: %d mmHeight: %d",
 			width, height, mmWidth, mmHeight));
 
+	if ((width < 1) || (height < 1))
+		return FALSE;
+
 	SetRootClip(pScreen, FALSE);
 
 	pRoot = pScreen->root;
 
-	if ((width < 1) || (height < 1))
-	{
-		return FALSE;
-	}
-
 	rdpup_detach_framebuffer();
+
+	shmmin = get_min_shared_memory_segment_size();
 
 	g_rdpScreen.width = width;
 	g_rdpScreen.height = height;
 	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
 	g_rdpScreen.sizeInBytes = g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height;
+
+	if (shmmin > 0)
+	{
+		if (g_rdpScreen.sizeInBytes < shmmin)
+			g_rdpScreen.sizeInBytes = shmmin;
+	}
 
 	pScreen->x = 0;
 	pScreen->y = 0;

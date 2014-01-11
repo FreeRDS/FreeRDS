@@ -82,7 +82,6 @@ void freerds_connector_free(rdsBackendConnector* connector)
 
 BOOL freerds_connector_connect(rdsBackendConnector* connector)
 {
-
 	HANDLE hClientPipe;
 
 	hClientPipe = freerds_named_pipe_connect(connector->Endpoint, 20);

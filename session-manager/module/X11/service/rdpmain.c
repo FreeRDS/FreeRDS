@@ -61,8 +61,6 @@ int g_use_rail = 0;
 
 int g_con_number = 0; /* increments for each connection */
 
-WindowPtr g_invalidate_window = 0;
-
 /* set all these at once, use function set_bpp */
 int g_bpp = 16;
 int g_Bpp = 2;
@@ -216,6 +214,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	int dpix;
 	int dpiy;
 	int ret;
+	int shmmin;
 	Bool vis_found;
 	VisualPtr vis;
 	PictureScreenPtr ps;
@@ -227,32 +226,27 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	dpiy = PixelDPI;
 	monitorResolution = PixelDPI;
 
+	shmmin = get_min_shared_memory_segment_size();
+
 	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
 	g_rdpScreen.bitsPerPixel = rdpBitsPerPixel(g_rdpScreen.depth);
+	g_rdpScreen.sizeInBytes = (g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height);
 
-	DEBUG_OUT("\n");
-	ErrorF("X11rdp, an X server for xrdp\n");
+	if (shmmin > 0)
+	{
+		if (g_rdpScreen.sizeInBytes < shmmin)
+			g_rdpScreen.sizeInBytes = shmmin;
+	}
+
+	ErrorF("X11rdp, an X11 server for FreeRDS\n");
 	ErrorF("Version %s\n", X11RDPVER);
 	ErrorF("Copyright (C) 2005-2012 Jay Sorg\n");
 	ErrorF("Copyright (C) 2013 Thincast Technologies GmbH\n");
-	ErrorF("See http://xrdp.sf.net for information on xrdp.\n");
-#if defined(XORG_VERSION_CURRENT) && defined (XVENDORNAME)
-	ErrorF("Underlying X server release %d, %s\n",
-			XORG_VERSION_CURRENT, XVENDORNAME);
-#endif
-#if defined(XORG_RELEASE)
-	ErrorF("Xorg %s\n", XORG_RELEASE);
-#endif
-	ErrorF("Screen width %d height %d depth %d bpp %d\n", g_rdpScreen.width,
-			g_rdpScreen.height, g_rdpScreen.depth, g_rdpScreen.bitsPerPixel);
-	ErrorF("dpix %d dpiy %d\n", dpix, dpiy);
 
 	g_rdpScreen.sharedMemory = 1;
 
 	if (!g_rdpScreen.pfbMemory)
 	{
-		g_rdpScreen.sizeInBytes = (g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height);
-
 		if (g_rdpScreen.sharedMemory)
 		{
 			/* allocate shared memory segment */
