@@ -270,8 +270,6 @@ UINT32 rdpup_convert_opcode(int opcode);
 UINT32 rdp_dstblt_rop(int opcode);
 int rdpup_init(void);
 int rdpup_check(void);
-int rdpup_begin_update(void);
-int rdpup_end_update(void);
 int rdpup_check_attach_framebuffer();
 int rdpup_detach_framebuffer();
 int rdpup_opaque_rect(RDS_MSG_OPAQUE_RECT* msg);

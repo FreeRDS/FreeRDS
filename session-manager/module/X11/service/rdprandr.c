@@ -383,12 +383,21 @@ Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSi
 
 Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 {
+	int width;
+	int height;
+	rrScrPrivPtr pScrPriv;
+
 	LLOGLN(0, ("rdpRRGetInfo"));
+
+	pScrPriv = rrGetScrPriv(pScreen);
 
 	if (pRotations)
 		*pRotations = RR_Rotate_0;
 
-	rdpRRRegisterSize(pScreen, pScreen->width, pScreen->height);
+	width = pScrPriv->crtcs[0]->mode->mode.width;
+	height = pScrPriv->crtcs[0]->mode->mode.height;
+
+	rdpRRRegisterSize(pScreen, width, height);
 
 	return TRUE;
 }
@@ -516,6 +525,18 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 	LLOGLN(0, ("rdpRRCrtcSet: x: %d y: %d numOutputs: %d",
 			x, y, numOutputs));
 
+	if (crtc)
+	{
+		crtc->x = y;
+		crtc->y = y;
+
+		if (mode)
+		{
+			crtc->mode->mode.width = mode->mode.width;
+			crtc->mode->mode.height = mode->mode.height;
+		}
+	}
+
 	return RRCrtcNotify(crtc, mode, x, y, rotation, NULL, numOutputs, outputs);
 }
 
@@ -542,9 +563,19 @@ Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property
 
 Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output, RRModePtr mode)
 {
+	rrScrPrivPtr pScrPriv;
+
 	LLOGLN(0, ("rdpRROutputValidateMode"));
 
-	return TRUE;
+	pScrPriv = rrGetScrPriv(pScreen);
+
+	if ((pScrPriv->minWidth <= mode->mode.width) && (pScrPriv->maxWidth >= mode->mode.width) &&
+			(pScrPriv->minHeight <= mode->mode.height) && (pScrPriv->maxHeight >= mode->mode.height))
+	{
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode)

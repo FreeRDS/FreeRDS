@@ -99,8 +99,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 	if (cd == 1) /* no clip */
 	{
-		rdpup_begin_update();
-
 		dstblt_rop = rdp_dstblt_rop(pGC->alu);
 
 		if ((pGC->fillStyle == 0) && (dstblt_rop))
@@ -128,8 +126,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
 		}
-
-		rdpup_end_update();
 	}
 	else if (cd == 2) /* clip */
 	{
@@ -139,8 +135,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 		if (num_clips > 0)
 		{
 			dstblt_rop = rdp_dstblt_rop(pGC->alu);
-
-			rdpup_begin_update();
 
 			if ((pGC->fillStyle == 0) && (dstblt_rop))
 			{
@@ -167,8 +161,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 			}
-
-			rdpup_end_update();
 		}
 	}
 

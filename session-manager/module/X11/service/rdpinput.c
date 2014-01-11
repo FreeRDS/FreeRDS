@@ -670,7 +670,6 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 			mskLine += stride;
 		}
 	}
-	rdpup_begin_update();
 
 	msg.xorBpp = bpp;
 	msg.xorMaskData = (BYTE*) cur_data;
@@ -679,8 +678,6 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 	msg.lengthAndMask = 0;
 
 	rdpup_set_pointer(&msg);
-
-	rdpup_end_update();
 }
 
 void rdpSpriteMoveCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y)

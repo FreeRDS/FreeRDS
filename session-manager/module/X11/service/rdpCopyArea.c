@@ -79,9 +79,7 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 
 	if (cd == 1)
 	{
-		rdpup_begin_update();
 		rdpup_screen_blt(ldstx, ldsty, w, h, lsrcx, lsrcy);
-		rdpup_end_update();
 	}
 	else if (cd == 2)
 	{
@@ -89,8 +87,6 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 
 		if (num_clips > 0)
 		{
-			rdpup_begin_update();
-
 			dx = dstx - srcx;
 			dy = dsty - srcy;
 
@@ -114,7 +110,6 @@ static RegionPtr rdpCopyAreaWndToWnd(WindowPtr pSrcWnd, WindowPtr pDstWnd, GCPtr
 			}
 
 			rdpup_reset_clip();
-			rdpup_end_update();
 		}
 	}
 
@@ -208,9 +203,7 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 
 	if (cd == 1)
 	{
-		rdpup_begin_update();
 		rdpup_send_area(pDst->x + dstx, pDst->y + dsty, w, h);
-		rdpup_end_update();
 	}
 	else if (cd == 2)
 	{
@@ -218,7 +211,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 
 		if (num_clips > 0)
 		{
-			rdpup_begin_update();
 			box.x1 = pDst->x + dstx;
 			box.y1 = pDst->y + dsty;
 			box.x2 = box.x1 + w;
@@ -244,7 +236,6 @@ RegionPtr rdpCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC, int srcx, i
 			}
 
 			RegionUninit(&box_reg);
-			rdpup_end_update();
 		}
 	}
 

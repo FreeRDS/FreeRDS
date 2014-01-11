@@ -155,8 +155,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 		{
 			RDS_MSG_OPAQUE_RECT msg;
 
-			rdpup_begin_update();
-
 			if (pGC->lineStyle == LineSolid)
 			{
 				for (i = 0; i < nrects * 4; i++)
@@ -180,8 +178,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 					rdpup_send_area(r->x, r->y, r->width, r->height);
 				}
 			}
-
-			rdpup_end_update();
 		}
 	}
 	else if (cd == 2)
@@ -194,8 +190,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 
 			if (num_clips > 0)
 			{
-				rdpup_begin_update();
-
 				if (pGC->lineStyle == LineSolid)
 				{
 					RDS_MSG_OPAQUE_RECT msg;
@@ -221,8 +215,6 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 						rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 					}
 				}
-
-				rdpup_end_update();
 			}
 
 			RegionDestroy(fill_reg);

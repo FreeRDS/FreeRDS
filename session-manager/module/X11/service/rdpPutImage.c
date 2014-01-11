@@ -91,14 +91,10 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 
 	if (cd == 1)
 	{
-		rdpup_begin_update();
 		rdpup_send_area(pDst->x + x, pDst->y + y, w, h);
-		rdpup_end_update();
 	}
 	else if (cd == 2)
 	{
-		rdpup_begin_update();
-
 		for (j = REGION_NUM_RECTS(&clip_reg) - 1; j >= 0; j--)
 		{
 			box = REGION_RECTS(&clip_reg)[j];
@@ -107,7 +103,6 @@ void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, in
 		}
 
 		rdpup_reset_clip();
-		rdpup_end_update();
 	}
 
 	RegionUninit(&clip_reg);

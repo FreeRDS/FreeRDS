@@ -223,28 +223,12 @@ UINT32 rdp_dstblt_rop(int opcode)
 	return rop;
 }
 
-int rdpup_begin_update(void)
-{
-	return 0;
-}
-
-int rdpup_end_update(void)
-{
-	return 0;
-}
-
 int rdpup_update(RDS_MSG_COMMON* msg)
 {
 	int status;
 
 	if (g_connected && g_active)
 	{
-		if ((msg->type == RDS_SERVER_BEGIN_UPDATE) || (msg->type == RDS_SERVER_END_UPDATE))
-			return 0;
-
-		fprintf(stderr, "rdpup_update: g_active: %d msg->type: %d\n",
-				g_active, msg->type);
-
 		status = freerds_server_outbound_write_message((rdsBackend*) g_service, (RDS_MSG_COMMON*) msg);
 
 		LLOGLN(0, ("rdpup_update: adding %s message (%d)", freerds_server_message_name(msg->type), msg->type));

@@ -674,7 +674,6 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 	dx = pWin->drawable.x - ptOldOrg.x;
 	dy = pWin->drawable.y - ptOldOrg.y;
 
-	rdpup_begin_update();
 	num_clip_rects = REGION_NUM_RECTS(&clip);
 	num_reg_rects = REGION_NUM_RECTS(&reg);
 
@@ -712,7 +711,6 @@ void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
 	}
 
 	rdpup_reset_clip();
-	rdpup_end_update();
 
 	RegionUninit(&reg);
 	RegionUninit(&clip);
@@ -749,15 +747,11 @@ void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool gener
 		RegionInit(&reg, &box, 0);
 		RegionIntersect(&reg, &reg, &pWin->clipList);
 
-		rdpup_begin_update();
-
 		for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
 		{
 			box = REGION_RECTS(&reg)[j];
 			rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 		}
-
-		rdpup_end_update();
 
 		RegionUninit(&reg);
 	}
@@ -776,15 +770,11 @@ RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 	RegionInit(&reg, NullBox, 0);
 	RegionCopy(&reg, prgnExposed);
 
-	rdpup_begin_update();
-
 	for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
 	{
 		box = REGION_RECTS(&reg)[j];
 		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 	}
-
-	rdpup_end_update();
 
 	RegionUninit(&reg);
 
@@ -910,15 +900,11 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 
 		if (num_clips > 0)
 		{
-			rdpup_begin_update();
-
 			for (j = num_clips - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&reg1)[j];
 				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
-
-			rdpup_end_update();
 		}
 
 		RegionUninit(&reg1);
@@ -931,9 +917,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 		box.x2 = box.x1 + width;
 		box.y2 = box.y1 + height;
 
-		rdpup_begin_update();
 		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-		rdpup_end_update();
 	}
 }
 
@@ -1035,9 +1019,7 @@ void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFor
 
 	GlyphExtents(nlists, lists, glyphs, &box);
 
-	rdpup_begin_update();
 	rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-	rdpup_end_update();
 
 	LLOGLN(10, ("rdpGlyphs: out"));
 }

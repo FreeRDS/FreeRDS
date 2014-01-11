@@ -108,9 +108,7 @@ int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char
 
 	if (cd == 1)
 	{
-		rdpup_begin_update();
 		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-		rdpup_end_update();
 	}
 	else if (cd == 2)
 	{
@@ -120,15 +118,11 @@ int rdpPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char
 
 		if (num_clips > 0)
 		{
-			rdpup_begin_update();
-
 			for (j = num_clips - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&reg)[j];
 				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
-
-			rdpup_end_update();
 		}
 
 		RegionUninit(&reg1);

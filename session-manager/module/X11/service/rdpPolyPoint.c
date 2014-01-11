@@ -146,8 +146,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		{
 			RDS_MSG_OPAQUE_RECT msg;
 
-			rdpup_begin_update();
-
 			for (i = 0; i < npt; i++)
 			{
 				msg.nLeftRect = pts[i].x;
@@ -158,8 +156,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 				rdpup_opaque_rect(&msg);
 			}
-
-			rdpup_end_update();
 		}
 	}
 	else if (cd == 2)
@@ -169,8 +165,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		if (npt > 0 && num_clips > 0)
 		{
 			RDS_MSG_OPAQUE_RECT msg;
-
-			rdpup_begin_update();
 
 			for (j = num_clips - 1; j >= 0; j--)
 			{
@@ -190,7 +184,6 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 			}
 
 			rdpup_reset_clip();
-			rdpup_end_update();
 		}
 	}
 

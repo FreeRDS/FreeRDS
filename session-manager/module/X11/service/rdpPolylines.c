@@ -146,8 +146,6 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		{
 			RDS_MSG_LINE_TO msg;
 
-			rdpup_begin_update();
-
 			msg.bRop2 = rdpup_convert_opcode(pGC->alu);
 			msg.penColor = rdpup_convert_color(pGC->fgPixel);
 			msg.penWidth = pGC->lineWidth;
@@ -162,8 +160,6 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 
 				rdpup_draw_line(&msg);
 			}
-
-			rdpup_end_update();
 		}
 	}
 	else if (cd == 2)
@@ -173,8 +169,6 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		if (nseg != 0 && num_clips > 0)
 		{
 			RDS_MSG_LINE_TO msg;
-
-			rdpup_begin_update();
 
 			msg.bRop2 = rdpup_convert_opcode(pGC->alu);
 			msg.penColor = rdpup_convert_color(pGC->fgPixel);
@@ -198,7 +192,6 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 			}
 
 			rdpup_reset_clip();
-			rdpup_end_update();
 		}
 	}
 
