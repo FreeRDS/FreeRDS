@@ -31,47 +31,6 @@
 
 Bool noFontCacheExtension = 1;
 
-/* print a time-stamped message to the log file (stderr). */
-void rdpLog(char *format, ...)
-{
-	va_list args;
-	char buf[256];
-	time_t clock;
-
-	va_start(args, format);
-	time(&clock);
-	strftime(buf, 255, "%d/%m/%y %T ", localtime(&clock));
-	fprintf(stderr, "%s", buf);
-	vfprintf(stderr, format, args);
-	fflush(stderr);
-	va_end(args);
-}
-
-int rdpBitsPerPixel(int depth)
-{
-	if (depth == 1)
-	{
-		return 1;
-	}
-	else if (depth <= 8)
-	{
-		return 8;
-	}
-	else if (depth <= 16)
-	{
-		return 16;
-	}
-	else
-	{
-		return 32;
-	}
-}
-
-void rdpClientStateChange(CallbackListPtr *cbl, pointer myData, pointer clt)
-{
-	dispatchException &= ~DE_RESET; /* hack - force server not to reset */
-}
-
 /* DPMS */
 
 #ifdef DPMSExtension

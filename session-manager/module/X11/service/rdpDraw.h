@@ -47,22 +47,14 @@ void rdpQueryBestSize(int xclass, unsigned short* pWidth, unsigned short* pHeigh
 
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint);
 Bool rdpDestroyPixmap(PixmapPtr pPixmap);
-Bool rdpCreateWindow(WindowPtr pWindow);
-Bool rdpDestroyWindow(WindowPtr pWindow);
-Bool rdpPositionWindow(WindowPtr pWindow, int x, int y);
-Bool rdpRealizeWindow(WindowPtr pWindow);
-Bool rdpUnrealizeWindow(WindowPtr pWindow);
-Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask);
-void rdpWindowExposures(WindowPtr pWindow, RegionPtr pRegion, RegionPtr pBSRegion);
+
+#include "rdpPalette.h" /* Colormap procedures */
+#include "rdpWindow.h" /* Window Procedures */
 
 Bool rdpCreateGC(GCPtr pGC);
 void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion);
 void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool generateExposures);
 RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed);
-void rdpInstallColormap(ColormapPtr pmap);
-void rdpUninstallColormap(ColormapPtr pmap);
-int rdpListInstalledColormaps(ScreenPtr pScreen, Colormap* pmaps);
-void rdpStoreColors(ColormapPtr pmap, int ndef, xColorItem* pdefs);
 Bool rdpSaveScreen(ScreenPtr pScreen, int on);
 Bool rdpRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
 Bool rdpUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);

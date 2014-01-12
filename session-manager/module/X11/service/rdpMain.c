@@ -55,11 +55,6 @@ Bool g_wrapPixmap = 1;
 
 rdpPixmapRec g_screenPriv;
 
-/* if true, running in RemoteApp / RAIL mode */
-int g_use_rail = 0;
-
-int g_con_number = 0; /* increments for each connection */
-
 /* set all these at once, use function set_bpp */
 int g_bpp = 16;
 int g_Bpp = 2;
@@ -170,6 +165,7 @@ static void rdpWakeupHandler(ScreenPtr pScreen, unsigned long result, pointer pR
 
 static void rdpBlockHandler1(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
 {
+
 }
 
 static void rdpWakeupHandler1(pointer blockData, int result, pointer pReadmask)
@@ -177,35 +173,35 @@ static void rdpWakeupHandler1(pointer blockData, int result, pointer pReadmask)
 	rdp_check();
 }
 
-#if 0
-static Bool
-rdpDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScreen)
+/* device cursor procedures */
+
+Bool rdpDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScreen)
 {
 	DEBUG_OUT("rdpDeviceCursorInitializeProcPtr:\n");
-	return 1;
+	return TRUE;
 }
 
-static void
-rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
+void rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
 {
 	DEBUG_OUT("rdpDeviceCursorCleanupProcPtr:\n");
 }
-#endif
 
-#if 0
-Bool
-rdpCreateColormap(ColormapPtr pCmap)
+int rdpBitsPerPixel(int depth)
 {
-	DEBUG_OUT("rdpCreateColormap:\n");
-	return 1;
+	if (depth == 1)
+		return 1;
+	else if (depth <= 8)
+		return 8;
+	else if (depth <= 16)
+		return 16;
+	else
+		return 32;
 }
 
-static void
-rdpDestroyColormap(ColormapPtr pColormap)
+void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt)
 {
-	DEBUG_OUT("rdpDestroyColormap:\n");
+	dispatchException &= ~DE_RESET; /* hack - force server not to reset */
 }
-#endif
 
 /* returns boolean, true if everything is ok */
 static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
@@ -265,7 +261,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 		if (!g_rdpScreen.pfbMemory)
 		{
-			rdpLog("rdpScreenInit pfbMemory malloc failed\n");
+			ErrorF("rdpScreenInit pfbMemory malloc failed\n");
 			return 0;
 		}
 
@@ -283,7 +279,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 			miGetDefaultVisualMask(g_rdpScreen.depth),
 			8, defaultColorVisualClass))
 	{
-		rdpLog("rdpScreenInit miSetVisualTypes failed\n");
+		ErrorF("rdpScreenInit miSetVisualTypes failed\n");
 		return 0;
 	}
 
@@ -388,8 +384,16 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	/* os layer procedures */
 	g_rdpScreen.WakeupHandler = pScreen->WakeupHandler;
 
+	/* Colormap procedures */
 	g_rdpScreen.CreateColormap = pScreen->CreateColormap;
 	g_rdpScreen.DestroyColormap = pScreen->DestroyColormap;
+#if 0
+	g_rdpScreen.InstallColormap = pScreen->InstallColormap;
+	g_rdpScreen.UninstallColormap = pScreen->UninstallColormap;
+	g_rdpScreen.ListInstalledColormaps = pScreen->ListInstalledColormaps;
+	g_rdpScreen.StoreColors = pScreen->StoreColors;
+	g_rdpScreen.ResolveColor = pScreen->ResolveColor;
+#endif
 
 	ps = GetPictureScreenIfSet(pScreen);
 
@@ -442,14 +446,21 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	/* Backing store procedures */
 	//pScreen->RestoreAreas = rdpRestoreAreas;
 
-#if 0
+	/* Colormap procedures */
 	pScreen->CreateColormap = rdpCreateColormap;
 	pScreen->DestroyColormap = rdpDestroyColormap;
+#if 0
+	pScreen->InstallColormap = rdpInstallColormap;
+	pScreen->UninstallColormap = rdpUninstallColormap;
+	pScreen->ListInstalledColormaps = rdpListInstalledColormaps;
+	pScreen->StoreColors = rdpStoreColors;
+	pScreen->ResolveColor = rdpResolveColor;
 #endif
 
 	miPointerInitialize(pScreen, &g_rdpSpritePointerFuncs, &g_rdpPointerCursorFuncs, 1);
 
 #if 0
+	/* device cursor procedures */
 	pScreen->DeviceCursorInitialize = rdpDeviceCursorInitialize;
 	pScreen->DeviceCursorCleanup = rdpDeviceCursorCleanup;
 #endif
@@ -469,7 +480,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	if (!vis_found)
 	{
-		rdpLog("rdpScreenInit: couldn't find root visual\n");
+		ErrorF("rdpScreenInit: couldn't find root visual\n");
 		exit(1);
 	}
 
@@ -640,7 +651,7 @@ void InitOutput(ScreenInfo* pScreenInfo, int argc, char** argv)
 
 	if (!AddCallback(&ClientStateCallback, rdpClientStateChange, NULL))
 	{
-		rdpLog("InitOutput: AddCallback failed\n");
+		ErrorF("InitOutput: AddCallback failed\n");
 		return;
 	}
 

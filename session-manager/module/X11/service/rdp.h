@@ -83,8 +83,6 @@
 #define PixelDPI 96
 #define PixelToMM(_size) ((int)(((((double)(_size)) / PixelDPI) * 25.4 + 0.5)))
 
-/* Per-screen (framebuffer) structure.  There is only one of these, since we
-   don't allow the X server to have multiple screens. */
 struct _rdpScreenInfoRec
 {
 	int width;
@@ -97,10 +95,13 @@ struct _rdpScreenInfoRec
 	Pixel blackPixel;
 	Pixel whitePixel;
 	/* wrapped screen functions */
+
 	/* Random screen procedures */
 	CloseScreenProcPtr CloseScreen;
+
 	/* GC procedures */
 	CreateGCProcPtr CreateGC;
+
 	/* Pixmap procedures */
 	CreatePixmapProcPtr CreatePixmap;
 	DestroyPixmapProcPtr DestroyPixmap;
@@ -114,8 +115,14 @@ struct _rdpScreenInfoRec
 	ChangeWindowAttributesProcPtr ChangeWindowAttributes;
 	WindowExposuresProcPtr WindowExposures;
 
+	/* Colormap procedures */
 	CreateColormapProcPtr CreateColormap;
 	DestroyColormapProcPtr DestroyColormap;
+	InstallColormapProcPtr InstallColormap;
+	UninstallColormapProcPtr UninstallColormap;
+	ListInstalledColormapsProcPtr ListInstalledColormaps;
+	StoreColorsProcPtr StoreColors;
+	ResolveColorProcPtr ResolveColor;
 
 	CopyWindowProcPtr CopyWindow;
 	ClearToBackgroundProcPtr ClearToBackground;
@@ -160,7 +167,6 @@ typedef rdpWindowRec* rdpWindowPtr;
 struct _rdpPixmapRec
 {
 	int status;
-	int con_number;
 	int pad0;
 	int kind_width;
 };
@@ -169,10 +175,6 @@ typedef rdpPixmapRec* rdpPixmapPtr;
 
 #define GETPIXPRIV(_pPixmap) \
 		(rdpPixmapPtr)dixGetPrivateAddr(&(_pPixmap->devPrivates), &g_rdpPixmapIndex)
-
-void rdpLog(char *format, ...);
-int rdpBitsPerPixel(int depth);
-void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt);
 
 #include "rdpDraw.h"
 #include "rdpInput.h"

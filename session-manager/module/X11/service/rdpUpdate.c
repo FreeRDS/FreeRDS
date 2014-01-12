@@ -49,7 +49,6 @@ extern ScreenPtr g_pScreen;
 extern int g_Bpp;
 extern int g_Bpp_mask;
 extern rdpScreenInfoRec g_rdpScreen;
-extern int g_con_number;
 
 /*
 0 GXclear,        0
@@ -562,7 +561,6 @@ int rds_service_accept(rdsBackendService* service)
 
 	g_clientfd = GetNamePipeFileDescriptor(service->hClientPipe);
 
-	g_con_number++;
 	g_connected = 1;
 	g_rdpScreen.fbAttached = 0;
 

@@ -165,6 +165,12 @@ set(${MODULE_PREFIX}_SRCS
 	rdpRandr.h
 	rdpSetSpans.c
 	rdpSetSpans.h
+	rdpWindow.c
+	rdpWindow.h
+	rdpPalette.c
+	rdpPalette.h
+	rdpScreen.c
+	rdpScreen.h
 	rdpUpdate.c
 	rdpUpdate.h)
 

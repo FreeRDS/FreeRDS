@@ -253,7 +253,7 @@ void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 
 	if (!pKeySyms->map)
 	{
-		rdpLog("KbdDeviceInit malloc failed\n");
+		ErrorF("KbdDeviceInit malloc failed\n");
 		exit(1);
 	}
 

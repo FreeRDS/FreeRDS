@@ -476,7 +476,7 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 
 		if (!g_rdpScreen.pfbMemory)
 		{
-			rdpLog("rdpScreenInit pfbMemory malloc failed\n");
+			ErrorF("rdpScreenInit pfbMemory malloc failed\n");
 			return 0;
 		}
 
