@@ -131,11 +131,11 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
 		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
 
-	if ((DesktopWidth % 4) != 0)
-		DesktopWidth += (DesktopWidth % 4);
+	//if ((DesktopWidth % 4) != 0)
+	//	DesktopWidth += (DesktopWidth % 4);
 
-	if ((DesktopHeight % 4) != 0)
-		DesktopHeight += (DesktopHeight % 4);
+	//if ((DesktopHeight % 4) != 0)
+	//	DesktopHeight += (DesktopHeight % 4);
 
 	if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight)
 			|| (ColorDepth != settings->ColorDepth))

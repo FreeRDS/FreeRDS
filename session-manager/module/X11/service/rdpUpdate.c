@@ -231,17 +231,17 @@ int rdp_attach_framebuffer()
 	if (!g_active)
 		return 0;
 
-	if (g_rdpScreen.sharedMemory && !g_rdpScreen.fbAttached)
+	if (!g_rdpScreen.fbAttached)
 	{
 		RDS_MSG_SHARED_FRAMEBUFFER msg;
 
 		msg.flags = RDS_FRAMEBUFFER_FLAG_ATTACH;
 		msg.width = g_rdpScreen.width;
 		msg.height = g_rdpScreen.height;
-		msg.scanline = g_rdpScreen.paddedWidthInBytes;
+		msg.scanline = g_rdpScreen.scanline;
 		msg.segmentId = g_rdpScreen.segmentId;
 		msg.bitsPerPixel = g_rdpScreen.depth;
-		msg.bytesPerPixel = g_Bpp;
+		msg.bytesPerPixel = g_rdpScreen.bytesPerPixel;
 
 		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
 		status = freerds_server_outbound_write_message((rdsBackend*) g_service, (RDS_MSG_COMMON*) &msg);
@@ -254,17 +254,17 @@ int rdp_attach_framebuffer()
 
 int rdp_detach_framebuffer()
 {
-	if (g_rdpScreen.sharedMemory && g_rdpScreen.fbAttached)
+	if (g_rdpScreen.fbAttached)
 	{
 		RDS_MSG_SHARED_FRAMEBUFFER msg;
 
 		msg.flags = 0;
 		msg.width = g_rdpScreen.width;
 		msg.height = g_rdpScreen.height;
-		msg.scanline = g_rdpScreen.paddedWidthInBytes;
+		msg.scanline = g_rdpScreen.scanline;
 		msg.segmentId = g_rdpScreen.segmentId;
 		msg.bitsPerPixel = g_rdpScreen.depth;
-		msg.bytesPerPixel = g_Bpp;
+		msg.bytesPerPixel = g_rdpScreen.bytesPerPixel;
 
 		msg.type = RDS_SERVER_SHARED_FRAMEBUFFER;
 		rdp_send_update((RDS_MSG_COMMON*) &msg);

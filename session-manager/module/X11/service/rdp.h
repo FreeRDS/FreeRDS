@@ -86,14 +86,17 @@
 struct _rdpScreenInfoRec
 {
 	int width;
-	int paddedWidthInBytes;
 	int height;
 	int depth;
+	int scanline;
 	int bitsPerPixel;
+	int bytesPerPixel;
 	int sizeInBytes;
 	char* pfbMemory;
+
 	Pixel blackPixel;
 	Pixel whitePixel;
+
 	/* wrapped screen functions */
 
 	/* Random screen procedures */
@@ -131,11 +134,8 @@ struct _rdpScreenInfoRec
 	GlyphsProcPtr Glyphs;
 
 	int segmentId;
-	int sharedMemory;
 	int fbAttached;
 
-	int rdp_width;
-	int rdp_height;
 	int rdp_bpp;
 	int rdp_Bpp;
 	int rdp_Bpp_mask;

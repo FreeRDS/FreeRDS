@@ -238,11 +238,11 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 				backend->framebuffer.fbWidth, backend->framebuffer.fbHeight,
 				(uint32_t*) backend->framebuffer.fbSharedMemory, backend->framebuffer.fbScanline);
 
-		if ((DesktopWidth % 4) != 0)
-			DesktopWidth += (DesktopWidth % 4);
+		//if ((DesktopWidth % 4) != 0)
+		//	DesktopWidth += (DesktopWidth % 4);
 
-		if ((DesktopHeight % 4) != 0)
-			DesktopHeight += (DesktopHeight % 4);
+		//if ((DesktopHeight % 4) != 0)
+		//	DesktopHeight += (DesktopHeight % 4);
 
 		if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight))
 		{

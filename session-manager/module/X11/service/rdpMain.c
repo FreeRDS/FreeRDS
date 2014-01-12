@@ -23,6 +23,7 @@
 
 #include "rdp.h"
 #include "rdpRandr.h"
+#include "rdpScreen.h"
 
 #include "glx_extinit.h"
 
@@ -39,7 +40,7 @@
 #define DEBUG_OUT(fmt, ...)
 #endif
 
-rdpScreenInfoRec g_rdpScreen; /* the one screen */
+rdpScreenInfoRec g_rdpScreen;
 ScreenPtr g_pScreen = 0;
 
 DevPrivateKeyRec g_rdpGCIndex;
@@ -49,9 +50,6 @@ DevPrivateKeyRec g_rdpPixmapIndex;
 /* main mouse and keyboard devices */
 DeviceIntPtr g_pointer = 0;
 DeviceIntPtr g_keyboard = 0;
-
-Bool g_wrapWindow = 1;
-Bool g_wrapPixmap = 1;
 
 rdpPixmapRec g_screenPriv;
 
@@ -186,18 +184,6 @@ void rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
 	DEBUG_OUT("rdpDeviceCursorCleanupProcPtr:\n");
 }
 
-int rdpBitsPerPixel(int depth)
-{
-	if (depth == 1)
-		return 1;
-	else if (depth <= 8)
-		return 8;
-	else if (depth <= 16)
-		return 16;
-	else
-		return 32;
-}
-
 void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt)
 {
 	dispatchException &= ~DE_RESET; /* hack - force server not to reset */
@@ -209,7 +195,6 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	int dpix;
 	int dpiy;
 	int ret;
-	int shmmin;
 	Bool vis_found;
 	VisualPtr vis;
 	PictureScreenPtr ps;
@@ -221,52 +206,12 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	dpiy = PixelDPI;
 	monitorResolution = PixelDPI;
 
-	shmmin = get_min_shared_memory_segment_size();
-
-	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
-	g_rdpScreen.bitsPerPixel = rdpBitsPerPixel(g_rdpScreen.depth);
-	g_rdpScreen.sizeInBytes = (g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height);
-
-	if (shmmin > 0)
-	{
-		if (g_rdpScreen.sizeInBytes < shmmin)
-			g_rdpScreen.sizeInBytes = shmmin;
-	}
-
 	ErrorF("X11rdp, an X11 server for FreeRDS\n");
 	ErrorF("Version %s\n", X11RDPVER);
 	ErrorF("Copyright (C) 2005-2012 Jay Sorg\n");
 	ErrorF("Copyright (C) 2013 Thincast Technologies GmbH\n");
 
-	g_rdpScreen.sharedMemory = 1;
-
-	if (!g_rdpScreen.pfbMemory)
-	{
-		if (g_rdpScreen.sharedMemory)
-		{
-			/* allocate shared memory segment */
-			g_rdpScreen.segmentId = shmget(IPC_PRIVATE, g_rdpScreen.sizeInBytes,
-					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-			/* attach the shared memory segment */
-			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);
-
-			DEBUG_OUT("sizeInBytes %d segmentId: %d pfbMemory: %p\n",
-					g_rdpScreen.sizeInBytes, g_rdpScreen.segmentId, g_rdpScreen.pfbMemory);
-		}
-		else
-		{
-			g_rdpScreen.pfbMemory = (char*) malloc(g_rdpScreen.sizeInBytes);
-		}
-
-		if (!g_rdpScreen.pfbMemory)
-		{
-			ErrorF("rdpScreenInit pfbMemory malloc failed\n");
-			return 0;
-		}
-
-		ZeroMemory(g_rdpScreen.pfbMemory, g_rdpScreen.sizeInBytes);
-	}
+	rdpScreenFrameBufferAlloc();
 
 	miClearVisualTypes();
 
@@ -285,30 +230,9 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	miSetPixmapDepths();
 
-	switch (g_rdpScreen.bitsPerPixel)
-	{
-		case 8:
-			ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
-					g_rdpScreen.width, g_rdpScreen.height,
-					dpix, dpiy, g_rdpScreen.paddedWidthInBytes, 8);
-			break;
-
-		case 16:
-			ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
-					g_rdpScreen.width, g_rdpScreen.height,
-					dpix, dpiy, g_rdpScreen.paddedWidthInBytes / 2, 16);
-			break;
-
-		case 32:
-			ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
-					g_rdpScreen.width, g_rdpScreen.height,
-					dpix, dpiy, g_rdpScreen.paddedWidthInBytes / 4, 32);
-			break;
-
-		default:
-			DEBUG_OUT("rdpScreenInit: error\n");
-			return 0;
-	}
+	ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
+			g_rdpScreen.width, g_rdpScreen.height,
+			dpix, dpiy, g_rdpScreen.scanline / g_rdpScreen.bytesPerPixel, g_rdpScreen.bitsPerPixel);
 
 	if (!ret)
 	{
@@ -421,25 +345,18 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	/* GC procedures */
 	pScreen->CreateGC = rdpCreateGC;
 
-	if (g_wrapPixmap)
-	{
-		/* Pixmap procedures */
-		pScreen->CreatePixmap = rdpCreatePixmap;
-		pScreen->DestroyPixmap = rdpDestroyPixmap;
-	}
+	/* Pixmap procedures */
+	pScreen->CreatePixmap = rdpCreatePixmap;
+	pScreen->DestroyPixmap = rdpDestroyPixmap;
 
-	if (g_wrapWindow)
-	{
-		/* Window Procedures */
-		pScreen->CreateWindow = rdpCreateWindow;
-		pScreen->DestroyWindow = rdpDestroyWindow;
-		pScreen->ChangeWindowAttributes = rdpChangeWindowAttributes;
-		pScreen->RealizeWindow = rdpRealizeWindow;
-		pScreen->UnrealizeWindow = rdpUnrealizeWindow;
-		pScreen->PositionWindow = rdpPositionWindow;
-		pScreen->WindowExposures = rdpWindowExposures;
-	}
-
+	/* Window Procedures */
+	pScreen->CreateWindow = rdpCreateWindow;
+	pScreen->DestroyWindow = rdpDestroyWindow;
+	pScreen->ChangeWindowAttributes = rdpChangeWindowAttributes;
+	pScreen->RealizeWindow = rdpRealizeWindow;
+	pScreen->UnrealizeWindow = rdpUnrealizeWindow;
+	pScreen->PositionWindow = rdpPositionWindow;
+	pScreen->WindowExposures = rdpWindowExposures;
 	pScreen->CopyWindow = rdpCopyWindow;
 	pScreen->ClearToBackground = rdpClearToBackground;
 
@@ -679,7 +596,6 @@ void InitInput(int argc, char** argv)
 	}
 
 	mieqInit();
-
 }
 
 void ddxGiveUp(enum ExitCode error)
@@ -688,23 +604,8 @@ void ddxGiveUp(enum ExitCode error)
 
 	DEBUG_OUT("ddxGiveUp:\n");
 
-	if (g_rdpScreen.sharedMemory)
-	{
-		if (g_rdpScreen.pfbMemory)
-		{
-			/* detach shared memory segment */
-			shmdt(g_rdpScreen.pfbMemory);
-			g_rdpScreen.pfbMemory = NULL;
-
-			/* deallocate shared memory segment */
-			shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
-		}
-	}
-	else
-	{
-		free(g_rdpScreen.pfbMemory);
-		g_rdpScreen.pfbMemory = NULL;
-	}
+	if (g_rdpScreen.pfbMemory)
+		rdpScreenFrameBufferFree();
 
 	if (g_initOutputCalled)
 	{
@@ -723,8 +624,6 @@ void ProcessInputEvents(void)
 	mieqProcessInputEvents();
 }
 
-/* needed for some reason? todo
-   needs to be rfb */
 void rfbRootPropertyChange(PropertyPtr pProp)
 {
 

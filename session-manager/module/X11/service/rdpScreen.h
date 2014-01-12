@@ -23,6 +23,10 @@
 #ifndef FREERDS_X11RDP_SCREEN_H
 #define FREERDS_X11RDP_SCREEN_H
 
+int rdpScreenFrameBufferAlloc();
+int rdpScreenFrameBufferFree();
 
+int get_min_shared_memory_segment_size(void);
+int get_max_shared_memory_segment_size(void);
 
 #endif /* FREERDS_X11RDP_SCREEN_H */

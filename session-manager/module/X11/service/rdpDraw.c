@@ -56,7 +56,6 @@ extern rdpScreenInfoRec g_rdpScreen;
 extern DevPrivateKeyRec g_rdpGCIndex;
 extern DevPrivateKeyRec g_rdpPixmapIndex;
 extern ScreenPtr g_pScreen;
-extern Bool g_wrapPixmap;
 
 static int g_doing_font = 0;
 
@@ -263,42 +262,12 @@ void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n
 static void rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
 {
 	rdpGCRec* priv;
-	int wrap;
-	RegionPtr pRegion;
 
 	LLOGLN(10, ("rdpValidateGC:"));
 	GC_FUNC_PROLOGUE(pGC);
 	pGC->funcs->ValidateGC(pGC, changes, d);
 
-	if (g_wrapPixmap)
-	{
-		wrap = 1;
-	}
-	else
-	{
-		wrap = (d->type == DRAWABLE_WINDOW) && ((WindowPtr)d)->viewable;
-
-		if (wrap)
-		{
-			if (pGC->subWindowMode == IncludeInferiors)
-			{
-				pRegion = &(((WindowPtr)d)->borderClip);
-			}
-			else
-			{
-				pRegion = &(((WindowPtr)d)->clipList);
-			}
-
-			wrap = RegionNotEmpty(pRegion);
-		}
-	}
-
-	priv->ops = 0;
-
-	if (wrap)
-	{
-		priv->ops = pGC->ops;
-	}
+	priv->ops = pGC->ops;
 
 	GC_FUNC_EPILOGUE(pGC);
 }
@@ -513,7 +482,7 @@ RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 
 Bool rdpSaveScreen(ScreenPtr pScreen, int on)
 {
-	return 1;
+	return TRUE;
 }
 
 /* it looks like all the antialias draws go through here */

@@ -23,6 +23,7 @@
 
 #include "rdp.h"
 #include "rdpRandr.h"
+#include "rdpScreen.h"
 
 #include <stdio.h>
 #include <sys/shm.h>
@@ -278,34 +279,6 @@ EDID* rdpConstructScreenEdid(ScreenPtr pScreen)
 	return edid;
 }
 
-int get_min_shared_memory_segment_size(void)
-{
-#ifdef _GNU_SOURCE
-	struct shminfo info;
-
-	if ((shmctl(0, IPC_INFO, (struct shmid_ds*)(void*)&info)) == -1)
-		return -1;
-
-	return info.shmmin;
-#else
-	return -1;
-#endif
-}
-
-int get_max_shared_memory_segment_size(void)
-{
-#ifdef _GNU_SOURCE
-	struct shminfo info;
-
-	if ((shmctl(0, IPC_INFO, (struct shmid_ds*)(void*)&info)) == -1)
-		return -1;
-
-	return info.shmmax;
-#else
-	return -1;
-#endif
-}
-
 Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 {
 	int k;
@@ -339,8 +312,8 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 				continue; /* required buffer size is too large */
 		}
 
-		if (((width % 4) != 0) || ((height % 4) != 0))
-			continue; /* disable resolutions unaligned to 4 bytes for now */
+		//if (((width % 4) != 0) || ((height % 4) != 0))
+		//	continue; /* disable resolutions unaligned to 4 bytes for now */
 
 		mmWidth = PixelToMM(width);
 		mmHeight = PixelToMM(height);
@@ -409,7 +382,6 @@ Bool rdpRRSetInfo(ScreenPtr pScreen)
 
 Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 mmWidth, CARD32 mmHeight)
 {
-	int shmmin;
 	BoxRec box;
 	WindowPtr pRoot;
 	PixmapPtr screenPixmap;
@@ -426,18 +398,8 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 
 	rdp_detach_framebuffer();
 
-	shmmin = get_min_shared_memory_segment_size();
-
 	g_rdpScreen.width = width;
 	g_rdpScreen.height = height;
-	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
-	g_rdpScreen.sizeInBytes = g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height;
-
-	if (shmmin > 0)
-	{
-		if (g_rdpScreen.sizeInBytes < shmmin)
-			g_rdpScreen.sizeInBytes = shmmin;
-	}
 
 	pScreen->x = 0;
 	pScreen->y = 0;
@@ -452,36 +414,9 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	screenInfo.height = height;
 
 	if (g_rdpScreen.pfbMemory)
-	{
-		if (g_rdpScreen.sharedMemory)
-		{
-			/* detach shared memory segment */
-			shmdt(g_rdpScreen.pfbMemory);
-			g_rdpScreen.pfbMemory = NULL;
+		rdpScreenFrameBufferFree();
 
-			/* deallocate shared memory segment */
-			shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
-
-			/* allocate shared memory segment */
-			g_rdpScreen.segmentId = shmget(IPC_PRIVATE, g_rdpScreen.sizeInBytes,
-					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-			/* attach the shared memory segment */
-			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);
-		}
-		else
-		{
-			g_rdpScreen.pfbMemory = (char*) malloc(g_rdpScreen.sizeInBytes);
-		}
-
-		if (!g_rdpScreen.pfbMemory)
-		{
-			ErrorF("rdpScreenInit pfbMemory malloc failed\n");
-			return 0;
-		}
-
-		ZeroMemory(g_rdpScreen.pfbMemory, g_rdpScreen.sizeInBytes);
-	}
+	rdpScreenFrameBufferAlloc();
 
 	screenPixmap = pScreen->GetScreenPixmap(pScreen);
 
@@ -489,8 +424,7 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	{
 		pScreen->ModifyPixmapHeader(screenPixmap, width, height,
 				g_rdpScreen.depth, g_rdpScreen.bitsPerPixel,
-				g_rdpScreen.paddedWidthInBytes,
-				g_rdpScreen.pfbMemory);
+				g_rdpScreen.scanline, g_rdpScreen.pfbMemory);
 	}
 
 	box.x1 = 0;
@@ -780,19 +714,6 @@ int rdpRRInit(ScreenPtr pScreen)
 
 	modeInfo.hSkew = 0;
 	modeInfo.nameLength = strlen(name);
-
-	/**
-	 * Sample EDID:
-	 *
-	 * 00ffffffffffff001e6d8d5736210100
-	 * 0a140103e0301b78ea3337a5554d9d25
-	 * 115052a54b00b3008180818f714f0101
-	 * 010101010101023a801871382d40582c
-	 * 4500dd0c1100001a000000fd00384b1e
-	 * 530f000a202020202020000000fc0045
-	 * 323235300a20202020202020000000ff
-	 * 003031304e44524632363033380a00a2
-	 */
 
 	mode = RRModeGet(&modeInfo, name);
 

@@ -26,7 +26,4 @@
 
 int rdpRRInit(ScreenPtr pScreen);
 
-int get_min_shared_memory_segment_size(void);
-int get_max_shared_memory_segment_size(void);
-
 #endif
