@@ -292,13 +292,13 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 	LLOGLN(0, ("rdpRRRegisterSize width: %d height: %d", width, height));
 
 	index = 0;
-	cIndex = -1;
+	cIndex = 0;
 	cWidth = width;
 	cHeight = height;
 
 	shmmax = get_max_shared_memory_segment_size();
 
-	for (k = 0; k < sizeof(g_StandardSizes) / sizeof(UINT32); k++)
+	for (k = 1; k < sizeof(g_StandardSizes) / sizeof(UINT32); k++)
 	{
 		width = SCREEN_SIZE_WIDTH(g_StandardSizes[k]);
 		height = SCREEN_SIZE_HEIGHT(g_StandardSizes[k]);
@@ -319,7 +319,7 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 		mmHeight = PixelToMM(height);
 
 		if ((width == cWidth) && (height == cHeight))
-			cIndex = index;
+			continue;
 
 		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
 		RRRegisterRate(pScreen, pSizes[index], 60);
@@ -358,6 +358,7 @@ Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 {
 	int width;
 	int height;
+	RRModePtr mode;
 	rrScrPrivPtr pScrPriv;
 
 	LLOGLN(0, ("rdpRRGetInfo"));
@@ -367,15 +368,21 @@ Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 	if (pRotations)
 		*pRotations = RR_Rotate_0;
 
+	width = pScreen->width;
+	height = pScreen->height;
+
 	if (pScrPriv)
 	{
-		width = pScrPriv->crtcs[0]->mode->mode.width;
-		height = pScrPriv->crtcs[0]->mode->mode.height;
-	}
-	else
-	{
-		width = pScreen->width;
-		height = pScreen->height;
+		if (pScrPriv->numCrtcs > 0)
+		{
+			mode = pScrPriv->crtcs[0]->mode;
+
+			if (mode)
+			{
+				width = mode->mode.width;
+				height = mode->mode.height;
+			}
+		}
 	}
 
 	rdpRRRegisterSize(pScreen, width, height);
@@ -492,6 +499,26 @@ Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
 	LLOGLN(0, ("rdpRRCrtcGetGamma"));
+
+	crtc->gammaSize = 1;
+
+	if (!crtc->gammaRed)
+	{
+		crtc->gammaRed = (CARD16*) malloc(32);
+		ZeroMemory(crtc->gammaRed, 32);
+	}
+
+	if (!crtc->gammaGreen)
+	{
+		crtc->gammaGreen = (CARD16*) malloc(32);
+		ZeroMemory(crtc->gammaGreen, 32);
+	}
+
+	if (!crtc->gammaBlue)
+	{
+		crtc->gammaBlue = (CARD16*) malloc(32);
+		ZeroMemory(crtc->gammaBlue, 32);
+	}
 
 	return TRUE;
 }
@@ -743,7 +770,7 @@ int rdpRRInit(ScreenPtr pScreen)
 	if (!RROutputSetClones(output, NULL, 0))
 		return -1;
 
-	if (!RROutputSetModes(output, &mode, 1, 0))
+	if (!RROutputSetModes(output, &mode, 1, 1))
 		return -1;
 
 	if (!RROutputSetCrtcs(output, &crtc, 1))
