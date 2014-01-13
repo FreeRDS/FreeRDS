@@ -367,8 +367,16 @@ Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 	if (pRotations)
 		*pRotations = RR_Rotate_0;
 
-	width = pScrPriv->crtcs[0]->mode->mode.width;
-	height = pScrPriv->crtcs[0]->mode->mode.height;
+	if (pScrPriv)
+	{
+		width = pScrPriv->crtcs[0]->mode->mode.width;
+		height = pScrPriv->crtcs[0]->mode->mode.height;
+	}
+	else
+	{
+		width = pScreen->width;
+		height = pScreen->height;
+	}
 
 	rdpRRRegisterSize(pScreen, width, height);
 
