@@ -24,18 +24,22 @@
 
 #include "rdpPalette.h"
 
-ColormapPtr g_rdpInstalledColormap;
+extern rdpScreenInfoRec g_rdpScreen;
+
+ColormapPtr g_rdpInstalledColormap = NULL;
 
 /* Colormap procedures */
 
 Bool rdpCreateColormap(ColormapPtr pColormap)
 {
-	return TRUE;
+	Bool status;
+	status = g_rdpScreen.CreateColormap(pColormap);
+	return status;
 }
 
 void rdpDestroyColormap(ColormapPtr pColormap)
 {
-
+	g_rdpScreen.DestroyColormap(pColormap);
 }
 
 void rdpInstallColormap(ColormapPtr pColormap)
@@ -57,7 +61,7 @@ void rdpInstallColormap(ColormapPtr pColormap)
 		/*rfbSetClientColourMaps(0, 0);*/
 	}
 
-	/*g_rdpScreen.InstallColormap(pColormap);*/
+	g_rdpScreen.InstallColormap(pColormap);
 }
 
 void rdpUninstallColormap(ColormapPtr pColormap)
@@ -74,6 +78,8 @@ void rdpUninstallColormap(ColormapPtr pColormap)
 			//pColormap->pScreen->InstallColormap(curpmap);
 		}
 	}
+
+	g_rdpScreen.UninstallColormap(pColormap);
 }
 
 int rdpListInstalledColormaps(ScreenPtr pScreen, XID* pmaps)
@@ -84,10 +90,10 @@ int rdpListInstalledColormaps(ScreenPtr pScreen, XID* pmaps)
 
 void rdpStoreColors(ColormapPtr pColormap, int ndef, xColorItem* pdef)
 {
-
+	g_rdpScreen.StoreColors(pColormap, ndef, pdef);
 }
 
 void rdpResolveColor(unsigned short* pred, unsigned short* pgreen, unsigned short* pblue, VisualPtr pVisual)
 {
-
+	g_rdpScreen.ResolveColor(pred, pgreen, pblue, pVisual);
 }

@@ -311,13 +311,11 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	/* Colormap procedures */
 	g_rdpScreen.CreateColormap = pScreen->CreateColormap;
 	g_rdpScreen.DestroyColormap = pScreen->DestroyColormap;
-#if 0
 	g_rdpScreen.InstallColormap = pScreen->InstallColormap;
 	g_rdpScreen.UninstallColormap = pScreen->UninstallColormap;
 	g_rdpScreen.ListInstalledColormaps = pScreen->ListInstalledColormaps;
 	g_rdpScreen.StoreColors = pScreen->StoreColors;
 	g_rdpScreen.ResolveColor = pScreen->ResolveColor;
-#endif
 
 	ps = GetPictureScreenIfSet(pScreen);
 
@@ -327,8 +325,8 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 		g_rdpScreen.Glyphs = ps->Glyphs;
 	}
 
-	pScreen->blackPixel = g_rdpScreen.blackPixel;
-	pScreen->whitePixel = g_rdpScreen.whitePixel;
+	pScreen->blackPixel = g_rdpScreen.blackPixel = 0;
+	pScreen->whitePixel = g_rdpScreen.whitePixel = 0;
 
 	/* Random screen procedures */
 	pScreen->CloseScreen = rdpCloseScreen;
@@ -366,13 +364,11 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	/* Colormap procedures */
 	pScreen->CreateColormap = rdpCreateColormap;
 	pScreen->DestroyColormap = rdpDestroyColormap;
-#if 0
 	pScreen->InstallColormap = rdpInstallColormap;
 	pScreen->UninstallColormap = rdpUninstallColormap;
 	pScreen->ListInstalledColormaps = rdpListInstalledColormaps;
 	pScreen->StoreColors = rdpStoreColors;
 	pScreen->ResolveColor = rdpResolveColor;
-#endif
 
 	miPointerInitialize(pScreen, &g_rdpSpritePointerFuncs, &g_rdpPointerCursorFuncs, 1);
 
