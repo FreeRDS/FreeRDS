@@ -1,5 +1,5 @@
 /**
- * Task Object for the Executor
+ * Task for session timeout
  *
  * Copyright 2013 Thincast Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
@@ -17,44 +17,32 @@
  * limitations under the License.
  */
 
-#ifndef __TASK_H_
-#define __TASK_H_
+#ifndef __TASK_SESSION_TIMEOUT_
+#define __TASK_SESSION_TIMEOUT_
 
-#include <boost/shared_ptr.hpp>
-#include <winpr/synch.h>
+#include <task/Task.h>
 
 namespace freerds
 {
-	namespace task
+	namespace sessionmanager
 	{
-		class Task
+		namespace session
 		{
+
+		class TaskSessionTimeout: public taskNS::Task {
 		public:
-			Task():mhStop(0),mhStarted(0) {};
-			virtual ~Task() {};
-			virtual void run() = 0;
-			virtual bool isThreaded() {
-				return false;
-			}
-			void setHandles(HANDLE stopHandle,HANDLE startedHandle) {
-				mhStop = stopHandle;
-				mhStarted = startedHandle;
-			}
-			void informStarted() {
-				SetEvent(mhStarted);
-			}
+			virtual void run();
+			virtual bool isThreaded();
+
 		private:
-			HANDLE mhStarted;
-		protected:
-			HANDLE mhStop;
 		};
 
-		typedef boost::shared_ptr<Task> TaskPtr;
+		typedef boost::shared_ptr<TaskSessionTimeout> TaskSessionTimeoutPtr;
 
-
+		}
 	}
 }
 
-namespace taskNS = freerds::task;
+namespace sessionNS = freerds::sessionmanager::session;
 
-#endif /* __TASK_H_ */
+#endif /* __TASK_SESSION_TIMEOUT_ */

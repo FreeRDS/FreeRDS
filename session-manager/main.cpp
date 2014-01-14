@@ -237,6 +237,7 @@ int main(int argc, char** argv)
 	//APP_CONTEXT.getPropertyManager()->saveProperties(APP_CONTEXT.getSystemConfigPath() + "/config.ini");
 
 	APP_CONTEXT.startTaskExecutor();
+	APP_CONTEXT.startSessionTimoutMonitor();
 
 
 	cout << "Hello session manager" << endl;

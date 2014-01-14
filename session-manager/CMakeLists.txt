@@ -77,6 +77,7 @@ set(${MODULE_PREFIX}_SRCS
 	common/session/Session.cpp
 	common/session/ConnectionStore.cpp
 	common/session/Connection.cpp
+	common/session/TaskSessionTimeout.cpp
 	common/module/ModuleManager.cpp
 	common/module/Module.cpp
 	common/module/AuthModule.cpp
