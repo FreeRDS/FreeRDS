@@ -104,6 +104,9 @@ int rdpScreenFrameBufferAlloc()
 			return 0;
 		}
 
+		/* mark the shared memory segment for automatic deletion */
+		shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
+
 		ZeroMemory(g_rdpScreen.pfbMemory, g_rdpScreen.sizeInBytes);
 	}
 
@@ -115,9 +118,6 @@ int rdpScreenFrameBufferFree()
 	/* detach shared memory segment */
 	shmdt(g_rdpScreen.pfbMemory);
 	g_rdpScreen.pfbMemory = NULL;
-
-	/* deallocate shared memory segment */
-	shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
 
 	return 0;
 }

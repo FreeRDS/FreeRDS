@@ -29,6 +29,9 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 
+#include <winpr/crt.h>
+#include <winpr/stream.h>
+
 #define LOG_LEVEL 10
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
@@ -279,6 +282,81 @@ EDID* rdpConstructScreenEdid(ScreenPtr pScreen)
 	return edid;
 }
 
+BYTE* rdpEdidToBuffer(EDID* edid)
+{
+	int i;
+	wStream* s;
+	BYTE* data;
+	int length = 128;
+
+	data = (BYTE*) malloc(length);
+	ZeroMemory(data, length);
+
+	s = Stream_New(data, length);
+
+	Stream_Write(s, &(edid->Header), 8);
+	Stream_Write_UINT16(s, edid->ManufacturerId);
+	Stream_Write_UINT16(s, edid->ManufacturerProductCode);
+	Stream_Write_UINT16(s, edid->ManufacturerSerialNumber);
+	Stream_Write_UINT8(s, edid->WeekOfManufacture);
+	Stream_Write_UINT8(s, edid->YearOfManufacture);
+	Stream_Write_UINT8(s, edid->EdidVersion);
+	Stream_Write_UINT8(s, edid->EdidRevision);
+	Stream_Write(s, &(edid->DisplayParameters), 4);
+	Stream_Write(s, &(edid->ChromacityCoordinates), 10);
+	Stream_Write(s, &(edid->BitmapTiming), 4);
+	Stream_Write(s, &(edid->StandardTiming), 16);
+	Stream_Write(s, &(edid->Descriptor1), 18);
+	Stream_Write(s, &(edid->Descriptor2), 18);
+	Stream_Write(s, &(edid->Descriptor3), 18);
+	Stream_Write(s, &(edid->Descriptor4), 18);
+	Stream_Write_UINT8(s, edid->NumberOfExtensions);
+
+	edid->Checksum = 0;
+	Stream_Write_UINT8(s, edid->Checksum);
+
+	for (i = 0; i < length; i++)
+		edid->Checksum = (edid->Checksum + data[i]) % 256;
+
+	edid->Checksum = 256 - edid->Checksum;
+
+	Stream_Rewind(s, 1);
+	Stream_Write_UINT8(s, edid->Checksum);
+
+	Stream_Free(s, FALSE);
+
+	return data;
+}
+
+static EDID* g_EDID = NULL;
+static Atom edid_atom = 0;
+#define EDID_ATOM_NAME		"EDID"
+
+void rdpSetOutputEdid(RROutputPtr output, EDID* edid)
+{
+	BYTE* buffer;
+	int length = 128;
+
+	buffer = rdpEdidToBuffer(edid);
+
+	if (!edid_atom)
+	{
+		edid_atom = MakeAtom(EDID_ATOM_NAME, sizeof(EDID_ATOM_NAME) - 1, TRUE);
+	}
+
+	if (length)
+	{
+		RRChangeOutputProperty(output, edid_atom, XA_INTEGER, 8,
+				PropModeReplace, length, buffer, FALSE, TRUE);
+	}
+	else
+	{
+		RRDeleteOutputProperty(output, edid_atom);
+	}
+
+	free(buffer);
+}
+
 Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 {
 	int k;
@@ -479,7 +557,7 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		crtc->x = y;
 		crtc->y = y;
 
-		if (mode)
+		if (mode && crtc->mode)
 		{
 			crtc->mode->mode.width = mode->mode.width;
 			crtc->mode->mode.height = mode->mode.height;
@@ -588,7 +666,7 @@ Bool rdpRRGetPanning(ScreenPtr pScreen, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr
 		totalArea->y2 = pScreen->height;
 
 		LLOGLN(100, ("rdpRRGetPanning: totalArea: x1: %d y1: %d x2: %d y2: %d",
-				totalArea->x1, totalArea->y1, totalArea->x1, totalArea->y2));
+				totalArea->x1, totalArea->y1, totalArea->x2, totalArea->y2));
 	}
 
 	if (trackingArea)
@@ -599,7 +677,7 @@ Bool rdpRRGetPanning(ScreenPtr pScreen, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr
 		trackingArea->y2 = pScreen->height;
 
 		LLOGLN(100, ("rdpRRGetPanning: trackingArea: x1: %d y1: %d x2: %d y2: %d",
-				trackingArea->x1, trackingArea->y1, trackingArea->x1, trackingArea->y2));
+				trackingArea->x1, trackingArea->y1, trackingArea->x2, trackingArea->y2));
 	}
 
 	if (border)
@@ -760,7 +838,7 @@ int rdpRRInit(ScreenPtr pScreen)
 	if (!crtc)
 		return FALSE;
 
-	RRCrtcGammaSetSize(crtc, 256);
+	RRCrtcGammaSetSize(crtc, 32);
 
 	output = RROutputCreate(pScreen, "RDP-0", strlen("RDP-0"), NULL);
 
@@ -784,6 +862,9 @@ int rdpRRInit(ScreenPtr pScreen)
 
 	if (!RROutputSetConnection(output, RR_Connected))
 		return -1;
+
+	g_EDID = rdpConstructScreenEdid(pScreen);
+	rdpSetOutputEdid(output, g_EDID);
 
 #if (RANDR_INTERFACE_VERSION >= 0x0104)
 	provider = RRProviderCreate(pScreen, "RDP", strlen("RDP"));
