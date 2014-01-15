@@ -108,12 +108,8 @@ namespace freerds
 				timeout = 0;
 			}
 
-			 bool reconnectAllowd;
-             if (!APP_CONTEXT.getPropertyManager()->getPropertyBool(currentSession->getSessionID(),"session.reconnect",reconnectAllowd)) {
-            	 reconnectAllowd = true;
-             }
 
-			if ((timeout == 0) && (!reconnectAllowd)) {
+			if (timeout == 0)  {
 				callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
 				task->setSessionId(currentSession->getSessionID());
 				APP_CONTEXT.addTask(task);
