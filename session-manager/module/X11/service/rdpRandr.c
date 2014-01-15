@@ -1,41 +1,42 @@
-/*
-Copyright 2011-2012 Jay Sorg
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-RandR extension implementation
-
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ *
+ * Copyright 2011-2012 Jay Sorg
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "rdp.h"
-#include "rdprandr.h"
+#include "rdpRandr.h"
+#include "rdpScreen.h"
 
 #include <stdio.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
 
-#define LOG_LEVEL 0
+#include <winpr/crt.h>
+#include <winpr/stream.h>
+
+#define LOG_LEVEL 10
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
 extern rdpScreenInfoRec g_rdpScreen;
-extern WindowPtr g_invalidate_window;
-
-static XID g_wid = 0;
 
 #define DEFINE_SCREEN_SIZE(_width, _height) ((_width << 16) | _height)
 
@@ -281,18 +282,79 @@ EDID* rdpConstructScreenEdid(ScreenPtr pScreen)
 	return edid;
 }
 
-static int get_max_shared_memory_segment_size(void)
+BYTE* rdpEdidToBuffer(EDID* edid)
 {
-#ifdef _GNU_SOURCE
-	struct shminfo info;
+	int i;
+	wStream* s;
+	BYTE* data;
+	int length = 128;
 
-	if ((shmctl(0, IPC_INFO, (struct shmid_ds*)(void*)&info)) == -1)
-		return -1;
+	data = (BYTE*) malloc(length);
+	ZeroMemory(data, length);
 
-	return info.shmmax;
-#else
-	return -1;
-#endif
+	s = Stream_New(data, length);
+
+	Stream_Write(s, &(edid->Header), 8);
+	Stream_Write_UINT16(s, edid->ManufacturerId);
+	Stream_Write_UINT16(s, edid->ManufacturerProductCode);
+	Stream_Write_UINT16(s, edid->ManufacturerSerialNumber);
+	Stream_Write_UINT8(s, edid->WeekOfManufacture);
+	Stream_Write_UINT8(s, edid->YearOfManufacture);
+	Stream_Write_UINT8(s, edid->EdidVersion);
+	Stream_Write_UINT8(s, edid->EdidRevision);
+	Stream_Write(s, &(edid->DisplayParameters), 4);
+	Stream_Write(s, &(edid->ChromacityCoordinates), 10);
+	Stream_Write(s, &(edid->BitmapTiming), 4);
+	Stream_Write(s, &(edid->StandardTiming), 16);
+	Stream_Write(s, &(edid->Descriptor1), 18);
+	Stream_Write(s, &(edid->Descriptor2), 18);
+	Stream_Write(s, &(edid->Descriptor3), 18);
+	Stream_Write(s, &(edid->Descriptor4), 18);
+	Stream_Write_UINT8(s, edid->NumberOfExtensions);
+
+	edid->Checksum = 0;
+	Stream_Write_UINT8(s, edid->Checksum);
+
+	for (i = 0; i < length; i++)
+		edid->Checksum = (edid->Checksum + data[i]) % 256;
+
+	edid->Checksum = 256 - edid->Checksum;
+
+	Stream_Rewind(s, 1);
+	Stream_Write_UINT8(s, edid->Checksum);
+
+	Stream_Free(s, FALSE);
+
+	return data;
+}
+
+static EDID* g_EDID = NULL;
+static Atom edid_atom = 0;
+#define EDID_ATOM_NAME		"EDID"
+
+void rdpSetOutputEdid(RROutputPtr output, EDID* edid)
+{
+	BYTE* buffer;
+	int length = 128;
+
+	buffer = rdpEdidToBuffer(edid);
+
+	if (!edid_atom)
+	{
+		edid_atom = MakeAtom(EDID_ATOM_NAME, sizeof(EDID_ATOM_NAME) - 1, TRUE);
+	}
+
+	if (length)
+	{
+		RRChangeOutputProperty(output, edid_atom, XA_INTEGER, 8,
+				PropModeReplace, length, buffer, FALSE, TRUE);
+	}
+	else
+	{
+		RRDeleteOutputProperty(output, edid_atom);
+	}
+
+	free(buffer);
 }
 
 Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
@@ -308,13 +370,13 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 	LLOGLN(0, ("rdpRRRegisterSize width: %d height: %d", width, height));
 
 	index = 0;
-	cIndex = -1;
+	cIndex = 0;
 	cWidth = width;
 	cHeight = height;
 
 	shmmax = get_max_shared_memory_segment_size();
 
-	for (k = 0; k < sizeof(g_StandardSizes) / sizeof(UINT32); k++)
+	for (k = 1; k < sizeof(g_StandardSizes) / sizeof(UINT32); k++)
 	{
 		width = SCREEN_SIZE_WIDTH(g_StandardSizes[k]);
 		height = SCREEN_SIZE_HEIGHT(g_StandardSizes[k]);
@@ -328,11 +390,14 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 				continue; /* required buffer size is too large */
 		}
 
+		//if (((width % 4) != 0) || ((height % 4) != 0))
+		//	continue; /* disable resolutions unaligned to 4 bytes for now */
+
 		mmWidth = PixelToMM(width);
 		mmHeight = PixelToMM(height);
 
 		if ((width == cWidth) && (height == cHeight))
-			cIndex = index;
+			continue;
 
 		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
 		RRRegisterRate(pScreen, pSizes[index], 60);
@@ -369,12 +434,36 @@ Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSi
 
 Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 {
+	int width;
+	int height;
+	RRModePtr mode;
+	rrScrPrivPtr pScrPriv;
+
 	LLOGLN(0, ("rdpRRGetInfo"));
+
+	pScrPriv = rrGetScrPriv(pScreen);
 
 	if (pRotations)
 		*pRotations = RR_Rotate_0;
 
-	rdpRRRegisterSize(pScreen, pScreen->width, pScreen->height);
+	width = pScreen->width;
+	height = pScreen->height;
+
+	if (pScrPriv)
+	{
+		if (pScrPriv->numCrtcs > 0)
+		{
+			mode = pScrPriv->crtcs[0]->mode;
+
+			if (mode)
+			{
+				width = mode->mode.width;
+				height = mode->mode.height;
+			}
+		}
+	}
+
+	rdpRRRegisterSize(pScreen, width, height);
 
 	return TRUE;
 }
@@ -384,65 +473,26 @@ Bool rdpRRSetInfo(ScreenPtr pScreen)
 	return TRUE;
 }
 
-/**
- * for lack of a better way, a window is created that covers
- * the area and when its deleted, it's invalidated
- */
-static int rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int width, int height)
-{
-	int attri;
-	Mask mask;
-	int result;
-	WindowPtr pWin;
-	XID attributes[4];
-
-	mask = 0;
-	attri = 0;
-	attributes[attri++] = pScreen->blackPixel;
-	mask |= CWBackPixel;
-	attributes[attri++] = xTrue;
-	mask |= CWOverrideRedirect;
-
-	if (g_wid == 0)
-	{
-		g_wid = FakeClientID(0);
-	}
-
-	pWin = CreateWindow(g_wid, pScreen->root,
-			x, y, width, height, 0, InputOutput, mask,
-			attributes, 0, serverClient,
-			wVisual(pScreen->root), &result);
-
-	if (result == 0)
-	{
-		g_invalidate_window = pWin;
-		MapWindow(pWin, serverClient);
-		DeleteWindow(pWin, None);
-		g_invalidate_window = pWin;
-	}
-
-	return 0;
-}
-
 Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 mmWidth, CARD32 mmHeight)
 {
 	BoxRec box;
+	WindowPtr pRoot;
 	PixmapPtr screenPixmap;
 
 	LLOGLN(0, ("rdpRRScreenSetSize: width: %d height: %d mmWidth: %d mmHeight: %d",
 			width, height, mmWidth, mmHeight));
 
 	if ((width < 1) || (height < 1))
-	{
 		return FALSE;
-	}
 
-	rdpup_detach_framebuffer();
+	SetRootClip(pScreen, FALSE);
+
+	pRoot = pScreen->root;
+
+	rdp_detach_framebuffer();
 
 	g_rdpScreen.width = width;
 	g_rdpScreen.height = height;
-	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
-	g_rdpScreen.sizeInBytes = g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height;
 
 	pScreen->x = 0;
 	pScreen->y = 0;
@@ -457,36 +507,9 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	screenInfo.height = height;
 
 	if (g_rdpScreen.pfbMemory)
-	{
-		if (g_rdpScreen.sharedMemory)
-		{
-			/* detach shared memory segment */
-			shmdt(g_rdpScreen.pfbMemory);
-			g_rdpScreen.pfbMemory = NULL;
+		rdpScreenFrameBufferFree();
 
-			/* deallocate shared memory segment */
-			shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
-
-			/* allocate shared memory segment */
-			g_rdpScreen.segmentId = shmget(IPC_PRIVATE, g_rdpScreen.sizeInBytes,
-					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-			/* attach the shared memory segment */
-			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);
-		}
-		else
-		{
-			g_rdpScreen.pfbMemory = (char*) malloc(g_rdpScreen.sizeInBytes);
-		}
-
-		if (!g_rdpScreen.pfbMemory)
-		{
-			rdpLog("rdpScreenInit pfbMemory malloc failed\n");
-			return 0;
-		}
-
-		ZeroMemory(g_rdpScreen.pfbMemory, g_rdpScreen.sizeInBytes);
-	}
+	rdpScreenFrameBufferAlloc();
 
 	screenPixmap = pScreen->GetScreenPixmap(pScreen);
 
@@ -494,8 +517,7 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	{
 		pScreen->ModifyPixmapHeader(screenPixmap, width, height,
 				g_rdpScreen.depth, g_rdpScreen.bitsPerPixel,
-				g_rdpScreen.paddedWidthInBytes,
-				g_rdpScreen.pfbMemory);
+				g_rdpScreen.scanline, g_rdpScreen.pfbMemory);
 	}
 
 	box.x1 = 0;
@@ -503,22 +525,23 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	box.x2 = width;
 	box.y2 = height;
 
-	RegionInit(&pScreen->root->winSize, &box, 1);
-	RegionInit(&pScreen->root->borderSize, &box, 1);
-	RegionReset(&pScreen->root->borderClip, &box);
-	RegionBreak(&pScreen->root->clipList);
+	RegionInit(&pRoot->winSize, &box, 1);
+	RegionInit(&pRoot->borderSize, &box, 1);
+	RegionReset(&pRoot->borderClip, &box);
+	RegionBreak(&pRoot->clipList);
 
-	pScreen->root->drawable.width = width;
-	pScreen->root->drawable.height = height;
+	pRoot->drawable.width = width;
+	pRoot->drawable.height = height;
 
-	ResizeChildrenWinSize(pScreen->root, 0, 0, 0, 0);
+	ResizeChildrenWinSize(pRoot, 0, 0, 0, 0);
 
 	RRGetInfo(pScreen, 1);
 
-	rdpInvalidateArea(pScreen, 0, 0, pScreen->width, pScreen->height);
+	SetRootClip(pScreen, TRUE);
+
+	miPaintWindow(pRoot, &pRoot->borderClip, PW_BACKGROUND);
 
 	RRScreenSizeNotify(pScreen);
-	RRTellChanged(pScreen);
 
 	return TRUE;
 }
@@ -528,6 +551,18 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 {
 	LLOGLN(0, ("rdpRRCrtcSet: x: %d y: %d numOutputs: %d",
 			x, y, numOutputs));
+
+	if (crtc)
+	{
+		crtc->x = y;
+		crtc->y = y;
+
+		if (mode && crtc->mode)
+		{
+			crtc->mode->mode.width = mode->mode.width;
+			crtc->mode->mode.height = mode->mode.height;
+		}
+	}
 
 	return RRCrtcNotify(crtc, mode, x, y, rotation, NULL, numOutputs, outputs);
 }
@@ -543,6 +578,26 @@ Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
 	LLOGLN(0, ("rdpRRCrtcGetGamma"));
 
+	crtc->gammaSize = 1;
+
+	if (!crtc->gammaRed)
+	{
+		crtc->gammaRed = (CARD16*) malloc(32);
+		ZeroMemory(crtc->gammaRed, 32);
+	}
+
+	if (!crtc->gammaGreen)
+	{
+		crtc->gammaGreen = (CARD16*) malloc(32);
+		ZeroMemory(crtc->gammaGreen, 32);
+	}
+
+	if (!crtc->gammaBlue)
+	{
+		crtc->gammaBlue = (CARD16*) malloc(32);
+		ZeroMemory(crtc->gammaBlue, 32);
+	}
+
 	return TRUE;
 }
 
@@ -555,9 +610,19 @@ Bool rdpRROutputSetProperty(ScreenPtr pScreen, RROutputPtr output, Atom property
 
 Bool rdpRROutputValidateMode(ScreenPtr pScreen, RROutputPtr output, RRModePtr mode)
 {
+	rrScrPrivPtr pScrPriv;
+
 	LLOGLN(0, ("rdpRROutputValidateMode"));
 
-	return TRUE;
+	pScrPriv = rrGetScrPriv(pScreen);
+
+	if ((pScrPriv->minWidth <= mode->mode.width) && (pScrPriv->maxWidth >= mode->mode.width) &&
+			(pScrPriv->minHeight <= mode->mode.height) && (pScrPriv->maxHeight >= mode->mode.height))
+	{
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 void rdpRRModeDestroy(ScreenPtr pScreen, RRModePtr mode)
@@ -601,7 +666,7 @@ Bool rdpRRGetPanning(ScreenPtr pScreen, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr
 		totalArea->y2 = pScreen->height;
 
 		LLOGLN(100, ("rdpRRGetPanning: totalArea: x1: %d y1: %d x2: %d y2: %d",
-				totalArea->x1, totalArea->y1, totalArea->x1, totalArea->y2));
+				totalArea->x1, totalArea->y1, totalArea->x2, totalArea->y2));
 	}
 
 	if (trackingArea)
@@ -612,7 +677,7 @@ Bool rdpRRGetPanning(ScreenPtr pScreen, RRCrtcPtr crtc, BoxPtr totalArea, BoxPtr
 		trackingArea->y2 = pScreen->height;
 
 		LLOGLN(100, ("rdpRRGetPanning: trackingArea: x1: %d y1: %d x2: %d y2: %d",
-				trackingArea->x1, trackingArea->y1, trackingArea->x1, trackingArea->y2));
+				trackingArea->x1, trackingArea->y1, trackingArea->x2, trackingArea->y2));
 	}
 
 	if (border)
@@ -763,19 +828,6 @@ int rdpRRInit(ScreenPtr pScreen)
 	modeInfo.hSkew = 0;
 	modeInfo.nameLength = strlen(name);
 
-	/**
-	 * Sample EDID:
-	 *
-	 * 00ffffffffffff001e6d8d5736210100
-	 * 0a140103e0301b78ea3337a5554d9d25
-	 * 115052a54b00b3008180818f714f0101
-	 * 010101010101023a801871382d40582c
-	 * 4500dd0c1100001a000000fd00384b1e
-	 * 530f000a202020202020000000fc0045
-	 * 323235300a20202020202020000000ff
-	 * 003031304e44524632363033380a00a2
-	 */
-
 	mode = RRModeGet(&modeInfo, name);
 
 	if (!mode)
@@ -786,7 +838,7 @@ int rdpRRInit(ScreenPtr pScreen)
 	if (!crtc)
 		return FALSE;
 
-	RRCrtcGammaSetSize(crtc, 256);
+	RRCrtcGammaSetSize(crtc, 32);
 
 	output = RROutputCreate(pScreen, "RDP-0", strlen("RDP-0"), NULL);
 
@@ -796,7 +848,7 @@ int rdpRRInit(ScreenPtr pScreen)
 	if (!RROutputSetClones(output, NULL, 0))
 		return -1;
 
-	if (!RROutputSetModes(output, &mode, 1, 0))
+	if (!RROutputSetModes(output, &mode, 1, 1))
 		return -1;
 
 	if (!RROutputSetCrtcs(output, &crtc, 1))
@@ -810,6 +862,9 @@ int rdpRRInit(ScreenPtr pScreen)
 
 	if (!RROutputSetConnection(output, RR_Connected))
 		return -1;
+
+	g_EDID = rdpConstructScreenEdid(pScreen);
+	rdpSetOutputEdid(output, g_EDID);
 
 #if (RANDR_INTERFACE_VERSION >= 0x0104)
 	provider = RRProviderCreate(pScreen, "RDP", strlen("RDP"));

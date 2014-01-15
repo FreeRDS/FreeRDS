@@ -1,7 +1,6 @@
 /**
  * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright 2005-2012 Jay Sorg
  * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,9 +20,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __RDPPOLYFILLRECT_H
-#define __RDPPOLYFILLRECT_H
+#ifndef FREERDS_X11RDP_SCREEN_H
+#define FREERDS_X11RDP_SCREEN_H
 
-void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle* prectInit);
+int rdpScreenFrameBufferAlloc();
+int rdpScreenFrameBufferFree();
 
-#endif
+int get_min_shared_memory_segment_size(void);
+int get_max_shared_memory_segment_size(void);
+
+#endif /* FREERDS_X11RDP_SCREEN_H */

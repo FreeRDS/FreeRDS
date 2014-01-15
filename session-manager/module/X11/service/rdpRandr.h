@@ -1,7 +1,7 @@
 /**
  * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright 2005-2012 Jay Sorg
+ * Copyright 2011-2012 Jay Sorg
  * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,9 +21,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __RDPPOLYFILLRECT_H
-#define __RDPPOLYFILLRECT_H
+#ifndef _RDPRANDR_H
+#define _RDPRANDR_H
 
-void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle* prectInit);
+int rdpRRInit(ScreenPtr pScreen);
 
 #endif

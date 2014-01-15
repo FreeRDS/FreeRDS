@@ -120,8 +120,8 @@ set(${MODULE_PREFIX}_SRCS
 	rdpCopyArea.h
 	rdpCopyPlane.c
 	rdpCopyPlane.h
-	rdpdraw.c
-	rdpdraw.h
+	rdpDraw.c
+	rdpDraw.h
 	rdpFillPolygon.c
 	rdpFillPolygon.h
 	rdpFillSpans.c
@@ -133,9 +133,10 @@ set(${MODULE_PREFIX}_SRCS
 	rdpImageText16.h
 	rdpImageText8.c
 	rdpImageText8.h
-	rdpinput.c
-	rdpmain.c
-	rdpmisc.c
+	rdpInput.c
+	rdpInput.h
+	rdpMain.c
+	rdpMisc.c
 	rdpPolyArc.c
 	rdpPolyArc.h
 	rdpPolyFillArc.c
@@ -160,11 +161,18 @@ set(${MODULE_PREFIX}_SRCS
 	rdpPushPixels.h
 	rdpPutImage.c
 	rdpPutImage.h
-	rdprandr.c
-	rdprandr.h
+	rdpRandr.c
+	rdpRandr.h
 	rdpSetSpans.c
 	rdpSetSpans.h
-	rdpup.c)
+	rdpWindow.c
+	rdpWindow.h
+	rdpPalette.c
+	rdpPalette.h
+	rdpScreen.c
+	rdpScreen.h
+	rdpUpdate.c
+	rdpUpdate.h)
 
 set(${MODULE_PREFIX}_XORG_XSERVER_SRCS
 	${XSRCBASE}/mi/miinitext.c

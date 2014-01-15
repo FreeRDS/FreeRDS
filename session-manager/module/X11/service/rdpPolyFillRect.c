@@ -1,26 +1,28 @@
-/*
-Copyright 2005-2012 Jay Sorg
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ *
+ * Copyright 2005-2012 Jay Sorg
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "rdp.h"
-#include "rdpdraw.h"
+#include "rdpDraw.h"
 
 #define LDEBUG 0
 
@@ -99,8 +101,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 
 	if (cd == 1) /* no clip */
 	{
-		rdpup_begin_update();
-
 		dstblt_rop = rdp_dstblt_rop(pGC->alu);
 
 		if ((pGC->fillStyle == 0) && (dstblt_rop))
@@ -111,13 +111,14 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 			{
 				box = REGION_RECTS(fill_reg)[j];
 
+				msg.type = RDS_SERVER_DSTBLT;
 				msg.nLeftRect = box.x1;
 				msg.nTopRect = box.y1;
 				msg.nWidth = box.x2 - box.x1;
 				msg.nHeight = box.y2 - box.y1;
 				msg.bRop = dstblt_rop;
 
-				rdpup_dstblt(&msg);
+				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
 		}
 		else
@@ -125,11 +126,9 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 			for (j = REGION_NUM_RECTS(fill_reg) - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(fill_reg)[j];
-				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
 		}
-
-		rdpup_end_update();
 	}
 	else if (cd == 2) /* clip */
 	{
@@ -140,8 +139,6 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 		{
 			dstblt_rop = rdp_dstblt_rop(pGC->alu);
 
-			rdpup_begin_update();
-
 			if ((pGC->fillStyle == 0) && (dstblt_rop))
 			{
 				RDS_MSG_DSTBLT msg;
@@ -150,13 +147,14 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 				{
 					box = REGION_RECTS(&clip_reg)[j];
 
+					msg.type = RDS_SERVER_DSTBLT;
 					msg.nLeftRect = box.x1;
 					msg.nTopRect = box.y1;
 					msg.nWidth = box.x2 - box.x1;
 					msg.nHeight = box.y2 - box.y1;
 					msg.bRop = dstblt_rop;
 
-					rdpup_dstblt(&msg);
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 			else
@@ -164,11 +162,9 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 				for (j = num_clips - 1; j >= 0; j--)
 				{
 					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+					rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 			}
-
-			rdpup_end_update();
 		}
 	}
 

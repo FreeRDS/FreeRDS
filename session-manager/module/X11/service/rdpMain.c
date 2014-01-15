@@ -1,29 +1,29 @@
-/*
-Copyright 2005-2012 Jay Sorg
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-This is the main file called from main.c
-Sets up the  functions
-
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ *
+ * Copyright 2005-2012 Jay Sorg
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "rdp.h"
-#include "rdprandr.h"
+#include "rdpRandr.h"
+#include "rdpScreen.h"
 
 #include "glx_extinit.h"
 
@@ -40,7 +40,7 @@ Sets up the  functions
 #define DEBUG_OUT(fmt, ...)
 #endif
 
-rdpScreenInfoRec g_rdpScreen; /* the one screen */
+rdpScreenInfoRec g_rdpScreen;
 ScreenPtr g_pScreen = 0;
 
 DevPrivateKeyRec g_rdpGCIndex;
@@ -51,17 +51,7 @@ DevPrivateKeyRec g_rdpPixmapIndex;
 DeviceIntPtr g_pointer = 0;
 DeviceIntPtr g_keyboard = 0;
 
-Bool g_wrapWindow = 1;
-Bool g_wrapPixmap = 1;
-
 rdpPixmapRec g_screenPriv;
-
-/* if true, running in RemoteApp / RAIL mode */
-int g_use_rail = 0;
-
-int g_con_number = 0; /* increments for each connection */
-
-WindowPtr g_invalidate_window = 0;
 
 /* set all these at once, use function set_bpp */
 int g_bpp = 16;
@@ -173,42 +163,31 @@ static void rdpWakeupHandler(ScreenPtr pScreen, unsigned long result, pointer pR
 
 static void rdpBlockHandler1(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
 {
+
 }
 
 static void rdpWakeupHandler1(pointer blockData, int result, pointer pReadmask)
 {
-	rdpup_check();
+	rdp_check();
 }
 
-#if 0
-static Bool
-rdpDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScreen)
+/* device cursor procedures */
+
+Bool rdpDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScreen)
 {
 	DEBUG_OUT("rdpDeviceCursorInitializeProcPtr:\n");
-	return 1;
+	return TRUE;
 }
 
-static void
-rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
+void rdpDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScreen)
 {
 	DEBUG_OUT("rdpDeviceCursorCleanupProcPtr:\n");
 }
-#endif
 
-#if 0
-Bool
-rdpCreateColormap(ColormapPtr pCmap)
+void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt)
 {
-	DEBUG_OUT("rdpCreateColormap:\n");
-	return 1;
+	dispatchException &= ~DE_RESET; /* hack - force server not to reset */
 }
-
-static void
-rdpDestroyColormap(ColormapPtr pColormap)
-{
-	DEBUG_OUT("rdpDestroyColormap:\n");
-}
-#endif
 
 /* returns boolean, true if everything is ok */
 static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
@@ -227,57 +206,12 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	dpiy = PixelDPI;
 	monitorResolution = PixelDPI;
 
-	g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width, g_rdpScreen.depth);
-	g_rdpScreen.bitsPerPixel = rdpBitsPerPixel(g_rdpScreen.depth);
-
-	DEBUG_OUT("\n");
-	ErrorF("X11rdp, an X server for xrdp\n");
+	ErrorF("X11rdp, an X11 server for FreeRDS\n");
 	ErrorF("Version %s\n", X11RDPVER);
 	ErrorF("Copyright (C) 2005-2012 Jay Sorg\n");
 	ErrorF("Copyright (C) 2013 Thincast Technologies GmbH\n");
-	ErrorF("See http://xrdp.sf.net for information on xrdp.\n");
-#if defined(XORG_VERSION_CURRENT) && defined (XVENDORNAME)
-	ErrorF("Underlying X server release %d, %s\n",
-			XORG_VERSION_CURRENT, XVENDORNAME);
-#endif
-#if defined(XORG_RELEASE)
-	ErrorF("Xorg %s\n", XORG_RELEASE);
-#endif
-	ErrorF("Screen width %d height %d depth %d bpp %d\n", g_rdpScreen.width,
-			g_rdpScreen.height, g_rdpScreen.depth, g_rdpScreen.bitsPerPixel);
-	ErrorF("dpix %d dpiy %d\n", dpix, dpiy);
 
-	g_rdpScreen.sharedMemory = 1;
-
-	if (!g_rdpScreen.pfbMemory)
-	{
-		g_rdpScreen.sizeInBytes = (g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height);
-
-		if (g_rdpScreen.sharedMemory)
-		{
-			/* allocate shared memory segment */
-			g_rdpScreen.segmentId = shmget(IPC_PRIVATE, g_rdpScreen.sizeInBytes,
-					IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-			/* attach the shared memory segment */
-			g_rdpScreen.pfbMemory = (char*) shmat(g_rdpScreen.segmentId, 0, 0);
-
-			DEBUG_OUT("sizeInBytes %d segmentId: %d pfbMemory: %p\n",
-					g_rdpScreen.sizeInBytes, g_rdpScreen.segmentId, g_rdpScreen.pfbMemory);
-		}
-		else
-		{
-			g_rdpScreen.pfbMemory = (char*) malloc(g_rdpScreen.sizeInBytes);
-		}
-
-		if (!g_rdpScreen.pfbMemory)
-		{
-			rdpLog("rdpScreenInit pfbMemory malloc failed\n");
-			return 0;
-		}
-
-		ZeroMemory(g_rdpScreen.pfbMemory, g_rdpScreen.sizeInBytes);
-	}
+	rdpScreenFrameBufferAlloc();
 
 	miClearVisualTypes();
 
@@ -290,36 +224,15 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 			miGetDefaultVisualMask(g_rdpScreen.depth),
 			8, defaultColorVisualClass))
 	{
-		rdpLog("rdpScreenInit miSetVisualTypes failed\n");
+		ErrorF("rdpScreenInit miSetVisualTypes failed\n");
 		return 0;
 	}
 
 	miSetPixmapDepths();
 
-	switch (g_rdpScreen.bitsPerPixel)
-	{
-		case 8:
-			ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
-					g_rdpScreen.width, g_rdpScreen.height,
-					dpix, dpiy, g_rdpScreen.paddedWidthInBytes, 8);
-			break;
-
-		case 16:
-			ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
-					g_rdpScreen.width, g_rdpScreen.height,
-					dpix, dpiy, g_rdpScreen.paddedWidthInBytes / 2, 16);
-			break;
-
-		case 32:
-			ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
-					g_rdpScreen.width, g_rdpScreen.height,
-					dpix, dpiy, g_rdpScreen.paddedWidthInBytes / 4, 32);
-			break;
-
-		default:
-			DEBUG_OUT("rdpScreenInit: error\n");
-			return 0;
-	}
+	ret = fbScreenInit(pScreen, g_rdpScreen.pfbMemory,
+			g_rdpScreen.width, g_rdpScreen.height,
+			dpix, dpiy, g_rdpScreen.scanline / g_rdpScreen.bytesPerPixel, g_rdpScreen.bitsPerPixel);
 
 	if (!ret)
 	{
@@ -395,8 +308,14 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	/* os layer procedures */
 	g_rdpScreen.WakeupHandler = pScreen->WakeupHandler;
 
+	/* Colormap procedures */
 	g_rdpScreen.CreateColormap = pScreen->CreateColormap;
 	g_rdpScreen.DestroyColormap = pScreen->DestroyColormap;
+	g_rdpScreen.InstallColormap = pScreen->InstallColormap;
+	g_rdpScreen.UninstallColormap = pScreen->UninstallColormap;
+	g_rdpScreen.ListInstalledColormaps = pScreen->ListInstalledColormaps;
+	g_rdpScreen.StoreColors = pScreen->StoreColors;
+	g_rdpScreen.ResolveColor = pScreen->ResolveColor;
 
 	ps = GetPictureScreenIfSet(pScreen);
 
@@ -406,8 +325,8 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 		g_rdpScreen.Glyphs = ps->Glyphs;
 	}
 
-	pScreen->blackPixel = g_rdpScreen.blackPixel;
-	pScreen->whitePixel = g_rdpScreen.whitePixel;
+	pScreen->blackPixel = g_rdpScreen.blackPixel = 0;
+	pScreen->whitePixel = g_rdpScreen.whitePixel = 0;
 
 	/* Random screen procedures */
 	pScreen->CloseScreen = rdpCloseScreen;
@@ -424,39 +343,37 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	/* GC procedures */
 	pScreen->CreateGC = rdpCreateGC;
 
-	if (g_wrapPixmap)
-	{
-		/* Pixmap procedures */
-		pScreen->CreatePixmap = rdpCreatePixmap;
-		pScreen->DestroyPixmap = rdpDestroyPixmap;
-	}
+	/* Pixmap procedures */
+	pScreen->CreatePixmap = rdpCreatePixmap;
+	pScreen->DestroyPixmap = rdpDestroyPixmap;
 
-	if (g_wrapWindow)
-	{
-		/* Window Procedures */
-		pScreen->CreateWindow = rdpCreateWindow;
-		pScreen->DestroyWindow = rdpDestroyWindow;
-		pScreen->ChangeWindowAttributes = rdpChangeWindowAttributes;
-		pScreen->RealizeWindow = rdpRealizeWindow;
-		pScreen->UnrealizeWindow = rdpUnrealizeWindow;
-		pScreen->PositionWindow = rdpPositionWindow;
-		pScreen->WindowExposures = rdpWindowExposures;
-	}
-
+	/* Window Procedures */
+	pScreen->CreateWindow = rdpCreateWindow;
+	pScreen->DestroyWindow = rdpDestroyWindow;
+	pScreen->ChangeWindowAttributes = rdpChangeWindowAttributes;
+	pScreen->RealizeWindow = rdpRealizeWindow;
+	pScreen->UnrealizeWindow = rdpUnrealizeWindow;
+	pScreen->PositionWindow = rdpPositionWindow;
+	pScreen->WindowExposures = rdpWindowExposures;
 	pScreen->CopyWindow = rdpCopyWindow;
 	pScreen->ClearToBackground = rdpClearToBackground;
 
 	/* Backing store procedures */
 	//pScreen->RestoreAreas = rdpRestoreAreas;
 
-#if 0
+	/* Colormap procedures */
 	pScreen->CreateColormap = rdpCreateColormap;
 	pScreen->DestroyColormap = rdpDestroyColormap;
-#endif
+	pScreen->InstallColormap = rdpInstallColormap;
+	pScreen->UninstallColormap = rdpUninstallColormap;
+	pScreen->ListInstalledColormaps = rdpListInstalledColormaps;
+	pScreen->StoreColors = rdpStoreColors;
+	pScreen->ResolveColor = rdpResolveColor;
 
 	miPointerInitialize(pScreen, &g_rdpSpritePointerFuncs, &g_rdpPointerCursorFuncs, 1);
 
 #if 0
+	/* device cursor procedures */
 	pScreen->DeviceCursorInitialize = rdpDeviceCursorInitialize;
 	pScreen->DeviceCursorCleanup = rdpDeviceCursorCleanup;
 #endif
@@ -476,7 +393,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	if (!vis_found)
 	{
-		rdpLog("rdpScreenInit: couldn't find root visual\n");
+		ErrorF("rdpScreenInit: couldn't find root visual\n");
 		exit(1);
 	}
 
@@ -494,7 +411,7 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	if (ret)
 	{
-		ret = rdpup_init();
+		ret = rdp_init();
 
 		if (!ret)
 		{
@@ -647,7 +564,7 @@ void InitOutput(ScreenInfo* pScreenInfo, int argc, char** argv)
 
 	if (!AddCallback(&ClientStateCallback, rdpClientStateChange, NULL))
 	{
-		rdpLog("InitOutput: AddCallback failed\n");
+		ErrorF("InitOutput: AddCallback failed\n");
 		return;
 	}
 
@@ -675,7 +592,6 @@ void InitInput(int argc, char** argv)
 	}
 
 	mieqInit();
-
 }
 
 void ddxGiveUp(enum ExitCode error)
@@ -684,23 +600,8 @@ void ddxGiveUp(enum ExitCode error)
 
 	DEBUG_OUT("ddxGiveUp:\n");
 
-	if (g_rdpScreen.sharedMemory)
-	{
-		if (g_rdpScreen.pfbMemory)
-		{
-			/* detach shared memory segment */
-			shmdt(g_rdpScreen.pfbMemory);
-			g_rdpScreen.pfbMemory = NULL;
-
-			/* deallocate shared memory segment */
-			shmctl(g_rdpScreen.segmentId, IPC_RMID, 0);
-		}
-	}
-	else
-	{
-		free(g_rdpScreen.pfbMemory);
-		g_rdpScreen.pfbMemory = NULL;
-	}
+	if (g_rdpScreen.pfbMemory)
+		rdpScreenFrameBufferFree();
 
 	if (g_initOutputCalled)
 	{
@@ -719,8 +620,6 @@ void ProcessInputEvents(void)
 	mieqProcessInputEvents();
 }
 
-/* needed for some reason? todo
-   needs to be rfb */
 void rfbRootPropertyChange(PropertyPtr pProp)
 {
 

@@ -1,24 +1,24 @@
-/*
-Copyright 2005-2013 Jay Sorg
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-keyboard and mouse stuff
-
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ *
+ * Copyright 2005-2012 Jay Sorg
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "rdp.h"
@@ -30,6 +30,8 @@ keyboard and mouse stuff
 #include "inpututils.h"
 
 #include <winpr/input.h>
+
+#include "rdpInput.h"
 
 #if 1
 #define DEBUG_OUT_INPUT(arg)
@@ -251,7 +253,7 @@ void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 
 	if (!pKeySyms->map)
 	{
-		rdpLog("KbdDeviceInit malloc failed\n");
+		ErrorF("KbdDeviceInit malloc failed\n");
 		exit(1);
 	}
 
@@ -614,6 +616,8 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 	w = pCurs->bits->width;
 	h = pCurs->bits->height;
 
+	msg.type = RDS_SERVER_SET_POINTER;
+
 	msg.xPos = pCurs->bits->xhot;
 	msg.yPos = pCurs->bits->yhot;
 	ZeroMemory(cur_data, sizeof(cur_data));
@@ -670,7 +674,6 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 			mskLine += stride;
 		}
 	}
-	rdpup_begin_update();
 
 	msg.xorBpp = bpp;
 	msg.xorMaskData = (BYTE*) cur_data;
@@ -678,9 +681,7 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 	msg.andMaskData = (BYTE*) cur_mask;
 	msg.lengthAndMask = 0;
 
-	rdpup_set_pointer(&msg);
-
-	rdpup_end_update();
+	rdp_send_update((RDS_MSG_COMMON*) &msg);
 }
 
 void rdpSpriteMoveCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y)
@@ -865,30 +866,37 @@ static void kbdSyncState(int xkb_flags, int rdp_flags, int keycode)
 
 void KbdAddSyncEvent(DWORD flags)
 {
-	DeviceIntPtr pDev = g_keyboard;
-	DeviceIntPtr master = pDev->key->xkbInfo->device->master;
-	KeyClassPtr keyc;
-	char numLock = -1, scrollLock = -1;
 	int i;
 	int xkb_state;
+	KeyClassPtr keyc;
+	char numLock = -1;
+	char scrollLock = -1;
+	DeviceIntPtr pDev = g_keyboard;
+	DeviceIntPtr master = pDev->key->xkbInfo->device->master;
+
 	if (!master)
-		/* no master device */
-		return;
+		return; /* no master device */
+
 	keyc = master->key;
 	xkb_state = XkbStateFieldFromRec(&master->key->xkbInfo->state);
 
-	/* figure out which virtual modifier NumLock and ScrollLock are
-	 * and get the the mapped real modifiers */
-	for (i=0 ; i < XkbNumVirtualMods; ++i)
+	/**
+	 * figure out which virtual modifier NumLock and ScrollLock
+	 * are and get the the mapped real modifiers
+	 */
+	for (i = 0; i < XkbNumVirtualMods; ++i)
 	{
 		Atom mod = keyc->xkbInfo->desc->names->vmods[i];
-		if ( mod == NULL)
+
+		if (!mod)
 			continue;
+
 		if (!strcmp(NameForAtom(mod),"NumLock"))
 			numLock = keyc->xkbInfo->desc->server->vmods[i];
 		else if (!strcmp(NameForAtom(mod),"ScrollLock"))
 			scrollLock = keyc->xkbInfo->desc->server->vmods[i];
 	}
+
 	kbdSyncState(xkb_state & LockMask, flags & KBD_SYNC_CAPS_LOCK, 66);
 	kbdSyncState(xkb_state & numLock, flags & KBD_SYNC_NUM_LOCK, 77);
 	kbdSyncState(xkb_state & scrollLock, flags & KBD_SYNC_SCROLL_LOCK, 78);

@@ -1,29 +1,29 @@
-/*
-Copyright 2005-2012 Jay Sorg
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Xserver drawing ops and funcs
-
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ *
+ * Copyright 2005-2012 Jay Sorg
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "rdp.h"
 #include "gcops.h"
-#include "rdpdraw.h"
+#include "rdpDraw.h"
 
 #include "rdpCopyArea.h"
 #include "rdpPolyFillRect.h"
@@ -54,15 +54,8 @@ Xserver drawing ops and funcs
 
 extern rdpScreenInfoRec g_rdpScreen;
 extern DevPrivateKeyRec g_rdpGCIndex;
-extern DevPrivateKeyRec g_rdpWindowIndex;
 extern DevPrivateKeyRec g_rdpPixmapIndex;
 extern ScreenPtr g_pScreen;
-extern Bool g_wrapPixmap;
-extern WindowPtr g_invalidate_window;
-extern int g_use_rail;
-extern int g_con_number;
-
-ColormapPtr g_rdpInstalledColormap;
 
 static int g_doing_font = 0;
 
@@ -127,7 +120,7 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 				break;
 
 			default:
-				rdpLog("unimp clip type %d\n", pGC->clientClipType);
+				ErrorF("unimp clip type %d\n", pGC->clientClipType);
 				break;
 		}
 
@@ -178,7 +171,7 @@ int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
 						break;
 
 					default:
-						rdpLog("unimp clip type %d\n", pGC->clientClipType);
+						ErrorF("unimp clip type %d\n", pGC->clientClipType);
 						break;
 				}
 
@@ -269,42 +262,12 @@ void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n
 static void rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
 {
 	rdpGCRec* priv;
-	int wrap;
-	RegionPtr pRegion;
 
 	LLOGLN(10, ("rdpValidateGC:"));
 	GC_FUNC_PROLOGUE(pGC);
 	pGC->funcs->ValidateGC(pGC, changes, d);
 
-	if (g_wrapPixmap)
-	{
-		wrap = 1;
-	}
-	else
-	{
-		wrap = (d->type == DRAWABLE_WINDOW) && ((WindowPtr)d)->viewable;
-
-		if (wrap)
-		{
-			if (pGC->subWindowMode == IncludeInferiors)
-			{
-				pRegion = &(((WindowPtr)d)->borderClip);
-			}
-			else
-			{
-				pRegion = &(((WindowPtr)d)->clipList);
-			}
-
-			wrap = RegionNotEmpty(pRegion);
-		}
-	}
-
-	priv->ops = 0;
-
-	if (wrap)
-	{
-		priv->ops = pGC->ops;
-	}
+	priv->ops = pGC->ops;
 
 	GC_FUNC_EPILOGUE(pGC);
 }
@@ -445,7 +408,6 @@ PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, u
 	pScreen->CreatePixmap = g_rdpScreen.CreatePixmap;
 	rv = pScreen->CreatePixmap(pScreen, width, height, depth, usage_hint);
 	priv = GETPIXPRIV(rv);
-	priv->con_number = g_con_number;
 	priv->kind_width = width;
 	pScreen->ModifyPixmapHeader(rv, org_width, height, depth, 0, 0, 0);
 	pScreen->CreatePixmap = rdpCreatePixmap;
@@ -471,176 +433,6 @@ Bool rdpDestroyPixmap(PixmapPtr pPixmap)
 	return status;
 }
 
-Bool rdpCreateWindow(WindowPtr pWindow)
-{
-	Bool rv;
-	ScreenPtr pScreen;
-	rdpWindowRec *priv;
-
-	LLOGLN(10, ("rdpCreateWindow:"));
-	priv = GETWINPRIV(pWindow);
-	LLOGLN(10, ("  %p status %d", priv, priv->status));
-
-	pScreen = pWindow->drawable.pScreen;
-	pScreen->CreateWindow = g_rdpScreen.CreateWindow;
-	rv = pScreen->CreateWindow(pWindow);
-	pScreen->CreateWindow = rdpCreateWindow;
-
-	if (g_use_rail)
-	{
-	}
-
-	return rv;
-}
-
-Bool rdpDestroyWindow(WindowPtr pWindow)
-{
-	Bool rv;
-	ScreenPtr pScreen;
-	//rdpWindowRec *priv;
-
-	LLOGLN(10, ("rdpDestroyWindow:"));
-	//priv = GETWINPRIV(pWindow);
-
-	pScreen = pWindow->drawable.pScreen;
-	pScreen->DestroyWindow = g_rdpScreen.DestroyWindow;
-	rv = pScreen->DestroyWindow(pWindow);
-	pScreen->DestroyWindow = rdpDestroyWindow;
-
-	if (g_use_rail)
-	{
-
-	}
-
-	return rv;
-}
-
-Bool rdpPositionWindow(WindowPtr pWindow, int x, int y)
-{
-	Bool rv;
-	ScreenPtr pScreen;
-	rdpWindowRec *priv;
-
-	LLOGLN(10, ("rdpPositionWindow:"));
-	priv = GETWINPRIV(pWindow);
-	pScreen = pWindow->drawable.pScreen;
-	pScreen->PositionWindow = g_rdpScreen.PositionWindow;
-	rv = pScreen->PositionWindow(pWindow, x, y);
-	pScreen->PositionWindow = rdpPositionWindow;
-
-	if (g_use_rail)
-	{
-		if (priv->status == 1)
-		{
-			LLOGLN(10, ("rdpPositionWindow:"));
-			LLOGLN(10, ("  x %d y %d", x, y));
-		}
-	}
-
-	return rv;
-}
-
-Bool rdpRealizeWindow(WindowPtr pWindow)
-{
-	Bool rv;
-	ScreenPtr pScreen;
-	rdpWindowRec *priv;
-
-	LLOGLN(10, ("rdpRealizeWindow:"));
-	priv = GETWINPRIV(pWindow);
-	pScreen = pWindow->drawable.pScreen;
-	pScreen->RealizeWindow = g_rdpScreen.RealizeWindow;
-	rv = pScreen->RealizeWindow(pWindow);
-	pScreen->RealizeWindow = rdpRealizeWindow;
-
-	if (g_use_rail)
-	{
-		if ((pWindow != g_invalidate_window) && (pWindow->parent != 0))
-		{
-			if (XR_IS_ROOT(pWindow->parent))
-			{
-				LLOGLN(10, ("rdpRealizeWindow:"));
-				LLOGLN(10, ("  pWindow %p id 0x%x pWindow->parent %p id 0x%x x %d "
-						"y %d width %d height %d",
-						pWindow, (int)(pWindow->drawable.id),
-						pWindow->parent, (int)(pWindow->parent->drawable.id),
-						pWindow->drawable.x, pWindow->drawable.y,
-						pWindow->drawable.width, pWindow->drawable.height));
-				priv->status = 1;
-				rdpup_create_window(pWindow, priv);
-			}
-		}
-	}
-
-	return rv;
-}
-
-Bool rdpUnrealizeWindow(WindowPtr pWindow)
-{
-	Bool rv;
-	ScreenPtr pScreen;
-	rdpWindowRec *priv;
-
-	LLOGLN(10, ("rdpUnrealizeWindow:"));
-	priv = GETWINPRIV(pWindow);
-	pScreen = pWindow->drawable.pScreen;
-	pScreen->UnrealizeWindow = g_rdpScreen.UnrealizeWindow;
-	rv = pScreen->UnrealizeWindow(pWindow);
-	pScreen->UnrealizeWindow = rdpUnrealizeWindow;
-
-	if (g_use_rail)
-	{
-		if (priv->status == 1)
-		{
-			LLOGLN(10, ("rdpUnrealizeWindow:"));
-			priv->status = 0;
-			rdpup_delete_window(pWindow, priv);
-		}
-	}
-
-	return rv;
-}
-
-Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask)
-{
-	Bool rv;
-	ScreenPtr pScreen;
-	//rdpWindowRec *priv;
-
-	LLOGLN(10, ("rdpChangeWindowAttributes:"));
-	//priv = GETWINPRIV(pWindow);
-	pScreen = pWindow->drawable.pScreen;
-	pScreen->ChangeWindowAttributes = g_rdpScreen.ChangeWindowAttributes;
-	rv = pScreen->ChangeWindowAttributes(pWindow, mask);
-	pScreen->ChangeWindowAttributes = rdpChangeWindowAttributes;
-
-	if (g_use_rail)
-	{
-
-	}
-
-	return rv;
-}
-
-void rdpWindowExposures(WindowPtr pWindow, RegionPtr pRegion, RegionPtr pBSRegion)
-{
-	ScreenPtr pScreen;
-	//rdpWindowRec *priv;
-
-	LLOGLN(10, ("rdpWindowExposures:"));
-	//priv = GETWINPRIV(pWindow);
-	pScreen = pWindow->drawable.pScreen;
-	pScreen->WindowExposures = g_rdpScreen.WindowExposures;
-	pScreen->WindowExposures(pWindow, pRegion, pBSRegion);
-
-	if (g_use_rail)
-	{
-
-	}
-
-	pScreen->WindowExposures = rdpWindowExposures;
-}
-
 Bool rdpCreateGC(GCPtr pGC)
 {
 	rdpGCRec* priv;
@@ -659,125 +451,11 @@ Bool rdpCreateGC(GCPtr pGC)
 	}
 	else
 	{
-		rdpLog("error in rdpCreateGC, CreateGC failed\n");
+		ErrorF("error in rdpCreateGC, CreateGC failed\n");
 	}
 
 	g_pScreen->CreateGC = rdpCreateGC;
 	return rv;
-}
-
-void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion)
-{
-	RegionRec reg;
-	RegionRec clip;
-	int dx;
-	int dy;
-	int i;
-	int j;
-	int num_clip_rects;
-	int num_reg_rects;
-	BoxRec box1;
-	BoxRec box2;
-
-	LLOGLN(10, ("in rdpCopyWindow"));
-	RegionInit(&reg, NullBox, 0);
-	RegionCopy(&reg, pOldRegion);
-	g_pScreen->CopyWindow = g_rdpScreen.CopyWindow;
-	g_pScreen->CopyWindow(pWin, ptOldOrg, pOldRegion);
-	RegionInit(&clip, NullBox, 0);
-	RegionCopy(&clip, &pWin->borderClip);
-	dx = pWin->drawable.x - ptOldOrg.x;
-	dy = pWin->drawable.y - ptOldOrg.y;
-
-	rdpup_begin_update();
-	num_clip_rects = REGION_NUM_RECTS(&clip);
-	num_reg_rects = REGION_NUM_RECTS(&reg);
-
-	/* should maybe sort the rects instead of checking dy < 0 */
-	/* If we can depend on the rects going from top to bottom, left to right we are ok */
-	if (dy < 0 || (dy == 0 && dx < 0))
-	{
-		for (j = 0; j < num_clip_rects; j++)
-		{
-			box1 = REGION_RECTS(&clip)[j];
-			rdpup_set_clip(box1.x1, box1.y1, box1.x2 - box1.x1, box1.y2 - box1.y1);
-
-			for (i = 0; i < num_reg_rects; i++)
-			{
-				box2 = REGION_RECTS(&reg)[i];
-				rdpup_screen_blt(box2.x1 + dx, box2.y1 + dy, box2.x2 - box2.x1,
-						box2.y2 - box2.y1, box2.x1, box2.y1);
-			}
-		}
-	}
-	else
-	{
-		for (j = num_clip_rects - 1; j >= 0; j--)
-		{
-			box1 = REGION_RECTS(&clip)[j];
-			rdpup_set_clip(box1.x1, box1.y1, box1.x2 - box1.x1, box1.y2 - box1.y1);
-
-			for (i = num_reg_rects - 1; i >= 0; i--)
-			{
-				box2 = REGION_RECTS(&reg)[i];
-				rdpup_screen_blt(box2.x1 + dx, box2.y1 + dy, box2.x2 - box2.x1,
-						box2.y2 - box2.y1, box2.x1, box2.y1);
-			}
-		}
-	}
-
-	rdpup_reset_clip();
-	rdpup_end_update();
-
-	RegionUninit(&reg);
-	RegionUninit(&clip);
-	g_pScreen->CopyWindow = rdpCopyWindow;
-}
-
-void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool generateExposures)
-{
-	int j;
-	BoxRec box;
-	RegionRec reg;
-
-	LLOGLN(10, ("in rdpClearToBackground"));
-	g_pScreen->ClearToBackground = g_rdpScreen.ClearToBackground;
-	g_pScreen->ClearToBackground(pWin, x, y, w, h, generateExposures);
-
-	if (!generateExposures)
-	{
-		if (w > 0 && h > 0)
-		{
-			box.x1 = x;
-			box.y1 = y;
-			box.x2 = box.x1 + w;
-			box.y2 = box.y1 + h;
-		}
-		else
-		{
-			box.x1 = pWin->drawable.x;
-			box.y1 = pWin->drawable.y;
-			box.x2 = box.x1 + pWin->drawable.width;
-			box.y2 = box.y1 + pWin->drawable.height;
-		}
-
-		RegionInit(&reg, &box, 0);
-		RegionIntersect(&reg, &reg, &pWin->clipList);
-
-		rdpup_begin_update();
-
-		for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
-		{
-			box = REGION_RECTS(&reg)[j];
-			rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-		}
-
-		rdpup_end_update();
-
-		RegionUninit(&reg);
-	}
-
-	g_pScreen->ClearToBackground = rdpClearToBackground;
 }
 
 RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
@@ -791,74 +469,20 @@ RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 	RegionInit(&reg, NullBox, 0);
 	RegionCopy(&reg, prgnExposed);
 
-	rdpup_begin_update();
-
 	for (j = REGION_NUM_RECTS(&reg) - 1; j >= 0; j--)
 	{
 		box = REGION_RECTS(&reg)[j];
-		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+		rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 	}
-
-	rdpup_end_update();
 
 	RegionUninit(&reg);
 
 	return rv;
 }
 
-void rdpInstallColormap(ColormapPtr pmap)
-{
-	ColormapPtr oldpmap;
-
-	oldpmap = g_rdpInstalledColormap;
-
-	if (pmap != oldpmap)
-	{
-		if (oldpmap != (ColormapPtr)None)
-		{
-			WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
-		}
-
-		/* Install pmap */
-		g_rdpInstalledColormap = pmap;
-		WalkTree(pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
-		/*rfbSetClientColourMaps(0, 0);*/
-	}
-
-	/*g_rdpScreen.InstallColormap(pmap);*/
-}
-
-void rdpUninstallColormap(ColormapPtr pmap)
-{
-	ColormapPtr curpmap;
-
-	curpmap = g_rdpInstalledColormap;
-
-	if (pmap == curpmap)
-	{
-		if (pmap->mid != pmap->pScreen->defColormap)
-		{
-			//curpmap = (ColormapPtr)LookupIDByType(pmap->pScreen->defColormap,
-			//                                      RT_COLORMAP);
-			//pmap->pScreen->InstallColormap(curpmap);
-		}
-	}
-}
-
-int rdpListInstalledColormaps(ScreenPtr pScreen, Colormap* pmaps)
-{
-	*pmaps = g_rdpInstalledColormap->mid;
-	return 1;
-}
-
-void rdpStoreColors(ColormapPtr pmap, int ndef, xColorItem* pdefs)
-{
-
-}
-
 Bool rdpSaveScreen(ScreenPtr pScreen, int on)
 {
-	return 1;
+	return TRUE;
 }
 
 /* it looks like all the antialias draws go through here */
@@ -925,15 +549,11 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 
 		if (num_clips > 0)
 		{
-			rdpup_begin_update();
-
 			for (j = num_clips - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&reg1)[j];
-				rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 			}
-
-			rdpup_end_update();
 		}
 
 		RegionUninit(&reg1);
@@ -946,9 +566,7 @@ void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 		box.x2 = box.x1 + width;
 		box.y2 = box.y1 + height;
 
-		rdpup_begin_update();
-		rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-		rdpup_end_update();
+		rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 	}
 }
 
@@ -1050,9 +668,7 @@ void rdpGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst, PictFormatPtr maskFor
 
 	GlyphExtents(nlists, lists, glyphs, &box);
 
-	rdpup_begin_update();
-	rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-	rdpup_end_update();
+	rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
 	LLOGLN(10, ("rdpGlyphs: out"));
 }

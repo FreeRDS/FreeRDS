@@ -1,7 +1,6 @@
 /**
  * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright 2005-2012 Jay Sorg
  * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,9 +20,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __RDPPOLYFILLRECT_H
-#define __RDPPOLYFILLRECT_H
+#ifndef FREERDS_X11RDP_WINDOW_H
+#define FREERDS_X11RDP_WINDOW_H
 
-void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle* prectInit);
+/* Window Procedures */
+Bool rdpCreateWindow(WindowPtr pWindow);
+Bool rdpDestroyWindow(WindowPtr pWindow);
+Bool rdpPositionWindow(WindowPtr pWindow, int x, int y);
+Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask);
+Bool rdpRealizeWindow(WindowPtr pWindow);
+Bool rdpUnrealizeWindow(WindowPtr pWindow);
+int rdpValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind);
+void rdpPostValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind);
+void rdpWindowExposures(WindowPtr pWindow, RegionPtr prgn, RegionPtr other_exposed);
+void rdpCopyWindow(WindowPtr pWindow, DDXPointRec ptOldOrg, RegionPtr prgnSrc);
+void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool generateExposures);
+void rdpClipNotify(WindowPtr pWindow, int dx, int dy);
+void rdpRestackWindow(WindowPtr pWindow, WindowPtr pOldNextSib);
 
-#endif
+#endif /* FREERDS_X11RDP_WINDOW_H */

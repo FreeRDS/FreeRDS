@@ -5,6 +5,10 @@ if [ -r /etc/default/locale ]; then
   export LANG LANGUAGE
 fi
 
+if [ -f $HOME/.config/monitors.xml ]; then
+  rm $HOME/.config/monitors.xml
+fi
+
 if [ -r /etc/X11/Xsession ]; then
   . /etc/X11/Xsession
 elif [ -r /etc/gdm/Xsession ]; then
