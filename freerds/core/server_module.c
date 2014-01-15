@@ -198,13 +198,22 @@ int freerds_client_inbound_glyph_index(rdsBackend* backend, RDS_MSG_GLYPH_INDEX*
 	return 0;
 }
 
+static void detach_framebuffer(RDS_FRAMEBUFFER *framebuffer)
+{
+
+	fprintf(stderr, "detaching segment %d from %p\n",
+			framebuffer->fbSegmentId, framebuffer->fbSharedMemory);
+	shmdt(framebuffer->fbSharedMemory);
+	ZeroMemory(framebuffer, sizeof(RDS_FRAMEBUFFER));
+}
+
 int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	int attach;
 
 	attach = (msg->flags & RDS_FRAMEBUFFER_FLAG_ATTACH) ? TRUE : FALSE;
 
-	if (!backend->framebuffer.fbAttached && attach)
+	if (attach)
 	{
 		void* addr;
 		RDS_MSG_PAINT_RECT fm;
@@ -212,6 +221,11 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		rdpSettings* settings = connector->settings;
 		UINT32 DesktopWidth = msg->width;
 		UINT32 DesktopHeight = msg->height;
+
+		if (backend->framebuffer.fbAttached)
+		{
+			detach_framebuffer(&(backend->framebuffer));
+		}
 
 		backend->framebuffer.fbWidth = msg->width;
 		backend->framebuffer.fbHeight = msg->height;
@@ -226,10 +240,11 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		{
 			fprintf(stderr, "failed to attach to segment %d, errno: %d\n",
 					backend->framebuffer.fbSegmentId, errno);
+			return 1;
 		}
 
 		backend->framebuffer.fbSharedMemory = (BYTE*) addr;
-		backend->framebuffer.fbAttached = TRUE;
+		backend->framebuffer.fbAttached = 1;
 
 		fprintf(stderr, "attached segment %d to %p\n",
 				backend->framebuffer.fbSegmentId, backend->framebuffer.fbSharedMemory);
@@ -268,15 +283,12 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 		freerds_client_inbound_paint_rect(backend, &fm);
 	}
-
-	if (backend->framebuffer.fbAttached && !attach)
+	else // detach
 	{
-		fprintf(stderr, "detaching segment %d from %p\n",
-				backend->framebuffer.fbSegmentId, backend->framebuffer.fbSharedMemory);
-
-		shmdt(backend->framebuffer.fbSharedMemory);
-
-		ZeroMemory(&(backend->framebuffer), sizeof(RDS_FRAMEBUFFER));
+		if (backend->framebuffer.fbAttached)
+		{
+			detach_framebuffer(&(backend->framebuffer));
+		}
 	}
 
 	backend->client->VBlankEvent(backend);

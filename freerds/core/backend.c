@@ -24,6 +24,8 @@
 
 #include "freerds.h"
 #include <freerds/backend.h>
+#include <sys/types.h>
+#include <sys/shm.h>
 
 rdsBackendConnector* freerds_connector_new(rdsConnection* connection)
 {
@@ -77,6 +79,12 @@ void freerds_connector_free(rdsBackendConnector* connector)
         if (connector->Endpoint)
         	free(connector->Endpoint);
 
+        if (connector->framebuffer.fbAttached)
+        {
+           shmdt(connector->framebuffer.fbSharedMemory);
+           fprintf(stderr, "connector_free: detached shm %d from %p\n",
+           connector->framebuffer.fbSegmentId, connector->framebuffer.fbSharedMemory);
+        }
         free(connector);
 }
 
