@@ -292,6 +292,11 @@ namespace freerds
 			void Session::setConnectState(WTS_CONNECTSTATE_CLASS state)
 			{
 				mCurrentState = state;
+				mCurrentStateChangeTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
+			}
+
+			boost::posix_time::ptime Session::getConnectStateChangeTime() {
+				return mCurrentStateChangeTime;
 			}
 		}
 	}

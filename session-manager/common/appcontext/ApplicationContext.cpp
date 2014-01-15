@@ -31,6 +31,8 @@
 
 #include "ApplicationContext.h"
 
+#include <session/TaskSessionTimeout.h>
+
 namespace freerds
 {
 	namespace sessionmanager
@@ -255,6 +257,8 @@ namespace freerds
 			mPropertyManager.setPropertyString(Global, 0, "auth.module","PAM");
 			mPropertyManager.setPropertyString(Global, 0, "auth.greeter","greeter");
 			mPropertyManager.setPropertyBool(Global, 0, "session.reconnect",true);
+			mPropertyManager.setPropertyNumber(Global, 0, "session.timeout",1);
+
 
 
 			mPropertyManager.setPropertyString(Global, 0, "module.xsession.modulename","X11");
@@ -293,6 +297,12 @@ namespace freerds
 		void ApplicationContext::stopTaskExecutor() {
 			mTaskExecutor.stop();
 		}
+
+		void ApplicationContext::startSessionTimoutMonitor(){
+			sessionNS::TaskSessionTimeoutPtr task(new sessionNS::TaskSessionTimeout());
+			addTask(task);
+		}
+
 
 		bool ApplicationContext::addTask(taskNS::TaskPtr task) {
 			return mTaskExecutor.addTask(task);

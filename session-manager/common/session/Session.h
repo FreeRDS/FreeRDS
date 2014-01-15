@@ -28,6 +28,7 @@
 #include <freerds/module.h>
 #include <winpr/wtsapi.h>
 #include <boost/shared_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "Connection.h"
 
@@ -66,6 +67,7 @@ namespace freerds
 			bool stopModule();
 
 			WTS_CONNECTSTATE_CLASS getConnectState();
+			boost::posix_time::ptime getConnectStateChangeTime();
 			void setConnectState(WTS_CONNECTSTATE_CLASS state);
 
 		private:
@@ -88,6 +90,7 @@ namespace freerds
 			std::string mModuleName;
 			RDS_MODULE_COMMON* mCurrentModuleContext;
 			WTS_CONNECTSTATE_CLASS mCurrentState;
+			boost::posix_time::ptime mCurrentStateChangeTime;
 			CRITICAL_SECTION mCSection;
 		};
 

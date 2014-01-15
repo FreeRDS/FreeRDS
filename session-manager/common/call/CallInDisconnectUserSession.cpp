@@ -102,14 +102,14 @@ namespace freerds
 			currentSession->setConnectState(WTSDisconnected);
 			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
 
-			bool reconnectAllowd;
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyBool(currentSession->getSessionID(),"session.reconnect",reconnectAllowd)) {
-				reconnectAllowd = true;
+			long timeout;
+
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber(currentSession->getSessionID(),"session.timeout",timeout)) {
+				timeout = 0;
 			}
 
-			if (!reconnectAllowd) {
-				// shutdown the user session ... because no reconnect is possible
-				// TODO: remove this after adding session timeouts and let the timeout handle the session termination
+
+			if (timeout == 0)  {
 				callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
 				task->setSessionId(currentSession->getSessionID());
 				APP_CONTEXT.addTask(task);
