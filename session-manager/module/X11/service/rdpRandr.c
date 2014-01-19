@@ -393,8 +393,8 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 		//if (((width % 4) != 0) || ((height % 4) != 0))
 		//	continue; /* disable resolutions unaligned to 4 bytes for now */
 
-		mmWidth = PixelToMM(width);
-		mmHeight = PixelToMM(height);
+		mmWidth = rdpScreenPixelToMM(width);
+		mmHeight = rdpScreenPixelToMM(height);
 
 		if ((width == cWidth) && (height == cHeight))
 			continue;
@@ -412,8 +412,8 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 	{
 		cIndex = index;
 
-		mmWidth = PixelToMM(width);
-		mmHeight = PixelToMM(height);
+		mmWidth = rdpScreenPixelToMM(width);
+		mmHeight = rdpScreenPixelToMM(height);
 
 		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
 		RRRegisterRate(pScreen, pSizes[index], 60);

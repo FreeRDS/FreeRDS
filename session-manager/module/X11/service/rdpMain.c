@@ -202,9 +202,10 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	g_pScreen = pScreen;
 	ZeroMemory(&g_screenPriv, sizeof(g_screenPriv));
 
-	dpix = PixelDPI;
-	dpiy = PixelDPI;
-	monitorResolution = PixelDPI;
+	g_rdpScreen.dpi = 96;
+	dpix = g_rdpScreen.dpi;
+	dpiy = g_rdpScreen.dpi;
+	monitorResolution = g_rdpScreen.dpi;
 
 	ErrorF("X11rdp, an X11 server for FreeRDS\n");
 	ErrorF("Version %s\n", X11RDPVER);
@@ -283,13 +284,27 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 
 	/* Random screen procedures */
 	g_rdpScreen.CloseScreen = pScreen->CloseScreen;
+	g_rdpScreen.QueryBestSize = pScreen->QueryBestSize;
+	g_rdpScreen.SaveScreen = pScreen->SaveScreen;
+	//g_rdpScreen.GetImage = pScreen->GetImage;
+	//g_rdpScreen.GetSpans = pScreen->GetSpans;
+	//g_rdpScreen.SourceValidate = pScreen->SourceValidate;
+	pScreen->CloseScreen = rdpCloseScreen;
+	pScreen->QueryBestSize = rdpQueryBestSize;
+	pScreen->SaveScreen = rdpSaveScreen;
+	//pScreen->GetImage = rdpGetImage;
+	//pScreen->GetSpans = rdpGetSpans;
+	//pScreen->SourceValidate = rdpSourceValidate;
 
 	/* GC procedures */
 	g_rdpScreen.CreateGC = pScreen->CreateGC;
+	pScreen->CreateGC = rdpCreateGC;
 
 	/* Pixmap procedures */
 	g_rdpScreen.CreatePixmap = pScreen->CreatePixmap;
 	g_rdpScreen.DestroyPixmap = pScreen->DestroyPixmap;
+	pScreen->CreatePixmap = rdpCreatePixmap;
+	pScreen->DestroyPixmap = rdpDestroyPixmap;
 
 	/* Window Procedures */
 	g_rdpScreen.CreateWindow = pScreen->CreateWindow;
@@ -301,12 +316,25 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	g_rdpScreen.WindowExposures = pScreen->WindowExposures;
 	g_rdpScreen.CopyWindow = pScreen->CopyWindow;
 	g_rdpScreen.ClearToBackground = pScreen->ClearToBackground;
+	pScreen->CreateWindow = rdpCreateWindow;
+	pScreen->DestroyWindow = rdpDestroyWindow;
+	pScreen->ChangeWindowAttributes = rdpChangeWindowAttributes;
+	pScreen->RealizeWindow = rdpRealizeWindow;
+	pScreen->UnrealizeWindow = rdpUnrealizeWindow;
+	pScreen->PositionWindow = rdpPositionWindow;
+	pScreen->WindowExposures = rdpWindowExposures;
+	pScreen->CopyWindow = rdpCopyWindow;
+	pScreen->ClearToBackground = rdpClearToBackground;
 
 	/* Backing store procedures */
 	//g_rdpScreen.RestoreAreas = pScreen->RestoreAreas;
+	//pScreen->RestoreAreas = rdpRestoreAreas;
 
 	/* os layer procedures */
 	g_rdpScreen.WakeupHandler = pScreen->WakeupHandler;
+	//g_rdpScreen.BlockHandler = pScreen->BlockHandler;
+	pScreen->WakeupHandler = rdpWakeupHandler;
+	//pScreen->BlockHandler = rdpBlockHandler;
 
 	/* Colormap procedures */
 	g_rdpScreen.CreateColormap = pScreen->CreateColormap;
@@ -316,6 +344,13 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	g_rdpScreen.ListInstalledColormaps = pScreen->ListInstalledColormaps;
 	g_rdpScreen.StoreColors = pScreen->StoreColors;
 	g_rdpScreen.ResolveColor = pScreen->ResolveColor;
+	pScreen->CreateColormap = rdpCreateColormap;
+	pScreen->DestroyColormap = rdpDestroyColormap;
+	pScreen->InstallColormap = rdpInstallColormap;
+	pScreen->UninstallColormap = rdpUninstallColormap;
+	pScreen->ListInstalledColormaps = rdpListInstalledColormaps;
+	pScreen->StoreColors = rdpStoreColors;
+	pScreen->ResolveColor = rdpResolveColor;
 
 	ps = GetPictureScreenIfSet(pScreen);
 
@@ -328,47 +363,11 @@ static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 	pScreen->blackPixel = g_rdpScreen.blackPixel = 0;
 	pScreen->whitePixel = g_rdpScreen.whitePixel = 0;
 
-	/* Random screen procedures */
-	pScreen->CloseScreen = rdpCloseScreen;
-	pScreen->QueryBestSize = rdpQueryBestSize;
-	pScreen->WakeupHandler = rdpWakeupHandler;
-
 	if (ps)
 	{
 		ps->Composite = rdpComposite;
 		ps->Glyphs = rdpGlyphs;
 	}
-
-	pScreen->SaveScreen = rdpSaveScreen;
-	/* GC procedures */
-	pScreen->CreateGC = rdpCreateGC;
-
-	/* Pixmap procedures */
-	pScreen->CreatePixmap = rdpCreatePixmap;
-	pScreen->DestroyPixmap = rdpDestroyPixmap;
-
-	/* Window Procedures */
-	pScreen->CreateWindow = rdpCreateWindow;
-	pScreen->DestroyWindow = rdpDestroyWindow;
-	pScreen->ChangeWindowAttributes = rdpChangeWindowAttributes;
-	pScreen->RealizeWindow = rdpRealizeWindow;
-	pScreen->UnrealizeWindow = rdpUnrealizeWindow;
-	pScreen->PositionWindow = rdpPositionWindow;
-	pScreen->WindowExposures = rdpWindowExposures;
-	pScreen->CopyWindow = rdpCopyWindow;
-	pScreen->ClearToBackground = rdpClearToBackground;
-
-	/* Backing store procedures */
-	//pScreen->RestoreAreas = rdpRestoreAreas;
-
-	/* Colormap procedures */
-	pScreen->CreateColormap = rdpCreateColormap;
-	pScreen->DestroyColormap = rdpDestroyColormap;
-	pScreen->InstallColormap = rdpInstallColormap;
-	pScreen->UninstallColormap = rdpUninstallColormap;
-	pScreen->ListInstalledColormaps = rdpListInstalledColormaps;
-	pScreen->StoreColors = rdpStoreColors;
-	pScreen->ResolveColor = rdpResolveColor;
 
 	miPointerInitialize(pScreen, &g_rdpSpritePointerFuncs, &g_rdpPointerCursorFuncs, 1);
 

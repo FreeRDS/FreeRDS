@@ -38,101 +38,104 @@ extern ScreenPtr g_pScreen;
 
 Bool rdpCreateWindow(WindowPtr pWindow)
 {
-	Bool rv;
+	Bool status;
 	ScreenPtr pScreen;
-	rdpWindowRec *priv;
+	rdpWindowRec* priv;
 
-	LLOGLN(10, ("rdpCreateWindow:"));
+	LLOGLN(10, ("rdpCreateWindow"));
+
 	priv = GETWINPRIV(pWindow);
-	LLOGLN(10, ("  %p status %d", priv, priv->status));
-
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->CreateWindow = g_rdpScreen.CreateWindow;
-	rv = pScreen->CreateWindow(pWindow);
+	status = pScreen->CreateWindow(pWindow);
 	pScreen->CreateWindow = rdpCreateWindow;
 
-	return rv;
+	return status;
 }
 
 Bool rdpDestroyWindow(WindowPtr pWindow)
 {
-	Bool rv;
+	Bool status;
 	ScreenPtr pScreen;
-	//rdpWindowRec *priv;
+	//rdpWindowRec* priv;
 
 	LLOGLN(10, ("rdpDestroyWindow:"));
 	//priv = GETWINPRIV(pWindow);
 
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->DestroyWindow = g_rdpScreen.DestroyWindow;
-	rv = pScreen->DestroyWindow(pWindow);
+	status = pScreen->DestroyWindow(pWindow);
 	pScreen->DestroyWindow = rdpDestroyWindow;
 
-	return rv;
+	return status;
 }
 
 Bool rdpPositionWindow(WindowPtr pWindow, int x, int y)
 {
-	Bool rv;
+	Bool status;
 	ScreenPtr pScreen;
-	rdpWindowRec *priv;
+	rdpWindowRec* priv;
 
-	LLOGLN(10, ("rdpPositionWindow:"));
+	LLOGLN(10, ("rdpPositionWindow"));
+
 	priv = GETWINPRIV(pWindow);
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->PositionWindow = g_rdpScreen.PositionWindow;
-	rv = pScreen->PositionWindow(pWindow, x, y);
+	status = pScreen->PositionWindow(pWindow, x, y);
 	pScreen->PositionWindow = rdpPositionWindow;
 
-	return rv;
+	return status;
 }
 
 Bool rdpChangeWindowAttributes(WindowPtr pWindow, unsigned long mask)
 {
-	Bool rv;
+	Bool status;
 	ScreenPtr pScreen;
-	//rdpWindowRec *priv;
+	//rdpWindowRec* priv;
 
 	LLOGLN(10, ("rdpChangeWindowAttributes:"));
+
 	//priv = GETWINPRIV(pWindow);
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->ChangeWindowAttributes = g_rdpScreen.ChangeWindowAttributes;
-	rv = pScreen->ChangeWindowAttributes(pWindow, mask);
+	status = pScreen->ChangeWindowAttributes(pWindow, mask);
 	pScreen->ChangeWindowAttributes = rdpChangeWindowAttributes;
 
-	return rv;
+	return status;
 }
 
 Bool rdpRealizeWindow(WindowPtr pWindow)
 {
-	Bool rv;
+	Bool status;
 	ScreenPtr pScreen;
-	rdpWindowRec *priv;
+	rdpWindowRec* priv;
 
-	LLOGLN(10, ("rdpRealizeWindow:"));
+	LLOGLN(10, ("rdpRealizeWindow"));
+
 	priv = GETWINPRIV(pWindow);
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->RealizeWindow = g_rdpScreen.RealizeWindow;
-	rv = pScreen->RealizeWindow(pWindow);
+	status = pScreen->RealizeWindow(pWindow);
 	pScreen->RealizeWindow = rdpRealizeWindow;
 
-	return rv;
+	return status;
 }
 
 Bool rdpUnrealizeWindow(WindowPtr pWindow)
 {
-	Bool rv;
+	Bool status;
 	ScreenPtr pScreen;
-	rdpWindowRec *priv;
+	rdpWindowRec* priv;
 
-	LLOGLN(10, ("rdpUnrealizeWindow:"));
+	LLOGLN(10, ("rdpUnrealizeWindow"));
+
 	priv = GETWINPRIV(pWindow);
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->UnrealizeWindow = g_rdpScreen.UnrealizeWindow;
-	rv = pScreen->UnrealizeWindow(pWindow);
+	status = pScreen->UnrealizeWindow(pWindow);
 	pScreen->UnrealizeWindow = rdpUnrealizeWindow;
 
-	return rv;
+	return status;
 }
 
 int rdpValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
@@ -148,10 +151,12 @@ void rdpPostValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
 void rdpWindowExposures(WindowPtr pWindow, RegionPtr prgn, RegionPtr other_exposed)
 {
 	ScreenPtr pScreen;
-	//rdpWindowRec *priv;
+	//rdpWindowRec* priv;
 
 	LLOGLN(10, ("rdpWindowExposures:"));
+
 	//priv = GETWINPRIV(pWindow);
+
 	pScreen = pWindow->drawable.pScreen;
 	pScreen->WindowExposures = g_rdpScreen.WindowExposures;
 	pScreen->WindowExposures(pWindow, prgn, other_exposed);
@@ -161,19 +166,18 @@ void rdpWindowExposures(WindowPtr pWindow, RegionPtr prgn, RegionPtr other_expos
 
 void rdpCopyWindow(WindowPtr pWindow, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
-	RegionRec reg;
-	RegionRec clip;
-	int dx;
-	int dy;
-	int i;
-	int j;
-	int num_clip_rects;
-	int num_reg_rects;
+	int i, j;
+	int dx, dy;
 	BoxRec box1;
 	BoxRec box2;
+	RegionRec reg;
+	RegionRec clip;
+	int num_clip_rects;
+	int num_reg_rects;
 	RDS_MSG_SCREEN_BLT msg;
 
 	LLOGLN(10, ("in rdpCopyWindow"));
+
 	RegionInit(&reg, NullBox, 0);
 	RegionCopy(&reg, prgnSrc);
 	g_pScreen->CopyWindow = g_rdpScreen.CopyWindow;
@@ -249,6 +253,7 @@ void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool gener
 	RegionRec reg;
 
 	LLOGLN(10, ("in rdpClearToBackground"));
+
 	g_pScreen->ClearToBackground = g_rdpScreen.ClearToBackground;
 	g_pScreen->ClearToBackground(pWin, x, y, w, h, generateExposures);
 

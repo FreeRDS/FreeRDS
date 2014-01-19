@@ -23,6 +23,8 @@
 #ifndef FREERDS_X11RDP_SCREEN_H
 #define FREERDS_X11RDP_SCREEN_H
 
+int rdpScreenPixelToMM(int pixels);
+
 int rdpScreenFrameBufferAlloc();
 int rdpScreenFrameBufferFree();
 

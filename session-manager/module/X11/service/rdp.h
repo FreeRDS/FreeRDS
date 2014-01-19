@@ -80,9 +80,6 @@
 
 #define X11RDPVER "0.7.7"
 
-#define PixelDPI 96
-#define PixelToMM(_size) ((int)(((((double)(_size)) / PixelDPI) * 25.4 + 0.5)))
-
 struct _rdpScreenInfoRec
 {
 	int width;
@@ -94,6 +91,7 @@ struct _rdpScreenInfoRec
 	int sizeInBytes;
 	char* pfbMemory;
 
+	int dpi;
 	Pixel blackPixel;
 	Pixel whitePixel;
 
@@ -101,6 +99,11 @@ struct _rdpScreenInfoRec
 
 	/* Random screen procedures */
 	CloseScreenProcPtr CloseScreen;
+	QueryBestSizeProcPtr QueryBestSize;
+	SaveScreenProcPtr SaveScreen;
+	GetImageProcPtr GetImage;
+	GetSpansProcPtr GetSpans;
+	SourceValidateProcPtr SourceValidate;
 
 	/* GC procedures */
 	CreateGCProcPtr CreateGC;
@@ -117,6 +120,8 @@ struct _rdpScreenInfoRec
 	UnrealizeWindowProcPtr UnrealizeWindow;
 	ChangeWindowAttributesProcPtr ChangeWindowAttributes;
 	WindowExposuresProcPtr WindowExposures;
+	CopyWindowProcPtr CopyWindow;
+	ClearToBackgroundProcPtr ClearToBackground;
 
 	/* Colormap procedures */
 	CreateColormapProcPtr CreateColormap;
@@ -127,9 +132,10 @@ struct _rdpScreenInfoRec
 	StoreColorsProcPtr StoreColors;
 	ResolveColorProcPtr ResolveColor;
 
-	CopyWindowProcPtr CopyWindow;
-	ClearToBackgroundProcPtr ClearToBackground;
+	/* os layer procedures */
+	ScreenBlockHandlerProcPtr BlockHandler;
 	ScreenWakeupHandlerProcPtr WakeupHandler;
+
 	CompositeProcPtr Composite;
 	GlyphsProcPtr Glyphs;
 

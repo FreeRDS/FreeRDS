@@ -29,6 +29,8 @@
 
 #include <freerds/backend.h>
 
+#include "rdpScreen.h"
+
 #include "rdpUpdate.h"
 
 #define LOG_LEVEL 0
@@ -386,8 +388,8 @@ int rds_client_capabilities(rdsBackend* backend, RDS_MSG_CAPABILITIES* capabilit
 	width = capabilities->DesktopWidth;
 	height = capabilities->DesktopHeight;
 
-	mmWidth = PixelToMM(width);
-	mmHeight = PixelToMM(height);
+	mmWidth = rdpScreenPixelToMM(width);
+	mmHeight = rdpScreenPixelToMM(height);
 
 	if ((g_pScreen->width != width) || (g_pScreen->height != height))
 	{
