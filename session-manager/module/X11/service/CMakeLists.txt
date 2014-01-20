@@ -163,6 +163,8 @@ set(${MODULE_PREFIX}_SRCS
 	rdpPutImage.h
 	rdpRandr.c
 	rdpRandr.h
+	rdpModes.c
+	rdpModes.h
 	rdpSetSpans.c
 	rdpSetSpans.h
 	rdpWindow.c

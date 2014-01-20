@@ -435,15 +435,17 @@ Bool rdpDestroyPixmap(PixmapPtr pPixmap)
 
 Bool rdpCreateGC(GCPtr pGC)
 {
+	Bool status;
 	rdpGCRec* priv;
-	Bool rv;
 
 	LLOGLN(10, ("in rdpCreateGC\n"));
-	priv = GETGCPRIV(pGC);
-	g_pScreen->CreateGC = g_rdpScreen.CreateGC;
-	rv = g_pScreen->CreateGC(pGC);
 
-	if (rv)
+	priv = GETGCPRIV(pGC);
+
+	g_pScreen->CreateGC = g_rdpScreen.CreateGC;
+	status = g_pScreen->CreateGC(pGC);
+
+	if (status)
 	{
 		priv->funcs = pGC->funcs;
 		priv->ops = 0;
@@ -455,7 +457,8 @@ Bool rdpCreateGC(GCPtr pGC)
 	}
 
 	g_pScreen->CreateGC = rdpCreateGC;
-	return rv;
+
+	return status;
 }
 
 RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)

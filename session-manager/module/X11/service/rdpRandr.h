@@ -24,6 +24,25 @@
 #ifndef _RDPRANDR_H
 #define _RDPRANDR_H
 
+#include "rdpModes.h"
+
+typedef struct _rdpRandRInfo
+{
+	int width;
+	int height;
+
+	int numModes;
+	int modeCount;
+	RRModePtr mode;
+	RRModePtr* modes;
+
+	EDID* edid;
+	Atom edidAtom;
+
+} rdpRandRInfoRec, *rdpRandRInfoPtr;
+
 int rdpRRInit(ScreenPtr pScreen);
+
+rdpRandRInfoPtr rdpGetRandRFromScreen(ScreenPtr pScreen);
 
 #endif
