@@ -30,6 +30,8 @@ typedef struct _rdpRandRInfo
 {
 	int width;
 	int height;
+	int mmWidth;
+	int mmHeight;
 
 	int numModes;
 	int modeCount;
