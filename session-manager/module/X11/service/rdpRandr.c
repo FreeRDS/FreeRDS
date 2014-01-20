@@ -33,7 +33,7 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-#define LOG_LEVEL 10
+#define LOG_LEVEL 0
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
@@ -405,6 +405,9 @@ int rdpRRInit(ScreenPtr pScreen)
 	pScrPriv->rrProviderDestroy = rdpRRProviderDestroy;
 #endif
 
+	randr->width = pScreen->width;
+	randr->height = pScreen->height;
+
 	rdpProbeModes(pScreen);
 
 	RRScreenSetSizeRange(pScreen, 8, 8, 16384, 16384);
@@ -458,6 +461,8 @@ int rdpRRInit(ScreenPtr pScreen)
 
 	RRCrtcNotify(crtc, randr->mode, 0, 0, RR_Rotate_0, NULL, 1, &output);
 #endif
+
+	rdpWriteGnomeMonitorConfiguration(pScreen);
 
 	return 0;
 }

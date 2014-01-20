@@ -27,6 +27,7 @@
 #include "rdpModes.h"
 
 #include <winpr/crt.h>
+#include <winpr/path.h>
 #include <winpr/stream.h>
 
 #define DEFINE_SCREEN_SIZE(_width, _height) ((_width << 16) | _height)
@@ -92,6 +93,27 @@ EDID* rdpConstructScreenEdid(ScreenPtr pScreen)
 	 * a2 Checksum
 	 */
 
+	/**
+	 * 00 ff ff ff ff ff ff 00 Header
+	 * 5a 63 ManufacturerId
+	 * 2d 45 ManufaturerProductCode
+	 * 01 01 01 01 ManufacturerSerialNumber
+	 * 05 WeekOfManufacture
+	 * 17 YearOfManufacture
+	 * 01 EdidVersion
+	 * 03 EdidRevision
+	 * 80 34 1d 78 DisplayParameters
+	 * 2e a7 25 a4 57 51 a0 26 10 50 ChromacityCoordinates
+	 * 54 bf ef 80 BitmapTiming
+	 * b3 00 a9 40 a9 c0 95 00 90 40 81 80 81 40 81 00 StandardTiming
+	 * 02 3a 80 18 71 38 2d 40 58 2c 45 00 09 25 21 00 00 1e Descriptor1
+	 * 00 00 00 ff 00 54 4a 47 31 33 30 35 30 30 34 34 34 0a Descriptor2
+	 * 00 00 00 fd 00 32 4b 1e 52 11 00 0a 20 20 20 20 20 20 Descriptor3
+	 * 00 00 00 fc 00 54 44 32 34 32 30 20 53 45 52 49 45 53 Descriptor4
+	 * 00 NumberOfExtensions
+	 * f0 Checksum
+	 */
+
 	ZeroMemory(edid, sizeof(EDID));
 
 	edid->Header[0] = 0x00;
@@ -103,9 +125,9 @@ EDID* rdpConstructScreenEdid(ScreenPtr pScreen)
 	edid->Header[6] = 0xFF;
 	edid->Header[7] = 0x00;
 
-	edid->ManufacturerId = 0x6D1E; /* 1e 6d */
-	edid->ManufacturerProductCode = 0x578D; /* 8d 57 */
-	edid->ManufacturerSerialNumber = 0x21360001; /* 36 21 01 00 */
+	edid->ManufacturerId = 0x635A; /* 5a 63 */
+	edid->ManufacturerProductCode = 0x452D; /* 2d 45 */
+	edid->ManufacturerSerialNumber = 0x01010101; /* 01 01 01 01 */
 
 	edid->WeekOfManufacture = 10; /* 0x0A */
 	edid->YearOfManufacture = 20; /* 0x14 */
@@ -113,47 +135,47 @@ EDID* rdpConstructScreenEdid(ScreenPtr pScreen)
 	edid->EdidVersion = 1;
 	edid->EdidRevision = 3;
 
-	/* e0 30 1b 78 */
-	edid->DisplayParameters[0] = 0xE0;
-	edid->DisplayParameters[1] = 0x30;
-	edid->DisplayParameters[2] = 0x1B;
+	/* 80 34 1d 78 */
+	edid->DisplayParameters[0] = 0x80;
+	edid->DisplayParameters[1] = 0x34;
+	edid->DisplayParameters[2] = 0x1D;
 	edid->DisplayParameters[3] = 0x78;
 
-	/* ea 33 37 a5 55 4d 9d 25 11 50 */
-	edid->ChromacityCoordinates[0] = 0xEA;
-	edid->ChromacityCoordinates[1] = 0x33;
-	edid->ChromacityCoordinates[2] = 0x37;
-	edid->ChromacityCoordinates[3] = 0xA5;
-	edid->ChromacityCoordinates[4] = 0x55;
-	edid->ChromacityCoordinates[5] = 0x4D;
-	edid->ChromacityCoordinates[6] = 0x9D;
-	edid->ChromacityCoordinates[7] = 0x25;
-	edid->ChromacityCoordinates[8] = 0x11;
+	/* 2e a7 25 a4 57 51 a0 26 10 50 */
+	edid->ChromacityCoordinates[0] = 0x2E;
+	edid->ChromacityCoordinates[1] = 0xA7;
+	edid->ChromacityCoordinates[2] = 0x25;
+	edid->ChromacityCoordinates[3] = 0xA4;
+	edid->ChromacityCoordinates[4] = 0x57;
+	edid->ChromacityCoordinates[5] = 0x51;
+	edid->ChromacityCoordinates[6] = 0xA0;
+	edid->ChromacityCoordinates[7] = 0x26;
+	edid->ChromacityCoordinates[8] = 0x10;
 	edid->ChromacityCoordinates[9] = 0x50;
 
-	/* 52 a5 4b 00 */
-	edid->BitmapTiming[0] = 0x52;
-	edid->BitmapTiming[1] = 0xA5;
-	edid->BitmapTiming[2] = 0x4B;
-	edid->BitmapTiming[3] = 0x00;
+	/* 54 bf ef 80 */
+	edid->BitmapTiming[0] = 0x54;
+	edid->BitmapTiming[1] = 0xBF;
+	edid->BitmapTiming[2] = 0xEF;
+	edid->BitmapTiming[3] = 0x80;
 
-	/* b3 00 81 80 81 8f 71 4f 01 01 01 01 01 01 01 01 */
+	/* b3 00 a9 40 a9 c0 95 00 90 40 81 80 81 40 81 00 */
 	edid->StandardTiming[0] = 0xB3;
 	edid->StandardTiming[1] = 0x00;
-	edid->StandardTiming[2] = 0x81;
-	edid->StandardTiming[3] = 0x80;
-	edid->StandardTiming[4] = 0x81;
-	edid->StandardTiming[5] = 0x8F;
-	edid->StandardTiming[6] = 0x71;
-	edid->StandardTiming[7] = 0x4F;
-	edid->StandardTiming[8] = 0x01;
-	edid->StandardTiming[9] = 0x01;
-	edid->StandardTiming[10] = 0x01;
-	edid->StandardTiming[11] = 0x01;
-	edid->StandardTiming[12] = 0x01;
-	edid->StandardTiming[13] = 0x01;
-	edid->StandardTiming[14] = 0x01;
-	edid->StandardTiming[15] = 0x01;
+	edid->StandardTiming[2] = 0xA9;
+	edid->StandardTiming[3] = 0x40;
+	edid->StandardTiming[4] = 0xA9;
+	edid->StandardTiming[5] = 0xC0;
+	edid->StandardTiming[6] = 0x95;
+	edid->StandardTiming[7] = 0x00;
+	edid->StandardTiming[8] = 0x90;
+	edid->StandardTiming[9] = 0x40;
+	edid->StandardTiming[10] = 0x81;
+	edid->StandardTiming[11] = 0x80;
+	edid->StandardTiming[12] = 0x81;
+	edid->StandardTiming[13] = 0x40;
+	edid->StandardTiming[14] = 0x81;
+	edid->StandardTiming[15] = 0x00;
 
 	/* 02 3a 80 18 71 38 2d 40 58 2c 45 00 dd 0c 11 00 00 1a */
 	edid->Descriptor1[0] = 0x02;
@@ -257,7 +279,7 @@ BYTE* rdpEdidToBuffer(EDID* edid)
 	Stream_Write(s, &(edid->Header), 8);
 	Stream_Write_UINT16(s, edid->ManufacturerId);
 	Stream_Write_UINT16(s, edid->ManufacturerProductCode);
-	Stream_Write_UINT16(s, edid->ManufacturerSerialNumber);
+	Stream_Write_UINT32(s, edid->ManufacturerSerialNumber);
 	Stream_Write_UINT8(s, edid->WeekOfManufacture);
 	Stream_Write_UINT8(s, edid->YearOfManufacture);
 	Stream_Write_UINT8(s, edid->EdidVersion);
@@ -319,6 +341,59 @@ void rdpSetOutputEdid(RROutputPtr output, EDID* edid)
 	free(buffer);
 }
 
+static const char* g_MonitorsXmlFmt =
+"<monitors version=\"1\">\n"
+"  <configuration>\n"
+"      <clone>no</clone>\n"
+"      <output name=\"%s\">\n"
+"          <vendor>VSC</vendor>\n"
+"          <product>0x452d</product>\n"
+"          <serial>0x01010101</serial>\n"
+"          <width>%d</width>\n"
+"          <height>%d</height>\n"
+"          <rate>%d</rate>\n"
+"          <x>%d</x>\n"
+"          <y>%d</y>\n"
+"          <rotation>normal</rotation>\n"
+"          <reflect_x>no</reflect_x>\n"
+"          <reflect_y>no</reflect_y>\n"
+"          <primary>yes</primary>\n"
+"      </output>\n"
+"  </configuration>\n"
+"</monitors>\n";
+
+int rdpWriteGnomeMonitorConfiguration(ScreenPtr pScreen)
+{
+	FILE* fp;
+	int length;
+	char monitors_xml[2048];
+	char* monitors_xml_path;
+	rdpRandRInfoPtr randr = rdpGetRandRFromScreen(pScreen);
+
+	if (!randr)
+		return -1;
+
+	sprintf(monitors_xml, g_MonitorsXmlFmt, "RDP-0",
+			randr->width, randr->height, 60, 0, 0);
+
+	length = strlen(monitors_xml);
+
+	monitors_xml_path = GetKnownSubPath(KNOWN_PATH_XDG_CONFIG_HOME, "monitors.rdp.xml");
+
+	fp = fopen(monitors_xml_path, "w+b");
+
+	if (fp)
+	{
+		fwrite((void*) monitors_xml, length + 1, 1, fp);
+		fflush(fp);
+		fclose(fp);
+	}
+
+	free(monitors_xml_path);
+
+	return 0;
+}
+
 int rdpProbeModes(ScreenPtr pScreen)
 {
 	int k;
@@ -373,7 +448,7 @@ int rdpProbeModes(ScreenPtr pScreen)
 
 	randr->numModes = index;
 
-	rdpModeSelect(pScreen, 1024, 768);
+	rdpModeSelect(pScreen, randr->width, randr->height);
 
 	return 0;
 }

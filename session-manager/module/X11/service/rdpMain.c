@@ -189,8 +189,7 @@ void rdpClientStateChange(CallbackListPtr* cbl, pointer myData, pointer clt)
 	dispatchException &= ~DE_RESET; /* hack - force server not to reset */
 }
 
-/* returns boolean, true if everything is ok */
-static Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
+Bool rdpScreenInit(ScreenPtr pScreen, int argc, char** argv)
 {
 	int dpix;
 	int dpiy;
