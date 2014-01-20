@@ -426,7 +426,7 @@ int rdpWriteXfce4MonitorConfig(int width, int height)
 
 	length = strlen(displays_xml);
 
-	displays_xml_path = GetKnownSubPath(KNOWN_PATH_XDG_CONFIG_HOME, "xfce4/xfconf/xfce-perchannel-xml/monitors.xml");
+	displays_xml_path = GetKnownSubPath(KNOWN_PATH_XDG_CONFIG_HOME, "xfce4/xfconf/xfce-perchannel-xml/displays.xml");
 
 	if (PathFileExistsA(displays_xml_path))
 	{
