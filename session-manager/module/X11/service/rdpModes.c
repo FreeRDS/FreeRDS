@@ -28,6 +28,7 @@
 
 #include <winpr/crt.h>
 #include <winpr/path.h>
+#include <winpr/file.h>
 #include <winpr/stream.h>
 
 #define DEFINE_SCREEN_SIZE(_width, _height) ((_width << 16) | _height)
@@ -362,29 +363,29 @@ static const char* g_MonitorsXmlFmt =
 "  </configuration>\n"
 "</monitors>\n";
 
-int rdpWriteGnomeMonitorConfiguration(ScreenPtr pScreen)
+int rdpWriteGnomeMonitorsConfiguration(int width, int height)
 {
 	FILE* fp;
 	int length;
 	char monitors_xml[2048];
 	char* monitors_xml_path;
-	rdpRandRInfoPtr randr = rdpGetRandRFromScreen(pScreen);
 
-	if (!randr)
-		return -1;
-
-	sprintf(monitors_xml, g_MonitorsXmlFmt, "RDP-0",
-			randr->width, randr->height, 60, 0, 0);
+	sprintf(monitors_xml, g_MonitorsXmlFmt, "RDP-0", width, height, 60, 0, 0);
 
 	length = strlen(monitors_xml);
 
-	monitors_xml_path = GetKnownSubPath(KNOWN_PATH_XDG_CONFIG_HOME, "monitors.rdp.xml");
+	monitors_xml_path = GetKnownSubPath(KNOWN_PATH_XDG_CONFIG_HOME, "monitors.xml");
+
+	if (PathFileExistsA(monitors_xml_path))
+	{
+		DeleteFileA(monitors_xml_path);
+	}
 
 	fp = fopen(monitors_xml_path, "w+b");
 
 	if (fp)
 	{
-		fwrite((void*) monitors_xml, length + 1, 1, fp);
+		fwrite((void*) monitors_xml, length, 1, fp);
 		fflush(fp);
 		fclose(fp);
 	}

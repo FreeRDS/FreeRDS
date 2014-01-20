@@ -58,7 +58,7 @@ EDID* rdpConstructScreenEdid(ScreenPtr pScreen);
 BYTE* rdpEdidToBuffer(EDID* edid);
 
 void rdpSetOutputEdid(RROutputPtr output, EDID* edid);
-int rdpWriteGnomeMonitorConfiguration(ScreenPtr pScreen);
+int rdpWriteGnomeMonitorsConfiguration(int width, int height);
 
 int rdpProbeModes(ScreenPtr pScreen);
 int rdpModeSelect(ScreenPtr pScreen, int width, int height);

@@ -493,7 +493,5 @@ int rdpRRInit(ScreenPtr pScreen)
 	RRCrtcNotify(crtc, randr->mode, 0, 0, RR_Rotate_0, NULL, 1, &output);
 #endif
 
-	rdpWriteGnomeMonitorConfiguration(pScreen);
-
 	return 0;
 }

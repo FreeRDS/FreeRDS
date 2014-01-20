@@ -454,12 +454,13 @@ int ddxProcessArgument(int argc, char** argv, int i)
 			UseMsg();
 		}
 
-		if (sscanf(argv[i + 1], "%dx%d", &g_rdpScreen.width,
-				&g_rdpScreen.height) != 2)
+		if (sscanf(argv[i + 1], "%dx%d", &g_rdpScreen.width, &g_rdpScreen.height) != 2)
 		{
 			DEBUG_OUT("Invalid geometry %s\n", argv[i + 1]);
 			UseMsg();
 		}
+
+		rdpWriteGnomeMonitorsConfiguration(g_rdpScreen.width, g_rdpScreen.height);
 
 		return 2;
 	}
