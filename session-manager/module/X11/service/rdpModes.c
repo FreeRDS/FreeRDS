@@ -363,7 +363,7 @@ static const char* g_MonitorsXmlFmt =
 "  </configuration>\n"
 "</monitors>\n";
 
-int rdpWriteGnomeMonitorsConfiguration(int width, int height)
+int rdpWriteGnomeMonitorConfig(int width, int height)
 {
 	FILE* fp;
 	int length;
@@ -391,6 +391,66 @@ int rdpWriteGnomeMonitorsConfiguration(int width, int height)
 	}
 
 	free(monitors_xml_path);
+
+	return 0;
+}
+
+static const char* g_DisplaysXmlFmt =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+"\n"
+"<channel name=\"displays\" version=\"1.0\">\n"
+"  <property name=\"Default\" type=\"empty\">\n"
+"    <property name=\"%s\" type=\"string\" value=\"ViewSonic Corporation 23&quot;\">\n"
+"      <property name=\"Active\" type=\"bool\" value=\"true\"/>\n"
+"      <property name=\"Resolution\" type=\"string\" value=\"%dx%d\"/>\n"
+"      <property name=\"RefreshRate\" type=\"double\" value=\"%d.000000\"/>\n"
+"      <property name=\"Rotation\" type=\"int\" value=\"0\"/>\n"
+"      <property name=\"Reflection\" type=\"string\" value=\"0\"/>\n"
+"      <property name=\"Primary\" type=\"bool\" value=\"true\"/>\n"
+"      <property name=\"Position\" type=\"empty\">\n"
+"        <property name=\"X\" type=\"int\" value=\"%d\"/>\n"
+"        <property name=\"Y\" type=\"int\" value=\"%d\"/>\n"
+"      </property>\n"
+"    </property>\n"
+"  </property>\n"
+"</channel>\n";
+
+int rdpWriteXfce4MonitorConfig(int width, int height)
+{
+	FILE* fp;
+	int length;
+	char displays_xml[2048];
+	char* displays_xml_path;
+
+	sprintf(displays_xml, g_DisplaysXmlFmt, "RDP-0", width, height, 60, 0, 0);
+
+	length = strlen(displays_xml);
+
+	displays_xml_path = GetKnownSubPath(KNOWN_PATH_XDG_CONFIG_HOME, "xfce4/xfconf/xfce-perchannel-xml/monitors.xml");
+
+	if (PathFileExistsA(displays_xml_path))
+	{
+		DeleteFileA(displays_xml_path);
+	}
+
+	fp = fopen(displays_xml_path, "w+b");
+
+	if (fp)
+	{
+		fwrite((void*) displays_xml, length, 1, fp);
+		fflush(fp);
+		fclose(fp);
+	}
+
+	free(displays_xml_path);
+
+	return 0;
+}
+
+int rdpWriteMonitorConfig(int width, int height)
+{
+	rdpWriteGnomeMonitorConfig(width, height);
+	rdpWriteXfce4MonitorConfig(width, height);
 
 	return 0;
 }
