@@ -357,26 +357,130 @@ void rdpSetOutputEdid(RROutputPtr output, EDID* edid)
 	free(buffer);
 }
 
-Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
+Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSizePtr pSize)
+{
+	LLOGLN(0, ("rdpRRSetConfig: rate: %d id: %d width: %d height: %d mmWidth: %d mmHeight: %d",
+			rate, pSize->id, pSize->width, pSize->height, pSize->mmWidth, pSize->mmHeight));
+
+	return TRUE;
+}
+
+Bool rdpRRSetInfo(ScreenPtr pScreen)
+{
+	int index;
+	int width;
+	int height;
+	char name[64];
+	RRModePtr* modes;
+	RROutputPtr output;
+	xRRModeInfo modeInfo;
+	rrScrPrivPtr pScrPriv;
+
+	pScrPriv = rrGetScrPriv(pScreen);
+
+	output = RRFirstOutput(pScreen);
+
+	ZeroMemory(&modeInfo, sizeof(xRRModeInfo));
+
+	modes = (RRModePtr*) malloc(pScrPriv->nSizes * sizeof(RRModePtr));
+	ZeroMemory(modes, pScrPriv->nSizes * sizeof(RRModePtr));
+
+	for (index = 0; index < pScrPriv->nSizes; index++)
+	{
+		modeInfo.id = index;
+
+		width = pScrPriv->pSizes[index].width;
+		height = pScrPriv->pSizes[index].height;
+
+		sprintf(name, "%dx%d", width, height);
+
+		modeInfo.width = width;
+		modeInfo.hSyncStart = 0;
+		modeInfo.hSyncEnd = 0;
+		modeInfo.hTotal = 0;
+
+		modeInfo.height = height;
+		modeInfo.vSyncStart = 0;
+		modeInfo.vSyncEnd = 0;
+		modeInfo.vTotal = 0;
+
+		/* DotClock = RefreshRate * HTotal * VTotal */
+		modeInfo.dotClock = 60 * modeInfo.hTotal * modeInfo.vTotal;
+
+		modeInfo.hSkew = 0;
+		modeInfo.nameLength = strlen(name);
+
+		modes[index] = RRModeGet(&modeInfo, name);
+	}
+
+	RROutputSetModes(output, modes, pScrPriv->nSizes, 0);
+	free(modes);
+
+	return TRUE;
+}
+
+Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 {
 	int k;
 	int index;
 	int cIndex;
 	int shmmax;
+	RRModePtr mode;
+	BOOL bPreferred;
+	int width, height;
 	int cWidth, cHeight;
 	int mmWidth, mmHeight;
 	RRScreenSizePtr pSizes[32];
+	rrScrPrivPtr pScrPriv;
 
-	LLOGLN(0, ("rdpRRRegisterSize width: %d height: %d", width, height));
+	LLOGLN(0, ("rdpRRGetInfo"));
+
+	pScrPriv = rrGetScrPriv(pScreen);
+
+	if (pRotations)
+		*pRotations = RR_Rotate_0;
+
+	width = pScreen->width;
+	height = pScreen->height;
+
+	if (pScrPriv)
+	{
+		if (pScrPriv->numCrtcs > 0)
+		{
+			mode = pScrPriv->crtcs[0]->mode;
+
+			fprintf(stderr, "pScrPriv: %p numCrtcs: %d mode: %p\n",
+					pScrPriv, pScrPriv->numCrtcs, mode);
+
+			if (mode)
+			{
+				width = mode->mode.width;
+				height = mode->mode.height;
+			}
+		}
+		else
+		{
+			fprintf(stderr, "pScrPriv: %p numCrtcs: %d\n",
+					pScrPriv, pScrPriv->numCrtcs);
+		}
+	}
+	else
+	{
+		fprintf(stderr, "pScrPriv: %p\n", NULL);
+	}
+
+	fprintf(stderr, "rdpRRGetInfo: width: %d height: %d\n", width, height);
 
 	index = 0;
-	cIndex = 0;
 	cWidth = width;
 	cHeight = height;
 
+	bPreferred = TRUE;
+	cIndex = bPreferred ? 0 : -1;
+
 	shmmax = get_max_shared_memory_segment_size();
 
-	for (k = 1; k < sizeof(g_StandardSizes) / sizeof(UINT32); k++)
+	for (k = bPreferred ? 1 : 0; k < sizeof(g_StandardSizes) / sizeof(UINT32); k++)
 	{
 		width = SCREEN_SIZE_WIDTH(g_StandardSizes[k]);
 		height = SCREEN_SIZE_HEIGHT(g_StandardSizes[k]);
@@ -397,7 +501,12 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 		mmHeight = rdpScreenPixelToMM(height);
 
 		if ((width == cWidth) && (height == cHeight))
-			continue;
+		{
+			if (bPreferred)
+				cIndex = index;
+			else
+				continue;
+		}
 
 		pSizes[index] = RRRegisterSize(pScreen, width, height, mmWidth, mmHeight);
 		RRRegisterRate(pScreen, pSizes[index], 60);
@@ -421,55 +530,6 @@ Bool rdpRRRegisterSize(ScreenPtr pScreen, int width, int height)
 
 	RRSetCurrentConfig(pScreen, RR_Rotate_0, 60, pSizes[cIndex]);
 
-	return TRUE;
-}
-
-Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSizePtr pSize)
-{
-	LLOGLN(0, ("rdpRRSetConfig: rate: %d id: %d width: %d height: %d mmWidth: %d mmHeight: %d",
-			rate, pSize->id, pSize->width, pSize->height, pSize->mmWidth, pSize->mmHeight));
-
-	return TRUE;
-}
-
-Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
-{
-	int width;
-	int height;
-	RRModePtr mode;
-	rrScrPrivPtr pScrPriv;
-
-	LLOGLN(0, ("rdpRRGetInfo"));
-
-	pScrPriv = rrGetScrPriv(pScreen);
-
-	if (pRotations)
-		*pRotations = RR_Rotate_0;
-
-	width = pScreen->width;
-	height = pScreen->height;
-
-	if (pScrPriv)
-	{
-		if (pScrPriv->numCrtcs > 0)
-		{
-			mode = pScrPriv->crtcs[0]->mode;
-
-			if (mode)
-			{
-				width = mode->mode.width;
-				height = mode->mode.height;
-			}
-		}
-	}
-
-	rdpRRRegisterSize(pScreen, width, height);
-
-	return TRUE;
-}
-
-Bool rdpRRSetInfo(ScreenPtr pScreen)
-{
 	return TRUE;
 }
 
@@ -557,14 +617,24 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		crtc->x = y;
 		crtc->y = y;
 
+		fprintf(stderr, "rdpRRCrtcSet: crtc: %p mode: %p crtc->mode: %p\n", crtc, mode, crtc->mode);
+
 		if (mode && crtc->mode)
 		{
 			crtc->mode->mode.width = mode->mode.width;
 			crtc->mode->mode.height = mode->mode.height;
+
+			fprintf(stderr, "mode->mode.width: %d mode->mode.height: %d\n", mode->mode.width, mode->mode.height);
 		}
 	}
+	else
+	{
+		fprintf(stderr, "rdpRRCrtcSet: crtc: %p mode: %p crtc->mode: %p\n", NULL, mode, NULL);
+	}
 
-	return RRCrtcNotify(crtc, mode, x, y, rotation, NULL, numOutputs, outputs);
+	RRCrtcNotify(crtc, mode, x, y, rotation, NULL, numOutputs, outputs);
+
+	return TRUE;
 }
 
 Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
@@ -577,26 +647,6 @@ Bool rdpRRCrtcSetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 Bool rdpRRCrtcGetGamma(ScreenPtr pScreen, RRCrtcPtr crtc)
 {
 	LLOGLN(0, ("rdpRRCrtcGetGamma"));
-
-	crtc->gammaSize = 1;
-
-	if (!crtc->gammaRed)
-	{
-		crtc->gammaRed = (CARD16*) malloc(32);
-		ZeroMemory(crtc->gammaRed, 32);
-	}
-
-	if (!crtc->gammaGreen)
-	{
-		crtc->gammaGreen = (CARD16*) malloc(32);
-		ZeroMemory(crtc->gammaGreen, 32);
-	}
-
-	if (!crtc->gammaBlue)
-	{
-		crtc->gammaBlue = (CARD16*) malloc(32);
-		ZeroMemory(crtc->gammaBlue, 32);
-	}
 
 	return TRUE;
 }
@@ -838,7 +888,7 @@ int rdpRRInit(ScreenPtr pScreen)
 	if (!crtc)
 		return FALSE;
 
-	RRCrtcGammaSetSize(crtc, 32);
+	//RRCrtcGammaSetSize(crtc, 32);
 
 	output = RROutputCreate(pScreen, "RDP-0", strlen("RDP-0"), NULL);
 
@@ -850,6 +900,9 @@ int rdpRRInit(ScreenPtr pScreen)
 
 	if (!RROutputSetModes(output, &mode, 1, 1))
 		return -1;
+
+	//if (!RROutputSetModes(output, NULL, 0, 0))
+	//	return -1;
 
 	if (!RROutputSetCrtcs(output, &crtc, 1))
 		return -1;
