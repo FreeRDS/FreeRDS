@@ -435,7 +435,6 @@ int rdpProbeModes(ScreenPtr pScreen)
 				continue; /* required buffer size is too large */
 		}
 
-		modeInfo.id = index;
 		rdpGtfMode(&modeInfo, width, height, 60.0, 0, 0);
 
 		sprintf(name, "%dx%d", modeInfo.width, modeInfo.height);
@@ -449,6 +448,66 @@ int rdpProbeModes(ScreenPtr pScreen)
 	randr->numModes = index;
 
 	rdpModeSelect(pScreen, randr->width, randr->height);
+
+	return 0;
+}
+
+int rdpModeInfoCompare(xRRModeInfo* pModeInfo1, xRRModeInfo* pModeInfo2)
+{
+	int size1, size2;
+
+	size1 = pModeInfo1->width * pModeInfo1->height;
+	size2 = pModeInfo2->width * pModeInfo2->height;
+
+	if (size1 < size2)
+		return -1;
+	else if (size1 > size2)
+		return 1;
+	else
+		return 0;
+}
+
+int rdpModeAdd(ScreenPtr pScreen, int width, int height)
+{
+	int index;
+	char name[64];
+	RRModePtr mode;
+	RROutputPtr output;
+	xRRModeInfo modeInfo;
+	rdpRandRInfoPtr randr;
+
+	randr = rdpGetRandRFromScreen(pScreen);
+
+	if (!randr)
+		return -1;
+
+	ZeroMemory(&modeInfo, sizeof(xRRModeInfo));
+
+	rdpGtfMode(&modeInfo, width, height, 60.0, 0, 0);
+
+	sprintf(name, "%dx%d", modeInfo.width, modeInfo.height);
+	modeInfo.nameLength = strlen(name);
+
+	for (index = 0; index < randr->numModes; index++)
+	{
+		if (rdpModeInfoCompare(&(randr->modes[index]->mode), &modeInfo) < 0)
+			break;
+	}
+
+	mode = RRModeGet(&modeInfo, name);
+
+	MoveMemory(&(randr->modes[index + 1]), &(randr->modes[index]), (randr->numModes - index) * sizeof(RRModePtr));
+	randr->numModes++;
+
+	randr->modes[index] = mode;
+
+	output = RRFirstOutput(pScreen);
+
+	if (output)
+	{
+		if (!RROutputSetModes(output, randr->modes, randr->numModes, 0))
+			return -1;
+	}
 
 	return 0;
 }
@@ -475,6 +534,14 @@ int rdpModeSelect(ScreenPtr pScreen, int width, int height)
 			found = TRUE;
 			break;
 		}
+	}
+
+	if (!found)
+	{
+		if (rdpModeAdd(pScreen, width, height) < 0)
+			return -1;
+
+		return rdpModeSelect(pScreen, width, height);
 	}
 
 	if (!found && !randr->mode)
