@@ -33,7 +33,7 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-#define LOG_LEVEL 10
+#define LOG_LEVEL 0
 #define LLOGLN(_level, _args) \
 		do { if (_level < LOG_LEVEL) { ErrorF _args ; ErrorF("\n"); } } while (0)
 
@@ -57,7 +57,23 @@ Bool rdpRRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate, RRScreenSi
 
 Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 {
+	rdpRandRInfoPtr randr;
+
 	LLOGLN(0, ("rdpRRGetInfo"));
+
+	randr = rdpGetRandRFromScreen(pScreen);
+
+	if (!randr)
+		return FALSE;
+
+	if ((pScreen->width != randr->width) || (pScreen->height != randr->height))
+	{
+		randr->mmWidth = rdpScreenPixelToMM(randr->width);
+		randr->mmHeight = rdpScreenPixelToMM(randr->height);
+
+		RRScreenSizeSet(pScreen, randr->width, randr->height, randr->mmWidth, randr->mmHeight);
+		RRTellChanged(pScreen);
+	}
 
 	return TRUE;
 }
@@ -67,12 +83,25 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	BoxRec box;
 	WindowPtr pRoot;
 	PixmapPtr screenPixmap;
+	rdpRandRInfoPtr randr;
 
 	LLOGLN(0, ("rdpRRScreenSetSize: width: %d height: %d mmWidth: %d mmHeight: %d",
 			width, height, mmWidth, mmHeight));
 
+	randr = rdpGetRandRFromScreen(pScreen);
+
+	if (!randr)
+		return FALSE;
+
 	if ((width < 1) || (height < 1))
 		return FALSE;
+
+	randr->width = width;
+	randr->height = height;
+	randr->mmWidth = mmWidth;
+	randr->mmHeight = mmHeight;
+
+	rdpModeSelect(pScreen, randr->width, randr->height);
 
 	SetRootClip(pScreen, FALSE);
 
@@ -124,7 +153,7 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 
 	ResizeChildrenWinSize(pRoot, 0, 0, 0, 0);
 
-	RRGetInfo(pScreen, 1);
+	RRGetInfo(pScreen, TRUE);
 
 	SetRootClip(pScreen, TRUE);
 
@@ -160,6 +189,8 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 	}
 
 	RRCrtcNotify(crtc, randr->mode, x, y, rotation, NULL, numOutputs, outputs);
+
+	RRGetInfo(pScreen, TRUE);
 
 	return TRUE;
 }
@@ -404,6 +435,9 @@ int rdpRRInit(ScreenPtr pScreen)
 	pScrPriv->rrProviderSetProperty = rdpRRProviderSetProperty;
 	pScrPriv->rrProviderDestroy = rdpRRProviderDestroy;
 #endif
+
+	randr->width = pScreen->width;
+	randr->height = pScreen->height;
 
 	rdpProbeModes(pScreen);
 

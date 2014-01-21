@@ -135,9 +135,9 @@ void x11_rds_module_free(RDS_MODULE_COMMON* module)
 	if (moduleCon->commonModule.authToken)
 		free(moduleCon->commonModule.authToken);
 
-	if (moduleCon->commonModule.baseConfigPath) {
+	if (moduleCon->commonModule.baseConfigPath)
 		free(moduleCon->commonModule.baseConfigPath);
-	}
+
 	free(module);
 }
 
@@ -190,7 +190,7 @@ unsigned int detect_free_display()
 	return i;
 }
 
-char* x11_rds_module_start(RDS_MODULE_COMMON * module)
+char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 {
 	BOOL status = TRUE;
 	DWORD SessionId;
@@ -225,14 +225,14 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (x11->displayNum));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
+	initResolutions(x11->commonModule.baseConfigPath , &gConfig , x11->commonModule.sessionId,
+			&x11->commonModule.envBlock , &xres , &yres , &colordepth);
 
-	initResolutions(x11->commonModule.baseConfigPath , &gConfig , x11->commonModule.sessionId
-			, &x11->commonModule.envBlock , &xres , &yres , &colordepth);
-
-	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -dpi 120",
+	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -dpi 96",
 			"X11rdp", (int) (x11->displayNum), (int) xres, (int) yres, (int) 24);
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
+
 	status = CreateProcessAsUserA(x11->commonModule.userToken,
 			NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
@@ -240,7 +240,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	if (!status)
 	{
-		WLog_Print(gModuleLog, WLOG_ERROR , "s %d, problem startin X11rdp (status %d - cmd %s)\n",
+		WLog_Print(gModuleLog, WLOG_ERROR , "s %d, problem starting X11rdp (status %d - cmd %s)\n",
 		SessionId, status, lpCommandLine);
 		free(pipeName);
 		return NULL;
@@ -260,7 +260,6 @@ char* x11_rds_module_start(RDS_MODULE_COMMON * module)
 
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
-
 
 	if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath,&gConfig, x11->commonModule.sessionId, "startwm", startupname, 256))
 		strcpy(startupname, "startwm.sh");
