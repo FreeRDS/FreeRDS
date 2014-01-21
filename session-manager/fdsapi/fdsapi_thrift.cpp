@@ -53,6 +53,7 @@ int connectClient()
 	gClient = client;
 	gTransport = transport;
 	transport->open();
+
 	return 0;
 }
 
@@ -190,14 +191,21 @@ BOOL RpcGetChildSessionId(void* context, PULONG pSessionId)
 	return TRUE;
 }
 
-HANDLE RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName) {
+char* RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName)
+{
 	CHECK_CLIENT_CONNECTION();
+
 	std::string result;
 	std::string virtualName(pVirtualName);
 	gClient->virtualChannelOpen(result,gAuthToken,sessionId,virtualName);
-	if (result.size() == 0) {
+
+	if (result.size() == 0)
+	{
 		return NULL;
-	} else {
+	}
+	else
+	{
+#if 0
 		HANDLE hNamedPipe;
 
 		if (!WaitNamedPipeA(result.c_str(), 5000))
@@ -218,19 +226,28 @@ HANDLE RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName) {
 		// so we have this information for RpcVirtualChannelClose
 
 		return hNamedPipe;
+#endif
 	}
-}
 
-HANDLE RpcVirtualChannelOpenEx(DWORD SessionId, LPSTR pVirtualName, DWORD flags) {
-	CHECK_CLIENT_CONNECTION();
 	return NULL;
 }
-BOOL RpcVirtualChannelClose(HANDLE virtualChannelHandle) {
+
+char* RpcVirtualChannelOpenEx(DWORD SessionId, LPSTR pVirtualName, DWORD flags)
+{
 	CHECK_CLIENT_CONNECTION();
-	//std::string virtualName(pVirtualName);
-	//return gClient->virtualChannelClose(gAuthToken,SessionId,virtualName);
+
+	return NULL;
 }
 
+BOOL RpcVirtualChannelClose(DWORD SessionId, LPSTR pVirtualName)
+{
+	CHECK_CLIENT_CONNECTION();
+
+	//std::string virtualName(pVirtualName);
+	//return gClient->virtualChannelClose(gAuthToken,SessionId,virtualName);
+
+	return TRUE;
+}
 
 WTSFunctionTable FDSApiFunctionTable =
 {
