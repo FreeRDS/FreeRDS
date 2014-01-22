@@ -97,7 +97,41 @@ VOID RpcCloseServer(void* context, HANDLE hServer)
 BOOL RpcEnumerateSessions(void* context, HANDLE hServer, DWORD Reserved,
 		DWORD Version, PWTS_SESSION_INFOW* ppSessionInfo, DWORD* pCount)
 {
-	return TRUE;
+	DWORD count;
+	DWORD index;
+	BOOL bSuccess;
+	PWTS_SESSION_INFOW pSessionInfo;
+
+	CHECK_CLIENT_CONNECTION();
+
+	freerds::ReturnEnumerateSession result;
+	gClient->enumerateSessions(result, gAuthToken, Version);
+
+	bSuccess = result.returnValue ? TRUE : FALSE;
+
+	if (!bSuccess)
+		return FALSE;
+
+	count = (DWORD) result.sessionInfoList.size();
+
+	if (pCount)
+		*pCount = count;
+
+	pSessionInfo = (PWTS_SESSION_INFOW) malloc(sizeof(PWTS_SESSION_INFOW) * count);
+	ZeroMemory(pSessionInfo, sizeof(PWTS_SESSION_INFOW) * count);
+
+	for (index = 0; index < count; index++)
+	{
+		freerds::TWTS_SESSION_INFOA sessionInfo = result.sessionInfoList.at(index);
+
+		pSessionInfo[index].SessionId = (DWORD) sessionInfo.SessionId;
+		pSessionInfo[index].State = (WTS_CONNECTSTATE_CLASS) sessionInfo.State;
+	}
+
+	if (ppSessionInfo)
+		*ppSessionInfo = pSessionInfo;
+
+	return bSuccess;
 }
 
 BOOL RpcEnumerateSessionsEx(void* context, HANDLE hServer, DWORD* pLevel,
@@ -197,7 +231,7 @@ char* RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName)
 
 	std::string result;
 	std::string virtualName(pVirtualName);
-	gClient->virtualChannelOpen(result,gAuthToken,sessionId,virtualName);
+	gClient->virtualChannelOpen(result, gAuthToken, sessionId, virtualName);
 
 	if (result.size() == 0)
 	{
