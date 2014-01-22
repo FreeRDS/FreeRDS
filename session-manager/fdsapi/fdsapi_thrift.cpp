@@ -22,10 +22,10 @@
 #endif
 
 #include "fdsapi_thrift.h"
+
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
 #include <fdsapi/fdsapi.h>
-
 
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
@@ -282,6 +282,15 @@ WTSFunctionTable FDSApiFunctionTable =
 	RpcVirtualChannelClose
 };
 
-PWTSFunctionTable FDSApiEntry() {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+PWTSFunctionTable FDSApiEntry(void)
+{
 	return &FDSApiFunctionTable;
 }
+
+#ifdef __cplusplus
+}
+#endif

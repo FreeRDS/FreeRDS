@@ -28,7 +28,12 @@ PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOUR
 PROTOBUF_GENERATE_CPP(ICPS_PROTOBUF_SRC ICPS_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICPS.proto)
 
 if(WITH_FDSAPI)
-	include(ThriftExternalProject)
+
+	find_feature(Thrift REQUIRED "RPC" "Remote Procedure Call")
+	
+	if(NOT THRIFT_FOUND)
+		include(ThriftExternalProject)
+	endif()
 
 	include_directories(SYSTEM ${THRIFT_INCLUDE_DIR})
 	set(THRIFT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen/fdsapi)
