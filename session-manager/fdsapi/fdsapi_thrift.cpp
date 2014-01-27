@@ -22,10 +22,10 @@
 #endif
 
 #include "fdsapi_thrift.h"
+
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
 #include <fdsapi/fdsapi.h>
-
 
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
@@ -53,6 +53,7 @@ int connectClient()
 	gClient = client;
 	gTransport = transport;
 	transport->open();
+
 	return 0;
 }
 
@@ -96,7 +97,41 @@ VOID RpcCloseServer(void* context, HANDLE hServer)
 BOOL RpcEnumerateSessions(void* context, HANDLE hServer, DWORD Reserved,
 		DWORD Version, PWTS_SESSION_INFOW* ppSessionInfo, DWORD* pCount)
 {
-	return TRUE;
+	DWORD count;
+	DWORD index;
+	BOOL bSuccess;
+	PWTS_SESSION_INFOW pSessionInfo;
+
+	CHECK_CLIENT_CONNECTION();
+
+	freerds::ReturnEnumerateSession result;
+	gClient->enumerateSessions(result, gAuthToken, Version);
+
+	bSuccess = result.returnValue ? TRUE : FALSE;
+
+	if (!bSuccess)
+		return FALSE;
+
+	count = (DWORD) result.sessionInfoList.size();
+
+	if (pCount)
+		*pCount = count;
+
+	pSessionInfo = (PWTS_SESSION_INFOW) malloc(sizeof(PWTS_SESSION_INFOW) * count);
+	ZeroMemory(pSessionInfo, sizeof(PWTS_SESSION_INFOW) * count);
+
+	for (index = 0; index < count; index++)
+	{
+		freerds::TWTS_SESSION_INFOA sessionInfo = result.sessionInfoList.at(index);
+
+		pSessionInfo[index].SessionId = (DWORD) sessionInfo.SessionId;
+		pSessionInfo[index].State = (WTS_CONNECTSTATE_CLASS) sessionInfo.State;
+	}
+
+	if (ppSessionInfo)
+		*ppSessionInfo = pSessionInfo;
+
+	return bSuccess;
 }
 
 BOOL RpcEnumerateSessionsEx(void* context, HANDLE hServer, DWORD* pLevel,
@@ -190,14 +225,21 @@ BOOL RpcGetChildSessionId(void* context, PULONG pSessionId)
 	return TRUE;
 }
 
-HANDLE RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName) {
+char* RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName)
+{
 	CHECK_CLIENT_CONNECTION();
+
 	std::string result;
 	std::string virtualName(pVirtualName);
-	gClient->virtualChannelOpen(result,gAuthToken,sessionId,virtualName);
-	if (result.size() == 0) {
+	gClient->virtualChannelOpen(result, gAuthToken, sessionId, virtualName);
+
+	if (result.size() == 0)
+	{
 		return NULL;
-	} else {
+	}
+	else
+	{
+#if 0
 		HANDLE hNamedPipe;
 
 		if (!WaitNamedPipeA(result.c_str(), 5000))
@@ -218,19 +260,28 @@ HANDLE RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName) {
 		// so we have this information for RpcVirtualChannelClose
 
 		return hNamedPipe;
+#endif
 	}
-}
 
-HANDLE RpcVirtualChannelOpenEx(DWORD SessionId, LPSTR pVirtualName, DWORD flags) {
-	CHECK_CLIENT_CONNECTION();
 	return NULL;
 }
-BOOL RpcVirtualChannelClose(HANDLE virtualChannelHandle) {
+
+char* RpcVirtualChannelOpenEx(DWORD SessionId, LPSTR pVirtualName, DWORD flags)
+{
 	CHECK_CLIENT_CONNECTION();
-	//std::string virtualName(pVirtualName);
-	//return gClient->virtualChannelClose(gAuthToken,SessionId,virtualName);
+
+	return NULL;
 }
 
+BOOL RpcVirtualChannelClose(DWORD SessionId, LPSTR pVirtualName)
+{
+	CHECK_CLIENT_CONNECTION();
+
+	//std::string virtualName(pVirtualName);
+	//return gClient->virtualChannelClose(gAuthToken,SessionId,virtualName);
+
+	return TRUE;
+}
 
 WTSFunctionTable FDSApiFunctionTable =
 {
@@ -265,6 +316,15 @@ WTSFunctionTable FDSApiFunctionTable =
 	RpcVirtualChannelClose
 };
 
-PWTSFunctionTable FDSApiEntry() {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+PWTSFunctionTable FDSApiEntry(void)
+{
 	return &FDSApiFunctionTable;
 }
+
+#ifdef __cplusplus
+}
+#endif

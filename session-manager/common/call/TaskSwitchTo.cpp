@@ -79,6 +79,10 @@ namespace freerds
 					connection->setSessionId(mNewSessionId);
 					connection->setAbout2SwitchSessionId(0);
 				}
+				currentSession = APP_CONTEXT.getSessionStore()->getSession(mNewSessionId);
+				if (currentSession != NULL) {
+					currentSession->setConnectState(WTSConnected);
+				}
 
 				return;
 			}
@@ -102,9 +106,15 @@ namespace freerds
 			void TaskSwitchTo::cleanUpOnError() {
 				sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(mNewSessionId);
 				if (currentSession != NULL) {
-					currentSession->stopModule();
-					APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
-					WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: cleaning up session with sessionId %d",mNewSessionId);
+					if (currentSession->getConnectState() == WTSActive) {
+						// this was a new session for the connection, remove it
+						currentSession->stopModule();
+						APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
+						WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: cleaning up session with sessionId %d",mNewSessionId);
+					} else if (currentSession->getConnectState() == WTSConnectQuery){
+						// was a previous disconnected session
+						currentSession->setConnectState(WTSDisconnected);
+					}
 				} else {
 					WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mNewSessionId);
 				}

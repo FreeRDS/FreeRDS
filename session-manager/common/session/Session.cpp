@@ -170,13 +170,13 @@ namespace freerds
 				return &mpEnvBlock;
 			}
 
-			void Session::setModuleName(std::string moduleName)
+			void Session::setModuleConfigName(std::string configName)
 			{
-				mModuleName = moduleName;
+				mModuleConfigName = configName;
 			}
 
-			std::string Session::getModuleName() {
-				return mModuleName;
+			std::string Session::getModuleConfigName() {
+				return mModuleConfigName;
 			}
 
 			char * Session::dupEnv(char * orgBlock) {
@@ -212,6 +212,13 @@ namespace freerds
 					return false;
 				}
 
+				std::string configBaseName = std::string("module.")+mModuleConfigName;
+				std::string queryString = configBaseName+std::string(".modulename");
+				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(mSessionID,queryString,mModuleName)) {
+					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, Property %s not found.",queryString.c_str());
+					return false;
+				}
+
 				moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
 
 				if (!currentModule)
@@ -227,6 +234,7 @@ namespace freerds
 
 				mCurrentModuleContext->userToken = mUserToken;
 				mCurrentModuleContext->envBlock = dupEnv(mpEnvBlock);
+				mCurrentModuleContext->baseConfigPath = _strdup(configBaseName.c_str());
 
 				pName = currentModule->start(mCurrentModuleContext);
 
@@ -284,6 +292,11 @@ namespace freerds
 			void Session::setConnectState(WTS_CONNECTSTATE_CLASS state)
 			{
 				mCurrentState = state;
+				mCurrentStateChangeTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
+			}
+
+			boost::posix_time::ptime Session::getConnectStateChangeTime() {
+				return mCurrentStateChangeTime;
 			}
 		}
 	}

@@ -1,5 +1,7 @@
 freerds-session-manager
 
+ICPS.pb.cc
+ICPS.pb.h
 ICP.pb.cc
 ICP.pb.h
 pbRPC.pb.cc

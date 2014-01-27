@@ -19,7 +19,9 @@ set(MODULE_PREFIX "FREERDS_MODULE_X11")
 
 set(${MODULE_PREFIX}_SRCS
 	x11_module.c
-	x11_module.h)
+	x11_module.h
+	../common/module_helper.c
+	../common/module_helper.h)
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 

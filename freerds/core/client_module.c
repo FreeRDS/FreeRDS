@@ -1,27 +1,9 @@
 /**
- * FreeRDS: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright (C) Jay Sorg 2004-2013
  * Copyright 2013 Thincast Technologies GmbH
  * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/**
- * Short description
- * optional longer/detailed description
- *
+ * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,20 +66,20 @@ void* freerds_client_thread(void* arg)
 
 		if (WaitForSingleObject(connector->hClientPipe, 0) == WAIT_OBJECT_0)
 		{
-			if (freerds_transport_receive((rdsBackend *)connector) < 0)
+			if (freerds_transport_receive((rdsBackend*) connector) < 0)
 				break;
 		}
 
 		if (status == WAIT_OBJECT_0)
 		{
 			freerds_message_server_queue_pack(connector);
-		}
 
-		if (connector->fps != fps)
-		{
-			fps = connector->fps;
-			due.QuadPart = 0;
-			SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+			if (connector->fps != fps)
+			{
+				fps = connector->fps;
+				due.QuadPart = 0;
+				SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+			}
 		}
 	}
 
@@ -108,8 +90,8 @@ void* freerds_client_thread(void* arg)
 
 int freerds_client_get_event_handles(rdsBackend* backend, HANDLE* events, DWORD* nCount)
 {
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 
-	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
 	if (connector)
 	{
 		if (connector->ServerQueue)
@@ -126,7 +108,8 @@ int freerds_client_check_event_handles(rdsBackend* backend)
 {
 	int status = 0;
 
-	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
+
 	if (!connector)
 		return 0;
 

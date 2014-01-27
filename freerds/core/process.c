@@ -49,10 +49,13 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
 	rdpSettings* settings = client->settings;
 
+	settings->OsMajorType = OSMAJORTYPE_UNIX;
+	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
 	settings->ColorDepth = 32;
 	settings->RemoteFxCodec = TRUE;
 	settings->BitmapCacheV3Enabled = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
+	settings->SurfaceFrameMarkerEnabled = TRUE;
 
 	freerds_connection_init(context, settings);
 	context->client = client;
@@ -128,11 +131,11 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
 		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
 
-	if ((DesktopWidth % 4) != 0)
-		DesktopWidth += (DesktopWidth % 4);
+	//if ((DesktopWidth % 4) != 0)
+	//	DesktopWidth += (DesktopWidth % 4);
 
-	if ((DesktopHeight % 4) != 0)
-		DesktopHeight += (DesktopHeight % 4);
+	//if ((DesktopHeight % 4) != 0)
+	//	DesktopHeight += (DesktopHeight % 4);
 
 	if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight)
 			|| (ColorDepth != settings->ColorDepth))
@@ -163,6 +166,7 @@ int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
 	capabilities.DesktopWidth = settings->DesktopWidth;
 	capabilities.DesktopHeight = settings->DesktopHeight;
 	capabilities.KeyboardLayout = settings->KeyboardLayout;
+	capabilities.KeyboardType = settings->KeyboardType;
 	capabilities.KeyboardSubType = settings->KeyboardSubType;
 
 	freerds_write_capabilities(s, &capabilities);
@@ -180,7 +184,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 
 	if (connector)
 	{
-		printf("reactivation\n");
+		fprintf(stderr, "reactivation\n");
 		return TRUE;
 	}
 
@@ -190,8 +194,10 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	if (settings->Password)
 		settings->AutoLogonEnabled = 1;
 
-	if (settings->RemoteFxCodec || settings->NSCodec)
-		connection->codecMode = TRUE;
+	// TODO: add NS codec in the candidates as soon as the encoder will be able
+	//  	to create pdu that fit in fastpath pdu max size
+	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
+							settings->SurfaceFrameMarkerEnabled);
 
 	error_code = freerds_icp_LogonUser((UINT32)(connection->id),
 			settings->Username, settings->Domain, settings->Password, settings->DesktopWidth,
@@ -199,7 +205,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 
 	if (error_code != 0)
 	{
-		printf("freerds_icp_LogonUser failed %d\n", error_code);
+		fprintf(stderr, "freerds_icp_LogonUser failed %d\n", error_code);
 		return FALSE;
 	}
 
@@ -211,7 +217,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	if (!freerds_connector_connect(connector))
 		return FALSE;
 
-	printf("Client Activated\n");
+	fprintf(stderr, "Client Activated\n");
 
 	return TRUE;
 }
@@ -375,22 +381,23 @@ void freerds_suppress_output(rdpContext* context, BYTE allow, RECTANGLE_16* area
 		backend->client->SuppressOutput(backend, allow);
 }
 
-BOOL freerds_client_process_switch_session(rdsConnection *connection, wMessage *message)
+BOOL freerds_client_process_switch_session(rdsConnection* connection, wMessage* message)
 {
-	struct rds_notification_msg_switch *notification = (struct rds_notification_msg_switch *)message->wParam;
-	BOOL ret = FALSE;
 	int error = 0;
-	rdsBackendConnector *connector = NULL;
+	BOOL status = FALSE;
+	rdsBackendConnector* connector = NULL;
+	struct rds_notification_msg_switch *notification = (struct rds_notification_msg_switch*) message->wParam;
+
 	freerds_connector_free(connection->connector);
 	connection->connector = connector = freerds_connector_new(connection);
 	connector->Endpoint = notification->endpoint;
 
-	ret = freerds_connector_connect(connector);
+	status = freerds_connector_connect(connector);
 
-	error = freerds_icp_sendResponse(notification->tag, message->id, 0, ret);
+	error = freerds_icp_sendResponse(notification->tag, message->id, 0, status);
 	free(notification);
 
-	if(error != 0)
+	if (error != 0)
 	{
 		fprintf(stderr, "problem occured while switching session \n");
 		return FALSE;
@@ -398,31 +405,40 @@ BOOL freerds_client_process_switch_session(rdsConnection *connection, wMessage *
 
 	return TRUE;
 }
-BOOL freerds_client_process_logoff(rdsConnection *connection, wMessage *message)
+BOOL freerds_client_process_logoff(rdsConnection* connection, wMessage* message)
 {
 	int error = 0;
-	struct rds_notification_msg_logoff *notification = (struct rds_notification_msg_logoff *)message->wParam;
+	struct rds_notification_msg_logoff *notification = (struct rds_notification_msg_logoff*) message->wParam;
 	freerds_connector_free(connection->connector);
 	connection->connector = NULL;
+
+	connection->client->Close(connection->client);
+
 	error = freerds_icp_sendResponse(notification->tag, message->id, 0, TRUE);
 	free(notification);
 	return FALSE;
 }
 
-BOOL freerds_client_process_notification(rdsConnection *connection, wMessage *message)
+BOOL freerds_client_process_notification(rdsConnection* connection, wMessage* message)
 {
-	BOOL ret = FALSE;
-	switch(message->id)
+	BOOL status = FALSE;
+
+	switch (message->id)
 	{
 		case NOTIFY_SWITCHTO:
-			ret = freerds_client_process_switch_session(connection, message);
+			status = freerds_client_process_switch_session(connection, message);
 			break;
+
 		case NOTIFY_LOGOFF:
-			ret = freerds_client_process_logoff(connection, message);
+			status = freerds_client_process_logoff(connection, message);
+			break;
+
 		default:
+			fprintf(stderr, "%s: unhandled message 0x%x\n", __FUNCTION__, message->id);
 			break;
 	}
-	return ret;
+
+	return status;
 }
 
 void* freerds_connection_main_thread(void* arg)
@@ -437,7 +453,7 @@ void* freerds_connection_main_thread(void* arg)
 	HANDLE NotificationEvent;
 	rdsConnection* connection;
 	rdpSettings* settings;
-	rdsBackendConnector* connector;
+	rdsBackendConnector* connector = NULL;
 	freerdp_peer* client = (freerdp_peer*) arg;
 	BOOL disconnected = FALSE;
 #ifndef WIN32
@@ -455,7 +471,7 @@ void* freerds_connection_main_thread(void* arg)
 
 	settings->RdpSecurity = FALSE;
 	settings->TlsSecurity = TRUE;
-	settings->NlaSecurity = FALSE;
+	settings->NlaSecurity = TRUE;
 
 	client->Capabilities = freerds_peer_capabilities;
 	client->PostConnect = freerds_peer_post_connect;
@@ -544,8 +560,10 @@ void* freerds_connection_main_thread(void* arg)
 		if (WaitForSingleObject(NotificationEvent, 0) == WAIT_OBJECT_0)
 		{
 			wMessage message;
+
 			MessageQueue_Peek(connection->notifications, (void *)(&message), TRUE);
-			if (TRUE != freerds_client_process_notification(connection, &message))
+
+			if (!freerds_client_process_notification(connection, &message))
 				break;
 		}
 	}
@@ -554,8 +572,10 @@ void* freerds_connection_main_thread(void* arg)
 
 	if (connection->connector)
 	{
+		freerds_connector_free(connection->connector);
+		connection->connector = 0;
+
 		freerds_icp_DisconnectUserSession(connection->id, &disconnected);
-		CloseHandle(connection->connector->hClientPipe);
 	}
 	client->Disconnect(client);
 	app_context_remove_connection(connection->id);

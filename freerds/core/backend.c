@@ -1,5 +1,6 @@
 /**
- * FreeRDS
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ * Backend Interface
  *
  * Copyright 2013 Thincast Technologies GmbH
  * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
@@ -23,7 +24,8 @@
 
 #include "freerds.h"
 #include <freerds/backend.h>
-
+#include <sys/types.h>
+#include <sys/shm.h>
 
 rdsBackendConnector* freerds_connector_new(rdsConnection* connection)
 {
@@ -68,15 +70,26 @@ void freerds_connector_free(rdsBackendConnector* connector)
         CloseHandle(connector->StopEvent);
         CloseHandle(connector->hClientPipe);
 
-				if (connector->Endpoint)
-					free(connector->Endpoint);
+        if (connector->ServerList)
+        	LinkedList_Free(connector->ServerList);
 
+        if (connector->ServerQueue)
+        	MessageQueue_Free(connector->ServerQueue);
+
+        if (connector->Endpoint)
+        	free(connector->Endpoint);
+
+        if (connector->framebuffer.fbAttached)
+        {
+           shmdt(connector->framebuffer.fbSharedMemory);
+           fprintf(stderr, "connector_free: detached shm %d from %p\n",
+           connector->framebuffer.fbSegmentId, connector->framebuffer.fbSharedMemory);
+        }
         free(connector);
 }
 
 BOOL freerds_connector_connect(rdsBackendConnector* connector)
 {
-
 	HANDLE hClientPipe;
 
 	hClientPipe = freerds_named_pipe_connect(connector->Endpoint, 20);

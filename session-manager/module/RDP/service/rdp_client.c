@@ -136,7 +136,7 @@ int rds_check_shared_framebuffer(rdsContext* rds)
 	{
 		RDS_MSG_SHARED_FRAMEBUFFER msg;
 
-		msg.attach = 1;
+		msg.flags = RDS_FRAMEBUFFER_FLAG_ATTACH;
 		msg.width = rds->framebuffer.fbWidth;
 		msg.height = rds->framebuffer.fbHeight;
 		msg.scanline = rds->framebuffer.fbScanline;
@@ -310,7 +310,7 @@ BOOL rds_post_connect(freerdp* instance)
 	rds->framebufferSize = rds->framebuffer.fbScanline * rds->framebuffer.fbHeight;
 
 	rds->framebuffer.fbSegmentId = shmget(IPC_PRIVATE, rds->framebufferSize,
-			IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+			IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 	rds->framebuffer.fbSharedMemory = (BYTE*) shmat(rds->framebuffer.fbSegmentId, 0, 0);
 

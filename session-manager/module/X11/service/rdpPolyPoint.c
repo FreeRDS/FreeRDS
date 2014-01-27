@@ -1,26 +1,28 @@
-/*
-Copyright 2005-2012 Jay Sorg
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ *
+ * Copyright 2005-2012 Jay Sorg
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "rdp.h"
-#include "rdpdraw.h"
+#include "rdpDraw.h"
 
 #define LDEBUG 0
 
@@ -146,20 +148,17 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		{
 			RDS_MSG_OPAQUE_RECT msg;
 
-			rdpup_begin_update();
-
 			for (i = 0; i < npt; i++)
 			{
+				msg.type = RDS_SERVER_OPAQUE_RECT;
 				msg.nLeftRect = pts[i].x;
 				msg.nTopRect = pts[i].y;
 				msg.nWidth = 1;
 				msg.nHeight = 1;
-				msg.color = rdpup_convert_color(pGC->fgPixel);
+				msg.color = rdp_convert_color(pGC->fgPixel);
 
-				rdpup_opaque_rect(&msg);
+				rdp_send_update((RDS_MSG_COMMON*) &msg);
 			}
-
-			rdpup_end_update();
 		}
 	}
 	else if (cd == 2)
@@ -170,27 +169,25 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 		{
 			RDS_MSG_OPAQUE_RECT msg;
 
-			rdpup_begin_update();
-
 			for (j = num_clips - 1; j >= 0; j--)
 			{
 				box = REGION_RECTS(&clip_reg)[j];
-				rdpup_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+				rdp_set_clip(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
 				for (i = 0; i < npt; i++)
 				{
+					msg.type = RDS_SERVER_OPAQUE_RECT;
 					msg.nLeftRect = pts[i].x;
 					msg.nTopRect = pts[i].y;
 					msg.nWidth = 1;
 					msg.nHeight = 1;
-					msg.color = rdpup_convert_color(pGC->fgPixel);
+					msg.color = rdp_convert_color(pGC->fgPixel);
 
-					rdpup_opaque_rect(&msg);
+					rdp_send_update((RDS_MSG_COMMON*) &msg);
 				}
 			}
 
-			rdpup_reset_clip();
-			rdpup_end_update();
+			rdp_reset_clip();
 		}
 	}
 

@@ -1,7 +1,7 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright (C) Jay Sorg 2004-2013
+ * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * module interface
  */
 
 #ifdef HAVE_CONFIG_H
@@ -27,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <errno.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
 
@@ -35,25 +34,25 @@
 #include <freerds/backend.h>
 #include <freerds/icp_client_stubs.h>
 #include <freerds/icp.h>
-#include "../icp/pbrpc/pbrpc.h"
 #include "pbRPC.pb-c.h"
+#include "../icp/pbrpc/pbrpc.h"
 
 int freerds_client_inbound_begin_update(rdsBackend* backend, RDS_MSG_BEGIN_UPDATE* msg)
 {
-	freerds_orders_begin_paint(((rdsBackendConnector *)backend)->connection);
+	freerds_orders_begin_paint(((rdsBackendConnector*) backend)->connection);
 	return 0;
 }
 
 int freerds_client_inbound_end_update(rdsBackend* backend, RDS_MSG_END_UPDATE* msg)
 {
-	freerds_orders_end_paint(((rdsBackendConnector *)backend)->connection);
+	freerds_orders_end_paint(((rdsBackendConnector*) backend)->connection);
 	backend->client->VBlankEvent(backend);
 	return 0;
 }
 
 int freerds_client_inbound_beep(rdsBackend* backend, RDS_MSG_BEEP* msg)
 {
-	freerds_send_bell(((rdsBackendConnector *)backend)->connection);
+	freerds_send_bell(((rdsBackendConnector*) backend)->connection);
 	return 0;
 }
 
@@ -83,10 +82,19 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 	SURFACE_FRAME* frame;
 	rdsConnection* connection;
 	rdpSettings* settings;
-	rdsBackendConnector *connector = (rdsBackendConnector *)backend;
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 
 	connection = connector->connection;
 	settings = connection->settings;
+
+	if (!msg->framebuffer->fbAttached)
+		return 0;
+
+	if ((msg->nXSrc + msg->nWidth) > msg->framebuffer->fbWidth)
+		msg->nWidth = msg->framebuffer->fbWidth - msg->nXSrc;
+
+	if ((msg->nYSrc + msg->nHeight) > msg->framebuffer->fbHeight)
+		msg->nHeight = msg->framebuffer->fbHeight - msg->nYSrc;
 
 	if (connection->codecMode)
 	{
@@ -95,9 +103,16 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 		inFlightFrames = ListDictionary_Count(connection->FrameList);
 
 		if (inFlightFrames > settings->FrameAcknowledge)
+		{
 			connector->fps = (100 / (inFlightFrames + 1) * connector->MaxFps) / 100;
+		}
 		else
-			connector->fps = connector->MaxFps;
+		{
+			connector->fps += 2;
+
+			if (connector->fps > connector->MaxFps)
+				connector->fps = connector->MaxFps;
+		}
 
 		if (connector->fps < 1)
 			connector->fps = 1;
@@ -107,9 +122,13 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 		frame->frameId = ++connection->frameId;
 		ListDictionary_Add(connection->FrameList, (void*) (size_t) frame->frameId, frame);
 
-		freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
+		if (settings->SurfaceFrameMarkerEnabled)
+			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
+
 		freerds_send_surface_bits(connection, bpp, msg);
-		freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_END, frame->frameId);
+
+		if (settings->SurfaceFrameMarkerEnabled)
+			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_END, frame->frameId);
 	}
 	else
 	{
@@ -136,13 +155,13 @@ int freerds_client_inbound_dstblt(rdsBackend* backend, RDS_MSG_DSTBLT* msg)
 
 int freerds_client_inbound_set_pointer(rdsBackend* backend, RDS_MSG_SET_POINTER* msg)
 {
-	freerds_set_pointer(((rdsBackendConnector *)backend)->connection, msg);
+	freerds_set_pointer(((rdsBackendConnector*) backend)->connection, msg);
 	return 0;
 }
 
 int freerds_client_inbound_set_system_pointer(rdsBackend* backend, RDS_MSG_SET_SYSTEM_POINTER* msg)
 {
-	freerds_set_system_pointer(((rdsBackendConnector *)backend)->connection, msg);
+	freerds_set_system_pointer(((rdsBackendConnector*) backend)->connection, msg);
 	return 0;
 }
 
@@ -169,7 +188,7 @@ int freerds_client_inbound_line_to(rdsBackend* backend, RDS_MSG_LINE_TO* msg)
 
 int freerds_client_inbound_cache_glyph(rdsBackend* backend, RDS_MSG_CACHE_GLYPH* msg)
 {
-	return freerds_orders_send_font(((rdsBackendConnector *)backend)->connection, msg);
+	return freerds_orders_send_font(((rdsBackendConnector*) backend)->connection, msg);
 }
 
 int freerds_client_inbound_glyph_index(rdsBackend* backend, RDS_MSG_GLYPH_INDEX* msg)
@@ -179,42 +198,66 @@ int freerds_client_inbound_glyph_index(rdsBackend* backend, RDS_MSG_GLYPH_INDEX*
 	return 0;
 }
 
+static void detach_framebuffer(RDS_FRAMEBUFFER *framebuffer)
+{
+
+	fprintf(stderr, "detaching segment %d from %p\n",
+			framebuffer->fbSegmentId, framebuffer->fbSharedMemory);
+	shmdt(framebuffer->fbSharedMemory);
+	ZeroMemory(framebuffer, sizeof(RDS_FRAMEBUFFER));
+}
+
 int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 {
-	backend->framebuffer.fbWidth = msg->width;
-	backend->framebuffer.fbHeight = msg->height;
-	backend->framebuffer.fbScanline = msg->scanline;
-	backend->framebuffer.fbSegmentId = msg->segmentId;
-	backend->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
-	backend->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
+	int attach;
 
-	printf("received shared framebuffer message: mod->framebuffer.fbAttached: %d msg->attach: %d\n",
-			backend->framebuffer.fbAttached, msg->attach);
+	attach = (msg->flags & RDS_FRAMEBUFFER_FLAG_ATTACH) ? TRUE : FALSE;
 
-	if (!backend->framebuffer.fbAttached && msg->attach)
+	if (attach)
 	{
+		void* addr;
 		RDS_MSG_PAINT_RECT fm;
-		rdsBackendConnector *connector = (rdsBackendConnector *)backend;
-		rdpSettings *settings = connector->settings;
+		rdsBackendConnector* connector = (rdsBackendConnector*) backend;
+		rdpSettings* settings = connector->settings;
 		UINT32 DesktopWidth = msg->width;
 		UINT32 DesktopHeight = msg->height;
 
+		if (backend->framebuffer.fbAttached)
+		{
+			detach_framebuffer(&(backend->framebuffer));
+		}
 
-		backend->framebuffer.fbSharedMemory = (BYTE*) shmat(backend->framebuffer.fbSegmentId, 0, 0);
-		backend->framebuffer.fbAttached = TRUE;
+		backend->framebuffer.fbWidth = msg->width;
+		backend->framebuffer.fbHeight = msg->height;
+		backend->framebuffer.fbScanline = msg->scanline;
+		backend->framebuffer.fbSegmentId = msg->segmentId;
+		backend->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
+		backend->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
 
-		printf("attached segment %d to %p\n",
+		addr = shmat(backend->framebuffer.fbSegmentId, 0, SHM_RDONLY);
+
+		if (addr == ((void*) (size_t) (-1)))
+		{
+			fprintf(stderr, "failed to attach to segment %d, errno: %d\n",
+					backend->framebuffer.fbSegmentId, errno);
+			return 1;
+		}
+
+		backend->framebuffer.fbSharedMemory = (BYTE*) addr;
+		backend->framebuffer.fbAttached = 1;
+
+		fprintf(stderr, "attached segment %d to %p\n",
 				backend->framebuffer.fbSegmentId, backend->framebuffer.fbSharedMemory);
 
 		backend->framebuffer.image = (void*) pixman_image_create_bits(PIXMAN_x8r8g8b8,
 				backend->framebuffer.fbWidth, backend->framebuffer.fbHeight,
 				(uint32_t*) backend->framebuffer.fbSharedMemory, backend->framebuffer.fbScanline);
 
-		if ((DesktopWidth % 4) != 0)
-			DesktopWidth += (DesktopWidth % 4);
+		//if ((DesktopWidth % 4) != 0)
+		//	DesktopWidth += (DesktopWidth % 4);
 
-		if ((DesktopHeight % 4) != 0)
-			DesktopHeight += (DesktopHeight % 4);
+		//if ((DesktopHeight % 4) != 0)
+		//	DesktopHeight += (DesktopHeight % 4);
 
 		if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight))
 		{
@@ -240,14 +283,12 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 		freerds_client_inbound_paint_rect(backend, &fm);
 	}
-
-	if (backend->framebuffer.fbAttached && !msg->attach)
+	else // detach
 	{
-		printf("detaching segment %d to %p\n",
-				backend->framebuffer.fbSegmentId, backend->framebuffer.fbSharedMemory);
-		shmdt(backend->framebuffer.fbSharedMemory);
-		backend->framebuffer.fbAttached = FALSE;
-		backend->framebuffer.fbSharedMemory = 0;
+		if (backend->framebuffer.fbAttached)
+		{
+			detach_framebuffer(&(backend->framebuffer));
+		}
 	}
 
 	backend->client->VBlankEvent(backend);
@@ -257,7 +298,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 int freerds_client_inbound_reset(rdsBackend* backend, RDS_MSG_RESET* msg)
 {
-	if (freerds_reset(((rdsBackendConnector *)backend)->connection, msg) != 0)
+	if (freerds_reset(((rdsBackendConnector*) backend)->connection, msg) != 0)
 		return 0;
 
 	return 0;
@@ -285,12 +326,12 @@ int freerds_client_inbound_paint_offscreen_surface(rdsBackend* backend, RDS_MSG_
 
 int freerds_client_inbound_window_new_update(rdsBackend* backend, RDS_MSG_WINDOW_NEW_UPDATE* msg)
 {
-	return freerds_window_new_update(((rdsBackendConnector *)backend)->connection, msg);
+	return freerds_window_new_update(((rdsBackendConnector*) backend)->connection, msg);
 }
 
 int freerds_client_inbound_window_delete(rdsBackend* backend, RDS_MSG_WINDOW_DELETE* msg)
 {
-	return freerds_window_delete(((rdsBackendConnector *)backend)->connection, msg);
+	return freerds_window_delete(((rdsBackendConnector*) backend)->connection, msg);
 }
 
 int freerds_client_inbound_logon_user(rdsBackend* backend, RDS_MSG_LOGON_USER* msg)
@@ -338,14 +379,6 @@ void icpsCallback(UINT32 reason, Freerds__Pbrpc__RPCBase* response, void *args) 
 			goto cleanup_exit;
 		}
 
-		/*
-		if (response->msgtype < FREERDS__ICPS__MSGTYPE__FirstMessage ||
-				response->msgtype > FREERDS__ICPS__MSGTYPE__LastMessage)
-		{
-			fprintf(stderr, "received message is not an ICPS message, not forwarding\n");
-			goto cleanup_exit;
-		}*/
-
 		icps.status = ICPS_REPLY_SUCCESS;
 		icps.icpsType = response->msgtype;
 		icps.dataLen = response->payload.len;
@@ -382,7 +415,7 @@ int freerds_client_inbound_icps(rdsBackend* backend, RDS_MSG_ICPS_REQUEST* msg)
 
 int freerds_client_inbound_connector_init(rdsBackendConnector* connector)
 {
-	rdsServerInterface *serverInter;
+	rdsServerInterface* serverInter;
 
 	if (connector->server)
 	{

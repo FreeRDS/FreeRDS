@@ -23,6 +23,7 @@
 
 #include "CallInDisconnectUserSession.h"
 #include <appcontext/ApplicationContext.h>
+#include <call/TaskEndSession.h>
 
 using freerds::icp::DisconnectUserSessionRequest;
 using freerds::icp::DisconnectUserSessionResponse;
@@ -100,6 +101,20 @@ namespace freerds
 
 			currentSession->setConnectState(WTSDisconnected);
 			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
+
+			long timeout;
+
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber(currentSession->getSessionID(),"session.timeout",timeout)) {
+				timeout = 0;
+			}
+
+
+			if (timeout == 0)  {
+				callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
+				task->setSessionId(currentSession->getSessionID());
+				APP_CONTEXT.addTask(task);
+			}
+
 			mDisconnected = true;
 			return 0;
 		}

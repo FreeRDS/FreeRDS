@@ -40,7 +40,6 @@ message(STATUS "Using xorg-server sources in ${XSRCBASE_RELATIVE}")
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/LocalConfigSettings.cmake)
 	message(STATUS "Using local settings")
 	include(${CMAKE_CURRENT_SOURCE_DIR}/LocalConfigSettings.cmake)
-else()
 endif()
 
 set(XSRCBASE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
@@ -121,8 +120,8 @@ set(${MODULE_PREFIX}_SRCS
 	rdpCopyArea.h
 	rdpCopyPlane.c
 	rdpCopyPlane.h
-	rdpdraw.c
-	rdpdraw.h
+	rdpDraw.c
+	rdpDraw.h
 	rdpFillPolygon.c
 	rdpFillPolygon.h
 	rdpFillSpans.c
@@ -134,9 +133,10 @@ set(${MODULE_PREFIX}_SRCS
 	rdpImageText16.h
 	rdpImageText8.c
 	rdpImageText8.h
-	rdpinput.c
-	rdpmain.c
-	rdpmisc.c
+	rdpInput.c
+	rdpInput.h
+	rdpMain.c
+	rdpMisc.c
 	rdpPolyArc.c
 	rdpPolyArc.h
 	rdpPolyFillArc.c
@@ -161,11 +161,20 @@ set(${MODULE_PREFIX}_SRCS
 	rdpPushPixels.h
 	rdpPutImage.c
 	rdpPutImage.h
-	rdprandr.c
-	rdprandr.h
+	rdpRandr.c
+	rdpRandr.h
+	rdpModes.c
+	rdpModes.h
 	rdpSetSpans.c
 	rdpSetSpans.h
-	rdpup.c)
+	rdpWindow.c
+	rdpWindow.h
+	rdpPalette.c
+	rdpPalette.h
+	rdpScreen.c
+	rdpScreen.h
+	rdpUpdate.c
+	rdpUpdate.h)
 
 set(${MODULE_PREFIX}_XORG_XSERVER_SRCS
 	${XSRCBASE}/mi/miinitext.c
@@ -221,17 +230,41 @@ set_property(TARGET "glx-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/glx/.li
 add_library("glxdri-static" STATIC IMPORTED)
 set_property(TARGET "glxdri-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/glx/.libs/libglxdri.a")
 
-add_library("xfixes-static" STATIC IMPORTED)
-set_property(TARGET "xfixes-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/xfixes/.libs/libxfixes.a")
+set(WITH_LIBXFIXES 0)
+set(LIBXFIXES "${XOBJBASE}/xfixes/.libs/libxfixes.a")
 
-add_library("damageext-static" STATIC IMPORTED)
-set_property(TARGET "damageext-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/damageext/.libs/libdamageext.a")
+if(EXISTS ${LIBXFIXES})
+	set(WITH_LIBXFIXES 1)
+	add_library("xfixes-static" STATIC IMPORTED)
+	set_property(TARGET "xfixes-static" PROPERTY IMPORTED_LOCATION ${LIBXFIXES})
+endif()
 
-add_library("damage-static" STATIC IMPORTED)
-set_property(TARGET "damage-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/miext/damage/.libs/libdamage.a")
+set(WITH_LIBDAMAGEEXT 0)
+set(LIBDAMAGEEXT "${XOBJBASE}/damageext/.libs/libdamageext.a")
 
-add_library("sync-static" STATIC IMPORTED)
-set_property(TARGET "sync-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/miext/sync/.libs/libsync.a")
+if(EXISTS ${LIBDAMAGEEXT})
+	set(WITH_LIBDAMAGEEXT 1)
+	add_library("damageext-static" STATIC IMPORTED)
+	set_property(TARGET "damageext-static" PROPERTY IMPORTED_LOCATION ${LIBDAMAGEEXT})
+endif()
+
+set(WITH_LIBDAMAGE 0)
+set(LIBDAMAGE "${XOBJBASE}/miext/damage/.libs/libdamage.a")
+
+if(EXISTS ${LIBDAMAGE})
+	set(WITH_LIBDAMAGE 1)
+	add_library("damage-static" STATIC IMPORTED)
+	set_property(TARGET "damage-static" PROPERTY IMPORTED_LOCATION ${LIBDAMAGE})
+endif()
+
+set(WITH_LIBSYNC 0)
+set(LIBSYNC "${XOBJBASE}/miext/sync/.libs/libsync.a")
+
+if(EXISTS ${LIBSYNC})
+	set(WITH_LIBSYNC 1)
+	add_library("sync-static" STATIC IMPORTED)
+	set_property(TARGET "sync-static" PROPERTY IMPORTED_LOCATION ${LIBSYNC})
+endif()
 
 set(${MODULE_PREFIX}_INCLUDES
 	"${XSRCBASE}/include"
@@ -270,7 +303,23 @@ list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
 set(${MODULE_PREFIX}_STATIC_LIBS
 	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
-	render-static xkb-static Xext-static Xi-static glx-static glxdri-static xfixes-static damageext-static damage-static sync-static)
+	render-static xkb-static Xext-static Xi-static glx-static glxdri-static)
+
+if(WITH_LIBXFIXES)
+	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS xfixes-static)
+endif()
+
+if(WITH_LIBDAMAGE)
+	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS damage-static)
+endif()
+
+if(WITH_LIBDAMAGEEXT)
+	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS damageext-static)
+endif()
+
+if(WITH_LIBSYNC)
+	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS sync-static)
+endif()
 
 list(APPEND ${MODULE_PREFIX}_LIBS
 	${XFONT_LIBRARIES} ${XAU_LIBRARIES} ${XDMCP_LIBRARIES}

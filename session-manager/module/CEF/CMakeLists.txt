@@ -44,7 +44,9 @@ endif()
 
 set(${MODULE_PREFIX}_SRCS
 	cef_module.c
-	cef_module.h)
+	cef_module.h
+	../common/module_helper.c
+	../common/module_helper.h)
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 

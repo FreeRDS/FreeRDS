@@ -19,7 +19,9 @@ set(MODULE_PREFIX "FREERDS_MODULE_QT")
 
 set(${MODULE_PREFIX}_SRCS
 	qt_module.c
-	qt_module.h)
+	qt_module.h
+	../common/module_helper.c
+	../common/module_helper.h)
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 

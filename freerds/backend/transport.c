@@ -413,6 +413,17 @@ int freerds_receive_client_message(rdsBackend* backend, wStream* s, RDS_MSG_COMM
 
 	switch (common->type)
 	{
+		case RDS_CLIENT_CAPABILITIES:
+			{
+				RDS_MSG_CAPABILITIES msg;
+				CopyMemory(&msg, common, sizeof(RDS_MSG_CAPABILITIES));
+				freerds_read_capabilities(s, &msg);
+
+				if (client->Capabilities)
+					status = client->Capabilities(backend, &msg);
+			}
+			break;
+
 		case RDS_CLIENT_SYNCHRONIZE_KEYBOARD_EVENT:
 			{
 				RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT msg;

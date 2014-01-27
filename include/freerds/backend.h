@@ -212,6 +212,7 @@ struct _RDS_MSG_CAPABILITIES
 	UINT32 DesktopHeight;
 	UINT32 ColorDepth;
 	UINT32 KeyboardLayout;
+	UINT32 KeyboardType;
 	UINT32 KeyboardSubType;
 };
 typedef struct _RDS_MSG_CAPABILITIES RDS_MSG_CAPABILITIES;
@@ -255,7 +256,7 @@ struct _RDS_MSG_SUPPRESS_OUTPUT
 {
 	DEFINE_MSG_COMMON();
 
-	UINT32 suppressOutput;
+	UINT32 activeOutput;
 };
 typedef struct _RDS_MSG_SUPPRESS_OUTPUT RDS_MSG_SUPPRESS_OUTPUT;
 
@@ -620,13 +621,15 @@ struct _RDS_MSG_WINDOW_DELETE
 };
 typedef struct _RDS_MSG_WINDOW_DELETE RDS_MSG_WINDOW_DELETE;
 
+#define RDS_FRAMEBUFFER_FLAG_ATTACH		0x00000001
+
 struct _RDS_MSG_SHARED_FRAMEBUFFER
 {
 	DEFINE_MSG_COMMON();
 
+	UINT32 flags;
 	int width;
 	int height;
-	int attach;
 	int scanline;
 	int segmentId;
 	int bitsPerPixel;
@@ -680,6 +683,7 @@ typedef union _RDS_MSG_SERVER RDS_MSG_SERVER;
 typedef int (*pRdsGetEventHandles)(rdsBackend *backend, HANDLE* events, DWORD* nCount);
 typedef int (*pRdsCheckEventHandles)(rdsBackend* backend);
 
+typedef int (*pRdsClientCapabilities)(rdsBackend* backend, RDS_MSG_CAPABILITIES* capabilities);
 typedef int (*pRdsClientSynchronizeKeyboardEvent)(rdsBackend* backend, DWORD flags);
 typedef int (*pRdsClientScancodeKeyboardEvent)(rdsBackend* backend, DWORD flags, DWORD code, DWORD keyboardType);
 typedef int (*pRdsClientVirtualKeyboardEvent)(rdsBackend* backend, DWORD flags, DWORD code);
@@ -694,6 +698,7 @@ typedef int (*pRdsClientSuppressOutput)(rdsBackend* backend, UINT32 suppress_out
 
 struct rds_client_interface
 {
+	pRdsClientCapabilities Capabilities;
 	pRdsClientSynchronizeKeyboardEvent SynchronizeKeyboardEvent;
 	pRdsClientScancodeKeyboardEvent ScancodeKeyboardEvent;
 	pRdsClientVirtualKeyboardEvent VirtualKeyboardEvent;

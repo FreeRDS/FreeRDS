@@ -21,8 +21,8 @@ set(${EXTERNAL_PROJECT}_VERSION "0.9.0")
 set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}")
 set(${EXTERNAL_PROJECT}_EXT ".tar.gz")
 set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
-set(${EXTERNAL_PROJECT}_URL "http://www.eu.apache.org/dist/thrift/${${EXTERNAL_PROJECT}_VERSION}/${${EXTERNAL_PROJECT}_FILE}")
-set(${EXTERNAL_PROJECT}_CONFIGURE --without-python --without-java --without-c_glib
+set(${EXTERNAL_PROJECT}_URL "http://archive.apache.org/dist/thrift/${${EXTERNAL_PROJECT}_VERSION}/${${EXTERNAL_PROJECT}_FILE}")
+set(${EXTERNAL_PROJECT}_CONFIGURE --without-python --without-java --without-c_glib --with-pic
 --prefix=${EXTERNAL_PROJECTS_BASE}/Install/${EXTERNAL_PROJECT})
 set(${EXTERNAL_PROJECT}_UPDATE "")
 set(${EXTERNAL_PROJECT}_MAKE "")

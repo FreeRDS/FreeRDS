@@ -19,6 +19,7 @@
  * limitations under the License.
  */
 #include "FDSApiHandler.h"
+#include <session/SessionStore.h>
 #include <appcontext/ApplicationContext.h>
 
 #include <winpr/thread.h>
@@ -95,6 +96,27 @@ namespace freerds{
 				ReturnEnumerateSession& _return, const TLPSTR& authToken,
 				const TDWORD Version)
 		{
+			DWORD count;
+			DWORD index;
+
+			sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+			std::list<sessionNS::SessionPtr> sessions = sessionStore->getAllSessions();
+
+			count = sessions.size();
+			sessionList list(count);
+
+			std::list<sessionNS::SessionPtr>::iterator session = sessions.begin();
+
+			for (index = 0; index < count; index++)
+			{
+				list.at(index).SessionId = (*session)->getSessionID();
+				list.at(index).State = TWTS_CONNECTSTATE_CLASS::WTSActive;
+				session++;
+			}
+
+			_return.sessionInfoList = list;
+
+			_return.returnValue = true;
 		}
 
 		}

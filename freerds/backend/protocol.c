@@ -271,13 +271,14 @@ int freerds_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg)
 
 int freerds_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg)
 {
-	if (Stream_GetRemainingLength(s) < 24)
+	if (Stream_GetRemainingLength(s) < 28)
 		return -1;
 	Stream_Read_UINT32(s, msg->Version);
 	Stream_Read_UINT32(s, msg->DesktopWidth);
 	Stream_Read_UINT32(s, msg->DesktopHeight);
 	Stream_Read_UINT32(s, msg->ColorDepth);
 	Stream_Read_UINT32(s, msg->KeyboardLayout);
+	Stream_Read_UINT32(s, msg->KeyboardType);
 	Stream_Read_UINT32(s, msg->KeyboardSubType);
 
 	return 0;
@@ -286,7 +287,7 @@ int freerds_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg)
 int freerds_write_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg)
 {
 	msg->msgFlags = 0;
-	msg->length = freerds_write_common_header(NULL, (RDS_MSG_COMMON*) msg) + 24;
+	msg->length = freerds_write_common_header(NULL, (RDS_MSG_COMMON*) msg) + 28;
 
 	if (!s)
 		return msg->length;
@@ -298,6 +299,7 @@ int freerds_write_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg)
 	Stream_Write_UINT32(s, msg->DesktopHeight);
 	Stream_Write_UINT32(s, msg->ColorDepth);
 	Stream_Write_UINT32(s, msg->KeyboardLayout);
+	Stream_Write_UINT32(s, msg->KeyboardType);
 	Stream_Write_UINT32(s, msg->KeyboardSubType);
 
 	return 0;
@@ -393,7 +395,7 @@ int freerds_read_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg)
 	if (Stream_GetRemainingLength(s) < 4)
 		return -1;
 
-	Stream_Read_UINT32(s, msg->suppressOutput);
+	Stream_Read_UINT32(s, msg->activeOutput);
 	return 0;
 }
 
@@ -407,7 +409,7 @@ int freerds_write_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg)
 
 	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
 
-	Stream_Write_UINT32(s, msg->suppressOutput);
+	Stream_Write_UINT32(s, msg->activeOutput);
 	return 0;
 }
 
@@ -1554,9 +1556,9 @@ int freerds_read_shared_framebuffer(wStream* s, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 	if (Stream_GetRemainingLength(s) < 4 * 7)
 		return -1;
 
+	Stream_Read_UINT32(s, msg->flags);
 	Stream_Read_UINT32(s, msg->width);
 	Stream_Read_UINT32(s, msg->height);
-	Stream_Read_UINT32(s, msg->attach);
 	Stream_Read_UINT32(s, msg->scanline);
 	Stream_Read_UINT32(s, msg->segmentId);
 	Stream_Read_UINT32(s, msg->bitsPerPixel);
@@ -1575,9 +1577,9 @@ int freerds_write_shared_framebuffer(wStream* s, RDS_MSG_SHARED_FRAMEBUFFER* msg
 
 	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
 
+	Stream_Write_UINT32(s, msg->flags);
 	Stream_Write_UINT32(s, msg->width);
 	Stream_Write_UINT32(s, msg->height);
-	Stream_Write_UINT32(s, msg->attach);
 	Stream_Write_UINT32(s, msg->scanline);
 	Stream_Write_UINT32(s, msg->segmentId);
 	Stream_Write_UINT32(s, msg->bitsPerPixel);

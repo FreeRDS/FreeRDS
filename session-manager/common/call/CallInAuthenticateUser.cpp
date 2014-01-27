@@ -115,7 +115,15 @@ namespace freerds
 
 		int CallInAuthenticateUser::getUserSession() {
 
-			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
+			sessionNS::SessionPtr currentSession;
+			bool reconnectAllowd;
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyBool(0,"session.reconnect",reconnectAllowd,mUserName)) {
+				reconnectAllowd = true;
+			}
+
+			if (reconnectAllowd) {
+				currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
+			}
 
 			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
 			{
@@ -137,12 +145,14 @@ namespace freerds
 					mResult = 1;// will report error with answer
 					return 1;
 				}
-				std::string moduleName;
+				std::string moduleConfigName;
 
-				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(currentSession->getSessionID(),"module",moduleName)) {
-					moduleName = "X11";
+				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(currentSession->getSessionID(),"module",moduleConfigName)) {
+					moduleConfigName = "X11";
 				}
-				currentSession->setModuleName(moduleName);
+				currentSession->setModuleConfigName(moduleConfigName);
+			} else {
+				currentSession->setConnectState(WTSConnectQuery);
 			}
 
 			long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
@@ -154,7 +164,7 @@ namespace freerds
 				std::string pipeName;
 				if (!currentSession->startModule(pipeName))
 				{
-					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Module %s does not start properly for user %s in domain %s",currentSession->getModuleName().c_str(),mUserName.c_str(),mDomainName.c_str());
+					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "ModuleConfig %s does not start properly for user %s in domain %s",currentSession->getModuleConfigName().c_str(),mUserName.c_str(),mDomainName.c_str());
 					mResult = 1;// will report error with answer
 					return 1;
 				}

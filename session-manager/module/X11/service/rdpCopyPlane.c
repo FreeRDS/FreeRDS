@@ -1,26 +1,28 @@
-/*
-Copyright 2005-2012 Jay Sorg
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+/**
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ *
+ * Copyright 2005-2012 Jay Sorg
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "rdp.h"
-#include "rdpdraw.h"
+#include "rdpDraw.h"
 
 #define LDEBUG 0
 
@@ -98,9 +100,7 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 	if (cd == 1)
 	{
-		rdpup_begin_update();
-		rdpup_send_area(pDst->x + dstx, pDst->y + dsty, w, h);
-		rdpup_end_update();
+		rdp_send_area_update(pDst->x + dstx, pDst->y + dsty, w, h);
 	}
 	else if (cd == 2)
 	{
@@ -108,7 +108,6 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 
 		if (num_clips > 0)
 		{
-			rdpup_begin_update();
 			box.x1 = pDst->x + dstx;
 			box.y1 = pDst->y + dsty;
 			box.x2 = box.x1 + w;
@@ -122,17 +121,16 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 				for (j = num_clips - 1; j >= 0; j--)
 				{
 					box = REGION_RECTS(&clip_reg)[j];
-					rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+					rdp_send_area_update(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 				}
 			}
 			else
 			{
 				pbox = RegionExtents(&clip_reg);
-				rdpup_send_area(pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+				rdp_send_area_update(pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
 			}
 
 			RegionUninit(&box_reg);
-			rdpup_end_update();
 		}
 	}
 

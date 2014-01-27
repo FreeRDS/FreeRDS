@@ -27,10 +27,10 @@
 #include <Winsock2.h>
 #endif //WIN32
 
-#include "pbrpc.h"
 #include "pbrpc_transport.h"
-#include "pbrpc_utils.h"
 #include "pbRPC.pb-c.h"
+#include "pbrpc_utils.h"
+#include "pbrpc.h"
 
 
 struct pbrpc_transaction
@@ -304,6 +304,15 @@ static int pbrpc_transport_open(pbRPCContext* context)
 	return 0;
 }
 
+static void pbrpc_connect(pbRPCContext* context)
+{
+
+	if (0 != pbrpc_transport_open(context))
+		return;
+
+	context->isConnected = TRUE;
+}
+
 static void pbrpc_reconnect(pbRPCContext* context)
 {
 	pbRPCTransaction *ta = NULL;
@@ -317,11 +326,7 @@ static void pbrpc_reconnect(pbRPCContext* context)
 		if (ta->freeAfterResponse)
 			free(ta);
 	}
-
-	if (0 != pbrpc_transport_open(context))
-		return;
-
-	context->isConnected = TRUE;
+	pbrpc_connect(context);
 }
 
 static void pbrpc_mainloop(pbRPCContext* context)
@@ -329,6 +334,8 @@ static void pbrpc_mainloop(pbRPCContext* context)
 	int status;
 	DWORD nCount;
 	HANDLE events[32];
+
+	pbrpc_connect(context);
 
 	while (1)
 	{
@@ -380,12 +387,8 @@ static void pbrpc_mainloop(pbRPCContext* context)
 
 int pbrpc_server_start(pbRPCContext* context)
 {
-	if (pbrpc_transport_open(context) < 0)
-		return -1;
-
-	context->isConnected = TRUE;
+	context->isConnected = FALSE;
 	context->thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) pbrpc_mainloop, context, 0, NULL);
-
 	return 0;
 }
 

@@ -22,6 +22,14 @@
 
 #include <winpr/wtsapi.h>
 
-PWTSFunctionTable FDSApiEntry();
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif //FREERDS_FDSAPI_THRIFT_H
+WINPR_API PWTSFunctionTable FDSApiEntry(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* FREERDS_FDSAPI_THRIFT_H */

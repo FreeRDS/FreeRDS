@@ -53,7 +53,8 @@ namespace freerds
 
 			void startTaskExecutor();
 			void stopTaskExecutor();
-			void addTask(taskNS::TaskPtr task);
+			void startSessionTimoutMonitor();
+			bool addTask(taskNS::TaskPtr task);
 
 			std::string getHomePath();
 			std::string getLibraryPath();
