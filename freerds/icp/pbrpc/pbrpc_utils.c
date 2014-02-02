@@ -18,10 +18,8 @@
  * limitations under the License.
  */
 
-#include <stdlib.h>
-#include <winpr/wtypes.h>
+#include <winpr/crt.h>
 #include <winpr/interlocked.h>
-#include <winpr/memory.h>
 
 #include "pbRPC.pb-c.h"
 #include "pbrpc_utils.h"
