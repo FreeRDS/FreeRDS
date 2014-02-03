@@ -188,6 +188,9 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		}
 	}
 
+	if (!RROutputSetPhysicalSize(randr->output, randr->mmWidth, randr->mmHeight))
+		return FALSE;
+
 	RRCrtcNotify(crtc, randr->mode, x, y, rotation, NULL, numOutputs, outputs);
 
 	RRGetInfo(pScreen, TRUE);
@@ -380,8 +383,6 @@ void rdpRRProviderDestroy(ScreenPtr pScreen, RRProviderPtr provider)
 int rdpRRInit(ScreenPtr pScreen)
 {
 #if RANDR_12_INTERFACE
-	RRCrtcPtr crtc;
-	RROutputPtr output;
 	rdpRandRInfoPtr randr;
 #if (RANDR_INTERFACE_VERSION >= 0x0104)
 	RRProviderPtr provider;
@@ -436,47 +437,61 @@ int rdpRRInit(ScreenPtr pScreen)
 	pScrPriv->rrProviderDestroy = rdpRRProviderDestroy;
 #endif
 
+	pScreen->x = 0;
+	pScreen->y = 0;
+	pScreen->mmWidth = rdpScreenPixelToMM(pScreen->width);
+	pScreen->mmHeight = rdpScreenPixelToMM(pScreen->height);
+
+	randr->x = pScreen->x;
+	randr->y = pScreen->y;
 	randr->width = pScreen->width;
 	randr->height = pScreen->height;
+	randr->mmWidth = pScreen->mmWidth;
+	randr->mmHeight = pScreen->mmHeight;
 
 	rdpProbeModes(pScreen);
 
 	RRScreenSetSizeRange(pScreen, 8, 8, 16384, 16384);
 
-	crtc = RRCrtcCreate(pScreen, NULL);
+	randr->numCrtcs = 1;
+	randr->crtcs = (RRCrtcPtr*) malloc(sizeof(RRCrtcPtr) * randr->numCrtcs);
 
-	if (!crtc)
+	randr->crtc = RRCrtcCreate(pScreen, NULL);
+	randr->crtcs[0] = randr->crtc;
+
+	if (!randr->crtc)
 		return FALSE;
 
-	RRCrtcGammaSetSize(crtc, 256);
+	RRCrtcGammaSetSize(randr->crtc, 256);
 
-	output = RROutputCreate(pScreen, "RDP-0", strlen("RDP-0"), NULL);
+	randr->numOutputs = 1;
+	randr->outputs = (RROutputPtr*) malloc(sizeof(RROutputPtr) * randr->numOutputs);
 
-	if (!output)
+	randr->output = RROutputCreate(pScreen, "RDP-0", strlen("RDP-0"), NULL);
+	randr->outputs[0] = randr->output;
+
+	if (!randr->output)
 		return -1;
 
-	if (!RROutputSetClones(output, NULL, 0))
+	if (!RROutputSetModes(randr->output, randr->modes, randr->numModes, 0))
 		return -1;
 
-	if (!RROutputSetModes(output, randr->modes, randr->numModes, 0))
+	if (!RROutputSetCrtcs(randr->output, randr->crtcs, randr->numCrtcs))
 		return -1;
 
-	if (!RROutputSetCrtcs(output, &crtc, 1))
+	if (!RROutputSetSubpixelOrder(randr->output, SubPixelUnknown))
 		return -1;
 
-	if (!RROutputSetSubpixelOrder(output, SubPixelUnknown))
+	if (!RROutputSetPhysicalSize(randr->output, randr->mmWidth, randr->mmHeight))
 		return -1;
 
-	if (!RROutputSetPhysicalSize(output, 521, 293))
+	if (!RROutputSetConnection(randr->output, RR_Connected))
 		return -1;
 
-	if (!RROutputSetConnection(output, RR_Connected))
-		return -1;
-
-	pScrPriv->primaryOutput = output;
+	pScrPriv->primaryOutput = randr->output;
 
 	randr->edid = rdpConstructScreenEdid(pScreen);
-	rdpSetOutputEdid(output, randr->edid);
+	rdpSetOutputEdid(randr->output, randr->edid);
 
 #if (RANDR_INTERFACE_VERSION >= 0x0104)
 	provider = RRProviderCreate(pScreen, "RDP", strlen("RDP"));
@@ -490,7 +505,7 @@ int rdpRRInit(ScreenPtr pScreen)
 	RRProviderSetCapabilities(provider, capabilities);
 #endif
 
-	RRCrtcNotify(crtc, randr->mode, 0, 0, RR_Rotate_0, NULL, 1, &output);
+	RRCrtcNotify(randr->crtc, randr->mode, randr->x, randr->y, RR_Rotate_0, NULL, randr->numOutputs, randr->outputs);
 #endif
 
 	return 0;

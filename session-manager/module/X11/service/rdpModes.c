@@ -610,6 +610,8 @@ int rdpModeSelect(ScreenPtr pScreen, int width, int height)
 
 	randr->width = randr->mode->mode.width;
 	randr->height = randr->mode->mode.height;
+	randr->mmWidth = rdpScreenPixelToMM(randr->width);
+	randr->mmHeight = rdpScreenPixelToMM(randr->height);
 
 	return 0;
 }
