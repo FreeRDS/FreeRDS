@@ -71,7 +71,7 @@ int rdpScreenBitsPerPixel(int depth)
 
 int rdpScreenPixelToMM(int pixels)
 {
-	return ((int)(((((double)(pixels)) / g_rdpScreen.dpi) * 25.4 + 0.5)));
+	return ((int)(((((double)(pixels)) / g_rdpScreen.dpi) * 25.4)));
 }
 
 int rdpScreenFrameBufferAlloc()

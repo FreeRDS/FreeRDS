@@ -66,11 +66,11 @@ Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 	if (!randr)
 		return FALSE;
 
+	randr->mmWidth = rdpScreenPixelToMM(randr->width);
+	randr->mmHeight = rdpScreenPixelToMM(randr->height);
+
 	if ((pScreen->width != randr->width) || (pScreen->height != randr->height))
 	{
-		randr->mmWidth = rdpScreenPixelToMM(randr->width);
-		randr->mmHeight = rdpScreenPixelToMM(randr->height);
-
 		RRScreenSizeSet(pScreen, randr->width, randr->height, randr->mmWidth, randr->mmHeight);
 		RRTellChanged(pScreen);
 	}
@@ -168,6 +168,7 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		int x, int y, Rotation rotation, int numOutputs, RROutputPtr* outputs)
 {
 	rdpRandRInfoPtr randr;
+	RRTransformPtr transform = NULL;
 
 	LLOGLN(0, ("rdpRRCrtcSet: x: %d y: %d numOutputs: %d",
 			x, y, numOutputs));
@@ -182,16 +183,21 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 		crtc->x = y;
 		crtc->y = y;
 
+		transform = RRCrtcGetTransform(crtc);
+
 		if (mode && crtc->mode)
 		{
 			rdpModeSelect(pScreen, mode->mode.width, mode->mode.height);
+
+			randr->mmWidth = rdpScreenPixelToMM(randr->width);
+			randr->mmHeight = rdpScreenPixelToMM(randr->height);
+
+			if (!RROutputSetPhysicalSize(randr->output, randr->mmWidth, randr->mmHeight))
+				return FALSE;
+
+			RRCrtcNotify(crtc, randr->mode, x, y, rotation, transform, randr->numOutputs, outputs);
 		}
 	}
-
-	if (!RROutputSetPhysicalSize(randr->output, randr->mmWidth, randr->mmHeight))
-		return FALSE;
-
-	RRCrtcNotify(crtc, randr->mode, x, y, rotation, NULL, numOutputs, outputs);
 
 	RRGetInfo(pScreen, TRUE);
 
@@ -464,6 +470,11 @@ int rdpRRInit(ScreenPtr pScreen)
 
 	RRCrtcGammaSetSize(randr->crtc, 256);
 
+	randr->rotations = RR_Rotate_0;
+	RRCrtcSetRotations(randr->crtc, randr->rotations);
+
+	RRCrtcSetTransformSupport(randr->crtc, TRUE);
+
 	randr->numOutputs = 1;
 	randr->outputs = (RROutputPtr*) malloc(sizeof(RROutputPtr) * randr->numOutputs);
 
@@ -505,7 +516,8 @@ int rdpRRInit(ScreenPtr pScreen)
 	RRProviderSetCapabilities(provider, capabilities);
 #endif
 
-	RRCrtcNotify(randr->crtc, randr->mode, randr->x, randr->y, RR_Rotate_0, NULL, randr->numOutputs, randr->outputs);
+	RRCrtcNotify(randr->crtc, randr->mode, randr->x, randr->y, randr->rotations,
+			RRCrtcGetTransform(randr->crtc), randr->numOutputs, randr->outputs);
 #endif
 
 	return 0;

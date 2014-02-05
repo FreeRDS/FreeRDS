@@ -43,6 +43,8 @@ typedef struct _rdpRandRInfo
 	EDID* edid;
 	Atom edidAtom;
 
+	Rotation rotations;
+
 	int numCrtcs;
 	RRCrtcPtr crtc;
 	RRCrtcPtr* crtcs;
