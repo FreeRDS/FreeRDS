@@ -66,11 +66,11 @@ Bool rdpRRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
 	if (!randr)
 		return FALSE;
 
-	randr->mmWidth = rdpScreenPixelToMM(randr->width);
-	randr->mmHeight = rdpScreenPixelToMM(randr->height);
-
 	if ((pScreen->width != randr->width) || (pScreen->height != randr->height))
 	{
+		randr->mmWidth = rdpScreenPixelToMM(randr->width);
+		randr->mmHeight = rdpScreenPixelToMM(randr->height);
+
 		RRScreenSizeSet(pScreen, randr->width, randr->height, randr->mmWidth, randr->mmHeight);
 		RRTellChanged(pScreen);
 	}
@@ -170,8 +170,8 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 	rdpRandRInfoPtr randr;
 	RRTransformPtr transform = NULL;
 
-	LLOGLN(0, ("rdpRRCrtcSet: x: %d y: %d numOutputs: %d",
-			x, y, numOutputs));
+	LLOGLN(0, ("rdpRRCrtcSet: x: %d y: %d numOutputs: %d crtc: %p mode: %p",
+			x, y, numOutputs, crtc, mode));
 
 	randr = rdpGetRandRFromScreen(pScreen);
 
@@ -196,6 +196,9 @@ Bool rdpRRCrtcSet(ScreenPtr pScreen, RRCrtcPtr crtc, RRModePtr mode,
 				return FALSE;
 
 			RRCrtcNotify(crtc, randr->mode, x, y, rotation, transform, randr->numOutputs, outputs);
+
+			RRScreenSizeSet(pScreen, randr->width, randr->height, randr->mmWidth, randr->mmHeight);
+			RRTellChanged(pScreen);
 		}
 	}
 
