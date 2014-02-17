@@ -29,6 +29,8 @@
 
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
+#include <freerdp/channels/channels.h>
+
 #include <freerds/backend.h>
 
 #include <pixman.h>
