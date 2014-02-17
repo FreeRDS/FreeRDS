@@ -58,15 +58,15 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 	settings->SurfaceFrameMarkerEnabled = TRUE;
 
 	freerds_connection_init(context, settings);
-	context->client = client;
 
-	context->vcm = WTSCreateVirtualChannelManager(client);
+	context->client = client;
+	context->vcm = WTSOpenServerA((LPSTR) client->context);
 }
 
 void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
 {
 	freerds_connection_uninit(context);
-	WTSDestroyVirtualChannelManager(context->vcm);
+	WTSCloseServer((HANDLE) context->vcm);
 }
 
 rdsConnection* freerds_connection_create(freerdp_peer* client)
