@@ -874,8 +874,8 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 		scanline = bytesPerPixel * msg->nWidth;
 	}
 
-	//printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
-	//		bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
+			bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
 	if (connection->settings->RemoteFxCodec)
 	{
@@ -890,19 +890,19 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 		rect.height = msg->nHeight;
 
 		messages = rfx_encode_messages(connection->encoder->rfx_context, &rect, 1, data,
-				msg->nWidth, msg->nHeight, scanline, &numMessages,
+				msg->framebuffer->fbWidth, msg->framebuffer->fbHeight, scanline, &numMessages,
 				connection->settings->MultifragMaxRequestSize);
 
 		cmd.codecID = connection->settings->RemoteFxCodecId;
 
-		cmd.destLeft = msg->nLeftRect;
-		cmd.destTop = msg->nTopRect;
-		cmd.destRight = msg->nLeftRect + msg->nWidth;
-		cmd.destBottom = msg->nTopRect + msg->nHeight;
+		cmd.destLeft = 0;
+		cmd.destTop = 0;
+		cmd.destRight = msg->framebuffer->fbWidth;
+		cmd.destBottom = msg->framebuffer->fbHeight;
 
 		cmd.bpp = 32;
-		cmd.width = msg->nWidth;
-		cmd.height = msg->nHeight;
+		cmd.width = msg->framebuffer->fbWidth;
+		cmd.height = msg->framebuffer->fbHeight;
 
 		for (i = 0; i < numMessages; i++)
 		{
