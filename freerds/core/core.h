@@ -67,7 +67,7 @@ struct rds_connection
 	UINT32 frameId;
 	wListDictionary* FrameList;
 
-	WTSVirtualChannelManager* vcm;
+	HANDLE vcm;
 	CliprdrServerContext* cliprdr;
 	RdpdrServerContext* rdpdr;
 	RdpsndServerContext* rdpsnd;
