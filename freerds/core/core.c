@@ -874,8 +874,8 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 		scanline = bytesPerPixel * msg->nWidth;
 	}
 
-	printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
-			bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
+	//printf("%s: bpp: %d x: %d y: %d width: %d height: %d\n", __FUNCTION__,
+	//		bpp, msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight);
 
 	if (connection->settings->RemoteFxCodec)
 	{
