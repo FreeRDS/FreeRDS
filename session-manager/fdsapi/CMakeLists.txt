@@ -25,6 +25,8 @@ set(${MODULE_PREFIX}_GEN_SRCS
 	${FDSAPI_GEN_SRC_DIR}/fdsapi_types.cpp
 	${FDSAPI_GEN_SRC_DIR}/fdsapi.cpp)
 
+set_source_files_properties(${${MODULE_PREFIX}_GEN_SRCS} PROPERTIES GENERATED TRUE)
+
 set(${MODULE_PREFIX}_SRCS
 	fdsapi_thrift.cpp
 	${${MODULE_PREFIX}_GEN_SRCS})

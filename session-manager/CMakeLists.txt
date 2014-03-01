@@ -28,11 +28,15 @@ PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOUR
 PROTOBUF_GENERATE_CPP(ICPS_PROTOBUF_SRC ICPS_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICPS.proto)
 
 if(WITH_FDSAPI)
-
 	find_feature(Thrift REQUIRED "RPC" "Remote Procedure Call")
 	
 	if(NOT THRIFT_FOUND)
-		include(ThriftExternalProject)
+		#include(ThriftExternalProject)
+		message(STATUS "You may need to manually download and install thrift:")
+		message(STATUS "wget http://archive.apache.org/dist/thrift/0.9.0/thrift-0.9.0.tar.gz")
+		message(STATUS "tar zxvf thrift-0.9.0.tar.gz && cd thrift-0.9.0")
+		message(STATUS "./configure --without-python --without-java --without-c_glib --with-pic --without-csharp --without-haskell --without-go --without-d --without-qt4")
+		message(STATUS "make && sudo make install")
 	endif()
 
 	include_directories(SYSTEM ${THRIFT_INCLUDE_DIR})
@@ -41,9 +45,10 @@ if(WITH_FDSAPI)
 	include(ThriftUtils)
 
 	THRIFT_GEN(THRIFT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/thrift/fdsapi.thrift)
+	
 	add_definitions(-DWITH_FDSAPI)
 	set(FDSAPI_SRC common/fdsapi/FDSApiHandler.cpp common/fdsapi/FDSApiServer.cpp)
-endif(WITH_FDSAPI)
+endif()
 
 find_package(Boost REQUIRED)
 include_directories( ${Boost_INCLUDE_DIR} )

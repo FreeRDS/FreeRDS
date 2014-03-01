@@ -27,7 +27,6 @@ function(THRIFT_GEN VAR)
     # Get basename
     get_filename_component(FIL_WE ${FIL} NAME_WE)
 
-
     set(OUTPUT_THRIFT_FILE "${THRIFT_OUTPUT_DIR}/${FIL_WE}_types.cpp")
     set(OUTPUT_THRIFT_FILE ${OUTPUT_THRIFT_FILE} "${THRIFT_OUTPUT_DIR}/${FIL_WE}_types.h")
     set(OUTPUT_THRIFT_FILE ${OUTPUT_THRIFT_FILE} "${THRIFT_OUTPUT_DIR}/${FIL_WE}_constants.cpp")
@@ -38,7 +37,7 @@ function(THRIFT_GEN VAR)
 
     set(CPP_ARGS ${THRIFT_INCLUDE_DIR_OPTION} --gen cpp -out ${THRIFT_OUTPUT_DIR})
     
-      add_custom_command(
+    add_custom_command(
         OUTPUT ${OUTPUT_THRIFT_FILE}
         COMMAND ${THRIFT_COMPILER} ${CPP_ARGS} ${FIL}
         DEPENDS ${ABS_FIL}
