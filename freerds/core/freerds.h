@@ -33,8 +33,6 @@
 
 #include <freerds/backend.h>
 
-#include <pixman.h>
-
 typedef struct xrdp_listener rdsListener;
 
 #include "core.h"
