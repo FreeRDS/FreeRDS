@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-WINPR_API PWTSFunctionTable FDSApiEntry(void);
+
 
 #ifdef __cplusplus
 }
