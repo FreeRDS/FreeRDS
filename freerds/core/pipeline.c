@@ -23,6 +23,8 @@
 
 #include "freerds.h"
 
+#include <freerdp/codec/region.h>
+
 int freerds_server_message_enqueue(rdsBackend* backend, RDS_MSG_COMMON* msg)
 {
 	void* dup = NULL;
@@ -338,19 +340,19 @@ int freerds_message_server_queue_pack(rdsBackendConnector* connector)
 {
 	RDS_RECT rect;
 	int ChainedMode;
+	REGION16 region;
 	wLinkedList* list;
-	rdsConnection* connection;
+	RECTANGLE_16 rect16;
 	RDS_MSG_COMMON* node;
-	pixman_bool_t status;
-	pixman_box32_t* extents;
-	pixman_region32_t region;
+	rdsConnection* connection;
+	const RECTANGLE_16* extents;
 
 	ChainedMode = 0;
 	connection = connector->connection;
 
 	list = connector->ServerList;
 
-	pixman_region32_init(&region);
+	region16_init(&region);
 
 	LinkedList_Enumerator_Reset(list);
 
@@ -360,8 +362,12 @@ int freerds_message_server_queue_pack(rdsBackendConnector* connector)
 
 		if ((!ChainedMode) && (node->msgFlags & RDS_MSG_FLAG_RECT))
 		{
-			status = pixman_region32_union_rect(&region, &region,
-					node->rect.x, node->rect.y, node->rect.width, node->rect.height);
+			rect16.left = node->rect.x;
+			rect16.top = node->rect.y;
+			rect16.right = node->rect.x + node->rect.width;
+			rect16.bottom = node->rect.y + node->rect.height;
+
+			region16_union_rect(&region, &region, &rect16);
 		}
 		else
 		{
@@ -373,12 +379,12 @@ int freerds_message_server_queue_pack(rdsBackendConnector* connector)
 
 	if (!ChainedMode)
 	{
-		extents = pixman_region32_extents(&region);
+		extents = region16_extents(&region);
 
-		rect.x = extents->x1;
-		rect.y = extents->y1;
-		rect.width = extents->x2 - extents->x1;
-		rect.height = extents->y2 - extents->y1;
+		rect.x = extents->left;
+		rect.y = extents->top;
+		rect.width = extents->right - extents->left;
+		rect.height = extents->bottom - extents->top;
 
 		freerds_message_server_align_rect(connector, &rect);
 
@@ -407,7 +413,7 @@ int freerds_message_server_queue_pack(rdsBackendConnector* connector)
 		}
 	}
 
-	pixman_region32_fini(&region);
+	region16_uninit(&region);
 
 	return 0;
 }

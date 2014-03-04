@@ -26,49 +26,39 @@
 
 int freerds_channels_post_connect(rdsConnection* session)
 {
-	int i;
-	rdpSettings* settings = session->settings;
+	BOOL allowed;
 
-	for (i = 0; i < settings->ChannelCount; i++)
+	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "cliprdr"))
 	{
+		allowed = FALSE;
+		freerds_icp_IsChannelAllowed(session->id, "cliprdr", &allowed);
+		printf("channel %s is %s\n", "cliprdr", allowed ? "allowed" : "not allowed");
 
-		if (settings->ChannelDefArray[i].joined)
-		{
-			BOOL allowed = FALSE;
+		printf("Channel %s registered\n", "cliprdr");
+		session->cliprdr = cliprdr_server_context_new(session->vcm);
+		session->cliprdr->Start(session->cliprdr);
+	}
 
-			freerds_icp_IsChannelAllowed(session->id, settings->ChannelDefArray[i].Name, &allowed);
-			printf("channel %s is %s\n", settings->ChannelDefArray[i].Name, allowed ? "allowed" : "not allowed");
-#if 0
-			if (strncmp(settings->ChannelDefArray[i].Name, "cliprdr", 7) == 0)
-			{
-				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
-				session->cliprdr = cliprdr_server_context_new(session->vcm);
-				session->cliprdr->Start(session->cliprdr);
-			}
-			else if (strncmp(settings->ChannelDefArray[i].Name, "rdpdr", 5) == 0)
-			{
-				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
-				session->rdpdr = rdpdr_server_context_new(session->vcm);
-				session->rdpdr->Start(session->rdpdr);
-			}
-			else if (strncmp(settings->ChannelDefArray[i].Name, "rdpsnd", 6) == 0)
-			{
-				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
-				session->rdpsnd = rdpsnd_server_context_new(session->vcm);
-				session->rdpsnd->Start(session->rdpsnd);
-			}
-			else if (strncmp(settings->ChannelDefArray[i].Name, "drdynvc", 7) == 0)
-			{
-				printf("Channel %s registered\n", settings->ChannelDefArray[i].Name);
-				session->drdynvc = drdynvc_server_context_new(session->vcm);
-				session->drdynvc->Start(session->drdynvc);
-			}
-			else
-#endif
-			{
-				printf("Channel %s not registered\n", settings->ChannelDefArray[i].Name);
-			}
-		}
+	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "rdpdr"))
+	{
+		allowed = FALSE;
+		freerds_icp_IsChannelAllowed(session->id, "rdpdr", &allowed);
+		printf("channel %s is %s\n", "rdpdr", allowed ? "allowed" : "not allowed");
+
+		printf("Channel %s registered\n", "rdpdr");
+		session->rdpdr = rdpdr_server_context_new(session->vcm);
+		session->rdpdr->Start(session->rdpdr);
+	}
+
+	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "rdpsnd"))
+	{
+		allowed = FALSE;
+		freerds_icp_IsChannelAllowed(session->id, "rdpsnd", &allowed);
+		printf("channel %s is %s\n", "rdpsnd", allowed ? "allowed" : "not allowed");
+
+		printf("Channel %s registered\n", "rdpsnd");
+		session->rdpsnd = rdpsnd_server_context_new(session->vcm);
+		session->rdpsnd->Start(session->rdpsnd);
 	}
 
 	return 0;

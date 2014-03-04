@@ -249,16 +249,6 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		fprintf(stderr, "attached segment %d to %p\n",
 				backend->framebuffer.fbSegmentId, backend->framebuffer.fbSharedMemory);
 
-		backend->framebuffer.image = (void*) pixman_image_create_bits(PIXMAN_x8r8g8b8,
-				backend->framebuffer.fbWidth, backend->framebuffer.fbHeight,
-				(uint32_t*) backend->framebuffer.fbSharedMemory, backend->framebuffer.fbScanline);
-
-		//if ((DesktopWidth % 4) != 0)
-		//	DesktopWidth += (DesktopWidth % 4);
-
-		//if ((DesktopHeight % 4) != 0)
-		//	DesktopHeight += (DesktopHeight % 4);
-
 		if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight))
 		{
 			fprintf(stderr, "Resizing client to %dx%d\n", DesktopWidth, DesktopHeight);
@@ -283,7 +273,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 		freerds_client_inbound_paint_rect(backend, &fm);
 	}
-	else // detach
+	else
 	{
 		if (backend->framebuffer.fbAttached)
 		{

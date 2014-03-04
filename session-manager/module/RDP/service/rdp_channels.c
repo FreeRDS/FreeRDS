@@ -112,7 +112,7 @@ void* rds_channels_thread(void* arg)
 	return NULL;
 }
 
-int rds_receive_channel_data(freerdp* instance, int channelId, BYTE* data, int size, int flags, int totalSize)
+int rds_receive_channel_data(freerdp* instance, UINT16 channelId, BYTE* data, int size, int flags, int totalSize)
 {
 	return freerdp_channels_data(instance, channelId, data, size, flags, totalSize);
 }

@@ -1,6 +1,8 @@
 /**
- * FreeRDS: FDSApi implementation for thrift
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
+ * FDSAPI WTSAPI Stubs
  *
+ * Copyright 2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  * Copyright 2013 Thincast Technologies GmbH
  * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
@@ -23,9 +25,11 @@
 
 #include "fdsapi_thrift.h"
 
+#include <fdsapi/fdsapi.h>
+
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
-#include <fdsapi/fdsapi.h>
+#include <winpr/wtsapi.h>
 
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
@@ -57,45 +61,71 @@ int connectClient()
 	return 0;
 }
 
-BOOL RpcStartRemoteControlSession(void* context, LPWSTR pTargetServerName,
-		ULONG TargetLogonId, BYTE HotkeyVk, USHORT HotkeyModifiers)
+/**
+ * WTSAPI Stubs
+ */
+
+BOOL WINAPI FreeRDS_WTSStartRemoteControlSessionW(LPWSTR pTargetServerName, ULONG TargetLogonId, BYTE HotkeyVk, USHORT HotkeyModifiers)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcStopRemoteControlSession(void* context, ULONG LogonId)
+BOOL WINAPI FreeRDS_WTSStartRemoteControlSessionA(LPSTR pTargetServerName, ULONG TargetLogonId, BYTE HotkeyVk, USHORT HotkeyModifiers)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcConnectSession(void* context, ULONG LogonId, ULONG TargetLogonId, PWSTR pPassword, BOOL bWait)
+BOOL WINAPI FreeRDS_WTSStopRemoteControlSession(ULONG LogonId)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcEnumerateServers(void* context, LPWSTR pDomainName, DWORD Reserved,
-		DWORD Version, PWTS_SERVER_INFOW* ppServerInfo, DWORD* pCount)
+BOOL WINAPI FreeRDS_WTSConnectSessionW(ULONG LogonId, ULONG TargetLogonId, PWSTR pPassword, BOOL bWait)
 {
-	return TRUE;
+	return FALSE;
 }
 
-HANDLE RpcOpenServer(void* context, LPWSTR pServerName)
+BOOL WINAPI FreeRDS_WTSConnectSessionA(ULONG LogonId, ULONG TargetLogonId, PSTR pPassword, BOOL bWait)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSEnumerateServersW(LPWSTR pDomainName, DWORD Reserved, DWORD Version, PWTS_SERVER_INFOW* ppServerInfo, DWORD* pCount)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSEnumerateServersA(LPSTR pDomainName, DWORD Reserved, DWORD Version, PWTS_SERVER_INFOA* ppServerInfo, DWORD* pCount)
+{
+	return FALSE;
+}
+
+HANDLE WINAPI FreeRDS_WTSOpenServerW(LPWSTR pServerName)
+{
+	return INVALID_HANDLE_VALUE;
+}
+
+HANDLE WINAPI FreeRDS_WTSOpenServerA(LPSTR pServerName)
 {
 	return NULL;
 }
 
-HANDLE RpcOpenServerEx(void* context, LPWSTR pServerName)
+HANDLE WINAPI FreeRDS_WTSOpenServerExW(LPWSTR pServerName)
 {
-	return NULL;
+	return INVALID_HANDLE_VALUE;
 }
 
-VOID RpcCloseServer(void* context, HANDLE hServer)
+HANDLE WINAPI FreeRDS_WTSOpenServerExA(LPSTR pServerName)
+{
+	return FreeRDS_WTSOpenServerA(pServerName);
+}
+
+VOID WINAPI FreeRDS_WTSCloseServer(HANDLE hServer)
 {
 
 }
 
-BOOL RpcEnumerateSessions(void* context, HANDLE hServer, DWORD Reserved,
-		DWORD Version, PWTS_SESSION_INFOW* ppSessionInfo, DWORD* pCount)
+BOOL WINAPI FreeRDS_WTSEnumerateSessionsW(HANDLE hServer, DWORD Reserved, DWORD Version, PWTS_SESSION_INFOW* ppSessionInfo, DWORD* pCount)
 {
 	DWORD count;
 	DWORD index;
@@ -134,104 +164,130 @@ BOOL RpcEnumerateSessions(void* context, HANDLE hServer, DWORD Reserved,
 	return bSuccess;
 }
 
-BOOL RpcEnumerateSessionsEx(void* context, HANDLE hServer, DWORD* pLevel,
-		DWORD Filter, PWTS_SESSION_INFO_1W* ppSessionInfo, DWORD* pCount)
+BOOL WINAPI FreeRDS_WTSEnumerateSessionsA(HANDLE hServer, DWORD Reserved, DWORD Version, PWTS_SESSION_INFOA* ppSessionInfo, DWORD* pCount)
 {
-	return TRUE;
+	DWORD index;
+	DWORD count;
+	BOOL bSuccess;
+	PWTS_SESSION_INFOA pSessionInfoA = NULL;
+	PWTS_SESSION_INFOW pSessionInfoW = NULL;
+
+	CHECK_CLIENT_CONNECTION();
+
+	bSuccess = FreeRDS_WTSEnumerateSessionsW(hServer, Reserved, Version, &pSessionInfoW, pCount);
+
+	count = *pCount;
+	pSessionInfoA = (PWTS_SESSION_INFOA) malloc(sizeof(PWTS_SESSION_INFOA) * count);
+	ZeroMemory(pSessionInfoA, sizeof(PWTS_SESSION_INFOA) * count);
+
+	for (index = 0; index < count; index++)
+	{
+		pSessionInfoA[index].SessionId = pSessionInfoW[index].SessionId;
+		pSessionInfoA[index].State = pSessionInfoW[index].State;
+	}
+
+	if (ppSessionInfo)
+		*ppSessionInfo = pSessionInfoA;
+
+	free(pSessionInfoW);
+
+	return bSuccess;
 }
 
-BOOL RpcEnumerateProcesses(void* context, HANDLE hServer, DWORD Reserved,
-		DWORD Version, PWTS_PROCESS_INFOW* ppProcessInfo, DWORD* pCount)
+BOOL WINAPI FreeRDS_WTSEnumerateSessionsExW(HANDLE hServer, DWORD* pLevel, DWORD Filter, PWTS_SESSION_INFO_1W* ppSessionInfo, DWORD* pCount)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcTerminateProcess(void* context, HANDLE hServer, DWORD ProcessId, DWORD ExitCode)
+BOOL WINAPI FreeRDS_WTSEnumerateSessionsExA(HANDLE hServer, DWORD* pLevel, DWORD Filter, PWTS_SESSION_INFO_1A* ppSessionInfo, DWORD* pCount)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcQuerySessionInformation(void* context, HANDLE hServer, DWORD SessionId,
-		WTS_INFO_CLASS WTSInfoClass, LPWSTR* ppBuffer, DWORD* pBytesReturned)
+BOOL WINAPI FreeRDS_WTSEnumerateProcessesW(HANDLE hServer, DWORD Reserved, DWORD Version, PWTS_PROCESS_INFOW* ppProcessInfo, DWORD* pCount)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcQueryUserConfig(void* context, LPWSTR pServerName, LPWSTR pUserName,
-		WTS_CONFIG_CLASS WTSConfigClass, LPWSTR* ppBuffer, DWORD* pBytesReturned)
+BOOL WINAPI FreeRDS_WTSEnumerateProcessesA(HANDLE hServer, DWORD Reserved, DWORD Version, PWTS_PROCESS_INFOA* ppProcessInfo, DWORD* pCount)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcSetUserConfig(void* context, LPWSTR pServerName, LPWSTR pUserName,
-		WTS_CONFIG_CLASS WTSConfigClass, LPWSTR pBuffer, DWORD DataLength)
+BOOL WINAPI FreeRDS_WTSTerminateProcess(HANDLE hServer, DWORD ProcessId, DWORD ExitCode)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcSendMessage(void* context, HANDLE hServer, DWORD SessionId, LPWSTR pTitle, DWORD TitleLength,
+BOOL WINAPI FreeRDS_WTSQuerySessionInformationW(HANDLE hServer, DWORD SessionId, WTS_INFO_CLASS WTSInfoClass, LPWSTR* ppBuffer, DWORD* pBytesReturned)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSQuerySessionInformationA(HANDLE hServer, DWORD SessionId, WTS_INFO_CLASS WTSInfoClass, LPSTR* ppBuffer, DWORD* pBytesReturned)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSQueryUserConfigW(LPWSTR pServerName, LPWSTR pUserName, WTS_CONFIG_CLASS WTSConfigClass, LPWSTR* ppBuffer, DWORD* pBytesReturned)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSQueryUserConfigA(LPSTR pServerName, LPSTR pUserName, WTS_CONFIG_CLASS WTSConfigClass, LPSTR* ppBuffer, DWORD* pBytesReturned)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSSetUserConfigW(LPWSTR pServerName, LPWSTR pUserName, WTS_CONFIG_CLASS WTSConfigClass, LPWSTR pBuffer, DWORD DataLength)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSSetUserConfigA(LPSTR pServerName, LPSTR pUserName, WTS_CONFIG_CLASS WTSConfigClass, LPSTR pBuffer, DWORD DataLength)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSSendMessageW(HANDLE hServer, DWORD SessionId, LPWSTR pTitle, DWORD TitleLength,
 		LPWSTR pMessage, DWORD MessageLength, DWORD Style, DWORD Timeout, DWORD* pResponse, BOOL bWait)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcDisconnectSession(void* context, HANDLE hServer, DWORD SessionId, BOOL bWait)
+BOOL WINAPI FreeRDS_WTSSendMessageA(HANDLE hServer, DWORD SessionId, LPSTR pTitle, DWORD TitleLength,
+		LPSTR pMessage, DWORD MessageLength, DWORD Style, DWORD Timeout, DWORD* pResponse, BOOL bWait)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcLogoffSession(void* context, HANDLE hServer, DWORD SessionId, BOOL bWait)
+BOOL WINAPI FreeRDS_WTSDisconnectSession(HANDLE hServer, DWORD SessionId, BOOL bWait)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcShutdownSystem(void* context, HANDLE hServer, DWORD ShutdownFlag)
+BOOL WINAPI FreeRDS_WTSLogoffSession(HANDLE hServer, DWORD SessionId, BOOL bWait)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcRegisterSessionNotification(void* context, HWND hWnd, DWORD dwFlags)
+BOOL WINAPI FreeRDS_WTSShutdownSystem(HANDLE hServer, DWORD ShutdownFlag)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcUnRegisterSessionNotification(void* context, HWND hWnd)
+BOOL WINAPI FreeRDS_WTSWaitSystemEvent(HANDLE hServer, DWORD EventMask, DWORD* pEventFlags)
 {
-	return TRUE;
+	return FALSE;
 }
 
-BOOL RpcRegisterSessionNotificationEx(void* context, HANDLE hServer, HWND hWnd, DWORD dwFlags)
-{
-	return TRUE;
-}
-
-BOOL RpcUnRegisterSessionNotificationEx(void* context, HANDLE hServer, HWND hWnd)
-{
-	return TRUE;
-}
-
-BOOL RpcEnableChildSessions(void* context, BOOL bEnable)
-{
-	return TRUE;
-}
-
-BOOL RpcIsChildSessionsEnabled(void* context, PBOOL pbEnabled)
-{
-	return TRUE;
-}
-
-BOOL RpcGetChildSessionId(void* context, PULONG pSessionId)
-{
-	return TRUE;
-}
-
-char* RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName)
+HANDLE WINAPI FreeRDS_WTSVirtualChannelOpen(HANDLE hServer, DWORD SessionId, LPSTR pVirtualName)
 {
 	CHECK_CLIENT_CONNECTION();
 
 	std::string result;
 	std::string virtualName(pVirtualName);
-	gClient->virtualChannelOpen(result, gAuthToken, sessionId, virtualName);
+	gClient->virtualChannelOpen(result, gAuthToken, SessionId, virtualName);
 
 	if (result.size() == 0)
 	{
@@ -266,63 +322,261 @@ char* RpcVirtualChannelOpen(DWORD sessionId, LPSTR pVirtualName)
 	return NULL;
 }
 
-char* RpcVirtualChannelOpenEx(DWORD SessionId, LPSTR pVirtualName, DWORD flags)
+HANDLE WINAPI FreeRDS_WTSVirtualChannelOpenEx(DWORD SessionId, LPSTR pVirtualName, DWORD flags)
 {
-	CHECK_CLIENT_CONNECTION();
-
 	return NULL;
 }
 
-BOOL RpcVirtualChannelClose(DWORD SessionId, LPSTR pVirtualName)
+BOOL WINAPI FreeRDS_WTSVirtualChannelClose(HANDLE hChannelHandle)
 {
-	CHECK_CLIENT_CONNECTION();
-
-	//std::string virtualName(pVirtualName);
-	//return gClient->virtualChannelClose(gAuthToken,SessionId,virtualName);
-
 	return TRUE;
 }
 
-WTSFunctionTable FDSApiFunctionTable =
+BOOL WINAPI FreeRDS_WTSVirtualChannelRead(HANDLE hChannelHandle, ULONG TimeOut, PCHAR Buffer, ULONG BufferSize, PULONG pBytesRead)
 {
-	1, /* dwVersion */
-	RpcStartRemoteControlSession,
-	RpcStopRemoteControlSession,
-	RpcConnectSession,
-	RpcEnumerateServers,
-	RpcOpenServer,
-	RpcOpenServerEx,
-	RpcCloseServer,
-	RpcEnumerateSessions,
-	RpcEnumerateSessionsEx,
-	RpcEnumerateProcesses,
-	RpcTerminateProcess,
-	RpcQuerySessionInformation,
-	RpcQueryUserConfig,
-	RpcSetUserConfig,
-	RpcSendMessage,
-	RpcDisconnectSession,
-	RpcLogoffSession,
-	RpcShutdownSystem,
-	RpcRegisterSessionNotification,
-	RpcUnRegisterSessionNotification,
-	RpcRegisterSessionNotificationEx,
-	RpcUnRegisterSessionNotificationEx,
-	RpcEnableChildSessions,
-	RpcIsChildSessionsEnabled,
-	RpcGetChildSessionId,
-	RpcVirtualChannelOpen,
-	RpcVirtualChannelOpenEx,
-	RpcVirtualChannelClose
+	return TRUE;
+}
+
+BOOL WINAPI FreeRDS_WTSVirtualChannelWrite(HANDLE hChannelHandle, PCHAR Buffer, ULONG Length, PULONG pBytesWritten)
+{
+	return TRUE;
+}
+
+BOOL WINAPI FreeRDS_WTSVirtualChannelPurgeInput(HANDLE hChannelHandle)
+{
+	return TRUE;
+}
+
+BOOL WINAPI FreeRDS_WTSVirtualChannelPurgeOutput(HANDLE hChannelHandle)
+{
+	return TRUE;
+}
+
+BOOL WINAPI FreeRDS_WTSVirtualChannelQuery(HANDLE hChannelHandle, WTS_VIRTUAL_CLASS WtsVirtualClass, PVOID* ppBuffer, DWORD* pBytesReturned)
+{
+	return TRUE;
+}
+
+VOID WINAPI FreeRDS_WTSFreeMemory(PVOID pMemory)
+{
+
+}
+
+BOOL WINAPI FreeRDS_WTSFreeMemoryExW(WTS_TYPE_CLASS WTSTypeClass, PVOID pMemory, ULONG NumberOfEntries)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSFreeMemoryExA(WTS_TYPE_CLASS WTSTypeClass, PVOID pMemory, ULONG NumberOfEntries)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSRegisterSessionNotification(HWND hWnd, DWORD dwFlags)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSUnRegisterSessionNotification(HWND hWnd)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSRegisterSessionNotificationEx(HANDLE hServer, HWND hWnd, DWORD dwFlags)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSUnRegisterSessionNotificationEx(HANDLE hServer, HWND hWnd)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSQueryUserToken(ULONG SessionId, PHANDLE phToken)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSEnumerateProcessesExW(HANDLE hServer, DWORD* pLevel, DWORD SessionId, LPWSTR* ppProcessInfo, DWORD* pCount)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSEnumerateProcessesExA(HANDLE hServer, DWORD* pLevel, DWORD SessionId, LPSTR* ppProcessInfo, DWORD* pCount)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSEnumerateListenersW(HANDLE hServer, PVOID pReserved, DWORD Reserved, PWTSLISTENERNAMEW pListeners, DWORD* pCount)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSEnumerateListenersA(HANDLE hServer, PVOID pReserved, DWORD Reserved, PWTSLISTENERNAMEA pListeners, DWORD* pCount)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSQueryListenerConfigW(HANDLE hServer, PVOID pReserved, DWORD Reserved, LPWSTR pListenerName, PWTSLISTENERCONFIGW pBuffer)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSQueryListenerConfigA(HANDLE hServer, PVOID pReserved, DWORD Reserved, LPSTR pListenerName, PWTSLISTENERCONFIGA pBuffer)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSCreateListenerW(HANDLE hServer, PVOID pReserved, DWORD Reserved,
+		LPWSTR pListenerName, PWTSLISTENERCONFIGW pBuffer, DWORD flag)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSCreateListenerA(HANDLE hServer, PVOID pReserved, DWORD Reserved,
+		LPSTR pListenerName, PWTSLISTENERCONFIGA pBuffer, DWORD flag)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSSetListenerSecurityW(HANDLE hServer, PVOID pReserved, DWORD Reserved,
+		LPWSTR pListenerName, SECURITY_INFORMATION SecurityInformation,
+		PSECURITY_DESCRIPTOR pSecurityDescriptor)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSSetListenerSecurityA(HANDLE hServer, PVOID pReserved, DWORD Reserved,
+		LPSTR pListenerName, SECURITY_INFORMATION SecurityInformation,
+		PSECURITY_DESCRIPTOR pSecurityDescriptor)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSGetListenerSecurityW(HANDLE hServer, PVOID pReserved, DWORD Reserved,
+		LPWSTR pListenerName, SECURITY_INFORMATION SecurityInformation,
+		PSECURITY_DESCRIPTOR pSecurityDescriptor, DWORD nLength, LPDWORD lpnLengthNeeded)
+{
+	return FALSE;
+}
+
+BOOL WINAPI FreeRDS_WTSGetListenerSecurityA(HANDLE hServer, PVOID pReserved, DWORD Reserved,
+		LPSTR pListenerName, SECURITY_INFORMATION SecurityInformation,
+		PSECURITY_DESCRIPTOR pSecurityDescriptor, DWORD nLength, LPDWORD lpnLengthNeeded)
+{
+	return FALSE;
+}
+
+BOOL CDECL FreeRDS_WTSEnableChildSessions(BOOL bEnable)
+{
+	return FALSE;
+}
+
+BOOL CDECL FreeRDS_WTSIsChildSessionsEnabled(PBOOL pbEnabled)
+{
+	return FALSE;
+}
+
+BOOL CDECL FreeRDS_WTSGetChildSessionId(PULONG pSessionId)
+{
+	return FALSE;
+}
+
+DWORD WINAPI FreeRDS_WTSGetActiveConsoleSessionId(void)
+{
+	return 0xFFFFFFFF;
+}
+
+static WtsApiFunctionTable FreeRDS_WtsApiFunctionTable =
+{
+	0, /* dwVersion */
+	0, /* dwFlags */
+
+	FreeRDS_WTSStopRemoteControlSession, /* StopRemoteControlSession */
+	FreeRDS_WTSStartRemoteControlSessionW, /* StartRemoteControlSessionW */
+	FreeRDS_WTSStartRemoteControlSessionA, /* StartRemoteControlSessionA */
+	FreeRDS_WTSConnectSessionW, /* ConnectSessionW */
+	FreeRDS_WTSConnectSessionA, /* ConnectSessionA */
+	FreeRDS_WTSEnumerateServersW, /* EnumerateServersW */
+	FreeRDS_WTSEnumerateServersA, /* EnumerateServersA */
+	FreeRDS_WTSOpenServerW, /* OpenServerW */
+	FreeRDS_WTSOpenServerA, /* OpenServerA */
+	FreeRDS_WTSOpenServerExW, /* OpenServerExW */
+	FreeRDS_WTSOpenServerExA, /* OpenServerExA */
+	FreeRDS_WTSCloseServer, /* CloseServer */
+	FreeRDS_WTSEnumerateSessionsW, /* EnumerateSessionsW */
+	FreeRDS_WTSEnumerateSessionsA, /* EnumerateSessionsA */
+	FreeRDS_WTSEnumerateSessionsExW, /* EnumerateSessionsExW */
+	FreeRDS_WTSEnumerateSessionsExA, /* EnumerateSessionsExA */
+	FreeRDS_WTSEnumerateProcessesW, /* EnumerateProcessesW */
+	FreeRDS_WTSEnumerateProcessesA, /* EnumerateProcessesA */
+	FreeRDS_WTSTerminateProcess, /* TerminateProcess */
+	FreeRDS_WTSQuerySessionInformationW, /* QuerySessionInformationW */
+	FreeRDS_WTSQuerySessionInformationA, /* QuerySessionInformationA */
+	FreeRDS_WTSQueryUserConfigW, /* QueryUserConfigW */
+	FreeRDS_WTSQueryUserConfigA, /* QueryUserConfigA */
+	FreeRDS_WTSSetUserConfigW, /* SetUserConfigW */
+	FreeRDS_WTSSetUserConfigA, /* SetUserConfigA */
+	FreeRDS_WTSSendMessageW, /* SendMessageW */
+	FreeRDS_WTSSendMessageA, /* SendMessageA */
+	FreeRDS_WTSDisconnectSession, /* DisconnectSession */
+	FreeRDS_WTSLogoffSession, /* LogoffSession */
+	FreeRDS_WTSShutdownSystem, /* ShutdownSystem */
+	FreeRDS_WTSWaitSystemEvent, /* WaitSystemEvent */
+	FreeRDS_WTSVirtualChannelOpen, /* VirtualChannelOpen */
+	FreeRDS_WTSVirtualChannelOpenEx, /* VirtualChannelOpenEx */
+	FreeRDS_WTSVirtualChannelClose, /* VirtualChannelClose */
+	FreeRDS_WTSVirtualChannelRead, /* VirtualChannelRead */
+	FreeRDS_WTSVirtualChannelWrite, /* VirtualChannelWrite */
+	FreeRDS_WTSVirtualChannelPurgeInput, /* VirtualChannelPurgeInput */
+	FreeRDS_WTSVirtualChannelPurgeOutput, /* VirtualChannelPurgeOutput */
+	FreeRDS_WTSVirtualChannelQuery, /* VirtualChannelQuery */
+	FreeRDS_WTSFreeMemory, /* FreeMemory */
+	FreeRDS_WTSRegisterSessionNotification, /* RegisterSessionNotification */
+	FreeRDS_WTSUnRegisterSessionNotification, /* UnRegisterSessionNotification */
+	FreeRDS_WTSRegisterSessionNotificationEx, /* RegisterSessionNotificationEx */
+	FreeRDS_WTSUnRegisterSessionNotificationEx, /* UnRegisterSessionNotificationEx */
+	FreeRDS_WTSQueryUserToken, /* QueryUserToken */
+	FreeRDS_WTSFreeMemoryExW, /* FreeMemoryExW */
+	FreeRDS_WTSFreeMemoryExA, /* FreeMemoryExA */
+	FreeRDS_WTSEnumerateProcessesExW, /* EnumerateProcessesExW */
+	FreeRDS_WTSEnumerateProcessesExA, /* EnumerateProcessesExA */
+	FreeRDS_WTSEnumerateListenersW, /* EnumerateListenersW */
+	FreeRDS_WTSEnumerateListenersA, /* EnumerateListenersA */
+	FreeRDS_WTSQueryListenerConfigW, /* QueryListenerConfigW */
+	FreeRDS_WTSQueryListenerConfigA, /* QueryListenerConfigA */
+	FreeRDS_WTSCreateListenerW, /* CreateListenerW */
+	FreeRDS_WTSCreateListenerA, /* CreateListenerA */
+	FreeRDS_WTSSetListenerSecurityW, /* SetListenerSecurityW */
+	FreeRDS_WTSSetListenerSecurityA, /* SetListenerSecurityA */
+	FreeRDS_WTSGetListenerSecurityW, /* GetListenerSecurityW */
+	FreeRDS_WTSGetListenerSecurityA, /* GetListenerSecurityA */
+	FreeRDS_WTSEnableChildSessions, /* EnableChildSessions */
+	FreeRDS_WTSIsChildSessionsEnabled, /* IsChildSessionsEnabled */
+	FreeRDS_WTSGetChildSessionId, /* GetChildSessionId */
+	FreeRDS_WTSGetActiveConsoleSessionId /* GetActiveConsoleSessionId */
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-PWTSFunctionTable FDSApiEntry(void)
+/**
+ * Export InitWtsApi() but do not expose it with a header file due to possible conflicts
+ */
+
+WINPR_API PWtsApiFunctionTable CDECL InitWtsApi(void)
 {
-	return &FDSApiFunctionTable;
+	return &FreeRDS_WtsApiFunctionTable;
+}
+
+/**
+ * Export explicit FreeRDS_InitWtsApi() which we can safely expose with a header
+ */
+
+WINPR_API PWtsApiFunctionTable CDECL FreeRDS_InitWtsApi(void)
+{
+	return &FreeRDS_WtsApiFunctionTable;
 }
 
 #ifdef __cplusplus

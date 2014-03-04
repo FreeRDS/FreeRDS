@@ -28,6 +28,8 @@
 
 typedef struct _rdpRandRInfo
 {
+	int x;
+	int y;
 	int width;
 	int height;
 	int mmWidth;
@@ -40,6 +42,16 @@ typedef struct _rdpRandRInfo
 
 	EDID* edid;
 	Atom edidAtom;
+
+	Rotation rotations;
+
+	int numCrtcs;
+	RRCrtcPtr crtc;
+	RRCrtcPtr* crtcs;
+
+	int numOutputs;
+	RROutputPtr output;
+	RROutputPtr* outputs;
 
 } rdpRandRInfoRec, *rdpRandRInfoPtr;
 

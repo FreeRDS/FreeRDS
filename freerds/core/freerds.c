@@ -44,6 +44,7 @@
 #include <winpr/thread.h>
 #include <winpr/cmdline.h>
 #include <winpr/library.h>
+#include <winpr/wtsapi.h>
 
 #include <freerds/icp_client_stubs.h>
 #include "app_context.h"
@@ -136,6 +137,8 @@ int main(int argc, char** argv)
 #ifndef WIN32
 	sigset_t set;
 #endif
+
+	WTSRegisterWtsApiFunctionTable(FreeRDP_InitWtsApi());
 
 	no_daemon = kill_process = 0;
 

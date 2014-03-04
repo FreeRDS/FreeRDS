@@ -17,9 +17,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <winpr/memory.h>
+
+#include <winpr/crt.h>
 #include <winpr/thread.h>
-#include <stdio.h>
 
 #ifndef WIN32
 #include <arpa/inet.h>

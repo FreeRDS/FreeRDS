@@ -58,15 +58,15 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 	settings->SurfaceFrameMarkerEnabled = TRUE;
 
 	freerds_connection_init(context, settings);
-	context->client = client;
 
-	context->vcm = WTSCreateVirtualChannelManager(client);
+	context->client = client;
+	context->vcm = WTSOpenServerA((LPSTR) client->context);
 }
 
 void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
 {
 	freerds_connection_uninit(context);
-	WTSDestroyVirtualChannelManager(context->vcm);
+	WTSCloseServer((HANDLE) context->vcm);
 }
 
 rdsConnection* freerds_connection_create(freerdp_peer* client)
@@ -471,7 +471,12 @@ void* freerds_connection_main_thread(void* arg)
 
 	settings->RdpSecurity = FALSE;
 	settings->TlsSecurity = TRUE;
-	settings->NlaSecurity = TRUE;
+
+	/**
+	 * Disable NLA Security for now.
+	 * TODO: make this a configurable option.
+	 */
+	settings->NlaSecurity = FALSE;
 
 	client->Capabilities = freerds_peer_capabilities;
 	client->PostConnect = freerds_peer_post_connect;

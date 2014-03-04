@@ -30,8 +30,6 @@
 #include "core.h"
 #include "app_context.h"
 
-#include <pixman.h>
-
 /**
  * Custom helpers
  */
@@ -111,8 +109,6 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	int MaxRegionWidth;
 	int MaxRegionHeight;
 	INT32 nWidth, nHeight;
-	pixman_image_t* image;
-	pixman_image_t* fbImage;
 	BITMAP_DATA* bitmapData;
 	BITMAP_UPDATE bitmapUpdate;
 	rdpUpdate* update = connection->client->update;
@@ -168,7 +164,6 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	}
 
 	tile = (BYTE*) malloc(64 * 64 * 4);
-	fbImage = (pixman_image_t*) msg->framebuffer->image;
 
 	rows = (msg->nWidth + (64 - (msg->nWidth % 64))) / 64;
 	cols = (msg->nHeight + (64 - (msg->nHeight % 64))) / 64;
@@ -208,6 +203,8 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 
 			if (((nWidth * nHeight) > 0) && (nWidth >= 4) && (nHeight >= 4))
 			{
+				UINT32 srcFormat = PIXEL_FORMAT_RGB32;
+
 				e = nWidth % 4;
 
 				if (e != 0)
@@ -229,18 +226,19 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 
 				scanline = msg->framebuffer->fbScanline;
 
-				if (bpp > 16)
+				if (msg->framebuffer->fbBytesPerPixel == 4)
+					srcFormat = PIXEL_FORMAT_RGB32;
+				else if (msg->framebuffer->fbBytesPerPixel == 2)
+					srcFormat = PIXEL_FORMAT_RGB16;
+
+				if (bpp > 24)
 				{
 					int dstSize;
-					UINT32 format;
-
-					format = FREERDP_PIXEL_FORMAT(msg->framebuffer->fbBitsPerPixel,
-							FREERDP_PIXEL_FORMAT_TYPE_ARGB, FREERDP_PIXEL_FLIP_NONE);
 
 					buffer = connection->encoder->grid[k];
 
 					buffer = freerdp_bitmap_compress_planar(connection->encoder->planar_context,
-							data, format, nWidth, nHeight, scanline, buffer, &dstSize);
+							data, srcFormat, nWidth, nHeight, scanline, buffer, &dstSize);
 
 					bitmapData[k].bitmapDataStream = buffer;
 					bitmapData[k].bitmapLength = dstSize;
@@ -251,13 +249,25 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 				}
 				else
 				{
-					image = pixman_image_create_bits(PIXMAN_r5g6b5, nWidth, nHeight, (uint32_t*) tile, nWidth * 2);
+					int bytesPerPixel = 2;
+					UINT32 dstFormat = PIXEL_FORMAT_RGB16;
 
-					pixman_image_composite(PIXMAN_OP_OVER, fbImage, NULL, image,
-							bitmapData[k].destLeft, bitmapData[k].destTop, 0, 0, 0, 0, nWidth, nHeight);
+					if (bpp == 15)
+					{
+						bytesPerPixel = 2;
+						dstFormat = PIXEL_FORMAT_RGB15;
+					}
+					else if (bpp == 24)
+					{
+						bytesPerPixel = 3;
+						dstFormat = PIXEL_FORMAT_RGB32;
+					}
 
-					lines = freerdp_bitmap_compress((char*) pixman_image_get_data(image),
-							nWidth, nHeight, s, 16, 16384, nHeight - 1, ts, e);
+					freerdp_image_copy(tile, dstFormat, -1, 0, 0, nWidth, nHeight,
+							data, srcFormat, scanline, 0, 0);
+
+					lines = freerdp_bitmap_compress((char*) tile, nWidth, nHeight, s, bpp, 16384, nHeight - 1, ts, e);
+
 					Stream_SealLength(s);
 
 					bitmapData[k].bitmapDataStream = Stream_Buffer(s);
@@ -267,11 +277,9 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 					CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
 					bitmapData[k].bitmapDataStream = buffer;
 
-					bitmapData[k].bitsPerPixel = 16;
-					bitmapData[k].cbScanWidth = nWidth * 2;
-					bitmapData[k].cbUncompressedSize = nWidth * nHeight * 2;
-
-					pixman_image_unref(image);
+					bitmapData[k].bitsPerPixel = bpp;
+					bitmapData[k].cbScanWidth = nWidth * bytesPerPixel;
+					bitmapData[k].cbUncompressedSize = nWidth * nHeight * bytesPerPixel;
 				}
 
 				bitmapData[k].cbCompFirstRowSize = 0;
@@ -890,19 +898,19 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 		rect.height = msg->nHeight;
 
 		messages = rfx_encode_messages(connection->encoder->rfx_context, &rect, 1, data,
-				msg->nWidth, msg->nHeight, scanline, &numMessages,
+				msg->framebuffer->fbWidth, msg->framebuffer->fbHeight, scanline, &numMessages,
 				connection->settings->MultifragMaxRequestSize);
 
 		cmd.codecID = connection->settings->RemoteFxCodecId;
 
-		cmd.destLeft = msg->nLeftRect;
-		cmd.destTop = msg->nTopRect;
-		cmd.destRight = msg->nLeftRect + msg->nWidth;
-		cmd.destBottom = msg->nTopRect + msg->nHeight;
+		cmd.destLeft = 0;
+		cmd.destTop = 0;
+		cmd.destRight = msg->framebuffer->fbWidth;
+		cmd.destBottom = msg->framebuffer->fbHeight;
 
 		cmd.bpp = 32;
-		cmd.width = msg->nWidth;
-		cmd.height = msg->nHeight;
+		cmd.width = msg->framebuffer->fbWidth;
+		cmd.height = msg->framebuffer->fbHeight;
 
 		for (i = 0; i < numMessages; i++)
 		{

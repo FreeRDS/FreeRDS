@@ -29,9 +29,9 @@
 
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
-#include <freerds/backend.h>
+#include <freerdp/channels/channels.h>
 
-#include <pixman.h>
+#include <freerds/backend.h>
 
 typedef struct xrdp_listener rdsListener;
 

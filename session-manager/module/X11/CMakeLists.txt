@@ -23,6 +23,8 @@ set(${MODULE_PREFIX}_SRCS
 	../common/module_helper.c
 	../common/module_helper.h)
 
+include_directories(${PIXMAN_INCLUDE_DIRS})
+
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})

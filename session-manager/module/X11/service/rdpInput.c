@@ -33,12 +33,6 @@
 
 #include "rdpInput.h"
 
-#if 1
-#define DEBUG_OUT_INPUT(arg)
-#else
-#define DEBUG_OUT_INPUT(arg) ErrorF arg
-#endif
-
 extern DeviceIntPtr g_pointer;
 extern DeviceIntPtr g_keyboard;
 extern rdpScreenInfoRec g_rdpScreen;
@@ -228,8 +222,6 @@ void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 {
 	int i;
 
-	DEBUG_OUT_INPUT(("KbdDeviceInit\n"));
-
 	for (i = 0; i < MAP_LENGTH; i++)
 	{
 		pModMap[i] = NoSymbol;
@@ -272,22 +264,22 @@ void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 
 void KbdDeviceOn(void)
 {
-	DEBUG_OUT_INPUT(("KbdDeviceOn\n"));
+
 }
 
 void KbdDeviceOff(void)
 {
-	DEBUG_OUT_INPUT(("KbdDeviceOff\n"));
+
 }
 
 void rdpBell(int volume, DeviceIntPtr pDev, pointer ctrl, int cls)
 {
-	ErrorF("rdpBell:\n");
+
 }
 
 void rdpChangeKeyboardControl(DeviceIntPtr pDev, KeybdCtrl *ctrl)
 {
-	ErrorF("rdpChangeKeyboardControl:\n");
+
 }
 
 int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
@@ -297,7 +289,6 @@ int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 	DevicePtr pDev;
 	XkbRMLVOSet set;
 
-	DEBUG_OUT_INPUT(("rdpKeybdProc\n"));
 	pDev = (DevicePtr) pDevice;
 
 	switch (onoff)
@@ -340,27 +331,27 @@ int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 
 void PtrDeviceControl(DeviceIntPtr dev, PtrCtrl *ctrl)
 {
-	DEBUG_OUT_INPUT(("PtrDeviceControl\n"));
+
 }
 
 void PtrDeviceInit(void)
 {
-	DEBUG_OUT_INPUT(("PtrDeviceInit\n"));
+
 }
 
 void PtrDeviceOn(DeviceIntPtr pDev)
 {
-	DEBUG_OUT_INPUT(("PtrDeviceOn\n"));
+
 }
 
 void PtrDeviceOff(void)
 {
-	DEBUG_OUT_INPUT(("PtrDeviceOff\n"));
+
 }
 
 static void rdpMouseCtrl(DeviceIntPtr pDevice, PtrCtrl *pCtrl)
 {
-	ErrorF("rdpMouseCtrl:\n");
+
 }
 
 int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
@@ -370,8 +361,7 @@ int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 	Atom btn_labels[10];
 	Atom axes_labels[3];
 
-	DEBUG_OUT_INPUT(("rdpMouseProc\n"));
-	pDev = (DevicePtr)pDevice;
+	pDev = (DevicePtr) pDevice;
 
 	switch (onoff)
 	{
@@ -439,43 +429,39 @@ int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 	return Success;
 }
 
-Bool rdpCursorOffScreen(ScreenPtr *ppScreen, int *x, int *y)
+Bool rdpCursorOffScreen(ScreenPtr* ppScreen, int* x, int* y)
 {
-	DEBUG_OUT_INPUT(("rdpCursorOffScreen\n"));
 	return 0;
 }
 
 void rdpCrossScreen(ScreenPtr pScreen, Bool entering)
 {
-	DEBUG_OUT_INPUT(("rdpCrossScreen\n"));
+
 }
 
 void rdpPointerWarpCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y)
 {
-	ErrorF("rdpPointerWarpCursor:\n");
 	miPointerWarpCursor(pDev, pScr, x, y);
 }
 
-void rdpPointerEnqueueEvent(DeviceIntPtr pDev, InternalEvent *event)
+void rdpPointerEnqueueEvent(DeviceIntPtr pDev, InternalEvent* event)
 {
-	ErrorF("rdpPointerEnqueueEvent:\n");
+
 }
 
 void rdpPointerNewEventScreen(DeviceIntPtr pDev, ScreenPtr pScr, Bool fromDIX)
 {
-	ErrorF("rdpPointerNewEventScreen:\n");
+
 }
 
 Bool rdpSpriteRealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs)
 {
-	DEBUG_OUT_INPUT(("rdpSpriteRealizeCursor xid %d\n", pCurs->id));
 	return 1;
 }
 
 Bool rdpSpriteUnrealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs)
 {
-	DEBUG_OUT_INPUT(("hi rdpSpriteUnrealizeCursor xid %d\n", pCurs->id));
-	return 1;
+	return TRUE;
 }
 
 int get_pixel_safe(char *data, int x, int y, int width, int height, int bpp)
@@ -686,18 +672,17 @@ void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int 
 
 void rdpSpriteMoveCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y)
 {
-	DEBUG_OUT_INPUT(("hi rdpSpriteMoveCursor\n"));
+
 }
 
 Bool rdpSpriteDeviceCursorInitialize(DeviceIntPtr pDev, ScreenPtr pScr)
 {
-	ErrorF("rdpSpriteDeviceCursorInitialize:\n");
-	return 1;
+	return TRUE;
 }
 
 void rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr)
 {
-	ErrorF("rdpSpriteDeviceCursorCleanup:\n");
+
 }
 
 static void rdpEnqueueMotion(int x, int y)

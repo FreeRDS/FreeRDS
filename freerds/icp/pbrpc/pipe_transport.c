@@ -17,8 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include <winpr/crt.h>
 #include <winpr/pipe.h>
-#include <winpr/memory.h>
+
 #include "pipe_transport.h"
 
 struct np_transport_context
