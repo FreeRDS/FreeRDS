@@ -114,11 +114,7 @@ pushd session-manager/module/X11/service/xorg-build
 cmake .
 make
 cd ..
-#cp xorg-build/scripts/LocalConfigSettings.cmake .
 ln -s xorg-build/external/Source/xorg-server .
-# For some reason, it's looking for xorg-server in both X11 and X11/service
-#cd ..
-#ln -s service/xorg-build/external/Source/xorg-server .
 popd
 popd
 
