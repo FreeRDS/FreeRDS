@@ -94,6 +94,33 @@ protobuf-c-compiler libprotobuf-c0 libprotobuf-dev libprotobuf-c0-dev \
 libboost-dev
 
 #
+# Install the correct version of Thrift
+#
+THRIFT_VERSION=0.9.1
+THRIFT_FOLDER=thrift-$THRIFT_VERSION
+THRIFT_ARCHIVE=$THRIFT_FOLDER.tar.gz
+THRIFT_URL=http://archive.apache.org/dist/thrift/$THRIFT_VERSION/$THRIFT_ARCHIVE
+
+RESULT=`thrift --version`
+if [ "$RESULT" != "Thrift version $THRIFT_VERSION" ]; then
+  # Download compressed archive
+  pushd ~/Downloads
+  wget $THRIFT_URL
+  popd
+
+  # Unpack compressed archive
+  pushd ~/Downloadsc
+  tar xvf $THRIFT_ARCHIVE
+  pushd $THRIFT_FOLDER
+  ./configure --without-python --without-java --without-c_glib --with-pic --without-csharp --without-haskell --without-go --without-d --without-qt4
+  make
+  sudo make install
+  popd
+  rm $THRIFT_ARCHIVE
+  popd
+fi
+
+#
 # Create the installation directory.
 #
 if [ ! -d $FREERDS_INSTALL_DIR ]; then
@@ -122,7 +149,7 @@ popd
 # Build FreeRDP (with FreeRDS)
 #
 pushd $GIT_ROOT_DIR/FreeRDP
-cmake -DCMAKE_INSTALL_PREFIX=$FREERDS_INSTALL_DIR -DCMAKE_BUILD_TYPE=Debug -DSTATIC_CHANNELS=on -DMONOLITHIC_BUILD=on -DWITH_FDSAPI=off -DWITH_SERVER=on -DWITH_X11RDP=on .
+cmake -DCMAKE_INSTALL_PREFIX=$FREERDS_INSTALL_DIR -DCMAKE_BUILD_TYPE=Debug -DSTATIC_CHANNELS=on -DMONOLITHIC_BUILD=on -DWITH_FDSAPI=on -DWITH_SERVER=on -DWITH_X11RDP=on .
 make
 sudo make install
 popd
