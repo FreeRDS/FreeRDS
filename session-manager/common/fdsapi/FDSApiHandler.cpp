@@ -25,6 +25,7 @@
 #include <winpr/thread.h>
 #include <winpr/synch.h>
 #include <winpr/wlog.h>
+#include <winpr/wtsapi.h>
 
 #include <call/CallOutFdsApiVirtualChannelOpen.h>
 
@@ -44,13 +45,33 @@ namespace freerds{
 		{
 		}
 
-		TDWORD FDSApiHandler::ping(const TDWORD input)
+		TINT32 FDSApiHandler::ping(const TINT32 input)
 		{
 		}
 
-		void FDSApiHandler::virtualChannelOpen(TLPSTR& _return,
-				const TLPSTR& authToken, const TDWORD sessionId,
-				const TLPSTR& virtualName)
+		TINT32 FDSApiHandler::authenticateUser(
+			const TSTRING& authToken,
+			const TINT32 sessionId,
+			const TSTRING& username,
+			const TSTRING& password,
+			const TSTRING& domain)
+		{
+			TINT32 authStatus;
+
+			authStatus = APP_CONTEXT.authenticateUser(
+				sessionId,
+				username,
+				password,
+				domain);
+
+			return authStatus;
+		}
+
+		void FDSApiHandler::virtualChannelOpen(
+			TSTRING& _return,
+			const TSTRING& authToken,
+			const TINT32 sessionId,
+			const TSTRING& virtualName)
 		{
 			// ....
 
@@ -60,10 +81,13 @@ namespace freerds{
 
 			APP_CONTEXT.getRpcOutgoingQueue()->addElement(&openCall);
 			WaitForSingleObject(openCall.getAnswerHandle(),INFINITE);
-			if (openCall.getResult() == 0) {
+			if (openCall.getResult() == 0)
+			{
 				// no error
 				_return = openCall.getConnectionString();
-			} else {
+			}
+			else
+			{
 				// report error
 				_return = "";
 			}
@@ -71,30 +95,67 @@ namespace freerds{
 		}
 
 		void FDSApiHandler::virtualChannelOpenEx(
-				TLPSTR& _return, const TLPSTR& authToken, const TDWORD sessionId,
-				const TLPSTR& virtualName, const TDWORD flags)
+			TSTRING& _return,
+			const TSTRING& authToken,
+			const TINT32 sessionId,
+			const TSTRING& virtualName,
+			const INT32 flags)
 		{
 		}
 
-		bool FDSApiHandler::virtualChannelClose(
-				const TLPSTR& authToken, const TDWORD sessionId,
-				const TLPSTR& virtualName)
+		TBOOL FDSApiHandler::virtualChannelClose(
+			const TSTRING& authToken,
+			const TINT32 sessionId,
+			const TSTRING& virtualName)
 		{
+			return false;
 		}
 
-		bool FDSApiHandler::disconnectSession(
-				const TLPSTR& authToken, const TDWORD sessionId, const bool wait)
+		TBOOL FDSApiHandler::disconnectSession(
+			const TSTRING& authToken,
+			const TINT32 sessionId,
+			const TBOOL wait)
 		{
+			sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+			sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
+
+			if (session)
+			{
+				/* TODO: Disconnect the session. */
+			}
+
+			return false;
 		}
 
-		bool FDSApiHandler::logoffSession(
-				const TLPSTR& authToken, const TDWORD sessionId, const bool wait)
+		TBOOL FDSApiHandler::logoffSession(
+			const TSTRING& authToken,
+			const TINT32 sessionId,
+			const TBOOL wait)
 		{
+			sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+			sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
+
+			if (session)
+			{
+				/* TODO: Logoff the session. */
+			}
+
+			return false;
+		}
+
+		TBOOL FDSApiHandler::shutdownSystem(
+			const TSTRING& authToken,
+			const TINT32 shutdownFlag)
+		{
+			/* TODO: Shutdown the system. */
+
+			return false;
 		}
 
 		void FDSApiHandler::enumerateSessions(
-				ReturnEnumerateSession& _return, const TLPSTR& authToken,
-				const TDWORD Version)
+			TReturnEnumerateSessions& _return,
+			const TSTRING& authToken,
+			const TINT32 Version)
 		{
 			DWORD count;
 			DWORD index;
@@ -103,20 +164,106 @@ namespace freerds{
 			std::list<sessionNS::SessionPtr> sessions = sessionStore->getAllSessions();
 
 			count = sessions.size();
-			sessionList list(count);
+			TSessionInfoList list(count);
 
 			std::list<sessionNS::SessionPtr>::iterator session = sessions.begin();
 
 			for (index = 0; index < count; index++)
 			{
-				list.at(index).SessionId = (*session)->getSessionID();
-				list.at(index).State = TWTS_CONNECTSTATE_CLASS::WTSActive;
+				list.at(index).sessionId = (*session)->getSessionID();
+				list.at(index).winStationName = (*session)->getWinStationName();
+				list.at(index).connectState = WTSActive;
 				session++;
 			}
 
 			_return.sessionInfoList = list;
 
 			_return.returnValue = true;
+		}
+
+		void FDSApiHandler::getSessionInformation(
+			TReturnGetSessionInformation& _return,
+			const TSTRING& authToken,
+			const TINT32 sessionId,
+			const TINT32 infoClass)
+		{
+			sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+			sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
+
+			if (session)
+			{
+				_return.returnValue = true;
+
+				switch (infoClass)
+				{
+					case WTSSessionId:
+						_return.infoValue.int32Value = session->getSessionID();
+						break;
+
+					case WTSUserName:
+						_return.infoValue.stringValue = session->getUserName();
+						break;
+
+					case WTSWinStationName:
+						_return.infoValue.stringValue = session->getWinStationName();
+						break;
+
+					case WTSDomainName:
+						_return.infoValue.stringValue = session->getDomain();
+						break;
+
+					case WTSConnectState:
+						_return.infoValue.int32Value = session->getConnectState();
+						break;
+
+					case WTSClientBuildNumber:
+						_return.infoValue.int32Value = session->getClientBuildNumber();
+						break;
+
+					case WTSClientName:
+						_return.infoValue.stringValue = session->getClientName();
+						break;
+
+					case WTSClientProductId:
+						_return.infoValue.int16Value = session->getClientProductId();
+						break;
+
+					case WTSClientHardwareId:
+						_return.infoValue.int32Value = session->getClientHardwareId();
+						break;
+
+					case WTSClientAddress:
+						_return.infoValue.stringValue = session->getClientAddress();
+						break;
+
+					case WTSClientDisplay:
+						_return.infoValue.displayValue.displayWidth = session->getClientDisplayWidth();
+						_return.infoValue.displayValue.displayHeight = session->getClientDisplayHeight();
+						_return.infoValue.displayValue.colorDepth = session->getClientDisplayColorDepth();
+						break;
+
+					case WTSClientProtocolType:
+						_return.infoValue.int16Value = session->getClientProtocolType();
+						break;
+
+					default:
+						_return.returnValue = false;
+						break;
+				}
+			}
+			else
+			{
+				_return.returnValue = false;
+			}
+		}
+
+		TBOOL FDSApiHandler::setSessionInformation(
+			const TSTRING& authToken,
+			const TINT32 sessionId,
+			const TINT32 infoClass,
+			const TSessionInfoValue& infoValue)
+		{
+			return false;
 		}
 
 		}

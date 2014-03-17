@@ -17,19 +17,49 @@
  * limitations under the License.
  */
 
-#ifndef FREERDS_FDSAPI_THRIFT_H
-#define FREERDS_FDSAPI_THRIFT_H
+#ifndef FREERDS_FDSAPI_H
+#define FREERDS_FDSAPI_H
 
-#include <freerds/fdsapi.h>
+#include <winpr/wtsapi.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+ * WTSAPI Private Interface
+ */
 
+BOOL WINAPI
+FreeRDS_WTSSetSessionInformationA(
+	HANDLE hServer,
+	DWORD SessionId,
+	WTS_INFO_CLASS WTSInfoClass,
+	LPSTR pBuffer,
+	DWORD cbBuffer);
+
+BOOL WINAPI
+FreeRDS_WTSSetSessionInformationW(
+	HANDLE hServer,
+	DWORD SessionId,
+	WTS_INFO_CLASS WTSInfoClass,
+	LPWSTR pBuffer,
+	DWORD cbBuffer);
+
+
+/**
+ * ICP Private Interface
+ */
+
+int WINAPI
+FreeRDS_AuthenticateUser(
+	UINT32 SessionId,
+	LPCSTR Username,
+	LPCSTR Password,
+	LPCSTR Domain);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* FREERDS_FDSAPI_THRIFT_H */
+#endif /* FREERDS_FDSAPI_H */

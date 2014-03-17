@@ -48,8 +48,29 @@ namespace freerds
 			void setDomain(std::string domainName);
 			std::string getUserName();
 			void setUserName(std::string username);
+			std::string getWinStationName();
+			void setWinStationName(std::string winStationName);
 			UINT32 getSessionID();
 			std::string getPipeName();
+
+			void setClientName(std::string name);
+			std::string getClientName();
+			void setClientAddress(std::string address);
+			std::string getClientAddress();
+			void setClientBuildNumber(UINT32 buildNumber);
+			UINT32 getClientBuildNumber();
+			void setClientProductId(UINT16 productId);
+			UINT16 getClientProductId();
+			void setClientHardwareId(UINT32 hardwareId);
+			UINT32 getClientHardwareId();
+			void setClientDisplayWidth(UINT32 displayWidth);
+			UINT32 getClientDisplayWidth();
+			void setClientDisplayHeight(UINT32 displayHeight);
+			UINT32 getClientDisplayHeight();
+			void setClientDisplayColorDepth(UINT32 displayColorDepth);
+			UINT32 getClientDisplayColorDepth();
+			void setClientProtocolType(UINT16 protocolType);
+			UINT16 getClientProtocolType();
 
 			bool generateUserToken();
 			bool generateEnvBlockAndModify();
@@ -80,6 +101,17 @@ namespace freerds
 
 			std::string mUsername;
 			std::string mDomain;
+			std::string mWinStationName;
+
+			UINT32 mClientBuildNumber;
+			std::string mClientName;
+			UINT16 mClientProductId;
+			UINT32 mClientHardwareId;
+			std::string mClientAddress;
+			UINT32 mClientDisplayWidth;
+			UINT32 mClientDisplayHeight;
+			UINT32 mClientDisplayColorDepth;
+			UINT16 mClientProtocolType;
 
 			std::string mPipeName;
 

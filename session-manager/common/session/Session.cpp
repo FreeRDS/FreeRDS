@@ -81,19 +81,120 @@ namespace freerds
 				mUsername = username;
 			}
 
+			std::string Session::getWinStationName()
+			{
+				return mWinStationName;
+			}
+
+			void Session::setWinStationName(std::string winStationName)
+			{
+				mWinStationName = winStationName;
+			}
+
 			UINT32 Session::getSessionID()
 			{
 				return mSessionID;
 			}
 
-			bool Session::isAuthSession() {
+			std::string Session::getClientName()
+			{
+				return mClientName;
+			}
+
+			void Session::setClientName(std::string name)
+			{
+				mClientName = name;
+			}
+
+			std::string Session::getClientAddress()
+			{
+				return mClientAddress;
+			}
+
+			void Session::setClientAddress(std::string address)
+			{
+				mClientAddress = address;
+			}
+
+			UINT32 Session::getClientBuildNumber()
+			{
+				return mClientBuildNumber;
+			}
+
+			void Session::setClientBuildNumber(UINT32 buildNumber)
+			{
+				mClientBuildNumber = buildNumber;
+			}
+
+			UINT16 Session::getClientProductId()
+			{
+				return mClientProductId;
+			}
+
+			void Session::setClientProductId(UINT16 productId)
+			{
+				mClientProductId = productId;
+			}
+
+			UINT32 Session::getClientHardwareId()
+			{
+				return mClientHardwareId;
+			}
+
+			void Session::setClientHardwareId(UINT32 hardwareId)
+			{
+				mClientHardwareId = hardwareId;
+			}
+
+			UINT32 Session::getClientDisplayWidth()
+			{
+				return mClientDisplayWidth;
+			}
+
+			void Session::setClientDisplayWidth(UINT32 displayWidth)
+			{
+				mClientDisplayWidth = displayWidth;
+			}
+
+			UINT32 Session::getClientDisplayHeight()
+			{
+				return mClientDisplayHeight;
+			}
+
+			void Session::setClientDisplayHeight(UINT32 displayHeight)
+			{
+				mClientDisplayHeight = displayHeight;
+			}
+
+			UINT32 Session::getClientDisplayColorDepth()
+			{
+				return mClientDisplayColorDepth;
+			}
+
+			void Session::setClientDisplayColorDepth(UINT32 displayColorDepth)
+			{
+				mClientDisplayColorDepth = displayColorDepth;
+			}
+
+			UINT16 Session::getClientProtocolType()
+			{
+				return mClientProtocolType;
+			}
+
+			void Session::setClientProtocolType(UINT16 protocolType)
+			{
+				mClientProtocolType = protocolType;
+			}
+
+			bool Session::isAuthSession()
+			{
 				return mAuthSession;
 			}
 
-			void Session::setAuthSession(bool authSession) {
+			void Session::setAuthSession(bool authSession)
+			{
 				mAuthSession = authSession;
 			}
-
 
 			bool Session::generateUserToken()
 			{
@@ -175,12 +276,13 @@ namespace freerds
 				mModuleConfigName = configName;
 			}
 
-			std::string Session::getModuleConfigName() {
+			std::string Session::getModuleConfigName()
+			{
 				return mModuleConfigName;
 			}
 
-			char * Session::dupEnv(char * orgBlock) {
-
+			char * Session::dupEnv(char * orgBlock)
+			{
 				char * penvb = orgBlock;
 				int length;
 				int currentLength;
@@ -295,7 +397,8 @@ namespace freerds
 				mCurrentStateChangeTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
 			}
 
-			boost::posix_time::ptime Session::getConnectStateChangeTime() {
+			boost::posix_time::ptime Session::getConnectStateChangeTime()
+			{
 				return mCurrentStateChangeTime;
 			}
 		}

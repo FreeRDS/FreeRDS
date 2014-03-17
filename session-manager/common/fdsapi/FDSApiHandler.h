@@ -37,13 +37,19 @@ namespace freerds{
 			FDSApiHandler();
 			virtual ~FDSApiHandler();
 
-			virtual TDWORD ping(const TDWORD input);
-			virtual void virtualChannelOpen(TLPSTR& _return, const TLPSTR& authToken, const TDWORD sessionId, const TLPSTR& virtualName);
-			virtual void virtualChannelOpenEx(TLPSTR& _return, const TLPSTR& authToken, const TDWORD sessionId, const TLPSTR& virtualName, const TDWORD flags);
-			virtual bool virtualChannelClose(const TLPSTR& authToken, const TDWORD sessionId, const TLPSTR& virtualName);
-			virtual bool disconnectSession(const TLPSTR& authToken, const TDWORD sessionId, const bool wait);
-			virtual bool logoffSession(const TLPSTR& authToken, const TDWORD sessionId, const bool wait);
-			virtual void enumerateSessions(ReturnEnumerateSession& _return, const TLPSTR& authToken, const TDWORD Version);
+			virtual TINT32 ping(const TINT32 input);
+
+			virtual TINT32 authenticateUser(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& username, const TSTRING& password, const TSTRING& domain);
+
+			virtual void virtualChannelOpen(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName);
+			virtual void virtualChannelOpenEx(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName, const TINT32 flags);
+			virtual TBOOL virtualChannelClose(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName);
+			virtual TBOOL disconnectSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
+			virtual TBOOL logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
+			virtual TBOOL shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag);
+			virtual void enumerateSessions(TReturnEnumerateSessions& _return, const TSTRING& authToken, const TINT32 Version);
+			virtual void getSessionInformation(TReturnGetSessionInformation& _return, const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass);
+			virtual TBOOL setSessionInformation(const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass, const TSessionInfoValue& infoValue);
 		};
 
 		}
