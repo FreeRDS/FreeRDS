@@ -58,6 +58,12 @@ message LogonUserRequest {
 	required uint32 Width = 5;
 	required uint32 Height = 6;
 	required uint32 ColorDepth = 7;
+	optional string ClientName = 8;
+	optional string ClientAddress = 9;
+	optional uint32 ClientBuildNumber = 10;
+	optional uint32 ClientProductId = 11;
+	optional uint32 ClientHardwareId = 12;
+	optional uint32 ClientProtocolType = 13;
 }
 
 message LogonUserResponse {

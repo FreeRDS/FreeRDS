@@ -58,6 +58,13 @@ namespace freerds
 				long mHeight;
 				long mColorDepth;
 
+				std::string mClientName;
+				std::string mClientAddress;
+				long mClientBuildNumber;
+				long mClientProductId;
+				long mClientHardwareId;
+				long mClientProtocolType;
+
 				int mAuthStatus;
 				UINT32 mConnectionId;
 				std::string mPipeName;

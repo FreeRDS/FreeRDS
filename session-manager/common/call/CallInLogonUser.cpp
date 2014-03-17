@@ -39,7 +39,9 @@ namespace freerds
 
 
 		CallInLogonUser::CallInLogonUser()
-			: mConnectionId(0), mAuthStatus(0),mWidth(0),mHeight(0),mColorDepth(0)
+			: mConnectionId(0), mAuthStatus(0),mWidth(0),mHeight(0),mColorDepth(0),
+				mClientName(),mClientAddress(),mClientBuildNumber(0),mClientProductId(0),
+				mClientHardwareId(0),mClientProtocolType(0)
 		{
 
 		};
@@ -79,6 +81,18 @@ namespace freerds
 			mHeight = req.height();
 
 			mColorDepth = req.colordepth();
+
+			mClientName = req.clientname();
+
+			mClientAddress = req.clientaddress();
+
+			mClientBuildNumber = req.clientbuildnumber();
+
+			mClientProductId = req.clientproductid();
+
+			mClientHardwareId = req.clienthardwareid();
+
+			mClientProtocolType = req.clientprotocoltype();
 
 			return 0;
 		};
@@ -132,6 +146,19 @@ namespace freerds
 				currentSession = APP_CONTEXT.getSessionStore()->createSession();
 				currentSession->setUserName(mUserName);
 				currentSession->setDomain(mDomainName);
+				currentSession->setClientDisplayWidth(mWidth);
+				currentSession->setClientDisplayHeight(mHeight);
+				currentSession->setClientDisplayColorDepth(mColorDepth);
+				currentSession->setClientName(mClientName);
+				currentSession->setClientAddress(mClientAddress);
+				currentSession->setClientBuildNumber(mClientBuildNumber);
+				currentSession->setClientProductId(mClientProductId);
+				currentSession->setClientHardwareId(mClientHardwareId);
+				currentSession->setClientProtocolType(mClientProtocolType);
+
+				char winStationName[32];
+				sprintf(winStationName, "RDP-Tcp#%d", mConnectionId);
+				currentSession->setWinStationName(winStationName);
 
 				if (!currentSession->generateUserToken())
 				{
