@@ -93,34 +93,6 @@ static BOOL CheckSessionId(LPDWORD pSessionId)
 	return TRUE;
 }
 
-static BOOL AnsiToWideString(
-	LPCSTR pAnsiString,
-	LPWSTR* ppWideString,
-	DWORD* pcbWideString
-)
-{
-	LPWSTR pWideString;
-	int size;
-
-	size = MultiByteToWideChar(CP_ACP, 0, pAnsiString, -1, NULL, 0);
-	if (size == 0) return FALSE;
-
-	pWideString = (LPWSTR)malloc(size);
-	if (pWideString == NULL) return FALSE;
-
-	size = MultiByteToWideChar(CP_ACP, 0, pAnsiString, -1, pWideString, size);
-	if (size == 0)
-	{
-		free(pWideString);
-		return FALSE;
-	}
-
-	*ppWideString = pWideString;
-	*pcbWideString = size;
-
-	return TRUE;
-}
-
 
 /**
  * WTSAPI Public Interface
@@ -584,6 +556,9 @@ FreeRDS_WTSQuerySessionInformationW(
 	DWORD cbBuffer;
 	BOOL bSuccess;
 
+	*ppBuffer = NULL;
+	*pBytesReturned = 0;
+
 	bSuccess = FreeRDS_WTSQuerySessionInformationA(
 		hServer,
 		SessionId,
@@ -600,12 +575,22 @@ FreeRDS_WTSQuerySessionInformationW(
 			case WTSDomainName:
 			case WTSClientName:
 			{
-				bSuccess = AnsiToWideString(pBuffer, ppBuffer, pBytesReturned);
+				int status = ConvertToUnicode(CP_ACP, 0, pBuffer, -1, ppBuffer, 0);
+				if (status > 0)
+				{
+					*pBytesReturned = status;
+				}
+				else
+				{
+					bSuccess = FALSE;
+				}
 				WTSFreeMemory(pBuffer);
 				break;
 			}
 
 			default:
+				*ppBuffer = (LPWSTR)pBuffer;
+				*pBytesReturned = cbBuffer;
 				break;
 		}
 	}
@@ -1274,11 +1259,22 @@ FreeRDS_AuthenticateUser(
 	LPCSTR Domain
 )
 {
-	CHECK_CLIENT_CONNECTION();
-
 	int authStatus;
 
-	authStatus = gClient->authenticateUser(gAuthToken, SessionId, Username, Password, Domain);
+	CHECK_CLIENT_CONNECTION();
+
+	/* Check parameters. */
+	if (!CheckSessionId((LPDWORD)&SessionId)) return -1;
+
+	/* Execute session manager RPC. */
+	try
+	{
+		authStatus = gClient->authenticateUser(gAuthToken, SessionId, Username, Password, Domain);
+	}
+	catch (...)
+	{
+		authStatus = -1;
+	}
 
 	return authStatus;
 }
