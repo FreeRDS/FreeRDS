@@ -56,13 +56,13 @@ namespace freerds{
 			const TSTRING& password,
 			const TSTRING& domain)
 		{
-			TINT32 authStatus;
+			TINT32 authStatus = 0;
 
-			authStatus = APP_CONTEXT.authenticateUser(
-				sessionId,
-				username,
-				password,
-				domain);
+			//authStatus = APP_CONTEXT.authenticateUser(
+			//	sessionId,
+			//	username,
+			//	password,
+			//	domain);
 
 			return authStatus;
 		}
