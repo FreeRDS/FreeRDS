@@ -48,8 +48,7 @@ namespace freerds{
 			virtual TBOOL logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
 			virtual TBOOL shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag);
 			virtual void enumerateSessions(TReturnEnumerateSessions& _return, const TSTRING& authToken, const TINT32 Version);
-			virtual void getSessionInformation(TReturnGetSessionInformation& _return, const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass);
-			virtual TBOOL setSessionInformation(const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass, const TSessionInfoValue& infoValue);
+			virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass);
 		};
 
 		}

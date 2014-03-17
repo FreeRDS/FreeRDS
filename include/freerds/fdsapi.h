@@ -30,27 +30,6 @@ extern "C" {
  * WTSAPI Private Interface
  */
 
-BOOL WINAPI
-FreeRDS_WTSSetSessionInformationA(
-	HANDLE hServer,
-	DWORD SessionId,
-	WTS_INFO_CLASS WTSInfoClass,
-	LPSTR pBuffer,
-	DWORD cbBuffer);
-
-BOOL WINAPI
-FreeRDS_WTSSetSessionInformationW(
-	HANDLE hServer,
-	DWORD SessionId,
-	WTS_INFO_CLASS WTSInfoClass,
-	LPWSTR pBuffer,
-	DWORD cbBuffer);
-
-
-/**
- * ICP Private Interface
- */
-
 int WINAPI
 FreeRDS_AuthenticateUser(
 	UINT32 SessionId,

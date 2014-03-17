@@ -181,8 +181,8 @@ namespace freerds{
 			_return.returnValue = true;
 		}
 
-		void FDSApiHandler::getSessionInformation(
-			TReturnGetSessionInformation& _return,
+		void FDSApiHandler::querySessionInformation(
+			TReturnQuerySessionInformation& _return,
 			const TSTRING& authToken,
 			const TINT32 sessionId,
 			const TINT32 infoClass)
@@ -255,15 +255,6 @@ namespace freerds{
 			{
 				_return.returnValue = false;
 			}
-		}
-
-		TBOOL FDSApiHandler::setSessionInformation(
-			const TSTRING& authToken,
-			const TINT32 sessionId,
-			const TINT32 infoClass,
-			const TSessionInfoValue& infoValue)
-		{
-			return false;
 		}
 
 		}

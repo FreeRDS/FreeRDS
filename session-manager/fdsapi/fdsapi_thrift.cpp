@@ -458,7 +458,7 @@ FreeRDS_WTSQuerySessionInformationA(
 	DWORD* pBytesReturned
 )
 {
-	freerds::TReturnGetSessionInformation result;
+	freerds::TReturnQuerySessionInformation result;
 	BOOL bSuccess;
 
 	CHECK_CLIENT_CONNECTION();
@@ -472,7 +472,7 @@ FreeRDS_WTSQuerySessionInformationA(
 	/* Execute session manager RPC. */
 	try
 	{
-		gClient->getSessionInformation(result, gAuthToken, SessionId, WTSInfoClass);
+		gClient->querySessionInformation(result, gAuthToken, SessionId, WTSInfoClass);
 		bSuccess = result.returnValue ? TRUE : FALSE;
 	}
 	catch (...)
@@ -1264,34 +1264,6 @@ WINPR_API PWtsApiFunctionTable CDECL FreeRDS_InitWtsApi(void)
 
 /**
  * WTSAPI Private Interface
- */
-
-BOOL WINAPI
-FreeRDS_WTSSetSessionInformationA(
-	HANDLE hServer,
-	DWORD SessionId,
-	WTS_INFO_CLASS WTSInfoClass,
-	LPSTR pBuffer,
-	DWORD cbBuffer
-)
-{
-	return FALSE;
-}
-
-BOOL WINAPI
-FreeRDS_WTSSetSessionInformationW(
-	HANDLE hServer,
-	DWORD SessionId,
-	WTS_INFO_CLASS WTSInfoClass,
-	LPWSTR pBuffer,
-	DWORD cbBuffer
-)
-{
-	return FALSE;
-}
-
-/**
- * ICP Private Interface
  */
 
 int WINAPI

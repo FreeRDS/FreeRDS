@@ -40,7 +40,7 @@ struct TReturnEnumerateSessions
 	2:TSessionInfoList sessionInfoList;
 }
 
-struct TReturnGetSessionInformation
+struct TReturnQuerySessionInformation
 {
 	1:TBOOL returnValue;
 	2:TSessionInfoValue infoValue;
@@ -61,7 +61,6 @@ service fdsapi {
 	TBOOL logoffSession(1:TSTRING authToken, 2:TINT32 sessionId, 3:TBOOL wait);
 	TBOOL shutdownSystem(1:TSTRING authToken, 2:TINT32 shutdownFlag);
 	TReturnEnumerateSessions enumerateSessions(1:TSTRING authToken, 2:TINT32 Version);
-	TReturnGetSessionInformation getSessionInformation(1:TSTRING authToken, 2:TINT32 sessionId, 3:TINT32 infoClass);
-	TBOOL setSessionInformation(1:TSTRING authToken, 2:TINT32 sessionId, 3:TINT32 infoClass, 4:TSessionInfoValue infoValue);
+	TReturnQuerySessionInformation querySessionInformation(1:TSTRING authToken, 2:TINT32 sessionId, 3:TINT32 infoClass);
 }
 
