@@ -237,18 +237,23 @@ int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff)
 	return PBRPC_SUCCESS;
 }
 
-int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
-		char* password, UINT32 width, UINT32 height, UINT32 bbp, char** serviceEndpoint)
+int freerds_icp_LogonUser(UINT32 connectionId, FREERDS_ICP_LOGON_USER_DATA* pLogonUserData, char** serviceEndpoint)
 {
 	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
 
 	request.connectionid = connectionId;
-	request.domain = domain;
-	request.username = username;
-	request.password = password;
-	request.width = width;
-	request.height = height;
-	request.colordepth = bbp;
+	request.domain = pLogonUserData->Domain;
+	request.username = pLogonUserData->Username;
+	request.password = pLogonUserData->Password;
+	request.width = pLogonUserData->DesktopWidth;
+	request.height = pLogonUserData->DesktopHeight;
+	request.colordepth = pLogonUserData->ColorDepth;
+	request.clientname = pLogonUserData->ClientName;
+	request.clientaddress = pLogonUserData->ClientAddress;
+	request.clientbuildnumber = pLogonUserData->ClientBuildNumber;
+	request.clientproductid = pLogonUserData->ClientProductId;
+	request.clienthardwareid = pLogonUserData->ClientHardwareId;
+	request.clientprotocoltype = 2;
 
 	ICP_CLIENT_STUB_CALL(LogonUser, logon_user)
 
