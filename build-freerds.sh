@@ -4,21 +4,31 @@
 #
 # build-freerds.sh
 #
-# This script builds and installs FreeRDS on a clean Ubuntu 12.04 LTS
-# installation.  Follow these steps:
+# This script builds and installs FreeRDS on a clean Ubuntu distro (12.10,
+# 13.04, or 13.10).  Follow these steps:
 #
-#   1. Install Ubuntu 12.04 LTS.
-#   2. Apply Ubuntu software updates.
-#   3. Open a Terminal window.
-#   4. Download this script.
-#   5. Run the command "chmod +x build-freerds.sh".
-#   6. Run the command "./build-freerds.sh
+#   1. Install Ubuntu.
+#   2. Open a Terminal window.
+#   3. Download this script.
+#   4. Run the command "chmod +x build-freerds.sh".
+#   5. Run the command "./build-freerds.sh
+#
+# Once the installation has finished, here are instructions for running
+# FreeRDS from the command line:
+#
+#   1. Run the command "cd /opt/FreeRDS/bin".
+#   2. Open 2 more Terminal windows as root (e.g., "sudo gnome-terminal &").
+#   3. Run "./freerds --nodaemon" in Terminal window 1.
+#   4. Run "./freerds-session-manager --nodaemon" in Terminal window 2.
+#   5. Connect with FreeRDP using "./xfreerdp /v:localhost /cert-ignore".
 #
 #===========================================================================
 
 GIT_ROOT_DIR=~/git/vworkspace
-FREERDP_GIT=https://github.com/awakecoding/FreeRDP.git
-FREERDS_GIT=https://github.com/awakecoding/FreeRDS.git
+FREERDP_GIT=https://github.com/vworkspace/FreeRDP.git
+FREERDS_GIT=https://github.com/vworkspace/FreeRDS.git
+FREERDP_BRANCH=awakecoding
+FREERDS_BRANCH=awakecoding
 FREERDS_INSTALL_DIR=/opt/FreeRDS
 
 #
@@ -33,12 +43,16 @@ fi
 if [ ! -d $GIT_ROOT_DIR/FreeRDP ]; then
   pushd $GIT_ROOT_DIR
   git clone $FREERDP_GIT
+  cd FreeRDP
+  git checkout $FREERDP_BRANCH
   popd
 fi
 
 if [ ! -d $GIT_ROOT_DIR/FreeRDP/server/FreeRDS ]; then
   pushd $GIT_ROOT_DIR/FreeRDP/server
   git clone $FREERDS_GIT
+  cd FreeRDS
+  git checkout $FREERDS_BRANCH
   popd
 fi
 
@@ -109,7 +123,7 @@ if [ "$RESULT" != "Thrift version $THRIFT_VERSION" ]; then
   popd
 
   # Unpack compressed archive
-  pushd ~/Downloadsc
+  pushd ~/Downloads
   tar xvf $THRIFT_ARCHIVE
   pushd $THRIFT_FOLDER
   ./configure --without-python --without-java --without-c_glib --with-pic --without-csharp --without-haskell --without-go --without-d --without-qt4
