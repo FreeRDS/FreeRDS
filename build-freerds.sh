@@ -91,7 +91,7 @@ libexpat1-dev libxml-libxml-perl libtool bison flex xsltproc \
 libfreetype6-dev libfontconfig1-dev libpixman-1-dev xutils-dev \
 x11proto-gl-dev mesa-common-dev libgl1-mesa-dev xorg-dev \
 protobuf-c-compiler libprotobuf-c0 libprotobuf-dev libprotobuf-c0-dev \
-libboost-dev
+libboost-dev qt4-dev-tools
 
 #
 # Install the correct version of Thrift
