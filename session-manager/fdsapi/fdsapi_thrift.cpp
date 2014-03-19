@@ -56,7 +56,15 @@ static int connectClient()
 
 	gClient = client;
 	gTransport = transport;
-	transport->open();
+
+	try
+	{
+		transport->open();
+	}
+	catch (...)
+	{
+		return -1;
+	}
 
 	return 0;
 }
@@ -68,14 +76,15 @@ static int connectClient()
 
 static BOOL GetCurrentSessionId(LPDWORD pSessionId)
 {
-	/**
-	 * TODO: Need to figure out how to get the session id
-	 * associated with the current process.  Perhaps an
-	 * environment variable such as FREERDS_SID can be
-	 * used.
-	 */
-	*pSessionId = 0;
-	return TRUE;
+	/* The FREERDS_SID environment variable has the session id. */
+	char* env = getenv("FREERDS_SID");
+	if (env)
+	{
+		*pSessionId = atoi(env);
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 static BOOL CheckSessionId(LPDWORD pSessionId)
