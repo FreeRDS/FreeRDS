@@ -1,6 +1,6 @@
 # FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
-# Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+# Copyright 2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/icp)
+# Authentication Library
 
-add_subdirectory(rpc)
-add_subdirectory(auth)
-add_subdirectory(core)
-add_subdirectory(backend)
-add_subdirectory(icp)
+set(MODULE_NAME "freerds-rpc")
+set(MODULE_PREFIX "FREERDS_RPC")
+
+set(${MODULE_PREFIX}_SRCS
+	rpc.c)
+
+add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+
+set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
+	MONOLITHIC ${MONOLITHIC_BUILD}
+	MODULE winpr
+	MODULES winpr-crt winpr-path winpr-library)
+
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
+
+install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
