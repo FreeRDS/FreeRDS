@@ -102,13 +102,6 @@ int freerds_rpc_named_pipe_clean(const char* pipeName)
 	return status;
 }
 
-int freerds_rpc_named_pipe_clean_endpoint(const char* Endpoint)
-{
-	char pipeName[256];
-	freerds_rpc_named_pipe_get_endpoint_name(Endpoint, pipeName, sizeof(pipeName));
-	return freerds_rpc_named_pipe_clean(pipeName);
-}
-
 HANDLE freerds_rpc_named_pipe_connect(const char* pipeName, DWORD nTimeOut)
 {
 	HANDLE hNamedPipe;
@@ -156,13 +149,6 @@ HANDLE freerds_rpc_named_pipe_create(const char* pipeName)
 	return hNamedPipe;
 }
 
-HANDLE freerds_rpc_named_pipe_create_endpoint(const char* Endpoint)
-{
-	char pipeName[256];
-	freerds_rpc_named_pipe_get_endpoint_name(Endpoint, pipeName, sizeof(pipeName));
-	return freerds_rpc_named_pipe_create(pipeName);
-}
-
 int freerds_rpc_transport_receive(rdsRpc* rpc)
 {
 	int status;
@@ -207,11 +193,11 @@ int freerds_rpc_transport_receive(rdsRpc* rpc)
 		if (Stream_GetPosition(s) >= length)
 		{
 			Stream_SealLength(s);
-			Stream_SetPosition(s, 0);
+			Stream_SetPosition(s, 4);
 
 			if (rpc->ReceiveMessage)
 			{
-				status = rpc->ReceiveMessage(rpc, Stream_Buffer(s), length - 4);
+				status = rpc->ReceiveMessage(rpc, Stream_Pointer(s), length - 4);
 			}
 		}
 	}
@@ -234,6 +220,9 @@ void* freerds_rpc_client_thread(void* arg)
 	{
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
+		if (status == WAIT_FAILED)
+			break;
+
 		if (WaitForSingleObject(rpc->StopEvent, 0) == WAIT_OBJECT_0)
 		{
 			break;
@@ -251,13 +240,15 @@ void* freerds_rpc_client_thread(void* arg)
 
 int freerds_rpc_client_start(rdsRpc* rpc)
 {
-	rpc->hClientPipe = freerds_rpc_named_pipe_connect(rpc->Endpoint, 20);
+	rpc->hClientPipe = freerds_rpc_named_pipe_connect(rpc->PipeName, 20);
 
 	if (rpc->hClientPipe == INVALID_HANDLE_VALUE)
 	{
-		fprintf(stderr, "Failed to create named pipe %s\n", rpc->Endpoint);
+		fprintf(stderr, "Failed to create named pipe %s\n", rpc->PipeName);
 		return -1;
 	}
+
+	fprintf(stderr, "Connected to endpoint: %s, named pipe: %s\n", rpc->Endpoint, rpc->PipeName);
 
 	rpc->ServerThread = CreateThread(NULL, 0,
 			(LPTHREAD_START_ROUTINE) freerds_rpc_client_thread,
@@ -348,21 +339,19 @@ void* freerds_rpc_server_listener_thread(void* arg)
 			rpc->ClientThread = CreateThread(NULL, 0,
 					(LPTHREAD_START_ROUTINE) freerds_rpc_server_client_thread,
 					(void*) rpc, 0, NULL);
-
-			break;
 		}
 	}
 
 	WaitForSingleObject(rpc->ClientThread, INFINITE);
-
-	printf("Client Thread exited\n");
 
 	return NULL;
 }
 
 int freerds_rpc_server_start(rdsRpc* rpc)
 {
-	rpc->hServerPipe = freerds_rpc_named_pipe_create_endpoint(rpc->Endpoint);
+	freerds_rpc_named_pipe_clean(rpc->PipeName);
+
+	rpc->hServerPipe = freerds_rpc_named_pipe_create(rpc->PipeName);
 
 	if (!rpc->hServerPipe)
 		return -1;
@@ -400,6 +389,7 @@ int freerds_rpc_server_write_message(rdsRpc* rpc, BYTE* buffer, UINT32 length)
 
 rdsRpc* freerds_rpc_common_new(const char* Endpoint)
 {
+	int length;
 	rdsRpc* rpc;
 
 	rpc = (rdsRpc*) calloc(1, sizeof(rdsRpc));
@@ -419,6 +409,10 @@ rdsRpc* freerds_rpc_common_new(const char* Endpoint)
 		rpc->OutboundTotalCount = 0;
 
 		rpc->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+		length = 64 + strlen(rpc->Endpoint);
+		rpc->PipeName = (char*) malloc(length);
+		sprintf_s(rpc->PipeName, length, "\\\\.\\pipe\\FreeRDS_%s", rpc->Endpoint);
 	}
 
 	return rpc;

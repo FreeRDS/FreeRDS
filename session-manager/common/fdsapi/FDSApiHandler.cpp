@@ -36,7 +36,6 @@ namespace freerds{
 
 		static wLog * logger_FDSApiHandler = WLog_Get("freerds.sessionmanager.fdsapihandler");
 
-
 		FDSApiHandler::FDSApiHandler()
 		{
 		}

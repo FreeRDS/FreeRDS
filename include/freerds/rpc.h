@@ -37,7 +37,9 @@ typedef int (*pRdsRpcReceiveMessage)(rdsRpc* rpc, BYTE* buffer, UINT32 length);
 
 struct rds_rpc
 {
+	void* custom;
 	char* Endpoint;
+	char* PipeName;
 	BOOL ServerMode;
 	HANDLE StopEvent;
 	HANDLE ClientThread;
