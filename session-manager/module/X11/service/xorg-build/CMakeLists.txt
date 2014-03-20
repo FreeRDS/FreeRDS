@@ -74,7 +74,7 @@ else()
 		set(${EXTERNAL_PROJECT}_EXT ".tar.bz2")
 		set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
 		set(${EXTERNAL_PROJECT}_URL "http://xorg.freedesktop.org/releases/individual/xserver/${${EXTERNAL_PROJECT}_FILE}")
-		set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=/usr;--with-sha1=libcrypto;--disable-dpms")
+		set(${EXTERNAL_PROJECT}_CONFIGURE "--prefix=/usr;--with-sha1=libcrypto;--disable-dpms;--without-dtrace")
 		set(${EXTERNAL_PROJECT}_UPDATE "")
 		set(${EXTERNAL_PROJECT}_MAKE "")
 
