@@ -153,6 +153,9 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 
 	freerds_channels_post_connect(connection);
 
+	connection->encoder = freerds_bitmap_encoder_new(settings->DesktopWidth,
+			settings->DesktopHeight, settings->ColorDepth);
+
 	return TRUE;
 }
 
