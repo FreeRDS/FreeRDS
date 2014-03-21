@@ -22,10 +22,13 @@
 
 #include "channels.h"
 
+//#define WITH_FREERDS_CHANNELS	1
+
 #include <freerds/icp_client_stubs.h>
 
 int freerds_channels_post_connect(rdsConnection* session)
 {
+#ifdef WITH_FREERDS_CHANNELS
 	BOOL allowed;
 
 	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "cliprdr"))
@@ -60,6 +63,7 @@ int freerds_channels_post_connect(rdsConnection* session)
 		session->rdpsnd = rdpsnd_server_context_new(session->vcm);
 		session->rdpsnd->Start(session->rdpsnd);
 	}
+#endif
 
 	return 0;
 }

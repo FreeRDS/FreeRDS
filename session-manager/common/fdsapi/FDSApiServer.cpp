@@ -33,8 +33,11 @@
 #include <thrift/transport/TSSLSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 
-#include <winpr/thread.h>
 #include <winpr/wlog.h>
+#include <winpr/thread.h>
+#include <winpr/stream.h>
+
+#include <freerds/rpc.h>
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -43,26 +46,52 @@ using namespace apache::thrift::server;
 
 using boost::shared_ptr;
 
-
-namespace freerds{
-	namespace sessionmanager{
+namespace freerds {
+	namespace sessionmanager {
 		namespace fdsapi {
 
 		static wLog * logger_FDSApiServer = WLog_Get("freerds.sessionmanager.fdsapiserver");
 
+		int FDSApiServer_RpcAccept(rdsRpc* rpc)
+		{
+			wStream* s;
+			int TestMessageLength;
+			char* TestMessage = "FDSAPI Test Message";
+
+			printf("FDSApiServer_RpcAccept\n");
+
+			TestMessageLength = strlen(TestMessage) + 1;
+
+			s = Stream_New(NULL, 1024);
+			Stream_Seek(s, 4);
+			Stream_Write(s, (BYTE*) TestMessage, TestMessageLength);
+			Stream_SealLength(s);
+			Stream_SetPosition(s, 0);
+			Stream_Write_UINT32(s, Stream_Length(s));
+
+			freerds_rpc_server_write_message(rpc, Stream_Buffer(s), Stream_Length(s));
+			Stream_Free(s, TRUE);
+
+			return 0;
+		}
+
 		FDSApiServer::FDSApiServer()
 		{
-			if (!InitializeCriticalSectionAndSpinCount(&mCSection,
-					0x00000400) )
+			if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 			{
 				WLog_Print(logger_FDSApiServer, WLOG_ERROR, "FDSApiServer: InitializeCriticalSectionAndSpinCount failed!");
 			}
 			mServerThread = NULL;
 			mPort = 9091;
+
+			mRpcServer = freerds_rpc_server_new("FDSAPI");
+			mRpcServer->custom = (void*) this;
+			mRpcServer->Accept = FDSApiServer_RpcAccept;
 		}
 
 		FDSApiServer::~FDSApiServer()
 		{
+
 		}
 
 		void FDSApiServer::setServer(boost::shared_ptr<apache::thrift::server::TServer> server)
@@ -85,10 +114,9 @@ namespace freerds{
 			return &mCSection;
 		}
 
-
 		void FDSApiServer::serverThread(void * param)
 		{
-			FDSApiServer * server = (FDSApiServer *) param;
+			FDSApiServer* server = (FDSApiServer*) param;
 
 			shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 			shared_ptr<FDSApiHandler> handler(new FDSApiHandler());
@@ -107,15 +135,19 @@ namespace freerds{
 		 void FDSApiServer::startFDSApi()
 		 {
 			EnterCriticalSection(&mCSection);
+			freerds_rpc_server_start(mRpcServer);
 			mServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) FDSApiServer::serverThread, (void*) this, 0, NULL);
 			ResumeThread(mServerThread);
 			EnterCriticalSection(&mCSection);
-			LeaveCriticalSection(&mCSection);     }
+			LeaveCriticalSection(&mCSection);
+		 }
 
 		 void FDSApiServer::stopFDSApi()
 		 {
-			 if (mServer != NULL) {
-				WLog_Print(logger_FDSApiServer, WLOG_INFO, "Stopping FDSApiServer ...")
+			 if (mServer != NULL)
+			 {
+				 WLog_Print(logger_FDSApiServer, WLOG_INFO, "Stopping FDSApiServer ...");
+				 freerds_rpc_server_stop(mRpcServer);
 				 mServer->stop();
 				 WaitForSingleObject(mServerThread,INFINITE);
 				 CloseHandle(mServerThread);

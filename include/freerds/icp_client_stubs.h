@@ -23,12 +23,31 @@
 
 #include <winpr/wtypes.h>
 
+struct _FREERDS_ICP_LOGON_USER_DATA
+{
+	char* Username;
+	char* Password;
+	char* Domain;
+	UINT32 DesktopWidth;
+	UINT32 DesktopHeight;
+	UINT32 ColorDepth;
+	char* ClientName;
+	char* ClientAddress;
+	UINT32 ClientBuildNumber;
+	UINT32 ClientProductId;
+	UINT32 ClientHardwareId;
+	UINT32 ClientProtocolType;
+	char* InitialProgram;
+	char* ApplicationName;
+	char* WorkingDirectory;
+};
+typedef struct _FREERDS_ICP_LOGON_USER_DATA FREERDS_ICP_LOGON_USER_DATA;
+
 int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed);
 int freerds_icp_Ping(BOOL* pong);
 int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected);
 int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff);
-int freerds_icp_LogonUser(UINT32 connectionId, char* username, char* domain,
-		char* password, UINT32 width, UINT32 height, UINT32 bbp, char** serviceEndpoint);
+int freerds_icp_LogonUser(UINT32 connectionId, FREERDS_ICP_LOGON_USER_DATA* pLogonUserData, char** serviceEndpoint);
 int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success);
 
 #endif // _ICP_CLIENT_STUBS_H

@@ -21,17 +21,17 @@
 #include "config.h"
 #endif
 
-#include "config.h"
-#include <iostream>
+#include <signal.h>
+#include <fcntl.h>
 
 #include <appcontext/ApplicationContext.h>
 
 #include <winpr/wtypes.h>
 #include <winpr/synch.h>
-#include <signal.h>
-#include <fcntl.h>
 #include <winpr/cmdline.h>
 #include <winpr/path.h>
+
+#include <iostream>
 
 using namespace std;
 

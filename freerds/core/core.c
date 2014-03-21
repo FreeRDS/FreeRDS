@@ -64,9 +64,6 @@ int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
 
 	connection->bytesPerPixel = 4;
 
-	connection->encoder = freerds_bitmap_encoder_new(settings->DesktopWidth,
-			settings->DesktopHeight, settings->ColorDepth);
-
 	connection->FrameList = ListDictionary_New(TRUE);
 
 	return 0;

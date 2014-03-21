@@ -25,6 +25,9 @@
 
 #include <winpr/synch.h>
 #include <winpr/thread.h>
+
+#include <freerds/rpc.h>
+
 #include <boost/shared_ptr.hpp>
 #include <thrift/server/TServer.h>
 
@@ -52,6 +55,8 @@ namespace freerds{
 			boost::shared_ptr<apache::thrift::server::TServer> mServer;
 			HANDLE mServerThread;
 			DWORD mPort;
+
+			rdsRpc* mRpcServer;
 		};
 
 		}

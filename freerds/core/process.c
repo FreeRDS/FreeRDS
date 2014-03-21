@@ -153,6 +153,9 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 
 	freerds_channels_post_connect(connection);
 
+	connection->encoder = freerds_bitmap_encoder_new(settings->DesktopWidth,
+			settings->DesktopHeight, settings->ColorDepth);
+
 	return TRUE;
 }
 
@@ -177,10 +180,11 @@ int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
 BOOL freerds_peer_activate(freerdp_peer* client)
 {
 	int error_code;
+	char* endpoint;
 	rdpSettings* settings;
+	FREERDS_ICP_LOGON_USER_DATA LogonUserData;
 	rdsConnection* connection = (rdsConnection*) client->context;
 	rdsBackendConnector* connector = connection->connector;
-	char *endpoint;
 
 	if (connector)
 	{
@@ -199,9 +203,25 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
 							settings->SurfaceFrameMarkerEnabled);
 
-	error_code = freerds_icp_LogonUser((UINT32)(connection->id),
-			settings->Username, settings->Domain, settings->Password, settings->DesktopWidth,
-			settings->DesktopHeight, settings->ColorDepth, &endpoint);
+	ZeroMemory(&LogonUserData, sizeof(FREERDS_ICP_LOGON_USER_DATA));
+
+	LogonUserData.Username = settings->Username;
+	LogonUserData.Password = settings->Password;
+	LogonUserData.Domain = settings->Domain;
+	LogonUserData.DesktopWidth = settings->DesktopWidth;
+	LogonUserData.DesktopHeight = settings->DesktopHeight;
+	LogonUserData.ColorDepth = settings->ColorDepth;
+	LogonUserData.ClientName = settings->ClientHostname;
+	LogonUserData.ClientAddress = settings->ClientAddress;
+	LogonUserData.ClientBuildNumber = settings->ClientBuild;
+	LogonUserData.ClientProductId = 1;
+	LogonUserData.ClientHardwareId = 0;
+	LogonUserData.ClientProtocolType = 2;
+	LogonUserData.InitialProgram = NULL;
+	LogonUserData.ApplicationName = NULL;
+	LogonUserData.WorkingDirectory = NULL;
+
+	error_code = freerds_icp_LogonUser((UINT32)(connection->id), &LogonUserData, &endpoint);
 
 	if (error_code != 0)
 	{

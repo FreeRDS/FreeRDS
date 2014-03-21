@@ -29,7 +29,10 @@
 
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
+#include <winpr/print.h>
 #include <winpr/wtsapi.h>
+
+#include <freerds/rpc.h>
 
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
@@ -42,9 +45,18 @@ using namespace apache::thrift::transport;
 boost::shared_ptr<TTransport> gTransport;
 boost::shared_ptr<freerds::fdsapiClient> gClient;
 
+rdsRpc* g_Rpc = NULL;
+
 std::string gAuthToken("HUGO");
 
 #define CHECK_CLIENT_CONNECTION() if((!gTransport)||(!gTransport->isOpen())) {connectClient();}
+
+int FDSAPI_RpcReceiveMessage(rdsRpc* rpc, BYTE* buffer, UINT32 length)
+{
+	printf("FDSAPI_RpcReceiveMessage: length: %d\n", length);
+	winpr_HexDump(buffer, length);
+	return 0;
+}
 
 static int connectClient()
 {
@@ -65,6 +77,11 @@ static int connectClient()
 	{
 		return -1;
 	}
+
+	g_Rpc = freerds_rpc_client_new("FDSAPI");
+	g_Rpc->ReceiveMessage = FDSAPI_RpcReceiveMessage;
+
+	freerds_rpc_client_start(g_Rpc);
 
 	return 0;
 }
@@ -935,6 +952,8 @@ FreeRDS_WTSRegisterSessionNotification(
 	DWORD dwFlags
 )
 {
+	CHECK_CLIENT_CONNECTION();
+
 	return FALSE;
 }
 
@@ -943,6 +962,8 @@ FreeRDS_WTSUnRegisterSessionNotification(
 	HWND hWnd
 )
 {
+	CHECK_CLIENT_CONNECTION();
+
 	return FALSE;
 }
 
@@ -953,6 +974,8 @@ FreeRDS_WTSRegisterSessionNotificationEx(
 	DWORD dwFlags
 )
 {
+	CHECK_CLIENT_CONNECTION();
+
 	return FALSE;
 }
 
@@ -962,6 +985,8 @@ FreeRDS_WTSUnRegisterSessionNotificationEx(
 	HWND hWnd
 )
 {
+	CHECK_CLIENT_CONNECTION();
+
 	return FALSE;
 }
 
