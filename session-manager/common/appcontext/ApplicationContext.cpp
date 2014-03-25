@@ -141,6 +141,44 @@ namespace freerds
 			return mSystemConfigPath;
 		}
 
+		void ApplicationContext::exportContext()
+		{
+			int size;
+			FILE* fp;
+			char iniStr[2048];
+			
+			const char iniFmt[] =
+				"[FreeRDS]\n"
+				"prefix=\"%s\"\n"
+				"bindir=\"%s\"\n"
+				"sbindir=\"%s\"\n"
+				"libdir=\"\"%s\n"
+				"datarootdir=\"%s\"\n"
+				"localstatedir=\"%s\"\n"
+				"sysconfdir=\"%s\"\n"
+				"\n";
+			
+			sprintf_s(iniStr, sizeof(iniStr), iniFmt,
+				mHomePath.c_str(), /* prefix */
+				FREERDS_INSTALL_BINDIR, /* bindir */
+				FREERDS_INSTALL_SBINDIR, /* sbindir */
+				FREERDS_INSTALL_LIBDIR, /* libdir */
+				FREERDS_INSTALL_DATAROOTDIR, /* datarootdir */
+				FREERDS_INSTALL_LOCALSTATEDIR, /* localstatedir */
+				FREERDS_INSTALL_SYSCONFDIR /* sysconfdir */
+				);
+			
+			size = strlen(iniStr) + 1;
+			
+			fp = fopen("/var/run/freerds.instance", "w");
+			
+			if (fp)
+			{
+				fwrite(iniStr, 1, size, fp);
+				fclose(fp);
+			}
+		}
+                
 		void ApplicationContext::initPaths()
 		{
 			getHomePath();
@@ -148,8 +186,9 @@ namespace freerds
 			getExecutablePath();
 			getShareDataPath();
 			getSystemConfigPath();
+			
+			exportContext();
 		}
-
 
 		void ApplicationContext::configureExecutableSearchPath()
 		{
