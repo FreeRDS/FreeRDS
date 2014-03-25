@@ -152,7 +152,7 @@ namespace freerds
 				"prefix=\"%s\"\n"
 				"bindir=\"%s\"\n"
 				"sbindir=\"%s\"\n"
-				"libdir=\"\"%s\n"
+				"libdir=\"%s\"\n"
 				"datarootdir=\"%s\"\n"
 				"localstatedir=\"%s\"\n"
 				"sysconfdir=\"%s\"\n"
