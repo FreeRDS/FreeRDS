@@ -4,10 +4,10 @@
 #
 # build-freerds.sh
 #
-# This script builds and installs FreeRDS on a clean Ubuntu distro (12.10,
-# 13.04, or 13.10).  Follow these steps:
+# This script builds and installs FreeRDS on a clean Ubuntu or CentOS Linux
+# distribution.  Complete the following steps:
 #
-#   1. Install Ubuntu.
+#   1. Install Ubuntu or CentOS.
 #   2. Open a Terminal window.
 #   3. Download this script.
 #   4. Run the command "chmod +x build-freerds.sh".
@@ -21,6 +21,11 @@
 #   3. Run "./freerds --nodaemon" in Terminal window 1.
 #   4. Run "./freerds-session-manager --nodaemon" in Terminal window 2.
 #   5. Connect with FreeRDP using "./xfreerdp /v:localhost /cert-ignore".
+#
+# Supported platforms include:
+#
+#   Ubuntu (12.10, 13.x)
+#   CentOS (6.x)
 #
 #===========================================================================
 
