@@ -118,10 +118,13 @@ Remote Desktop Server for Linux</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" alignment="Qt::AlignRight">
+      <item row="1" column="0">
        <widget class="QLabel" name="usernameLabel">
         <property name="styleSheet">
          <string notr="true">color: rgb(63, 63, 63);</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight</set>
         </property>
         <property name="text">
          <string>Username:</string>
@@ -131,10 +134,13 @@ Remote Desktop Server for Linux</string>
       <item row="1" column="1">
        <widget class="QLineEdit" name="usernameEdit"/>
       </item>
-      <item row="2" column="0" alignment="Qt::AlignRight">
+      <item row="2" column="0">
        <widget class="QLabel" name="passwordLabel">
         <property name="styleSheet">
          <string notr="true">color: rgb(63, 63, 63);</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight</set>
         </property>
         <property name="text">
          <string>Password:</string>
