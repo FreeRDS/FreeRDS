@@ -22,7 +22,6 @@
 #define _PBRPC_UTILS_H
 
 #include "pbrpc.h"
-#include "pbRPC.pb-c.h"
 
 DWORD pbrpc_getTag(pbRPCContext *context);
 Freerds__Pbrpc__RPCBase *pbrpc_message_new();
