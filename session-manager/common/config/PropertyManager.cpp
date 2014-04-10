@@ -325,6 +325,7 @@ namespace freerds
 						parsePropertyGlobal(parentPath +"."+ v.first ,subtree,level);
 					}
 				}
+			return 0;
 			}
 
 			int PropertyManager::loadProperties(std::string filename) {
@@ -338,6 +339,7 @@ namespace freerds
 					WLog_Print(logger_PropertyManager, WLOG_ERROR, "Could not parse config file %s",filename.c_str());
 				}
 
+			return 0;
 			}
 
 			int PropertyManager::saveProperties(std::string filename) {
