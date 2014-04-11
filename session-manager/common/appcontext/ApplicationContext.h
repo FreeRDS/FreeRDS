@@ -77,6 +77,7 @@ namespace freerds
 			std::string mSystemConfigPath;
 
 			void initPaths();
+                        void exportContext();
 
 			void configureExecutableSearchPath();
 
