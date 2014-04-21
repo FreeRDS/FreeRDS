@@ -75,7 +75,7 @@ pbRPCContext* pbrpc_server_new(pbRPCTransportContext* transport)
 	context->stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	context->transport = transport;
 	context->transactions = ListDictionary_New(TRUE);
-	context->transactions->object.fnObjectFree = list_dictionary_item_free;
+	ListDictionary_ValueObject(context->transactions)->fnObjectFree = list_dictionary_item_free;
 	context->writeQueue = Queue_New(TRUE, -1, -1);
 	context->writeQueue->object.fnObjectFree = queue_item_free;
 	return context;
