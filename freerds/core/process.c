@@ -40,7 +40,7 @@
 #include <freerds/auth.h>
 #include <freerds/icp_client_stubs.h>
 
-#include "makecert.h"
+#include <winpr/tools/makecert.h>
 
 #include "channels.h"
 #include "app_context.h"
