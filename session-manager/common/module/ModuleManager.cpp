@@ -117,6 +117,7 @@ namespace freerds
 					 }
 				 }
 				 while (FindNextFile(hFind, &FindFileData) != 0);
+				 return 0;
 			}
 
 			int ModuleManager::addModule(std::string path, std::string modulename)

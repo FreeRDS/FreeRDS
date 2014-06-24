@@ -97,8 +97,8 @@ namespace freerds
 
 				if (pipeName)
 					pipeNameStr.assign(pipeName);
-				else
-					return pipeNameStr;
+
+				return pipeNameStr;
 			}
 
 			int Module::stop(RDS_MODULE_COMMON* context)

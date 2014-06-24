@@ -60,15 +60,15 @@ bool getPropertyString(long sessionID, char* path, char* value, unsigned int val
 
 int setPropertyBool(PROPERTY_LEVEL level, long sessionID, char* path, bool value)
 {
-
+	return 0;
 }
 
 int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, char* path, long value)
 {
-
+	return 0;
 }
 
 int setPropertyString(PROPERTY_LEVEL level, long sessionID, char* path, char* value)
 {
-
+	return 0;
 }
