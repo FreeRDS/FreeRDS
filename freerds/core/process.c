@@ -40,7 +40,7 @@
 #include <freerds/auth.h>
 #include <freerds/icp_client_stubs.h>
 
-#include "makecert.h"
+#include <winpr/tools/makecert.h>
 
 #include "channels.h"
 #include "app_context.h"
@@ -194,6 +194,9 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 
 	settings = client->settings;
 	settings->BitmapCacheVersion = 2;
+	client->settings->CompressionEnabled = TRUE;
+	client->settings->CompressionLevel = PACKET_COMPR_TYPE_64K;
+
 
 	if (settings->Password)
 		settings->AutoLogonEnabled = 1;
@@ -202,6 +205,8 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	//  	to create pdu that fit in fastpath pdu max size
 	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
 							settings->SurfaceFrameMarkerEnabled);
+	
+	fprintf(stderr, "codec mode %d\n", connection->codecMode);
 
 	ZeroMemory(&LogonUserData, sizeof(FREERDS_ICP_LOGON_USER_DATA));
 

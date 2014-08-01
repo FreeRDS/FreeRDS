@@ -426,12 +426,10 @@ void* rds_client_thread(void* arg)
 
 void rds_freerdp_client_global_init()
 {
-	freerdp_channels_global_init();
 }
 
 void rds_freerdp_client_global_uninit()
 {
-	freerdp_channels_global_uninit();
 }
 
 int rds_freerdp_client_start(rdpContext* context)
