@@ -91,6 +91,8 @@ namespace freerds
 			boost::posix_time::ptime getConnectStateChangeTime();
 			void setConnectState(WTS_CONNECTSTATE_CLASS state);
 
+			UINT32 getStateChange(WTS_CONNECTSTATE_CLASS oldState, WTS_CONNECTSTATE_CLASS newState);
+
 		private:
 
 			char * dupEnv(char * orgBlock);

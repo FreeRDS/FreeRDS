@@ -289,6 +289,13 @@ namespace freerds
 			return &mModuleManager;
 		}
 
+#ifdef WITH_FDSAPI
+		fdsapiNS::FDSApiServer* ApplicationContext::getFDSApiServer()
+		{
+			return &mFDSApiServer;
+		}
+#endif
+
 		void ApplicationContext::setupTestingPropValues()
 		{
 

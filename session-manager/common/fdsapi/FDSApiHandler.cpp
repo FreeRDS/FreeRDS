@@ -185,6 +185,10 @@ namespace freerds{
 				}
 			}
 
+			WLog_Print(logger_FDSApiHandler, WLOG_INFO,
+				"Switching from session %d to session %d",
+				sessionId, userSession->getSessionID());
+
 			callNS::TaskSwitchToPtr switchToTask;
 			switchToTask = callNS::TaskSwitchToPtr(new callNS::TaskSwitchTo());
 			switchToTask->setConnectionId(connectionId);

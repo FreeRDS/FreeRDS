@@ -29,6 +29,7 @@
 #include <winpr/wlog.h>
 #include <winpr/sspicli.h>
 #include <winpr/environment.h>
+#include <winpr/wnd.h>
 
 #include <winpr/crt.h>
 #include <winpr/tchar.h>
@@ -54,11 +55,19 @@ namespace freerds
 					 WLog_Print(logger_Session, WLOG_FATAL, "cannot init Session critical section!");
 				}
 
+				// Fire a session created event.
+				fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+				FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_CREATE);
 			}
 
 			Session::~Session()
 			{
+				// Mark the session as down.
+				setConnectState(WTSDown);
 
+				// Fire a session terminated event.
+				fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+				FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_TERMINATE);
 			}
 
 			std::string Session::getDomain()
@@ -350,7 +359,7 @@ namespace freerds
 					pipeName = pName;
 					mPipeName = pName;
 					mSessionStarted = true;
-					setConnectState(WTSActive);
+					setConnectState(WTSConnected);
 					return true;
 				}
 			}
@@ -393,13 +402,69 @@ namespace freerds
 
 			void Session::setConnectState(WTS_CONNECTSTATE_CLASS state)
 			{
-				mCurrentState = state;
-				mCurrentStateChangeTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
+				fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+
+				if (mCurrentState != state)
+				{
+					UINT32 stateChange = getStateChange(mCurrentState, state);
+
+					mCurrentState = state;
+					mCurrentStateChangeTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
+
+					if (stateChange != 0)
+					{
+						// Fire a session state change event.
+						FDSApiServer->fireSessionEvent(mSessionID, stateChange);
+					}
+				}
 			}
 
 			boost::posix_time::ptime Session::getConnectStateChangeTime()
 			{
 				return mCurrentStateChangeTime;
+			}
+
+			UINT32 Session::getStateChange(WTS_CONNECTSTATE_CLASS oldState, WTS_CONNECTSTATE_CLASS newState)
+			{
+				// Based on the transition from the old state to the new state,
+				// this method returns the corresponding state change (if any).
+				// These are the same state change notifications that can occur
+				// as a result of a WM_WTSSESSION_CHANGE message.
+
+				UINT32 stateChange = 0;
+
+				switch (newState)
+				{
+					case WTSConnected:
+						if (newState != oldState)
+						{
+							stateChange = WTS_REMOTE_CONNECT;
+						}
+						break;
+
+					case WTSDisconnected:
+						if (newState != oldState)
+						{
+							stateChange = WTS_REMOTE_DISCONNECT;
+						}
+						break;
+
+					case WTSActive:
+						if (newState != oldState)
+						{
+							stateChange = WTS_SESSION_LOGON;
+						}
+						break;
+
+					default:
+						if ((oldState == WTSActive) || (oldState == WTSDisconnected))
+						{
+							stateChange = WTS_SESSION_LOGOFF;
+						}
+						break;
+				}
+
+				return stateChange;
 			}
 		}
 	}

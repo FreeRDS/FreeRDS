@@ -198,7 +198,8 @@ namespace freerds
 					return 1;
 				}
 			}
-			currentSession->setConnectState(WTSConnected);
+
+			currentSession->setConnectState(WTSActive);
 
 			mPipeName = currentSession->getPipeName();
 			return 0;
