@@ -656,9 +656,9 @@ FreeRDS_WTSEnumerateSessionsA(
 
 		cbExtra += sessionInfo.winStationName.length() + 1;
 #else
-		FDSAPI_SESSION_INFO* pSessionInfo = responseMsg.u.enumerateSessionsResponse.pSessionInfo;
+		FDSAPI_SESSION_INFO* pSessionInfo = &responseMsg.u.enumerateSessionsResponse.pSessionInfo[index];
 
-		cbExtra += pSessionInfo[index].winStationName ? strlen(pSessionInfo[index].winStationName) + 1 : 0;
+		cbExtra += pSessionInfo->winStationName ? strlen(pSessionInfo->winStationName) + 1 : 0;
 #endif
 	}
 
@@ -682,7 +682,7 @@ FreeRDS_WTSEnumerateSessionsA(
 		strcpy((LPSTR)pExtra, sessionInfo.winStationName.c_str());
 		pExtra += sessionInfo.winStationName.length() + 1;
 #else
-		FDSAPI_SESSION_INFO* pSessionInfo = responseMsg.u.enumerateSessionsResponse.pSessionInfo;
+		FDSAPI_SESSION_INFO* pSessionInfo = &responseMsg.u.enumerateSessionsResponse.pSessionInfo[index];
 
 		pSessionInfoA[index].SessionId = (DWORD)pSessionInfo->sessionId;
 		pSessionInfoA[index].pWinStationName = (LPSTR)pExtra;
@@ -867,6 +867,9 @@ FreeRDS_WTSQuerySessionInformationA(
 	if (ppBuffer == NULL) return FALSE;
 	if (pBytesReturned == NULL) return FALSE;
 
+	*ppBuffer = NULL;
+	*pBytesReturned = 0;
+
 #if USE_THRIFT
 	/* Execute session manager RPC. */
 	try
@@ -878,6 +881,9 @@ FreeRDS_WTSQuerySessionInformationA(
 	{
 		bSuccess = FALSE;
 	}
+	if (!bSuccess) return FALSE;
+
+	if (!result.returnValue) return FALSE;
 #else
 	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
 	ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
@@ -889,8 +895,10 @@ FreeRDS_WTSQuerySessionInformationA(
 	infoValue = &responseMsg.u.querySessionInformationResponse.infoValue;
 
 	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
-#endif
 	if (!bSuccess) return FALSE;
+
+	if (!responseMsg.u.querySessionInformationResponse.result) return FALSE;
+#endif
 
 	/* Return the result. */
 	switch (WTSInfoClass)

@@ -308,7 +308,7 @@ namespace freerds{
 			{
 				list.at(index).sessionId = (*session)->getSessionID();
 				list.at(index).winStationName = (*session)->getWinStationName();
-				list.at(index).connectState = WTSActive;
+				list.at(index).connectState = (*session)->getConnectState();
 				session++;
 			}
 
@@ -326,70 +326,110 @@ namespace freerds{
 			sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
 			sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
 
+			_return.returnValue = false;
+
 			if (session)
 			{
-				_return.returnValue = true;
+				WTS_CONNECTSTATE_CLASS connectState = session->getConnectState();
+				bool isClientConnected;
+
+				if ((connectState == WTSConnected) || (connectState == WTSActive))
+				{
+					isClientConnected = true;
+				}
+				else
+				{
+					isClientConnected = false;
+				}
 
 				switch (infoClass)
 				{
 					case WTSSessionId:
 						_return.infoValue.int32Value = session->getSessionID();
+						_return.returnValue = true;
 						break;
 
 					case WTSUserName:
 						_return.infoValue.stringValue = session->getUserName();
+						_return.returnValue = true;
 						break;
 
 					case WTSWinStationName:
 						_return.infoValue.stringValue = session->getWinStationName();
+						_return.returnValue = true;
 						break;
 
 					case WTSDomainName:
 						_return.infoValue.stringValue = session->getDomain();
+						_return.returnValue = true;
 						break;
 
 					case WTSConnectState:
 						_return.infoValue.int32Value = session->getConnectState();
+						_return.returnValue = true;
 						break;
 
 					case WTSClientBuildNumber:
-						_return.infoValue.int32Value = session->getClientBuildNumber();
+						if (isClientConnected)
+						{
+							_return.infoValue.int32Value = session->getClientBuildNumber();
+							_return.returnValue = true;
+						}
 						break;
 
 					case WTSClientName:
-						_return.infoValue.stringValue = session->getClientName();
+						if (isClientConnected)
+						{
+							_return.infoValue.stringValue = session->getClientName();
+							_return.returnValue = true;
+						}
 						break;
 
 					case WTSClientProductId:
-						_return.infoValue.int16Value = session->getClientProductId();
+						if (isClientConnected)
+						{
+							_return.infoValue.int16Value = session->getClientProductId();
+							_return.returnValue = true;
+						}
 						break;
 
 					case WTSClientHardwareId:
-						_return.infoValue.int32Value = session->getClientHardwareId();
+						if (isClientConnected)
+						{
+							_return.infoValue.int32Value = session->getClientHardwareId();
+							_return.returnValue = true;
+						}
 						break;
 
 					case WTSClientAddress:
-						_return.infoValue.stringValue = session->getClientAddress();
+						if (isClientConnected)
+						{
+							_return.infoValue.stringValue = session->getClientAddress();
+							_return.returnValue = true;
+						}
 						break;
 
 					case WTSClientDisplay:
-						_return.infoValue.displayValue.displayWidth = session->getClientDisplayWidth();
-						_return.infoValue.displayValue.displayHeight = session->getClientDisplayHeight();
-						_return.infoValue.displayValue.colorDepth = session->getClientDisplayColorDepth();
+						if (isClientConnected)
+						{				
+							_return.infoValue.displayValue.displayWidth = session->getClientDisplayWidth();
+							_return.infoValue.displayValue.displayHeight = session->getClientDisplayHeight();
+							_return.infoValue.displayValue.colorDepth = session->getClientDisplayColorDepth();
+							_return.returnValue = true;
+						}
 						break;
 
 					case WTSClientProtocolType:
-						_return.infoValue.int16Value = session->getClientProtocolType();
+						if (isClientConnected)
+						{
+							_return.infoValue.int16Value = session->getClientProtocolType();
+							_return.returnValue = true;
+						}
 						break;
 
 					default:
-						_return.returnValue = false;
 						break;
 				}
-			}
-			else
-			{
-				_return.returnValue = false;
 			}
 		}
 

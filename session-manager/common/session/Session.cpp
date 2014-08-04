@@ -411,6 +411,17 @@ namespace freerds
 					mCurrentState = state;
 					mCurrentStateChangeTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
 
+					if ((state != WTSConnected) && (state != WTSActive))
+					{
+						// Clear out the client information.
+						setClientName("");
+						setClientAddress("");
+						setClientBuildNumber(0);
+						setClientProductId(0);
+						setClientHardwareId(0);
+						setClientProtocolType(0);
+					}
+
 					if (stateChange != 0)
 					{
 						// Fire a session state change event.
