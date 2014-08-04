@@ -303,7 +303,7 @@ namespace freerds
 			mPropertyManager.setPropertyString(Global, 0, "auth.module","PAM");
 			mPropertyManager.setPropertyString(Global, 0, "auth.greeter","greeter");
 			mPropertyManager.setPropertyBool(Global, 0, "session.reconnect",true);
-			mPropertyManager.setPropertyNumber(Global, 0, "session.timeout",1);
+			mPropertyManager.setPropertyNumber(Global, 0, "session.timeout",60);
 
 
 
