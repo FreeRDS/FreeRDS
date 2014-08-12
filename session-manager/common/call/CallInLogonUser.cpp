@@ -140,7 +140,20 @@ namespace freerds
 				currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
 			}
 
-			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
+			if (currentSession && (currentSession->getConnectState() == WTSDisconnected))
+			{
+				// reconnect to a disconnected session
+				currentSession->setClientDisplayWidth(mWidth);
+				currentSession->setClientDisplayHeight(mHeight);
+				currentSession->setClientDisplayColorDepth(mColorDepth);
+				currentSession->setClientName(mClientName);
+				currentSession->setClientAddress(mClientAddress);
+				currentSession->setClientBuildNumber(mClientBuildNumber);
+				currentSession->setClientProductId(mClientProductId);
+				currentSession->setClientHardwareId(mClientHardwareId);
+				currentSession->setClientProtocolType(mClientProtocolType);
+			}
+			else
 			{
 				// create new Session for this request
 				currentSession = APP_CONTEXT.getSessionStore()->createSession();
