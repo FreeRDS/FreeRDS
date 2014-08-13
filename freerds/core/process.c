@@ -58,7 +58,7 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 	settings->FrameMarkerCommandEnabled = TRUE;
 	settings->SurfaceFrameMarkerEnabled = TRUE;
 
-	settings->RdpKeyFile = "freerds.pem";
+	settings->RdpKeyFile = strdup("freerds.pem");
 
 	fp = fopen(settings->RdpKeyFile, "rb");
 	if (fp == NULL)
