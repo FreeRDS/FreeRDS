@@ -48,6 +48,7 @@
 void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
 	rdpSettings* settings = client->settings;
+	FILE* fp = NULL;
 
 	settings->OsMajorType = OSMAJORTYPE_UNIX;
 	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
@@ -56,6 +57,27 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 	settings->BitmapCacheV3Enabled = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
 	settings->SurfaceFrameMarkerEnabled = TRUE;
+
+	settings->RdpKeyFile = "freerds.pem";
+
+	fp = fopen(settings->RdpKeyFile, "rb");
+	if (fp == NULL)
+	{
+		/*
+		 * This is the first time FreeRDS has been executed and
+		 * the RSA keys do not exist.  Go ahead and create them
+		 * using the OpenSSL command line utilities.
+		 */
+
+		char command[256];
+
+		sprintf(command, "openssl genrsa -out %s 1024", settings->RdpKeyFile);
+		system(command);
+	}
+	else
+	{
+		fclose(fp);
+	}
 
 	freerds_connection_init(context, settings);
 
@@ -494,8 +516,8 @@ void* freerds_connection_main_thread(void* arg)
 	app_context_add_connection(connection);
 	freerds_generate_certificate(settings);
 
-	settings->RdpSecurity = FALSE;
-	settings->TlsSecurity = TRUE;
+	settings->RdpSecurity = TRUE;
+	settings->TlsSecurity = FALSE;
 
 	/**
 	 * Disable NLA Security for now.
