@@ -517,7 +517,7 @@ void* freerds_connection_main_thread(void* arg)
 	freerds_generate_certificate(settings);
 
 	settings->RdpSecurity = TRUE;
-	settings->TlsSecurity = FALSE;
+	settings->TlsSecurity = TRUE;
 
 	/**
 	 * Disable NLA Security for now.
