@@ -65,18 +65,24 @@ SimpleGreeterWindow::SimpleGreeterWindow()
 	innerBox->setAutoFillBackground(true);
 	innerBox->setPalette(palette);
 
-	// Initialize widgets.
-	char *env = getenv("FREERDS_USER");
-	if (env)
-	{
-		usernameEdit->setText(env);
-	}
-
-	// Start a timer.
+	// Create a timer.
 	mTimer = new QTimer;
 	mTimer->setInterval(UI_TIMEOUT * 1000);
 	mTimer->setSingleShot(true);
 	connect(mTimer, SIGNAL(timeout()), this, SLOT(timeout()));
+
+	// Initialize widgets.
+	const char *domain = getenv("FREERDS_DOMAIN");
+	const char *username = getenv("FREERDS_USER");
+	if (domain && username)
+	{
+		QString text = QString("%1\\%2").arg(domain, username);
+		usernameEdit->setText(text);
+	}
+	else if (username)
+	{
+		usernameEdit->setText(username);
+	}
 
 	// Update the buttons.
 	updateButtons();
