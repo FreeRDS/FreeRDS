@@ -154,6 +154,12 @@ void SimpleGreeterWindow::on_loginButton_clicked(bool checked)
 	{
 		QMessageBox::critical(NULL, "FreeRDS", "Login failure: bad username or password");
 	}
+
+	// Clear out the password field.
+	passwordEdit->clear();
+
+	// Update the buttons.
+	updateButtons();
 }
 
 void SimpleGreeterWindow::on_cancelButton_clicked(bool checked)
