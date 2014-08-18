@@ -39,6 +39,7 @@ static HANDLE gTermEvent;
 
 void shutdown(int signal)
 {
+	fprintf(stderr, "Shutdown due to signal %d\n", signal);
 	SetEvent(gTermEvent);
 }
 
@@ -219,8 +220,14 @@ int main(int argc, char** argv)
 
 	signal(SIGINT, shutdown);
 	signal(SIGKILL, shutdown);
-	signal(SIGPIPE, shutdown);
 	signal(SIGTERM, shutdown);
+
+	/*
+	 * Ignore SIGPIPE - This can occur normally due to the use of
+	 * named pipes as a means of interprocess communication.  It
+	 * shouldn't result in terminating the entire process.
+	 */
+	signal(SIGPIPE, SIG_IGN);
 
 	pid = GetCurrentProcessId();
 
