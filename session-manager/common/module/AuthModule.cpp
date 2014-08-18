@@ -83,6 +83,9 @@ namespace freerds
 				if (!mEntryPoints.LogonUser)
 					return -1;
 
+				if (username.empty())
+					return -1;
+
 				status = mEntryPoints.LogonUser(mAuth, username.c_str(), domain.size() == 0 ? NULL : domain.c_str(), password.size() == 0 ? NULL : password.c_str());
 
 				return status;
