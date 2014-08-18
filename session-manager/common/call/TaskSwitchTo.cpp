@@ -79,10 +79,6 @@ namespace freerds
 					connection->setSessionId(mNewSessionId);
 					connection->setAbout2SwitchSessionId(0);
 				}
-				currentSession = APP_CONTEXT.getSessionStore()->getSession(mNewSessionId);
-				if (currentSession != NULL) {
-					currentSession->setConnectState(WTSConnected);
-				}
 
 				return;
 			}
