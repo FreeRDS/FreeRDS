@@ -261,7 +261,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
-	if (module->userToken == 0)
+	if (x11->commonModule.userToken == 0)
 	{
 		strcpy(startupname, "simple_greeter");
 	}
