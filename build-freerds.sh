@@ -143,7 +143,7 @@ case $LINUX_DISTRO_NAME in
     openssl-devel \
     libX11-devel libXext-devel libXinerama-devel libXcursor-devel libxkbfile-devel \
     libXv-devel libXtst-devel libXi-devel libXdamage-devel libXrandr-devel \
-    alsa-lib-devel cups-devel ffmpeg-devel
+    alsa-lib-devel cups-devel ffmpeg-devel glib2-devel
     ;;
 esac
 
