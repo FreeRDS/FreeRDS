@@ -83,9 +83,17 @@ void x11_rds_module_reset_process_informations(STARTUPINFO *si, PROCESS_INFORMAT
 int clean_up_process(PROCESS_INFORMATION *pi)
 {
 	DWORD ret = 0;
-	GetExitCodeProcess(pi->hProcess, &ret);
-	CloseHandle(pi->hProcess);
-	CloseHandle(pi->hThread);
+	if (pi->hProcess)
+	{
+		GetExitCodeProcess(pi->hProcess, &ret);
+		CloseHandle(pi->hProcess);
+		pi->hProcess = NULL;
+	}
+	if (pi->hThread)
+	{
+		CloseHandle(pi->hThread);
+		pi->hThread = NULL;
+	}
 	return ret;
 }
 
