@@ -87,6 +87,11 @@ if [ ! -d $GIT_ROOT_DIR/FreeRDP/server/FreeRDS ]; then
 fi
 
 #
+# On 64-bit platforms, point to shared objects.
+#
+export LD_LIBRARY_PATH=/usr/lib
+
+#
 # Install the correct version of CMake
 #
 case $LINUX_DISTRO_NAME in
