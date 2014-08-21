@@ -337,7 +337,7 @@ static void pbrpc_mainloop(pbRPCContext* context)
 
 	pbrpc_connect(context);
 
-	while (1)
+	while (context->isConnected)
 	{
 		nCount = 0;
 		HANDLE thandle = context->transport->get_fds(context->transport);
@@ -348,7 +348,7 @@ static void pbrpc_mainloop(pbRPCContext* context)
 
 		if (status == WAIT_FAILED)
 		{
-			continue;
+			break;
 		}
 		if (WaitForSingleObject(context->stopEvent, 0) == WAIT_OBJECT_0)
 		{
