@@ -33,7 +33,7 @@ then
 	echo "freerds-session-manager is not executable"
 	exit 0
 fi
-if [ -x $CFGDIR/startwm.sh ]
+if [ ! -x $CFGDIR/startwm.sh ]
 then
 	echo "startwm.sh is not executable"
 	exit 0
