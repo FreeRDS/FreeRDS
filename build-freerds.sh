@@ -26,6 +26,7 @@
 #
 #   Ubuntu (12.10, 13.x, 14.x)
 #   CentOS (6.x)
+#   Debian 7
 #
 #===========================================================================
 
@@ -42,7 +43,7 @@ FREERDS_INSTALL_DIR=/opt/FreeRDS
 LINUX_DISTRO_NAME=`cat /etc/issue|head -1|awk '{ print $1 }'`
 
 case $LINUX_DISTRO_NAME in
-  Ubuntu)
+  Ubuntu|Debian)
     LINUX_DISTRO_VERSION=`cat /etc/issue|head -1|awk '{ print $2 }'`
     ;;		
   CentOS)
@@ -58,7 +59,7 @@ esac
 # Fetch sources from GitHub
 #
 case $LINUX_DISTRO_NAME in
-  Ubuntu)
+  Ubuntu|Debian)
     sudo apt-get install -y git-core
     ;;
   CentOS)
@@ -95,7 +96,7 @@ export LD_LIBRARY_PATH=/usr/lib
 # Install the correct version of CMake
 #
 case $LINUX_DISTRO_NAME in
-  Ubuntu)
+  Ubuntu|Debian)
     sudo apt-get install -y build-essential
     ;;
   CentOS)
@@ -133,7 +134,7 @@ fi
 # Install FreeRDP dependencies
 #
 case $LINUX_DISTRO_NAME in
-  Ubuntu)
+  Ubuntu|Debian)
     sudo apt-get install -y \
     libssl-dev \
     libx11-dev libxext-dev libxinerama-dev libxcursor-dev libxkbfile-dev \
@@ -156,7 +157,7 @@ esac
 # Install FreeRDS dependencies
 #
 case $LINUX_DISTRO_NAME in
-  Ubuntu)
+  Ubuntu|Debian)
     sudo apt-get install -y \
     libpciaccess-dev libpam0g-dev libpng12-dev libjpeg-dev intltool \
     libexpat1-dev libxml-libxml-perl libtool bison flex xsltproc \
