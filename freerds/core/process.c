@@ -215,10 +215,6 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	}
 
 	settings = client->settings;
-	settings->BitmapCacheVersion = 2;
-	client->settings->CompressionEnabled = TRUE;
-	client->settings->CompressionLevel = PACKET_COMPR_TYPE_64K;
-
 
 	if (settings->Password)
 		settings->AutoLogonEnabled = 1;
