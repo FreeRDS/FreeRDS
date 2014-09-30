@@ -2,8 +2,8 @@
  * Freerds internal communication protocol
  * Client stubs
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef _ICP_CLIENT_STUBS_H
-#define  _ICP_CLIENT_STUBS_H
+#define _ICP_CLIENT_STUBS_H
+
 #include <winpr/wtypes.h>
 
+struct _FREERDS_ICP_LOGON_USER_DATA
+{
+	char* Username;
+	char* Password;
+	char* Domain;
+	UINT32 DesktopWidth;
+	UINT32 DesktopHeight;
+	UINT32 ColorDepth;
+	char* ClientName;
+	char* ClientAddress;
+	UINT32 ClientBuildNumber;
+	UINT32 ClientProductId;
+	UINT32 ClientHardwareId;
+	UINT32 ClientProtocolType;
+	char* InitialProgram;
+	char* ApplicationName;
+	char* WorkingDirectory;
+};
+typedef struct _FREERDS_ICP_LOGON_USER_DATA FREERDS_ICP_LOGON_USER_DATA;
 
-int freerds_icp_IsChannelAllowed(int sessionId, char *channelName, BOOL *isAllowed);
-int freerds_icp_Ping(BOOL *pong);
-int freerds_icp_GetUserSession(char *username, char * domain, UINT32 *sessionID, char **serviceEndpoint);
+int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed);
+int freerds_icp_Ping(BOOL* pong);
+int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected);
+int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff);
+int freerds_icp_LogonUser(UINT32 connectionId, FREERDS_ICP_LOGON_USER_DATA* pLogonUserData, char** serviceEndpoint);
+int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success);
+
 #endif // _ICP_CLIENT_STUBS_H

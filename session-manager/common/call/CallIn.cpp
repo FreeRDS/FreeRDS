@@ -1,8 +1,8 @@
 /**
  * Baseclass for incoming rpc calls (freerds to session manager)
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,29 +25,36 @@
 #include <string>
 #include <winpr/handle.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
-		CallIn::CallIn() {
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
+		CallIn::CallIn()
+		{
 
 		};
 
-		CallIn::~CallIn() {
+		CallIn::~CallIn()
+		{
+
 		};
 
-		void CallIn::setEncodedRequest(std::string encodedRequest) {
+		void CallIn::setEncodedRequest(std::string encodedRequest)
+		{
 			mEncodedRequest = encodedRequest;
 		}
 
-		std::string CallIn::getEncodedResponse() {
+		std::string CallIn::getEncodedResponse()
+		{
 			return mEncodedResponse;
 		}
 
-		unsigned long CallIn::getDerivedType() {
+		unsigned long CallIn::getDerivedType()
+		{
 			return 1; // for all CallIns
 		}
-
 
 		}
 	}

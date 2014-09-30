@@ -1,6 +1,5 @@
 /**
- * FreeRDP: A Remote Desktop Protocol Implementation
- * FreeRDP X11 Server
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
@@ -29,14 +28,13 @@
 #include <freerdp/codec/bitmap.h>
 
 #include "core.h"
-
-#include <pixman.h>
+#include "app_context.h"
 
 /**
  * Custom helpers
  */
 
-int freerds_set_bounds_rect(rdsConnection* connection, xrdpRect* rect)
+int freerds_set_bounds_rect(rdsConnection* connection, rdsRect* rect)
 {
 	rdpUpdate* update = connection->client->update;
 
@@ -61,33 +59,10 @@ int freerds_set_bounds_rect(rdsConnection* connection, xrdpRect* rect)
 
 int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
 {
+	connection->id = app_context_get_connectionid();
 	connection->settings = settings;
 
 	connection->bytesPerPixel = 4;
-
-	connection->bs = Stream_New(NULL, 16384);
-	connection->bts = Stream_New(NULL, 16384);
-
-	connection->rfx_s = Stream_New(NULL, 16384);
-	connection->rfx_context = rfx_context_new(TRUE);
-
-	connection->rfx_context->mode = RLGR3;
-	connection->rfx_context->width = settings->DesktopWidth;
-	connection->rfx_context->height = settings->DesktopHeight;
-
-	connection->nsc_s = Stream_New(NULL, 16384);
-	connection->nsc_context = nsc_context_new();
-
-	if (connection->bytesPerPixel == 4)
-	{
-		rfx_context_set_pixel_format(connection->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
-		nsc_context_set_pixel_format(connection->nsc_context, RDP_PIXEL_FORMAT_B8G8R8A8);
-	}
-	else if (connection->bytesPerPixel == 3)
-	{
-		rfx_context_set_pixel_format(connection->rfx_context, RDP_PIXEL_FORMAT_B8G8R8);
-		nsc_context_set_pixel_format(connection->nsc_context, RDP_PIXEL_FORMAT_B8G8R8);
-	}
 
 	connection->FrameList = ListDictionary_New(TRUE);
 
@@ -96,14 +71,7 @@ int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
 
 void freerds_connection_uninit(rdsConnection* connection)
 {
-	Stream_Free(connection->bs, TRUE);
-	Stream_Free(connection->bts, TRUE);
-
-	Stream_Free(connection->rfx_s, TRUE);
-	rfx_context_free(connection->rfx_context);
-
-	Stream_Free(connection->nsc_s, TRUE);
-	nsc_context_free(connection->nsc_context);
+	freerds_bitmap_encoder_free(connection->encoder);
 
 	ListDictionary_Free(connection->FrameList);
 }
@@ -138,8 +106,6 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	int MaxRegionWidth;
 	int MaxRegionHeight;
 	INT32 nWidth, nHeight;
-	pixman_image_t* image;
-	pixman_image_t* fbImage;
 	BITMAP_DATA* bitmapData;
 	BITMAP_UPDATE bitmapUpdate;
 	rdpUpdate* update = connection->client->update;
@@ -148,6 +114,18 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 
 	MaxRegionWidth = 64 * 4;
 	MaxRegionHeight = 64 * 1;
+
+	if ((msg->nLeftRect % 4) != 0)
+	{
+		msg->nWidth += (msg->nLeftRect % 4);
+		msg->nLeftRect -= (msg->nLeftRect % 4);
+	}
+
+	if ((msg->nTopRect % 4) != 0)
+	{
+		msg->nHeight += (msg->nTopRect % 4);
+		msg->nTopRect -= (msg->nTopRect % 4);
+	}
 
 	if ((msg->nWidth * msg->nHeight) > (MaxRegionWidth * MaxRegionHeight))
 	{
@@ -171,7 +149,7 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 				subMsg.nWidth = (i < (rows - 1)) ? MaxRegionWidth : msg->nWidth - (i * MaxRegionWidth);
 				subMsg.nHeight = (j < (cols - 1)) ? MaxRegionHeight : msg->nHeight - (j * MaxRegionHeight);
 
-				//printf("\t[%d, %d]: x: %d y: %d width: %d height; %d\n",
+				//printf("\t[%d, %d]: x: %d y: %d width: %d height: %d\n",
 				//		i, j, subMsg.nLeftRect, subMsg.nTopRect, subMsg.nWidth, subMsg.nHeight);
 
 				if ((subMsg.nWidth * subMsg.nHeight) > 0)
@@ -183,7 +161,6 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	}
 
 	tile = (BYTE*) malloc(64 * 64 * 4);
-	fbImage = (pixman_image_t*) msg->framebuffer->image;
 
 	rows = (msg->nWidth + (64 - (msg->nWidth % 64))) / 64;
 	cols = (msg->nHeight + (64 - (msg->nHeight % 64))) / 64;
@@ -192,6 +169,18 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	bitmapUpdate.count = bitmapUpdate.number = rows * cols;
 	bitmapData = (BITMAP_DATA*) malloc(sizeof(BITMAP_DATA) * bitmapUpdate.number);
 	bitmapUpdate.rectangles = bitmapData;
+
+	if ((msg->nWidth % 4) != 0)
+	{
+		msg->nLeftRect -= (msg->nWidth % 4);
+		msg->nWidth += (msg->nWidth % 4);
+	}
+
+	if ((msg->nHeight % 4) != 0)
+	{
+		msg->nTopRect -= (msg->nHeight % 4);
+		msg->nHeight += (msg->nHeight % 4);
+	}
 
 	for (i = 0; i < rows; i++)
 	{
@@ -211,6 +200,8 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 
 			if (((nWidth * nHeight) > 0) && (nWidth >= 4) && (nHeight >= 4))
 			{
+				UINT32 srcFormat = PIXEL_FORMAT_RGB32;
+
 				e = nWidth % 4;
 
 				if (e != 0)
@@ -220,8 +211,8 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 				//		k, bitmapData[k].destLeft, bitmapData[k].destTop,
 				//		bitmapData[k].destRight, bitmapData[k].destBottom, nWidth, nHeight);
 
-				s = connection->bs;
-				ts = connection->bts;
+				s = connection->encoder->bs;
+				ts = connection->encoder->bts;
 
 				Stream_SetPosition(s, 0);
 				Stream_SetPosition(ts, 0);
@@ -232,29 +223,64 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 
 				scanline = msg->framebuffer->fbScanline;
 
-				image = pixman_image_create_bits(PIXMAN_r5g6b5, nWidth, nHeight, (uint32_t*) tile, nWidth * 2);
+				if (msg->framebuffer->fbBytesPerPixel == 4)
+					srcFormat = PIXEL_FORMAT_RGB32;
+				else if (msg->framebuffer->fbBytesPerPixel == 2)
+					srcFormat = PIXEL_FORMAT_RGB16;
 
-				pixman_image_composite(PIXMAN_OP_OVER, fbImage, NULL, image,
-						bitmapData[k].destLeft, bitmapData[k].destTop, 0, 0, 0, 0, nWidth, nHeight);
+				if (bpp > 24)
+				{
+					int dstSize;
 
-				lines = freerdp_bitmap_compress((char*) pixman_image_get_data(image),
-						nWidth, nHeight, s, 16, 16384, nHeight - 1, ts, e);
-				Stream_SealLength(s);
+					buffer = connection->encoder->grid[k];
 
-				bitmapData[k].bitmapDataStream = Stream_Buffer(s);
-				bitmapData[k].bitmapLength = Stream_Length(s);
+					buffer = freerdp_bitmap_compress_planar(connection->encoder->planar_context,
+							data, srcFormat, nWidth, nHeight, scanline, buffer, &dstSize);
 
-				buffer = (BYTE*) malloc(bitmapData[k].bitmapLength);
-				CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
+					bitmapData[k].bitmapDataStream = buffer;
+					bitmapData[k].bitmapLength = dstSize;
 
-				bitmapData[k].bitmapDataStream = buffer;
+					bitmapData[k].bitsPerPixel = 32;
+					bitmapData[k].cbScanWidth = nWidth * 4;
+					bitmapData[k].cbUncompressedSize = nWidth * nHeight * 4;
+				}
+				else
+				{
+					int bytesPerPixel = 2;
+					UINT32 dstFormat = PIXEL_FORMAT_RGB16;
+
+					if (bpp == 15)
+					{
+						bytesPerPixel = 2;
+						dstFormat = PIXEL_FORMAT_RGB15;
+					}
+					else if (bpp == 24)
+					{
+						bytesPerPixel = 3;
+						dstFormat = PIXEL_FORMAT_RGB32;
+					}
+
+					freerdp_image_copy(tile, dstFormat, -1, 0, 0, nWidth, nHeight,
+							data, srcFormat, scanline, 0, 0);
+
+					lines = freerdp_bitmap_compress((char*) tile, nWidth, nHeight, s, bpp, 16384, nHeight - 1, ts, e);
+
+					Stream_SealLength(s);
+
+					bitmapData[k].bitmapDataStream = Stream_Buffer(s);
+					bitmapData[k].bitmapLength = Stream_Length(s);
+
+					buffer = connection->encoder->grid[k];
+					CopyMemory(buffer, bitmapData[k].bitmapDataStream, bitmapData[k].bitmapLength);
+					bitmapData[k].bitmapDataStream = buffer;
+
+					bitmapData[k].bitsPerPixel = bpp;
+					bitmapData[k].cbScanWidth = nWidth * bytesPerPixel;
+					bitmapData[k].cbUncompressedSize = nWidth * nHeight * bytesPerPixel;
+				}
 
 				bitmapData[k].cbCompFirstRowSize = 0;
 				bitmapData[k].cbCompMainBodySize = bitmapData[k].bitmapLength;
-				bitmapData[k].cbScanWidth = nWidth * 2;
-				bitmapData[k].cbUncompressedSize = nWidth * nHeight * 2;
-
-				pixman_image_unref(image);
 
 				k++;
 			}
@@ -264,11 +290,6 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	bitmapUpdate.count = bitmapUpdate.number = k;
 
 	IFCALL(update->BitmapUpdate, (rdpContext*) connection, &bitmapUpdate);
-
-	for (k = 0; k < bitmapUpdate.number; k++)
-	{
-		free(bitmapData[k].bitmapDataStream);
-	}
 
 	free(bitmapData);
 	free(tile);
@@ -351,7 +372,7 @@ int freerds_orders_end_paint(rdsConnection* connection)
 }
 
 int freerds_orders_rect(rdsConnection* connection, int x, int y,
-		int cx, int cy, int color, xrdpRect* rect)
+		int cx, int cy, int color, rdsRect* rect)
 {
 	OPAQUE_RECT_ORDER opaqueRect;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -372,7 +393,7 @@ int freerds_orders_rect(rdsConnection* connection, int x, int y,
 }
 
 int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
-		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect)
+		int cx, int cy, int srcx, int srcy, int rop, rdsRect* rect)
 {
 	SCRBLT_ORDER scrblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -396,7 +417,7 @@ int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
 
 int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
-		xrdpBrush* brush, xrdpRect* rect)
+		rdpBrush* brush, rdsRect* rect)
 {
 	PATBLT_ORDER patblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -411,11 +432,11 @@ int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 	patblt.backColor = (UINT32) fg_color;
 	patblt.foreColor = (UINT32) bg_color;
 
-	patblt.brush.x = brush->x_orgin;
-	patblt.brush.y = brush->y_orgin;
+	patblt.brush.x = brush->x;
+	patblt.brush.y = brush->y;
 	patblt.brush.style = brush->style;
 	patblt.brush.data = patblt.brush.p8x8;
-	CopyMemory(patblt.brush.data, brush->pattern, 8);
+	CopyMemory(patblt.brush.data, brush->data, 8);
 	patblt.brush.hatch = patblt.brush.data[0];
 
 	freerds_set_bounds_rect(connection, rect);
@@ -426,7 +447,7 @@ int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 }
 
 int freerds_orders_dest_blt(rdsConnection* connection,
-		int x, int y, int cx, int cy, int rop, xrdpRect* rect)
+		int x, int y, int cx, int cy, int rop, rdsRect* rect)
 {
 	DSTBLT_ORDER dstblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -446,7 +467,7 @@ int freerds_orders_dest_blt(rdsConnection* connection,
 	return 0;
 }
 
-int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRect* rect)
+int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, rdsRect* rect)
 {
 	LINE_TO_ORDER lineTo;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -473,7 +494,7 @@ int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRec
 
 int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
-		int srcy, int cache_idx, xrdpRect* rect)
+		int srcy, int cache_idx, rdsRect* rect)
 {
 	MEMBLT_ORDER memblt;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -499,7 +520,7 @@ int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 	return 0;
 }
 
-int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect)
+int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, rdsRect* rect)
 {
 	GLYPH_INDEX_ORDER glyphIndex;
 	rdpPrimaryUpdate* primary = connection->client->update->primary;
@@ -600,8 +621,8 @@ int freerds_orders_send_bitmap(rdsConnection* connection,
 	cache_bitmap.cacheIndex = cache_idx;
 	cache_bitmap.compressed = TRUE;
 
-	s = connection->bs;
-	ts = connection->bts;
+	s = connection->encoder->bs;
+	ts = connection->encoder->bts;
 
 	Stream_SetPosition(s, 0);
 	Stream_SetPosition(ts, 0);
@@ -725,8 +746,8 @@ int freerds_orders_send_bitmap2(rdsConnection* connection,
 	cache_bitmap_v2.compressed = TRUE;
 	cache_bitmap_v2.flags = 0;
 
-	s = connection->bs;
-	ts = connection->bts;
+	s = connection->encoder->bs;
+	ts = connection->encoder->bts;
 
 	Stream_SetPosition(s, 0);
 	Stream_SetPosition(ts, 0);
@@ -833,6 +854,9 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 	SURFACE_BITS_COMMAND cmd;
 	rdpUpdate* update = ((rdpContext*) connection)->update;
 
+	if (!msg->framebuffer->fbAttached)
+		return 0;
+
 	if ((bpp == 24) || (bpp == 32))
 	{
 		bytesPerPixel = 4;
@@ -863,33 +887,33 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 		RFX_RECT rect;
 		RFX_MESSAGE* messages;
 
-		s = connection->rfx_s;
+		s = connection->encoder->rfx_s;
 
 		rect.x = msg->nLeftRect;
 		rect.y = msg->nTopRect;
 		rect.width = msg->nWidth;
 		rect.height = msg->nHeight;
 
-		messages = rfx_encode_messages(connection->rfx_context, &rect, 1, data,
-				msg->nWidth, msg->nHeight, scanline, &numMessages,
+		messages = rfx_encode_messages(connection->encoder->rfx_context, &rect, 1, data,
+				msg->framebuffer->fbWidth, msg->framebuffer->fbHeight, scanline, &numMessages,
 				connection->settings->MultifragMaxRequestSize);
 
 		cmd.codecID = connection->settings->RemoteFxCodecId;
 
-		cmd.destLeft = msg->nLeftRect;
-		cmd.destTop = msg->nTopRect;
-		cmd.destRight = msg->nLeftRect + msg->nWidth;
-		cmd.destBottom = msg->nTopRect + msg->nHeight;
+		cmd.destLeft = 0;
+		cmd.destTop = 0;
+		cmd.destRight = msg->framebuffer->fbWidth;
+		cmd.destBottom = msg->framebuffer->fbHeight;
 
 		cmd.bpp = 32;
-		cmd.width = msg->nWidth;
-		cmd.height = msg->nHeight;
+		cmd.width = msg->framebuffer->fbWidth;
+		cmd.height = msg->framebuffer->fbHeight;
 
 		for (i = 0; i < numMessages; i++)
 		{
 			Stream_SetPosition(s, 0);
-			rfx_write_message(connection->rfx_context, s, &messages[i]);
-			rfx_message_free(connection->rfx_context, &messages[i]);
+			rfx_write_message(connection->encoder->rfx_context, s, &messages[i]);
+			rfx_message_free(connection->encoder->rfx_context, &messages[i]);
 
 			cmd.bitmapDataLength = Stream_GetPosition(s);
 			cmd.bitmapData = Stream_Buffer(s);
@@ -905,9 +929,9 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 	{
 		NSC_MESSAGE* messages;
 
-		s = connection->nsc_s;
+		s = connection->encoder->nsc_s;
 
-		messages = nsc_encode_messages(connection->nsc_context, data,
+		messages = nsc_encode_messages(connection->encoder->nsc_context, data,
 				msg->nLeftRect, msg->nTopRect, msg->nWidth, msg->nHeight,
 				scanline, &numMessages, connection->settings->MultifragMaxRequestSize);
 
@@ -918,8 +942,8 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 		{
 			Stream_SetPosition(s, 0);
 
-			nsc_write_message(connection->nsc_context, s, &messages[i]);
-			nsc_message_free(connection->nsc_context, &messages[i]);
+			nsc_write_message(connection->encoder->nsc_context, s, &messages[i]);
+			nsc_message_free(connection->encoder->nsc_context, &messages[i]);
 
 			cmd.destLeft = messages[i].x;
 			cmd.destTop = messages[i].y;

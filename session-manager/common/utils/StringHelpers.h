@@ -1,8 +1,8 @@
 /**
  * helper templates for strings
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@
 #define __STRING_HELPERS_HEADER_H
 
 #include <vector>
+#include <string>
+#include <boost/lexical_cast.hpp>
 
 template<typename T>
 std::vector<T>
@@ -28,7 +30,7 @@ split(const T & str, const T & delimiters) {
 	std::vector<T> v;
     typename T::size_type start = 0;
     typename T::size_type pos = str.find_first_of(delimiters, start);
-    while(pos != T::npos) {
+    while (pos != T::npos) {
         if(pos != start) // ignore empty tokens
         	v.push_back(str.substr(start, pos - start));
         start = pos + 1;
@@ -40,5 +42,18 @@ split(const T & str, const T & delimiters) {
     return v;
 }
 
+namespace std{
+
+	bool stringEndsWith(const string& compString, const string& suffix);
+	bool stringStartsWith(const string& string2comp, const string& startswith);
+}
+
+namespace boost {
+	template<>
+        bool lexical_cast<bool, std::string>(const std::string& arg);
+
+    template<>
+    std::string lexical_cast<std::string, bool>(const bool& b);
+}
 
 #endif

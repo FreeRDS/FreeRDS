@@ -1,7 +1,7 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright (C) Jay Sorg 2004-2012
+ * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * main include file
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#ifndef RDS_H
-#define RDS_H
+#ifndef FREERDS_H
+#define FREERDS_H
 
 #include <winpr/crt.h>
 #include <winpr/synch.h>
@@ -31,12 +29,11 @@
 
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
+#include <freerdp/channels/channels.h>
 
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
-#include <pixman.h>
-
-typedef struct xrdp_listener xrdpListener;
+typedef struct xrdp_listener rdsListener;
 
 #include "core.h"
 
@@ -49,24 +46,24 @@ void freerds_connection_delete(rdsConnection* self);
 HANDLE freerds_connection_get_term_event(rdsConnection* self);
 void* freerds_connection_main_thread(void* arg);
 
-xrdpListener* freerds_listener_create(void);
-void freerds_listener_delete(xrdpListener* self);
-int freerds_listener_main_loop(xrdpListener* self);
+rdsListener* freerds_listener_create(void);
+void freerds_listener_delete(rdsListener* self);
+int freerds_listener_main_loop(rdsListener* self);
 
-rdsModuleConnector* freerds_module_new(rdsConnection* connection);
-void freerds_module_free(rdsModuleConnector* connector);
+rdsBackendConnector* freerds_connector_new(rdsConnection* connection);
+void freerds_connector_free(rdsBackendConnector* connector);
+BOOL freerds_connector_connect(rdsBackendConnector* connector);
 
-long freerds_authenticate(char* username, char* password, int* errorcode);
+int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s);
 
 void* freerds_client_thread(void* arg);
-int freerds_client_get_event_handles(rdsModuleConnector* connector, HANDLE* events, DWORD* nCount);
-int freerds_client_check_event_handles(rdsModuleConnector* connector);
+int freerds_client_get_event_handles(rdsBackend* backend, HANDLE* events, DWORD* nCount);
+int freerds_client_check_event_handles(rdsBackend* backend);
 
-int freerds_client_inbound_connector_init(rdsModuleConnector* connector);
-int freerds_message_server_connector_init(rdsModuleConnector* connector);
+int freerds_client_inbound_connector_init(rdsBackendConnector* connector);
+int freerds_message_server_connector_init(rdsBackendConnector* connector);
 
-int freerds_message_server_queue_pack(rdsModuleConnector* connector);
-int freerds_message_server_queue_process_pending_messages(rdsModuleConnector* connector);
-int freerds_message_server_module_init(rdsModuleConnector* connector);
+int freerds_message_server_queue_pack(rdsBackendConnector* connector);
+int freerds_message_server_queue_process_pending_messages(rdsBackendConnector* backend);
 
-#endif /* RDS_H */
+#endif /* FREERDS_H */

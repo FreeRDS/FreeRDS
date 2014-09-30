@@ -1,7 +1,7 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright (C) Jay Sorg 2004-2012
+ * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * main program
  */
 
 #ifdef HAVE_CONFIG_H
@@ -30,6 +28,11 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifndef WIN32
+#include <signal.h>
+#endif
 
 #include "freerds.h"
 
@@ -40,12 +43,41 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/cmdline.h>
+#include <winpr/library.h>
+#include <winpr/wtsapi.h>
 
 #include <freerds/icp_client_stubs.h>
+#include "app_context.h"
 
-char* RdsModuleName = NULL;
 static HANDLE g_TermEvent = NULL;
-static xrdpListener* g_listen = NULL;
+static rdsListener* g_listen = NULL;
+static char* freerds_home_path = NULL;
+
+char* freerds_get_home_path()
+{
+	if (!freerds_home_path)
+	{
+		char* p;
+		int length;
+		char separator;
+		char moduleFileName[4096];
+
+		separator = PathGetSeparatorA(PATH_STYLE_NATIVE);
+		GetModuleFileNameA(NULL, moduleFileName, sizeof(moduleFileName));
+
+		p = strrchr(moduleFileName, separator);
+		*p = '\0';
+		p = strrchr(moduleFileName, separator);
+		*p = '\0';
+
+		length = strlen(moduleFileName);
+		freerds_home_path = (char*) malloc(length + 1);
+		CopyMemory(freerds_home_path, moduleFileName, length);
+		freerds_home_path[length] = '\0';
+	}
+
+	return freerds_home_path;
+}
 
 COMMAND_LINE_ARGUMENT_A freerds_args[] =
 {
@@ -102,6 +134,11 @@ int main(int argc, char** argv)
 	char text[256];
 	char pid_file[256];
 	COMMAND_LINE_ARGUMENT_A* arg;
+#ifndef WIN32
+	sigset_t set;
+#endif
+
+	WTSRegisterWtsApiFunctionTable(FreeRDP_InitWtsApi());
 
 	no_daemon = kill_process = 0;
 
@@ -127,10 +164,6 @@ int main(int argc, char** argv)
 		CommandLineSwitchCase(arg, "nodaemon")
 		{
 			no_daemon = 1;
-		}
-		CommandLineSwitchCase(arg, "module")
-		{
-			RdsModuleName = _strdup(arg->Value);
 		}
 
 		CommandLineSwitchEnd(arg)
@@ -207,6 +240,12 @@ int main(int argc, char** argv)
 		DeleteFileA(pid_file);
 	}
 
+#ifndef WIN32
+	/* block all signals per default */
+	sigfillset(&set);
+	sigprocmask(SIG_BLOCK, &set, NULL);
+#endif
+
 	if (!no_daemon)
 	{
 		/* start of daemonizing code */
@@ -251,33 +290,41 @@ int main(int argc, char** argv)
 		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		/* end of daemonizing code */
 	}
+#ifndef WIN32
+	/* unbock required signals */
+	sigemptyset(&set);
+	sigaddset(&set, SIGINT);
+	sigaddset(&set, SIGPIPE);
+	sigaddset(&set, SIGTERM);
+	sigprocmask(SIG_UNBLOCK, &set, NULL);
+#endif
 
 	g_listen = freerds_listener_create();
 
 	signal(SIGINT, freerds_shutdown);
-	signal(SIGKILL, freerds_shutdown);
+	signal(SIGTERM, freerds_shutdown);
 	signal(SIGPIPE, pipe_sig);
-	signal(SIGPIPE, freerds_shutdown);
 
 	pid = GetCurrentProcessId();
 
+	freerds_get_home_path();
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	printf("starting icp and waiting for session manager \n");
+	app_context_init();
+
 	freerds_icp_start();
-	printf("connected to session manager\n");
 
 	freerds_listener_main_loop(g_listen);
 	freerds_listener_delete(g_listen);
 
 	CloseHandle(g_TermEvent);
+	freerds_icp_shutdown();
+	app_context_uninit();
 
 	/* only main process should delete pid file */
 	if ((!no_daemon) && (pid == GetCurrentProcessId()))
 	{
 		DeleteFileA(pid_file);
 	}
-
-	freerds_icp_shutdown();
 
 	return 0;
 }

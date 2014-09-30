@@ -3,6 +3,8 @@
  * CEF Server Module
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +28,20 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/pipe.h>
+#include <winpr/environment.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
 #include "cef_module.h"
+#include "../common/module_helper.h"
+
+RDS_MODULE_CONFIG_CALLBACKS gConfig;
+RDS_MODULE_STATUS_CALLBACKS gStatus;
+
 
 struct rds_module_cef
 {
@@ -79,6 +87,8 @@ char * cef_rds_module_start(RDS_MODULE_COMMON * module)
 	DWORD SessionId = cef->commonModule.sessionId;
 	HANDLE hClientPipe;
 	char* pipeName;
+	long xres, yres, colordepth;
+
 
 	WLog_Print(cef->log, WLOG_DEBUG, "RdsModuleStart: SessionId: %d Endpoint: %s",
 			(int) SessionId, endpoint);
@@ -89,8 +99,13 @@ char * cef_rds_module_start(RDS_MODULE_COMMON * module)
 	cef->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(cef->pi), sizeof(PROCESS_INFORMATION));
 
+
+	initResolutions(cef->commonModule.baseConfigPath , &gConfig , cef->commonModule.sessionId
+			, &cef->commonModule.envBlock , &xres , &yres , &colordepth);
+
+
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /session-id:%d /width:%d /height:%d",
-			"freerds-cef", (int) SessionId, 1024, 768);
+			"freerds-cef", (int) SessionId, (int)xres, (int)yres);
 
 	WLog_Print(cef->log, WLOG_DEBUG, "Starting process with command line: %s", lpCommandLine);
 
@@ -135,6 +150,10 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 
 	pEntryPoints->Start = cef_rds_module_start;
 	pEntryPoints->Stop = cef_rds_module_stop;
+
+	gStatus = pEntryPoints->status;
+	gConfig = pEntryPoints->config;
+
 
 	return 0;
 }

@@ -2,8 +2,8 @@
  * FreeRDS internal communication protocol
  * Main functionality
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 Bernhard Miklautz <bmiklautz@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 Bernhard Miklautz <bernhard.miklautz@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <freerds/icp.h>
 #include "pbrpc.h"
 #include "pipe_transport.h"
@@ -25,21 +26,22 @@
 
 struct icp_context
 {
-	pbRPCContext *pbcontext;
-	pbRPCTransportContext *tpcontext;
+	pbRPCContext* pbcontext;
+	pbRPCTransportContext* tpcontext;
 };
 
-static struct icp_context *icpContext = NULL;
+static struct icp_context* icpContext = NULL;
 
 static pbRPCMethod icpMethods[] =
 {
-	{FREERDS__ICP__MSGTYPE__Ping, ping},
-	{0, NULL}
+	{ FREERDS__ICP__MSGTYPE__Ping, ping },
+	{ FREERDS__ICP__MSGTYPE__SwitchTo, switchTo},
+	{ FREERDS__ICP__MSGTYPE__LogOffUserSession, logOffUserSession},
+	{ 0, NULL }
 };
 
 int freerds_icp_start()
 {
-
 	icpContext = malloc(sizeof(struct icp_context));
 	icpContext->tpcontext = tp_npipe_new();
 	icpContext->pbcontext = pbrpc_server_new(icpContext->tpcontext);
@@ -58,7 +60,7 @@ int freerds_icp_shutdown()
 	return 0;
 }
 
-void *freerds_icp_get_context()
+void* freerds_icp_get_context()
 {
 	return icpContext->pbcontext;
 }

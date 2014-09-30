@@ -37,31 +37,36 @@
 #include <sys/select.h>
 #include <sys/signal.h>
 
-#include <freerds/module_connector.h>
+#include <freerds/auth.h>
 #include <freerds/icp_client_stubs.h>
-#include "makecert.h"
+
+#include <winpr/tools/makecert.h>
 
 #include "channels.h"
+#include "app_context.h"
 
 void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
 	rdpSettings* settings = client->settings;
 
+	settings->OsMajorType = OSMAJORTYPE_UNIX;
+	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
 	settings->ColorDepth = 32;
 	settings->RemoteFxCodec = TRUE;
 	settings->BitmapCacheV3Enabled = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
+	settings->SurfaceFrameMarkerEnabled = TRUE;
 
 	freerds_connection_init(context, settings);
-	context->client = client;
 
-	context->vcm = WTSCreateVirtualChannelManager(client);
+	context->client = client;
+	context->vcm = WTSOpenServerA((LPSTR) client->context);
 }
 
 void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
 {
 	freerds_connection_uninit(context);
-	WTSDestroyVirtualChannelManager(context->vcm);
+	WTSCloseServer((HANDLE) context->vcm);
 }
 
 rdsConnection* freerds_connection_create(freerdp_peer* client)
@@ -76,6 +81,7 @@ rdsConnection* freerds_connection_create(freerdp_peer* client)
 	xfp = (rdsConnection*) client->context;
 
 	xfp->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	xfp->notifications = MessageQueue_New(NULL);
 
 	xfp->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) freerds_connection_main_thread, client, 0, NULL);
 
@@ -125,11 +131,11 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
 		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
 
-	if ((DesktopWidth % 4) != 0)
-		DesktopWidth += (DesktopWidth % 4);
+	//if ((DesktopWidth % 4) != 0)
+	//	DesktopWidth += (DesktopWidth % 4);
 
-	if ((DesktopHeight % 4) != 0)
-		DesktopHeight += (DesktopHeight % 4);
+	//if ((DesktopHeight % 4) != 0)
+	//	DesktopHeight += (DesktopHeight % 4);
 
 	if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight)
 			|| (ColorDepth != settings->ColorDepth))
@@ -147,59 +153,96 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 
 	freerds_channels_post_connect(connection);
 
+	connection->encoder = freerds_bitmap_encoder_new(settings->DesktopWidth,
+			settings->DesktopHeight, settings->ColorDepth);
+
 	return TRUE;
+}
+
+int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
+{
+	RDS_MSG_CAPABILITIES capabilities;
+
+	ZeroMemory(&capabilities, sizeof(RDS_MSG_CAPABILITIES));
+	capabilities.type = RDS_CLIENT_CAPABILITIES;
+	capabilities.Version = 1;
+	capabilities.DesktopWidth = settings->DesktopWidth;
+	capabilities.DesktopHeight = settings->DesktopHeight;
+	capabilities.KeyboardLayout = settings->KeyboardLayout;
+	capabilities.KeyboardType = settings->KeyboardType;
+	capabilities.KeyboardSubType = settings->KeyboardSubType;
+
+	freerds_write_capabilities(s, &capabilities);
+
+	return freerds_named_pipe_write(hClientPipe, Stream_Buffer(s), Stream_GetPosition(s));
 }
 
 BOOL freerds_peer_activate(freerdp_peer* client)
 {
-	rdpSettings* settings;
-	rdsConnection* connection = (rdsConnection*) client->context;
-	int auth_status;
 	int error_code;
-	HANDLE hClientPipe;
+	char* endpoint;
+	rdpSettings* settings;
+	FREERDS_ICP_LOGON_USER_DATA LogonUserData;
+	rdsConnection* connection = (rdsConnection*) client->context;
+	rdsBackendConnector* connector = connection->connector;
+
+	if (connector)
+	{
+		fprintf(stderr, "reactivation\n");
+		return TRUE;
+	}
 
 	settings = client->settings;
 	settings->BitmapCacheVersion = 2;
+	client->settings->CompressionEnabled = TRUE;
+	client->settings->CompressionLevel = PACKET_COMPR_TYPE_64K;
+
 
 	if (settings->Password)
 		settings->AutoLogonEnabled = 1;
 
-	if (settings->RemoteFxCodec || settings->NSCodec)
-		connection->codecMode = TRUE;
+	// TODO: add NS codec in the candidates as soon as the encoder will be able
+	//  	to create pdu that fit in fastpath pdu max size
+	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
+							settings->SurfaceFrameMarkerEnabled);
+	
+	fprintf(stderr, "codec mode %d\n", connection->codecMode);
 
-	auth_status = freerds_authenticate(settings->Username, settings->Password, &error_code);
+	ZeroMemory(&LogonUserData, sizeof(FREERDS_ICP_LOGON_USER_DATA));
 
-	if (!connection->connector)
-		connection->connector = freerds_module_connector_new(connection);
+	LogonUserData.Username = settings->Username;
+	LogonUserData.Password = settings->Password;
+	LogonUserData.Domain = settings->Domain;
+	LogonUserData.DesktopWidth = settings->DesktopWidth;
+	LogonUserData.DesktopHeight = settings->DesktopHeight;
+	LogonUserData.ColorDepth = settings->ColorDepth;
+	LogonUserData.ClientName = settings->ClientHostname;
+	LogonUserData.ClientAddress = settings->ClientAddress;
+	LogonUserData.ClientBuildNumber = settings->ClientBuild;
+	LogonUserData.ClientProductId = 1;
+	LogonUserData.ClientHardwareId = 0;
+	LogonUserData.ClientProtocolType = 2;
+	LogonUserData.InitialProgram = NULL;
+	LogonUserData.ApplicationName = NULL;
+	LogonUserData.WorkingDirectory = NULL;
 
-	error_code = freerds_icp_GetUserSession(settings->Username, settings->Domain,
-	(UINT32 *)(&(connection->connector->SessionId)), (&(connection->connector->Endpoint)));
+	error_code = freerds_icp_LogonUser((UINT32)(connection->id), &LogonUserData, &endpoint);
+
 	if (error_code != 0)
 	{
-		printf("freerds_icp_GetUserSession failed %d\n", error_code);
+		fprintf(stderr, "freerds_icp_LogonUser failed %d\n", error_code);
 		return FALSE;
 	}
-	hClientPipe = freerds_named_pipe_connect(connection->connector->Endpoint, 20);
 
-	if (!hClientPipe)
-	{
-		fprintf(stderr, "Failed to create named pipe %s\n", connection->connector->Endpoint);
+	if (!connector)
+		connection->connector = connector = freerds_connector_new(connection);
+
+	connector->Endpoint = endpoint;
+
+	if (!freerds_connector_connect(connector))
 		return FALSE;
-	}
-	printf("Connected to session %d\n", connection->connector->SessionId);
 
-	connection->connector->hClientPipe = hClientPipe;
-	connection->connector->GetEventHandles = freerds_client_get_event_handles;
-	connection->connector->CheckEventHandles = freerds_client_check_event_handles;
-
-	connection->connector->ServerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) freerds_client_thread,
-			(void*) connection->connector, CREATE_SUSPENDED, NULL);
-
-	freerds_client_inbound_connector_init(connection->connector);
-
-	ResumeThread(connection->connector->ServerThread);
-
-	printf("Client Activated\n");
+	fprintf(stderr, "Client Activated\n");
 
 	return TRUE;
 }
@@ -264,13 +307,13 @@ int freerds_generate_certificate(rdpSettings* settings)
 void freerds_input_synchronize_event(rdpInput* input, UINT32 flags)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModuleConnector* connector = connection->connector;
+	rdsBackend* backend = (rdsBackend *)connection->connector;
 
-	if (connector)
+	if (backend)
 	{
-		if (connector->client->SynchronizeKeyboardEvent)
+		if (backend->client->SynchronizeKeyboardEvent)
 		{
-			connector->client->SynchronizeKeyboardEvent(connector, flags);
+			backend->client->SynchronizeKeyboardEvent(backend, flags);
 		}
 	}
 }
@@ -278,13 +321,13 @@ void freerds_input_synchronize_event(rdpInput* input, UINT32 flags)
 void freerds_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModuleConnector* connector = connection->connector;
+	rdsBackend* backend = (rdsBackend *)connection->connector;
 
-	if (connector)
+	if (backend)
 	{
-		if (connector->client->ScancodeKeyboardEvent)
+		if (backend->client->ScancodeKeyboardEvent)
 		{
-			connector->client->ScancodeKeyboardEvent(connector, flags, code, connection->settings->KeyboardType);
+			backend->client->ScancodeKeyboardEvent(backend, flags, code, connection->settings->KeyboardType);
 		}
 	}
 }
@@ -292,13 +335,13 @@ void freerds_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 void freerds_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModuleConnector* connector = connection->connector;
+	rdsBackend* backend = (rdsBackend *)connection->connector;
 
-	if (connector)
+	if (backend)
 	{
-		if (connector->client->UnicodeKeyboardEvent)
+		if (backend->client->UnicodeKeyboardEvent)
 		{
-			connector->client->UnicodeKeyboardEvent(connector, flags, code);
+			backend->client->UnicodeKeyboardEvent(backend, flags, code);
 		}
 	}
 }
@@ -306,13 +349,13 @@ void freerds_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 
 void freerds_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModuleConnector* connector = connection->connector;
+	rdsBackend* backend = (rdsBackend *)connection->connector;
 
-	if (connector)
+	if (backend)
 	{
-		if (connector->client->MouseEvent)
+		if (backend->client->MouseEvent)
 		{
-			connector->client->MouseEvent(connector, flags, x, y);
+			backend->client->MouseEvent(backend, flags, x, y);
 		}
 	}
 }
@@ -320,13 +363,13 @@ void freerds_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y
 void freerds_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
-	rdsModuleConnector* connector = connection->connector;
+	rdsBackend* backend = (rdsBackend *)connection->connector;
 
-	if (connector)
+	if (backend)
 	{
-		if (connector->client->ExtendedMouseEvent)
+		if (backend->client->ExtendedMouseEvent)
 		{
-			connector->client->ExtendedMouseEvent(connector, flags, x, y);
+			backend->client->ExtendedMouseEvent(backend, flags, x, y);
 		}
 	}
 }
@@ -354,6 +397,75 @@ void freerds_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
 	}
 }
 
+void freerds_suppress_output(rdpContext* context, BYTE allow, RECTANGLE_16* area)
+{
+	rdsConnection* connection = (rdsConnection*) context;
+	rdsBackend* backend = (rdsBackend *)connection->connector;
+
+	if (backend && backend->client && backend->client->SuppressOutput)
+		backend->client->SuppressOutput(backend, allow);
+}
+
+BOOL freerds_client_process_switch_session(rdsConnection* connection, wMessage* message)
+{
+	int error = 0;
+	BOOL status = FALSE;
+	rdsBackendConnector* connector = NULL;
+	struct rds_notification_msg_switch *notification = (struct rds_notification_msg_switch*) message->wParam;
+
+	freerds_connector_free(connection->connector);
+	connection->connector = connector = freerds_connector_new(connection);
+	connector->Endpoint = notification->endpoint;
+
+	status = freerds_connector_connect(connector);
+
+	error = freerds_icp_sendResponse(notification->tag, message->id, 0, status);
+	free(notification);
+
+	if (error != 0)
+	{
+		fprintf(stderr, "problem occured while switching session \n");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+BOOL freerds_client_process_logoff(rdsConnection* connection, wMessage* message)
+{
+	int error = 0;
+	struct rds_notification_msg_logoff *notification = (struct rds_notification_msg_logoff*) message->wParam;
+	freerds_connector_free(connection->connector);
+	connection->connector = NULL;
+
+	connection->client->Close(connection->client);
+
+	error = freerds_icp_sendResponse(notification->tag, message->id, 0, TRUE);
+	free(notification);
+	return FALSE;
+}
+
+BOOL freerds_client_process_notification(rdsConnection* connection, wMessage* message)
+{
+	BOOL status = FALSE;
+
+	switch (message->id)
+	{
+		case NOTIFY_SWITCHTO:
+			status = freerds_client_process_switch_session(connection, message);
+			break;
+
+		case NOTIFY_LOGOFF:
+			status = freerds_client_process_logoff(connection, message);
+			break;
+
+		default:
+			fprintf(stderr, "%s: unhandled message 0x%x\n", __FUNCTION__, message->id);
+			break;
+	}
+
+	return status;
+}
+
 void* freerds_connection_main_thread(void* arg)
 {
 	DWORD status;
@@ -363,20 +475,32 @@ void* freerds_connection_main_thread(void* arg)
 	HANDLE ChannelEvent;
 	HANDLE LocalTermEvent;
 	HANDLE GlobalTermEvent;
+	HANDLE NotificationEvent;
 	rdsConnection* connection;
 	rdpSettings* settings;
-	rdsModuleConnector* connector;
+	rdsBackendConnector* connector = NULL;
 	freerdp_peer* client = (freerdp_peer*) arg;
+	BOOL disconnected = FALSE;
+#ifndef WIN32
+	sigset_t set;
+	int ret;
+#endif
 
 	fprintf(stderr, "We've got a client %s\n", client->hostname);
 
 	connection = (rdsConnection*) client->context;
 	settings = client->settings;
 
+	app_context_add_connection(connection);
 	freerds_generate_certificate(settings);
 
 	settings->RdpSecurity = FALSE;
 	settings->TlsSecurity = TRUE;
+
+	/**
+	 * Disable NLA Security for now.
+	 * TODO: make this a configurable option.
+	 */
 	settings->NlaSecurity = FALSE;
 
 	client->Capabilities = freerds_peer_capabilities;
@@ -388,13 +512,21 @@ void* freerds_connection_main_thread(void* arg)
 	freerds_input_register_callbacks(client->input);
 
 	client->update->SurfaceFrameAcknowledge = freerds_update_frame_acknowledge;
+	client->update->SuppressOutput = freerds_suppress_output;
 
 	ClientEvent = client->GetEventHandle(client);
 	ChannelEvent = WTSVirtualChannelManagerGetEventHandle(connection->vcm);
 
 	GlobalTermEvent = g_get_term_event();
 	LocalTermEvent = connection->TermEvent;
-
+	NotificationEvent = MessageQueue_Event(connection->notifications);
+#ifndef WIN32
+	sigemptyset(&set);
+	sigaddset(&set, SIGPIPE);
+	ret = pthread_sigmask(SIG_BLOCK, &set, NULL);
+	if (0 != ret)
+		fprintf(stderr, "couldn't block SIGPIPE\n");
+#endif
 	while (1)
 	{
 		nCount = 0;
@@ -402,24 +534,27 @@ void* freerds_connection_main_thread(void* arg)
 		events[nCount++] = ChannelEvent;
 		events[nCount++] = GlobalTermEvent;
 		events[nCount++] = LocalTermEvent;
+		events[nCount++] = NotificationEvent;
 
 		if (client->activated)
 		{
-			connector = (rdsModuleConnector*) connection->connector;
+			connector = (rdsBackendConnector*) connection->connector;
 
-			if (connector)
-				connector->GetEventHandles(connection->connector, events, &nCount);
+			if (connector && connector->GetEventHandles)
+				connector->GetEventHandles((rdsBackend *)connector, events, &nCount);
 		}
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
 		if (WaitForSingleObject(GlobalTermEvent, 0) == WAIT_OBJECT_0)
 		{
+			fprintf(stderr, "GlobalTermEvent\n");
 			break;
 		}
 
 		if (WaitForSingleObject(LocalTermEvent, 0) == WAIT_OBJECT_0)
 		{
+			fprintf(stderr, "LocalTermEvent\n");
 			break;
 		}
 
@@ -443,22 +578,37 @@ void* freerds_connection_main_thread(void* arg)
 
 		if (client->activated)
 		{
-			connector = (rdsModuleConnector*) connection->connector;
-
-			if (connector)
+			if (connector && connector->CheckEventHandles)
 			{
-				if (connector->CheckEventHandles(connection->connector) < 0)
+				if (connector->CheckEventHandles((rdsBackend *)connector) < 0)
 				{
 					fprintf(stderr, "ModuleClient->CheckEventHandles failure\n");
 					break;
 				}
 			}
 		}
+		if (WaitForSingleObject(NotificationEvent, 0) == WAIT_OBJECT_0)
+		{
+			wMessage message;
+
+			MessageQueue_Peek(connection->notifications, (void *)(&message), TRUE);
+
+			if (!freerds_client_process_notification(connection, &message))
+				break;
+		}
 	}
 
 	fprintf(stderr, "Client %s disconnected.\n", client->hostname);
 
+	if (connection->connector)
+	{
+		freerds_connector_free(connection->connector);
+		connection->connector = 0;
+
+		freerds_icp_DisconnectUserSession(connection->id, &disconnected);
+	}
 	client->Disconnect(client);
+	app_context_remove_connection(connection->id);
 
 	freerdp_peer_context_free(client);
 	freerdp_peer_free(client);

@@ -1,7 +1,7 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright (C) Jay Sorg 2004-2012
+ * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * listen for incoming connection
  */
 
 #ifdef HAVE_CONFIG_H
@@ -36,22 +34,22 @@ void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 	freerds_connection_create(client);
 }
 
-xrdpListener* freerds_listener_create(void)
+rdsListener* freerds_listener_create(void)
 {
 	freerdp_listener* listener;
 
 	listener = freerdp_listener_new();
 	listener->PeerAccepted = freerds_peer_accepted;
 
-	return (xrdpListener*) listener;
+	return (rdsListener*) listener;
 }
 
-void freerds_listener_delete(xrdpListener* self)
+void freerds_listener_delete(rdsListener* self)
 {
 	freerdp_listener_free((freerdp_listener*) self);
 }
 
-int freerds_listener_main_loop(xrdpListener* self)
+int freerds_listener_main_loop(rdsListener* self)
 {
 	DWORD status;
 	DWORD nCount;

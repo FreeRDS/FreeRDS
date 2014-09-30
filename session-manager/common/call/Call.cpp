@@ -1,8 +1,8 @@
 /**
  * Baseclass of an rpc call
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,12 @@
 #include <string>
 #include <winpr/handle.h>
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
-
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
 		Call::Call():mTag(0),mResult(0) {
 
 		};
@@ -55,4 +57,3 @@ namespace freerds{
 		}
 	}
 }
-

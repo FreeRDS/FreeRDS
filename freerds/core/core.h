@@ -1,6 +1,5 @@
 /**
- * FreeRDP: A Remote Desktop Protocol Implementation
- * FreeRDP X11 Server
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
@@ -17,13 +16,14 @@
  * limitations under the License.
  */
 
-#ifndef FREERDP_RDS_NG_CORE_H
-#define FREERDP_RDS_NG_CORE_H
+#ifndef FREERDS_CORE_H
+#define FREERDS_CORE_H
 
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
 #include <freerdp/codec/rfx.h>
 #include <freerdp/codec/nsc.h>
+#include <freerdp/codec/bitmap.h>
 
 #include <freerdp/channels/wtsvc.h>
 #include <freerdp/server/cliprdr.h>
@@ -34,34 +34,27 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-#include <freerds/freerds.h>
+#include <freerds/backend.h>
 
-#include "freerds.h"
+#include "encoder.h"
 
-struct xrdp_brush
-{
-	int x_orgin;
-	int y_orgin;
-	int style;
-	char pattern[8];
-};
-typedef struct xrdp_brush xrdpBrush;
+typedef struct rds_backend_connector rdsBackendConnector;
 
-struct RDS_RECT
+struct rds_rect
 {
 	int left;
 	int top;
 	int right;
 	int bottom;
 };
-typedef struct RDS_RECT xrdpRect;
+typedef struct rds_rect rdsRect;
 
 struct rds_connection
 {
 	rdpContext context;
 
 	long id;
-	rdsModuleConnector* connector;
+	rdsBackendConnector* connector;
 	HANDLE Thread;
 	HANDLE TermEvent;
 	freerdp_peer* client;
@@ -69,24 +62,49 @@ struct rds_connection
 
 	BOOL codecMode;
 	int bytesPerPixel;
-
-	wStream* bs;
-	wStream* bts;
-
-	wStream* rfx_s;
-	RFX_CONTEXT* rfx_context;
-
-	wStream* nsc_s;
-	NSC_CONTEXT* nsc_context;
+	rdsBitmapEncoder* encoder;
 
 	UINT32 frameId;
 	wListDictionary* FrameList;
 
-	WTSVirtualChannelManager* vcm;
+	HANDLE vcm;
 	CliprdrServerContext* cliprdr;
 	RdpdrServerContext* rdpdr;
 	RdpsndServerContext* rdpsnd;
 	DrdynvcServerContext* drdynvc;
+	wMessageQueue* notifications;
+};
+
+
+struct rds_backend_connector
+{
+	DEFINE_BACKEND_COMMON();
+
+	int MaxFps;
+	int fps;
+	wLinkedList* ServerList;
+	wMessageQueue* ServerQueue;
+	rdsServerInterface* ServerProxy;
+	freerdp* instance;
+	rdpSettings* settings;
+	rdsConnection* connection;
+};
+
+struct rds_notification_msg_switch
+{
+	UINT32 tag;
+	char *endpoint;
+};
+
+struct rds_notification_msg_logoff
+{
+	UINT32 tag;
+};
+
+enum notifications
+{
+	NOTIFY_SWITCHTO = 0,
+	NOTIFY_LOGOFF,
 };
 
 #ifdef __cplusplus
@@ -111,25 +129,25 @@ FREERDP_API int freerds_orders_begin_paint(rdsConnection* connection);
 FREERDP_API int freerds_orders_end_paint(rdsConnection* connection);
 
 FREERDP_API int freerds_orders_rect(rdsConnection* connection, int x, int y,
-		int cx, int cy, int color, xrdpRect* rect);
+		int cx, int cy, int color, rdsRect* rect);
 
 FREERDP_API int freerds_orders_screen_blt(rdsConnection* connection, int x, int y,
-		int cx, int cy, int srcx, int srcy, int rop, xrdpRect* rect);
+		int cx, int cy, int srcx, int srcy, int rop, rdsRect* rect);
 
 FREERDP_API int freerds_orders_pat_blt(rdsConnection* connection, int x, int y,
 		int cx, int cy, int rop, int bg_color, int fg_color,
-		xrdpBrush* brush, xrdpRect* rect);
+		rdpBrush* brush, rdsRect* rect);
 
 FREERDP_API int freerds_orders_dest_blt(rdsConnection* connection,
-		int x, int y, int cx, int cy, int rop, xrdpRect* rect);
+		int x, int y, int cx, int cy, int rop, rdsRect* rect);
 
-FREERDP_API int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, xrdpRect* rect);
+FREERDP_API int freerds_orders_line(rdsConnection* connection, RDS_MSG_LINE_TO* msg, rdsRect* rect);
 
 FREERDP_API int freerds_orders_mem_blt(rdsConnection* connection, int cache_id,
 		int color_table, int x, int y, int cx, int cy, int rop, int srcx,
-		int srcy, int cache_idx, xrdpRect* rect);
+		int srcy, int cache_idx, rdsRect* rect);
 
-FREERDP_API int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, xrdpRect* rect);
+FREERDP_API int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_INDEX* msg, rdsRect* rect);
 
 FREERDP_API int freerds_orders_send_palette(rdsConnection* connection, int* palette, int cache_id);
 
@@ -170,9 +188,10 @@ FREERDP_API int freerds_window_new_update(rdsConnection* connection, RDS_MSG_WIN
 
 FREERDP_API int freerds_window_delete(rdsConnection* connection, RDS_MSG_WINDOW_DELETE* msg);
 
+
 #ifdef __cplusplus
 }
 #endif
 
 
-#endif /* FREERDP_RDS_NG_CORE_H */
+#endif /* FREERDS_CORE_H */

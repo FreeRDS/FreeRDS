@@ -30,8 +30,7 @@
 #include <freerdp/api.h>
 #include <freerdp/freerdp.h>
 
-#include <freerds/freerds.h>
-#include <freerds/service_helper.h>
+#include <freerds/backend.h>
 
 typedef struct rds_context rdsContext;
 
@@ -44,7 +43,7 @@ struct rds_context
 	rdpSettings* settings;
 
 	DWORD SessionId;
-	rdsService* service;
+	rdsBackendService* service;
 
 	wLog* log;
 

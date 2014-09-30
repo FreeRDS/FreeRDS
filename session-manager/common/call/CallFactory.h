@@ -1,8 +1,8 @@
 /**
  * Factory for rpc calls
  *
- * Copyright 2013 Thinstuff Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thinstuff.at>
+ * Copyright 2013 Thincast Technologies GmbH
+ * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,12 @@
 
 #define CALL_FACTORY freerds::sessionmanager::call::CallFactory::instance()
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace call{
+namespace freerds
+{
+	namespace sessionmanager
+	{
+		namespace call
+		{
 
 		/**
 		* @class	PacketFactory.
@@ -40,8 +43,8 @@ namespace freerds{
 		* @author	Martin Haimberger
 		*/
 
-		class CallFactory :public FactoryBase<Call,unsigned long>, public SingletonBase<CallFactory>  {
-
+		class CallFactory :public FactoryBase<Call,unsigned long>, public SingletonBase<CallFactory>
+		{
 			SINGLETON_ADD_INITIALISATION(CallFactory)
 		};
 
