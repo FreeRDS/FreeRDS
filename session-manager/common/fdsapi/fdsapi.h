@@ -8,6 +8,7 @@
 #define fdsapi_H
 
 #include <thrift/TDispatchProcessor.h>
+
 #include "fdsapi_types.h"
 
 namespace freerds {
@@ -15,16 +16,16 @@ namespace freerds {
 class fdsapiIf {
  public:
   virtual ~fdsapiIf() {}
-  virtual TINT32 ping(const TINT32 input) = 0;
-  virtual TINT32 authenticateUser(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& username, const TSTRING& password, const TSTRING& domain) = 0;
-  virtual void virtualChannelOpen(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName) = 0;
-  virtual void virtualChannelOpenEx(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName, const TINT32 flags) = 0;
-  virtual TBOOL virtualChannelClose(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName) = 0;
-  virtual TBOOL disconnectSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait) = 0;
-  virtual TBOOL logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait) = 0;
-  virtual TBOOL shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag) = 0;
-  virtual void enumerateSessions(TReturnEnumerateSessions& _return, const TSTRING& authToken, const TINT32 Version) = 0;
-  virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass) = 0;
+  virtual INT32 ping(const INT32 input) = 0;
+  virtual INT32 authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain) = 0;
+  virtual void virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName) = 0;
+  virtual void virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags) = 0;
+  virtual bool virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName) = 0;
+  virtual bool disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait) = 0;
+  virtual bool logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait) = 0;
+  virtual bool shutdownSystem(const std::string& authToken, const INT32 shutdownFlag) = 0;
+  virtual void enumerateSessions(TReturnEnumerateSessions& _return, const std::string& authToken, const INT32 Version) = 0;
+  virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass) = 0;
 };
 
 class fdsapiIfFactory {
@@ -54,40 +55,40 @@ class fdsapiIfSingletonFactory : virtual public fdsapiIfFactory {
 class fdsapiNull : virtual public fdsapiIf {
  public:
   virtual ~fdsapiNull() {}
-  TINT32 ping(const TINT32 /* input */) {
-    TINT32 _return = 0;
+  INT32 ping(const INT32 /* input */) {
+    INT32 _return = 0;
     return _return;
   }
-  TINT32 authenticateUser(const TSTRING& /* authToken */, const TINT32 /* sessionId */, const TSTRING& /* username */, const TSTRING& /* password */, const TSTRING& /* domain */) {
-    TINT32 _return = 0;
+  INT32 authenticateUser(const std::string& /* authToken */, const INT32 /* sessionId */, const std::string& /* username */, const std::string& /* password */, const std::string& /* domain */) {
+    INT32 _return = 0;
     return _return;
   }
-  void virtualChannelOpen(TSTRING& /* _return */, const TSTRING& /* authToken */, const TINT32 /* sessionId */, const TSTRING& /* virtualName */) {
+  void virtualChannelOpen(std::string& /* _return */, const std::string& /* authToken */, const INT32 /* sessionId */, const std::string& /* virtualName */) {
     return;
   }
-  void virtualChannelOpenEx(TSTRING& /* _return */, const TSTRING& /* authToken */, const TINT32 /* sessionId */, const TSTRING& /* virtualName */, const TINT32 /* flags */) {
+  void virtualChannelOpenEx(std::string& /* _return */, const std::string& /* authToken */, const INT32 /* sessionId */, const std::string& /* virtualName */, const INT32 /* flags */) {
     return;
   }
-  TBOOL virtualChannelClose(const TSTRING& /* authToken */, const TINT32 /* sessionId */, const TSTRING& /* virtualName */) {
-    TBOOL _return = false;
+  bool virtualChannelClose(const std::string& /* authToken */, const INT32 /* sessionId */, const std::string& /* virtualName */) {
+    bool _return = false;
     return _return;
   }
-  TBOOL disconnectSession(const TSTRING& /* authToken */, const TINT32 /* sessionId */, const TBOOL /* wait */) {
-    TBOOL _return = false;
+  bool disconnectSession(const std::string& /* authToken */, const INT32 /* sessionId */, const bool /* wait */) {
+    bool _return = false;
     return _return;
   }
-  TBOOL logoffSession(const TSTRING& /* authToken */, const TINT32 /* sessionId */, const TBOOL /* wait */) {
-    TBOOL _return = false;
+  bool logoffSession(const std::string& /* authToken */, const INT32 /* sessionId */, const bool /* wait */) {
+    bool _return = false;
     return _return;
   }
-  TBOOL shutdownSystem(const TSTRING& /* authToken */, const TINT32 /* shutdownFlag */) {
-    TBOOL _return = false;
+  bool shutdownSystem(const std::string& /* authToken */, const INT32 /* shutdownFlag */) {
+    bool _return = false;
     return _return;
   }
-  void enumerateSessions(TReturnEnumerateSessions& /* _return */, const TSTRING& /* authToken */, const TINT32 /* Version */) {
+  void enumerateSessions(TReturnEnumerateSessions& /* _return */, const std::string& /* authToken */, const INT32 /* Version */) {
     return;
   }
-  void querySessionInformation(TReturnQuerySessionInformation& /* _return */, const TSTRING& /* authToken */, const TINT32 /* sessionId */, const TINT32 /* infoClass */) {
+  void querySessionInformation(TReturnQuerySessionInformation& /* _return */, const std::string& /* authToken */, const INT32 /* sessionId */, const INT32 /* infoClass */) {
     return;
   }
 };
@@ -105,11 +106,11 @@ class fdsapi_ping_args {
 
   virtual ~fdsapi_ping_args() throw() {}
 
-  TINT32 input;
+  INT32 input;
 
   _fdsapi_ping_args__isset __isset;
 
-  void __set_input(const TINT32 val) {
+  void __set_input(const INT32 val) {
     input = val;
   }
 
@@ -137,7 +138,7 @@ class fdsapi_ping_pargs {
 
   virtual ~fdsapi_ping_pargs() throw() {}
 
-  const TINT32* input;
+  const INT32* input;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -156,11 +157,11 @@ class fdsapi_ping_result {
 
   virtual ~fdsapi_ping_result() throw() {}
 
-  TINT32 success;
+  INT32 success;
 
   _fdsapi_ping_result__isset __isset;
 
-  void __set_success(const TINT32 val) {
+  void __set_success(const INT32 val) {
     success = val;
   }
 
@@ -192,7 +193,7 @@ class fdsapi_ping_presult {
 
   virtual ~fdsapi_ping_presult() throw() {}
 
-  TINT32* success;
+  INT32* success;
 
   _fdsapi_ping_presult__isset __isset;
 
@@ -217,31 +218,31 @@ class fdsapi_authenticateUser_args {
 
   virtual ~fdsapi_authenticateUser_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 sessionId;
-  TSTRING username;
-  TSTRING password;
-  TSTRING domain;
+  std::string authToken;
+  INT32 sessionId;
+  std::string username;
+  std::string password;
+  std::string domain;
 
   _fdsapi_authenticateUser_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_sessionId(const TINT32 val) {
+  void __set_sessionId(const INT32 val) {
     sessionId = val;
   }
 
-  void __set_username(const TSTRING& val) {
+  void __set_username(const std::string& val) {
     username = val;
   }
 
-  void __set_password(const TSTRING& val) {
+  void __set_password(const std::string& val) {
     password = val;
   }
 
-  void __set_domain(const TSTRING& val) {
+  void __set_domain(const std::string& val) {
     domain = val;
   }
 
@@ -277,11 +278,11 @@ class fdsapi_authenticateUser_pargs {
 
   virtual ~fdsapi_authenticateUser_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* sessionId;
-  const TSTRING* username;
-  const TSTRING* password;
-  const TSTRING* domain;
+  const std::string* authToken;
+  const INT32* sessionId;
+  const std::string* username;
+  const std::string* password;
+  const std::string* domain;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -300,11 +301,11 @@ class fdsapi_authenticateUser_result {
 
   virtual ~fdsapi_authenticateUser_result() throw() {}
 
-  TINT32 success;
+  INT32 success;
 
   _fdsapi_authenticateUser_result__isset __isset;
 
-  void __set_success(const TINT32 val) {
+  void __set_success(const INT32 val) {
     success = val;
   }
 
@@ -336,7 +337,7 @@ class fdsapi_authenticateUser_presult {
 
   virtual ~fdsapi_authenticateUser_presult() throw() {}
 
-  TINT32* success;
+  INT32* success;
 
   _fdsapi_authenticateUser_presult__isset __isset;
 
@@ -359,21 +360,21 @@ class fdsapi_virtualChannelOpen_args {
 
   virtual ~fdsapi_virtualChannelOpen_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 sessionId;
-  TSTRING virtualName;
+  std::string authToken;
+  INT32 sessionId;
+  std::string virtualName;
 
   _fdsapi_virtualChannelOpen_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_sessionId(const TINT32 val) {
+  void __set_sessionId(const INT32 val) {
     sessionId = val;
   }
 
-  void __set_virtualName(const TSTRING& val) {
+  void __set_virtualName(const std::string& val) {
     virtualName = val;
   }
 
@@ -405,9 +406,9 @@ class fdsapi_virtualChannelOpen_pargs {
 
   virtual ~fdsapi_virtualChannelOpen_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* sessionId;
-  const TSTRING* virtualName;
+  const std::string* authToken;
+  const INT32* sessionId;
+  const std::string* virtualName;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -426,11 +427,11 @@ class fdsapi_virtualChannelOpen_result {
 
   virtual ~fdsapi_virtualChannelOpen_result() throw() {}
 
-  TSTRING success;
+  std::string success;
 
   _fdsapi_virtualChannelOpen_result__isset __isset;
 
-  void __set_success(const TSTRING& val) {
+  void __set_success(const std::string& val) {
     success = val;
   }
 
@@ -462,7 +463,7 @@ class fdsapi_virtualChannelOpen_presult {
 
   virtual ~fdsapi_virtualChannelOpen_presult() throw() {}
 
-  TSTRING* success;
+  std::string* success;
 
   _fdsapi_virtualChannelOpen_presult__isset __isset;
 
@@ -486,26 +487,26 @@ class fdsapi_virtualChannelOpenEx_args {
 
   virtual ~fdsapi_virtualChannelOpenEx_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 sessionId;
-  TSTRING virtualName;
-  TINT32 flags;
+  std::string authToken;
+  INT32 sessionId;
+  std::string virtualName;
+  INT32 flags;
 
   _fdsapi_virtualChannelOpenEx_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_sessionId(const TINT32 val) {
+  void __set_sessionId(const INT32 val) {
     sessionId = val;
   }
 
-  void __set_virtualName(const TSTRING& val) {
+  void __set_virtualName(const std::string& val) {
     virtualName = val;
   }
 
-  void __set_flags(const TINT32 val) {
+  void __set_flags(const INT32 val) {
     flags = val;
   }
 
@@ -539,10 +540,10 @@ class fdsapi_virtualChannelOpenEx_pargs {
 
   virtual ~fdsapi_virtualChannelOpenEx_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* sessionId;
-  const TSTRING* virtualName;
-  const TINT32* flags;
+  const std::string* authToken;
+  const INT32* sessionId;
+  const std::string* virtualName;
+  const INT32* flags;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -561,11 +562,11 @@ class fdsapi_virtualChannelOpenEx_result {
 
   virtual ~fdsapi_virtualChannelOpenEx_result() throw() {}
 
-  TSTRING success;
+  std::string success;
 
   _fdsapi_virtualChannelOpenEx_result__isset __isset;
 
-  void __set_success(const TSTRING& val) {
+  void __set_success(const std::string& val) {
     success = val;
   }
 
@@ -597,7 +598,7 @@ class fdsapi_virtualChannelOpenEx_presult {
 
   virtual ~fdsapi_virtualChannelOpenEx_presult() throw() {}
 
-  TSTRING* success;
+  std::string* success;
 
   _fdsapi_virtualChannelOpenEx_presult__isset __isset;
 
@@ -620,21 +621,21 @@ class fdsapi_virtualChannelClose_args {
 
   virtual ~fdsapi_virtualChannelClose_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 sessionId;
-  TSTRING virtualName;
+  std::string authToken;
+  INT32 sessionId;
+  std::string virtualName;
 
   _fdsapi_virtualChannelClose_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_sessionId(const TINT32 val) {
+  void __set_sessionId(const INT32 val) {
     sessionId = val;
   }
 
-  void __set_virtualName(const TSTRING& val) {
+  void __set_virtualName(const std::string& val) {
     virtualName = val;
   }
 
@@ -666,9 +667,9 @@ class fdsapi_virtualChannelClose_pargs {
 
   virtual ~fdsapi_virtualChannelClose_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* sessionId;
-  const TSTRING* virtualName;
+  const std::string* authToken;
+  const INT32* sessionId;
+  const std::string* virtualName;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -687,11 +688,11 @@ class fdsapi_virtualChannelClose_result {
 
   virtual ~fdsapi_virtualChannelClose_result() throw() {}
 
-  TBOOL success;
+  bool success;
 
   _fdsapi_virtualChannelClose_result__isset __isset;
 
-  void __set_success(const TBOOL val) {
+  void __set_success(const bool val) {
     success = val;
   }
 
@@ -723,7 +724,7 @@ class fdsapi_virtualChannelClose_presult {
 
   virtual ~fdsapi_virtualChannelClose_presult() throw() {}
 
-  TBOOL* success;
+  bool* success;
 
   _fdsapi_virtualChannelClose_presult__isset __isset;
 
@@ -746,21 +747,21 @@ class fdsapi_disconnectSession_args {
 
   virtual ~fdsapi_disconnectSession_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 sessionId;
-  TBOOL wait;
+  std::string authToken;
+  INT32 sessionId;
+  bool wait;
 
   _fdsapi_disconnectSession_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_sessionId(const TINT32 val) {
+  void __set_sessionId(const INT32 val) {
     sessionId = val;
   }
 
-  void __set_wait(const TBOOL val) {
+  void __set_wait(const bool val) {
     wait = val;
   }
 
@@ -792,9 +793,9 @@ class fdsapi_disconnectSession_pargs {
 
   virtual ~fdsapi_disconnectSession_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* sessionId;
-  const TBOOL* wait;
+  const std::string* authToken;
+  const INT32* sessionId;
+  const bool* wait;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -813,11 +814,11 @@ class fdsapi_disconnectSession_result {
 
   virtual ~fdsapi_disconnectSession_result() throw() {}
 
-  TBOOL success;
+  bool success;
 
   _fdsapi_disconnectSession_result__isset __isset;
 
-  void __set_success(const TBOOL val) {
+  void __set_success(const bool val) {
     success = val;
   }
 
@@ -849,7 +850,7 @@ class fdsapi_disconnectSession_presult {
 
   virtual ~fdsapi_disconnectSession_presult() throw() {}
 
-  TBOOL* success;
+  bool* success;
 
   _fdsapi_disconnectSession_presult__isset __isset;
 
@@ -872,21 +873,21 @@ class fdsapi_logoffSession_args {
 
   virtual ~fdsapi_logoffSession_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 sessionId;
-  TBOOL wait;
+  std::string authToken;
+  INT32 sessionId;
+  bool wait;
 
   _fdsapi_logoffSession_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_sessionId(const TINT32 val) {
+  void __set_sessionId(const INT32 val) {
     sessionId = val;
   }
 
-  void __set_wait(const TBOOL val) {
+  void __set_wait(const bool val) {
     wait = val;
   }
 
@@ -918,9 +919,9 @@ class fdsapi_logoffSession_pargs {
 
   virtual ~fdsapi_logoffSession_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* sessionId;
-  const TBOOL* wait;
+  const std::string* authToken;
+  const INT32* sessionId;
+  const bool* wait;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -939,11 +940,11 @@ class fdsapi_logoffSession_result {
 
   virtual ~fdsapi_logoffSession_result() throw() {}
 
-  TBOOL success;
+  bool success;
 
   _fdsapi_logoffSession_result__isset __isset;
 
-  void __set_success(const TBOOL val) {
+  void __set_success(const bool val) {
     success = val;
   }
 
@@ -975,7 +976,7 @@ class fdsapi_logoffSession_presult {
 
   virtual ~fdsapi_logoffSession_presult() throw() {}
 
-  TBOOL* success;
+  bool* success;
 
   _fdsapi_logoffSession_presult__isset __isset;
 
@@ -997,16 +998,16 @@ class fdsapi_shutdownSystem_args {
 
   virtual ~fdsapi_shutdownSystem_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 shutdownFlag;
+  std::string authToken;
+  INT32 shutdownFlag;
 
   _fdsapi_shutdownSystem_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_shutdownFlag(const TINT32 val) {
+  void __set_shutdownFlag(const INT32 val) {
     shutdownFlag = val;
   }
 
@@ -1036,8 +1037,8 @@ class fdsapi_shutdownSystem_pargs {
 
   virtual ~fdsapi_shutdownSystem_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* shutdownFlag;
+  const std::string* authToken;
+  const INT32* shutdownFlag;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1056,11 +1057,11 @@ class fdsapi_shutdownSystem_result {
 
   virtual ~fdsapi_shutdownSystem_result() throw() {}
 
-  TBOOL success;
+  bool success;
 
   _fdsapi_shutdownSystem_result__isset __isset;
 
-  void __set_success(const TBOOL val) {
+  void __set_success(const bool val) {
     success = val;
   }
 
@@ -1092,7 +1093,7 @@ class fdsapi_shutdownSystem_presult {
 
   virtual ~fdsapi_shutdownSystem_presult() throw() {}
 
-  TBOOL* success;
+  bool* success;
 
   _fdsapi_shutdownSystem_presult__isset __isset;
 
@@ -1114,16 +1115,16 @@ class fdsapi_enumerateSessions_args {
 
   virtual ~fdsapi_enumerateSessions_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 Version;
+  std::string authToken;
+  INT32 Version;
 
   _fdsapi_enumerateSessions_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_Version(const TINT32 val) {
+  void __set_Version(const INT32 val) {
     Version = val;
   }
 
@@ -1153,8 +1154,8 @@ class fdsapi_enumerateSessions_pargs {
 
   virtual ~fdsapi_enumerateSessions_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* Version;
+  const std::string* authToken;
+  const INT32* Version;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1232,21 +1233,21 @@ class fdsapi_querySessionInformation_args {
 
   virtual ~fdsapi_querySessionInformation_args() throw() {}
 
-  TSTRING authToken;
-  TINT32 sessionId;
-  TINT32 infoClass;
+  std::string authToken;
+  INT32 sessionId;
+  INT32 infoClass;
 
   _fdsapi_querySessionInformation_args__isset __isset;
 
-  void __set_authToken(const TSTRING& val) {
+  void __set_authToken(const std::string& val) {
     authToken = val;
   }
 
-  void __set_sessionId(const TINT32 val) {
+  void __set_sessionId(const INT32 val) {
     sessionId = val;
   }
 
-  void __set_infoClass(const TINT32 val) {
+  void __set_infoClass(const INT32 val) {
     infoClass = val;
   }
 
@@ -1278,9 +1279,9 @@ class fdsapi_querySessionInformation_pargs {
 
   virtual ~fdsapi_querySessionInformation_pargs() throw() {}
 
-  const TSTRING* authToken;
-  const TINT32* sessionId;
-  const TINT32* infoClass;
+  const std::string* authToken;
+  const INT32* sessionId;
+  const INT32* infoClass;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1363,35 +1364,35 @@ class fdsapiClient : virtual public fdsapiIf {
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
-  TINT32 ping(const TINT32 input);
-  void send_ping(const TINT32 input);
-  TINT32 recv_ping();
-  TINT32 authenticateUser(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& username, const TSTRING& password, const TSTRING& domain);
-  void send_authenticateUser(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& username, const TSTRING& password, const TSTRING& domain);
-  TINT32 recv_authenticateUser();
-  void virtualChannelOpen(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName);
-  void send_virtualChannelOpen(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName);
-  void recv_virtualChannelOpen(TSTRING& _return);
-  void virtualChannelOpenEx(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName, const TINT32 flags);
-  void send_virtualChannelOpenEx(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName, const TINT32 flags);
-  void recv_virtualChannelOpenEx(TSTRING& _return);
-  TBOOL virtualChannelClose(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName);
-  void send_virtualChannelClose(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName);
-  TBOOL recv_virtualChannelClose();
-  TBOOL disconnectSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
-  void send_disconnectSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
-  TBOOL recv_disconnectSession();
-  TBOOL logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
-  void send_logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
-  TBOOL recv_logoffSession();
-  TBOOL shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag);
-  void send_shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag);
-  TBOOL recv_shutdownSystem();
-  void enumerateSessions(TReturnEnumerateSessions& _return, const TSTRING& authToken, const TINT32 Version);
-  void send_enumerateSessions(const TSTRING& authToken, const TINT32 Version);
+  INT32 ping(const INT32 input);
+  void send_ping(const INT32 input);
+  INT32 recv_ping();
+  INT32 authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain);
+  void send_authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain);
+  INT32 recv_authenticateUser();
+  void virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+  void send_virtualChannelOpen(const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+  void recv_virtualChannelOpen(std::string& _return);
+  void virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags);
+  void send_virtualChannelOpenEx(const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags);
+  void recv_virtualChannelOpenEx(std::string& _return);
+  bool virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+  void send_virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+  bool recv_virtualChannelClose();
+  bool disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait);
+  void send_disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait);
+  bool recv_disconnectSession();
+  bool logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait);
+  void send_logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait);
+  bool recv_logoffSession();
+  bool shutdownSystem(const std::string& authToken, const INT32 shutdownFlag);
+  void send_shutdownSystem(const std::string& authToken, const INT32 shutdownFlag);
+  bool recv_shutdownSystem();
+  void enumerateSessions(TReturnEnumerateSessions& _return, const std::string& authToken, const INT32 Version);
+  void send_enumerateSessions(const std::string& authToken, const INT32 Version);
   void recv_enumerateSessions(TReturnEnumerateSessions& _return);
-  void querySessionInformation(TReturnQuerySessionInformation& _return, const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass);
-  void send_querySessionInformation(const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass);
+  void querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass);
+  void send_querySessionInformation(const std::string& authToken, const INT32 sessionId, const INT32 infoClass);
   void recv_querySessionInformation(TReturnQuerySessionInformation& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
@@ -1459,7 +1460,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     ifaces_.push_back(iface);
   }
  public:
-  TINT32 ping(const TINT32 input) {
+  INT32 ping(const INT32 input) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1468,7 +1469,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return ifaces_[i]->ping(input);
   }
 
-  TINT32 authenticateUser(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& username, const TSTRING& password, const TSTRING& domain) {
+  INT32 authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1477,7 +1478,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return ifaces_[i]->authenticateUser(authToken, sessionId, username, password, domain);
   }
 
-  void virtualChannelOpen(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName) {
+  void virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1487,7 +1488,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return;
   }
 
-  void virtualChannelOpenEx(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName, const TINT32 flags) {
+  void virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1497,7 +1498,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return;
   }
 
-  TBOOL virtualChannelClose(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName) {
+  bool virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1506,7 +1507,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return ifaces_[i]->virtualChannelClose(authToken, sessionId, virtualName);
   }
 
-  TBOOL disconnectSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait) {
+  bool disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1515,7 +1516,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return ifaces_[i]->disconnectSession(authToken, sessionId, wait);
   }
 
-  TBOOL logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait) {
+  bool logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1524,7 +1525,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return ifaces_[i]->logoffSession(authToken, sessionId, wait);
   }
 
-  TBOOL shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag) {
+  bool shutdownSystem(const std::string& authToken, const INT32 shutdownFlag) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1533,7 +1534,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return ifaces_[i]->shutdownSystem(authToken, shutdownFlag);
   }
 
-  void enumerateSessions(TReturnEnumerateSessions& _return, const TSTRING& authToken, const TINT32 Version) {
+  void enumerateSessions(TReturnEnumerateSessions& _return, const std::string& authToken, const INT32 Version) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1543,7 +1544,7 @@ class fdsapiMultiface : virtual public fdsapiIf {
     return;
   }
 
-  void querySessionInformation(TReturnQuerySessionInformation& _return, const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass) {
+  void querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {

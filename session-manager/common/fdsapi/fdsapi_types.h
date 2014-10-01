@@ -7,22 +7,14 @@
 #ifndef fdsapi_TYPES_H
 #define fdsapi_TYPES_H
 
+#include <winpr/crt.h>
+
 #include <thrift/Thrift.h>
 #include <thrift/TApplicationException.h>
 #include <thrift/protocol/TProtocol.h>
 #include <thrift/transport/TTransport.h>
 
-
-
 namespace freerds {
-
-typedef bool TBOOL;
-
-typedef int16_t TINT16;
-
-typedef int32_t TINT32;
-
-typedef std::string TSTRING;
 
 typedef std::vector<class TSessionInfo>  TSessionInfoList;
 
@@ -44,21 +36,21 @@ class TClientDisplay {
 
   virtual ~TClientDisplay() throw() {}
 
-  TINT32 displayWidth;
-  TINT32 displayHeight;
-  TINT32 colorDepth;
+  INT32 displayWidth;
+  INT32 displayHeight;
+  INT32 colorDepth;
 
   _TClientDisplay__isset __isset;
 
-  void __set_displayWidth(const TINT32 val) {
+  void __set_displayWidth(const INT32 val) {
     displayWidth = val;
   }
 
-  void __set_displayHeight(const TINT32 val) {
+  void __set_displayHeight(const INT32 val) {
     displayHeight = val;
   }
 
-  void __set_colorDepth(const TINT32 val) {
+  void __set_colorDepth(const INT32 val) {
     colorDepth = val;
   }
 
@@ -103,21 +95,21 @@ class TSessionInfo {
 
   virtual ~TSessionInfo() throw() {}
 
-  TINT32 sessionId;
-  TINT32 connectState;
-  TSTRING winStationName;
+  INT32 sessionId;
+  INT32 connectState;
+  std::string winStationName;
 
   _TSessionInfo__isset __isset;
 
-  void __set_sessionId(const TINT32 val) {
+  void __set_sessionId(const INT32 val) {
     sessionId = val;
   }
 
-  void __set_connectState(const TINT32 val) {
+  void __set_connectState(const INT32 val) {
     connectState = val;
   }
 
-  void __set_winStationName(const TSTRING& val) {
+  void __set_winStationName(const std::string& val) {
     winStationName = val;
   }
 
@@ -164,27 +156,27 @@ class TSessionInfoValue {
 
   virtual ~TSessionInfoValue() throw() {}
 
-  TBOOL boolValue;
-  TINT16 int16Value;
-  TINT32 int32Value;
-  TSTRING stringValue;
+  bool boolValue;
+  INT16 int16Value;
+  INT32 int32Value;
+  std::string stringValue;
   TClientDisplay displayValue;
 
   _TSessionInfoValue__isset __isset;
 
-  void __set_boolValue(const TBOOL val) {
+  void __set_boolValue(const bool val) {
     boolValue = val;
   }
 
-  void __set_int16Value(const TINT16 val) {
+  void __set_int16Value(const INT16 val) {
     int16Value = val;
   }
 
-  void __set_int32Value(const TINT32 val) {
+  void __set_int32Value(const INT32 val) {
     int32Value = val;
   }
 
-  void __set_stringValue(const TSTRING& val) {
+  void __set_stringValue(const std::string& val) {
     stringValue = val;
   }
 
@@ -236,12 +228,12 @@ class TReturnEnumerateSessions {
 
   virtual ~TReturnEnumerateSessions() throw() {}
 
-  TBOOL returnValue;
+  bool returnValue;
   TSessionInfoList sessionInfoList;
 
   _TReturnEnumerateSessions__isset __isset;
 
-  void __set_returnValue(const TBOOL val) {
+  void __set_returnValue(const bool val) {
     returnValue = val;
   }
 
@@ -287,12 +279,12 @@ class TReturnQuerySessionInformation {
 
   virtual ~TReturnQuerySessionInformation() throw() {}
 
-  TBOOL returnValue;
+  bool returnValue;
   TSessionInfoValue infoValue;
 
   _TReturnQuerySessionInformation__isset __isset;
 
-  void __set_returnValue(const TBOOL val) {
+  void __set_returnValue(const bool val) {
     returnValue = val;
   }
 

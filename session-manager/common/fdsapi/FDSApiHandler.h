@@ -28,8 +28,8 @@
 #include <boost/shared_ptr.hpp>
 #include <thrift/server/TServer.h>
 
-namespace freerds{
-	namespace sessionmanager{
+namespace freerds {
+	namespace sessionmanager {
 		namespace fdsapi {
 
 		class FDSApiHandler : virtual public fdsapiIf {
@@ -37,18 +37,18 @@ namespace freerds{
 			FDSApiHandler();
 			virtual ~FDSApiHandler();
 
-			virtual TINT32 ping(const TINT32 input);
+			virtual INT32 ping(const INT32 input);
 
-			virtual TINT32 authenticateUser(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& username, const TSTRING& password, const TSTRING& domain);
+			virtual INT32 authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain);
 
-			virtual void virtualChannelOpen(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName);
-			virtual void virtualChannelOpenEx(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName, const TINT32 flags);
-			virtual TBOOL virtualChannelClose(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName);
-			virtual TBOOL disconnectSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
-			virtual TBOOL logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait);
-			virtual TBOOL shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag);
-			virtual void enumerateSessions(TReturnEnumerateSessions& _return, const TSTRING& authToken, const TINT32 Version);
-			virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass);
+			virtual void virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+			virtual void virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags);
+			virtual bool virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+			virtual bool disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait);
+			virtual bool logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait);
+			virtual bool shutdownSystem(const std::string& authToken, const INT32 shutdownFlag);
+			virtual void enumerateSessions(TReturnEnumerateSessions& _return, const std::string& authToken, const INT32 Version);
+			virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass);
 		};
 
 		}

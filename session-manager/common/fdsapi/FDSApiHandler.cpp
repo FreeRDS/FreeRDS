@@ -30,9 +30,8 @@
 #include <call/CallOutFdsApiVirtualChannelOpen.h>
 #include <call/TaskSwitchTo.h>
 
-
-namespace freerds{
-	namespace sessionmanager{
+namespace freerds {
+	namespace sessionmanager {
 		namespace fdsapi {
 
 		static wLog * logger_FDSApiHandler = WLog_Get("freerds.sessionmanager.fdsapihandler");
@@ -45,18 +44,18 @@ namespace freerds{
 		{
 		}
 
-		TINT32 FDSApiHandler::ping(const TINT32 input)
+		INT32 FDSApiHandler::ping(const INT32 input)
 		{
 		}
 
-		TINT32 FDSApiHandler::authenticateUser(
-			const TSTRING& authToken,
-			const TINT32 sessionId,
-			const TSTRING& username,
-			const TSTRING& password,
-			const TSTRING& domain)
+		INT32 FDSApiHandler::authenticateUser(
+			const std::string& authToken,
+			const INT32 sessionId,
+			const std::string& username,
+			const std::string& password,
+			const std::string& domain)
 		{
-			TINT32 authStatus = -1;
+			INT32 authStatus = -1;
 
 			configNS::PropertyManager* propertyManager = APP_CONTEXT.getPropertyManager();
 			sessionNS::ConnectionStore* connectionStore = APP_CONTEXT.getConnectionStore();
@@ -204,10 +203,10 @@ namespace freerds{
 		}
 
 		void FDSApiHandler::virtualChannelOpen(
-			TSTRING& _return,
-			const TSTRING& authToken,
-			const TINT32 sessionId,
-			const TSTRING& virtualName)
+			std::string& _return,
+			const std::string& authToken,
+			const INT32 sessionId,
+			const std::string& virtualName)
 		{
 			// ....
 
@@ -231,26 +230,26 @@ namespace freerds{
 		}
 
 		void FDSApiHandler::virtualChannelOpenEx(
-			TSTRING& _return,
-			const TSTRING& authToken,
-			const TINT32 sessionId,
-			const TSTRING& virtualName,
+			std::string& _return,
+			const std::string& authToken,
+			const INT32 sessionId,
+			const std::string& virtualName,
 			const INT32 flags)
 		{
 		}
 
-		TBOOL FDSApiHandler::virtualChannelClose(
-			const TSTRING& authToken,
-			const TINT32 sessionId,
-			const TSTRING& virtualName)
+		bool FDSApiHandler::virtualChannelClose(
+			const std::string& authToken,
+			const INT32 sessionId,
+			const std::string& virtualName)
 		{
 			return false;
 		}
 
-		TBOOL FDSApiHandler::disconnectSession(
-			const TSTRING& authToken,
-			const TINT32 sessionId,
-			const TBOOL wait)
+		bool FDSApiHandler::disconnectSession(
+			const std::string& authToken,
+			const INT32 sessionId,
+			const bool wait)
 		{
 			sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
 			sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
@@ -263,10 +262,10 @@ namespace freerds{
 			return false;
 		}
 
-		TBOOL FDSApiHandler::logoffSession(
-			const TSTRING& authToken,
-			const TINT32 sessionId,
-			const TBOOL wait)
+		bool FDSApiHandler::logoffSession(
+			const std::string& authToken,
+			const INT32 sessionId,
+			const bool wait)
 		{
 			sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
 			sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
@@ -279,9 +278,9 @@ namespace freerds{
 			return false;
 		}
 
-		TBOOL FDSApiHandler::shutdownSystem(
-			const TSTRING& authToken,
-			const TINT32 shutdownFlag)
+		bool FDSApiHandler::shutdownSystem(
+			const std::string& authToken,
+			const INT32 shutdownFlag)
 		{
 			/* TODO: Shutdown the system. */
 
@@ -290,8 +289,8 @@ namespace freerds{
 
 		void FDSApiHandler::enumerateSessions(
 			TReturnEnumerateSessions& _return,
-			const TSTRING& authToken,
-			const TINT32 Version)
+			const std::string& authToken,
+			const INT32 Version)
 		{
 			DWORD count;
 			DWORD index;
@@ -319,9 +318,9 @@ namespace freerds{
 
 		void FDSApiHandler::querySessionInformation(
 			TReturnQuerySessionInformation& _return,
-			const TSTRING& authToken,
-			const TINT32 sessionId,
-			const TINT32 infoClass)
+			const std::string& authToken,
+			const INT32 sessionId,
+			const INT32 infoClass)
 		{
 			sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
 			sessionNS::SessionPtr session = sessionStore->getSession(sessionId);

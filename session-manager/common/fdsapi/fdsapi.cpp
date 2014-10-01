@@ -1932,13 +1932,13 @@ uint32_t fdsapi_querySessionInformation_presult::read(::apache::thrift::protocol
   return xfer;
 }
 
-TINT32 fdsapiClient::ping(const TINT32 input)
+INT32 fdsapiClient::ping(const INT32 input)
 {
   send_ping(input);
   return recv_ping();
 }
 
-void fdsapiClient::send_ping(const TINT32 input)
+void fdsapiClient::send_ping(const INT32 input)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("ping", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -1952,7 +1952,7 @@ void fdsapiClient::send_ping(const TINT32 input)
   oprot_->getTransport()->flush();
 }
 
-TINT32 fdsapiClient::recv_ping()
+INT32 fdsapiClient::recv_ping()
 {
 
   int32_t rseqid = 0;
@@ -1977,7 +1977,7 @@ TINT32 fdsapiClient::recv_ping()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  TINT32 _return;
+  INT32 _return;
   fdsapi_ping_presult result;
   result.success = &_return;
   result.read(iprot_);
@@ -1990,13 +1990,13 @@ TINT32 fdsapiClient::recv_ping()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "ping failed: unknown result");
 }
 
-TINT32 fdsapiClient::authenticateUser(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& username, const TSTRING& password, const TSTRING& domain)
+INT32 fdsapiClient::authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain)
 {
   send_authenticateUser(authToken, sessionId, username, password, domain);
   return recv_authenticateUser();
 }
 
-void fdsapiClient::send_authenticateUser(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& username, const TSTRING& password, const TSTRING& domain)
+void fdsapiClient::send_authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("authenticateUser", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -2014,7 +2014,7 @@ void fdsapiClient::send_authenticateUser(const TSTRING& authToken, const TINT32 
   oprot_->getTransport()->flush();
 }
 
-TINT32 fdsapiClient::recv_authenticateUser()
+INT32 fdsapiClient::recv_authenticateUser()
 {
 
   int32_t rseqid = 0;
@@ -2039,7 +2039,7 @@ TINT32 fdsapiClient::recv_authenticateUser()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  TINT32 _return;
+  INT32 _return;
   fdsapi_authenticateUser_presult result;
   result.success = &_return;
   result.read(iprot_);
@@ -2052,13 +2052,13 @@ TINT32 fdsapiClient::recv_authenticateUser()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "authenticateUser failed: unknown result");
 }
 
-void fdsapiClient::virtualChannelOpen(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName)
+void fdsapiClient::virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName)
 {
   send_virtualChannelOpen(authToken, sessionId, virtualName);
   recv_virtualChannelOpen(_return);
 }
 
-void fdsapiClient::send_virtualChannelOpen(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName)
+void fdsapiClient::send_virtualChannelOpen(const std::string& authToken, const INT32 sessionId, const std::string& virtualName)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("virtualChannelOpen", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -2074,7 +2074,7 @@ void fdsapiClient::send_virtualChannelOpen(const TSTRING& authToken, const TINT3
   oprot_->getTransport()->flush();
 }
 
-void fdsapiClient::recv_virtualChannelOpen(TSTRING& _return)
+void fdsapiClient::recv_virtualChannelOpen(std::string& _return)
 {
 
   int32_t rseqid = 0;
@@ -2112,13 +2112,13 @@ void fdsapiClient::recv_virtualChannelOpen(TSTRING& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "virtualChannelOpen failed: unknown result");
 }
 
-void fdsapiClient::virtualChannelOpenEx(TSTRING& _return, const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName, const TINT32 flags)
+void fdsapiClient::virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags)
 {
   send_virtualChannelOpenEx(authToken, sessionId, virtualName, flags);
   recv_virtualChannelOpenEx(_return);
 }
 
-void fdsapiClient::send_virtualChannelOpenEx(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName, const TINT32 flags)
+void fdsapiClient::send_virtualChannelOpenEx(const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("virtualChannelOpenEx", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -2135,7 +2135,7 @@ void fdsapiClient::send_virtualChannelOpenEx(const TSTRING& authToken, const TIN
   oprot_->getTransport()->flush();
 }
 
-void fdsapiClient::recv_virtualChannelOpenEx(TSTRING& _return)
+void fdsapiClient::recv_virtualChannelOpenEx(std::string& _return)
 {
 
   int32_t rseqid = 0;
@@ -2173,13 +2173,13 @@ void fdsapiClient::recv_virtualChannelOpenEx(TSTRING& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "virtualChannelOpenEx failed: unknown result");
 }
 
-TBOOL fdsapiClient::virtualChannelClose(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName)
+bool fdsapiClient::virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName)
 {
   send_virtualChannelClose(authToken, sessionId, virtualName);
   return recv_virtualChannelClose();
 }
 
-void fdsapiClient::send_virtualChannelClose(const TSTRING& authToken, const TINT32 sessionId, const TSTRING& virtualName)
+void fdsapiClient::send_virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("virtualChannelClose", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -2195,7 +2195,7 @@ void fdsapiClient::send_virtualChannelClose(const TSTRING& authToken, const TINT
   oprot_->getTransport()->flush();
 }
 
-TBOOL fdsapiClient::recv_virtualChannelClose()
+bool fdsapiClient::recv_virtualChannelClose()
 {
 
   int32_t rseqid = 0;
@@ -2220,7 +2220,7 @@ TBOOL fdsapiClient::recv_virtualChannelClose()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  TBOOL _return;
+  bool _return;
   fdsapi_virtualChannelClose_presult result;
   result.success = &_return;
   result.read(iprot_);
@@ -2233,13 +2233,13 @@ TBOOL fdsapiClient::recv_virtualChannelClose()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "virtualChannelClose failed: unknown result");
 }
 
-TBOOL fdsapiClient::disconnectSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait)
+bool fdsapiClient::disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait)
 {
   send_disconnectSession(authToken, sessionId, wait);
   return recv_disconnectSession();
 }
 
-void fdsapiClient::send_disconnectSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait)
+void fdsapiClient::send_disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("disconnectSession", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -2255,7 +2255,7 @@ void fdsapiClient::send_disconnectSession(const TSTRING& authToken, const TINT32
   oprot_->getTransport()->flush();
 }
 
-TBOOL fdsapiClient::recv_disconnectSession()
+bool fdsapiClient::recv_disconnectSession()
 {
 
   int32_t rseqid = 0;
@@ -2280,7 +2280,7 @@ TBOOL fdsapiClient::recv_disconnectSession()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  TBOOL _return;
+  bool _return;
   fdsapi_disconnectSession_presult result;
   result.success = &_return;
   result.read(iprot_);
@@ -2293,13 +2293,13 @@ TBOOL fdsapiClient::recv_disconnectSession()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "disconnectSession failed: unknown result");
 }
 
-TBOOL fdsapiClient::logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait)
+bool fdsapiClient::logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait)
 {
   send_logoffSession(authToken, sessionId, wait);
   return recv_logoffSession();
 }
 
-void fdsapiClient::send_logoffSession(const TSTRING& authToken, const TINT32 sessionId, const TBOOL wait)
+void fdsapiClient::send_logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("logoffSession", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -2315,7 +2315,7 @@ void fdsapiClient::send_logoffSession(const TSTRING& authToken, const TINT32 ses
   oprot_->getTransport()->flush();
 }
 
-TBOOL fdsapiClient::recv_logoffSession()
+bool fdsapiClient::recv_logoffSession()
 {
 
   int32_t rseqid = 0;
@@ -2340,7 +2340,7 @@ TBOOL fdsapiClient::recv_logoffSession()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  TBOOL _return;
+  bool _return;
   fdsapi_logoffSession_presult result;
   result.success = &_return;
   result.read(iprot_);
@@ -2353,13 +2353,13 @@ TBOOL fdsapiClient::recv_logoffSession()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "logoffSession failed: unknown result");
 }
 
-TBOOL fdsapiClient::shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag)
+bool fdsapiClient::shutdownSystem(const std::string& authToken, const INT32 shutdownFlag)
 {
   send_shutdownSystem(authToken, shutdownFlag);
   return recv_shutdownSystem();
 }
 
-void fdsapiClient::send_shutdownSystem(const TSTRING& authToken, const TINT32 shutdownFlag)
+void fdsapiClient::send_shutdownSystem(const std::string& authToken, const INT32 shutdownFlag)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("shutdownSystem", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -2374,7 +2374,7 @@ void fdsapiClient::send_shutdownSystem(const TSTRING& authToken, const TINT32 sh
   oprot_->getTransport()->flush();
 }
 
-TBOOL fdsapiClient::recv_shutdownSystem()
+bool fdsapiClient::recv_shutdownSystem()
 {
 
   int32_t rseqid = 0;
@@ -2399,7 +2399,7 @@ TBOOL fdsapiClient::recv_shutdownSystem()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  TBOOL _return;
+  bool _return;
   fdsapi_shutdownSystem_presult result;
   result.success = &_return;
   result.read(iprot_);
@@ -2412,13 +2412,13 @@ TBOOL fdsapiClient::recv_shutdownSystem()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "shutdownSystem failed: unknown result");
 }
 
-void fdsapiClient::enumerateSessions(TReturnEnumerateSessions& _return, const TSTRING& authToken, const TINT32 Version)
+void fdsapiClient::enumerateSessions(TReturnEnumerateSessions& _return, const std::string& authToken, const INT32 Version)
 {
   send_enumerateSessions(authToken, Version);
   recv_enumerateSessions(_return);
 }
 
-void fdsapiClient::send_enumerateSessions(const TSTRING& authToken, const TINT32 Version)
+void fdsapiClient::send_enumerateSessions(const std::string& authToken, const INT32 Version)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("enumerateSessions", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -2471,13 +2471,13 @@ void fdsapiClient::recv_enumerateSessions(TReturnEnumerateSessions& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "enumerateSessions failed: unknown result");
 }
 
-void fdsapiClient::querySessionInformation(TReturnQuerySessionInformation& _return, const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass)
+void fdsapiClient::querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass)
 {
   send_querySessionInformation(authToken, sessionId, infoClass);
   recv_querySessionInformation(_return);
 }
 
-void fdsapiClient::send_querySessionInformation(const TSTRING& authToken, const TINT32 sessionId, const TINT32 infoClass)
+void fdsapiClient::send_querySessionInformation(const std::string& authToken, const INT32 sessionId, const INT32 infoClass)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("querySessionInformation", ::apache::thrift::protocol::T_CALL, cseqid);

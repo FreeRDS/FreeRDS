@@ -35,24 +35,22 @@
 
 using boost::shared_ptr;
 
-namespace freerds{
-	namespace sessionmanager{
-		namespace fdsapi{
+namespace freerds {
+	namespace sessionmanager {
+		namespace fdsapi {
 
 		class FDSApiServer {
 		 public:
 			FDSApiServer();
 			virtual ~FDSApiServer();
 
-			static void serverThread( void * parameter);
 			void startFDSApi();
 			void stopFDSApi();
 
 			void setPort(DWORD port);
 			DWORD getPort();
 
-			void setServer(boost::shared_ptr<apache::thrift::server::TServer> server);
-			CRITICAL_SECTION * getCritSection();
+			CRITICAL_SECTION* getCritSection();
 
 			void fireSessionEvent(UINT32 sessionId, UINT32 stateChange);
 
@@ -62,7 +60,6 @@ namespace freerds{
 			static int RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
 
 			CRITICAL_SECTION mCSection;
-			boost::shared_ptr<apache::thrift::server::TServer> mServer;
 			HANDLE mServerThread;
 			DWORD mPort;
 

@@ -40,7 +40,6 @@ endif()
 set(FDSAPI_SRCS
 	common/fdsapi/fdsapi.cpp
 	common/fdsapi/fdsapi_types.cpp
-	common/fdsapi/fdsapi_constants.cpp
 	common/fdsapi/FDSApiHandler.cpp
 	common/fdsapi/FDSApiServer.cpp
 	common/fdsapi/FDSApiMessages.cpp)
