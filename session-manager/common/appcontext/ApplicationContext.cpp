@@ -253,17 +253,13 @@ namespace freerds
 
 		int ApplicationContext::startRPCEngine()
 		{
-#ifdef WITH_FDSAPI
 			mFDSApiServer.startFDSApi();
-#endif
 			return mRpcEngine.startEngine();
 		}
 
 		int ApplicationContext::stopRPCEngine()
 		{
-#ifdef WITH_FDSAPI
 			mFDSApiServer.stopFDSApi();
-#endif
 			return mRpcEngine.stopEngine();
 		}
 
@@ -288,23 +284,18 @@ namespace freerds
 			return &mModuleManager;
 		}
 
-#ifdef WITH_FDSAPI
 		fdsapiNS::FDSApiServer* ApplicationContext::getFDSApiServer()
 		{
 			return &mFDSApiServer;
 		}
-#endif
 
 		void ApplicationContext::setupTestingPropValues()
 		{
-
 			mPropertyManager.setPropertyString(Global, 0, "module","xsession");
 			mPropertyManager.setPropertyString(Global, 0, "auth.module","PAM");
 			mPropertyManager.setPropertyString(Global, 0, "auth.greeter","greeter");
 			mPropertyManager.setPropertyBool(Global, 0, "session.reconnect",true);
 			mPropertyManager.setPropertyNumber(Global, 0, "session.timeout",60);
-
-
 
 			mPropertyManager.setPropertyString(Global, 0, "module.xsession.modulename","X11");
 			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.maxXRes",1920);
