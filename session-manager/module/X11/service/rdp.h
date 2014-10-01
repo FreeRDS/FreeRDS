@@ -48,6 +48,7 @@
 #include <X11/fonts/fontstruct.h>
 #include <X11/extensions/XKBstr.h>
 
+#define ATOM wATOM
 #include "scrnintstr.h"
 #include "servermd.h"
 #include "colormapst.h"
@@ -69,16 +70,18 @@
 #include "exevents.h"
 #include "xserver-properties.h"
 #include "xkbsrv.h"
+#undef ATOM
+
+#ifndef WINPR_NO_CREATE_WINDOW
+#define WINPR_NO_CREATE_WINDOW
+#endif
 
 #include <winpr/crt.h>
+#include <winpr/wnd.h>
 #include <winpr/stream.h>
 
 #include <freerdp/freerdp.h>
 #include <freerds/backend.h>
-
-#define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
-
-#define X11RDPVER "0.7.7"
 
 struct _rdpScreenInfoRec
 {
@@ -148,6 +151,10 @@ struct _rdpScreenInfoRec
 };
 typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
 typedef rdpScreenInfoRec* rdpScreenInfoPtr;
+
+#define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
+
+#define X11RDPVER "0.7.7"
 
 struct _rdpGCRec
 {
