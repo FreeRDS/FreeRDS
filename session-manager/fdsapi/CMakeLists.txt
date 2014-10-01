@@ -17,33 +17,17 @@
 set(MODULE_NAME "freerds-fdsapi")
 set(MODULE_PREFIX "FREERDS_FDSAPI")
 
-set(FDSAPI_GEN_INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../gen")
-set(FDSAPI_GEN_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../gen/fdsapi")
-
-set(${MODULE_PREFIX}_GEN_SRCS
-	${FDSAPI_GEN_SRC_DIR}/fdsapi_constants.cpp
-	${FDSAPI_GEN_SRC_DIR}/fdsapi_types.cpp
-	${FDSAPI_GEN_SRC_DIR}/fdsapi.cpp)
-
 set(FDSAPI_COMMON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../common/fdsapi")
-
-set_source_files_properties(${${MODULE_PREFIX}_GEN_SRCS} PROPERTIES GENERATED TRUE)
 
 set(${MODULE_PREFIX}_SRCS
 	fdsapi_thrift.cpp
-	${FDSAPI_COMMON_DIR}/FDSApiMessages.cpp
-	${${MODULE_PREFIX}_GEN_SRCS})
+	${FDSAPI_COMMON_DIR}/FDSApiMessages.cpp)
 
-include_directories(
-	${FDSAPI_GEN_INC_DIR}
-	${FDSAPI_COMMON_DIR}
-	${THRIFT_INCLUDE_DIR})
+include_directories(${FDSAPI_COMMON_DIR})
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS freerds-rpc)
-
-list(APPEND ${MODULE_PREFIX}_LIBS ${THRIFT_STATIC_LIB})
 
 list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 

@@ -27,36 +27,23 @@ PROTOBUF_GENERATE_CPP(PBRPC_PROTOBUF_SRC PBRPC_PROTOBUF_HEADERS ${CMAKE_CURRENT_
 PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICP.proto)
 PROTOBUF_GENERATE_CPP(ICPS_PROTOBUF_SRC ICPS_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICPS.proto)
 
-if(NOT DEFINED WITH_FDSAPI)
-	set(WITH_FDSAPI 1)
+find_feature(Thrift REQUIRED "RPC" "Remote Procedure Call")
+	
+if(NOT THRIFT_FOUND)
+	message(STATUS "You may need to manually download and install thrift:")
+	message(STATUS "wget http://archive.apache.org/dist/thrift/0.9.0/thrift-0.9.0.tar.gz")
+	message(STATUS "tar zxvf thrift-0.9.0.tar.gz && cd thrift-0.9.0")
+	message(STATUS "./configure --without-python --without-java --without-c_glib --with-pic --without-csharp --without-haskell --without-go --without-d --without-qt4")
+	message(STATUS "make && sudo make install")
 endif()
 
-if(WITH_FDSAPI)
-	find_feature(Thrift REQUIRED "RPC" "Remote Procedure Call")
-	
-	if(NOT THRIFT_FOUND)
-		#include(ThriftExternalProject)
-		message(STATUS "You may need to manually download and install thrift:")
-		message(STATUS "wget http://archive.apache.org/dist/thrift/0.9.0/thrift-0.9.0.tar.gz")
-		message(STATUS "tar zxvf thrift-0.9.0.tar.gz && cd thrift-0.9.0")
-		message(STATUS "./configure --without-python --without-java --without-c_glib --with-pic --without-csharp --without-haskell --without-go --without-d --without-qt4")
-		message(STATUS "make && sudo make install")
-	endif()
-
-	include_directories(SYSTEM ${THRIFT_INCLUDE_DIR})
-	set(THRIFT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen/fdsapi)
-	file(MAKE_DIRECTORY ${THRIFT_OUTPUT_DIR})
-	include(ThriftUtils)
-
-	THRIFT_GEN(THRIFT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/thrift/fdsapi.thrift)
-	
-	add_definitions(-DWITH_FDSAPI)
-	set(FDSAPI_SRC
-		common/fdsapi/FDSApiHandler.cpp
-		common/fdsapi/FDSApiServer.cpp
-		common/fdsapi/FDSApiMessages.cpp
-	)
-endif()
+set(FDSAPI_SRCS
+	common/fdsapi/fdsapi.cpp
+	common/fdsapi/fdsapi_types.cpp
+	common/fdsapi/fdsapi_constants.cpp
+	common/fdsapi/FDSApiHandler.cpp
+	common/fdsapi/FDSApiServer.cpp
+	common/fdsapi/FDSApiMessages.cpp)
 
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
@@ -65,7 +52,6 @@ include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gen)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 
 set(ICP_SOURCES 
 	common/call/Call.cpp
@@ -85,8 +71,7 @@ set(ICP_SOURCES
 	common/call/CallInEndSession.cpp
 	common/call/TaskEndSession.cpp
 	common/call/TaskSwitchTo.cpp	
-	common/pbRPC/RpcEngine.cpp
-)
+	common/pbRPC/RpcEngine.cpp)
 
 set(${MODULE_PREFIX}_SRCS
 	main.cpp 
@@ -106,18 +91,15 @@ set(${MODULE_PREFIX}_SRCS
 	common/utils/StringHelpers.cpp
 	common/task/Executor.cpp
 	${ICP_SOURCES}
-	${FDSAPI_SRC}
+	${FDSAPI_SRCS}
 	${PBRPC_PROTOBUF_SRC}
 	${PBRPC_PROTOBUF_HEADERS}
 	${ICP_PROTOBUF_SRC}
 	${ICP_PROTOBUF_HEADERS}
 	${ICPS_PROTOBUF_SRC}
-	${ICPS_PROTOBUF_HEADERS}
-	${THRIFT_FILES}
-	)
+	${ICPS_PROTOBUF_HEADERS})
  
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
-add_dependencies(${MODULE_NAME} thrift)
 
 set(${MODULE_PREFIX}_LIBS freerds-rpc)
 
@@ -131,6 +113,4 @@ install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_subdirectory(module)
 
-if(WITH_FDSAPI)
-	add_subdirectory(fdsapi)
-endif()
+add_subdirectory(fdsapi)
