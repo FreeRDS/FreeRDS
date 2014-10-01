@@ -29,7 +29,6 @@
 #include <freerds/rpc.h>
 
 #include <boost/shared_ptr.hpp>
-#include <thrift/server/TServer.h>
 
 #include "FDSApiHandler.h"
 

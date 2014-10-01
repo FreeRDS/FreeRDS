@@ -18,7 +18,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "FDSApiHandler.h"
+
 #include <session/SessionStore.h>
 #include <appcontext/ApplicationContext.h>
 
@@ -46,6 +48,7 @@ namespace freerds {
 
 		INT32 FDSApiHandler::ping(const INT32 input)
 		{
+			return 0;
 		}
 
 		INT32 FDSApiHandler::authenticateUser(

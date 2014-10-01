@@ -19,8 +19,6 @@
  * limitations under the License.
  */
 
-#include "FDSApiServer.h"
-
 #include <winpr/wlog.h>
 #include <winpr/thread.h>
 #include <winpr/stream.h>
@@ -31,6 +29,8 @@
 
 #include "FDSApiHandler.h"
 #include "FDSApiMessages.h"
+
+#include "FDSApiServer.h"
 
 namespace freerds {
 	namespace sessionmanager {

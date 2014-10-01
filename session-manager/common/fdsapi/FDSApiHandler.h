@@ -22,25 +22,23 @@
 #ifndef FDSAPISHANDLER_H_
 #define FDSAPISHANDLER_H_
 
-#include <fdsapi/fdsapi.h>
 #include <winpr/synch.h>
 #include <winpr/thread.h>
+
+#include <fdsapi/fdsapi.h>
 #include <boost/shared_ptr.hpp>
-#include <thrift/server/TServer.h>
 
 namespace freerds {
 	namespace sessionmanager {
 		namespace fdsapi {
 
-		class FDSApiHandler : virtual public fdsapiIf {
+		class FDSApiHandler {
 		 public:
 			FDSApiHandler();
 			virtual ~FDSApiHandler();
 
 			virtual INT32 ping(const INT32 input);
-
 			virtual INT32 authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain);
-
 			virtual void virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
 			virtual void virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags);
 			virtual bool virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
