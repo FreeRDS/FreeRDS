@@ -70,8 +70,6 @@ RDS_MODULE_COMMON* rdp_rds_module_new(void)
 	rdp->log = WLog_Get("com.freerds.module.rdp");
 	WLog_OpenAppender(rdp->log);
 
-	WLog_SetLogLevel(rdp->log, WLOG_DEBUG);
-
 	WLog_Print(rdp->log, WLOG_DEBUG, "RdsModuleNew");
 
 	return (RDS_MODULE_COMMON*) rdp;

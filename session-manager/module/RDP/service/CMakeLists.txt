@@ -31,16 +31,9 @@ set_target_properties(${MODULE_NAME} PROPERTIES OUTPUT_NAME "freerds-rdp" RUNTIM
 
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE freerdp
-	MODULES freerdp-core freerdp-gdi freerdp-utils)
-
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-crt winpr-synch winpr-thread winpr-environment winpr-utils)
+list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 	
+list(APPEND ${MODULE_PREFIX}_LIBS freerdp)
 list(APPEND ${MODULE_PREFIX}_LIBS freerdp-client)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})

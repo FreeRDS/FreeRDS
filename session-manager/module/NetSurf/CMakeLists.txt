@@ -22,17 +22,13 @@ set(${MODULE_PREFIX}_SRCS
 	netsurf_module.h
 	../common/module_helper.c
 	../common/module_helper.h)
-	
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS "")
+
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-crt winpr-synch winpr-thread winpr-environment winpr-utils winpr-utils)
+list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

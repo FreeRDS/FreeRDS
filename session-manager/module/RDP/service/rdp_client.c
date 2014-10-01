@@ -488,8 +488,6 @@ int rds_freerdp_client_new(freerdp* instance, rdpContext* context)
 	rds->log = WLog_Get("com.freerds.module.rdp.service");
 	WLog_OpenAppender(rds->log);
 
-	WLog_SetLogLevel(rds->log, WLOG_DEBUG);
-
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsRdpClientNew");
 
 	instance->PreConnect = rds_pre_connect;

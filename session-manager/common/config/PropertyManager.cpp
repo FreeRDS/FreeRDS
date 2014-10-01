@@ -224,9 +224,9 @@ namespace freerds
 				helper.boolValue = value;
 
 				if (username.size() == 0) {
-					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %s in global scope",path.c_str(),value ? "true" :"false");
+					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %s in global scope",path.c_str(),value ? "true" :"false");
 				} else {
-					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %s for user %s",path.c_str(),value ? "true" :"false",username.c_str());
+					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %s for user %s",path.c_str(),value ? "true" :"false",username.c_str());
 				}
 
 				return setPropertyInternal(level,sessionID,path,helper,username);
@@ -241,9 +241,9 @@ namespace freerds
 				helper.numberValue = value;
 
 				if (username.size() == 0) {
-					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %d in global scope",path.c_str(),value);
+					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %d in global scope",path.c_str(),value);
 				} else {
-					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %d for user %s",path.c_str(),value,username.c_str());
+					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %d for user %s",path.c_str(),value,username.c_str());
 				}
 
 				return setPropertyInternal(level,sessionID,path,helper,username);
@@ -258,9 +258,9 @@ namespace freerds
 				helper.stringValue = value;
 
 				if (username.size() == 0) {
-					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %s in global scope",path.c_str(),value.c_str());
+					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %s in global scope",path.c_str(),value.c_str());
 				} else {
-					WLog_Print(logger_PropertyManager, WLOG_TRACE, "Adding property %s with value %s for user %s",path.c_str(),value.c_str(),username.c_str());
+					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %s for user %s",path.c_str(),value.c_str(),username.c_str());
 				}
 
 				return setPropertyInternal(level,sessionID,path,helper,username);

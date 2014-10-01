@@ -121,8 +121,6 @@ add_subdirectory(scripts)
 
 add_subdirectory(session-manager)
 
-add_subdirectory(widgets)
-
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.10")
 
 	export(PACKAGE freerds)

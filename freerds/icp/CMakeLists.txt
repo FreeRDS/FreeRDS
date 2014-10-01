@@ -23,12 +23,11 @@ PROTOBUFC_GENERATE_C(ICP_PROTOC_SRC ICP_PROTOC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/
 PROTOBUFC_GENERATE_C(PBRPC_PROTOC_SRC PBRPC_PROTOC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/../../protocols/protobuf/pbRPC.proto)
 
 set(PBRPC_SRC
-  ${PBRPC_PREFIX}/pbrpc.c
+	${PBRPC_PREFIX}/pbrpc.c
 	${PBRPC_PREFIX}/pbrpc_utils.c
 	${PBRPC_PREFIX}/pipe_transport.c
 	${PBRPC_PROTOC_HDRS}
-	${PBRPC_PROTOC_SRC}
-)
+	${PBRPC_PROTOC_SRC})
 
 include_directories(${PBRPC_PREFIX})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -39,15 +38,11 @@ set(${MODULE_PREFIX}_SRCS
 	icp_server_stubs.c
 	${ICP_PROTOC_SRC}
 	${ICP_PROTOC_HDRS}
-	${PBRPC_SRC}
-)
+	${PBRPC_SRC})
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-utils winpr-file winpr-pipe)
+list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUFC_LIBRARIES})
 

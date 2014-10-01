@@ -261,7 +261,7 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 					}
 
 					freerdp_image_copy(tile, dstFormat, -1, 0, 0, nWidth, nHeight,
-							data, srcFormat, scanline, 0, 0);
+							data, srcFormat, scanline, 0, 0, NULL);
 
 					lines = freerdp_bitmap_compress((char*) tile, nWidth, nHeight, s, bpp, 16384, nHeight - 1, ts, e);
 

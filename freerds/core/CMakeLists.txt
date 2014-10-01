@@ -39,23 +39,15 @@ set(${MODULE_PREFIX}_SRCS
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
+list(APPEND ${MODULE_PREFIX}_LIBS freerdp)
+list(APPEND ${MODULE_PREFIX}_LIBS freerdp-server)
+
+list(APPEND ${MODULE_PREFIX}_LIBS winpr)
+list(APPEND ${MODULE_PREFIX}_LIBS winpr-makecert-tool)
+
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-auth)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
-
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-thread winpr-synch winpr-file winpr-path winpr-sysinfo winpr-pipe winpr-environment winpr-library winpr-sspicli winpr-utils winpr-crt)
-
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE freerdp
-	MODULES freerdp-core)
-	
-list(APPEND ${MODULE_PREFIX}_LIBS freerdp-server)
-
-list(APPEND ${MODULE_PREFIX}_LIBS winpr-makecert-tool)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

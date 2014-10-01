@@ -332,9 +332,6 @@ int FDSAPI_RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 leng
 	wStream *s;
 	FDSAPI_MESSAGE msg;
 
-	printf("FDSAPI_RpcMessageReceived: length: %d\n", length);
-	winpr_HexDump(buffer, length);
-
 	status = -1;
 
 	/* Allocate a stream. */

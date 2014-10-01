@@ -216,7 +216,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	SessionId = x11->commonModule.sessionId;
 	x11->displayNum = detect_free_display();
 
-	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, using display %d\n", SessionId, x11->displayNum);
+	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, using display %d", SessionId, x11->displayNum);
 	pipeName = (char*) malloc(256);
 	freerds_named_pipe_get_endpoint_name(x11->displayNum, "X11", pipeName, 256);
 
@@ -248,13 +248,13 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 
 	if (!status)
 	{
-		WLog_Print(gModuleLog, WLOG_ERROR , "s %d, problem starting X11rdp (status %d - cmd %s)\n",
+		WLog_Print(gModuleLog, WLOG_ERROR , "s %d, problem starting X11rdp (status %d - cmd %s)",
 		SessionId, status, lpCommandLine);
 		free(pipeName);
 		return NULL;
 	}
 
-	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, X11rdp Process started: %d (pid %d - cmd %s)\n",
+	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, X11rdp Process started: %d (pid %d - cmd %s)",
 	SessionId, status, x11->X11ProcessInformation.dwProcessId, lpCommandLine);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
@@ -286,7 +286,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 
 	if (!status)
 	{
-		WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, problem starting %s (status %d)\n", SessionId, startupname, status);
+		WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, problem starting %s (status %d)", SessionId, startupname, status);
 		x11_rds_stop_process(&(x11->X11ProcessInformation));
 		free(pipeName);
 		return NULL;

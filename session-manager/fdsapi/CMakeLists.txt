@@ -37,8 +37,7 @@ set(${MODULE_PREFIX}_SRCS
 include_directories(
 	${FDSAPI_GEN_INC_DIR}
 	${FDSAPI_COMMON_DIR}
-	${THRIFT_INCLUDE_DIR}
-)
+	${THRIFT_INCLUDE_DIR})
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
@@ -46,10 +45,7 @@ set(${MODULE_PREFIX}_LIBS freerds-rpc)
 
 list(APPEND ${MODULE_PREFIX}_LIBS ${THRIFT_STATIC_LIB})
 
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-crt winpr-synch winpr-thread winpr-environment winpr-sspicli winpr-utils)
+list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

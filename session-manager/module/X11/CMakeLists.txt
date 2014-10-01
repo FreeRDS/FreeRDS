@@ -27,13 +27,11 @@ include_directories(${PIXMAN_INCLUDE_DIRS})
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
+list(APPEND ${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
+
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-crt winpr-synch winpr-thread winpr-environment winpr-sspicli winpr-utils)
+list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

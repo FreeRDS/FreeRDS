@@ -39,7 +39,7 @@ void app_context_uninit()
 
 long app_context_get_connectionid()
 {
-	return InterlockedIncrement(&(gAppContext->connectionId));
+	return InterlockedIncrement((volatile LONG*) &(gAppContext->connectionId));
 }
 
 void app_context_add_connection(rdsConnection* connection)

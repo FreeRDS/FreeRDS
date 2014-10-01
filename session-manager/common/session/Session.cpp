@@ -35,6 +35,7 @@
 #include <winpr/tchar.h>
 
 #include <module/AuthModule.h>
+#include <fdsapi/FDSApiServer.h>
 #include <appcontext/ApplicationContext.h>
 
 namespace freerds

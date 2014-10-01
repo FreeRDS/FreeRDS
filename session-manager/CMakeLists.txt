@@ -27,6 +27,10 @@ PROTOBUF_GENERATE_CPP(PBRPC_PROTOBUF_SRC PBRPC_PROTOBUF_HEADERS ${CMAKE_CURRENT_
 PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICP.proto)
 PROTOBUF_GENERATE_CPP(ICPS_PROTOBUF_SRC ICPS_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICPS.proto)
 
+if(NOT DEFINED WITH_FDSAPI)
+	set(WITH_FDSAPI 1)
+endif()
+
 if(WITH_FDSAPI)
 	find_feature(Thrift REQUIRED "RPC" "Remote Procedure Call")
 	
@@ -55,7 +59,7 @@ if(WITH_FDSAPI)
 endif()
 
 find_package(Boost REQUIRED)
-include_directories( ${Boost_INCLUDE_DIR} )
+include_directories(${Boost_INCLUDE_DIR})
 
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
@@ -117,10 +121,7 @@ add_dependencies(${MODULE_NAME} thrift)
 
 set(${MODULE_PREFIX}_LIBS freerds-rpc)
 
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-path winpr-pipe winpr-library winpr-sspicli)
+list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 
 list(APPEND ${MODULE_PREFIX}_LIBS ${PROTOBUF_LIBRARY})
 	
@@ -130,6 +131,6 @@ install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_subdirectory(module)
 
-if (WITH_FDSAPI)
-add_subdirectory(fdsapi)
+if(WITH_FDSAPI)
+	add_subdirectory(fdsapi)
 endif()
