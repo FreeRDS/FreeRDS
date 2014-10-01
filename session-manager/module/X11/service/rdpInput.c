@@ -801,7 +801,7 @@ void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType)
 	DWORD vkcodeWithFlags;
 	DWORD scancodeWithFlags;
 
-	type = (flags & KBD_FLAGS_DOWN) ? KeyPress : KeyRelease;
+	type = (flags & KBD_FLAGS_RELEASE) ? KeyRelease : KeyPress;
 
 	scancodeWithFlags = scancode;
 	scancodeWithFlags |= (flags & KBD_FLAGS_EXTENDED) ? KBDEXT : 0;
