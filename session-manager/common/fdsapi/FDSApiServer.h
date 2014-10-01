@@ -31,6 +31,10 @@
 #include <boost/shared_ptr.hpp>
 #include <thrift/server/TServer.h>
 
+#include "FDSApiHandler.h"
+
+using boost::shared_ptr;
+
 namespace freerds{
 	namespace sessionmanager{
 		namespace fdsapi{
@@ -50,13 +54,21 @@ namespace freerds{
 			void setServer(boost::shared_ptr<apache::thrift::server::TServer> server);
 			CRITICAL_SECTION * getCritSection();
 
+			void fireSessionEvent(UINT32 sessionId, UINT32 stateChange);
+
 		 private:
+			static int RpcConnectionAccepted(rdsRpcClient* rpcClient);
+			static int RpcConnectionClosed(rdsRpcClient* rpcClient);
+			static int RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
+
 			CRITICAL_SECTION mCSection;
 			boost::shared_ptr<apache::thrift::server::TServer> mServer;
 			HANDLE mServerThread;
 			DWORD mPort;
 
-			rdsRpc* mRpcServer;
+			static shared_ptr<FDSApiHandler> mFDSApiHandler;
+
+			rdsRpcServer* mRpcServer;
 		};
 
 		}

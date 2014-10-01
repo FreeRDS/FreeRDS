@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SimpleGreeterWindow</class>
+ <widget class="QMainWindow" name="SimpleGreeterWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Simple Greeter Window</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="outerGrid">
+    <item row="0" column="0" colspan="4">
+	 <widget class="QWidget">
+      <property name="minimumSize">
+       <size>
+        <width>20</width>
+        <height>75</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <spacer name="verticalSpacer1">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>218</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="1" colspan="2">
+     <layout class="QGridLayout">
+     <item>
+     <widget class="QLabel" name="logoLabel">
+        <property name="alignment">
+          <set>Qt::AlignCenter</set>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>150</width>
+          <height>150</height>
+         </size>
+        </property>
+     </widget>
+     </item>
+     </layout>
+    </item>
+    <item row="5" column="0" colspan="4">
+     <spacer name="verticalSpacer2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>218</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="6" column="0" colspan="4">
+     <widget class="QLabel" name="poweredByLabel">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Powered by vWorkspace</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight</set>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" rowspan="3" colspan="2">
+     <widget class="QWidget" name="innerBox">
+     <layout class="QGridLayout" name="innerGrid">
+      <property name="margin">
+       <number>10</number>
+      </property>
+      <property name="spacing">
+       <number>20</number>
+      </property>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="welcomeLabel">
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(63, 63, 63);</string>
+        </property>
+        <property name="text">
+         <string>Welcome to FreeRDS
+Remote Desktop Server for Linux</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="usernameLabel">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(63, 63, 63);</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight</set>
+        </property>
+        <property name="text">
+         <string>Username:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="usernameEdit"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="passwordLabel">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(63, 63, 63);</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight</set>
+        </property>
+        <property name="text">
+         <string>Password:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="passwordEdit">
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QWidget" name="buttonBox">
+       <layout class="QGridLayout" name="buttonGrid">
+        <property name="margin">
+         <number>10</number>
+        </property>
+        <property name="spacing">
+         <number>20</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QWidget" name="horizontalSpacer1">
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="loginButton">
+          <property name="text">
+           <string>Login</string>
+          </property>
+          <property name="default">
+           <bool>true</bool>
+          </property>
+          <property name="autoDefault">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="cancelButton">
+          <property name="text">
+           <string>Cancel</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QWidget" name="horizontalSpacer2">
+         </widget>
+        </item>
+       </layout>
+       </widget>
+      </item>
+     </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

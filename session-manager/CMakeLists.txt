@@ -47,7 +47,11 @@ if(WITH_FDSAPI)
 	THRIFT_GEN(THRIFT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/thrift/fdsapi.thrift)
 	
 	add_definitions(-DWITH_FDSAPI)
-	set(FDSAPI_SRC common/fdsapi/FDSApiHandler.cpp common/fdsapi/FDSApiServer.cpp)
+	set(FDSAPI_SRC
+		common/fdsapi/FDSApiHandler.cpp
+		common/fdsapi/FDSApiServer.cpp
+		common/fdsapi/FDSApiMessages.cpp
+	)
 endif()
 
 find_package(Boost REQUIRED)

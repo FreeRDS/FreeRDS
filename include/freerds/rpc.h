@@ -30,46 +30,58 @@
 extern "C" {
 #endif
 
-typedef struct rds_rpc rdsRpc;
+typedef struct rds_rpc_server rdsRpcServer;
+typedef struct rds_rpc_client rdsRpcClient;
 
-typedef int (*pRdsRpcAccept)(rdsRpc* rpc);
-typedef int (*pRdsRpcReceiveMessage)(rdsRpc* rpc, BYTE* buffer, UINT32 length);
+typedef int (*pRdsRpcConnectionAccepted)(rdsRpcClient* rpcClient);
+typedef int (*pRdsRpcConnectionClosed)(rdsRpcClient* rpcClient);
+typedef int (*pRdsRpcMessageReceived)(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
 
-struct rds_rpc
+struct rds_rpc_server
 {
 	void* custom;
 	char* Endpoint;
 	char* PipeName;
-	BOOL ServerMode;
-	HANDLE StopEvent;
-	HANDLE ClientThread;
-	HANDLE ServerThread;
-	HANDLE hClientPipe;
-	HANDLE hServerPipe;
-	wStream* OutboundStream;
-	wStream* InboundStream;
-	UINT32 InboundTotalLength;
-	UINT32 InboundTotalCount;
-	UINT32 OutboundTotalLength;
-	UINT32 OutboundTotalCount;
+	HANDLE hStopEvent;
+	HANDLE hServerThread;
 
-	pRdsRpcAccept Accept;
-	pRdsRpcReceiveMessage ReceiveMessage;
+	wArrayList* ClientList;
+
+	pRdsRpcConnectionAccepted ConnectionAccepted;
+	pRdsRpcConnectionClosed ConnectionClosed;
+	pRdsRpcMessageReceived MessageReceived;
 };
 
-int freerds_rpc_client_start(rdsRpc* rpc);
-int freerds_rpc_client_stop(rdsRpc* rpc);
-int freerds_rpc_client_write_message(rdsRpc* rpc, BYTE* buffer, UINT32 length);
+struct rds_rpc_client
+{
+	void* custom;
+	char* Endpoint;
+	char* PipeName;
+	HANDLE hStopEvent;
+	HANDLE hClientThread;
+	HANDLE hClientPipe;
 
-rdsRpc* freerds_rpc_client_new(const char* Endpoint);
-void freerds_rpc_client_free(rdsRpc* rpc);
+	rdsRpcServer* RpcServer;
 
-int freerds_rpc_server_start(rdsRpc* rpc);
-int freerds_rpc_server_stop(rdsRpc* rpc);
-int freerds_rpc_server_write_message(rdsRpc* rpc, BYTE* buffer, UINT32 length);
+	wStream* InboundStream;
 
-rdsRpc* freerds_rpc_server_new(const char* Endpoint);
-void freerds_rpc_server_free(rdsRpc* rpc);
+	pRdsRpcConnectionClosed ConnectionClosed;
+	pRdsRpcMessageReceived MessageReceived;
+};
+
+rdsRpcServer* freerds_rpc_server_new(const char* Endpoint);
+void freerds_rpc_server_free(rdsRpcServer* rpcServer);
+
+int freerds_rpc_server_start(rdsRpcServer* rpcServer);
+int freerds_rpc_server_stop(rdsRpcServer* rpcServer);
+int freerds_rpc_server_broadcast_message(rdsRpcServer* rpcServer, BYTE* buffer, UINT32 length);
+
+rdsRpcClient* freerds_rpc_client_new(const char* Endpoint);
+void freerds_rpc_client_free(rdsRpcClient* rpcClient);
+
+int freerds_rpc_client_start(rdsRpcClient* rpcClient);
+int freerds_rpc_client_stop(rdsRpcClient* rpcClient);
+int freerds_rpc_client_send_message(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
 
 #ifdef __cplusplus
 }

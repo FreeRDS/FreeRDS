@@ -23,6 +23,8 @@
 #include "config.h"
 #endif
 
+#define USE_THRIFT 0
+
 #include "fdsapi_thrift.h"
 
 #include <fdsapi/fdsapi.h>
@@ -30,10 +32,15 @@
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
 #include <winpr/print.h>
+#include <winpr/sysinfo.h>
+#include <winpr/wnd.h>
 #include <winpr/wtsapi.h>
 
 #include <freerds/rpc.h>
 
+#include "FDSApiMessages.h"
+
+#if USE_THRIFT
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/protocol/TBinaryProtocol.h>
@@ -45,37 +52,374 @@ using namespace apache::thrift::transport;
 boost::shared_ptr<TTransport> gTransport;
 boost::shared_ptr<freerds::fdsapiClient> gClient;
 
-rdsRpc* g_Rpc = NULL;
-
 std::string gAuthToken("HUGO");
+#endif
 
-#define CHECK_CLIENT_CONNECTION() if((!gTransport)||(!gTransport->isOpen())) {connectClient();}
+static DWORD g_currentSessionId = 0xFFFFFFFF;
 
-int FDSAPI_RpcReceiveMessage(rdsRpc* rpc, BYTE* buffer, UINT32 length)
+rdsRpcClient* g_RpcClient = NULL;
+
+/*
+ * Most calls result in a request/response message being sent and
+ * received from the FreeRDS server.  The following code handles
+ * the blocking nature of these calls in a thread-safe manner.
+ * Each request is tagged with a unique request id and a response
+ * is paired with the request.
+ */
+
+typedef struct
 {
-	printf("FDSAPI_RpcReceiveMessage: length: %d\n", length);
-	winpr_HexDump(buffer, length);
+	HANDLE hWaitEvent;
+	FDSAPI_MESSAGE* requestMsg;
+	FDSAPI_MESSAGE* responseMsg;
+}
+FDSAPI_REQUEST_ITEM;
+
+static UINT16 g_nextRequestId;
+static wArrayList* g_activeRequestList;
+
+static BOOL FDSAPI_SendRequest(FDSAPI_MESSAGE* requestMsg, FDSAPI_MESSAGE* responseMsg)
+{
+	FDSAPI_REQUEST_ITEM requestItem;
+	BOOL success = FALSE;
+	wStream* s = NULL;
+	int status;
+
+	ZeroMemory(&requestItem, sizeof(requestItem));
+
+	/* Enter critical section. */
+	ArrayList_Lock(g_activeRequestList);
+
+	/* Set the request id. */
+	requestMsg->requestId = g_nextRequestId++;
+
+	/* Leave critical section. */
+	ArrayList_Unlock(g_activeRequestList);
+
+	printf("FDSAPI_SendRequest: sending request %d\n", requestMsg->requestId);
+
+	/* Encode the request. */
+	s = FDSAPI_EncodeMessage(requestMsg);
+	if (s == NULL) return FALSE;
+
+	/* Add the request to the list. */
+	requestItem.hWaitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (requestItem.hWaitEvent == NULL) goto EXCEPTION;
+
+	requestItem.requestMsg = requestMsg;
+	requestItem.responseMsg = responseMsg;
+
+	ArrayList_Add(g_activeRequestList, &requestItem);
+
+	/* Send the request to the FreeRDS server. */
+	status = freerds_rpc_client_send_message(g_RpcClient, Stream_Buffer(s), Stream_Length(s));
+	if (status == Stream_Length(s))
+	{
+		printf("FDSAPI_SendRequest: waiting for response\n");
+
+		/* Wait for the response. */
+		WaitForSingleObject(requestItem.hWaitEvent, INFINITE);
+
+		printf("FDSAPI_SendRequest: received response %d\n", responseMsg->requestId);
+
+		/* Check for the expected response. */
+		if (requestMsg->requestId == responseMsg->requestId)
+		{
+			success = TRUE;
+		}
+	}
+
+	/* Remove the request from the list. */	
+	ArrayList_Remove(g_activeRequestList, &requestItem);
+
+	CloseHandle(requestItem.hWaitEvent);
+
+EXCEPTION:
+	if (s)
+	{
+		Stream_Free(s, TRUE);
+	}
+
+	return success;
+}
+
+static int FDSAPI_HandleResponse(rdsRpcClient* rpcClient, FDSAPI_MESSAGE* msg)
+{
+	int index;
+
+	/* Find the matching request. */
+	ArrayList_Lock(g_activeRequestList);
+	for (index = 0; index < ArrayList_Count(g_activeRequestList); index++)
+	{
+		FDSAPI_REQUEST_ITEM* requestItem = (FDSAPI_REQUEST_ITEM*)ArrayList_GetItem(g_activeRequestList, index);
+
+		if (msg->requestId == requestItem->requestMsg->requestId)
+		{
+			/* Wake up the requesting thread. */
+			CopyMemory(requestItem->responseMsg, msg, sizeof(FDSAPI_MESSAGE));
+			SetEvent(requestItem->hWaitEvent);
+			break;
+		}
+	}
+	ArrayList_Unlock(g_activeRequestList);
+
 	return 0;
 }
 
-static int connectClient()
+	
+/**
+ * As calls to WTSWaitSystemEvent and WTSRegisterSessionNotification
+ * are made from various threads in the process, a list is maintained
+ * of FDSAPI_SESSION_EVENT_OBSERVER structures.  Each time a session
+ * event message (FDSAPI_SESSION_EVENT) is received from the FreeRDS
+ * server, we need to walk through this list and deliver the session
+ * event in the desired manner (either by completing the wait being
+ * done in WTSWaitSystemEvent or sending a message to the HWND that
+ * was registered via WTSRegisterSessionNotification).
+ */
+
+#define FDSAPI_WAIT_SYSTEM_EVENT_TYPE		1
+#define FDSAPI_SESSION_NOTIFICATION_TYPE	2
+
+typedef struct
 {
-	boost::shared_ptr<TSocket> socket(new TSocket("localhost", 9091));
-	boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-	boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+	HANDLE hWaitEvent;
+	DWORD dwEventMask;
+	DWORD dwEventFlags;
+}
+FDSAPI_WAIT_SYSTEM_EVENT;
 
-	boost::shared_ptr<freerds::fdsapiClient> client(new freerds::fdsapiClient(protocol));
+typedef struct
+{
+	HWND hWnd;
+	DWORD dwFlags;
+}
+FDSAPI_SESSION_NOTIFICATION;
 
-	gClient = client;
-	gTransport = transport;
-	transport->open();
+typedef struct
+{
+	int type;
+	union
+	{
+		FDSAPI_WAIT_SYSTEM_EVENT waitSystemEvent;
+		FDSAPI_SESSION_NOTIFICATION sessionNotification;
+	} u;
+}
+FDSAPI_SESSION_EVENT_OBSERVER;
 
-	g_Rpc = freerds_rpc_client_new("FDSAPI");
-	g_Rpc->ReceiveMessage = FDSAPI_RpcReceiveMessage;
+static wArrayList* g_sessionEventObserverList;
+static DWORD g_sessionEventTimeDelay = 1000;
+static DWORD g_sessionEventTimeStamp;
 
-	freerds_rpc_client_start(g_Rpc);
+static int FDSAPI_HandleSessionEvent(rdsRpcClient* rpcClient, FDSAPI_SESSION_EVENT* sessionEvent)
+{
+	DWORD sleepTime;
+	int index;
+
+	/* Enter critical section. */
+	ArrayList_Lock(g_sessionEventObserverList);
+
+	/*
+	 * Wait a short period of time to allow session event observers to
+	 * register.  This can happen if a WTSWaitSystemEvent gets satisfied
+	 * and another session event comes in immediately.  In this case, the
+	 * possibility exists that a session event could get missed.
+	 */
+	sleepTime = g_sessionEventTimeDelay - (GetTickCount() - g_sessionEventTimeStamp);
+
+	if (sleepTime < g_sessionEventTimeDelay)
+	{
+		ArrayList_Unlock(g_sessionEventObserverList);
+		Sleep(sleepTime);
+		ArrayList_Lock(g_sessionEventObserverList);
+	}
+
+	/* Loop through all items in the list... */
+	for (index = 0; index < ArrayList_Count(g_sessionEventObserverList); index++)
+	{
+		FDSAPI_SESSION_EVENT_OBSERVER* observer;
+
+		observer = (FDSAPI_SESSION_EVENT_OBSERVER*)ArrayList_GetItem(g_sessionEventObserverList, index);
+		switch (observer->type)
+		{
+			case FDSAPI_WAIT_SYSTEM_EVENT_TYPE:
+			{
+				DWORD dwEventFlags = 0;
+
+				/* Map the state change to event flags. */
+				switch (sessionEvent->stateChange)
+				{
+					case WTS_SESSION_CREATE:
+						dwEventFlags = WTS_EVENT_CREATE;
+						break;
+
+					case WTS_SESSION_TERMINATE:
+						dwEventFlags = WTS_EVENT_DELETE;
+						break;
+
+					case WTS_CONSOLE_CONNECT:
+					case WTS_REMOTE_CONNECT:
+						dwEventFlags = WTS_EVENT_STATECHANGE | WTS_EVENT_CONNECT;
+						break;
+
+					case WTS_CONSOLE_DISCONNECT:
+					case WTS_REMOTE_DISCONNECT:
+						dwEventFlags = WTS_EVENT_STATECHANGE | WTS_EVENT_DISCONNECT;
+						break;
+
+					case WTS_SESSION_LOGON:
+						dwEventFlags = WTS_EVENT_STATECHANGE | WTS_EVENT_LOGON;
+						break;
+
+					case WTS_SESSION_LOGOFF:
+						dwEventFlags = WTS_EVENT_STATECHANGE | WTS_EVENT_LOGOFF;
+						break;
+
+					default:
+						break;
+				}
+
+				/* If the event flags match the event mask... */
+				if ((dwEventFlags & observer->u.waitSystemEvent.dwEventMask) != 0)
+				{
+					/* Save the event flags. */
+					observer->u.waitSystemEvent.dwEventFlags |= dwEventFlags;
+
+					/* Wake up the thread calling WTSWaitSystemEvent. */
+					SetEvent(observer->u.waitSystemEvent.hWaitEvent);
+				}
+
+				break;
+			}
+
+			case FDSAPI_SESSION_NOTIFICATION_TYPE:
+			{
+				/* If the session matches a session being monitored... */
+				if ((observer->u.sessionNotification.dwFlags == NOTIFY_FOR_ALL_SESSIONS) ||
+				    ((observer->u.sessionNotification.dwFlags == NOTIFY_FOR_THIS_SESSION)
+				        && (sessionEvent->sessionId == g_currentSessionId)))
+				{
+					/* Send a WM_WTSSESSION_CHANGE message to the window. */
+					SendMessage(
+						observer->u.sessionNotification.hWnd,
+						WM_WTSSESSION_CHANGE,
+						(WPARAM)sessionEvent->stateChange,
+						(LPARAM)sessionEvent->sessionId);
+				}
+
+				break;
+			}
+		}
+	}
+
+	/* Update the timestamp. */
+	g_sessionEventTimeStamp = GetTickCount();
+
+	/* Leave critical section. */
+	ArrayList_Unlock(g_sessionEventObserverList);
 
 	return 0;
+}
+
+int FDSAPI_RpcConnectionClosed(rdsRpcClient* rpcClient)
+{
+	return 0;
+}
+
+int FDSAPI_RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length)
+{
+	int status;
+	wStream *s;
+	FDSAPI_MESSAGE msg;
+
+	printf("FDSAPI_RpcMessageReceived: length: %d\n", length);
+	winpr_HexDump(buffer, length);
+
+	status = -1;
+
+	/* Allocate a stream. */
+	s = Stream_New(buffer, length);
+	if (s == NULL) return -1;
+
+	/* Decode the message. */
+	if (FDSAPI_DecodeMessage(s, &msg))
+	{
+		switch (msg.messageId)
+		{
+			case FDSAPI_SESSION_EVENT_ID:
+				status = FDSAPI_HandleSessionEvent(rpcClient, &msg.u.sessionEvent);
+				break;
+
+			default:
+				status = FDSAPI_HandleResponse(rpcClient, &msg);
+				break;
+		}
+	}
+
+	/* Free the stream. */
+	Stream_Free(s, FALSE);
+
+	return status;
+}
+
+static BOOL ConnectClient()
+{
+#if USE_THRIFT
+	if (!gClient || !gTransport || !gTransport->isOpen())
+	{
+		boost::shared_ptr<TSocket> socket(new TSocket("localhost", 9091));
+		boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
+		boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+
+		boost::shared_ptr<freerds::fdsapiClient> client(new freerds::fdsapiClient(protocol));
+
+		try
+		{
+			transport->open();
+		}
+		catch (...)
+		{
+			return FALSE;
+		}
+
+		gClient = client;
+		gTransport = transport;
+	}
+#endif
+
+	if (!g_RpcClient)
+	{
+		g_activeRequestList = ArrayList_New(TRUE);
+		g_sessionEventObserverList = ArrayList_New(TRUE);
+
+		g_RpcClient = freerds_rpc_client_new("FDSAPI");
+		g_RpcClient->ConnectionClosed = FDSAPI_RpcConnectionClosed;
+		g_RpcClient->MessageReceived = FDSAPI_RpcMessageReceived;
+
+		freerds_rpc_client_start(g_RpcClient);
+
+#if 0
+		int i;
+		rdsRpcClient* rpcClient[10];
+		for (i = 0; i < 10; i++)
+		{
+			rpcClient[i] = freerds_rpc_client_new("FDSAPI");
+			rpcClient[i]->ConnectionClosed = FDSAPI_RpcConnectionClosed;
+			rpcClient[i]->MessageReceived = FDSAPI_RpcMessageReceived;
+			freerds_rpc_client_start(rpcClient[i]);
+		}
+
+		sleep(30);
+
+		for (i = 0; i < 10; i++)
+		{
+			freerds_rpc_client_stop(rpcClient[i]);
+			freerds_rpc_client_free(rpcClient[i]);
+		}
+#endif
+	}
+
+	return TRUE;
 }
 
 
@@ -85,14 +429,24 @@ static int connectClient()
 
 static BOOL GetCurrentSessionId(LPDWORD pSessionId)
 {
-	/**
-	 * TODO: Need to figure out how to get the session id
-	 * associated with the current process.  Perhaps an
-	 * environment variable such as FREERDS_SID can be
-	 * used.
-	 */
-	*pSessionId = 0;
-	return TRUE;
+	/* If the session has been previously obtained... */
+	if (g_currentSessionId != 0xFFFFFFFF)
+	{
+		/* Simply return it to the caller. */
+		*pSessionId = g_currentSessionId;
+		return TRUE;
+	}
+
+	/* The FREERDS_SID environment variable has the session id. */
+	char* env = getenv("FREERDS_SID");
+	if (env)
+	{
+		g_currentSessionId = atoi(env);
+		*pSessionId = g_currentSessionId;
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 static BOOL CheckSessionId(LPDWORD pSessionId)
@@ -227,7 +581,13 @@ FreeRDS_WTSEnumerateSessionsA(
 	PWTS_SESSION_INFOA* ppSessionInfo,
 	DWORD* pCount)
 {
+#if USE_THRIFT
 	freerds::TReturnEnumerateSessions result;
+#else
+	FDSAPI_MESSAGE requestMsg;
+	FDSAPI_MESSAGE responseMsg;
+#endif
+
 	PWTS_SESSION_INFOA pSessionInfoA;
 	BOOL bSuccess;
 	LPBYTE pExtra;
@@ -236,10 +596,10 @@ FreeRDS_WTSEnumerateSessionsA(
 	DWORD count;
 	DWORD size;
 
-	CHECK_CLIENT_CONNECTION();
-
 	*ppSessionInfo = NULL;
 	*pCount = 0;
+
+	if (!ConnectClient()) return FALSE;
 
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE) return FALSE;
@@ -251,6 +611,7 @@ FreeRDS_WTSEnumerateSessionsA(
 	*pCount = 0;
 
 	/* Execute session manager RPC. */
+#if USE_THRIFT
 	try
 	{
 		gClient->enumerateSessions(result, gAuthToken, Version);
@@ -264,14 +625,41 @@ FreeRDS_WTSEnumerateSessionsA(
 
 	count = (DWORD)result.sessionInfoList.size();
 	if (count == 0) return TRUE;
+#else
+	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
+	ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
+
+	requestMsg.messageId = FDSAPI_ENUMERATE_SESSIONS_REQUEST_ID;
+	requestMsg.u.enumerateSessionsRequest.version = Version;
+
+	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
+	if (bSuccess)
+	{
+		printf("WTSEnumerateSessionsA: result=%u, count=%u\n",
+			responseMsg.u.enumerateSessionsResponse.result,
+			responseMsg.u.enumerateSessionsResponse.cSessions);
+
+		bSuccess = responseMsg.u.enumerateSessionsResponse.result;
+	}
+	if (!bSuccess) return FALSE;
+
+	count = responseMsg.u.enumerateSessionsResponse.cSessions;
+	if (count == 0) return TRUE;
+#endif	
 
 	/* Allocate memory (including space for strings). */
 	cbExtra = 0;
 	for (index = 0; index < count; index++)
 	{
+#if USE_THRIFT
 		freerds::TSessionInfo sessionInfo = result.sessionInfoList.at(index);
 
 		cbExtra += sessionInfo.winStationName.length() + 1;
+#else
+		FDSAPI_SESSION_INFO* pSessionInfo = &responseMsg.u.enumerateSessionsResponse.pSessionInfo[index];
+
+		cbExtra += pSessionInfo->winStationName ? strlen(pSessionInfo->winStationName) + 1 : 0;
+#endif
 	}
 
 	size = (count * sizeof(WTS_SESSION_INFOA)) + cbExtra;
@@ -284,6 +672,7 @@ FreeRDS_WTSEnumerateSessionsA(
 	/* Fill memory with session information. */
 	for (index = 0; index < count; index++)
 	{
+#if USE_THRIFT
 		freerds::TSessionInfo sessionInfo = result.sessionInfoList.at(index);
 
 		pSessionInfoA[index].SessionId = (DWORD)sessionInfo.sessionId;
@@ -292,6 +681,20 @@ FreeRDS_WTSEnumerateSessionsA(
 
 		strcpy((LPSTR)pExtra, sessionInfo.winStationName.c_str());
 		pExtra += sessionInfo.winStationName.length() + 1;
+#else
+		FDSAPI_SESSION_INFO* pSessionInfo = &responseMsg.u.enumerateSessionsResponse.pSessionInfo[index];
+
+		pSessionInfoA[index].SessionId = (DWORD)pSessionInfo->sessionId;
+		pSessionInfoA[index].pWinStationName = (LPSTR)pExtra;
+		pSessionInfoA[index].State = (WTS_CONNECTSTATE_CLASS)pSessionInfo->connectState;
+
+		size = pSessionInfo->winStationName ? strlen(pSessionInfo->winStationName) : 0;
+		if (size > 0)
+		{
+			strcpy((LPSTR)pExtra, pSessionInfo->winStationName);
+		}
+		pExtra += size + 1;
+#endif
 	}
 
 	*ppSessionInfo = pSessionInfoA;
@@ -318,10 +721,10 @@ FreeRDS_WTSEnumerateSessionsW(
 	DWORD index;
 	DWORD size;
 
-	CHECK_CLIENT_CONNECTION();
-
 	*ppSessionInfo = NULL;
 	*pCount = 0;
+
+	if (!ConnectClient()) return FALSE;
 
 	bSuccess = FreeRDS_WTSEnumerateSessionsA(
 		hServer,
@@ -447,10 +850,16 @@ FreeRDS_WTSQuerySessionInformationA(
 	DWORD* pBytesReturned
 )
 {
+#if USE_THRIFT
 	freerds::TReturnQuerySessionInformation result;
+#else
+	FDSAPI_MESSAGE requestMsg;
+	FDSAPI_MESSAGE responseMsg;
+	FDSAPI_SESSION_INFO_VALUE *infoValue;
+#endif
 	BOOL bSuccess;
 
-	CHECK_CLIENT_CONNECTION();
+	if (!ConnectClient()) return FALSE;
 
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE) return FALSE;
@@ -458,6 +867,10 @@ FreeRDS_WTSQuerySessionInformationA(
 	if (ppBuffer == NULL) return FALSE;
 	if (pBytesReturned == NULL) return FALSE;
 
+	*ppBuffer = NULL;
+	*pBytesReturned = 0;
+
+#if USE_THRIFT
 	/* Execute session manager RPC. */
 	try
 	{
@@ -470,6 +883,23 @@ FreeRDS_WTSQuerySessionInformationA(
 	}
 	if (!bSuccess) return FALSE;
 
+	if (!result.returnValue) return FALSE;
+#else
+	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
+	ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
+
+	requestMsg.messageId = FDSAPI_QUERY_SESSION_INFORMATION_REQUEST_ID;
+	requestMsg.u.querySessionInformationRequest.sessionId = SessionId;
+	requestMsg.u.querySessionInformationRequest.infoClass = WTSInfoClass;
+
+	infoValue = &responseMsg.u.querySessionInformationResponse.infoValue;
+
+	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
+	if (!bSuccess) return FALSE;
+
+	if (!responseMsg.u.querySessionInformationResponse.result) return FALSE;
+#endif
+
 	/* Return the result. */
 	switch (WTSInfoClass)
 	{
@@ -481,7 +911,11 @@ FreeRDS_WTSQuerySessionInformationA(
 			ULONG* pulValue = (ULONG*)malloc(sizeof(ULONG));
 			if (pulValue == NULL) return FALSE;
 
+#if USE_THRIFT
 			*pulValue = (ULONG)result.infoValue.int32Value;
+#else
+			*pulValue = (ULONG)infoValue->u.uint32Value;
+#endif
 
 			*ppBuffer = (LPSTR)pulValue;
 			*pBytesReturned = sizeof(ULONG);
@@ -495,7 +929,11 @@ FreeRDS_WTSQuerySessionInformationA(
 			USHORT* pusValue = (USHORT*)malloc(sizeof(USHORT));
 			if (pusValue == NULL) return FALSE;
 
+#if USE_THRIFT
 			*pusValue = (USHORT)result.infoValue.int16Value;
+#else
+			*pusValue = (USHORT)infoValue->u.uint16Value;
+#endif
 
 			*ppBuffer = (LPSTR)pusValue;
 			*pBytesReturned = sizeof(USHORT);
@@ -508,11 +946,17 @@ FreeRDS_WTSQuerySessionInformationA(
 		case WTSDomainName:
 		case WTSClientName:
 		{
-			int size = result.infoValue.stringValue.length() + 1;
+#if USE_THRIFT
+			const char* stringValue = result.infoValue.stringValue.c_str();
+#else
+			const char* stringValue = infoValue->u.stringValue ? infoValue->u.stringValue : "";
+#endif
+			int size = strlen(stringValue) + 1;
+
 			LPSTR pszValue = (LPSTR)malloc(size);
 			if (pszValue == NULL) return FALSE;
 
-			strncpy(pszValue, result.infoValue.stringValue.c_str(), size);
+			strncpy(pszValue, stringValue, size);
 
 			*ppBuffer = pszValue;
 			*pBytesReturned = size;
@@ -522,13 +966,28 @@ FreeRDS_WTSQuerySessionInformationA(
 
 		case WTSClientAddress:
 		{
+#if USE_THRIFT
+			const char* stringValue = result.infoValue.stringValue.c_str();
+#else
+			const char* stringValue = infoValue->u.stringValue ? infoValue->u.stringValue : "";
+#endif
+
 			int size = sizeof(WTS_CLIENT_ADDRESS);
 			WTS_CLIENT_ADDRESS* pClientAddress = (WTS_CLIENT_ADDRESS*)malloc(size);
 			if (pClientAddress == NULL) return FALSE;
 
 			/* TODO: Need to convert IPV4 or IPV6 address from string to binary. */
+			int ipAddr[4];
+
 			ZeroMemory(pClientAddress, sizeof(WTS_CLIENT_ADDRESS));
 			pClientAddress->AddressFamily = AF_INET;
+			if (sscanf(stringValue, "%d.%d.%d.%d", &ipAddr[0], &ipAddr[1], &ipAddr[2], &ipAddr[3]) == 4)
+			{
+				pClientAddress->Address[2] = (BYTE)ipAddr[0];
+				pClientAddress->Address[3] = (BYTE)ipAddr[1];
+				pClientAddress->Address[4] = (BYTE)ipAddr[2];
+				pClientAddress->Address[5] = (BYTE)ipAddr[3];
+			}
 
 			*ppBuffer = (LPSTR)pClientAddress;
 			*pBytesReturned = size;
@@ -542,9 +1001,15 @@ FreeRDS_WTSQuerySessionInformationA(
 			WTS_CLIENT_DISPLAY* pClientDisplay = (WTS_CLIENT_DISPLAY*)malloc(size);
 			if (pClientDisplay == NULL) return FALSE;
 
+#if USE_THRIFT
 			pClientDisplay->HorizontalResolution = result.infoValue.displayValue.displayWidth;
 			pClientDisplay->VerticalResolution = result.infoValue.displayValue.displayHeight;
 			pClientDisplay->ColorDepth = result.infoValue.displayValue.colorDepth;
+#else
+			pClientDisplay->HorizontalResolution = infoValue->u.displayValue.displayWidth;
+			pClientDisplay->VerticalResolution = infoValue->u.displayValue.displayHeight;
+			pClientDisplay->ColorDepth = infoValue->u.displayValue.colorDepth;
+#endif
 
 			*ppBuffer = (LPSTR)pClientDisplay;
 			*pBytesReturned = size;
@@ -556,6 +1021,10 @@ FreeRDS_WTSQuerySessionInformationA(
 			bSuccess = FALSE;
 			break;
 	}
+
+#if !USE_THRIFT
+	FDSAPI_FreeMessage(&responseMsg);
+#endif
 
 	return bSuccess;
 }
@@ -704,15 +1173,20 @@ FreeRDS_WTSDisconnectSession(
 	BOOL bWait
 )
 {
+#if !USE_THRIFT
+	FDSAPI_MESSAGE requestMsg;
+	FDSAPI_MESSAGE responseMsg;
+#endif
 	BOOL bSuccess;
 
-	CHECK_CLIENT_CONNECTION();
+	if (!ConnectClient()) return FALSE;
 
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE) return FALSE;
 	if (!CheckSessionId(&SessionId)) return FALSE;
 
 	/* Execute session manager RPC. */
+#if USE_THRIFT
 	try
 	{
 		bSuccess = gClient->disconnectSession(gAuthToken, SessionId, bWait);
@@ -721,6 +1195,20 @@ FreeRDS_WTSDisconnectSession(
 	{
 		bSuccess = FALSE;
 	}
+#else
+	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
+	ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
+
+	requestMsg.messageId = FDSAPI_DISCONNECT_SESSION_REQUEST_ID;
+	requestMsg.u.disconnectSessionRequest.sessionId = SessionId;
+	requestMsg.u.disconnectSessionRequest.wait = bWait;
+
+	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
+	if (bSuccess)
+	{
+		bSuccess = responseMsg.u.disconnectSessionResponse.result;
+	}
+#endif
 
 	/* Return the result. */
 	return bSuccess;
@@ -733,15 +1221,20 @@ FreeRDS_WTSLogoffSession(
 	BOOL bWait
 )
 {
+#if !USE_THRIFT
+	FDSAPI_MESSAGE requestMsg;
+	FDSAPI_MESSAGE responseMsg;
+#endif
 	BOOL bSuccess;
 
-	CHECK_CLIENT_CONNECTION();
+	if (!ConnectClient()) return FALSE;
 
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE) return FALSE;
 	if (!CheckSessionId(&SessionId)) return FALSE;
 
 	/* Execute session manager RPC. */
+#if USE_THRIFT
 	try
 	{
 		bSuccess = gClient->logoffSession(gAuthToken, SessionId, bWait);
@@ -750,6 +1243,20 @@ FreeRDS_WTSLogoffSession(
 	{
 		bSuccess = FALSE;
 	}
+#else
+	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
+	ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
+
+	requestMsg.messageId = FDSAPI_LOGOFF_SESSION_REQUEST_ID;
+	requestMsg.u.logoffSessionRequest.sessionId = SessionId;
+	requestMsg.u.logoffSessionRequest.wait = bWait;
+
+	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
+	if (bSuccess)
+	{
+		bSuccess = responseMsg.u.logoffSessionResponse.result;
+	}
+#endif
 
 	/* Return the result. */
 	return bSuccess;
@@ -761,14 +1268,19 @@ FreeRDS_WTSShutdownSystem(
 	DWORD ShutdownFlag
 )
 {
+#if !USE_THRIFT
+	FDSAPI_MESSAGE requestMsg;
+	FDSAPI_MESSAGE responseMsg;
+#endif
 	BOOL bSuccess;
 
-	CHECK_CLIENT_CONNECTION();
+	if (!ConnectClient()) return FALSE;
 
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE) return FALSE;
 
 	/* Execute session manager RPC. */
+#if USE_THRIFT
 	try
 	{
 		bSuccess = gClient->shutdownSystem(gAuthToken, ShutdownFlag);
@@ -777,6 +1289,19 @@ FreeRDS_WTSShutdownSystem(
 	{
 		bSuccess = FALSE;
 	}
+#else
+	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
+	ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
+
+	requestMsg.messageId = FDSAPI_SHUTDOWN_SYSTEM_REQUEST_ID;
+	requestMsg.u.shutdownSystemRequest.shutdownFlag = ShutdownFlag;
+
+	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
+	if (bSuccess)
+	{
+		bSuccess = responseMsg.u.shutdownSystemResponse.result;
+	}
+#endif
 
 	/* Return the result. */
 	return bSuccess;
@@ -789,7 +1314,62 @@ FreeRDS_WTSWaitSystemEvent(
 	DWORD* pEventFlags
 )
 {
-	return FALSE;
+	BOOL bSuccess = FALSE;
+	HANDLE hEvent = NULL;
+	FDSAPI_SESSION_EVENT_OBSERVER* pSessionEventObserver = NULL;
+
+	if (!ConnectClient()) return FALSE;
+
+	/* Check parameters. */
+	if (hServer != WTS_CURRENT_SERVER_HANDLE) return FALSE;
+
+	/* Create an event. */
+	hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (hEvent == NULL) goto EXCEPTION;
+
+	/* Create a session event observer. */
+	pSessionEventObserver = (FDSAPI_SESSION_EVENT_OBSERVER*)malloc(sizeof(FDSAPI_SESSION_EVENT_OBSERVER));
+	if (pSessionEventObserver == NULL) goto EXCEPTION;
+
+	ZeroMemory(pSessionEventObserver, sizeof(FDSAPI_SESSION_EVENT_OBSERVER));
+	pSessionEventObserver->type = FDSAPI_WAIT_SYSTEM_EVENT_TYPE;
+	pSessionEventObserver->u.waitSystemEvent.hWaitEvent = hEvent;
+	pSessionEventObserver->u.waitSystemEvent.dwEventMask = EventMask;
+
+	/* Add the session event observer to a list. */
+	ArrayList_Lock(g_sessionEventObserverList);
+	ArrayList_Add(g_sessionEventObserverList, pSessionEventObserver);
+	ArrayList_Unlock(g_sessionEventObserverList);
+
+	/* Wait for the event. */
+	if (WaitForSingleObject(hEvent, INFINITE) == WAIT_OBJECT_0)
+	{
+		bSuccess = TRUE;
+	}
+
+	/* Remove the session event observer from a list. */
+	ArrayList_Lock(g_sessionEventObserverList);
+	ArrayList_Remove(g_sessionEventObserverList, pSessionEventObserver);
+	ArrayList_Unlock(g_sessionEventObserverList);
+
+	if (bSuccess)
+	{
+		/* Return the event flags to the caller. */
+		*pEventFlags = pSessionEventObserver->u.waitSystemEvent.dwEventFlags;
+	}
+
+EXCEPTION:
+	if (hEvent)
+	{
+		CloseHandle(hEvent);
+	}
+
+	if (pSessionEventObserver)
+	{
+		free(pSessionEventObserver);
+	}
+
+	return bSuccess;
 }
 
 HANDLE WINAPI
@@ -799,17 +1379,27 @@ FreeRDS_WTSVirtualChannelOpen(
 	LPSTR pVirtualName
 )
 {
-	CHECK_CLIENT_CONNECTION();
+	if (!ConnectClient()) return NULL;
 
+#if USE_THRIFT
 	std::string result;
 	std::string virtualName(pVirtualName);
-	gClient->virtualChannelOpen(result, gAuthToken, SessionId, virtualName);
+
+	try
+	{
+		gClient->virtualChannelOpen(result, gAuthToken, SessionId, virtualName);
+	}
+	catch (...)
+	{
+		return NULL;
+	}
 
 	if (result.size() == 0)
 	{
 		return NULL;
 	}
-	else
+#endif
+
 	{
 #if 0
 		HANDLE hNamedPipe;
@@ -943,9 +1533,25 @@ FreeRDS_WTSRegisterSessionNotification(
 	DWORD dwFlags
 )
 {
-	CHECK_CLIENT_CONNECTION();
+	FDSAPI_SESSION_EVENT_OBSERVER* pSessionEventObserver = NULL;
 
-	return FALSE;
+	if (!ConnectClient()) return FALSE;
+
+	/* Create a session event observer. */
+	pSessionEventObserver = (FDSAPI_SESSION_EVENT_OBSERVER*)malloc(sizeof(FDSAPI_SESSION_EVENT_OBSERVER));
+	if (pSessionEventObserver == NULL) return FALSE;
+
+	ZeroMemory(pSessionEventObserver, sizeof(FDSAPI_SESSION_EVENT_OBSERVER));
+	pSessionEventObserver->type = FDSAPI_SESSION_NOTIFICATION_TYPE;
+	pSessionEventObserver->u.sessionNotification.hWnd = hWnd;
+	pSessionEventObserver->u.sessionNotification.dwFlags = dwFlags;
+
+	/* Add the session event observer to a list. */
+	ArrayList_Lock(g_sessionEventObserverList);
+	ArrayList_Add(g_sessionEventObserverList, pSessionEventObserver);
+	ArrayList_Unlock(g_sessionEventObserverList);
+
+	return TRUE;
 }
 
 BOOL WINAPI
@@ -953,9 +1559,37 @@ FreeRDS_WTSUnRegisterSessionNotification(
 	HWND hWnd
 )
 {
-	CHECK_CLIENT_CONNECTION();
+	BOOL bSuccess = FALSE;
+	int index;
 
-	return FALSE;
+	if (!ConnectClient()) return FALSE;
+
+	/* Loop through the session event observer list... */
+	ArrayList_Lock(g_sessionEventObserverList);
+	for (index = 0; !bSuccess && (index < ArrayList_Count(g_sessionEventObserverList)); index++)
+	{
+		FDSAPI_SESSION_EVENT_OBSERVER* pSessionEventObserver;
+
+		/* Get the next item in the list. */
+		pSessionEventObserver = (FDSAPI_SESSION_EVENT_OBSERVER*)ArrayList_GetItem(g_sessionEventObserverList, index);
+		if (pSessionEventObserver->type == FDSAPI_SESSION_NOTIFICATION_TYPE)
+		{
+			/* If the item matches the specified HWND... */
+			if (pSessionEventObserver->u.sessionNotification.hWnd == hWnd)
+			{
+				/* Remove the item from the list. */
+				ArrayList_RemoveAt(g_sessionEventObserverList, index);
+
+				/* Free the session event observer. */
+				free(pSessionEventObserver);
+
+				bSuccess = TRUE;
+			}
+		}
+	}
+	ArrayList_Unlock(g_sessionEventObserverList);
+
+	return bSuccess;
 }
 
 BOOL WINAPI
@@ -964,10 +1598,11 @@ FreeRDS_WTSRegisterSessionNotificationEx(
 	HWND hWnd,
 	DWORD dwFlags
 )
-{
-	CHECK_CLIENT_CONNECTION();
+{	
+	/* Check parameters. */
+	if (hServer != WTS_CURRENT_SERVER_HANDLE) return FALSE;
 
-	return FALSE;
+	return FreeRDS_WTSRegisterSessionNotification(hWnd, dwFlags);
 }
 
 BOOL WINAPI
@@ -976,9 +1611,10 @@ FreeRDS_WTSUnRegisterSessionNotificationEx(
 	HWND hWnd
 )
 {
-	CHECK_CLIENT_CONNECTION();
+	/* Check parameters. */
+	if (hServer != WTS_CURRENT_SERVER_HANDLE) return FALSE;
 
-	return FALSE;
+	return FreeRDS_WTSUnRegisterSessionNotification(hWnd);
 }
 
 BOOL WINAPI
@@ -1284,14 +1920,20 @@ FreeRDS_AuthenticateUser(
 	LPCSTR Domain
 )
 {
+#if !USE_THRIFT
+	FDSAPI_MESSAGE requestMsg;
+	FDSAPI_MESSAGE responseMsg;
+	BOOL bSuccess;
+#endif
 	int authStatus;
 
-	CHECK_CLIENT_CONNECTION();
+	if (!ConnectClient()) return FALSE;
 
 	/* Check parameters. */
 	if (!CheckSessionId((LPDWORD)&SessionId)) return -1;
 
 	/* Execute session manager RPC. */
+#if USE_THRIFT
 	try
 	{
 		authStatus = gClient->authenticateUser(gAuthToken, SessionId, Username, Password, Domain);
@@ -1300,6 +1942,26 @@ FreeRDS_AuthenticateUser(
 	{
 		authStatus = -1;
 	}
+#else
+	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
+	ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
+
+	requestMsg.messageId = FDSAPI_AUTHENTICATE_USER_REQUEST_ID;
+	requestMsg.u.authenticateUserRequest.sessionId = SessionId;
+	requestMsg.u.authenticateUserRequest.username = Username ? strdup(Username) : NULL;
+	requestMsg.u.authenticateUserRequest.password = Password ? strdup(Password) : NULL;
+	requestMsg.u.authenticateUserRequest.domain = Domain ? strdup(Domain) : NULL;
+
+	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
+	if (bSuccess)
+	{
+		authStatus = responseMsg.u.authenticateUserResponse.result;
+	}
+	else
+	{
+		authStatus = -1;
+	}
+#endif
 
 	return authStatus;
 }

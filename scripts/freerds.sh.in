@@ -17,17 +17,23 @@
 # Description: starts freerds
 ### END INIT INFO
 
+BINDIR=${FREERDS_BIN_PATH}
 SBINDIR=${FREERDS_SBIN_PATH}
 CFGDIR=${FREERDS_CFG_PATH}
 PIDDIR=${FREERDS_PID_PATH}
 LOG=/dev/null
 
-if ! test -x $SBINDIR/freerds
+if [ ! -x $BINDIR/freerds ]
 then
 	echo "freerds is not executable"
 	exit 0
 fi
-if ! test -x $CFGDIR/startwm.sh
+if [ ! -x $BINDIR/freerds-session-manager ]
+then
+	echo "freerds-session-manager is not executable"
+	exit 0
+fi
+if [ ! -x $CFGDIR/startwm.sh ]
 then
 	echo "startwm.sh is not executable"
 	exit 0
@@ -36,7 +42,8 @@ fi
 freerds_start()
 {
 	echo -n "Starting FreeRDS..."
-	$SBINDIR/freerds >> $LOG
+	$BINDIR/freerds >> $LOG
+	$BINDIR/freerds-session-manager >> $LOG
 	echo "."
 	sleep 1
 	return 0;
@@ -45,33 +52,55 @@ freerds_start()
 freerds_stop()
 {
 	echo -n "Stopping FreeRDS..."
-	$SBINDIR/freerds --kill >> $LOG
+	$BINDIR/freerds --kill >> $LOG
+	$BINDIR/freerds-session-manager --kill >> $LOG
 	echo "."
 	return 0;
 }
 
 is_freerds_running()
 {
-	ps u --noheading -C freerds | grep -q -i freerds
-	if test $? -eq 0
+	ps u --noheading -C freerds | grep -q -i $BINDIR/freerds
+	if [ $? -eq 0 ]
 	then
 		return 1;
 	else
-	return 0;
+		return 0;
+	fi
+}
+
+is_freerds_session_manager_running()
+{
+	ps u --noheading -C freerds-session-manager | grep -q -i $BINDIR/freerds-session-manager
+	if [ $? -eq 0 ]
+	then
+		return 1;
+	else
+		return 0;
 	fi
 }
 
 check_up()
 {
-	# Cleanup : If xrdp isn't running, but the pid exists, erase it.
+	# Cleanup : If freerds isn't running, but the pid exists, erase it.
 	is_freerds_running
-	if test $? -eq 0
+	if [ $? -eq 0 ]
 	then
-		if test -e $PIDDIR/freerds.pid
+		if [ -e $PIDDIR/freerds.pid ]
 		then
 			rm $PIDDIR/freerds.pid
 		fi
 	fi
+
+	is_freerds_session_manager_running
+	if [ $? -eq 0 ]
+	then
+		if [ -e $PIDDIR/freerds-session-manager.pid ]
+		then
+			rm $PIDDIR/freerds-session-manager.pid
+		fi
+	fi
+
 	return 0;
 }
 
@@ -79,9 +108,15 @@ case "$1" in
 	start)
 		check_up
 		is_freerds_running
-		if ! test $? -eq 0
+		if [ $? -ne 0 ]
 		then
 			echo "FreeRDS is already running."
+			exit 1
+		fi
+		is_freerds_session_manager_running
+		if [ $? -ne 0 ]
+		then
+			echo "FreeRDS Session Manager is already running"
 			exit 1
 		fi
 		freerds_start
@@ -89,9 +124,14 @@ case "$1" in
 	stop)
 		check_up
 		is_freerds_running
-		if test $? -eq 0
+		if [ $? -eq 0 ]
 		then
-			echo "FreeRDS is not running."
+			echo "FreeRDS is not running"
+		fi
+		is_freerds_session_manager_running
+		if [ $? -eq 0 ]
+		then
+			echo "FreeRDS Session Manager is not running"
 		fi
 		freerds_stop
 		;;
@@ -100,11 +140,18 @@ case "$1" in
 		echo "Restarting FreeRDS..."
 		freerds_stop
 		is_freerds_running
-		while ! test $? -eq 0
+		while [ $? -ne 0 ]
 		do
 			check_up
 			sleep 1
 			is_freerds_running
+		done
+		is_freerds_session_manager_running
+		while [ $? -ne 0 ]
+		do
+			check_up
+			sleep 1
+			is_freerds_session_manager_running
 		done
 		freerds_start
 		;;

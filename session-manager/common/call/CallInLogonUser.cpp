@@ -122,12 +122,10 @@ namespace freerds
 				mAuthStatus = -1;
 				return -1;
 			}
-			mAuthStatus = currentConnection->authenticateUser(mUserName,mDomainName,mPassword);
-			return mAuthStatus;
+			return currentConnection->authenticateUser(mUserName,mDomainName,mPassword);
 		}
 
 		int CallInLogonUser::getUserSession() {
-
 
 			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
 			sessionNS::SessionPtr currentSession;
@@ -140,7 +138,20 @@ namespace freerds
 				currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
 			}
 
-			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
+			if (currentSession && (currentSession->getConnectState() == WTSDisconnected))
+			{
+				// reconnect to a disconnected session
+				currentSession->setClientDisplayWidth(mWidth);
+				currentSession->setClientDisplayHeight(mHeight);
+				currentSession->setClientDisplayColorDepth(mColorDepth);
+				currentSession->setClientName(mClientName);
+				currentSession->setClientAddress(mClientAddress);
+				currentSession->setClientBuildNumber(mClientBuildNumber);
+				currentSession->setClientProductId(mClientProductId);
+				currentSession->setClientHardwareId(mClientHardwareId);
+				currentSession->setClientProtocolType(mClientProtocolType);
+			}
+			else
 			{
 				// create new Session for this request
 				currentSession = APP_CONTEXT.getSessionStore()->createSession();
@@ -198,7 +209,8 @@ namespace freerds
 					return 1;
 				}
 			}
-			currentSession->setConnectState(WTSConnected);
+
+			currentSession->setConnectState(WTSActive);
 
 			mPipeName = currentSession->getPipeName();
 			return 0;
@@ -218,6 +230,19 @@ namespace freerds
 
 			currentSession->setUserName(mUserName);
 			currentSession->setDomain(mDomainName);
+			currentSession->setClientDisplayWidth(mWidth);
+			currentSession->setClientDisplayHeight(mHeight);
+			currentSession->setClientDisplayColorDepth(mColorDepth);
+			currentSession->setClientName(mClientName);
+			currentSession->setClientAddress(mClientAddress);
+			currentSession->setClientBuildNumber(mClientBuildNumber);
+			currentSession->setClientProductId(mClientProductId);
+			currentSession->setClientHardwareId(mClientHardwareId);
+			currentSession->setClientProtocolType(mClientProtocolType);
+
+			char winStationName[32];
+			sprintf(winStationName, "RDP-Tcp#%d", mConnectionId);
+			currentSession->setWinStationName(winStationName);
 
 			if (!currentSession->generateAuthEnvBlockAndModify())
 			{
@@ -248,9 +273,10 @@ namespace freerds
 
 		int CallInLogonUser::doStuff()
 		{
+			int authStatus;
 
-			authenticateUser();
-			if (mAuthStatus != 0) {
+			authStatus = authenticateUser();
+			if (authStatus != 0) {
 				getAuthSession();
 			} else {
 				getUserSession();

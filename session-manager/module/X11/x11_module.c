@@ -83,9 +83,17 @@ void x11_rds_module_reset_process_informations(STARTUPINFO *si, PROCESS_INFORMAT
 int clean_up_process(PROCESS_INFORMATION *pi)
 {
 	DWORD ret = 0;
-	GetExitCodeProcess(pi->hProcess, &ret);
-	CloseHandle(pi->hProcess);
-	CloseHandle(pi->hThread);
+	if (pi->hProcess)
+	{
+		GetExitCodeProcess(pi->hProcess, &ret);
+		CloseHandle(pi->hProcess);
+		pi->hProcess = NULL;
+	}
+	if (pi->hThread)
+	{
+		CloseHandle(pi->hThread);
+		pi->hThread = NULL;
+	}
 	return ret;
 }
 
@@ -261,8 +269,15 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
-	if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath,&gConfig, x11->commonModule.sessionId, "startwm", startupname, 256))
-		strcpy(startupname, "startwm.sh");
+	if (x11->commonModule.userToken == 0)
+	{
+		strcpy(startupname, "simple_greeter");
+	}
+	else
+	{
+		if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath,&gConfig, x11->commonModule.sessionId, "startwm", startupname, 256))
+			strcpy(startupname, "startwm.sh");
+	}
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken,
 			NULL, startupname,

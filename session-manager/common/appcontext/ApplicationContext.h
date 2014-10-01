@@ -48,6 +48,10 @@ namespace freerds
 			sessionNS::ConnectionStore* getConnectionStore();
 			configNS::PropertyManager* getPropertyManager();
 			moduleNS::ModuleManager* getModuleManager();
+#ifdef WITH_FDSAPI
+			fdsapiNS::FDSApiServer* getFDSApiServer();
+#endif
+
 			int startRPCEngine();
 			int stopRPCEngine();
 
@@ -77,7 +81,7 @@ namespace freerds
 			std::string mSystemConfigPath;
 
 			void initPaths();
-                        void exportContext();
+			void exportContext();
 
 			void configureExecutableSearchPath();
 

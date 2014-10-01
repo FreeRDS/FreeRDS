@@ -289,6 +289,13 @@ namespace freerds
 			return &mModuleManager;
 		}
 
+#ifdef WITH_FDSAPI
+		fdsapiNS::FDSApiServer* ApplicationContext::getFDSApiServer()
+		{
+			return &mFDSApiServer;
+		}
+#endif
+
 		void ApplicationContext::setupTestingPropValues()
 		{
 
@@ -296,7 +303,7 @@ namespace freerds
 			mPropertyManager.setPropertyString(Global, 0, "auth.module","PAM");
 			mPropertyManager.setPropertyString(Global, 0, "auth.greeter","greeter");
 			mPropertyManager.setPropertyBool(Global, 0, "session.reconnect",true);
-			mPropertyManager.setPropertyNumber(Global, 0, "session.timeout",1);
+			mPropertyManager.setPropertyNumber(Global, 0, "session.timeout",60);
 
 
 
@@ -310,7 +317,7 @@ namespace freerds
 			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.colordepth",24);
 			mPropertyManager.setPropertyString(Global, 0, "module.xsession.startwm","startwm.sh");
 
-			mPropertyManager.setPropertyString(Global, 0, "module.greeter.modulename","Qt");
+			mPropertyManager.setPropertyString(Global, 0, "module.greeter.modulename","X11");
 			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.maxXRes",1920);
 			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.maxYRes",1200);
 			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.minXRes",320);
@@ -318,7 +325,7 @@ namespace freerds
 			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.xres",1024);
 			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.yres",768);
 			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.colordepth",24);
-			mPropertyManager.setPropertyString(Global, 0, "module.greeter.cmd","nice_greeter");
+			mPropertyManager.setPropertyString(Global, 0, "module.greeter.cmd","simple_greeter");
 
 			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.xres",800,"demo1");
 			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.yres",600,"demo1");

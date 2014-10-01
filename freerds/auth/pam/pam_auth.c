@@ -101,7 +101,7 @@ static int verify_pam_conv(int num_msg, const struct pam_message **msg, struct p
 	return PAM_SUCCESS;
 }
 
-long freerds_authenticate_pam(char* username, char* password, int* errorcode)
+BOOL freerds_authenticate_pam(char* username, char* password, int* errorcode)
 {
 	int error;
 	char service_name[256];
@@ -123,9 +123,9 @@ long freerds_authenticate_pam(char* username, char* password, int* errorcode)
 		if (errorcode != NULL)
 			*errorcode = error;
 
-		printf("pam_start failed: %s\n", pam_strerror(auth_info->ph, error));
+		printf("pam_start failed\n");
 		free(auth_info);
-		return 0;
+		return FALSE;
 	}
 
 	error = pam_authenticate(auth_info->ph, 0);
@@ -136,8 +136,9 @@ long freerds_authenticate_pam(char* username, char* password, int* errorcode)
 			*errorcode = error;
 
 		printf("pam_authenticate failed: %s\n", pam_strerror(auth_info->ph, error));
+		pam_end(auth_info->ph, error);
 		free(auth_info);
-		return 0;
+		return FALSE;
 	}
 
 	error = pam_acct_mgmt(auth_info->ph, 0);
@@ -148,11 +149,15 @@ long freerds_authenticate_pam(char* username, char* password, int* errorcode)
 			*errorcode = error;
 
 		printf("pam_acct_mgmt failed: %s\n", pam_strerror(auth_info->ph, error));
+		pam_end(auth_info->ph, error);
 		free(auth_info);
-		return 0;
+		return FALSE;
 	}
 
-	return (long) auth_info;
+	pam_end(auth_info->ph, 0);
+	free(auth_info);
+
+	return TRUE;
 }
  
 /**
@@ -187,8 +192,8 @@ void rds_auth_module_free(rdsAuthModulePam* pam)
 
 int rds_auth_logon_user(rdsAuthModulePam* pam, char* username, char* domain, char* password)
 {
+	BOOL auth_status;
 	int error_code = 0;
-	long auth_status = 0;
 
 	if (!pam)
 		return -1;
