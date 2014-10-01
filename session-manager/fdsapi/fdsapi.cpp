@@ -23,9 +23,7 @@
 #include "config.h"
 #endif
 
-#include "fdsapi_thrift.h"
-
-#include <fdsapi/fdsapi.h>
+#include "fdsapi.h"
 
 #include <winpr/crt.h>
 #include <winpr/pipe.h>
@@ -33,6 +31,7 @@
 #include <winpr/sysinfo.h>
 #include <winpr/wnd.h>
 #include <winpr/wtsapi.h>
+#include <winpr/winsock.h>
 
 #include <freerds/rpc.h>
 

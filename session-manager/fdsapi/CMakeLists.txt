@@ -20,7 +20,7 @@ set(MODULE_PREFIX "FREERDS_FDSAPI")
 set(FDSAPI_COMMON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../common/fdsapi")
 
 set(${MODULE_PREFIX}_SRCS
-	fdsapi_thrift.cpp
+	fdsapi.cpp
 	${FDSAPI_COMMON_DIR}/FDSApiMessages.cpp)
 
 include_directories(${FDSAPI_COMMON_DIR})

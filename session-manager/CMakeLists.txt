@@ -27,16 +27,6 @@ PROTOBUF_GENERATE_CPP(PBRPC_PROTOBUF_SRC PBRPC_PROTOBUF_HEADERS ${CMAKE_CURRENT_
 PROTOBUF_GENERATE_CPP(ICP_PROTOBUF_SRC ICP_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICP.proto)
 PROTOBUF_GENERATE_CPP(ICPS_PROTOBUF_SRC ICPS_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/ICPS.proto)
 
-find_feature(Thrift REQUIRED "RPC" "Remote Procedure Call")
-	
-if(NOT THRIFT_FOUND)
-	message(STATUS "You may need to manually download and install thrift:")
-	message(STATUS "wget http://archive.apache.org/dist/thrift/0.9.0/thrift-0.9.0.tar.gz")
-	message(STATUS "tar zxvf thrift-0.9.0.tar.gz && cd thrift-0.9.0")
-	message(STATUS "./configure --without-python --without-java --without-c_glib --with-pic --without-csharp --without-haskell --without-go --without-d --without-qt4")
-	message(STATUS "make && sudo make install")
-endif()
-
 set(FDSAPI_SRCS
 	common/fdsapi/FDSApiHandler.cpp
 	common/fdsapi/FDSApiServer.cpp
@@ -104,7 +94,7 @@ list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 
 list(APPEND ${MODULE_PREFIX}_LIBS ${PROTOBUF_LIBRARY})
 	
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY} ${THRIFT_STATIC_LIB})
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 

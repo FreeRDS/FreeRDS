@@ -22,11 +22,55 @@
 #ifndef FDSAPISHANDLER_H_
 #define FDSAPISHANDLER_H_
 
+#include <winpr/crt.h>
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 
-#include <fdsapi/fdsapi.h>
 #include <boost/shared_ptr.hpp>
+
+#include <vector>
+#include <iostream>
+
+namespace freerds {
+
+typedef std::vector<class TSessionInfo>  TSessionInfoList;
+
+class TClientDisplay {
+public:
+	INT32 displayWidth;
+	INT32 displayHeight;
+	INT32 colorDepth;
+};
+
+class TSessionInfo {
+public:
+	INT32 sessionId;
+	INT32 connectState;
+	std::string winStationName;
+};
+
+class TSessionInfoValue {
+public:
+	bool boolValue;
+	INT16 int16Value;
+	INT32 int32Value;
+	std::string stringValue;
+	TClientDisplay displayValue;
+};
+
+class TReturnEnumerateSessions {
+public:
+	bool returnValue;
+	TSessionInfoList sessionInfoList;
+};
+
+class TReturnQuerySessionInformation {
+public:
+	bool returnValue;
+	TSessionInfoValue infoValue;
+};
+
+}
 
 namespace freerds {
 	namespace sessionmanager {
