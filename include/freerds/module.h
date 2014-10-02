@@ -37,7 +37,6 @@ struct _RDS_MODULE_COMMON
 };
 typedef struct _RDS_MODULE_COMMON RDS_MODULE_COMMON;
 
-
 struct _RDS_MODULE_CONFIG_CALLBACKS
 {
 	pgetPropertyBool getPropertyBool;

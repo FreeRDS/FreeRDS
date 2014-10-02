@@ -25,57 +25,50 @@
 
 #include "module_helper.h"
 
-
 #include <winpr/wlog.h>
 #include <winpr/environment.h>
 #include <winpr/wtypes.h>
 #include <winpr/string.h>
-#include <stdbool.h>
 
-bool combinePaths(char * buffer, int buffersize, char * basePath, char * prop) {
-
+BOOL combinePaths(char* buffer, int buffersize, char* basePath, char* prop)
+{
 	int basePathLength = strlen(basePath);
 	int propLength = strlen(prop);
 	int fullLength = basePathLength + propLength + 2;
-	if (fullLength > buffersize) {
-		//WLog_Print(logger_module_helper, WLOG_ERROR, "Setting: combinePaths failed, because buffersize is %d but %d is needed\n",buffersize,fullLength);
-		return false;
-	}
-	memcpy(buffer,basePath,basePathLength);
+
+	if (fullLength > buffersize)
+		return FALSE;
+
+	CopyMemory(buffer,basePath,basePathLength);
 	buffer[basePathLength] = '.';
-	memcpy(buffer + basePathLength + 1, prop, propLength);
-	buffer[fullLength-1] = 0;
-	return true;
+	CopyMemory(buffer + basePathLength + 1, prop, propLength);
+	buffer[fullLength - 1] = 0;
+
+	return TRUE;
 }
 
-bool getPropertyBoolWrapper(char * basePath, RDS_MODULE_CONFIG_CALLBACKS * config,long sessionID, char* path, bool* value) {
+BOOL getPropertyNumberWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionID, char* path, long* value)
+{
 	char tempBuffer[1024];
-	if (!combinePaths(tempBuffer,1024,basePath,path)) {
-		//WLog_Print(logger_module_helper, WLOG_ERROR, "getPropertyBoolWrapper: combinePaths failed");
-		return false;
-	}
-	return config->getPropertyBool(sessionID,tempBuffer,value);
-};
-bool getPropertyNumberWrapper(char * basePath, RDS_MODULE_CONFIG_CALLBACKS * config,long sessionID, char* path, long* value) {
-	char tempBuffer[1024];
-	if (!combinePaths(tempBuffer,1024,basePath,path)) {
-		//WLog_Print(logger_module_helper, WLOG_ERROR, "getPropertyNumberWrapper: combinePaths failed");
-		return false;
-	}
-	return config->getPropertyNumber(sessionID,tempBuffer,value);
-}
-bool getPropertyStringWrapper(char * basePath, RDS_MODULE_CONFIG_CALLBACKS * config,long sessionID, char* path, char* value, unsigned int valueLength) {
-	char tempBuffer[1024];
-	if (!combinePaths(tempBuffer,1024,basePath,path)) {
-		//WLog_Print(logger_module_helper, WLOG_ERROR, "getPropertyStringWrapper: combinePaths failed");
-		return false;
-	}
-	return config->getPropertyString(sessionID,tempBuffer,value,valueLength);
 
+	if (!combinePaths(tempBuffer, 1024, basePath, path))
+		return FALSE;
+
+	return config->getPropertyNumber(sessionID, tempBuffer, value);
 }
 
+BOOL getPropertyStringWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionID, char* path, char* value, unsigned int valueLength)
+{
+	char tempBuffer[1024];
 
-void initResolutions(char * basePath,RDS_MODULE_CONFIG_CALLBACKS * config, long sessionId ,char ** envBlock ,  long * xres, long * yres, long * colordepth) {
+	if (!combinePaths(tempBuffer, 1024, basePath, path))
+		return FALSE;
+
+	return config->getPropertyString(sessionID, tempBuffer, value, valueLength);
+}
+
+void initResolutions(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionId, char** envBlock, long* xres, long* yres, long* colordepth)
+{
 	char tempstr[256];
 	long maxXRes = 0 , maxYRes = 0, minXRes = 0, minYRes = 0;
 	long connectionXRes = 0, connectionYRes = 0, connectionColorDepth = 0;

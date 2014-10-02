@@ -100,4 +100,3 @@ install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_subdirectory(module)
 
-add_subdirectory(fdsapi)

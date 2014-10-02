@@ -33,13 +33,11 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
+BOOL getPropertyBool(long sessionID, char* path, BOOL* value);
+BOOL getPropertyNumber(long sessionID, char* path, long* value);
+BOOL getPropertyString(long sessionID, char* path, char* value, unsigned int valueLength);
 
-bool getPropertyBool(long sessionID, char* path, bool* value);
-bool getPropertyNumber(long sessionID, char* path, long* value);
-bool getPropertyString(long sessionID, char* path, char* value, unsigned int valueLength);
-
-int setPropertyBool(PROPERTY_LEVEL level, long sessionID, char* path, bool value);
+int setPropertyBool(PROPERTY_LEVEL level, long sessionID, char* path, BOOL value);
 int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, char* path, long value);
 int setPropertyString(PROPERTY_LEVEL level, long sessionID, char* path, char* value);
 

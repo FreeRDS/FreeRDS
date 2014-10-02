@@ -86,6 +86,7 @@ namespace freerds
 		int CallInDisconnectUserSession::doStuff()
 		{
 			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+
 			if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
 				mDisconnected = false;
 				return -1;
@@ -104,7 +105,7 @@ namespace freerds
 
 			long timeout;
 
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber(currentSession->getSessionID(),"session.timeout",timeout)) {
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber(currentSession->getSessionID(),"session.timeout", &timeout)) {
 				timeout = 0;
 			}
 

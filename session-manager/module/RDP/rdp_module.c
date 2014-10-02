@@ -42,8 +42,8 @@
 
 #include "rdp_module.h"
 
-RDS_MODULE_CONFIG_CALLBACKS gConfig;
-RDS_MODULE_STATUS_CALLBACKS gStatus;
+RDS_MODULE_CONFIG_CALLBACKS g_Config;
+RDS_MODULE_STATUS_CALLBACKS g_Status;
 
 struct rds_module_rdp
 {
@@ -110,7 +110,7 @@ char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 	rdp->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(rdp->pi), sizeof(PROCESS_INFORMATION));
 
-	initResolutions(rdp->commonModule.baseConfigPath , &gConfig , rdp->commonModule.sessionId , &rdp->commonModule.envBlock , &xres , &yres , &colordepth);
+	initResolutions(rdp->commonModule.baseConfigPath , &g_Config , rdp->commonModule.sessionId , &rdp->commonModule.envBlock , &xres , &yres , &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /size:%dx%d",
 			"freerds-rdp", (int) xres, (int) yres);
@@ -153,8 +153,8 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Start = rdp_rds_module_start;
 	pEntryPoints->Stop = rdp_rds_module_stop;
 
-	gStatus = pEntryPoints->status;
-	gConfig = pEntryPoints->config;
+	g_Status = pEntryPoints->status;
+	g_Config = pEntryPoints->config;
 
 	return 0;
 }

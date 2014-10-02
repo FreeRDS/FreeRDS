@@ -40,27 +40,36 @@ namespace freerds
 				return true;
 			};
 
-
-			void TaskSessionTimeout::run() {
+			void TaskSessionTimeout::run()
+			{
 				long timeout;
 				DWORD status;
 				boost::posix_time::ptime myEpoch(boost::gregorian::date(1970,boost::gregorian::Jan,1));
-				for (;;){
+
+				for (;;)
+				{
 					status = WaitForSingleObject(mhStop,10 * 1000);
+
 					if (status == WAIT_OBJECT_0) {
 						// shutdown
 						return;
 					}
-					if (status == WAIT_TIMEOUT) {
+
+					if (status == WAIT_TIMEOUT)
+					{
 						// check all session if they need to be disconnected.
  						std::list<SessionPtr> allSessions = APP_CONTEXT.getSessionStore()->getAllSessions();
 						boost::posix_time::ptime currentTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
 						std::list<sessionNS::SessionPtr>::iterator iterator;
-						for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator) {
+
+						for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator)
+						{
 							sessionNS::SessionPtr currentSession = (*iterator);
-							if (currentSession->getConnectState() == WTSDisconnected) {
+
+							if (currentSession->getConnectState() == WTSDisconnected)
+							{
 								//currentSession->getUserName()
-								if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber(currentSession->getSessionID(),"session.timeout",timeout)) {
+								if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber(currentSession->getSessionID(), "session.timeout", &timeout)) {
 									WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "session.timeout was not found for session %d, using value of 0",currentSession->getSessionID());
 									timeout = 0;
 								}
@@ -79,9 +88,6 @@ namespace freerds
 					}// WAIT_TIMEOUT
 				} // for loop
 			}
-
-
-
 		}
 	}
 }

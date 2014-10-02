@@ -27,7 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #ifndef WIN32
+#include <limits.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -42,20 +44,19 @@
 #include <winpr/environment.h>
 
 #include <freerds/backend.h>
-#include <limits.h>
 
 #include "x11_module.h"
 #include "../common/module_helper.h"
 
-RDS_MODULE_CONFIG_CALLBACKS gConfig;
-RDS_MODULE_STATUS_CALLBACKS gStatus;
+RDS_MODULE_CONFIG_CALLBACKS g_Config;
+RDS_MODULE_STATUS_CALLBACKS g_Status;
 
 #define X11_DISPLAY_OFFSET 10
 #define X11_LOCKFILE_FORMAT "/tmp/.X%d-lock"
 #define X11_UNIX_SOCKET_FORMAT "/tmp/.X11-unix/X%d"
 #define X11_DISPLAY_MAX 1024
 
-static wLog *gModuleLog;
+static wLog* gModuleLog;
 
 struct rds_module_x11
 {
@@ -68,21 +69,21 @@ struct rds_module_x11
 	HANDLE monitorStopEvent;
 	STARTUPINFO WMStartupInfo;
 	PROCESS_INFORMATION WMProcessInformation;
-	unsigned int displayNum;
+	UINT32 displayNum;
 };
-
 typedef struct rds_module_x11 rdsModuleX11;
 
-void x11_rds_module_reset_process_informations(STARTUPINFO *si, PROCESS_INFORMATION *pi)
+void x11_rds_module_reset_process_informations(STARTUPINFO* si, PROCESS_INFORMATION* pi)
 {
 	ZeroMemory(si, sizeof(STARTUPINFO));
 	si->cb = sizeof(STARTUPINFO);
 	ZeroMemory(pi, sizeof(PROCESS_INFORMATION));
 }
 
-int clean_up_process(PROCESS_INFORMATION *pi)
+int clean_up_process(PROCESS_INFORMATION* pi)
 {
 	DWORD ret = 0;
+
 	if (pi->hProcess)
 	{
 		GetExitCodeProcess(pi->hProcess, &ret);
@@ -94,14 +95,15 @@ int clean_up_process(PROCESS_INFORMATION *pi)
 		CloseHandle(pi->hThread);
 		pi->hThread = NULL;
 	}
+
 	return ret;
 }
 
-void monitoring_thread(void *arg)
+void monitoring_thread(void* arg)
 {
 	int status;
 	int ret;
-	rdsModuleX11 *x11 = (rdsModuleX11*)arg;
+	rdsModuleX11* x11 = (rdsModuleX11*) arg;
 	
 	while (1)
 	{
@@ -125,14 +127,13 @@ void monitoring_thread(void *arg)
 		}
 	}
 
-	gStatus.shutdown(x11->commonModule.sessionId);
+	g_Status.shutdown(x11->commonModule.sessionId);
 	return;
 }
 
 RDS_MODULE_COMMON* x11_rds_module_new(void)
 {
-	rdsModuleX11* module = (rdsModuleX11*) malloc(sizeof(rdsModuleX11));
-	ZeroMemory(module, sizeof(rdsModuleX11));
+	rdsModuleX11* module = (rdsModuleX11*) calloc(1, sizeof(rdsModuleX11));
 	return (RDS_MODULE_COMMON*) module;
 }
 
@@ -151,32 +152,32 @@ void x11_rds_module_free(RDS_MODULE_COMMON* module)
 
 int x11_rds_stop_process(PROCESS_INFORMATION *pi)
 {
-#ifdef WIN32
-	TerminateProcess(pi.hProcess,0);
-
-	 // Wait until child process exits.
-	WaitForSingleObject(pi->hProcess, 5);
-#else
 	int ret = 0, status = 0;
 	int wait = 10;
+
 	/* check if child is still alive */
 	status = waitpid(pi->dwProcessId, &ret, WNOHANG);
+
 	if (status == 0)
 	{
 		kill(pi->dwProcessId, SIGTERM);
+
 		while (wait > 0)
 		{
 			status = waitpid(pi->dwProcessId, &ret, WNOHANG);
+
 			if (status != 0)
 				break;
+
 			usleep(500000);
 			wait--;
 		}
+
 		if (status == 0)
 			kill(pi->dwProcessId, SIGKILL);
 	}
-#endif
 	clean_up_process(pi);
+
 	return ret;
 }
 
@@ -186,15 +187,18 @@ unsigned int detect_free_display()
 	unsigned int i = 0;
 	char buf[256];
 	char buf2[256];
+
 	for (i = X11_DISPLAY_OFFSET; i <= X11_DISPLAY_MAX; i++)
 	{
 		snprintf(buf,256, X11_LOCKFILE_FORMAT, i);
 		snprintf(buf2,256, X11_UNIX_SOCKET_FORMAT, i);
+
 		if(stat (buf, &tstats) != 0 && stat(buf2, &tstats) != 0)
 		{
 			break;
 		}
 	}
+
 	return i;
 }
 
@@ -233,16 +237,15 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (x11->displayNum));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
-	initResolutions(x11->commonModule.baseConfigPath , &gConfig , x11->commonModule.sessionId,
-			&x11->commonModule.envBlock , &xres , &yres , &colordepth);
+	initResolutions(x11->commonModule.baseConfigPath, &g_Config, x11->commonModule.sessionId,
+			&x11->commonModule.envBlock, &xres, &yres, &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -dpi 96",
 			"X11rdp", (int) (x11->displayNum), (int) xres, (int) yres, (int) 24);
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
-	status = CreateProcessAsUserA(x11->commonModule.userToken,
-			NULL, lpCommandLine,
+	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, lpCommandLine,
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
@@ -255,7 +258,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	}
 
 	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, X11rdp Process started: %d (pid %d - cmd %s)",
-	SessionId, status, x11->X11ProcessInformation.dwProcessId, lpCommandLine);
+			SessionId, status, x11->X11ProcessInformation.dwProcessId, lpCommandLine);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
@@ -269,18 +272,12 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
-	if (x11->commonModule.userToken == 0)
+	if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath, &g_Config, x11->commonModule.sessionId, "startwm", startupname, 256))
 	{
-		strcpy(startupname, "simple_greeter");
-	}
-	else
-	{
-		if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath,&gConfig, x11->commonModule.sessionId, "startwm", startupname, 256))
-			strcpy(startupname, "startwm.sh");
+		strcpy(startupname, "startwm.sh");
 	}
 
-	status = CreateProcessAsUserA(x11->commonModule.userToken,
-			NULL, startupname,
+	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, startupname,
 			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->WMStartupInfo), &(x11->WMProcessInformation));
 
@@ -294,14 +291,16 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 
 	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: WM process started: %d (pid %d)", SessionId, status, x11->WMProcessInformation.dwProcessId);
 	x11->monitorThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) monitoring_thread, x11, 0, NULL);
+
 	return pipeName;
 }
 
-int x11_rds_module_stop(RDS_MODULE_COMMON * module)
+int x11_rds_module_stop(RDS_MODULE_COMMON* module)
 {
-	rdsModuleX11 *x11 = (rdsModuleX11*)module;
 	int ret = 0;
 	char buf[256];
+	rdsModuleX11* x11 = (rdsModuleX11*) module;
+
 	WLog_Print(gModuleLog, WLOG_TRACE, "Stop called");
 
 	SetEvent(x11->monitorStopEvent);
@@ -309,11 +308,15 @@ int x11_rds_module_stop(RDS_MODULE_COMMON * module)
 
 	ret = x11_rds_stop_process(&(x11->WMProcessInformation));
 	ret = x11_rds_stop_process(&(x11->X11ProcessInformation));
-	// clean up in case x server wasn't shut down cleanly
+
+	/* clean up in case x server wasn't shut down cleanly */
+
 	snprintf(buf,256, X11_LOCKFILE_FORMAT, x11->displayNum);
 	DeleteFileA(buf);
+
 	snprintf(buf,256, X11_UNIX_SOCKET_FORMAT, x11->displayNum);
 	DeleteFileA(buf);
+
 	return ret;
 }
 
@@ -321,7 +324,6 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 {
 	pEntryPoints->Version = 1;
 
-	//pEntryPoints->ContextSize = sizeof(rdsModuleX11);
 	pEntryPoints->New = x11_rds_module_new;
 	pEntryPoints->Free = x11_rds_module_free;
 
@@ -330,10 +332,11 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 
 	pEntryPoints->Name = "X11";
 
-	gStatus = pEntryPoints->status;
-	gConfig = pEntryPoints->config;
+	g_Status = pEntryPoints->status;
+	g_Config = pEntryPoints->config;
 
 	WLog_Init();
 	gModuleLog = WLog_Get("com.freerds.module.x11");
+
 	return 0;
 }

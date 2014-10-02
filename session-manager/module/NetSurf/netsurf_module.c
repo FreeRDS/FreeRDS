@@ -40,8 +40,8 @@
 #include "netsurf_module.h"
 #include "../common/module_helper.h"
 
-RDS_MODULE_CONFIG_CALLBACKS gConfig;
-RDS_MODULE_STATUS_CALLBACKS gStatus;
+RDS_MODULE_CONFIG_CALLBACKS g_Config;
+RDS_MODULE_STATUS_CALLBACKS g_Status;
 
 struct rds_module_netsurf
 {
@@ -55,7 +55,7 @@ typedef struct rds_module_netsurf rdsModuleNetSurf;
 
 RDS_MODULE_COMMON* netsurf_rds_module_new(void)
 {
-	rdsModuleNetSurf* ns = (rdsModuleNetSurf*) malloc(sizeof(rdsModuleNetSurf));
+	rdsModuleNetSurf* ns = (rdsModuleNetSurf*) calloc(1, sizeof(rdsModuleNetSurf));
 
 	WLog_Init();
 
@@ -96,9 +96,8 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 	ns->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(ns->pi), sizeof(PROCESS_INFORMATION));
 
-	initResolutions(ns->commonModule.baseConfigPath , &gConfig , ns->commonModule.sessionId
-			, &ns->commonModule.envBlock , &xres , &yres , &colordepth);
-
+	initResolutions(ns->commonModule.baseConfigPath, &g_Config, ns->commonModule.sessionId,
+			&ns->commonModule.envBlock , &xres, &yres, &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -f freerds -b 32 -w %d -h %d",
 			"netsurf", (int) xres, (int) yres);
@@ -140,8 +139,8 @@ int RdsModuleEntry(RDS_MODULE_ENTRY_POINTS* pEntryPoints)
 	pEntryPoints->Start = netsurf_rds_module_start;
 	pEntryPoints->Stop = netsurf_rds_module_stop;
 
-	gStatus = pEntryPoints->status;
-	gConfig = pEntryPoints->config;
+	g_Status = pEntryPoints->status;
+	g_Config = pEntryPoints->config;
 
 	return 0;
 }

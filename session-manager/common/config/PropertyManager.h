@@ -26,6 +26,8 @@
 #ifndef PROPERTYMANAGER_H_
 #define PROPERTYMANAGER_H_
 
+#include <winpr/crt.h>
+
 #include <string>
 #include <map>
 #include "PropertyLevel.h"
@@ -37,22 +39,21 @@ namespace freerds
 	{
 		namespace config
 		{
-
 			typedef std::map<std::string, PROPERTY_STORE_HELPER> TPropertyMap;
 			typedef std::pair<std::string, PROPERTY_STORE_HELPER> TPropertyPair;
 
 			typedef std::map<std::string, TPropertyMap * > TPropertyPropertyMap;
 			typedef std::pair<std::string, TPropertyMap * > TPropertyPropertyPair;
 
-
-			class PropertyManager{
+			class PropertyManager {
 			public:
 				PropertyManager();
 				~PropertyManager();
 
+				BOOL getPropertyBool(long sessionID, std::string path, BOOL* value, std::string username="");
 				bool getPropertyBool(long sessionID, std::string path, bool &value, std::string username="");
-				bool getPropertyNumber(long sessionID, std::string path, long &value, std::string username="");
-				bool getPropertyString(long sessionID, std::string path, std::string &value, std::string username="");
+				BOOL getPropertyNumber(long sessionID, std::string path, long* value, std::string username="");
+				BOOL getPropertyString(long sessionID, std::string path, std::string &value, std::string username="");
 
 				int setPropertyBool(PROPERTY_LEVEL level, long sessionID, std::string path, bool value, std::string username="");
 				int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, std::string path, long value, std::string username="");

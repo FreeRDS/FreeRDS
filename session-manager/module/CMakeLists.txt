@@ -14,7 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(X11)
+if(NOT WIN32)
+	add_subdirectory(X11)
+endif()
+
 add_subdirectory(RDP)
 add_subdirectory(NetSurf)
 
