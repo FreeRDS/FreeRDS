@@ -291,39 +291,31 @@ namespace freerds
 
 		void ApplicationContext::setupTestingPropValues()
 		{
-			mPropertyManager.setPropertyString(Global, 0, "module","xsession");
-			mPropertyManager.setPropertyString(Global, 0, "auth.module","PAM");
-			mPropertyManager.setPropertyString(Global, 0, "auth.greeter","greeter");
-			mPropertyManager.setPropertyBool(Global, 0, "session.reconnect",true);
-			mPropertyManager.setPropertyNumber(Global, 0, "session.timeout",60);
+			mPropertyManager.setPropertyString("module","xsession");
+			mPropertyManager.setPropertyString("auth.module","PAM");
+			mPropertyManager.setPropertyString("auth.greeter","greeter");
+			mPropertyManager.setPropertyBool("session.reconnect",true);
+			mPropertyManager.setPropertyNumber("session.timeout",60);
 
-			mPropertyManager.setPropertyString(Global, 0, "module.xsession.modulename","X11");
-			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.maxXRes",1920);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.maxYRes",1200);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.minXRes",320);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.minYRes",200);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.xres",1024);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.yres",768);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.xsession.colordepth",24);
-			mPropertyManager.setPropertyString(Global, 0, "module.xsession.startwm","startwm.sh");
+			mPropertyManager.setPropertyString("module.xsession.modulename","X11");
+			mPropertyManager.setPropertyNumber("module.xsession.maxXRes",1920);
+			mPropertyManager.setPropertyNumber("module.xsession.maxYRes",1200);
+			mPropertyManager.setPropertyNumber("module.xsession.minXRes",320);
+			mPropertyManager.setPropertyNumber("module.xsession.minYRes",200);
+			mPropertyManager.setPropertyNumber("module.xsession.xres",1024);
+			mPropertyManager.setPropertyNumber("module.xsession.yres",768);
+			mPropertyManager.setPropertyNumber("module.xsession.colordepth",24);
+			mPropertyManager.setPropertyString("module.xsession.startwm","startwm.sh");
 
-			mPropertyManager.setPropertyString(Global, 0, "module.greeter.modulename","X11");
-			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.maxXRes",1920);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.maxYRes",1200);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.minXRes",320);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.minYRes",200);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.xres",1024);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.yres",768);
-			mPropertyManager.setPropertyNumber(Global, 0, "module.greeter.colordepth",24);
-			mPropertyManager.setPropertyString(Global, 0, "module.greeter.cmd","simple_greeter");
-
-			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.xres",800,"demo1");
-			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.yres",600,"demo1");
-			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.xres",800,"demo2");
-			mPropertyManager.setPropertyNumber(User, 0, "module.xsession.yres",600,"demo2");
-			mPropertyManager.setPropertyBool(User, 0, "session.reconnect",false,"demo1");
-			mPropertyManager.setPropertyString(User, 0, "module","xsession","demo2");
-
+			mPropertyManager.setPropertyString("module.greeter.modulename","X11");
+			mPropertyManager.setPropertyNumber("module.greeter.maxXRes",1920);
+			mPropertyManager.setPropertyNumber("module.greeter.maxYRes",1200);
+			mPropertyManager.setPropertyNumber("module.greeter.minXRes",320);
+			mPropertyManager.setPropertyNumber("module.greeter.minYRes",200);
+			mPropertyManager.setPropertyNumber("module.greeter.xres",1024);
+			mPropertyManager.setPropertyNumber("module.greeter.yres",768);
+			mPropertyManager.setPropertyNumber("module.greeter.colordepth",24);
+			mPropertyManager.setPropertyString("module.greeter.cmd","simple_greeter");
 		}
 
 		void ApplicationContext::startTaskExecutor() {

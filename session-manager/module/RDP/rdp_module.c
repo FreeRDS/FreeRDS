@@ -110,7 +110,8 @@ char* rdp_rds_module_start(RDS_MODULE_COMMON* module)
 	rdp->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(rdp->pi), sizeof(PROCESS_INFORMATION));
 
-	initResolutions(rdp->commonModule.baseConfigPath , &g_Config , rdp->commonModule.sessionId , &rdp->commonModule.envBlock , &xres , &yres , &colordepth);
+	initResolutions(rdp->commonModule.baseConfigPath, &g_Config,
+			&rdp->commonModule.envBlock, &xres, &yres, &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s /tmp/rds.rdp /size:%dx%d",
 			"freerds-rdp", (int) xres, (int) yres);

@@ -47,27 +47,27 @@ BOOL combinePaths(char* buffer, int buffersize, char* basePath, char* prop)
 	return TRUE;
 }
 
-BOOL getPropertyNumberWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionID, char* path, long* value)
+BOOL getPropertyNumberWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, char* path, long* value)
 {
 	char tempBuffer[1024];
 
 	if (!combinePaths(tempBuffer, 1024, basePath, path))
 		return FALSE;
 
-	return config->getPropertyNumber(sessionID, tempBuffer, value);
+	return config->getPropertyNumber(tempBuffer, value);
 }
 
-BOOL getPropertyStringWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionID, char* path, char* value, unsigned int valueLength)
+BOOL getPropertyStringWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, char* path, char* value, unsigned int valueLength)
 {
 	char tempBuffer[1024];
 
 	if (!combinePaths(tempBuffer, 1024, basePath, path))
 		return FALSE;
 
-	return config->getPropertyString(sessionID, tempBuffer, value, valueLength);
+	return config->getPropertyString(tempBuffer, value, valueLength);
 }
 
-void initResolutions(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionId, char** envBlock, long* xres, long* yres, long* colordepth)
+void initResolutions(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, char** envBlock, long* xres, long* yres, long* colordepth)
 {
 	char tempstr[256];
 	long maxXRes = 0 , maxYRes = 0, minXRes = 0, minYRes = 0;
@@ -75,42 +75,43 @@ void initResolutions(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long s
 
 	wLog* logger_module_helper = WLog_Get("freerds.sessionmanager.module.helper");
 
-	if (!getPropertyNumberWrapper(basePath,config,sessionId, "maxXRes", &maxXRes)) {
+	if (!getPropertyNumberWrapper(basePath, config, "maxXRes", &maxXRes)) {
 		WLog_Print(logger_module_helper, WLOG_ERROR, "Setting: %s.maxXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n",basePath);
 	}
-	if (!getPropertyNumberWrapper(basePath,config,sessionId, "maxYRes", &maxYRes)) {
+	if (!getPropertyNumberWrapper(basePath, config, "maxYRes", &maxYRes)) {
 		WLog_Print(logger_module_helper, WLOG_ERROR, "Setting: %s.maxYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n",basePath);
 	}
-	if (!getPropertyNumberWrapper(basePath,config,sessionId, "minXRes", &minXRes)) {
+	if (!getPropertyNumberWrapper(basePath, config, "minXRes", &minXRes)) {
 		WLog_Print(logger_module_helper, WLOG_ERROR, "Setting: %s.minXRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n",basePath);
 	}
-	if (!getPropertyNumberWrapper(basePath,config,sessionId, "minYRes", &minYRes)){
+	if (!getPropertyNumberWrapper(basePath, config, "minYRes", &minYRes)){
 		WLog_Print(logger_module_helper, WLOG_ERROR, "Setting: %s.minYRes not defined, NOT setting FREERDS_SMAX or FREERDS_SMIN\n",basePath);
 	}
 
 	if ((maxXRes != 0) && (maxYRes != 0)){
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes,(unsigned int) maxYRes );
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) maxXRes, (unsigned int) maxYRes );
 		SetEnvironmentVariableEBA(envBlock, "FREERDS_SMAX", tempstr);
 	}
 	if ((minXRes != 0) && (minYRes != 0)) {
-		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes,(unsigned int) minYRes );
+		sprintf_s(tempstr, sizeof(tempstr), "%dx%d", (unsigned int) minXRes, (unsigned int) minYRes );
 		SetEnvironmentVariableEBA(envBlock, "FREERDS_SMIN", tempstr);
 	}
 
-	config->getPropertyNumber(sessionId, "current.connection.xres", &connectionXRes);
-	config->getPropertyNumber(sessionId, "current.connection.yres", &connectionYRes);
-	config->getPropertyNumber(sessionId, "current.connection.colordepth", &connectionColorDepth);
+	config->getPropertyNumber("current.connection.xres", &connectionXRes);
+	config->getPropertyNumber("current.connection.yres", &connectionYRes);
+	config->getPropertyNumber("current.connection.colordepth", &connectionColorDepth);
 
-	if ((connectionXRes == 0) || (connectionYRes == 0)) {
+	if ((connectionXRes == 0) || (connectionYRes == 0))
+	{
 		WLog_Print(logger_module_helper, WLOG_ERROR, "got no XRes or YRes from client, using config values");
 
-		if (!getPropertyNumberWrapper(basePath,config,sessionId, "xres", xres))
+		if (!getPropertyNumberWrapper(basePath, config, "xres", xres))
 			*xres = 1024;
 
-		if (!getPropertyNumberWrapper(basePath,config,sessionId, "yres", yres))
+		if (!getPropertyNumberWrapper(basePath, config, "yres", yres))
 			*yres = 768;
 
-		if (!getPropertyNumberWrapper(basePath,config,sessionId, "colordepth", colordepth))
+		if (!getPropertyNumberWrapper(basePath, config, "colordepth", colordepth))
 			*colordepth = 24;
 
 		return;
@@ -131,8 +132,10 @@ void initResolutions(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long s
 	} else {
 		*yres = connectionYRes;
 	}
+
 	if (connectionColorDepth == 0) {
 		connectionColorDepth = 16;
 	}
+
 	*colordepth = connectionColorDepth;
 }

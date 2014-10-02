@@ -33,13 +33,13 @@
 extern "C" {
 #endif
 
-BOOL getPropertyBool(long sessionID, char* path, BOOL* value);
-BOOL getPropertyNumber(long sessionID, char* path, long* value);
-BOOL getPropertyString(long sessionID, char* path, char* value, unsigned int valueLength);
+BOOL getPropertyBool(char* path, BOOL* value);
+BOOL getPropertyNumber(char* path, long* value);
+BOOL getPropertyString(char* path, char* value, unsigned int valueLength);
 
-int setPropertyBool(PROPERTY_LEVEL level, long sessionID, char* path, BOOL value);
-int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, char* path, long value);
-int setPropertyString(PROPERTY_LEVEL level, long sessionID, char* path, char* value);
+int setPropertyBool(char* path, BOOL value);
+int setPropertyNumber(char* path, long value);
+int setPropertyString(char* path, char* value);
 
 #ifdef __cplusplus
 }

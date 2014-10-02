@@ -291,26 +291,28 @@ namespace freerds
 				return mModuleConfigName;
 			}
 
-			char * Session::dupEnv(char * orgBlock)
+			char* Session::dupEnv(char* orgBlock)
 			{
-				char * penvb = orgBlock;
+				char* penvb = orgBlock;
 				int length;
 				int currentLength;
-				char *lpszEnvironmentBlock;
-				if (orgBlock == NULL) {
-					return NULL;
-				} else {
-					length = 0;
-					while (*penvb && *(penvb+1))
-					{
-						currentLength = strlen(penvb) + 1;
-						length += currentLength;
-						penvb += (currentLength);
-					}
-					lpszEnvironmentBlock = (char *) malloc((length + 2) * sizeof(CHAR));
-					memcpy(lpszEnvironmentBlock,orgBlock,length + 1);
+				char* lpszEnvironmentBlock;
 
+				if (!orgBlock)
+					return NULL;
+
+				length = 0;
+
+				while (*penvb && *(penvb+1))
+				{
+					currentLength = strlen(penvb) + 1;
+					length += currentLength;
+					penvb += (currentLength);
 				}
+
+				lpszEnvironmentBlock = (char*) malloc((length + 2) * sizeof(CHAR));
+				memcpy(lpszEnvironmentBlock,orgBlock,length + 1);
+
 				return lpszEnvironmentBlock;
 			}
 
@@ -326,7 +328,8 @@ namespace freerds
 
 				std::string configBaseName = std::string("module.")+mModuleConfigName;
 				std::string queryString = configBaseName+std::string(".modulename");
-				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(mSessionID,queryString,mModuleName)) {
+
+				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(queryString,mModuleName)) {
 					WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, Property %s not found.",queryString.c_str());
 					return false;
 				}

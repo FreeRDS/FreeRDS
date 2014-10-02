@@ -44,7 +44,7 @@ namespace freerds
 			{
 				long timeout;
 				DWORD status;
-				boost::posix_time::ptime myEpoch(boost::gregorian::date(1970,boost::gregorian::Jan,1));
+				boost::posix_time::ptime myEpoch(boost::gregorian::date(1970,boost::gregorian::Jan, 1));
 
 				for (;;)
 				{
@@ -69,8 +69,8 @@ namespace freerds
 							if (currentSession->getConnectState() == WTSDisconnected)
 							{
 								//currentSession->getUserName()
-								if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber(currentSession->getSessionID(), "session.timeout", &timeout)) {
-									WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "session.timeout was not found for session %d, using value of 0",currentSession->getSessionID());
+								if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber("session.timeout", &timeout)) {
+									WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "session.timeout was not found for session %d, using value of 0", currentSession->getSessionID());
 									timeout = 0;
 								}
 
@@ -81,12 +81,10 @@ namespace freerds
 									task->setSessionId(currentSession->getSessionID());
 									APP_CONTEXT.addTask(task);
 								}
-
 							}
-						} // for loop of all sessions
-
-					}// WAIT_TIMEOUT
-				} // for loop
+						}
+					}
+				}
 			}
 		}
 	}

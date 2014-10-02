@@ -91,9 +91,7 @@ namespace freerds {
 			{
 				WLog_Print(logger_FDSApiHandler, WLOG_ERROR,
 					"Could not authenticate session id %d user '%s' in domain '%s'",
-					sessionId,
-					username.c_str(),
-					domain.c_str());
+					sessionId, username.c_str(), domain.c_str());
 				return authStatus;
 			}
 
@@ -104,7 +102,7 @@ namespace freerds {
 			bool isReconnectAllowed;
 			bool isNewSession;
 
-			if (!propertyManager->getPropertyBool(0, "session.reconnect", isReconnectAllowed, username))
+			if (!propertyManager->getPropertyBool("session.reconnect", isReconnectAllowed))
 			{
 				isReconnectAllowed = true;
 			}
@@ -123,6 +121,7 @@ namespace freerds {
 			{
 				// Create a new session.
 				userSession = sessionStore->createSession();
+
 				if (!userSession)
 				{
 					WLog_Print(logger_FDSApiHandler, WLOG_ERROR,
@@ -155,7 +154,7 @@ namespace freerds {
 
 			std::string moduleConfigName;
 
-			if (!propertyManager->getPropertyString(sessionId, "module", moduleConfigName))
+			if (!propertyManager->getPropertyString("module", moduleConfigName))
 			{
 				moduleConfigName = "X11";
 			}
@@ -171,18 +170,15 @@ namespace freerds {
 			{
 				WLog_Print(logger_FDSApiHandler, WLOG_INFO,
 					"Starting new session %d for user '%s' in domain '%s'",
-					sessionId,
-					username.c_str(),
-					domain.c_str());
+					sessionId, username.c_str(), domain.c_str());
 
 				std::string pipeName;
+
 				if (!userSession->startModule(pipeName))
 				{
 					WLog_Print(logger_FDSApiHandler, WLOG_ERROR,
 						"ModuleConfig %s does not start properly for user '%s' in domain '%s'",
-						moduleConfigName.c_str(),
-						username.c_str(),
-						domain.c_str());
+						moduleConfigName.c_str(), username.c_str(), domain.c_str());
 					return -1;
 				}
 			}
@@ -211,14 +207,13 @@ namespace freerds {
 			const INT32 sessionId,
 			const std::string& virtualName)
 		{
-			// ....
-
 			callNS::CallOutFdsApiVirtualChannelOpen openCall;
 			openCall.setSessionID(sessionId);
 			openCall.setVirtualName(virtualName);
 
 			APP_CONTEXT.getRpcOutgoingQueue()->addElement(&openCall);
-			WaitForSingleObject(openCall.getAnswerHandle(),INFINITE);
+			WaitForSingleObject(openCall.getAnswerHandle(), INFINITE);
+
 			if (openCall.getResult() == 0)
 			{
 				// no error
@@ -229,7 +224,6 @@ namespace freerds {
 				// report error
 				_return = "";
 			}
-
 		}
 
 		void FDSApiHandler::virtualChannelOpenEx(

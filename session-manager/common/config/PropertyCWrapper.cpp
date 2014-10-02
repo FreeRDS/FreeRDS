@@ -28,25 +28,25 @@
 #include <appcontext/ApplicationContext.h>
 #include <string>
 
-BOOL getPropertyBool(long sessionID, char* path, BOOL* value)
+BOOL getPropertyBool(char* path, BOOL* value)
 {
-	return APP_CONTEXT.getPropertyManager()->getPropertyBool(sessionID, std::string(path), value);
+	return APP_CONTEXT.getPropertyManager()->getPropertyBool(std::string(path), value);
 }
 
-BOOL getPropertyNumber(long sessionID, char* path, long* value)
+BOOL getPropertyNumber(char* path, long* value)
 {
-	return APP_CONTEXT.getPropertyManager()->getPropertyNumber(sessionID, std::string(path), value);
+	return APP_CONTEXT.getPropertyManager()->getPropertyNumber(std::string(path), value);
 }
 
-BOOL getPropertyString(long sessionID, char* path, char* value, unsigned int valueLength)
+BOOL getPropertyString(char* path, char* value, unsigned int valueLength)
 {
 	std::string stdvalue;
-	BOOL retValue = APP_CONTEXT.getPropertyManager()->getPropertyString(sessionID, std::string(path), stdvalue);
+	BOOL retValue = APP_CONTEXT.getPropertyManager()->getPropertyString(std::string(path), stdvalue);
 
 	if (!retValue)
 		return FALSE;
 
-	if (stdvalue.size()+1 > valueLength)
+	if (stdvalue.size() + 1 > valueLength)
 	{
 		return FALSE;
 	}
@@ -57,17 +57,17 @@ BOOL getPropertyString(long sessionID, char* path, char* value, unsigned int val
 	}
 }
 
-int setPropertyBool(PROPERTY_LEVEL level, long sessionID, char* path, BOOL value)
+int setPropertyBool(char* path, BOOL value)
 {
 	return 0;
 }
 
-int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, char* path, long value)
+int setPropertyNumber(char* path, long value)
 {
 	return 0;
 }
 
-int setPropertyString(PROPERTY_LEVEL level, long sessionID, char* path, char* value)
+int setPropertyString(char* path, char* value)
 {
 	return 0;
 }

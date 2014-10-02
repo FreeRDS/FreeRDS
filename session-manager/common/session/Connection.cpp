@@ -44,7 +44,6 @@ namespace freerds
 	{
 		namespace session
 		{
-
 			static wLog* logger_Connection = WLog_Get("freerds.sessionmanager.session.connection");
 
 			Connection::Connection(DWORD connectionId)
@@ -55,7 +54,7 @@ namespace freerds
 					 WLog_Print(logger_Connection, WLOG_FATAL, "cannot init SessionStore critical section!");
 				}
 
-				memset(&mClientInformation, 0, sizeof(mClientInformation));
+				ZeroMemory(&mClientInformation, sizeof(mClientInformation));
 			}
 
 			Connection::~Connection()
@@ -67,16 +66,9 @@ namespace freerds
 				return mDomain;
 			}
 
-			/*void Connection::setDomain(std::string domainName) {
-				mDomain = domainName;
-			}*/
-
 			std::string Connection::getUserName() {
 				return mUsername;
 			}
-			/*void Connection::setUserName(std::string username) {
-				mUsername = username;
-			}*/
 
 			void Connection::setSessionId(long sessionId) {
 				mSessionId = sessionId;
@@ -90,16 +82,18 @@ namespace freerds
 				return mConnectionId;
 			}
 
-			int Connection::authenticateUser(std::string username, std::string domain, std::string password) {
-
+			int Connection::authenticateUser(std::string username, std::string domain, std::string password)
+			{
 				CSGuard guard(&mCSection);
+
 				if (mAuthStatus == 0) {
 					// a Connection can only be authorized once
 					return -1;
 				}
 
 				std::string authModule;
-				if (!APP_CONTEXT.getPropertyManager()->getPropertyString(0,"auth.module",authModule,username)) {
+
+				if (!APP_CONTEXT.getPropertyManager()->getPropertyString("auth.module", authModule)) {
 					authModule = "PAM";
 				}
 
@@ -112,10 +106,12 @@ namespace freerds
 				mAuthStatus = auth->logonUser(username, domain, password);
 
 				delete auth;
+
 				if (mAuthStatus == 0) {
 					mUsername = username;
 					mDomain = domain;
 				}
+
 				return mAuthStatus;
 
 			}
@@ -124,9 +120,8 @@ namespace freerds
 				return &mClientInformation;
 			}
 
-
-			bool Connection::getProperty(std::string path,
-					PROPERTY_STORE_HELPER& helper) {
+			bool Connection::getProperty(std::string path, PROPERTY_STORE_HELPER& helper)
+			{
 				if (path.compare("xres") == 0) {
 					helper.type = NumberType;
 					helper.numberValue = mClientInformation.with;
@@ -150,9 +145,6 @@ namespace freerds
 			void Connection::setAbout2SwitchSessionId(long switchSessionId) {
 				mAbout2SwitchSessionId = switchSessionId;
 			}
-
-
-
 		}
 	}
 }

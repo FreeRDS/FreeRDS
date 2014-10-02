@@ -23,9 +23,9 @@
 
 #include <freerds/module.h>
 
-void initResolutions(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionId, char** envBlock, long* xres, long* yres, long* colordepth);
+void initResolutions(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, char** envBlock, long* xres, long* yres, long* colordepth);
 
-BOOL getPropertyNumberWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionID, char* path, long* value);
-BOOL getPropertyStringWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, long sessionID, char* path, char* value, unsigned int valueLength);
+BOOL getPropertyNumberWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, char* path, long* value);
+BOOL getPropertyStringWrapper(char* basePath, RDS_MODULE_CONFIG_CALLBACKS* config, char* path, char* value, unsigned int valueLength);
 
 #endif /* FREERDS_MODULE_HELPER_H */

@@ -96,7 +96,7 @@ char* netsurf_rds_module_start(RDS_MODULE_COMMON* module)
 	ns->si.cb = sizeof(STARTUPINFO);
 	ZeroMemory(&(ns->pi), sizeof(PROCESS_INFORMATION));
 
-	initResolutions(ns->commonModule.baseConfigPath, &g_Config, ns->commonModule.sessionId,
+	initResolutions(ns->commonModule.baseConfigPath, &g_Config,
 			&ns->commonModule.envBlock , &xres, &yres, &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s -f freerds -b 32 -w %d -h %d",

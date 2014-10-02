@@ -28,8 +28,8 @@
 
 #include <winpr/crt.h>
 
-typedef BOOL (*pgetPropertyBool)(long sessionID, char* path, BOOL* value);
-typedef BOOL (*pgetPropertyNumber)(long sessionID, char* path, long* value);
-typedef BOOL (*pgetPropertyString)(long sessionID, char* path, char* value, unsigned int valueLength);
+typedef BOOL (*pgetPropertyBool)(char* path, BOOL* value);
+typedef BOOL (*pgetPropertyNumber)(char* path, long* value);
+typedef BOOL (*pgetPropertyString)(char* path, char* value, unsigned int valueLength);
 
 #endif /* PROPERTIES_H_ */

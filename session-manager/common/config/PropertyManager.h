@@ -50,22 +50,22 @@ namespace freerds
 				PropertyManager();
 				~PropertyManager();
 
-				BOOL getPropertyBool(long sessionID, std::string path, BOOL* value, std::string username="");
-				bool getPropertyBool(long sessionID, std::string path, bool &value, std::string username="");
-				BOOL getPropertyNumber(long sessionID, std::string path, long* value, std::string username="");
-				BOOL getPropertyString(long sessionID, std::string path, std::string &value, std::string username="");
+				BOOL getPropertyBool(std::string path, BOOL* value);
+				bool getPropertyBool(std::string path, bool &value);
+				BOOL getPropertyNumber(std::string path, long* value);
+				BOOL getPropertyString(std::string path, std::string &value);
 
-				int setPropertyBool(PROPERTY_LEVEL level, long sessionID, std::string path, bool value, std::string username="");
-				int setPropertyNumber(PROPERTY_LEVEL level, long sessionID, std::string path, long value, std::string username="");
-				int setPropertyString(PROPERTY_LEVEL level, long sessionID, std::string path, std::string value, std::string username="");
+				int setPropertyBool(std::string path, bool value);
+				int setPropertyNumber(std::string path, long value);
+				int setPropertyString(std::string path, std::string value);
 
 				int saveProperties(std::string filename);
 				int loadProperties(std::string filename);
 
 			private:
-				int parsePropertyGlobal(std::string parentPath, const boost::property_tree::ptree& tree, PROPERTY_LEVEL level);
-				int setPropertyInternal(PROPERTY_LEVEL level, long sessionID, std::string path, PROPERTY_STORE_HELPER helper, std::string username);
-				bool getPropertyInternal(long sessionID, std::string path, PROPERTY_STORE_HELPER & helper, std::string username);
+				int parsePropertyGlobal(std::string parentPath, const boost::property_tree::ptree& tree);
+				int setPropertyInternal(std::string path, PROPERTY_STORE_HELPER helper);
+				bool getPropertyInternal(std::string path, PROPERTY_STORE_HELPER & helper);
 
 				TPropertyMap mPropertyGlobalMap;
 				TPropertyPropertyMap mPropertyUserMap;

@@ -22,21 +22,12 @@
 
 #include <string>
 
-typedef enum _PROPERTY_LEVEL
-{
-	Global = 1,
-	UserGroup = 2,
-	User = 3
-}
-PROPERTY_LEVEL, *PPROPERTY_LEVEL;
-
 typedef enum _PROPERTY_STORE_TYPE
 {
 	BoolType = 1,
 	NumberType = 2,
 	StringType = 3
 } PROPERTY_STORE_TYPE, *PPROPERTY_STORE_TYPE;
-
 
 typedef struct _PROPERTY_STORE_HELPER {
 	PROPERTY_STORE_TYPE type;

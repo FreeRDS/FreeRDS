@@ -45,7 +45,7 @@ namespace freerds
 		{
 			static wLog* logger_PropertyManager = WLog_Get("freerds.SessionManager.config.propertymanager");
 
-			std::string gConnectionPrefix = "current.connection.";
+			std::string g_ConnectionPrefix = "current.connection.";
 
 			PropertyManager::PropertyManager()
 			{
@@ -57,64 +57,8 @@ namespace freerds
 
 			};
 
-			bool PropertyManager::getPropertyInternal(long sessionID, std::string path, PROPERTY_STORE_HELPER & helper, std::string username)
+			bool PropertyManager::getPropertyInternal(std::string path, PROPERTY_STORE_HELPER & helper)
 			{
-				// first try to resolve the sessionID
-				std::string currentUserName;
-
-				if (sessionID == 0) {
-					// for no session, use username if its present
-					if (username.size() == 0) {
-						if ((mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end())) {
-							helper = mPropertyGlobalMap[path];
-							return true;
-						} else {
-							return false;
-						}
-					}
-					currentUserName = username;
-				} else {
-					// for a given sessionID we try to get the username from the sessionstore
-					sessionNS::SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(sessionID);
-					if (session == NULL) {
-						return -1;
-					}
-					currentUserName = session->getUserName();
-				}
-
-				if (path.substr(0, gConnectionPrefix.size()) == gConnectionPrefix)
-				{
-				    // requesting session values
-					std::string actualPath = path.substr(gConnectionPrefix.size());
-					sessionNS::SessionPtr currentSession =APP_CONTEXT.getSessionStore()->getSession(sessionID);
-					if (currentSession == NULL) {
-						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get Session for sessionID %lu",sessionID);
-						return false;
-					}
-					long connectionID = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(currentSession->getSessionID());
-					if (connectionID == 0) {
-						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get ConnectionId for sessionID %lu",sessionID);
-						return false;
-					}
-					sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(connectionID);
-					if (currentConnection == NULL) {
-						WLog_Print(logger_PropertyManager, WLOG_ERROR, "Cannot get Connection for connectionId %lu",connectionID);
-						return false;
-					}
-					return currentConnection->getProperty(actualPath,helper);
-				}
-
-
-				if (mPropertyUserMap.find(currentUserName) != mPropertyUserMap.end())
-				{
-					TPropertyMap * uPropMap = mPropertyUserMap[currentUserName];
-					if (uPropMap->find(path) != uPropMap->end()) {
-						// we found the setting ...
-						helper = (*uPropMap)[path];
-						return true;
-					}
-				}
-
 				if ((mPropertyGlobalMap.find(path) != mPropertyGlobalMap.end()))
 				{
 					helper = mPropertyGlobalMap[path];
@@ -124,11 +68,11 @@ namespace freerds
 				return false;
 			}
 
-			BOOL PropertyManager::getPropertyBool(long sessionID, std::string path, BOOL* value, std::string username)
+			BOOL PropertyManager::getPropertyBool(std::string path, BOOL* value)
 			{
 				PROPERTY_STORE_HELPER internStore;
 
-				if (!getPropertyInternal(sessionID, path, internStore, username)) {
+				if (!getPropertyInternal(path, internStore)) {
 					return FALSE;
 				}
 
@@ -143,11 +87,11 @@ namespace freerds
 				}
 			}
 
-			bool PropertyManager::getPropertyBool(long sessionID, std::string path, bool &value, std::string username)
+			bool PropertyManager::getPropertyBool(std::string path, bool &value)
 			{
 				PROPERTY_STORE_HELPER internStore;
 
-				if (!getPropertyInternal(sessionID, path, internStore, username)) {
+				if (!getPropertyInternal(path, internStore)) {
 					return FALSE;
 				}
 
@@ -162,11 +106,11 @@ namespace freerds
 				}
 			}
 
-			BOOL PropertyManager::getPropertyNumber(long sessionID, std::string path, long* value, std::string username)
+			BOOL PropertyManager::getPropertyNumber(std::string path, long* value)
 			{
 				PROPERTY_STORE_HELPER internStore;
 
-				if (!getPropertyInternal(sessionID,path,internStore,username)) {
+				if (!getPropertyInternal(path, internStore)) {
 					return false;
 				}
 
@@ -181,11 +125,11 @@ namespace freerds
 				}
 			}
 
-			BOOL PropertyManager::getPropertyString(long sessionID, std::string path, std::string &value, std::string username)
+			BOOL PropertyManager::getPropertyString(std::string path, std::string &value)
 			{
 				PROPERTY_STORE_HELPER internStore;
 
-				if (!getPropertyInternal(sessionID,path,internStore,username)) {
+				if (!getPropertyInternal(path, internStore)) {
 					return false;
 				}
 
@@ -200,123 +144,48 @@ namespace freerds
 				}
 			}
 
-			int PropertyManager::setPropertyInternal(PROPERTY_LEVEL level, long sessionID,
-					std::string path, PROPERTY_STORE_HELPER helper, std::string username)
+			int PropertyManager::setPropertyInternal(std::string path, PROPERTY_STORE_HELPER helper)
 			{
-				if (level == User)
-				{
-					std::string currentUserName;
-
-					if (sessionID == 0)
-					{
-						// for no session, use username if its present
-						if (username.size() == 0) {
-							return -1;
-						}
-						currentUserName = username;
-					}
-					else
-					{
-						// for a given sessionID we try to get the username from the sessionstore
-						sessionNS::SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(sessionID);
-						if (session == NULL) {
-							return -1;
-						}
-						currentUserName = session->getUserName();
-					}
-
-					// we have the username now
-					if (mPropertyUserMap.find(currentUserName) != mPropertyUserMap.end())
-					{
-						TPropertyMap * uPropMap = mPropertyUserMap[currentUserName];
-						(*uPropMap)[path] = helper;
-					}
-					else
-					{
-						TPropertyMap * uPropMap = new TPropertyMap();
-						(*uPropMap)[path] = helper;
-						mPropertyUserMap[currentUserName] = uPropMap;
-					}
-
-					return 0;
-				}
-				else if (level == Global)
-				{
-					mPropertyGlobalMap[path]= helper;
-					return 0;
-				}
-
-				return -1;
+				mPropertyGlobalMap[path]= helper;
+				return 0;
 			}
 
-			int PropertyManager::setPropertyBool(PROPERTY_LEVEL level, long sessionID,
-					std::string path, bool value,std::string username)
+			int PropertyManager::setPropertyBool(std::string path, bool value)
 			{
 				PROPERTY_STORE_HELPER helper;
 				helper.type = BoolType;
 				helper.boolValue = value;
 
-				if (username.size() == 0) {
-					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %s in global scope",path.c_str(),value ? "true" :"false");
-				} else {
-					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %s for user %s",path.c_str(),value ? "true" :"false",username.c_str());
-				}
-
-				return setPropertyInternal(level,sessionID,path,helper,username);
+				return setPropertyInternal(path, helper);
 			}
 
-			int PropertyManager::setPropertyNumber(PROPERTY_LEVEL level, long sessionID,
-					std::string path, long value,std::string username)
+			int PropertyManager::setPropertyNumber(std::string path, long value)
 			{
-				// only global config for now
 				PROPERTY_STORE_HELPER helper;
 				helper.type = NumberType;
 				helper.numberValue = value;
 
-				if (username.size() == 0) {
-					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %d in global scope",path.c_str(),value);
-				} else {
-					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %d for user %s",path.c_str(),value,username.c_str());
-				}
-
-				return setPropertyInternal(level,sessionID,path,helper,username);
+				return setPropertyInternal(path, helper);
 			}
 
-			int PropertyManager::setPropertyString(PROPERTY_LEVEL level, long sessionID,
-					std::string path, std::string value,std::string username)
+			int PropertyManager::setPropertyString(std::string path, std::string value)
 			{
-				// only global config for now
 				PROPERTY_STORE_HELPER helper;
 				helper.type = StringType;
 				helper.stringValue = value;
 
-				if (username.size() == 0) {
-					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %s in global scope",path.c_str(),value.c_str());
-				} else {
-					WLog_Print(logger_PropertyManager, WLOG_DEBUG, "Adding property %s with value %s for user %s",path.c_str(),value.c_str(),username.c_str());
-				}
-
-				return setPropertyInternal(level,sessionID,path,helper,username);
+				return setPropertyInternal(path, helper);
 			}
 
-			int PropertyManager::parsePropertyGlobal(std::string parentPath, const boost::property_tree::ptree& tree, PROPERTY_LEVEL level)
+			int PropertyManager::parsePropertyGlobal(std::string parentPath, const boost::property_tree::ptree& tree)
 			{
 				bool useParentPath = false;
-				std::string username;
 
 				if (parentPath.size() != 0)
 				{
-					// check if it is global
-					if (stringStartsWith(parentPath,"user"))
-					{
-						username = parentPath;
-						username.erase(0,5);
-						level = User;
-					}
-					else if (!stringStartsWith(parentPath,"global"))
+					if (!stringStartsWith(parentPath, "global"))
 					{
 						useParentPath = true;
-						level = Global;
 					}
 				}
 
@@ -340,7 +209,7 @@ namespace freerds
 							std::replace(propertyName.begin(), propertyName.end(),'_','.');
 							try {
 								long number = boost::lexical_cast<long>(v.second.data());
-								setPropertyNumber(level,0,propertyName,number,username);
+								setPropertyNumber(propertyName, number);
 							} catch (boost::bad_lexical_cast &){
 								WLog_Print(logger_PropertyManager, WLOG_ERROR, "Could not cast %s to a number, property % ignored!",v.second.data().c_str(),propertyName.c_str());
 							}
@@ -349,14 +218,14 @@ namespace freerds
 						{
 							std::string propertyName = fullPath.substr(0,fullPath.size() - strlen("_string"));
 							std::replace(propertyName.begin(), propertyName.end(),'_','.');
-							setPropertyString(level,0,propertyName,v.second.data(),username);
+							setPropertyString(propertyName, v.second.data());
 						}
 						else if (std::stringEndsWith(fullPath,"_bool"))
 						{
 							std::string propertyName = fullPath.substr(0,fullPath.size() - strlen("_bool"));
 							std::replace(propertyName.begin(), propertyName.end(),'_','.');
 							try {
-								setPropertyBool(level,0,propertyName,boost::lexical_cast<bool>(v.second.data()),username);
+								setPropertyBool(propertyName,boost::lexical_cast<bool>(v.second.data()));
 							} catch (boost::bad_lexical_cast &){
 								WLog_Print(logger_PropertyManager, WLOG_ERROR, "Could not cast %s to a bool, property %s ignored!",v.second.data().c_str(), propertyName.c_str());
 							}
@@ -364,9 +233,9 @@ namespace freerds
 					}
 
 					if (parentPath.size() == 0) {
-						parsePropertyGlobal(v.first ,subtree,level);
+						parsePropertyGlobal(v.first, subtree);
 					} else {
-						parsePropertyGlobal(parentPath +"."+ v.first ,subtree,level);
+						parsePropertyGlobal(parentPath + "." + v.first, subtree);
 					}
 				}
 
@@ -379,7 +248,7 @@ namespace freerds
 
 				try {
 					boost::property_tree::read_ini(filename, pt);
-					parsePropertyGlobal("",pt,Global);
+					parsePropertyGlobal("", pt);
 				} catch (boost::property_tree::file_parser_error & e) {
 					WLog_Print(logger_PropertyManager, WLOG_ERROR, "Could not parse config file %s",filename.c_str());
 				}
@@ -436,7 +305,6 @@ namespace freerds
 
 				return 0;
 			}
-
 		}
 	}
 }

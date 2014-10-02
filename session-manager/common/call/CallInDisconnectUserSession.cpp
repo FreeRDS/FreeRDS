@@ -105,10 +105,9 @@ namespace freerds
 
 			long timeout;
 
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber(currentSession->getSessionID(),"session.timeout", &timeout)) {
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber("session.timeout", &timeout)) {
 				timeout = 0;
 			}
-
 
 			if (timeout == 0)  {
 				callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());

@@ -237,7 +237,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (x11->displayNum));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
-	initResolutions(x11->commonModule.baseConfigPath, &g_Config, x11->commonModule.sessionId,
+	initResolutions(x11->commonModule.baseConfigPath, &g_Config,
 			&x11->commonModule.envBlock, &xres, &yres, &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -dpi 96",
@@ -272,7 +272,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
-	if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath, &g_Config, x11->commonModule.sessionId, "startwm", startupname, 256))
+	if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath, &g_Config, "startwm", startupname, 256))
 	{
 		strcpy(startupname, "startwm.sh");
 	}
