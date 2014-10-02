@@ -70,7 +70,6 @@ namespace freerds
 
 		std::string ApplicationContext::getHomePath()
 		{
-
 			if (mHomePath.size() == 0)
 			{
 				char* p;

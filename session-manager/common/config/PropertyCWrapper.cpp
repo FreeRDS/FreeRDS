@@ -25,8 +25,9 @@
 
 #include "PropertyCWrapper.h"
 
-#include <appcontext/ApplicationContext.h>
 #include <string>
+
+#include <appcontext/ApplicationContext.h>
 
 BOOL getPropertyBool(char* path, BOOL* value)
 {

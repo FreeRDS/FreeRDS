@@ -26,7 +26,6 @@
 #ifndef PROPERTYCWRAPPER_H_
 #define PROPERTYCWRAPPER_H_
 
-#include "PropertyLevel.h"
 #include <freerds/properties.h>
 
 #ifdef __cplusplus

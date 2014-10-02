@@ -27,11 +27,9 @@
 #define PROPERTYMANAGER_H_
 
 #include <winpr/crt.h>
+#include <winpr/ini.h>
 
 #include <string>
-#include <map>
-#include "PropertyLevel.h"
-#include <boost/property_tree/ptree.hpp>
 
 namespace freerds
 {
@@ -39,19 +37,13 @@ namespace freerds
 	{
 		namespace config
 		{
-			typedef std::map<std::string, PROPERTY_STORE_HELPER> TPropertyMap;
-			typedef std::pair<std::string, PROPERTY_STORE_HELPER> TPropertyPair;
-
-			typedef std::map<std::string, TPropertyMap * > TPropertyPropertyMap;
-			typedef std::pair<std::string, TPropertyMap * > TPropertyPropertyPair;
-
 			class PropertyManager {
 			public:
 				PropertyManager();
 				~PropertyManager();
 
 				BOOL getPropertyBool(std::string path, BOOL* value);
-				bool getPropertyBool(std::string path, bool &value);
+				BOOL getPropertyBool(std::string path, bool &value);
 				BOOL getPropertyNumber(std::string path, long* value);
 				BOOL getPropertyString(std::string path, std::string &value);
 
@@ -63,17 +55,11 @@ namespace freerds
 				int loadProperties(std::string filename);
 
 			private:
-				int parsePropertyGlobal(std::string parentPath, const boost::property_tree::ptree& tree);
-				int setPropertyInternal(std::string path, PROPERTY_STORE_HELPER helper);
-				bool getPropertyInternal(std::string path, PROPERTY_STORE_HELPER & helper);
-
-				TPropertyMap mPropertyGlobalMap;
-				TPropertyPropertyMap mPropertyUserMap;
+				wIniFile* ini;
 			};
 		}
 	}
 }
-
 namespace configNS = freerds::sessionmanager::config;
 
 #endif /* PROPERTYMANAGER_H_ */

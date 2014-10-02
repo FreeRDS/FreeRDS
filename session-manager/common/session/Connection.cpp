@@ -120,24 +120,6 @@ namespace freerds
 				return &mClientInformation;
 			}
 
-			bool Connection::getProperty(std::string path, PROPERTY_STORE_HELPER& helper)
-			{
-				if (path.compare("xres") == 0) {
-					helper.type = NumberType;
-					helper.numberValue = mClientInformation.with;
-					return true;
-				} else if (path.compare("yres") == 0) {
-					helper.type = NumberType;
-					helper.numberValue = mClientInformation.height;
-					return true;
-				} else if (path.compare("colordepth") == 0) {
-					helper.type = NumberType;
-					helper.numberValue = mClientInformation.colordepth;
-					return true;
-				}
-				return false;
-			}
-
 			long Connection::getAbout2SwitchSessionId() {
 				return mAbout2SwitchSessionId;
 			}

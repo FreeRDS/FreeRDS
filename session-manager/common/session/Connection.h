@@ -31,8 +31,6 @@
 
 #include <freerds/module.h>
 
-#include <config/PropertyLevel.h>
-
 namespace freerds
 {
 	namespace sessionmanager
@@ -53,9 +51,7 @@ namespace freerds
 			~Connection();
 
 			std::string getDomain();
-			//void setDomain(std::string domainName);
 			std::string getUserName();
-			//void setUserName(std::string username);
 
 			void setSessionId(long sessionId);
 			long getSessionId();
@@ -69,9 +65,6 @@ namespace freerds
 			long getConnectionId();
 
 			int authenticateUser(std::string username, std::string domain, std::string password);
-
-			bool getProperty(std::string path, PROPERTY_STORE_HELPER & helper);
-
 
 		private:
 			DWORD mConnectionId;
