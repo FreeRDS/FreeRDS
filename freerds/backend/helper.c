@@ -23,6 +23,7 @@
 
 #include <winpr/crt.h>
 #include <winpr/synch.h>
+#include <winpr/environment.h>
 
 #include <freerds/backend.h>
 

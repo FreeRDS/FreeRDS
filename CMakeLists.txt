@@ -113,16 +113,14 @@ find_feature(ProtobufC ${PROTOBUFC_FEATURE_TYPE} ${PROTOBUFC_FEATURE_PURPOSE} ${
 
 include_directories(${PROTOBUFC_INCLUDE_DIRS})
 
+add_subdirectory(external)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/msgpack/src)
+
 add_subdirectory(include)
-
 add_subdirectory(freerds)
-
 add_subdirectory(scripts)
-
 add_subdirectory(manager)
-
 add_subdirectory(fdsapi)
-
 add_subdirectory(module)
 
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.10")

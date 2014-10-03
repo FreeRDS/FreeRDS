@@ -39,6 +39,7 @@ set(${MODULE_PREFIX}_SRCS
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 list(APPEND ${MODULE_PREFIX}_LIBS winpr)
+list(APPEND ${MODULE_PREFIX}_LIBS msgpack)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUFC_LIBRARIES})
 
