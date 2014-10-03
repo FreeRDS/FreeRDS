@@ -14,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(MODULE_NAME "freerds")
-set(MODULE_PREFIX "FREERDS_CORE")
+set(MODULE_NAME "freerds-server")
+set(MODULE_PREFIX "FREERDS_SERVER")
 
 include_directories(".")
-include_directories("${CMAKE_SOURCE_DIR}/winpr/tools/makecert")
 
 set(${MODULE_PREFIX}_SRCS
 	freerds.c

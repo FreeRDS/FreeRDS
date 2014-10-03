@@ -16,16 +16,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-project(X11rdp)
+
+project(Xrds)
 
 include(GNUInstallDirs)
 include(MergeStaticLibs)
 include(FindPackageHandleStandardArgs)
 
-# X11rdp
+# Xrds
 
-set(MODULE_NAME "X11rdp")
-set(MODULE_PREFIX "X11RDP")
+set(MODULE_NAME "Xrds")
+set(MODULE_PREFIX "XRDS")
 
 set(XSRCBASE_RELATIVE "xorg-server")
 set(XOBJBASE_RELATIVE "xorg-server")

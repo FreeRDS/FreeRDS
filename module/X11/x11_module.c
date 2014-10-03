@@ -240,7 +240,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 			&x11->commonModule.envBlock, &xres, &yres, &colordepth);
 
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -dpi 96",
-			"X11rdp", (int) (x11->displayNum), (int) xres, (int) yres, (int) 24);
+			"Xrds", (int) (x11->displayNum), (int) xres, (int) yres, (int) 24);
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
@@ -250,13 +250,13 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 
 	if (!status)
 	{
-		WLog_Print(gModuleLog, WLOG_ERROR , "s %d, problem starting X11rdp (status %d - cmd %s)",
+		WLog_Print(gModuleLog, WLOG_ERROR , "s %d, problem starting Xrds (status %d - cmd %s)",
 		SessionId, status, lpCommandLine);
 		free(pipeName);
 		return NULL;
 	}
 
-	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, X11rdp Process started: %d (pid %d - cmd %s)",
+	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, Xrds Process started: %d (pid %d - cmd %s)",
 			SessionId, status, x11->X11ProcessInformation.dwProcessId, lpCommandLine);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))

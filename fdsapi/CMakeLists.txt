@@ -17,7 +17,7 @@
 set(MODULE_NAME "freerds-fdsapi")
 set(MODULE_PREFIX "FREERDS_FDSAPI")
 
-set(FDSAPI_COMMON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../session-manager/fdsapi")
+set(FDSAPI_COMMON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../manager/fdsapi")
 
 set(${MODULE_PREFIX}_SRCS
 	fdsapi.cpp

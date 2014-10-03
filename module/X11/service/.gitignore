@@ -3,6 +3,6 @@ external/
 *_dummy.c
 *_dummy.c.base
 
-X11rdp
+Xrds
 LocalConfigSettings.cmake
 xorg-server

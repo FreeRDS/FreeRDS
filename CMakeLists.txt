@@ -119,7 +119,7 @@ add_subdirectory(freerds)
 
 add_subdirectory(scripts)
 
-add_subdirectory(session-manager)
+add_subdirectory(manager)
 
 add_subdirectory(fdsapi)
 
