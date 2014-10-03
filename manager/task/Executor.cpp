@@ -30,9 +30,10 @@
 
 #include <functional>
 
-namespace freerds {
-namespace task {
-
+namespace freerds
+{
+	namespace task
+	{
 		static wLog* logger_Executor = WLog_Get("freerds.task.Executor");
 
 		Executor::Executor()
@@ -210,5 +211,5 @@ namespace task {
 
 			return false;
 		}
-}
+	}
 }

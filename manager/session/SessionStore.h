@@ -31,10 +31,8 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace session
 	{
-		namespace session
-		{
 		typedef std::map<long , SessionPtr> TSessionMap;
 		typedef std::pair<long, SessionPtr> TSessionPair;
 
@@ -56,10 +54,9 @@ namespace freerds
 			long mNextSessionId;
 			CRITICAL_SECTION mCSection;
 		};
-		}
 	}
 }
 
-namespace sessionNS = freerds::sessionmanager::session;
+namespace sessionNS = freerds::session;
 
 #endif //__SESSIONSTORE_H_

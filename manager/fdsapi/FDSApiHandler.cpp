@@ -32,10 +32,10 @@
 #include <call/CallOutFdsApiVirtualChannelOpen.h>
 #include <call/TaskSwitchTo.h>
 
-namespace freerds {
-	namespace sessionmanager {
-		namespace fdsapi {
-
+namespace freerds
+{
+	namespace fdsapi
+	{
 		static wLog * logger_FDSApiHandler = WLog_Get("freerds.sessionmanager.fdsapihandler");
 
 		FDSApiHandler::FDSApiHandler()
@@ -427,8 +427,6 @@ namespace freerds {
 						break;
 				}
 			}
-		}
-
 		}
 	}
 }

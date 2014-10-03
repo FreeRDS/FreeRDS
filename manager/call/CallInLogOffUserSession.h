@@ -19,38 +19,38 @@
 
 #ifndef CALL_IN_LOGOFF_USER_SESSION_H_
 #define CALL_IN_LOGOFF_USER_SESSION_H_
-#include "CallFactory.h"
+
 #include <string>
+
+#include "CallFactory.h"
 #include "CallIn.h"
+
 #include <ICP.pb.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallInLogOffUserSession: public CallIn
 		{
-			class CallInLogOffUserSession: public CallIn
-			{
-			public:
-				CallInLogOffUserSession();
-				virtual ~CallInLogOffUserSession();
+		public:
+			CallInLogOffUserSession();
+			virtual ~CallInLogOffUserSession();
 
-				virtual unsigned long getCallType();
-				virtual int decodeRequest();
-				virtual int encodeResponse();
-				virtual int doStuff();
+			virtual unsigned long getCallType();
+			virtual int decodeRequest();
+			virtual int encodeResponse();
+			virtual int doStuff();
 
-			private:
-				long mConnectionId;
-				bool mLoggedOff;
-			};
+		private:
+			long mConnectionId;
+			bool mLoggedOff;
+		};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInLogOffUserSession,freerds::icp::LogOffUserSession);
-		}
+		FACTORY_REGISTER_DWORD(CallFactory,CallInLogOffUserSession,freerds::icp::LogOffUserSession);
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif

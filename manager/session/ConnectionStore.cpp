@@ -27,79 +27,76 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace session
 	{
-		namespace session
+		static wLog * logger_ConnectionStore = WLog_Get("freerds.SessionManager.session.connectionstore");
+
+		ConnectionStore::ConnectionStore()
 		{
-			static wLog * logger_ConnectionStore = WLog_Get("freerds.SessionManager.session.connectionstore");
-
-			ConnectionStore::ConnectionStore()
+			if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 			{
-				if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
+				 WLog_Print(logger_ConnectionStore, WLOG_FATAL, "cannot init ConnectionStore critical section!");
+			}
+		}
+
+		ConnectionStore::~ConnectionStore()
+		{
+			DeleteCriticalSection(&mCSection);
+		}
+
+		ConnectionPtr ConnectionStore::getOrCreateConnection(long connectionID)
+		{
+			CSGuard guard(&mCSection);
+			if (mConnectionMap.find(connectionID) != mConnectionMap.end()) {
+				return mConnectionMap[connectionID];
+			} else {
+				ConnectionPtr connection = ConnectionPtr(new Connection(connectionID));
+				mConnectionMap[connectionID] = connection;
+				return connection;
+			}
+		}
+
+		ConnectionPtr ConnectionStore::getConnection(long connectionID)
+		{
+			CSGuard guard(&mCSection);
+			if (mConnectionMap.find(connectionID) != mConnectionMap.end()) {
+				return mConnectionMap[connectionID];
+			}
+			return ConnectionPtr();
+		}
+
+
+		int ConnectionStore::removeConnection(long connectionID)
+		{
+			CSGuard guard(&mCSection);
+			mConnectionMap.erase(connectionID);
+			return 0;
+		}
+
+		long ConnectionStore::getConnectionIdForSessionId(long mSessionId)
+		{
+			CSGuard guard(&mCSection);
+
+			long connectionId = 0;
+
+			TConnectionMap::iterator iter;
+
+			for (iter = mConnectionMap.begin(); iter != mConnectionMap.end();iter++)
+			{
+				if((iter->second->getSessionId() == mSessionId) || (iter->second->getAbout2SwitchSessionId() == mSessionId))
 				{
-					 WLog_Print(logger_ConnectionStore, WLOG_FATAL, "cannot init ConnectionStore critical section!");
+					connectionId = iter->first;
+					break;
 				}
 			}
 
-			ConnectionStore::~ConnectionStore()
-			{
-				DeleteCriticalSection(&mCSection);
-			}
+			return connectionId;
+		}
 
-			ConnectionPtr ConnectionStore::getOrCreateConnection(long connectionID)
-			{
-				CSGuard guard(&mCSection);
-				if (mConnectionMap.find(connectionID) != mConnectionMap.end()) {
-					return mConnectionMap[connectionID];
-				} else {
-					ConnectionPtr connection = ConnectionPtr(new Connection(connectionID));
-					mConnectionMap[connectionID] = connection;
-					return connection;
-				}
-			}
-
-			ConnectionPtr ConnectionStore::getConnection(long connectionID)
-			{
-				CSGuard guard(&mCSection);
-				if (mConnectionMap.find(connectionID) != mConnectionMap.end()) {
-					return mConnectionMap[connectionID];
-				}
-				return ConnectionPtr();
-			}
-
-
-			int ConnectionStore::removeConnection(long connectionID)
-			{
-				CSGuard guard(&mCSection);
-				mConnectionMap.erase(connectionID);
-				return 0;
-			}
-
-			long ConnectionStore::getConnectionIdForSessionId(long mSessionId) {
-				CSGuard guard(&mCSection);
-
-				long connectionId = 0;
-
-				TConnectionMap::iterator iter;
-
-				for (iter = mConnectionMap.begin(); iter != mConnectionMap.end();iter++)
-				{
-					if((iter->second->getSessionId() == mSessionId) || (iter->second->getAbout2SwitchSessionId() == mSessionId))
-					{
-						connectionId = iter->first;
-						break;
-					}
-				}
-
-				return connectionId;
-			}
-
-			void ConnectionStore::reset() {
-				CSGuard guard(&mCSection);
-				mConnectionMap.clear();
-			}
-
-
+		void ConnectionStore::reset()
+		{
+			CSGuard guard(&mCSection);
+			mConnectionMap.clear();
 		}
 	}
 }

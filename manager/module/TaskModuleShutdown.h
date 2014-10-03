@@ -24,12 +24,10 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace module
 	{
-		namespace module
+		class TaskModuleShutdown: public taskNS::Task
 		{
-
-		class TaskModuleShutdown: public taskNS::Task {
 		public:
 			virtual void run();
 			void setSessionId(long sessionId);
@@ -39,11 +37,9 @@ namespace freerds
 		};
 
 		typedef boost::shared_ptr<TaskModuleShutdown> TaskModuleShutdownPtr;
-
-		}
 	}
 }
 
-namespace moduleNS = freerds::sessionmanager::module;
+namespace moduleNS = freerds::module;
 
 #endif /* __TASK_MODULE_SHUTDOWN_ */

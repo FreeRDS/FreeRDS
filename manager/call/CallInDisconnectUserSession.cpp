@@ -30,11 +30,8 @@ using freerds::icp::DisconnectUserSessionResponse;
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
-
 		CallInDisconnectUserSession::CallInDisconnectUserSession()
 		{
 			mConnectionId = 0;
@@ -117,7 +114,6 @@ namespace freerds
 
 			mDisconnected = true;
 			return 0;
-		}
 		}
 	}
 }

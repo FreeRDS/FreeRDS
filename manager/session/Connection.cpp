@@ -35,99 +35,95 @@
 #include <module/AuthModule.h>
 #include <utils/CSGuard.h>
 
-
 #include "Connection.h"
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace session
 	{
-		namespace session
+		static wLog* logger_Connection = WLog_Get("freerds.sessionmanager.session.connection");
+
+		Connection::Connection(DWORD connectionId)
+			: mConnectionId(connectionId), mSessionId(0),
+			  mAuthStatus(-1), mAbout2SwitchSessionId(0)
 		{
-			static wLog* logger_Connection = WLog_Get("freerds.sessionmanager.session.connection");
-
-			Connection::Connection(DWORD connectionId)
-				: mConnectionId(connectionId), mSessionId(0),
-				  mAuthStatus(-1), mAbout2SwitchSessionId(0)
+			if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 			{
-				if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
-				{
-					 WLog_Print(logger_Connection, WLOG_FATAL, "cannot init SessionStore critical section!");
-				}
-
-				ZeroMemory(&mClientInformation, sizeof(mClientInformation));
+				 WLog_Print(logger_Connection, WLOG_FATAL, "cannot init SessionStore critical section!");
 			}
 
-			Connection::~Connection()
-			{
+			ZeroMemory(&mClientInformation, sizeof(mClientInformation));
+		}
 
+		Connection::~Connection()
+		{
+
+		}
+
+		std::string Connection::getDomain() {
+			return mDomain;
+		}
+
+		std::string Connection::getUserName() {
+			return mUsername;
+		}
+
+		void Connection::setSessionId(long sessionId) {
+			mSessionId = sessionId;
+		}
+
+		long Connection::getSessionId() {
+			return mSessionId;
+		}
+
+		long Connection::getConnectionId() {
+			return mConnectionId;
+		}
+
+		int Connection::authenticateUser(std::string username, std::string domain, std::string password)
+		{
+			CSGuard guard(&mCSection);
+
+			if (mAuthStatus == 0) {
+				// a Connection can only be authorized once
+				return -1;
 			}
 
-			std::string Connection::getDomain() {
-				return mDomain;
+			std::string authModule;
+
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyString("auth.module", authModule)) {
+				authModule = "PAM";
 			}
 
-			std::string Connection::getUserName() {
-				return mUsername;
+			moduleNS::AuthModule* auth = moduleNS::AuthModule::loadFromName(authModule);
+
+			if (!auth) {
+				return 1;
 			}
 
-			void Connection::setSessionId(long sessionId) {
-				mSessionId = sessionId;
+			mAuthStatus = auth->logonUser(username, domain, password);
+
+			delete auth;
+
+			if (mAuthStatus == 0) {
+				mUsername = username;
+				mDomain = domain;
 			}
 
-			long Connection::getSessionId() {
-				return mSessionId;
-			}
+			return mAuthStatus;
 
-			long Connection::getConnectionId() {
-				return mConnectionId;
-			}
+		}
 
-			int Connection::authenticateUser(std::string username, std::string domain, std::string password)
-			{
-				CSGuard guard(&mCSection);
+		pCLIENT_INFORMATION Connection::getClientInformation() {
+			return &mClientInformation;
+		}
 
-				if (mAuthStatus == 0) {
-					// a Connection can only be authorized once
-					return -1;
-				}
+		long Connection::getAbout2SwitchSessionId() {
+			return mAbout2SwitchSessionId;
+		}
 
-				std::string authModule;
-
-				if (!APP_CONTEXT.getPropertyManager()->getPropertyString("auth.module", authModule)) {
-					authModule = "PAM";
-				}
-
-				moduleNS::AuthModule* auth = moduleNS::AuthModule::loadFromName(authModule);
-
-				if (!auth) {
-					return 1;
-				}
-
-				mAuthStatus = auth->logonUser(username, domain, password);
-
-				delete auth;
-
-				if (mAuthStatus == 0) {
-					mUsername = username;
-					mDomain = domain;
-				}
-
-				return mAuthStatus;
-
-			}
-
-			pCLIENT_INFORMATION Connection::getClientInformation() {
-				return &mClientInformation;
-			}
-
-			long Connection::getAbout2SwitchSessionId() {
-				return mAbout2SwitchSessionId;
-			}
-
-			void Connection::setAbout2SwitchSessionId(long switchSessionId) {
-				mAbout2SwitchSessionId = switchSessionId;
-			}
+		void Connection::setAbout2SwitchSessionId(long switchSessionId) {
+			mAbout2SwitchSessionId = switchSessionId;
 		}
 	}
 }

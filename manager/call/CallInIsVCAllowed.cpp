@@ -28,10 +28,8 @@ using freerds::icp::IsChannelAllowedResponse;
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
 		CallInIsVCAllowed::CallInIsVCAllowed()
 		{
 
@@ -85,7 +83,6 @@ namespace freerds
 			// find out if Virtual Channel is allowed
 			mVirtualChannelAllowed = true;
 			return 0;
-		}
 		}
 	}
 }

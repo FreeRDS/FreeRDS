@@ -19,38 +19,38 @@
 
 #ifndef CALL_IN_DISCONNECT_USER_SESSION_H_
 #define CALL_IN_DISCONNECT_USER_SESSION_H_
-#include "CallFactory.h"
+
 #include <string>
+
+#include "CallFactory.h"
 #include "CallIn.h"
+
 #include <ICP.pb.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallInDisconnectUserSession: public CallIn
 		{
-			class CallInDisconnectUserSession: public CallIn
-			{
-			public:
-				CallInDisconnectUserSession();
-				virtual ~CallInDisconnectUserSession();
+		public:
+			CallInDisconnectUserSession();
+			virtual ~CallInDisconnectUserSession();
 
-				virtual unsigned long getCallType();
-				virtual int decodeRequest();
-				virtual int encodeResponse();
-				virtual int doStuff();
+			virtual unsigned long getCallType();
+			virtual int decodeRequest();
+			virtual int encodeResponse();
+			virtual int doStuff();
 
-			private:
-				long mConnectionId;
-				bool mDisconnected;
-			};
+		private:
+			long mConnectionId;
+			bool mDisconnected;
+		};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInDisconnectUserSession,freerds::icp::DisconnectUserSession);
-		}
+		FACTORY_REGISTER_DWORD(CallFactory,CallInDisconnectUserSession,freerds::icp::DisconnectUserSession);
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif

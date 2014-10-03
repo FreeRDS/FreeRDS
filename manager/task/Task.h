@@ -50,8 +50,6 @@ namespace freerds
 		};
 
 		typedef boost::shared_ptr<Task> TaskPtr;
-
-
 	}
 }
 

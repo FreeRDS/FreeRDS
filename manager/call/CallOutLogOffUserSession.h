@@ -19,37 +19,35 @@
 
 #ifndef __CALL_OUT_LOGOFF_USER_SESSION_H_
 #define __CALL_OUT_LOGOFF_USER_SESSION_H_
+
 #include <string>
 #include "CallOut.h"
 #include <ICP.pb.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallOutLogOffUserSession: public CallOut
 		{
-			class CallOutLogOffUserSession: public CallOut
-			{
-			public:
-				CallOutLogOffUserSession();
-				virtual ~CallOutLogOffUserSession();
+		public:
+			CallOutLogOffUserSession();
+			virtual ~CallOutLogOffUserSession();
 
-				virtual unsigned long getCallType();
-				virtual int encodeRequest();
-				virtual int decodeResponse();
+			virtual unsigned long getCallType();
+			virtual int encodeRequest();
+			virtual int decodeResponse();
 
-				void setConnectionId(long connectionId);
-				bool isLoggedOff();
+			void setConnectionId(long connectionId);
+			bool isLoggedOff();
 
-			private:
-				long mConnectionId;
-				bool mLoggedOff;
-			};
-		}
+		private:
+			long mConnectionId;
+			bool mLoggedOff;
+		};
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif //__CALL_OUT_LOGOFF_USER_SESSION_H_

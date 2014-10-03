@@ -27,84 +27,80 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace module
 	{
-		namespace module
+		static wLog* logger_Module = WLog_Get("freerds.SessionManager.module.module");
+
+		Module::Module() : mfpNew(0), mfpFree(0), mfpStart(0), mfpStop(0)
 		{
-			static wLog* logger_Module = WLog_Get("freerds.SessionManager.module.module");
 
-			Module::Module() : mfpNew(0), mfpFree(0)
-				,mfpStart(0), mfpStop(0)
+		}
+
+		int Module::initModule(HMODULE libHandle, std::string moduleFileName, RDS_MODULE_ENTRY_POINTS* entrypoints)
+		{
+			char buffer[260];
+
+			if (!entrypoints)
+				return -1;
+
+			mModuleFile = moduleFileName;
+
+			if ((!entrypoints->Free) || (!entrypoints->New)|| (!entrypoints->Start)|| (!entrypoints->Stop))
 			{
-
+				WLog_Print(logger_Module, WLOG_ERROR, "not all passed function pointers are set for module %s",mModuleFile.c_str());
+				return -1;
 			}
 
-			int Module::initModule(HMODULE libHandle, std::string moduleFileName, RDS_MODULE_ENTRY_POINTS* entrypoints)
+			if (!entrypoints->Name)
 			{
-				char buffer[260];
-
-				if (!entrypoints)
-					return -1;
-
-				mModuleFile = moduleFileName;
-
-				if ((!entrypoints->Free) || (!entrypoints->New)|| (!entrypoints->Start)|| (!entrypoints->Stop))
-				{
-					WLog_Print(logger_Module, WLOG_ERROR, "not all passed function pointers are set for module %s",mModuleFile.c_str());
-					return -1;
-				}
-
-				if (!entrypoints->Name)
-				{
-					 WLog_Print(logger_Module, WLOG_ERROR, "no ModuleName is set for module %s",mModuleFile.c_str());
-					 return -1;
-				}
-
-				mfpFree = entrypoints->Free;
-				mfpNew = entrypoints->New;
-				mfpStart = entrypoints->Start;
-				mfpStop = entrypoints->Stop;
-				mModuleName = std::string(entrypoints->Name);
-
-				return 0;
+				 WLog_Print(logger_Module, WLOG_ERROR, "no ModuleName is set for module %s",mModuleFile.c_str());
+				 return -1;
 			}
 
-			Module::~Module()
-			{
+			mfpFree = entrypoints->Free;
+			mfpNew = entrypoints->New;
+			mfpStart = entrypoints->Start;
+			mfpStop = entrypoints->Stop;
+			mModuleName = std::string(entrypoints->Name);
 
-			}
+			return 0;
+		}
 
-			std::string Module::getName()
-			{
-				return mModuleName;
-			}
+		Module::~Module()
+		{
 
-			RDS_MODULE_COMMON* Module::newContext()
-			{
-				return mfpNew();
-			}
+		}
 
-			void Module::freeContext(RDS_MODULE_COMMON* context)
-			{
-				return mfpFree(context);
-			}
+		std::string Module::getName()
+		{
+			return mModuleName;
+		}
 
-			std::string Module::start(RDS_MODULE_COMMON* context)
-			{
-				char * pipeName;
-				std::string pipeNameStr;
-				pipeName = mfpStart(context);
+		RDS_MODULE_COMMON* Module::newContext()
+		{
+			return mfpNew();
+		}
 
-				if (pipeName)
-					pipeNameStr.assign(pipeName);
+		void Module::freeContext(RDS_MODULE_COMMON* context)
+		{
+			return mfpFree(context);
+		}
 
-				return pipeNameStr;
-			}
+		std::string Module::start(RDS_MODULE_COMMON* context)
+		{
+			char * pipeName;
+			std::string pipeNameStr;
+			pipeName = mfpStart(context);
 
-			int Module::stop(RDS_MODULE_COMMON* context)
-			{
-				return mfpStop(context);
-			}
+			if (pipeName)
+				pipeNameStr.assign(pipeName);
+
+			return pipeNameStr;
+		}
+
+		int Module::stop(RDS_MODULE_COMMON* context)
+		{
+			return mfpStop(context);
 		}
 	}
 }

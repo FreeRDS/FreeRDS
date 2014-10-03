@@ -29,11 +29,8 @@ using freerds::icp::PingResponse;
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
-
 		CallInPing::CallInPing()
 		{
 
@@ -82,7 +79,6 @@ namespace freerds
 		int CallInPing::doStuff()
 		{
 			return 0;
-		}
 		}
 	}
 }

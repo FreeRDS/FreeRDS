@@ -33,16 +33,14 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace session
 	{
-		namespace session
+		typedef struct _CLIENT_INFORMATION
 		{
-
-		typedef struct _CLIENT_INFORMATION {
 			long with;
 			long height;
 			long colordepth;
-		}CLIENT_INFORMATION, * pCLIENT_INFORMATION;
+		} CLIENT_INFORMATION, * pCLIENT_INFORMATION;
 
 		class Connection
 		{
@@ -84,11 +82,9 @@ namespace freerds
 		};
 
 		typedef boost::shared_ptr<Connection> ConnectionPtr;
-
-		}
 	}
 }
 
-namespace sessionNS = freerds::sessionmanager::session;
+namespace sessionNS = freerds::session;
 
 #endif // CONNECTION_H_

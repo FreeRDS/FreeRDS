@@ -26,35 +26,32 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallOutSwitchTo: public CallOut
 		{
-			class CallOutSwitchTo: public CallOut
-			{
-			public:
-				CallOutSwitchTo();
-				virtual ~CallOutSwitchTo();
+		public:
+			CallOutSwitchTo();
+			virtual ~CallOutSwitchTo();
 
-				virtual unsigned long getCallType();
+			virtual unsigned long getCallType();
 
-				virtual int encodeRequest();
-				virtual int decodeResponse();
+			virtual int encodeRequest();
+			virtual int decodeResponse();
 
-				void setConnectionId(long connectionId);
-				void setServiceEndpoint(std::string serviceEndpoint);
+			void setConnectionId(long connectionId);
+			void setServiceEndpoint(std::string serviceEndpoint);
 
-				bool isSuccess();
+			bool isSuccess();
 
-			private:
-				long mConnectionId;
-				std::string mServiceEndpoint;
-				bool mSuccess;
-			};
-		}
+		private:
+			long mConnectionId;
+			std::string mServiceEndpoint;
+			bool mSuccess;
+		};
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif //CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_

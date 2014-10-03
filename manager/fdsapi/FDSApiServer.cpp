@@ -32,10 +32,10 @@
 
 #include "FDSApiServer.h"
 
-namespace freerds {
-	namespace sessionmanager {
-		namespace fdsapi {
-
+namespace freerds
+{
+	namespace fdsapi
+	{
 		static wLog * logger_FDSApiServer = WLog_Get("freerds.sessionmanager.fdsapiserver");
 
 		shared_ptr<FDSApiHandler> FDSApiServer::mFDSApiHandler;
@@ -380,8 +380,6 @@ namespace freerds {
 		{
 			WLog_Print(logger_FDSApiServer, WLOG_INFO, "Stopping FDSApiServer ...");
 			freerds_rpc_server_stop(mRpcServer);
-		}
-
 		}
 	}
 }

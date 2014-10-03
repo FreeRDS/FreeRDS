@@ -30,11 +30,8 @@ using freerds::icps::EndSessionResponse;
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
-
 		CallInEndSession::CallInEndSession()
 		{
 			mSessionId = 0;
@@ -89,7 +86,6 @@ namespace freerds
 			APP_CONTEXT.addTask(task);
 			mSuccess = true;
 			return 0;
-		}
 		}
 	}
 }

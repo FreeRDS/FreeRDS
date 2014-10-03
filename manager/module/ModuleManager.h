@@ -28,32 +28,29 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace module
 	{
-		namespace module
+		class ModuleManager
 		{
-			class ModuleManager
-			{
-			public:
-				ModuleManager();
-				virtual ~ModuleManager();
+		public:
+			ModuleManager();
+			virtual ~ModuleManager();
 
-				int loadModulesFromPath(std::string path, std::string pattern);
-				int loadModulesFromPathAndEnv(std::string path, std::string pattern);
+			int loadModulesFromPath(std::string path, std::string pattern);
+			int loadModulesFromPathAndEnv(std::string path, std::string pattern);
 
-				Module* getModule(std::string moduleName);
+			Module* getModule(std::string moduleName);
 
-			private:
-				char pathSeparator;
-				char* defaultModuleName;
-				char* defaultGreeterModuleName;
-				int addModule(std::string path, std::string modulename);
-				std::map<std::string,Module *> mModulesMap;
-			};
-		}
+		private:
+			char pathSeparator;
+			char* defaultModuleName;
+			char* defaultGreeterModuleName;
+			int addModule(std::string path, std::string modulename);
+			std::map<std::string,Module *> mModulesMap;
+		};
 	}
 }
 
-namespace moduleNS = freerds::sessionmanager::module;
+namespace moduleNS = freerds::module;
 
 #endif /* MODULEMANAGER_H_ */

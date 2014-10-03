@@ -29,11 +29,8 @@ using freerds::icp::FdsApiVirtualChannelOpenResponse;
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
-
 		CallOutFdsApiVirtualChannelOpen::CallOutFdsApiVirtualChannelOpen()
 		{
 			mSessionID = 0;
@@ -50,7 +47,8 @@ namespace freerds
 		};
 
 
-		int CallOutFdsApiVirtualChannelOpen::encodeRequest(){
+		int CallOutFdsApiVirtualChannelOpen::encodeRequest()
+		{
 			FdsApiVirtualChannelOpenRequest req;
 			req.set_sessionid(mSessionID);
 			req.set_virtualname(mVirtualName);
@@ -64,7 +62,8 @@ namespace freerds
 			return 0;
 		}
 
-		int CallOutFdsApiVirtualChannelOpen::decodeResponse() {
+		int CallOutFdsApiVirtualChannelOpen::decodeResponse()
+		{
 			FdsApiVirtualChannelOpenResponse resp;
 
 			if (!resp.ParseFromString(mEncodedResponse))
@@ -88,9 +87,6 @@ namespace freerds
 
 		std::string CallOutFdsApiVirtualChannelOpen::getConnectionString() {
 			return mConnectionString;
-		}
-
-
 		}
 	}
 }

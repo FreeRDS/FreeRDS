@@ -21,59 +21,69 @@
 #include "config.h"
 #endif
 
-#include "TaskModuleShutdown.h"
 #include <winpr/wlog.h>
+
+#include "TaskModuleShutdown.h"
 #include <appcontext/ApplicationContext.h>
 #include <call/CallOutLogOffUserSession.h>
 
-
 namespace freerds
 {
-	namespace sessionmanager
+	namespace module
 	{
-		namespace module
-		{
-			static wLog* logger_TaskModuleShutdown = WLog_Get("freerds.SessionManager.module.taskshutdown");
+		static wLog* logger_TaskModuleShutdown = WLog_Get("freerds.SessionManager.module.taskshutdown");
 
-			void TaskModuleShutdown::run() {
-				long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
-				if (connectionId == 0) {
-					// no connection found for this session ... just shut down!
-					stopSession();
-				} else {
-					callNS::CallOutLogOffUserSession logoffSession;
-					logoffSession.setConnectionId(connectionId);
-					APP_CONTEXT.getRpcOutgoingQueue()->addElement(&logoffSession);
-					WaitForSingleObject(logoffSession.getAnswerHandle(),INFINITE);
-					if (logoffSession.getResult() == 0) {
-						// no error
-						if (logoffSession.isLoggedOff()) {
-							stopSession();
-							APP_CONTEXT.getConnectionStore()->removeConnection(connectionId);
-						} else {
-							WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "CallOutLogOffUserSession reported that logoff in freerds was not successful!");
-						}
+		void TaskModuleShutdown::run()
+		{
+			long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+
+			if (connectionId == 0)
+			{
+				// no connection found for this session ... just shut down!
+				stopSession();
+			}
+			else
+			{
+				callNS::CallOutLogOffUserSession logoffSession;
+				logoffSession.setConnectionId(connectionId);
+				APP_CONTEXT.getRpcOutgoingQueue()->addElement(&logoffSession);
+				WaitForSingleObject(logoffSession.getAnswerHandle(),INFINITE);
+
+				if (logoffSession.getResult() == 0)
+				{
+					// no error
+					if (logoffSession.isLoggedOff()) {
+						stopSession();
+						APP_CONTEXT.getConnectionStore()->removeConnection(connectionId);
 					} else {
-						// report error
-						WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "CallOutLogOffUserSession reported error %d!", logoffSession.getResult());
+						WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "CallOutLogOffUserSession reported that logoff in freerds was not successful!");
 					}
 				}
-			}
-
-			void TaskModuleShutdown::setSessionId(long sessionId) {
-				mSessionId = sessionId;
-			}
-
-			void TaskModuleShutdown::stopSession() {
-				sessionNS::SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
-				if (session) {
-					session->stopModule();
-					APP_CONTEXT.getSessionStore()->removeSession(mSessionId);
-				} else {
-					WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "session for id %d was not found!",mSessionId);
+				else
+				{
+					// report error
+					WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "CallOutLogOffUserSession reported error %d!", logoffSession.getResult());
 				}
 			}
+		}
 
+		void TaskModuleShutdown::setSessionId(long sessionId) {
+			mSessionId = sessionId;
+		}
+
+		void TaskModuleShutdown::stopSession()
+		{
+			sessionNS::SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
+
+			if (session)
+			{
+				session->stopModule();
+				APP_CONTEXT.getSessionStore()->removeSession(mSessionId);
+			}
+			else
+			{
+				WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "session for id %d was not found!",mSessionId);
+			}
 		}
 	}
 }

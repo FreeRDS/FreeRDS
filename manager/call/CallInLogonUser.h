@@ -22,59 +22,58 @@
 
 #include <winpr/crt.h>
 
-#include "CallFactory.h"
 #include <string>
+
+#include "CallFactory.h"
 #include "CallIn.h"
+
 #include <ICP.pb.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallInLogonUser: public CallIn
 		{
-			class CallInLogonUser: public CallIn
-			{
-			public:
-				CallInLogonUser();
-				virtual ~CallInLogonUser();
+		public:
+			CallInLogonUser();
+			virtual ~CallInLogonUser();
 
-				virtual unsigned long getCallType();
-				virtual int decodeRequest();
-				virtual int encodeResponse();
-				virtual int doStuff();
+			virtual unsigned long getCallType();
+			virtual int decodeRequest();
+			virtual int encodeResponse();
+			virtual int doStuff();
 
-			private:
+		private:
 
-				int authenticateUser();
-				int getAuthSession();
-				int getUserSession();
+			int authenticateUser();
+			int getAuthSession();
+			int getUserSession();
 
-				std::string mUserName;
-				std::string mDomainName;
-				std::string mPassword;
+			std::string mUserName;
+			std::string mDomainName;
+			std::string mPassword;
 
-				long mWidth;
-				long mHeight;
-				long mColorDepth;
+			long mWidth;
+			long mHeight;
+			long mColorDepth;
 
-				std::string mClientName;
-				std::string mClientAddress;
-				long mClientBuildNumber;
-				long mClientProductId;
-				long mClientHardwareId;
-				long mClientProtocolType;
+			std::string mClientName;
+			std::string mClientAddress;
+			long mClientBuildNumber;
+			long mClientProductId;
+			long mClientHardwareId;
+			long mClientProtocolType;
 
-				int mAuthStatus;
-				UINT32 mConnectionId;
-				std::string mPipeName;
-			};
+			int mAuthStatus;
+			UINT32 mConnectionId;
+			std::string mPipeName;
+		};
 
-			FACTORY_REGISTER_DWORD(CallFactory, CallInLogonUser, freerds::icp::LogonUser);
-		}
+		FACTORY_REGISTER_DWORD(CallFactory, CallInLogonUser, freerds::icp::LogonUser);
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif //__CALL_IN_LOGON_USER_H_

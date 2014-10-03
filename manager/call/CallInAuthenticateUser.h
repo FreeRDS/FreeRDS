@@ -31,41 +31,38 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallInAuthenticateUser: public CallIn
 		{
-			class CallInAuthenticateUser: public CallIn
-			{
-			public:
-				CallInAuthenticateUser();
-				virtual ~CallInAuthenticateUser();
+		public:
+			CallInAuthenticateUser();
+			virtual ~CallInAuthenticateUser();
 
-				virtual unsigned long getCallType();
-				virtual int decodeRequest();
-				virtual int encodeResponse();
-				virtual int doStuff();
+			virtual unsigned long getCallType();
+			virtual int decodeRequest();
+			virtual int encodeResponse();
+			virtual int doStuff();
 
-			private:
+		private:
 
-				int authenticateUser();
-				int getAuthSession();
-				int getUserSession();
+			int authenticateUser();
+			int getAuthSession();
+			int getUserSession();
 
-				std::string mUserName;
-				std::string mDomainName;
-				std::string mPassword;
+			std::string mUserName;
+			std::string mDomainName;
+			std::string mPassword;
 
-				int mAuthStatus;
-				UINT32 mSessionId;
-				std::string mPipeName;
-			};
+			int mAuthStatus;
+			UINT32 mSessionId;
+			std::string mPipeName;
+		};
 
-			FACTORY_REGISTER_DWORD(CallFactory, CallInAuthenticateUser, freerds::icps::AuthenticateUser);
-		}
+		FACTORY_REGISTER_DWORD(CallFactory, CallInAuthenticateUser, freerds::icps::AuthenticateUser);
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif// __CALL_IN_AUTHENTICATE_USER_H_

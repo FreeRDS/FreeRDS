@@ -20,39 +20,38 @@
 #ifndef CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_
 #define CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_
 
-#include "CallFactory.h"
 #include <string>
+
+#include "CallFactory.h"
 #include "CallIn.h"
+
 #include <ICP.pb.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallInIsVCAllowed: public CallIn
 		{
-			class CallInIsVCAllowed: public CallIn
-			{
-			public:
-				CallInIsVCAllowed();
-				virtual ~CallInIsVCAllowed();
+		public:
+			CallInIsVCAllowed();
+			virtual ~CallInIsVCAllowed();
 
-				virtual unsigned long getCallType();
-				virtual int decodeRequest();
-				virtual int encodeResponse();
-				virtual int doStuff();
+			virtual unsigned long getCallType();
+			virtual int decodeRequest();
+			virtual int encodeResponse();
+			virtual int doStuff();
 
-			private:
-				std::string mVirtualChannelName;
-				bool        mVirtualChannelAllowed;
+		private:
+			std::string mVirtualChannelName;
+			bool        mVirtualChannelAllowed;
 
-			};
+		};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInIsVCAllowed,freerds::icp::IsChannelAllowed);
-		}
+		FACTORY_REGISTER_DWORD(CallFactory,CallInIsVCAllowed,freerds::icp::IsChannelAllowed);
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif // CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_

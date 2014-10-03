@@ -34,10 +34,8 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace session
 	{
-		namespace session
-		{
 		class Session
 		{
 		public:
@@ -129,13 +127,9 @@ namespace freerds
 		};
 
 		typedef boost::shared_ptr<Session> SessionPtr;
-
-		}
 	}
 }
 
-
-
-namespace sessionNS = freerds::sessionmanager::session;
+namespace sessionNS = freerds::session;
 
 #endif

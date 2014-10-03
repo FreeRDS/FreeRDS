@@ -26,31 +26,28 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallOutPing: public CallOut
 		{
-			class CallOutPing: public CallOut
-			{
-			public:
-				CallOutPing();
-				virtual ~CallOutPing();
+		public:
+			CallOutPing();
+			virtual ~CallOutPing();
 
-				virtual unsigned long getCallType();
+			virtual unsigned long getCallType();
 
-				virtual int encodeRequest();
-				virtual int decodeResponse();
+			virtual int encodeRequest();
+			virtual int decodeResponse();
 
-				bool getPong();
+			bool getPong();
 
-			private:
-				bool mPong;
+		private:
+			bool mPong;
 
-			};
-		}
+		};
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif // __CALL_OUT_PING_H_

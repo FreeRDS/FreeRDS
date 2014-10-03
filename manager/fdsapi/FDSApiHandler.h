@@ -72,12 +72,13 @@ public:
 
 }
 
-namespace freerds {
-	namespace sessionmanager {
-		namespace fdsapi {
-
-		class FDSApiHandler {
-		 public:
+namespace freerds
+{
+	namespace fdsapi
+	{
+		class FDSApiHandler
+		{
+		public:
 			FDSApiHandler();
 			virtual ~FDSApiHandler();
 
@@ -92,10 +93,8 @@ namespace freerds {
 			virtual void enumerateSessions(TReturnEnumerateSessions& _return, const std::string& authToken, const INT32 Version);
 			virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass);
 		};
-
-		}
 	}
 }
-namespace fdsapiNS = freerds::sessionmanager::fdsapi;
+namespace fdsapiNS = freerds::fdsapi;
 
 #endif /* FDSAPISHANDLER_H_ */

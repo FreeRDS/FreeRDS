@@ -21,27 +21,25 @@
 #include "config.h"
 #endif
 
+#include <winpr/wlog.h>
+
 #include "CallBacks.h"
 #include "TaskModuleShutdown.h"
-#include <winpr/wlog.h>
+
 #include <appcontext/ApplicationContext.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace module
 	{
-		namespace module
+		static wLog* logger_CallBacks = WLog_Get("freerds.SessionManager.module.callbacks");
+
+		int CallBacks::shutdown(long sessionId)
 		{
-			static wLog* logger_CallBacks = WLog_Get("freerds.SessionManager.module.callbacks");
-
-			int CallBacks::shutdown(long sessionId) {
-				moduleNS::TaskModuleShutdownPtr task = moduleNS::TaskModuleShutdownPtr(new moduleNS::TaskModuleShutdown());
-				task->setSessionId(sessionId);
-				APP_CONTEXT.addTask(task);
-				return 0;
-			}
-
-
+			moduleNS::TaskModuleShutdownPtr task = moduleNS::TaskModuleShutdownPtr(new moduleNS::TaskModuleShutdown());
+			task->setSessionId(sessionId);
+			APP_CONTEXT.addTask(task);
+			return 0;
 		}
 	}
 }

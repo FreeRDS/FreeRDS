@@ -35,329 +35,324 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	ApplicationContext::ApplicationContext()
 	{
-		ApplicationContext::ApplicationContext()
+		wLogLayout* layout;
+		wLogAppender* appender;
+
+		initPaths();
+		configureExecutableSearchPath();
+
+		WLog_Init();
+
+		mWLogRoot = WLog_GetRoot();
+
+		WLog_SetLogAppenderType(mWLogRoot, WLOG_APPENDER_CONSOLE);
+
+		appender = WLog_GetLogAppender(mWLogRoot);
+		WLog_ConsoleAppender_SetOutputStream(mWLogRoot, (wLogConsoleAppender*) appender, WLOG_CONSOLE_STDERR);
+
+		layout = WLog_GetLogLayout(mWLogRoot);
+		WLog_Layout_SetPrefixFormat(mWLogRoot, layout, "[%lv:%mn] [%fl|%fn|%ln] - ");
+
+		WLog_OpenAppender(mWLogRoot);
+
+		setupTestingPropValues();
+	}
+
+	ApplicationContext::~ApplicationContext()
+	{
+		WLog_CloseAppender(mWLogRoot);
+		WLog_Uninit();
+	}
+
+	std::string ApplicationContext::getHomePath()
+	{
+		if (mHomePath.size() == 0)
 		{
-			wLogLayout* layout;
-			wLogAppender* appender;
+			char* p;
+			int length;
+			char separator;
+			char moduleFileName[4096];
 
-			initPaths();
-			configureExecutableSearchPath();
+			separator = PathGetSeparatorA(PATH_STYLE_NATIVE);
+			GetModuleFileNameA(NULL, moduleFileName, sizeof(moduleFileName));
 
-			WLog_Init();
+			p = strrchr(moduleFileName, separator);
+			*p = '\0';
+			p = strrchr(moduleFileName, separator);
+			*p = '\0';
 
-			mWLogRoot = WLog_GetRoot();
-
-			WLog_SetLogAppenderType(mWLogRoot, WLOG_APPENDER_CONSOLE);
-
-			appender = WLog_GetLogAppender(mWLogRoot);
-			WLog_ConsoleAppender_SetOutputStream(mWLogRoot, (wLogConsoleAppender*) appender, WLOG_CONSOLE_STDERR);
-
-			layout = WLog_GetLogLayout(mWLogRoot);
-			WLog_Layout_SetPrefixFormat(mWLogRoot, layout, "[%lv:%mn] [%fl|%fn|%ln] - ");
-
-			WLog_OpenAppender(mWLogRoot);
-
-			setupTestingPropValues();
+			mHomePath.assign(moduleFileName);
 		}
+		return mHomePath;
+	}
 
-		ApplicationContext::~ApplicationContext()
+	std::string ApplicationContext::getLibraryPath()
+	{
+		if (mLibraryPath.size() == 0)
 		{
-			WLog_CloseAppender(mWLogRoot);
-			WLog_Uninit();
+			mLibraryPath = getHomePath();
+			mLibraryPath += "/";
+			mLibraryPath += FREERDS_INSTALL_LIBDIR;
 		}
+		return mLibraryPath;
+	}
 
-		std::string ApplicationContext::getHomePath()
+	std::string ApplicationContext::getExecutablePath()
+	{
+		if (mExecutablePath.size() == 0)
 		{
-			if (mHomePath.size() == 0)
+			mExecutablePath = getHomePath();
+			mExecutablePath += "/";
+			mExecutablePath += FREERDS_INSTALL_BINDIR;
+		}
+		return mExecutablePath;
+	}
+
+	std::string ApplicationContext::getShareDataPath()
+	{
+		if (mShareDataPath.size() == 0)
+		{
+			mShareDataPath = getHomePath();
+			mShareDataPath += "/";
+			mShareDataPath += FREERDS_INSTALL_DATAROOTDIR;
+			mShareDataPath += "/";
+			mShareDataPath += "freerds";
+		}
+		return mShareDataPath;
+	}
+
+	std::string ApplicationContext::getSystemConfigPath()
+	{
+		if (mSystemConfigPath.size() == 0)
+		{
+
+			mSystemConfigPath = getHomePath();
+			mSystemConfigPath += "/";
+			mSystemConfigPath += FREERDS_INSTALL_SYSCONFDIR;
+			mSystemConfigPath += "/";
+			mSystemConfigPath += "freerds";
+		}
+		return mSystemConfigPath;
+	}
+
+	void ApplicationContext::exportContext()
+	{
+		int size;
+		FILE* fp;
+		char iniStr[2048];
+
+		const char iniFmt[] =
+			"[FreeRDS]\n"
+			"prefix=\"%s\"\n"
+			"bindir=\"%s\"\n"
+			"sbindir=\"%s\"\n"
+			"libdir=\"%s\"\n"
+			"datarootdir=\"%s\"\n"
+			"localstatedir=\"%s\"\n"
+			"sysconfdir=\"%s\"\n"
+			"\n";
+
+		sprintf_s(iniStr, sizeof(iniStr), iniFmt,
+			mHomePath.c_str(), /* prefix */
+			FREERDS_INSTALL_BINDIR, /* bindir */
+			FREERDS_INSTALL_SBINDIR, /* sbindir */
+			FREERDS_INSTALL_LIBDIR, /* libdir */
+			FREERDS_INSTALL_DATAROOTDIR, /* datarootdir */
+			FREERDS_INSTALL_LOCALSTATEDIR, /* localstatedir */
+			FREERDS_INSTALL_SYSCONFDIR /* sysconfdir */
+			);
+
+		size = strlen(iniStr) + 1;
+
+		fp = fopen("/var/run/freerds.instance", "w");
+
+		if (fp)
+		{
+			fwrite(iniStr, 1, size, fp);
+			fclose(fp);
+		}
+	}
+
+	void ApplicationContext::initPaths()
+	{
+		getHomePath();
+		getLibraryPath();
+		getExecutablePath();
+		getShareDataPath();
+		getSystemConfigPath();
+
+		exportContext();
+	}
+
+	void ApplicationContext::configureExecutableSearchPath()
+	{
+		int index;
+		DWORD nSize;
+
+		nSize = GetEnvironmentVariableA("PATH", NULL, 0);
+
+		if (nSize)
+		{
+			std::string pathExtra = "";
+			bool executablePathPresent = false;
+			bool systemConfigPathPresent = false;
+
+			char* lpBuffer = (LPSTR) malloc(nSize);
+			nSize = GetEnvironmentVariableA("PATH", lpBuffer, nSize);
+
+			std::string pathEnv(lpBuffer);
+			std::vector<std::string> pathList = split<std::string>(pathEnv, ":");
+
+			for (index = 0; index < pathList.size(); index++)
 			{
-				char* p;
-				int length;
-				char separator;
-				char moduleFileName[4096];
-
-				separator = PathGetSeparatorA(PATH_STYLE_NATIVE);
-				GetModuleFileNameA(NULL, moduleFileName, sizeof(moduleFileName));
-
-				p = strrchr(moduleFileName, separator);
-				*p = '\0';
-				p = strrchr(moduleFileName, separator);
-				*p = '\0';
-
-				mHomePath.assign(moduleFileName);
+				if (strcmp(mExecutablePath.c_str(), pathList[index].c_str()) == 0)
+					executablePathPresent = true;
+				else if (strcmp(mSystemConfigPath.c_str(), pathList[index].c_str()) == 0)
+					systemConfigPathPresent = true;
 			}
-			return mHomePath;
-		}
 
-		std::string ApplicationContext::getLibraryPath()
-		{
-			if (mLibraryPath.size() == 0)
+			if (!executablePathPresent)
 			{
-				mLibraryPath = getHomePath();
-				mLibraryPath += "/";
-				mLibraryPath += FREERDS_INSTALL_LIBDIR;
+				pathExtra += mExecutablePath;
+				pathExtra += ":";
 			}
-			return mLibraryPath;
-		}
 
-		std::string ApplicationContext::getExecutablePath()
-		{
-			if (mExecutablePath.size() == 0)
+			if (!systemConfigPathPresent)
 			{
-				mExecutablePath = getHomePath();
-				mExecutablePath += "/";
-				mExecutablePath += FREERDS_INSTALL_BINDIR;
+				pathExtra += mSystemConfigPath;
+				pathExtra += ":";
 			}
-			return mExecutablePath;
-		}
 
-		std::string ApplicationContext::getShareDataPath()
-		{
-			if (mShareDataPath.size() == 0)
+			if (pathExtra.length() > 0)
 			{
-				mShareDataPath = getHomePath();
-				mShareDataPath += "/";
-				mShareDataPath += FREERDS_INSTALL_DATAROOTDIR;
-				mShareDataPath += "/";
-				mShareDataPath += "freerds";
-			}
-			return mShareDataPath;
-		}
-
-		std::string ApplicationContext::getSystemConfigPath()
-		{
-			if (mSystemConfigPath.size() == 0)
-			{
-
-				mSystemConfigPath = getHomePath();
-				mSystemConfigPath += "/";
-				mSystemConfigPath += FREERDS_INSTALL_SYSCONFDIR;
-				mSystemConfigPath += "/";
-				mSystemConfigPath += "freerds";
-			}
-			return mSystemConfigPath;
-		}
-
-		void ApplicationContext::exportContext()
-		{
-			int size;
-			FILE* fp;
-			char iniStr[2048];
-			
-			const char iniFmt[] =
-				"[FreeRDS]\n"
-				"prefix=\"%s\"\n"
-				"bindir=\"%s\"\n"
-				"sbindir=\"%s\"\n"
-				"libdir=\"%s\"\n"
-				"datarootdir=\"%s\"\n"
-				"localstatedir=\"%s\"\n"
-				"sysconfdir=\"%s\"\n"
-				"\n";
-			
-			sprintf_s(iniStr, sizeof(iniStr), iniFmt,
-				mHomePath.c_str(), /* prefix */
-				FREERDS_INSTALL_BINDIR, /* bindir */
-				FREERDS_INSTALL_SBINDIR, /* sbindir */
-				FREERDS_INSTALL_LIBDIR, /* libdir */
-				FREERDS_INSTALL_DATAROOTDIR, /* datarootdir */
-				FREERDS_INSTALL_LOCALSTATEDIR, /* localstatedir */
-				FREERDS_INSTALL_SYSCONFDIR /* sysconfdir */
-				);
-			
-			size = strlen(iniStr) + 1;
-			
-			fp = fopen("/var/run/freerds.instance", "w");
-			
-			if (fp)
-			{
-				fwrite(iniStr, 1, size, fp);
-				fclose(fp);
-			}
-		}
-                
-		void ApplicationContext::initPaths()
-		{
-			getHomePath();
-			getLibraryPath();
-			getExecutablePath();
-			getShareDataPath();
-			getSystemConfigPath();
-			
-			exportContext();
-		}
-
-		void ApplicationContext::configureExecutableSearchPath()
-		{
-			int index;
-			DWORD nSize;
-
-			nSize = GetEnvironmentVariableA("PATH", NULL, 0);
-
-			if (nSize)
-			{
-				std::string pathExtra = "";
-				bool executablePathPresent = false;
-				bool systemConfigPathPresent = false;
-
-				char* lpBuffer = (LPSTR) malloc(nSize);
-				nSize = GetEnvironmentVariableA("PATH", lpBuffer, nSize);
-
-				std::string pathEnv(lpBuffer);
-				std::vector<std::string> pathList = split<std::string>(pathEnv, ":");
-
-				for (index = 0; index < pathList.size(); index++)
-				{
-					if (strcmp(mExecutablePath.c_str(), pathList[index].c_str()) == 0)
-						executablePathPresent = true;
-					else if (strcmp(mSystemConfigPath.c_str(), pathList[index].c_str()) == 0)
-						systemConfigPathPresent = true;
-				}
-
-				if (!executablePathPresent)
-				{
-					pathExtra += mExecutablePath;
-					pathExtra += ":";
-				}
-
-				if (!systemConfigPathPresent)
-				{
-					pathExtra += mSystemConfigPath;
-					pathExtra += ":";
-				}
-
-				if (pathExtra.length() > 0)
-				{
-					pathEnv = pathExtra + pathEnv;
-					SetEnvironmentVariableA("PATH", pathEnv.c_str());
-				}
+				pathEnv = pathExtra + pathEnv;
+				SetEnvironmentVariableA("PATH", pathEnv.c_str());
 			}
 		}
+	}
 
-		sessionNS::SessionStore* ApplicationContext::getSessionStore()
+	sessionNS::SessionStore* ApplicationContext::getSessionStore()
+	{
+		return &mSessionStore;
+	}
+
+	sessionNS::ConnectionStore* ApplicationContext::getConnectionStore()
+	{
+		return &mConnectionStore;
+	}
+
+	configNS::PropertyManager* ApplicationContext::getPropertyManager()
+	{
+		return &mPropertyManager;
+	}
+
+	int ApplicationContext::startRPCEngine()
+	{
+		mFDSApiServer.startFDSApi();
+		return mRpcEngine.startEngine();
+	}
+
+	int ApplicationContext::stopRPCEngine()
+	{
+		mFDSApiServer.stopFDSApi();
+		return mRpcEngine.stopEngine();
+	}
+
+	SignalingQueue<callNS::Call *> * ApplicationContext::getRpcOutgoingQueue()
+	{
+		return &mRpcOutgoingCalls;
+	}
+
+	int ApplicationContext::loadModulesFromPath(std::string path)
+	{
+		LPCSTR pszExt;
+		char pattern[256];
+
+		pszExt = PathGetSharedLibraryExtensionA(0);
+		sprintf_s(pattern, 256, "*freerds-module-*.%s", pszExt);
+
+		return mModuleManager.loadModulesFromPathAndEnv(path, pattern);
+	}
+
+	moduleNS::ModuleManager* ApplicationContext::getModuleManager()
+	{
+		return &mModuleManager;
+	}
+
+	fdsapiNS::FDSApiServer* ApplicationContext::getFDSApiServer()
+	{
+		return &mFDSApiServer;
+	}
+
+	void ApplicationContext::setupTestingPropValues()
+	{
+		mPropertyManager.setPropertyString("module","xsession");
+		mPropertyManager.setPropertyString("auth.module","PAM");
+		mPropertyManager.setPropertyString("auth.greeter","greeter");
+		mPropertyManager.setPropertyBool("session.reconnect",true);
+		mPropertyManager.setPropertyNumber("session.timeout",60);
+
+		mPropertyManager.setPropertyString("module.xsession.modulename","X11");
+		mPropertyManager.setPropertyNumber("module.xsession.maxXRes",1920);
+		mPropertyManager.setPropertyNumber("module.xsession.maxYRes",1200);
+		mPropertyManager.setPropertyNumber("module.xsession.minXRes",320);
+		mPropertyManager.setPropertyNumber("module.xsession.minYRes",200);
+		mPropertyManager.setPropertyNumber("module.xsession.xres",1024);
+		mPropertyManager.setPropertyNumber("module.xsession.yres",768);
+		mPropertyManager.setPropertyNumber("module.xsession.colordepth",24);
+		mPropertyManager.setPropertyString("module.xsession.startwm","startwm.sh");
+
+		mPropertyManager.setPropertyString("module.greeter.modulename","X11");
+		mPropertyManager.setPropertyNumber("module.greeter.maxXRes",1920);
+		mPropertyManager.setPropertyNumber("module.greeter.maxYRes",1200);
+		mPropertyManager.setPropertyNumber("module.greeter.minXRes",320);
+		mPropertyManager.setPropertyNumber("module.greeter.minYRes",200);
+		mPropertyManager.setPropertyNumber("module.greeter.xres",1024);
+		mPropertyManager.setPropertyNumber("module.greeter.yres",768);
+		mPropertyManager.setPropertyNumber("module.greeter.colordepth",24);
+		mPropertyManager.setPropertyString("module.greeter.cmd","simple_greeter");
+	}
+
+	void ApplicationContext::startTaskExecutor() {
+		mTaskExecutor.start();
+	}
+
+	void ApplicationContext::stopTaskExecutor() {
+		mTaskExecutor.stop();
+	}
+
+	void ApplicationContext::startSessionTimoutMonitor(){
+		sessionNS::TaskSessionTimeoutPtr task(new sessionNS::TaskSessionTimeout());
+		addTask(task);
+	}
+
+	bool ApplicationContext::addTask(taskNS::TaskPtr task) {
+		return mTaskExecutor.addTask(task);
+	}
+
+	void ApplicationContext::rpcDisconnected()
+	{
+		getConnectionStore()->reset();
+		std::list<sessionNS::SessionPtr> allSessions = getSessionStore()->getAllSessions();
+
+		std::list<sessionNS::SessionPtr>::iterator iterator;
+
+		for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator)
 		{
-			return &mSessionStore;
-		}
+			sessionNS::SessionPtr currentSession = (*iterator);
 
-		sessionNS::ConnectionStore* ApplicationContext::getConnectionStore()
-		{
-			return &mConnectionStore;
-		}
-
-		configNS::PropertyManager* ApplicationContext::getPropertyManager()
-		{
-			return &mPropertyManager;
-		}
-
-		int ApplicationContext::startRPCEngine()
-		{
-			mFDSApiServer.startFDSApi();
-			return mRpcEngine.startEngine();
-		}
-
-		int ApplicationContext::stopRPCEngine()
-		{
-			mFDSApiServer.stopFDSApi();
-			return mRpcEngine.stopEngine();
-		}
-
-		SignalingQueue<callNS::Call *> * ApplicationContext::getRpcOutgoingQueue()
-		{
-			return &mRpcOutgoingCalls;
-		}
-
-		int ApplicationContext::loadModulesFromPath(std::string path)
-		{
-			LPCSTR pszExt;
-			char pattern[256];
-
-			pszExt = PathGetSharedLibraryExtensionA(0);
-			sprintf_s(pattern, 256, "*freerds-module-*.%s", pszExt);
-
-			return mModuleManager.loadModulesFromPathAndEnv(path, pattern);
-		}
-
-		moduleNS::ModuleManager* ApplicationContext::getModuleManager()
-		{
-			return &mModuleManager;
-		}
-
-		fdsapiNS::FDSApiServer* ApplicationContext::getFDSApiServer()
-		{
-			return &mFDSApiServer;
-		}
-
-		void ApplicationContext::setupTestingPropValues()
-		{
-			mPropertyManager.setPropertyString("module","xsession");
-			mPropertyManager.setPropertyString("auth.module","PAM");
-			mPropertyManager.setPropertyString("auth.greeter","greeter");
-			mPropertyManager.setPropertyBool("session.reconnect",true);
-			mPropertyManager.setPropertyNumber("session.timeout",60);
-
-			mPropertyManager.setPropertyString("module.xsession.modulename","X11");
-			mPropertyManager.setPropertyNumber("module.xsession.maxXRes",1920);
-			mPropertyManager.setPropertyNumber("module.xsession.maxYRes",1200);
-			mPropertyManager.setPropertyNumber("module.xsession.minXRes",320);
-			mPropertyManager.setPropertyNumber("module.xsession.minYRes",200);
-			mPropertyManager.setPropertyNumber("module.xsession.xres",1024);
-			mPropertyManager.setPropertyNumber("module.xsession.yres",768);
-			mPropertyManager.setPropertyNumber("module.xsession.colordepth",24);
-			mPropertyManager.setPropertyString("module.xsession.startwm","startwm.sh");
-
-			mPropertyManager.setPropertyString("module.greeter.modulename","X11");
-			mPropertyManager.setPropertyNumber("module.greeter.maxXRes",1920);
-			mPropertyManager.setPropertyNumber("module.greeter.maxYRes",1200);
-			mPropertyManager.setPropertyNumber("module.greeter.minXRes",320);
-			mPropertyManager.setPropertyNumber("module.greeter.minYRes",200);
-			mPropertyManager.setPropertyNumber("module.greeter.xres",1024);
-			mPropertyManager.setPropertyNumber("module.greeter.yres",768);
-			mPropertyManager.setPropertyNumber("module.greeter.colordepth",24);
-			mPropertyManager.setPropertyString("module.greeter.cmd","simple_greeter");
-		}
-
-		void ApplicationContext::startTaskExecutor() {
-			mTaskExecutor.start();
-		}
-
-		void ApplicationContext::stopTaskExecutor() {
-			mTaskExecutor.stop();
-		}
-
-		void ApplicationContext::startSessionTimoutMonitor(){
-			sessionNS::TaskSessionTimeoutPtr task(new sessionNS::TaskSessionTimeout());
-			addTask(task);
-		}
-
-		bool ApplicationContext::addTask(taskNS::TaskPtr task) {
-			return mTaskExecutor.addTask(task);
-		}
-
-		void ApplicationContext::rpcDisconnected()
-		{
-			getConnectionStore()->reset();
-			std::list<sessionNS::SessionPtr> allSessions = getSessionStore()->getAllSessions();
-
-			std::list<sessionNS::SessionPtr>::iterator iterator;
-
-			for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator)
+			if (currentSession->isAuthSession())
 			{
-				sessionNS::SessionPtr currentSession = (*iterator);
-
-				if (currentSession->isAuthSession())
-				{
-					currentSession->stopModule();
-					getSessionStore()->removeSession(currentSession->getSessionID());
-				}
-				else
-				{
-					currentSession->setConnectState(WTSDisconnected);
-				}
+				currentSession->stopModule();
+				getSessionStore()->removeSession(currentSession->getSessionID());
+			}
+			else
+			{
+				currentSession->setConnectState(WTSDisconnected);
 			}
 		}
-
-
 	}
 }
 

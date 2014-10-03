@@ -27,7 +27,7 @@ template<typename QueueElement> class SignalingQueue
 {
 public:
 	SignalingQueue()
-{
+	{
 		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 		{
 			// todo report error

@@ -25,19 +25,16 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		CallFactory::CallFactory()
 		{
-			CallFactory::CallFactory()
-			{
 
-			};
+		};
 
-			CallFactory::~CallFactory()
-			{
+		CallFactory::~CallFactory()
+		{
 
-			};
-		}
+		};
 	}
 }

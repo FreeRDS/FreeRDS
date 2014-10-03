@@ -21,37 +21,36 @@
 #ifndef _CALL_IN_PING_H_
 #define _CALL_IN_PING_H_
 
-#include "CallFactory.h"
 #include <string>
+
+#include "CallFactory.h"
 #include "CallIn.h"
+
 #include <ICP.pb.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallInPing: public CallIn
 		{
-			class CallInPing: public CallIn
-			{
-			public:
-				CallInPing();
-				virtual ~CallInPing();
+		public:
+			CallInPing();
+			virtual ~CallInPing();
 
-				virtual unsigned long getCallType();
-				virtual int decodeRequest();
-				virtual int encodeResponse();
-				virtual int doStuff();
+			virtual unsigned long getCallType();
+			virtual int decodeRequest();
+			virtual int encodeResponse();
+			virtual int doStuff();
 
-			private:
+		private:
 
-			};
+		};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInPing,freerds::icp::Ping);
-		}
+		FACTORY_REGISTER_DWORD(CallFactory,CallInPing,freerds::icp::Ping);
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif // _CALL_IN_PING_H_

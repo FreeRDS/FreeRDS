@@ -22,15 +22,14 @@
 #endif
 
 #include "CallOut.h"
+
 #include <string>
 #include <winpr/handle.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
 		CallOut::CallOut():mAnswer(NULL)
 		{
 			initAnswerHandle();
@@ -82,8 +81,6 @@ namespace freerds
 		void CallOut::setErrorDescription(std::string error)
 		{
 			mErrorDescription = error;
-		}
-
 		}
 	}
 }

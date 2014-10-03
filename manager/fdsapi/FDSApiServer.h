@@ -34,12 +34,13 @@
 
 using boost::shared_ptr;
 
-namespace freerds {
-	namespace sessionmanager {
-		namespace fdsapi {
-
-		class FDSApiServer {
-		 public:
+namespace freerds
+{
+	namespace fdsapi
+	{
+		class FDSApiServer
+		{
+		public:
 			FDSApiServer();
 			virtual ~FDSApiServer();
 
@@ -53,7 +54,7 @@ namespace freerds {
 
 			void fireSessionEvent(UINT32 sessionId, UINT32 stateChange);
 
-		 private:
+		private:
 			static int RpcConnectionAccepted(rdsRpcClient* rpcClient);
 			static int RpcConnectionClosed(rdsRpcClient* rpcClient);
 			static int RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
@@ -66,9 +67,8 @@ namespace freerds {
 
 			rdsRpcServer* mRpcServer;
 		};
-
-		}
 	}
 }
-namespace fdsapiNS = freerds::sessionmanager::fdsapi;
+namespace fdsapiNS = freerds::fdsapi;
+
 #endif /* FDSAPISERVER_H_ */

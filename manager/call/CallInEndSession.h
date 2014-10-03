@@ -19,38 +19,38 @@
 
 #ifndef CALL_IN_END_SESSION_H_
 #define CALL_IN_END_SESSION_H_
-#include "CallFactory.h"
+
 #include <string>
+
+#include "CallFactory.h"
 #include "CallIn.h"
+
 #include <ICPS.pb.h>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class CallInEndSession: public CallIn
 		{
-			class CallInEndSession: public CallIn
-			{
-			public:
-				CallInEndSession();
-				virtual ~CallInEndSession();
+		public:
+			CallInEndSession();
+			virtual ~CallInEndSession();
 
-				virtual unsigned long getCallType();
-				virtual int decodeRequest();
-				virtual int encodeResponse();
-				virtual int doStuff();
+			virtual unsigned long getCallType();
+			virtual int decodeRequest();
+			virtual int encodeResponse();
+			virtual int doStuff();
 
-			private:
-				long mSessionId;
-				bool mSuccess;
-			};
+		private:
+			long mSessionId;
+			bool mSuccess;
+		};
 
-			FACTORY_REGISTER_DWORD(CallFactory,CallInEndSession,freerds::icps::EndSession);
-		}
+		FACTORY_REGISTER_DWORD(CallFactory,CallInEndSession,freerds::icps::EndSession);
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif

@@ -29,13 +29,8 @@ using freerds::icp::SwitchToResponse;
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
-
-		static wLog * logger_CallOutSwitchTo = WLog_Get("freerds.sessionmanager.call.calloutswitchto");
-
 		CallOutSwitchTo::CallOutSwitchTo()
 		{
 			mConnectionId = 0;
@@ -53,7 +48,8 @@ namespace freerds
 		};
 
 
-		int CallOutSwitchTo::encodeRequest(){
+		int CallOutSwitchTo::encodeRequest()
+		{
 			SwitchToRequest req;
 			req.set_connectionid(mConnectionId);
 			req.set_serviceendpoint(mServiceEndpoint);
@@ -67,7 +63,8 @@ namespace freerds
 			return 0;
 		}
 
-		int CallOutSwitchTo::decodeResponse() {
+		int CallOutSwitchTo::decodeResponse()
+		{
 			SwitchToResponse resp;
 
 			if (!resp.ParseFromString(mEncodedResponse))
@@ -80,7 +77,6 @@ namespace freerds
 			return 0;
 		}
 
-
 		void CallOutSwitchTo::setConnectionId(long connectionId) {
 			mConnectionId = connectionId;
 		}
@@ -91,9 +87,6 @@ namespace freerds
 
 		bool CallOutSwitchTo::isSuccess() {
 			return mSuccess;
-		}
-
-
 		}
 	}
 }

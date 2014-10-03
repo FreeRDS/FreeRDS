@@ -53,10 +53,10 @@ namespace freerds
 			int readHeader();
 			int readPayload();
 			int processData();
-			int send(freerds::sessionmanager::call::Call * call);
+			int send(freerds::call::Call * call);
 			int sendError(uint32_t callID, uint32_t callType);
 			int sendInternal(std::string data);
-			int processOutgoingCall(freerds::sessionmanager::call::Call* call);
+			int processOutgoingCall(freerds::call::Call* call);
 
 		private:
 			HANDLE mhClientPipe;

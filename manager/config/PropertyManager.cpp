@@ -34,168 +34,165 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace config
 	{
-		namespace config
+		PropertyManager::PropertyManager()
 		{
-			PropertyManager::PropertyManager()
-			{
-				ini = IniFile_New();
-			};
+			ini = IniFile_New();
+		};
 
-			PropertyManager::~PropertyManager()
-			{
-				IniFile_Free(ini);
-			};
+		PropertyManager::~PropertyManager()
+		{
+			IniFile_Free(ini);
+		};
 
-			int PropertyManager::getKeyValueInt(const char* section, const char* key)
-			{
-				int intVal;
+		int PropertyManager::getKeyValueInt(const char* section, const char* key)
+		{
+			int intVal;
 
-				if (!ini)
-					return FALSE;
+			if (!ini)
+				return FALSE;
 
-				intVal = IniFile_GetKeyValueInt(ini, section, key);
+			intVal = IniFile_GetKeyValueInt(ini, section, key);
 
-				if (intVal < 0)
-					return -1;
+			if (intVal < 0)
+				return -1;
 
-				return intVal;
-			}
+			return intVal;
+		}
 
-			const char* PropertyManager::getKeyValueString(const char* section, const char* key)
-			{
-				const char* strVal;
+		const char* PropertyManager::getKeyValueString(const char* section, const char* key)
+		{
+			const char* strVal;
 
-				if (!ini)
-					return FALSE;
+			if (!ini)
+				return FALSE;
 
-				strVal = IniFile_GetKeyValueString(ini, section, key);
+			strVal = IniFile_GetKeyValueString(ini, section, key);
 
-				if (!strVal)
-					return NULL;
+			if (!strVal)
+				return NULL;
 
-				return strVal;
-			}
+			return strVal;
+		}
 
-			BOOL PropertyManager::getPropertyBool(std::string path, BOOL* value)
-			{
-				int intVal;
+		BOOL PropertyManager::getPropertyBool(std::string path, BOOL* value)
+		{
+			int intVal;
 
-				if (!ini)
-					return FALSE;
+			if (!ini)
+				return FALSE;
 
-				intVal = IniFile_GetKeyValueInt(ini, "global", path.c_str());
+			intVal = IniFile_GetKeyValueInt(ini, "global", path.c_str());
 
-				if (intVal < 0)
-					return FALSE;
+			if (intVal < 0)
+				return FALSE;
 
-				*value = (!intVal) ? FALSE : TRUE;
+			*value = (!intVal) ? FALSE : TRUE;
 
-				return TRUE;
-			}
+			return TRUE;
+		}
 
-			BOOL PropertyManager::getPropertyBool(std::string path, bool &value)
-			{
-				int intVal;
+		BOOL PropertyManager::getPropertyBool(std::string path, bool &value)
+		{
+			int intVal;
 
-				if (!ini)
-					return FALSE;
+			if (!ini)
+				return FALSE;
 
-				intVal = IniFile_GetKeyValueInt(ini, "global", path.c_str());
+			intVal = IniFile_GetKeyValueInt(ini, "global", path.c_str());
 
-				if (intVal < 0)
-					return FALSE;
+			if (intVal < 0)
+				return FALSE;
 
-				value = (!intVal) ? false : true;
+			value = (!intVal) ? false : true;
 
-				return TRUE;
-			}
+			return TRUE;
+		}
 
-			BOOL PropertyManager::getPropertyNumber(std::string path, long* value)
-			{
-				int intVal;
+		BOOL PropertyManager::getPropertyNumber(std::string path, long* value)
+		{
+			int intVal;
 
-				if (!ini)
-					return FALSE;
+			if (!ini)
+				return FALSE;
 
-				intVal = IniFile_GetKeyValueInt(ini, "global", path.c_str());
+			intVal = IniFile_GetKeyValueInt(ini, "global", path.c_str());
 
-				if (intVal < 0)
-					return FALSE;
+			if (intVal < 0)
+				return FALSE;
 
-				*value = intVal;
+			*value = intVal;
 
-				return TRUE;
-			}
+			return TRUE;
+		}
 
-			BOOL PropertyManager::getPropertyString(std::string path, std::string &value)
-			{
-				const char* strVal;
+		BOOL PropertyManager::getPropertyString(std::string path, std::string &value)
+		{
+			const char* strVal;
 
-				if (!ini)
-					return FALSE;
+			if (!ini)
+				return FALSE;
 
-				strVal = IniFile_GetKeyValueString(ini, "global", path.c_str());
+			strVal = IniFile_GetKeyValueString(ini, "global", path.c_str());
 
-				if (!strVal)
-					return FALSE;
+			if (!strVal)
+				return FALSE;
 
-				value = strVal;
+			value = strVal;
 
-				return TRUE;
-			}
+			return TRUE;
+		}
 
-			int PropertyManager::setPropertyBool(std::string path, bool value)
-			{
-				if (!ini)
-					return 0;
-
-				IniFile_SetKeyValueInt(ini, "global", path.c_str(), value ? 1 : 0);
-
+		int PropertyManager::setPropertyBool(std::string path, bool value)
+		{
+			if (!ini)
 				return 0;
-			}
 
-			int PropertyManager::setPropertyNumber(std::string path, long value)
-			{
-				if (!ini)
-					return 0;
+			IniFile_SetKeyValueInt(ini, "global", path.c_str(), value ? 1 : 0);
 
-				IniFile_SetKeyValueInt(ini, "global", path.c_str(), value);
+			return 0;
+		}
 
+		int PropertyManager::setPropertyNumber(std::string path, long value)
+		{
+			if (!ini)
 				return 0;
-			}
 
-			int PropertyManager::setPropertyString(std::string path, std::string value)
-			{
-				int status;
+			IniFile_SetKeyValueInt(ini, "global", path.c_str(), value);
 
-				if (!ini)
-					return 0;
+			return 0;
+		}
 
-				status = IniFile_SetKeyValueString(ini, "global", path.c_str(), value.c_str());
+		int PropertyManager::setPropertyString(std::string path, std::string value)
+		{
+			int status;
 
+			if (!ini)
 				return 0;
-			}
 
-			int PropertyManager::loadProperties(std::string filename)
-			{
-				if (IniFile_ReadFile(ini, filename.c_str()) < 0)
-					return 0;
+			status = IniFile_SetKeyValueString(ini, "global", path.c_str(), value.c_str());
 
+			return 0;
+		}
+
+		int PropertyManager::loadProperties(std::string filename)
+		{
+			if (IniFile_ReadFile(ini, filename.c_str()) < 0)
 				return 0;
-			}
 
-			int PropertyManager::saveProperties(std::string filename)
-			{
-				if (!ini)
-					return 0;
+			return 0;
+		}
 
-				if (IniFile_WriteFile(ini, filename.c_str()) < 0)
-					return 0;
-
+		int PropertyManager::saveProperties(std::string filename)
+		{
+			if (!ini)
 				return 0;
-			}
+
+			if (IniFile_WriteFile(ini, filename.c_str()) < 0)
+				return 0;
+
+			return 0;
 		}
 	}
 }

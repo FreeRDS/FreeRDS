@@ -31,14 +31,10 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace session
 	{
-		namespace session
-		{
-
 		typedef std::map<long , ConnectionPtr> TConnectionMap;
 		typedef std::pair<long, ConnectionPtr> TConnectionPair;
-
 
 		class ConnectionStore
 		{
@@ -58,10 +54,9 @@ namespace freerds
 			TConnectionMap mConnectionMap;
 			CRITICAL_SECTION mCSection;
 		};
-		}
 	}
 }
 
-namespace sessionNS = freerds::sessionmanager::session;
+namespace sessionNS = freerds::session;
 
 #endif //__CONNECTION_STORE_H_

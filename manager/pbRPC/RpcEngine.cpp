@@ -344,7 +344,7 @@ int RpcEngine::processData()
 	return CLIENT_SUCCESS;
 }
 
-int RpcEngine::send(freerds::sessionmanager::call::Call* call)
+int RpcEngine::send(freerds::call::Call* call)
 {
 	DWORD lpNumberOfBytesWritten;
 	std::string serialized;
@@ -502,7 +502,7 @@ int RpcEngine::serveClient()
 	return retValue;
 }
 
-int RpcEngine::processOutgoingCall(freerds::sessionmanager::call::Call* call)
+int RpcEngine::processOutgoingCall(freerds::call::Call* call)
 {
 	if (call->getDerivedType() == 2)
 	{

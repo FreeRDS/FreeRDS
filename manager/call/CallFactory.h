@@ -26,32 +26,19 @@
 
 #include <string>
 
-#define CALL_FACTORY freerds::sessionmanager::call::CallFactory::instance()
+#define CALL_FACTORY freerds::call::CallFactory::instance()
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
-
-		/**
-		* @class	PacketFactory.
-		*
-		* @brief	Factory for creating packetes.
-		*
-		* @author	Martin Haimberger
-		*/
-
 		class CallFactory :public FactoryBase<Call,unsigned long>, public SingletonBase<CallFactory>
 		{
 			SINGLETON_ADD_INITIALISATION(CallFactory)
 		};
-
-		}
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif

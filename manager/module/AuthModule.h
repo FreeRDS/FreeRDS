@@ -22,40 +22,38 @@
 
 #include "Module.h"
 
-#include <freerds/auth.h>
+#include <string>
 
 #include <winpr/wtypes.h>
+
+#include <freerds/auth.h>
 #include <freerds/module.h>
-#include <string>
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace module
 	{
-		namespace module
+		class AuthModule
 		{
-			class AuthModule
-			{
-			public:
-				AuthModule();
-				int initModule(pRdsAuthModuleEntry moduleEntry);
-				virtual ~AuthModule();
+		public:
+			AuthModule();
+			int initModule(pRdsAuthModuleEntry moduleEntry);
+			virtual ~AuthModule();
 
-				int logonUser(std::string username, std::string domain, std::string password);
+			int logonUser(std::string username, std::string domain, std::string password);
 
-				static pRdsAuthModuleEntry loadModuleEntry(std::string filename);
-				static AuthModule* loadFromFileName(std::string fileName);
-				static AuthModule* loadFromName(std::string name);
+			static pRdsAuthModuleEntry loadModuleEntry(std::string filename);
+			static AuthModule* loadFromFileName(std::string fileName);
+			static AuthModule* loadFromName(std::string name);
 
-			private:
-				rdsAuthModule* mAuth;
-				pRdsAuthModuleEntry mModuleEntry;
-				RDS_AUTH_MODULE_ENTRY_POINTS mEntryPoints;
-			};
-		}
+		private:
+			rdsAuthModule* mAuth;
+			pRdsAuthModuleEntry mModuleEntry;
+			RDS_AUTH_MODULE_ENTRY_POINTS mEntryPoints;
+		};
 	}
 }
 
-namespace moduleNS = freerds::sessionmanager::module;
+namespace moduleNS = freerds::module;
 
 #endif /* AUTH_MODULE_H_ */

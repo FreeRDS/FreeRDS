@@ -29,10 +29,8 @@ using freerds::icp::LogOffUserSessionResponse;
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
 		CallOutLogOffUserSession::CallOutLogOffUserSession()
 		{
 			mConnectionId = 0;
@@ -90,7 +88,5 @@ namespace freerds
 		bool CallOutLogOffUserSession::isLoggedOff() {
 			return mLoggedOff;
 		}
-
-}
 	}
 }

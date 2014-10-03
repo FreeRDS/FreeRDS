@@ -33,126 +33,123 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace module
 	{
-		namespace module
+		static wLog* logger_Module = WLog_Get("freerds.sessionmanager.module.authmodule");
+
+		AuthModule::AuthModule()
+			: mAuth(NULL),
+			  mModuleEntry(NULL)
 		{
-			static wLog* logger_Module = WLog_Get("freerds.sessionmanager.module.authmodule");
+			ZeroMemory(&mEntryPoints, sizeof(RDS_AUTH_MODULE_ENTRY_POINTS));
+		}
 
-			AuthModule::AuthModule()
-				: mAuth(NULL),
-				  mModuleEntry(NULL)
+		int AuthModule::initModule(pRdsAuthModuleEntry moduleEntry)
+		{
+			int status = 0;
+			mModuleEntry = moduleEntry;
+
+			ZeroMemory(&mEntryPoints, sizeof(RDS_AUTH_MODULE_ENTRY_POINTS));
+			mEntryPoints.Version = RDS_AUTH_MODULE_INTERFACE_VERSION;
+
+			status = mModuleEntry(&mEntryPoints);
+
+			if (status < 0)
+				return -1;
+
+			mAuth = mEntryPoints.New();
+
+			if (!mAuth)
+				return -1;
+
+			return 0;
+		}
+
+		AuthModule::~AuthModule()
+		{
+			if (mEntryPoints.Free)
 			{
-				ZeroMemory(&mEntryPoints, sizeof(RDS_AUTH_MODULE_ENTRY_POINTS));
+				mEntryPoints.Free(mAuth);
+				mAuth = NULL;
 			}
+		}
 
-			int AuthModule::initModule(pRdsAuthModuleEntry moduleEntry)
-			{
-				int status = 0;
-				mModuleEntry = moduleEntry;
+		int AuthModule::logonUser(std::string username, std::string domain, std::string password)
+		{
+			int status;
 
-				ZeroMemory(&mEntryPoints, sizeof(RDS_AUTH_MODULE_ENTRY_POINTS));
-				mEntryPoints.Version = RDS_AUTH_MODULE_INTERFACE_VERSION;
+			if (!mEntryPoints.LogonUser)
+				return -1;
 
-				status = mModuleEntry(&mEntryPoints);
+			if (username.empty())
+				return -1;
 
-				if (status < 0)
-					return -1;
+			status = mEntryPoints.LogonUser(mAuth, username.c_str(), domain.size() == 0 ? NULL : domain.c_str(), password.size() == 0 ? NULL : password.c_str());
 
-				mAuth = mEntryPoints.New();
+			return status;
+		}
 
-				if (!mAuth)
-					return -1;
+		pRdsAuthModuleEntry AuthModule::loadModuleEntry(std::string filename)
+		{
+			HINSTANCE library;
+			pRdsAuthModuleEntry moduleEntry;
 
-				return 0;
-			}
+			library = LoadLibraryA(filename.c_str());
 
-			AuthModule::~AuthModule()
-			{
-				if (mEntryPoints.Free)
-				{
-					mEntryPoints.Free(mAuth);
-					mAuth = NULL;
-				}
-			}
-
-			int AuthModule::logonUser(std::string username, std::string domain, std::string password)
-			{
-				int status;
-
-				if (!mEntryPoints.LogonUser)
-					return -1;
-
-				if (username.empty())
-					return -1;
-
-				status = mEntryPoints.LogonUser(mAuth, username.c_str(), domain.size() == 0 ? NULL : domain.c_str(), password.size() == 0 ? NULL : password.c_str());
-
-				return status;
-			}
-
-			pRdsAuthModuleEntry AuthModule::loadModuleEntry(std::string filename)
-			{
-				HINSTANCE library;
-				pRdsAuthModuleEntry moduleEntry;
-
-				library = LoadLibraryA(filename.c_str());
-
-				if (!library)
-					return (pRdsAuthModuleEntry) NULL;
-
-				moduleEntry = (pRdsAuthModuleEntry) GetProcAddress(library, RDS_AUTH_MODULE_ENTRY_POINT_NAME);
-
-				if (moduleEntry)
-					return moduleEntry;
-
-				FreeLibrary(library);
-
+			if (!library)
 				return (pRdsAuthModuleEntry) NULL;
-			}
 
-			AuthModule* AuthModule::loadFromFileName(std::string filename)
-			{
-				AuthModule* module;
-				pRdsAuthModuleEntry moduleEntry;
+			moduleEntry = (pRdsAuthModuleEntry) GetProcAddress(library, RDS_AUTH_MODULE_ENTRY_POINT_NAME);
 
-				moduleEntry = AuthModule::loadModuleEntry(filename.c_str());
+			if (moduleEntry)
+				return moduleEntry;
 
-				if (!moduleEntry)
-					return (AuthModule*) NULL;
+			FreeLibrary(library);
 
-				module = new AuthModule();
-				module->initModule(moduleEntry);
+			return (pRdsAuthModuleEntry) NULL;
+		}
 
-				return module;
-			}
+		AuthModule* AuthModule::loadFromFileName(std::string filename)
+		{
+			AuthModule* module;
+			pRdsAuthModuleEntry moduleEntry;
 
-			AuthModule* AuthModule::loadFromName(std::string name)
-			{
-				int length;
-				char* filename;
-				char* lowerName;
-				std::string libraryPath;
-				AuthModule* module;
-				pRdsAuthModuleEntry moduleEntry;
+			moduleEntry = AuthModule::loadModuleEntry(filename.c_str());
 
-				libraryPath = APP_CONTEXT.getLibraryPath();
+			if (!moduleEntry)
+				return (AuthModule*) NULL;
 
-				lowerName = _strdup(name.c_str());
-				CharLowerA(lowerName);
+			module = new AuthModule();
+			module->initModule(moduleEntry);
 
-				length = strlen(lowerName) + libraryPath.size() + 64;
-				filename = (char*) malloc(length + 1);
+			return module;
+		}
 
-				sprintf_s(filename, length, "%s/libfreerds-auth-%s.so", libraryPath.c_str(), lowerName);
-				free(lowerName);
+		AuthModule* AuthModule::loadFromName(std::string name)
+		{
+			int length;
+			char* filename;
+			char* lowerName;
+			std::string libraryPath;
+			AuthModule* module;
+			pRdsAuthModuleEntry moduleEntry;
 
-				module = AuthModule::loadFromFileName(filename);
+			libraryPath = APP_CONTEXT.getLibraryPath();
 
-				free(filename);
+			lowerName = _strdup(name.c_str());
+			CharLowerA(lowerName);
 
-				return module;
-			}
+			length = strlen(lowerName) + libraryPath.size() + 64;
+			filename = (char*) malloc(length + 1);
+
+			sprintf_s(filename, length, "%s/libfreerds-auth-%s.so", libraryPath.c_str(), lowerName);
+			free(lowerName);
+
+			module = AuthModule::loadFromFileName(filename);
+
+			free(filename);
+
+			return module;
 		}
 	}
 }

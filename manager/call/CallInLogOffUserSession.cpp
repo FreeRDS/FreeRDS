@@ -29,10 +29,8 @@ using freerds::icp::LogOffUserSessionResponse;
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
 		CallInLogOffUserSession::CallInLogOffUserSession()
 		{
 			mConnectionId = 0;
@@ -108,7 +106,6 @@ namespace freerds
 			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
 			mLoggedOff = true;
 			return 0;
-		}
 		}
 	}
 }

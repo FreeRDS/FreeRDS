@@ -27,10 +27,8 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
 		CallIn::CallIn()
 		{
 
@@ -53,9 +51,7 @@ namespace freerds
 
 		unsigned long CallIn::getDerivedType()
 		{
-			return 1; // for all CallIns
-		}
-
+			return 1;
 		}
 	}
 }

@@ -37,70 +37,67 @@
 
 #include <fdsapi/FDSApiServer.h>
 
-#define APP_CONTEXT freerds::sessionmanager::ApplicationContext::instance()
+#define APP_CONTEXT freerds::ApplicationContext::instance()
 
 namespace freerds
 {
-	namespace sessionmanager
+	class ApplicationContext: public SingletonBase<ApplicationContext>
 	{
-		class ApplicationContext: public SingletonBase<ApplicationContext>
-		{
-		public:
-			sessionNS::SessionStore* getSessionStore();
-			sessionNS::ConnectionStore* getConnectionStore();
-			configNS::PropertyManager* getPropertyManager();
-			moduleNS::ModuleManager* getModuleManager();
-			fdsapiNS::FDSApiServer* getFDSApiServer();
+	public:
+		sessionNS::SessionStore* getSessionStore();
+		sessionNS::ConnectionStore* getConnectionStore();
+		configNS::PropertyManager* getPropertyManager();
+		moduleNS::ModuleManager* getModuleManager();
+		fdsapiNS::FDSApiServer* getFDSApiServer();
 
-			int startRPCEngine();
-			int stopRPCEngine();
+		int startRPCEngine();
+		int stopRPCEngine();
 
-			void startTaskExecutor();
-			void stopTaskExecutor();
-			void startSessionTimoutMonitor();
-			bool addTask(taskNS::TaskPtr task);
+		void startTaskExecutor();
+		void stopTaskExecutor();
+		void startSessionTimoutMonitor();
+		bool addTask(taskNS::TaskPtr task);
 
-			std::string getHomePath();
-			std::string getLibraryPath();
-			std::string getExecutablePath();
-			std::string getShareDataPath();
-			std::string getSystemConfigPath();
+		std::string getHomePath();
+		std::string getLibraryPath();
+		std::string getExecutablePath();
+		std::string getShareDataPath();
+		std::string getSystemConfigPath();
 
-			SignalingQueue<callNS::Call *> * getRpcOutgoingQueue();
+		SignalingQueue<callNS::Call *> * getRpcOutgoingQueue();
 
-			int loadModulesFromPath(std::string path);
-			void setupTestingPropValues();
+		int loadModulesFromPath(std::string path);
+		void setupTestingPropValues();
 
-			void rpcDisconnected();
+		void rpcDisconnected();
 
-		private:
-			std::string mHomePath;
-			std::string mLibraryPath;
-			std::string mExecutablePath;
-			std::string mShareDataPath;
-			std::string mSystemConfigPath;
+	private:
+		std::string mHomePath;
+		std::string mLibraryPath;
+		std::string mExecutablePath;
+		std::string mShareDataPath;
+		std::string mSystemConfigPath;
 
-			void initPaths();
-			void exportContext();
+		void initPaths();
+		void exportContext();
 
-			void configureExecutableSearchPath();
+		void configureExecutableSearchPath();
 
-			taskNS::Executor mTaskExecutor;
-			sessionNS::SessionStore mSessionStore;
-			sessionNS::ConnectionStore mConnectionStore;
+		taskNS::Executor mTaskExecutor;
+		sessionNS::SessionStore mSessionStore;
+		sessionNS::ConnectionStore mConnectionStore;
 
-			configNS::PropertyManager mPropertyManager;
-			pbRPC::RpcEngine mRpcEngine;
-			SignalingQueue<callNS::Call *> mRpcOutgoingCalls;
-			wLog* mWLogRoot;
-			moduleNS::ModuleManager mModuleManager;
-			fdsapiNS::FDSApiServer mFDSApiServer;
+		configNS::PropertyManager mPropertyManager;
+		pbRPC::RpcEngine mRpcEngine;
+		SignalingQueue<callNS::Call *> mRpcOutgoingCalls;
+		wLog* mWLogRoot;
+		moduleNS::ModuleManager mModuleManager;
+		fdsapiNS::FDSApiServer mFDSApiServer;
 
-			SINGLETON_ADD_INITIALISATION(ApplicationContext)
-		};
-	}
+		SINGLETON_ADD_INITIALISATION(ApplicationContext)
+	};
 }
 
-namespace appNS = freerds::sessionmanager;
+namespace appNS = freerds;
 
 #endif

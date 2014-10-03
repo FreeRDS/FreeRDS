@@ -19,8 +19,8 @@
 
 #include "StringHelpers.h"
 
-namespace std{
-
+namespace std
+{
 	bool stringEndsWith(const string& compString, const string& suffix)
 	{
 		return compString.rfind(suffix) == (compString.size()-suffix.size());
@@ -33,22 +33,22 @@ namespace std{
 	}
 }
 
-
-
-namespace boost {
+namespace boost
+{
 	template<>
-        bool lexical_cast<bool, std::string>(const std::string& arg) {
-        std::istringstream ss(arg);
-        bool b;
-        ss >> std::boolalpha >> b;
-        return b;
-    }
+	bool lexical_cast<bool, std::string>(const std::string& arg)
+	{
+		std::istringstream ss(arg);
+		bool b;
+		ss >> std::boolalpha >> b;
+		return b;
+	}
 
-    template<>
-    std::string lexical_cast<std::string, bool>(const bool& b) {
-        std::ostringstream ss;
-        ss << std::boolalpha << b;
-        return ss.str();
-    }
+	template<>
+	std::string lexical_cast<std::string, bool>(const bool& b)
+	{
+		std::ostringstream ss;
+		ss << std::boolalpha << b;
+		return ss.str();
+	}
 }
-

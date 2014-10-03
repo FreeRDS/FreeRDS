@@ -22,8 +22,8 @@
 
 #include <winpr/synch.h>
 
-class CSGuard {
-
+class CSGuard
+{
 public:
 	CSGuard(CRITICAL_SECTION* criticalSection) {
 		mCriticalSection = criticalSection;

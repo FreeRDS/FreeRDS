@@ -27,33 +27,30 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
-		{
-		Call::Call():mTag(0),mResult(0) {
+	Call::Call():mTag(0),mResult(0) {
 
-		};
+	};
 
-		Call::~Call() {
-		};
+	Call::~Call() {
+	};
 
-		void Call::setTag(uint32_t tag) {
-			mTag = tag;
-		}
+	void Call::setTag(uint32_t tag) {
+		mTag = tag;
+	}
 
-		uint32_t Call::getTag() {
-			return mTag;
-		}
+	uint32_t Call::getTag() {
+		return mTag;
+	}
 
-		uint32_t Call::getResult() {
-			return mResult;
-		}
+	uint32_t Call::getResult() {
+		return mResult;
+	}
 
-		std::string Call::getErrorDescription() {
-			return mErrorDescription;
-		}
+	std::string Call::getErrorDescription() {
+		return mErrorDescription;
+	}
 
-		}
 	}
 }

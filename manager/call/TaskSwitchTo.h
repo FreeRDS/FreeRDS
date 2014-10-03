@@ -25,12 +25,10 @@
 
 namespace freerds
 {
-	namespace sessionmanager
+	namespace call
 	{
-		namespace call
+		class TaskSwitchTo: public taskNS::Task
 		{
-
-		class TaskSwitchTo: public taskNS::Task {
 		public:
 			virtual void run();
 
@@ -50,11 +48,9 @@ namespace freerds
 		};
 
 		typedef boost::shared_ptr<TaskSwitchTo> TaskSwitchToPtr;
-
-		}
 	}
 }
 
-namespace callNS = freerds::sessionmanager::call;
+namespace callNS = freerds::call;
 
 #endif /* __TASK_MODULE_SWITCH_TO_ */

@@ -26,34 +26,36 @@
 
 template<typename T>
 std::vector<T>
-split(const T & str, const T & delimiters) {
+split(const T & str, const T & delimiters)
+{
 	std::vector<T> v;
-    typename T::size_type start = 0;
-    typename T::size_type pos = str.find_first_of(delimiters, start);
-    while (pos != T::npos) {
-        if(pos != start) // ignore empty tokens
-        	v.push_back(str.substr(start, pos - start));
-        start = pos + 1;
-        pos = str.find_first_of(delimiters, start);
-    }
-    if(start < str.length()) // ignore trailing delimiter
-    	v.push_back(str.substr(start,  str.length() - start));
+	typename T::size_type start = 0;
+	typename T::size_type pos = str.find_first_of(delimiters, start);
+	while (pos != T::npos) {
+		if(pos != start) // ignore empty tokens
+			v.push_back(str.substr(start, pos - start));
+		start = pos + 1;
+		pos = str.find_first_of(delimiters, start);
+	}
+	if(start < str.length()) // ignore trailing delimiter
+		v.push_back(str.substr(start,  str.length() - start));
 
-    return v;
+	return v;
 }
 
-namespace std{
-
+namespace std
+{
 	bool stringEndsWith(const string& compString, const string& suffix);
 	bool stringStartsWith(const string& string2comp, const string& startswith);
 }
 
-namespace boost {
+namespace boost
+{
 	template<>
-        bool lexical_cast<bool, std::string>(const std::string& arg);
+	bool lexical_cast<bool, std::string>(const std::string& arg);
 
-    template<>
-    std::string lexical_cast<std::string, bool>(const bool& b);
+	template<>
+	std::string lexical_cast<std::string, bool>(const bool& b);
 }
 
 #endif
