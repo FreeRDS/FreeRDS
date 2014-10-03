@@ -31,7 +31,7 @@ namespace freerds
 	{
 		namespace session
 		{
-			static wLog * logger_SessionStore = WLog_Get("freerds.SessionManager.session.sessionstore");
+			static wLog* logger_SessionStore = WLog_Get("freerds.SessionManager.session.sessionstore");
 
 			SessionStore::SessionStore()
 			{
@@ -50,9 +50,11 @@ namespace freerds
 			SessionPtr SessionStore::getSession(long sessionId)
 			{
 				CSGuard guard(&mCSection);
+
 				if (mSessionMap.find(sessionId) != mSessionMap.end()) {
 					return mSessionMap[sessionId];
 				}
+
 				return SessionPtr();
 			}
 
@@ -71,9 +73,9 @@ namespace freerds
 				SessionPtr session;
 				TSessionMap::iterator iter;
 
-				for (iter = mSessionMap.begin(); iter != mSessionMap.end();iter++)
+				for (iter = mSessionMap.begin(); iter != mSessionMap.end(); iter++)
 				{
-					if((iter->second->getUserName().compare(username) == 0) &&
+					if ((iter->second->getUserName().compare(username) == 0) &&
 							(iter->second->getDomain().compare(domain) == 0))
 					{
 						session = iter->second;
@@ -85,7 +87,8 @@ namespace freerds
 			}
 
 			SessionPtr SessionStore::getFirstDisconnectedSessionUserName(
-					std::string username, std::string domain) {
+					std::string username, std::string domain)
+			{
 				CSGuard guard(&mCSection);
 
 				SessionPtr session;
@@ -106,7 +109,6 @@ namespace freerds
 				return session;
 			}
 
-
 			int SessionStore::removeSession(long sessionId)
 			{
 				CSGuard guard(&mCSection);
@@ -114,16 +116,17 @@ namespace freerds
 				return 0;
 			}
 
-			std::list<SessionPtr> SessionStore::getAllSessions() {
+			std::list<SessionPtr> SessionStore::getAllSessions()
+			{
 				CSGuard guard(&mCSection);
 				std::list<SessionPtr> list;
-				for (TSessionMap::const_iterator it=mSessionMap.begin(); it!=mSessionMap.end(); ++it) {
-					list.push_back( it->second );
+
+				for (TSessionMap::const_iterator it = mSessionMap.begin(); it != mSessionMap.end(); ++it) {
+					list.push_back(it->second);
 				}
+
 				return list;
 			}
-
-
 		}
 	}
 }

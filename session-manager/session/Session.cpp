@@ -49,7 +49,9 @@ namespace freerds
 			Session::Session(long sessionID): mSessionID(sessionID),
 					mSessionStarted(false), mpEnvBlock(NULL),
 					mCurrentState(WTSDown), mUserToken(NULL),
-					mCurrentModuleContext(NULL), mAuthSession(false)
+					mCurrentModuleContext(NULL), mAuthSession(false),
+					mClientDisplayColorDepth(0), mClientDisplayWidth(0), mClientDisplayHeight(0),
+					mClientHardwareId(0), mClientBuildNumber(0), mClientProductId(0), mClientProtocolType(0)
 			{
 				if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 				{

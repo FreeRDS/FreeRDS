@@ -111,13 +111,14 @@ HANDLE freerds_rpc_named_pipe_accept(const char* pipeName)
 
 HANDLE freerds_rpc_named_pipe_connect(const char* pipeName)
 {
-	HANDLE hNamedPipe;
 	int i;
+	HANDLE hNamedPipe;
 
 	for (i = 0; i < RDS_RPC_CONNECT_RETRIES; i++)
 	{
 		/* Wait for an instance of the named pipe to become available. */
-		if (!WaitNamedPipeA(pipeName, RDS_RPC_CONNECT_TIMEOUT)) continue;
+		if (!WaitNamedPipeA(pipeName, RDS_RPC_CONNECT_TIMEOUT))
+			continue;
 
 		/* Attempt to connect to the named pipe. */
 		hNamedPipe = CreateFileA(pipeName,
@@ -125,7 +126,8 @@ HANDLE freerds_rpc_named_pipe_connect(const char* pipeName)
 			0, NULL, OPEN_EXISTING, 0, NULL);
 
 		/* Failure to connect means someone else claimed the instance of the named pipe. */
-		if (hNamedPipe == INVALID_HANDLE_VALUE) continue;
+		if (hNamedPipe == INVALID_HANDLE_VALUE)
+			continue;
 
 		printf("freerds_rpc_named_pipe_connect: connected to %s\n", pipeName);
 
@@ -270,17 +272,16 @@ rdsRpcClient* freerds_rpc_client_new(const char* Endpoint)
 {
 	rdsRpcClient* rpcClient;
 
-	rpcClient = (rdsRpcClient*) malloc(sizeof(rdsRpcClient));
+	rpcClient = (rdsRpcClient*) calloc(1, sizeof(rdsRpcClient));
+
 	if (rpcClient)
 	{
 		int length;
 
-		ZeroMemory(rpcClient, sizeof(rdsRpcClient));
-
 		rpcClient->Endpoint = _strdup(Endpoint);
 
 		length = 64 + strlen(rpcClient->Endpoint);
-		rpcClient->PipeName = (char*)malloc(length);
+		rpcClient->PipeName = (char*) malloc(length);
 		sprintf_s(rpcClient->PipeName, length, "\\\\.\\pipe\\FreeRDS_%s", rpcClient->Endpoint);
 
 		rpcClient->hStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -479,17 +480,16 @@ rdsRpcServer* freerds_rpc_server_new(const char* Endpoint)
 {
 	rdsRpcServer* rpcServer;
 
-	rpcServer = (rdsRpcServer*) malloc(sizeof(rdsRpcServer));
+	rpcServer = (rdsRpcServer*) calloc(1, sizeof(rdsRpcServer));
+
 	if (rpcServer)
 	{
 		int length;
 
-		ZeroMemory(rpcServer, sizeof(rdsRpcServer));
-
 		rpcServer->Endpoint = _strdup(Endpoint);
 
 		length = 64 + strlen(rpcServer->Endpoint);
-		rpcServer->PipeName = (char*)malloc(length);
+		rpcServer->PipeName = (char*) malloc(length);
 		sprintf_s(rpcServer->PipeName, length, "\\\\.\\pipe\\FreeRDS_%s", rpcServer->Endpoint);
 
 		rpcServer->ClientList = ArrayList_New(TRUE);
@@ -523,19 +523,19 @@ void freerds_rpc_server_free(rdsRpcServer* rpcServer)
 
 void* freerds_rpc_server_thread(void* arg)
 {
-	rdsRpcServer* rpcServer = (rdsRpcServer*) arg;
-
-	int count;
 	int i;
+	int count;
+	HANDLE hClientPipe;
+	rdsRpcClient* rpcClient;
+	rdsRpcServer* rpcServer = (rdsRpcServer*) arg;
 
 	while (1)
 	{
-		rdsRpcClient* rpcClient;
-		HANDLE hClientPipe;
-
 		/* Accept a connection from the client. */
 		hClientPipe = freerds_rpc_named_pipe_accept(rpcServer->PipeName);
-		if (hClientPipe == NULL) break;
+
+		if (!hClientPipe)
+			break;
 
 		/* If the stop event was signalled... */
 		if (WaitForSingleObject(rpcServer->hStopEvent, 0) == WAIT_OBJECT_0)
@@ -546,7 +546,9 @@ void* freerds_rpc_server_thread(void* arg)
 
 		/* Create an RPC client instance. */
 		rpcClient = freerds_rpc_client_new(rpcServer->Endpoint);
-		if (rpcClient == NULL) break;
+
+		if (!rpcClient)
+			break;
 
 		rpcClient->RpcServer = rpcServer;
 
@@ -573,19 +575,18 @@ void* freerds_rpc_server_thread(void* arg)
 
 	/* Signal all client threads to stop. */
 	count = ArrayList_Count(rpcServer->ClientList);
+
 	for (i = 0; i < count; i++)
 	{
-		rdsRpcClient* rpcClient;
-
 		rpcClient = (rdsRpcClient*) ArrayList_GetItem(rpcServer->ClientList, i);
-
 		SetEvent(rpcClient->hStopEvent);
 	}
 
 	/* Wait for remaining client threads to gracefully terminate. */
 	for (i = 0; i < 30; i++)
 	{
-		if (ArrayList_Count(rpcServer->ClientList) == 0) break;
+		if (ArrayList_Count(rpcServer->ClientList) == 0)
+			break;
 
 		ArrayList_Unlock(rpcServer->ClientList);
 		Sleep(1000);
@@ -622,6 +623,7 @@ int freerds_rpc_server_stop(rdsRpcServer* rpcServer)
 		SetEvent(rpcServer->hStopEvent);
 
 		hNamedPipe = freerds_rpc_named_pipe_connect(rpcServer->PipeName);
+
 		if (hNamedPipe)
 		{
 			CloseHandle(hNamedPipe);
@@ -639,15 +641,16 @@ int freerds_rpc_server_broadcast_message(rdsRpcServer* rpcServer, BYTE* buffer, 
 {
 	int status;
 	int index;
+	rdsRpcClient* rpcClient;
 
 	ArrayList_Lock(rpcServer->ClientList);
+
 	for (index = 0; index < ArrayList_Count(rpcServer->ClientList); index++)
 	{
-		rdsRpcClient* rpcClient;
-
 		rpcClient = (rdsRpcClient*) ArrayList_GetItem(rpcServer->ClientList, index);
 		status = freerds_rpc_client_send_message(rpcClient, buffer, length);
 	}
+
 	ArrayList_Unlock(rpcServer->ClientList);
 
 	return 0;

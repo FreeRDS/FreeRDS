@@ -41,7 +41,8 @@ namespace pbrpc {
 static wLog* logger_RPCEngine = WLog_Get("freerds.pbrpc.RpcEngine");
 
 RpcEngine::RpcEngine() :
-		mPacktLength(0), mHeaderRead(0), mPayloadRead(0),mNextOutCall(1)
+		mPacktLength(0), mHeaderRead(0), mPayloadRead(0), mNextOutCall(1),
+		mhClientPipe(0), mhServerPipe(0), mhServerThread(0)
 {
 	mhStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
 	WLog_SetLogLevel(logger_RPCEngine, WLOG_ERROR);
@@ -65,7 +66,7 @@ HANDLE RpcEngine::createServerPipe(const char* endpoint)
 
 	if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
 	{
-		WLog_Print(logger_RPCEngine, WLOG_ERROR, "creating namedpipe failed");
+		WLog_Print(logger_RPCEngine, WLOG_ERROR, "creating named pipe failed");
 		return NULL;
 	}
 
@@ -114,6 +115,7 @@ void* RpcEngine::listenerThread(void* arg)
 	RpcEngine* engine;
 
 	engine = (RpcEngine*) arg;
+
 	WLog_Print(logger_RPCEngine, WLOG_TRACE, "started RPC listener Thread");
 
 	while (1)
@@ -216,7 +218,7 @@ int RpcEngine::readHeader()
 
 	if (mHeaderRead == 4)
 	{
-		mPacktLength = ntohl(*(DWORD *)mHeaderBuffer);
+		mPacktLength = ntohl(*((DWORD*) mHeaderBuffer));
 		WLog_Print(logger_RPCEngine, WLOG_TRACE, "header read, packet size %d",mPacktLength);
 	}
 

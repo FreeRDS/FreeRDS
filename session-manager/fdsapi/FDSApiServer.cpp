@@ -52,22 +52,23 @@ namespace freerds {
 
 		int FDSApiServer::RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length)
 		{
-			static const std::string authToken = "HUGO";
-
-			shared_ptr<FDSApiHandler> FDSApiHandler = FDSApiServer::mFDSApiHandler;
-
-			FDSAPI_MESSAGE requestMsg;
-			FDSAPI_MESSAGE responseMsg;
+			int status;
+			std::string endPoint;
 			wStream* requestStream;
 			wStream* responseStream;
-			int status;
+			FDSAPI_MESSAGE requestMsg;
+			FDSAPI_MESSAGE responseMsg;
+			static const std::string authToken = "HUGO";
+			shared_ptr<FDSApiHandler> FDSApiHandler = FDSApiServer::mFDSApiHandler;
 
 			WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "received message (buffer=%p, length=%u)", buffer, length);
 
 			status = -1;
 
 			requestStream = Stream_New(buffer, length);
-			if (requestStream == NULL) return status;
+
+			if (!requestStream)
+				return status;
 
 			ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
 			ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
@@ -77,195 +78,225 @@ namespace freerds {
 			{
 				switch (requestMsg.messageId)
 				{
-					case FDSAPI_DISCONNECT_SESSION_REQUEST_ID:
-					{
-						responseMsg.messageId = FDSAPI_DISCONNECT_SESSION_RESPONSE_ID;
-						responseMsg.requestId = requestMsg.requestId;
+				case FDSAPI_DISCONNECT_SESSION_REQUEST_ID:
+				{
+					responseMsg.messageId = FDSAPI_DISCONNECT_SESSION_RESPONSE_ID;
+					responseMsg.requestId = requestMsg.requestId;
 
-						responseMsg.u.disconnectSessionResponse.result =
-							FDSApiHandler->disconnectSession(
-								authToken,
-								requestMsg.u.disconnectSessionRequest.sessionId,
-								requestMsg.u.disconnectSessionRequest.wait);
+					responseMsg.u.disconnectSessionResponse.result =
+							FDSApiHandler->disconnectSession(authToken,
+									requestMsg.u.disconnectSessionRequest.sessionId,
+									requestMsg.u.disconnectSessionRequest.wait);
 
-						break;
-					}
+					break;
+				}
 
-					case FDSAPI_LOGOFF_SESSION_REQUEST_ID:
-					{
-						responseMsg.messageId = FDSAPI_LOGOFF_SESSION_RESPONSE_ID;
-						responseMsg.requestId = requestMsg.requestId;
+				case FDSAPI_LOGOFF_SESSION_REQUEST_ID:
+				{
+					responseMsg.messageId = FDSAPI_LOGOFF_SESSION_RESPONSE_ID;
+					responseMsg.requestId = requestMsg.requestId;
 
-						responseMsg.u.logoffSessionResponse.result =
+					responseMsg.u.logoffSessionResponse.result =
 							FDSApiHandler->logoffSession(
-								authToken,
-								requestMsg.u.logoffSessionRequest.sessionId,
-								requestMsg.u.logoffSessionRequest.wait);
+									authToken,
+									requestMsg.u.logoffSessionRequest.sessionId,
+									requestMsg.u.logoffSessionRequest.wait);
 
-						break;
-					}
+					break;
+				}
 
-					case FDSAPI_SHUTDOWN_SYSTEM_REQUEST_ID:
-					{
-						responseMsg.messageId = FDSAPI_SHUTDOWN_SYSTEM_RESPONSE_ID;
-						responseMsg.requestId = requestMsg.requestId;
+				case FDSAPI_SHUTDOWN_SYSTEM_REQUEST_ID:
+				{
+					responseMsg.messageId = FDSAPI_SHUTDOWN_SYSTEM_RESPONSE_ID;
+					responseMsg.requestId = requestMsg.requestId;
 
-						responseMsg.u.shutdownSystemResponse.result =
+					responseMsg.u.shutdownSystemResponse.result =
 							FDSApiHandler->shutdownSystem(
-								authToken,
-								requestMsg.u.shutdownSystemRequest.shutdownFlag);
+									authToken,
+									requestMsg.u.shutdownSystemRequest.shutdownFlag);
 
-						break;
-					}
+					break;
+				}
 
-					case FDSAPI_ENUMERATE_SESSIONS_REQUEST_ID:
-					{
-						TReturnEnumerateSessions apiReturn;
+				case FDSAPI_ENUMERATE_SESSIONS_REQUEST_ID:
+				{
+					TReturnEnumerateSessions apiReturn;
 
-						WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSAPIHandler::enumerateSessions");
+					WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSAPIHandler::enumerateSessions");
 
-						FDSApiHandler->enumerateSessions(
+					FDSApiHandler->enumerateSessions(
 							apiReturn,
 							authToken,
 							requestMsg.u.enumerateSessionsRequest.version);
 
-						responseMsg.messageId = FDSAPI_ENUMERATE_SESSIONS_RESPONSE_ID;
-						responseMsg.requestId = requestMsg.requestId;
+					responseMsg.messageId = FDSAPI_ENUMERATE_SESSIONS_RESPONSE_ID;
+					responseMsg.requestId = requestMsg.requestId;
 
-						responseMsg.u.enumerateSessionsResponse.result = apiReturn.returnValue;
-						if (apiReturn.returnValue)
+					responseMsg.u.enumerateSessionsResponse.result = apiReturn.returnValue;
+					if (apiReturn.returnValue)
+					{
+						size_t count = apiReturn.sessionInfoList.size();
+
+						FDSAPI_SESSION_INFO* pSessionInfo;
+
+						pSessionInfo = (FDSAPI_SESSION_INFO*)malloc(count * sizeof(FDSAPI_SESSION_INFO));
+						if (pSessionInfo)
 						{
-							size_t count = apiReturn.sessionInfoList.size();
-
-							FDSAPI_SESSION_INFO* pSessionInfo;
-
-							pSessionInfo = (FDSAPI_SESSION_INFO*)malloc(count * sizeof(FDSAPI_SESSION_INFO));
-							if (pSessionInfo)
+							for (int i = 0; i < count; i++)
 							{
-								for (int i = 0; i < count; i++)
-								{
-									pSessionInfo[i].sessionId = apiReturn.sessionInfoList.at(i).sessionId;
-									pSessionInfo[i].winStationName = strdup(apiReturn.sessionInfoList.at(i).winStationName.c_str());
-									pSessionInfo[i].connectState = apiReturn.sessionInfoList.at(i).connectState;
-								}
-
-								responseMsg.u.enumerateSessionsResponse.cSessions = count;
-								responseMsg.u.enumerateSessionsResponse.pSessionInfo = pSessionInfo;
+								pSessionInfo[i].sessionId = apiReturn.sessionInfoList.at(i).sessionId;
+								pSessionInfo[i].winStationName = strdup(apiReturn.sessionInfoList.at(i).winStationName.c_str());
+								pSessionInfo[i].connectState = apiReturn.sessionInfoList.at(i).connectState;
 							}
-						}
 
-						break;
+							responseMsg.u.enumerateSessionsResponse.cSessions = count;
+							responseMsg.u.enumerateSessionsResponse.pSessionInfo = pSessionInfo;
+						}
 					}
 
-					case FDSAPI_QUERY_SESSION_INFORMATION_REQUEST_ID:
-					{
-						TReturnQuerySessionInformation apiReturn;
+					break;
+				}
 
-						WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSAPIHandler::querySessionInformation");
+				case FDSAPI_QUERY_SESSION_INFORMATION_REQUEST_ID:
+				{
+					TReturnQuerySessionInformation apiReturn;
 
-						FDSApiHandler->querySessionInformation(
-							apiReturn,
-							authToken,
+					WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSAPIHandler::querySessionInformation");
+
+					FDSApiHandler->querySessionInformation(
+							apiReturn, authToken,
 							requestMsg.u.querySessionInformationRequest.sessionId,
 							requestMsg.u.querySessionInformationRequest.infoClass);
 
-						responseMsg.messageId = FDSAPI_QUERY_SESSION_INFORMATION_RESPONSE_ID;
-						responseMsg.requestId = requestMsg.requestId;
+					responseMsg.messageId = FDSAPI_QUERY_SESSION_INFORMATION_RESPONSE_ID;
+					responseMsg.requestId = requestMsg.requestId;
 
-						responseMsg.u.querySessionInformationResponse.result = apiReturn.returnValue;
-						if (apiReturn.returnValue)
-						{
-							FDSAPI_SESSION_INFO_VALUE* infoValue;
+					responseMsg.u.querySessionInformationResponse.result = apiReturn.returnValue;
 
-							infoValue = &responseMsg.u.querySessionInformationResponse.infoValue;
-
-							switch (requestMsg.u.querySessionInformationRequest.infoClass)
-							{
-								case WTSClientProductId:
-								case WTSClientProtocolType:
-									infoValue->t = FDSAPI_SESSION_INFO_VALUE_UINT16;
-									infoValue->u.uint16Value = apiReturn.infoValue.int16Value;
-									break;
-
-								case WTSSessionId:
-								case WTSConnectState:
-								case WTSClientBuildNumber:
-								case WTSClientHardwareId:
-									infoValue->t = FDSAPI_SESSION_INFO_VALUE_UINT32;
-									infoValue->u.uint32Value = apiReturn.infoValue.int32Value;
-									break;
-
-								case WTSUserName:
-								case WTSWinStationName:
-								case WTSDomainName:
-								case WTSClientName:
-								case WTSClientAddress:
-									infoValue->t = FDSAPI_SESSION_INFO_VALUE_STRING;
-									infoValue->u.stringValue = strdup(apiReturn.infoValue.stringValue.c_str());
-									break;
-
-								case WTSClientDisplay:
-									infoValue->t = FDSAPI_SESSION_INFO_VALUE_DISPLAY;
-									infoValue->u.displayValue.displayWidth = apiReturn.infoValue.displayValue.displayWidth;
-									infoValue->u.displayValue.displayHeight = apiReturn.infoValue.displayValue.displayHeight;
-									infoValue->u.displayValue.colorDepth = apiReturn.infoValue.displayValue.colorDepth;
-									break;
-
-								default:
-									responseMsg.u.querySessionInformationResponse.result = FALSE;
-									break;
-							}
-						}
-
-						break;
-					}
-
-					case FDSAPI_AUTHENTICATE_USER_REQUEST_ID:
+					if (apiReturn.returnValue)
 					{
-						responseMsg.messageId = FDSAPI_AUTHENTICATE_USER_RESPONSE_ID;
-						responseMsg.requestId = requestMsg.requestId;
+						FDSAPI_SESSION_INFO_VALUE* infoValue;
 
-						std::string domain;
-						std::string username;
-						std::string password;
+						infoValue = &responseMsg.u.querySessionInformationResponse.infoValue;
 
-						if (requestMsg.u.authenticateUserRequest.domain)
+						switch (requestMsg.u.querySessionInformationRequest.infoClass)
 						{
-							domain = requestMsg.u.authenticateUserRequest.domain;
+						case WTSClientProductId:
+						case WTSClientProtocolType:
+							infoValue->t = FDSAPI_SESSION_INFO_VALUE_UINT16;
+							infoValue->u.uint16Value = apiReturn.infoValue.int16Value;
+							break;
+
+						case WTSSessionId:
+						case WTSConnectState:
+						case WTSClientBuildNumber:
+						case WTSClientHardwareId:
+							infoValue->t = FDSAPI_SESSION_INFO_VALUE_UINT32;
+							infoValue->u.uint32Value = apiReturn.infoValue.int32Value;
+							break;
+
+						case WTSUserName:
+						case WTSWinStationName:
+						case WTSDomainName:
+						case WTSClientName:
+						case WTSClientAddress:
+							infoValue->t = FDSAPI_SESSION_INFO_VALUE_STRING;
+							infoValue->u.stringValue = strdup(apiReturn.infoValue.stringValue.c_str());
+							break;
+
+						case WTSClientDisplay:
+							infoValue->t = FDSAPI_SESSION_INFO_VALUE_DISPLAY;
+							infoValue->u.displayValue.displayWidth = apiReturn.infoValue.displayValue.displayWidth;
+							infoValue->u.displayValue.displayHeight = apiReturn.infoValue.displayValue.displayHeight;
+							infoValue->u.displayValue.colorDepth = apiReturn.infoValue.displayValue.colorDepth;
+							break;
+
+						default:
+							responseMsg.u.querySessionInformationResponse.result = FALSE;
+							break;
 						}
-
-						if (requestMsg.u.authenticateUserRequest.username)
-						{
-							username = requestMsg.u.authenticateUserRequest.username;
-						}
-
-						if (requestMsg.u.authenticateUserRequest.password)
-						{
-							password = requestMsg.u.authenticateUserRequest.password;
-						}
-
-						WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSAPIHandler::authenticateUser");
-
-						responseMsg.u.authenticateUserResponse.result =
-							FDSApiHandler->authenticateUser(
-								authToken,
-								requestMsg.u.authenticateUserRequest.sessionId,
-								username,
-								password,
-								domain);
-
-						break;
 					}
 
-					default:
-						break;
+					break;
+				}
+
+				case FDSAPI_AUTHENTICATE_USER_REQUEST_ID:
+				{
+					responseMsg.messageId = FDSAPI_AUTHENTICATE_USER_RESPONSE_ID;
+					responseMsg.requestId = requestMsg.requestId;
+
+					std::string domain;
+					std::string username;
+					std::string password;
+
+					if (requestMsg.u.authenticateUserRequest.domain)
+					{
+						domain = requestMsg.u.authenticateUserRequest.domain;
+					}
+
+					if (requestMsg.u.authenticateUserRequest.username)
+					{
+						username = requestMsg.u.authenticateUserRequest.username;
+					}
+
+					if (requestMsg.u.authenticateUserRequest.password)
+					{
+						password = requestMsg.u.authenticateUserRequest.password;
+					}
+
+					WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSAPIHandler::authenticateUser");
+
+					responseMsg.u.authenticateUserResponse.result =
+							FDSApiHandler->authenticateUser(
+									authToken,
+									requestMsg.u.authenticateUserRequest.sessionId,
+									username,
+									password,
+									domain);
+
+					break;
+				}
+
+				case FDSAPI_VIRTUAL_CHANNEL_OPEN_REQUEST_ID:
+				{
+					responseMsg.messageId = FDSAPI_VIRTUAL_CHANNEL_OPEN_RESPONSE_ID;
+					responseMsg.requestId = requestMsg.requestId;
+
+					FDSApiHandler->virtualChannelOpen(endPoint, authToken,
+							requestMsg.u.virtualChannelOpenRequest.sessionId,
+							requestMsg.u.virtualChannelOpenRequest.virtualName);
+
+					responseMsg.u.virtualChannelOpenResponse.endPoint = endPoint.c_str();
+
+					break;
+				}
+
+				case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST_ID:
+				{
+					responseMsg.messageId = FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE_ID;
+					responseMsg.requestId = requestMsg.requestId;
+
+					FDSApiHandler->virtualChannelOpenEx(endPoint, authToken,
+							requestMsg.u.virtualChannelOpenExRequest.sessionId,
+							requestMsg.u.virtualChannelOpenExRequest.virtualName,
+							requestMsg.u.virtualChannelOpenExRequest.flags);
+
+					responseMsg.u.virtualChannelOpenExResponse.endPoint = endPoint.c_str();
+
+					break;
+				}
+
+				default:
+					break;
 				}			
 
 				// Send the response message.
 				responseStream = FDSAPI_EncodeMessage(&responseMsg);
+
 				if (responseStream)
 				{
-					status = freerds_rpc_client_send_message(rpcClient, Stream_Buffer(responseStream), Stream_Length(responseStream));
+					status = freerds_rpc_client_send_message(rpcClient,
+							Stream_Buffer(responseStream), Stream_Length(responseStream));
 					Stream_Free(responseStream, TRUE);
 				}
 			}
@@ -340,16 +371,16 @@ namespace freerds {
 			}
 		}
 
-		 void FDSApiServer::startFDSApi()
-		 {
+		void FDSApiServer::startFDSApi()
+		{
 			freerds_rpc_server_start(mRpcServer);
-		 }
+		}
 
-		 void FDSApiServer::stopFDSApi()
-		 {
-			 WLog_Print(logger_FDSApiServer, WLOG_INFO, "Stopping FDSApiServer ...");
-			 freerds_rpc_server_stop(mRpcServer);
-		 }
+		void FDSApiServer::stopFDSApi()
+		{
+			WLog_Print(logger_FDSApiServer, WLOG_INFO, "Stopping FDSApiServer ...");
+			freerds_rpc_server_stop(mRpcServer);
+		}
 
 		}
 	}
