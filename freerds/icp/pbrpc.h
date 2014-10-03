@@ -24,8 +24,6 @@
 #include <winpr/wtypes.h>
 #include <winpr/collections.h>
 
-#include "pbrpc_transport.h"
-
 #include "pbRPC.pb-c.h"
 
 #define PBRPC_TIMEOUT 10000
@@ -34,9 +32,9 @@ typedef struct pbrpc_method pbRPCMethod;
 
 struct  pbrpc_context
 {
+	HANDLE hPipe;
 	HANDLE stopEvent;
 	HANDLE thread;
-	pbRPCTransportContext* transport;
 	wListDictionary* transactions;
 	wQueue* writeQueue;
 	BOOL isConnected;
@@ -76,7 +74,7 @@ typedef enum pbrpc_status
 
 typedef void (*pbRpcResponseCallback)(UINT32 reason, Freerds__Pbrpc__RPCBase* response, void *args);
 
-pbRPCContext* pbrpc_server_new(pbRPCTransportContext* transport);
+pbRPCContext* pbrpc_server_new();
 void pbrpc_server_free(pbRPCContext* context);
 int pbrpc_server_start(pbRPCContext* context);
 int pbrpc_server_stop(pbRPCContext* context);
@@ -84,8 +82,17 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 		pbRpcResponseCallback callback, void *callback_args);
 void pbrpc_register_methods(pbRPCContext* context, pbRPCMethod* methods);
-int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 status, UINT32 type,
-UINT32 tag);
+int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 status, UINT32 type, UINT32 tag);
 
+/* utils */
+
+DWORD pbrpc_getTag(pbRPCContext *context);
+Freerds__Pbrpc__RPCBase *pbrpc_message_new();
+void pbrpc_message_free(Freerds__Pbrpc__RPCBase* msg, BOOL freePayload);
+void pbrpc_prepare_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg);
+void pbrpc_prepare_response(Freerds__Pbrpc__RPCBase* msg, UINT32 tag);
+void pbrpc_prepare_error(Freerds__Pbrpc__RPCBase* msg, UINT32 tag, char* error);
+pbRPCPayload* pbrpc_payload_new();
+void pbrpc_free_payload(pbRPCPayload* response);
 
 #endif //_PBRPC_H

@@ -17,9 +17,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "icp_server_stubs.h"
+
 #include "ICP.pb-c.h"
-#include "pbrpc_utils.h"
+#include "pbrpc.h"
 #include "../core/app_context.h"
 
 #define ICP_SERVER_STUB_SETUP(camel, expanded) \

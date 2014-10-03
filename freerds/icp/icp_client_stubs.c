@@ -24,7 +24,7 @@
 #include <winpr/crt.h>
 
 #include "ICP.pb-c.h"
-#include "pbrpc_utils.h"
+#include "pbrpc.h"
 #include "../core/core.h"
 
 #define ICP_CLIENT_STUB_SETUP(camel, expanded) \

@@ -61,7 +61,8 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 	settings->RdpKeyFile = strdup("freerds.pem");
 
 	fp = fopen(settings->RdpKeyFile, "rb");
-	if (fp == NULL)
+
+	if (!fp)
 	{
 		/*
 		 * This is the first time FreeRDS has been executed and
@@ -499,7 +500,7 @@ void* freerds_connection_main_thread(void* arg)
 	rdsBackendConnector* connector = NULL;
 	freerdp_peer* client = (freerdp_peer*) arg;
 	BOOL disconnected = FALSE;
-#ifndef WIN32
+#ifndef _WIN32
 	sigset_t set;
 	int ret;
 #endif
@@ -538,13 +539,15 @@ void* freerds_connection_main_thread(void* arg)
 	GlobalTermEvent = g_get_term_event();
 	LocalTermEvent = connection->TermEvent;
 	NotificationEvent = MessageQueue_Event(connection->notifications);
-#ifndef WIN32
+
+#ifndef _WIN32
 	sigemptyset(&set);
 	sigaddset(&set, SIGPIPE);
 	ret = pthread_sigmask(SIG_BLOCK, &set, NULL);
 	if (0 != ret)
 		fprintf(stderr, "couldn't block SIGPIPE\n");
 #endif
+
 	while (1)
 	{
 		nCount = 0;

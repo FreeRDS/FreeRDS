@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Authentication Library
-
 set(MODULE_NAME "freerds-rpc")
 set(MODULE_PREFIX "FREERDS_RPC")
 

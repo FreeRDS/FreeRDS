@@ -19,7 +19,9 @@
 
 #ifndef _ICP_H
 #define _ICP_H
+
 int freerds_icp_start();
 int freerds_icp_shutdown();
 void *freerds_icp_get_context();
+
 #endif //_ICP_H

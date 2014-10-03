@@ -19,19 +19,80 @@
  */
 
 #include <winpr/crt.h>
+#include <winpr/pipe.h>
 #include <winpr/thread.h>
+#include <winpr/interlocked.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <arpa/inet.h>
-#else //WIN32
-#include <Winsock2.h>
-#endif //WIN32
+#endif
 
-#include "pbrpc_transport.h"
 #include "pbRPC.pb-c.h"
-#include "pbrpc_utils.h"
 #include "pbrpc.h"
 
+int tp_npipe_open(pbRPCContext* context, int timeout)
+{
+	HANDLE hNamedPipe = 0;
+	char pipeName[] = "\\\\.\\pipe\\FreeRDS_SessionManager";
+
+	if (!WaitNamedPipeA(pipeName, timeout))
+	{
+		return -1;
+	}
+
+	hNamedPipe = CreateFileA(pipeName,
+			GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+	if ((!hNamedPipe) || (hNamedPipe == INVALID_HANDLE_VALUE))
+	{
+		return -1;
+	}
+
+	context->hPipe = hNamedPipe;
+
+	return 0;
+}
+
+int tp_npipe_close(pbRPCContext* context)
+{
+	if (context->hPipe)
+	{
+		CloseHandle(context->hPipe);
+		context->hPipe = 0;
+	}
+
+	return 0;
+}
+
+int tp_npipe_write(pbRPCContext* context, char* data, unsigned int datalen)
+{
+	DWORD bytesWritten;
+	BOOL fSuccess = FALSE;
+
+	fSuccess = WriteFile(context->hPipe, data, datalen, (LPDWORD) &bytesWritten, NULL);
+
+	if (!fSuccess || (bytesWritten < datalen))
+	{
+		return -1;
+	}
+
+	return bytesWritten;
+}
+
+int tp_npipe_read(pbRPCContext* context, char* data, unsigned int datalen)
+{
+	DWORD bytesRead;
+	BOOL fSuccess = FALSE;
+
+	fSuccess = ReadFile(context->hPipe, data, datalen, &bytesRead, NULL);
+
+	if (!fSuccess || (bytesRead < datalen))
+	{
+		return -1;
+	}
+
+	return bytesRead;
+}
 
 struct pbrpc_transaction
 {
@@ -41,15 +102,81 @@ struct pbrpc_transaction
 };
 typedef struct pbrpc_transaction pbRPCTransaction;
 
+DWORD pbrpc_getTag(pbRPCContext *context)
+{
+	return InterlockedIncrement(&(context->tag));
+}
+
+Freerds__Pbrpc__RPCBase* pbrpc_message_new()
+{
+	Freerds__Pbrpc__RPCBase* msg = malloc(sizeof(Freerds__Pbrpc__RPCBase));
+	if (!msg)
+		return msg;
+
+	freerds__pbrpc__rpcbase__init(msg);
+	return msg;
+}
+
+void pbrpc_message_free(Freerds__Pbrpc__RPCBase* msg, BOOL freePayload)
+{
+	if (freePayload && msg->payload.data)
+	{
+		free(msg->payload.data);
+	}
+
+	if (freePayload && msg->errordescription)
+	{
+		free(msg->errordescription);
+	}
+
+	free(msg);
+}
+
+void pbrpc_prepare_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg)
+{
+	msg->tag = pbrpc_getTag(context);
+	msg->isresponse = FALSE;
+	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
+}
+
+void pbrpc_prepare_response(Freerds__Pbrpc__RPCBase* msg, UINT32 tag)
+{
+	msg->isresponse = TRUE;
+	msg->tag = tag;
+}
+
+void pbrpc_prepare_error(Freerds__Pbrpc__RPCBase* msg, UINT32 tag, char *error)
+{
+	pbrpc_prepare_response(msg, tag);
+	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__FAILED;
+	msg->errordescription = error;
+}
+
+pbRPCPayload* pbrpc_payload_new()
+{
+	pbRPCPayload* pl = calloc(1, sizeof(pbRPCPayload));
+	return pl;
+}
+
+void pbrpc_free_payload(pbRPCPayload* response)
+{
+	if (!response)
+		return;
+
+	free(response->data);
+
+	if (response->errorDescription)
+		free(response->errorDescription);
+
+	free(response);
+}
 
 static pbRPCTransaction* pbrpc_transaction_new()
 {
-	pbRPCTransaction* ta = malloc(sizeof(pbRPCTransaction));
-	ZeroMemory(ta, sizeof(pbRPCTransaction));
+	pbRPCTransaction* ta = calloc(1, sizeof(pbRPCTransaction));
 	ta->freeAfterResponse = TRUE;
 	return ta;
 }
-
 
 void pbrpc_transaction_free(pbRPCTransaction* ta)
 {
@@ -68,16 +195,16 @@ static void list_dictionary_item_free(void* item)
 	pbrpc_transaction_free((pbRPCTransaction*)(di->value));
 }
 
-pbRPCContext* pbrpc_server_new(pbRPCTransportContext* transport)
+pbRPCContext* pbrpc_server_new()
 {
-	pbRPCContext* context = malloc(sizeof(pbRPCContext));
-	ZeroMemory(context, sizeof(pbRPCContext));
+	pbRPCContext* context = calloc(1, sizeof(pbRPCContext));
+
 	context->stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	context->transport = transport;
 	context->transactions = ListDictionary_New(TRUE);
 	ListDictionary_ValueObject(context->transactions)->fnObjectFree = list_dictionary_item_free;
 	context->writeQueue = Queue_New(TRUE, -1, -1);
 	context->writeQueue->object.fnObjectFree = queue_item_free;
+
 	return context;
 }
 
@@ -90,6 +217,7 @@ void pbrpc_server_free(pbRPCContext* context)
 	CloseHandle(context->thread);
 	ListDictionary_Free(context->transactions);
 	Queue_Free(context->writeQueue);
+
 	free(context);
 }
 
@@ -100,7 +228,7 @@ int pbrpc_receive_message(pbRPCContext* context, char** msg, int* msgLen)
 	char *recvbuffer;
 	int ret = 0;
 
-	ret = context->transport->read(context->transport, (char *)&msgLenWire, 4);
+	ret = tp_npipe_read(context, (char *)&msgLenWire, 4);
 
 	if (ret < 0)
 		return ret;
@@ -108,35 +236,43 @@ int pbrpc_receive_message(pbRPCContext* context, char** msg, int* msgLen)
 	len = ntohl(msgLenWire);
 	*msgLen = len;
 	recvbuffer = malloc(len);
-	ret = context->transport->read(context->transport, recvbuffer, len);
+
+	ret = tp_npipe_read(context, recvbuffer, len);
 
 	if (ret < 0)
 	{
 		free(recvbuffer);
 		return ret;
 	}
+
 	*msg = recvbuffer;
 	return ret;
 }
 
 int pbrpc_send_message(pbRPCContext* context, char *msg, UINT32 msgLen)
 {
+	int status;
 	UINT32 msgLenWire;
-	int ret;
 
 	msgLenWire = htonl(msgLen);
-	ret = context->transport->write(context->transport, (char *)&msgLenWire, 4);
-	if (ret < 0)
-		return ret;
-	ret = context->transport->write(context->transport, msg, msgLen);
-	if (ret < 0)
-		return ret;
+
+	status = tp_npipe_write(context, (char *)&msgLenWire, 4);
+
+	if (status < 0)
+		return status;
+
+	status = tp_npipe_write(context, msg, msgLen);
+
+	if (status < 0)
+		return status;
+
 	return 0;
 }
 
 static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase *rpcmessage)
 {
-	pbRPCTransaction *ta = ListDictionary_GetItemValue(context->transactions, (void *)((UINT_PTR)rpcmessage->tag));
+	pbRPCTransaction* ta = ListDictionary_GetItemValue(context->transactions, (void*)((UINT_PTR)rpcmessage->tag));
+
 	if (!ta)
 	{
 		fprintf(stderr,"unsoliciated response - ignoring (tag %d)\n", rpcmessage->tag);
@@ -144,61 +280,71 @@ static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase
 		return 1;
 	}
 
-	ListDictionary_Remove(context->transactions, (void *)((UINT_PTR)rpcmessage->tag));
+	ListDictionary_Remove(context->transactions, (void*)((UINT_PTR)rpcmessage->tag));
+
 	if (ta->responseCallback)
 		ta->responseCallback(rpcmessage->status, rpcmessage, ta->callbackArg);
+
 	if (ta->freeAfterResponse)
 		free(ta);
+
 	return 0;
 }
 
 static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCBase *msg)
 {
-	int ret;
+	int status;
 	char msgLen = freerds__pbrpc__rpcbase__get_packed_size(msg);
-	char *buf = malloc(msgLen);
+	char* buf = malloc(msgLen);
 
-	ret = freerds__pbrpc__rpcbase__pack(msg, (uint8_t *)buf);
-	//fprintf(stderr, "sending tag %d, type %d\n", msg->tag, msg->msgtype);
-	// packing failed..
-	if (ret != msgLen)
-		ret = 1;
+	status = freerds__pbrpc__rpcbase__pack(msg, (uint8_t *)buf);
+
+	if (status != msgLen)
+		status = 1;
 	else
-		ret = pbrpc_send_message(context, buf, msgLen);
+		status = pbrpc_send_message(context, buf, msgLen);
 
 	free(buf);
-	return ret;
+
+	return status;
 }
 
 static pbRPCCallback pbrpc_callback_find(pbRPCContext* context, UINT32 type)
 {
-	pbRPCMethod *cb = NULL;
 	int i = 0;
-	if(!context->methods)
+	pbRPCMethod* cb = NULL;
+
+	if (!context->methods)
 		return NULL;
+
 	while ((cb = &(context->methods[i++])))
 	{
 		if ((cb->type == 0) && (cb->cb == NULL))
 			return NULL;
+
 		if (cb->type == type)
 			return cb->cb;
 	}
+
 	return NULL;
 }
 
 static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase *message)
 {
-	pbRPCPayload *pl = pbrpc_payload_new();
-	pl->data = (char *)(message->payload.data);
+	pbRPCPayload* pl = pbrpc_payload_new();
+
+	pl->data = (char*)(message->payload.data);
 	pl->dataLen = message->payload.len;
 	pl->errorDescription = message->errordescription;
+
 	return pl;
 }
 
 int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 status, UINT32 type, UINT32 tag)
 {
 	int ret;
-	Freerds__Pbrpc__RPCBase *pbresponse = pbrpc_message_new();
+	Freerds__Pbrpc__RPCBase* pbresponse = pbrpc_message_new();
+
 	pbrpc_prepare_response(pbresponse, tag);
 	pbresponse->msgtype = type;
 	pbresponse->status = status;
@@ -208,7 +354,7 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 st
 		if (status == 0)
 		{
 			pbresponse->has_payload = 1;
-			pbresponse->payload.data = (unsigned char*) response->data;
+			pbresponse->payload.data = (BYTE*) response->data;
 			pbresponse->payload.len = response->dataLen;
 		}
 		else
@@ -218,51 +364,54 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 st
 	}
 
 	ret = pbrpc_process_message_out(context, pbresponse);
+
 	if (response)
 		pbrpc_free_payload(response);
+
 	pbrpc_message_free(pbresponse, FALSE);
+
 	return ret;
 }
 
 static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase *rpcmessage)
 {
-	int ret = 0;
+	int status = 0;
 	pbRPCCallback cb;
-	pbRPCPayload *request = NULL;
-	pbRPCPayload *response = NULL;
-
+	pbRPCPayload* request = NULL;
+	pbRPCPayload* response = NULL;
 
 	cb = pbrpc_callback_find(context, rpcmessage->msgtype);
 
-	if (NULL == cb)
+	if (!cb)
 	{
 		fprintf(stderr, "server callback not found %d\n", rpcmessage->msgtype);
-		ret = pbrpc_send_response(context, NULL, FREERDS__PBRPC__RPCBASE__RPCSTATUS__NOTFOUND, rpcmessage->msgtype, rpcmessage->tag);
+		status = pbrpc_send_response(context, NULL, FREERDS__PBRPC__RPCBASE__RPCSTATUS__NOTFOUND, rpcmessage->msgtype, rpcmessage->tag);
 		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
-		return ret;
+		return status;
 	}
 
 	request = pbrpc_fill_payload(rpcmessage);
-	ret = cb(rpcmessage->tag, request, &response);
+	status = cb(rpcmessage->tag, request, &response);
 	free(request);
 
-	/* If callback doesn't set a respond response needs to be sent ansync */
-	if (NULL == response)
+	/* If callback doesn't set a respond response needs to be sent async */
+	if (!response)
 	{
 		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
 		return 0;
 	}
 
-	ret = pbrpc_send_response(context, response, ret, rpcmessage->msgtype, rpcmessage->tag);
+	status = pbrpc_send_response(context, response, status, rpcmessage->msgtype, rpcmessage->tag);
 	freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
-	return ret;
+
+	return status;
 }
 
 int pbrpc_process_message_in(pbRPCContext* context)
 {
-	char *msg;
+	char* msg;
 	int msgLen;
-	int ret = 0;
+	int status = 0;
 	Freerds__Pbrpc__RPCBase* rpcmessage;
 
 	if (pbrpc_receive_message(context, &msg, &msgLen) < 0)
@@ -272,16 +421,15 @@ int pbrpc_process_message_in(pbRPCContext* context)
 
 	free(msg);
 
-	if (rpcmessage == NULL)
+	if (!rpcmessage)
 		return 1;
 
-	//fprintf(stderr, "pbrpc tag %d size %d, type %d status %d \n", rpcmessage->tag, rpcmessage->payload.len, rpcmessage->msgtype, rpcmessage->status);
 	if (rpcmessage->isresponse)
-		ret = pbrpc_process_response(context, rpcmessage);
+		status = pbrpc_process_response(context, rpcmessage);
 	else
-		ret = pbrpc_process_request(context, rpcmessage);
+		status = pbrpc_process_request(context, rpcmessage);
 
-	return ret;
+	return status;
 }
 
 static int pbrpc_transport_open(pbRPCContext* context)
@@ -290,14 +438,16 @@ static int pbrpc_transport_open(pbRPCContext* context)
 
 	while (1)
 	{
-		if (0 == context->transport->open(context->transport, sleepInterval))
+		if (tp_npipe_open(context, sleepInterval) == 0)
 		{
 			return 0;
 		}
+
 		if (WaitForSingleObject(context->stopEvent, 0) == WAIT_OBJECT_0)
 		{
 			return -1;
 		}
+
 		Sleep(sleepInterval);
 	}
 
@@ -306,7 +456,6 @@ static int pbrpc_transport_open(pbRPCContext* context)
 
 static void pbrpc_connect(pbRPCContext* context)
 {
-
 	if (0 != pbrpc_transport_open(context))
 		return;
 
@@ -315,17 +464,20 @@ static void pbrpc_connect(pbRPCContext* context)
 
 static void pbrpc_reconnect(pbRPCContext* context)
 {
-	pbRPCTransaction *ta = NULL;
+	pbRPCTransaction* ta = NULL;
 	context->isConnected = FALSE;
-	context->transport->close(context->transport);
+
+	tp_npipe_close(context);
 	Queue_Clear(context->writeQueue);
 
 	while ((ta = ListDictionary_Remove_Head(context->transactions)))
 	{
 		ta->responseCallback(PBRCP_TRANSPORT_ERROR, 0, ta->callbackArg);
+
 		if (ta->freeAfterResponse)
 			free(ta);
 	}
+
 	pbrpc_connect(context);
 }
 
@@ -340,24 +492,26 @@ static void pbrpc_mainloop(pbRPCContext* context)
 	while (context->isConnected)
 	{
 		nCount = 0;
-		HANDLE thandle = context->transport->get_fds(context->transport);
 		events[nCount++] = context->stopEvent;
 		events[nCount++] = Queue_Event(context->writeQueue);
-		events[nCount++] = thandle;
+		events[nCount++] = context->hPipe;
+
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
 		if (status == WAIT_FAILED)
 		{
 			break;
 		}
+
 		if (WaitForSingleObject(context->stopEvent, 0) == WAIT_OBJECT_0)
 		{
 			break;
 		}
 
-		if (WaitForSingleObject(thandle, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(context->hPipe, 0) == WAIT_OBJECT_0)
 		{
 			status = pbrpc_process_message_in(context);
+
 			if (status < 0)
 			{
 				fprintf(stderr, "Transport problem reconnecting..\n");
@@ -370,11 +524,12 @@ static void pbrpc_mainloop(pbRPCContext* context)
 		{
 			Freerds__Pbrpc__RPCBase* msg = NULL;
 
-			while((msg = Queue_Dequeue(context->writeQueue)))
+			while ((msg = Queue_Dequeue(context->writeQueue)))
 			{
 				status = pbrpc_process_message_out(context, msg);
 				pbrpc_message_free(msg, FALSE);
 			}
+
 			if (status < 0)
 			{
 				fprintf(stderr, "Transport problem reconnecting..\n");
@@ -397,7 +552,7 @@ int pbrpc_server_stop(pbRPCContext* context)
 	context->isConnected = FALSE;
 	SetEvent(context->stopEvent);
 	WaitForSingleObject(context->thread, INFINITE);
-	context->transport->close(context->transport);
+	tp_npipe_close(context);
 	return 0;
 }
 
@@ -408,13 +563,13 @@ struct pbrpc_local_call_context {
 	PBRPCSTATUS status;
 };
 
-static void pbrpc_response_local_cb(PBRPCSTATUS reason, Freerds__Pbrpc__RPCBase* response, void *args) {
+static void pbrpc_response_local_cb(PBRPCSTATUS reason, Freerds__Pbrpc__RPCBase* response, void *args)
+{
 	struct pbrpc_local_call_context *context = (struct pbrpc_local_call_context *)args;
 	context->response = response;
 	context->status = reason;
 	SetEvent(context->event);
 }
-
 
 int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request, pbRPCPayload** response)
 {
@@ -423,7 +578,6 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	UINT32 ret = PBRPC_FAILED;
 	UINT32 tag;
 	DWORD wait_ret;
-
 	struct pbrpc_local_call_context local_context;
 
 	if (!context->isConnected)
@@ -433,7 +587,7 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 
 	message = pbrpc_message_new();
 	pbrpc_prepare_request(context, message);
-	message->payload.data = (unsigned char*)request->data;
+	message->payload.data = (BYTE*) request->data;
 	message->payload.len = request->dataLen;
 	message->has_payload = 1;
 	message->msgtype = type;
@@ -462,6 +616,7 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	Queue_Enqueue(context->writeQueue, message);
 
 	wait_ret = WaitForSingleObject(local_context.event, PBRPC_TIMEOUT);
+
 	if (wait_ret != WAIT_OBJECT_0)
 	{
 		if(!ListDictionary_Remove(context->transactions, (void*)((UINT_PTR)(tag))))

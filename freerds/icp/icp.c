@@ -19,48 +19,46 @@
  */
 
 #include <freerds/icp.h>
+
 #include "pbrpc.h"
-#include "pipe_transport.h"
 #include "icp_server_stubs.h"
 #include "ICP.pb-c.h"
 
-struct icp_context
-{
-	pbRPCContext* pbcontext;
-	pbRPCTransportContext* tpcontext;
-};
+static pbRPCContext* g_pbContext = NULL;
 
-static struct icp_context* icpContext = NULL;
-
-static pbRPCMethod icpMethods[] =
+static pbRPCMethod g_IcpMethods[] =
 {
 	{ FREERDS__ICP__MSGTYPE__Ping, ping },
-	{ FREERDS__ICP__MSGTYPE__SwitchTo, switchTo},
-	{ FREERDS__ICP__MSGTYPE__LogOffUserSession, logOffUserSession},
+	{ FREERDS__ICP__MSGTYPE__SwitchTo, switchTo },
+	{ FREERDS__ICP__MSGTYPE__LogOffUserSession, logOffUserSession },
 	{ 0, NULL }
 };
 
 int freerds_icp_start()
 {
-	icpContext = malloc(sizeof(struct icp_context));
-	icpContext->tpcontext = tp_npipe_new();
-	icpContext->pbcontext = pbrpc_server_new(icpContext->tpcontext);
+	if (!g_pbContext)
+	{
+		g_pbContext = pbrpc_server_new();
+		pbrpc_register_methods(g_pbContext, g_IcpMethods);
+		pbrpc_server_start(g_pbContext);
+	}
 
-	pbrpc_register_methods(icpContext->pbcontext, icpMethods);
-	pbrpc_server_start(icpContext->pbcontext);
 	return 0;
 }
 
 int freerds_icp_shutdown()
 {
-	pbrpc_server_stop(icpContext->pbcontext);
-	pbrpc_server_free(icpContext->pbcontext);
-	tp_npipe_free(icpContext->tpcontext);
-	free(icpContext);
+	if (g_pbContext)
+	{
+		pbrpc_server_stop(g_pbContext);
+		pbrpc_server_free(g_pbContext);
+		g_pbContext = NULL;
+	}
+
 	return 0;
 }
 
 void* freerds_icp_get_context()
 {
-	return icpContext->pbcontext;
+	return (void*) g_pbContext;
 }
