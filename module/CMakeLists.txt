@@ -19,5 +19,7 @@ if(NOT WIN32)
 endif()
 
 add_subdirectory(RDP)
-add_subdirectory(NetSurf)
 
+if(WITH_NETSURF)
+	add_subdirectory(NetSurf)
+endif()

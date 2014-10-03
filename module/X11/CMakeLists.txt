@@ -25,8 +25,6 @@ include_directories(${PIXMAN_INCLUDE_DIRS})
 
 add_library(${MODULE_NAME} SHARED ${${MODULE_PREFIX}_SRCS})
 
-list(APPEND ${MODULE_PREFIX}_LIBS ${PAM_LIBRARY})
-
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
 list(APPEND ${MODULE_PREFIX}_LIBS winpr)
@@ -35,6 +33,6 @@ target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-if(WITH_X11RDP)
+if(WITH_XRDS)
 	add_subdirectory(service)
 endif()
