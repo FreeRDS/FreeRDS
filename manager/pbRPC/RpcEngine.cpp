@@ -23,13 +23,18 @@
 
 #include "RpcEngine.h"
 
+#include <winpr/wlog.h>
 #include <winpr/pipe.h>
 #include <winpr/thread.h>
-#include <call/CallFactory.h>
-#include <arpa/inet.h>
-#include <winpr/wlog.h>
+
 #include <call/CallIn.h>
+#include <call/CallFactory.h>
+
 #include <appcontext/ApplicationContext.h>
+
+#ifndef _WIN32
+#include <arpa/inet.h>
+#endif
 
 namespace freerds {
 namespace pbrpc {
@@ -157,7 +162,6 @@ HANDLE RpcEngine::acceptClient()
 
 	status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-
 	if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0)
 	{
 		WLog_Print(logger_RPCEngine, WLOG_TRACE, "got shutdown signal");
@@ -258,7 +262,7 @@ int RpcEngine::processData()
 		callNS::CallOut* foundCallOut = 0;
 		std::list<callNS::CallOut*>::iterator it;
 
-		for ( it = mAnswerWaitingQueue.begin(); it != mAnswerWaitingQueue.end(); it++)
+		for (it = mAnswerWaitingQueue.begin(); it != mAnswerWaitingQueue.end(); it++)
 		{
 			callNS::CallOut* currentCallOut = (callNS::CallOut*)(*it);
 
@@ -319,10 +323,9 @@ int RpcEngine::processData()
 
 			// call the implementation ...
 			createdCallIn->decodeRequest();
-
 			createdCallIn->doStuff();
-
 			createdCallIn->encodeResponse();
+
 			// send the result
 			send(createdCall);
 			delete createdCall;
@@ -350,6 +353,7 @@ int RpcEngine::send(freerds::sessionmanager::call::Call* call)
 	{
 		// this is a CallIn
 		callNS::CallIn* callIn = (callNS::CallIn*) call;
+
 		// create answer
 		mpbRPC.Clear();
 		mpbRPC.set_isresponse(true);
@@ -378,6 +382,7 @@ int RpcEngine::send(freerds::sessionmanager::call::Call* call)
 	{
 		// this is a CallOut
 		callNS::CallOut* callOut = (callNS::CallOut*) call;
+
 		// create answer
 		mpbRPC.Clear();
 		mpbRPC.set_isresponse(false);
@@ -444,7 +449,7 @@ int RpcEngine::serveClient()
 {
 	DWORD status;
 	DWORD nCount;
-	SignalingQueue<callNS::Call *>* outgoingQueue = APP_CONTEXT.getRpcOutgoingQueue();
+	SignalingQueue<callNS::Call*>* outgoingQueue = APP_CONTEXT.getRpcOutgoingQueue();
 	HANDLE queueHandle = outgoingQueue->getSignalHandle();
 	HANDLE events[3];
 
@@ -472,7 +477,6 @@ int RpcEngine::serveClient()
 			if (retValue)
 				break;
 
-			// process the data
 			if (mPayloadRead == mPacktLength)
 			{
 				processData();

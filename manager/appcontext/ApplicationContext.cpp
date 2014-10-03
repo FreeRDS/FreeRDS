@@ -330,25 +330,28 @@ namespace freerds
 			addTask(task);
 		}
 
-
 		bool ApplicationContext::addTask(taskNS::TaskPtr task) {
 			return mTaskExecutor.addTask(task);
 		}
 
-		void ApplicationContext::rpcDisconnected() {
-			// remove all connections
+		void ApplicationContext::rpcDisconnected()
+		{
 			getConnectionStore()->reset();
-			// iterate over the session and disconnect them if they are auth sessions.
 			std::list<sessionNS::SessionPtr> allSessions = getSessionStore()->getAllSessions();
 
 			std::list<sessionNS::SessionPtr>::iterator iterator;
-			for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator) {
+
+			for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator)
+			{
 				sessionNS::SessionPtr currentSession = (*iterator);
-				if (currentSession->isAuthSession()) {
+
+				if (currentSession->isAuthSession())
+				{
 					currentSession->stopModule();
 					getSessionStore()->removeSession(currentSession->getSessionID());
-				} else {
-					// disconnect the session
+				}
+				else
+				{
 					currentSession->setConnectState(WTSDisconnected);
 				}
 			}

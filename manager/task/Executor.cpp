@@ -40,10 +40,12 @@ namespace task {
 			mhStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
 			mhTaskThreadStarted = CreateEvent(NULL,TRUE,FALSE,NULL);
 			mhStopThreads = CreateEvent(NULL,TRUE,FALSE,NULL);
+
 			if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 			{
-				 WLog_Print(logger_Executor, WLOG_FATAL, "cannot init Executor critical section!");
+				WLog_Print(logger_Executor, WLOG_FATAL, "cannot init Executor critical section!");
 			}
+
 			mhServerThread = NULL;
 			mRunning = false;
 
@@ -53,13 +55,16 @@ namespace task {
 		{
 		}
 
-		int Executor::start() {
+		int Executor::start()
+		{
 			CSGuard guard(&mCSection);
 
-			if (mRunning) {
+			if (mRunning)
+			{
 				WLog_Print(logger_Executor, WLOG_ERROR, "Executor Thread already started!");
 				return 1;
 			}
+
 			mhServerThread = CreateThread(NULL, 0,
 					(LPTHREAD_START_ROUTINE) Executor::execThread, (void*) this,
 					CREATE_SUSPENDED, NULL);
@@ -70,17 +75,21 @@ namespace task {
 			return 0;
 		}
 
-		int Executor::stop() {
+		int Executor::stop()
+		{
 			CSGuard guard(&mCSection);
 
 			mRunning = false;
+
 			if (mhServerThread)
 			{
 				SetEvent(mhStopEvent);
 				WaitForSingleObject(mhServerThread, INFINITE);
 				CloseHandle(mhServerThread);
 				mhServerThread = NULL;
-			} else {
+			}
+			else
+			{
 				WLog_Print(logger_Executor, WLOG_ERROR, "Executor was not started before.");
 				return 1;
 			}
@@ -88,7 +97,8 @@ namespace task {
 			return 0;
 		}
 
-		void Executor::runExecutor() {
+		void Executor::runExecutor()
+		{
 			DWORD status;
 			DWORD nCount;
 			HANDLE queueHandle = mTasks.getSignalHandle();
@@ -117,10 +127,13 @@ namespace task {
 
 					while (currentTask)
 					{
-						if (!currentTask->isThreaded()) {
+						if (!currentTask->isThreaded())
+						{
 							currentTask->run();
 							currentTask.reset();
-						} else {
+						}
+						else
+						{
 							// start Task as thread
 
 							currentTask->setHandles(mhStopThreads,mhTaskThreadStarted);
@@ -140,22 +153,23 @@ namespace task {
 
 					mTasks.unlockQueue();
 				}
-
 			}
 		}
 
-		bool Executor::addTask(TaskPtr task) {
+		bool Executor::addTask(TaskPtr task)
+		{
 			CSGuard guard(&mCSection);
+
 			if (mRunning) {
 				mTasks.addElement(task);
 				return true;
 			} else {
 				return false;
 			}
-
 		}
 
-		void* Executor::execThread(void* arg) {
+		void* Executor::execThread(void* arg)
+		{
 			Executor* executor;
 
 			executor = (Executor*) arg;
@@ -167,7 +181,8 @@ namespace task {
 			return NULL;
 		}
 
-		void* Executor::execTask(void* arg) {
+		void* Executor::execTask(void* arg)
+		{
 			TaskPtr *taskptr = static_cast<TaskPtr*>(arg);
 			TaskPtr task = *taskptr;
 			task->informStarted();
@@ -180,25 +195,20 @@ namespace task {
 			return NULL;
 		}
 
-
 		bool Executor::checkThreadHandles(const HANDLE value) const
 		{
-		    if (WaitForSingleObject(value,0) == WAIT_OBJECT_0) {
-		    	// thread exited ...
-		    	return true;
-		    }
-		    return false;
+			if (WaitForSingleObject(value,0) == WAIT_OBJECT_0)
+				return true;
+
+			return false;
 		}
 
 		bool Executor::waitThreadHandles(const HANDLE value) const
 		{
-		    if (WaitForSingleObject(value,INFINITE) == WAIT_OBJECT_0) {
-		    	// thread exited ...
-		    	return true;
-		    }
-		    return false;
+			if (WaitForSingleObject(value,INFINITE) == WAIT_OBJECT_0)
+				return true;
+
+			return false;
 		}
-
-
 }
 }

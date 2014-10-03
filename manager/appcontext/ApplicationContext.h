@@ -20,16 +20,20 @@
 #ifndef __APP_CONTEXT_SESSION_MANAGER
 #define __APP_CONTEXT_SESSION_MANAGER
 
+#include <winpr/wlog.h>
+
 #include <utils/SingletonBase.h>
 #include <utils/SignalingQueue.h>
+
 #include <session/SessionStore.h>
 #include <session/ConnectionStore.h>
-#include <pbRPC/RpcEngine.h>
-#include <winpr/wlog.h>
+
 #include <call/CallOut.h>
+#include <task/Executor.h>
+#include <pbRPC/RpcEngine.h>
+
 #include <module/ModuleManager.h>
 #include <config/PropertyManager.h>
-#include <task/Executor.h>
 
 #include <fdsapi/FDSApiServer.h>
 

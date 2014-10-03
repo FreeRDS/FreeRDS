@@ -47,12 +47,12 @@ namespace freerds
 
 			private:
 				uint32_t mTag;
+
 			protected:
 				std::string mEncodedRequest;
 				std::string mEncodedResponse;
 
 				uint32_t mResult;
-				// this is used if result ist not 0
 				std::string mErrorDescription;
 			};
 		}

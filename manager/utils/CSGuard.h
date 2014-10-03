@@ -25,7 +25,7 @@
 class CSGuard {
 
 public:
-	CSGuard(CRITICAL_SECTION * criticalSection) {
+	CSGuard(CRITICAL_SECTION* criticalSection) {
 		mCriticalSection = criticalSection;
 		EnterCriticalSection(mCriticalSection);
 	};
