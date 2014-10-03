@@ -42,6 +42,9 @@ namespace freerds
 				PropertyManager();
 				~PropertyManager();
 
+				int getKeyValueInt(const char* section, const char* key);
+				const char* getKeyValueString(const char* section, const char* key);
+
 				BOOL getPropertyBool(std::string path, BOOL* value);
 				BOOL getPropertyBool(std::string path, bool &value);
 				BOOL getPropertyNumber(std::string path, long* value);

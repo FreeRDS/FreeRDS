@@ -38,8 +38,6 @@
 #include <freerds/module.h>
 #include <freerds/backend.h>
 
-#include "../common/module_helper.h"
-
 #include "rdp_module.h"
 
 RDS_MODULE_CONFIG_CALLBACKS g_Config;
@@ -55,7 +53,6 @@ struct rds_module_rdp
 
 	DWORD SessionId;
 	HANDLE hClientPipe;
-
 };
 typedef struct rds_module_rdp rdsModuleRdp;
 

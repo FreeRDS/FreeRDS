@@ -852,6 +852,19 @@ FREERDP_API int freerds_service_start(rdsBackendService* service);
 FREERDP_API int freerds_service_stop(rdsBackendService* service);
 typedef int (*pRdsServiceAccept)(rdsBackendService* service);
 
+/* helpers */
+
+#include <freerds/module.h>
+
+FREERDP_API BOOL getPropertyNumberWrapper(char* basePath,
+		RDS_MODULE_CONFIG_CALLBACKS* config, char* path, long* value);
+
+FREERDP_API BOOL getPropertyStringWrapper(char* basePath,
+		RDS_MODULE_CONFIG_CALLBACKS* config, char* path, char* value, unsigned int valueLength);
+
+FREERDP_API void initResolutions(char* basePath,
+		RDS_MODULE_CONFIG_CALLBACKS* config, char** envBlock, long* xres, long* yres, long* colordepth);
+
 #ifdef __cplusplus
 }
 #endif

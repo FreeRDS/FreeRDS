@@ -36,10 +36,6 @@ BOOL getPropertyBool(char* path, BOOL* value);
 BOOL getPropertyNumber(char* path, long* value);
 BOOL getPropertyString(char* path, char* value, unsigned int valueLength);
 
-int setPropertyBool(char* path, BOOL value);
-int setPropertyNumber(char* path, long value);
-int setPropertyString(char* path, char* value);
-
 #ifdef __cplusplus
 }
 #endif

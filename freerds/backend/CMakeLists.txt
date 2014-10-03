@@ -26,7 +26,8 @@ set(${MODULE_PREFIX}_SRCS
 	outbound.h
 	transport.c
 	transport.h
-	service.c)
+	service.c
+	helper.c)
 
 include_directories(../core)
 

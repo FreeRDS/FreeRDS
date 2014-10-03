@@ -1,10 +1,8 @@
 /**
- * FreeRDS: FreeRDP Remote Desktop Services (RDS)
- * X11 Server Module
+ * FreeRDP: A Remote Desktop Protocol Implementation
+ * xrdp-ng interprocess communication protocol
  *
  * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
- * Copyright 2013 Thincast Technologies GmbH
- * Copyright 2013 DI (FH) Martin Haimberger <martin.haimberger@thincast.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +21,10 @@
 #include "config.h"
 #endif
 
-#include "module_helper.h"
+#include <winpr/crt.h>
+#include <winpr/synch.h>
 
-#include <winpr/wlog.h>
-#include <winpr/environment.h>
-#include <winpr/wtypes.h>
-#include <winpr/string.h>
+#include <freerds/backend.h>
 
 BOOL combinePaths(char* buffer, int buffersize, char* basePath, char* prop)
 {

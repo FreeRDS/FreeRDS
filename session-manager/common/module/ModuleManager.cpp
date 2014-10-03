@@ -144,10 +144,8 @@ namespace freerds
 
 				if (entry)
 				{
-					// found entrypoint
 					ZeroMemory(&entrypoints, sizeof(RDS_MODULE_ENTRY_POINTS));
-					// setting the property callbacks
-					entrypoints.config.getPropertyBool = getPropertyBool;
+
 					entrypoints.config.getPropertyNumber = getPropertyNumber;
 					entrypoints.config.getPropertyString = getPropertyString;
 					entrypoints.status.shutdown = CallBacks::shutdown;
@@ -164,7 +162,7 @@ namespace freerds
 							if (mModulesMap.count(module->getName()))
 							{
 								WLog_Print(logger_ModuleManager, WLOG_INFO,
-										"library %s loaded, but another library has already registred modulename %s", module->getName().c_str());
+										"library %s loaded, but another library has already registered module name %s", module->getName().c_str());
 								delete module;
 								return -1;
 							}

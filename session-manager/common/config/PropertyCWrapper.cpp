@@ -57,18 +57,3 @@ BOOL getPropertyString(char* path, char* value, unsigned int valueLength)
 		return TRUE;
 	}
 }
-
-int setPropertyBool(char* path, BOOL value)
-{
-	return 0;
-}
-
-int setPropertyNumber(char* path, long value)
-{
-	return 0;
-}
-
-int setPropertyString(char* path, char* value)
-{
-	return 0;
-}

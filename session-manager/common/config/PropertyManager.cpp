@@ -48,6 +48,36 @@ namespace freerds
 				IniFile_Free(ini);
 			};
 
+			int PropertyManager::getKeyValueInt(const char* section, const char* key)
+			{
+				int intVal;
+
+				if (!ini)
+					return FALSE;
+
+				intVal = IniFile_GetKeyValueInt(ini, section, key);
+
+				if (intVal < 0)
+					return -1;
+
+				return intVal;
+			}
+
+			const char* PropertyManager::getKeyValueString(const char* section, const char* key)
+			{
+				const char* strVal;
+
+				if (!ini)
+					return FALSE;
+
+				strVal = IniFile_GetKeyValueString(ini, section, key);
+
+				if (!strVal)
+					return NULL;
+
+				return strVal;
+			}
+
 			BOOL PropertyManager::getPropertyBool(std::string path, BOOL* value)
 			{
 				int intVal;
@@ -159,6 +189,9 @@ namespace freerds
 			int PropertyManager::saveProperties(std::string filename)
 			{
 				if (!ini)
+					return 0;
+
+				if (IniFile_WriteFile(ini, filename.c_str()) < 0)
 					return 0;
 
 				return 0;

@@ -46,7 +46,6 @@
 #include <freerds/backend.h>
 
 #include "x11_module.h"
-#include "../common/module_helper.h"
 
 RDS_MODULE_CONFIG_CALLBACKS g_Config;
 RDS_MODULE_STATUS_CALLBACKS g_Status;
