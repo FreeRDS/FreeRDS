@@ -236,14 +236,14 @@ static void FDSAPI_FreeVirtualChannelOpenResponse(FDSAPI_VIRTUAL_CHANNEL_OPEN_RE
 }
 
 
-/* VIRTUAL_CHANNEL_OPENEX */
+/* VIRTUAL_CHANNEL_OPEN_EX */
 
-static UINT32 FDSAPI_SizeOfVirtualChannelOpenExRequest(FDSAPI_VIRTUAL_CHANNEL_OPENEX_REQUEST* virtualChannelOpenExRequest)
+static UINT32 FDSAPI_SizeOfVirtualChannelOpenExRequest(FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST* virtualChannelOpenExRequest)
 {
 	return (2 * FDSAPI_SizeOfUINT32()) + FDSAPI_SizeOfString(virtualChannelOpenExRequest->virtualName);
 }
 
-static BOOL FDSAPI_DecodeVirtualChannelOpenExRequest(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPENEX_REQUEST* virtualChannelOpenExRequest)
+static BOOL FDSAPI_DecodeVirtualChannelOpenExRequest(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST* virtualChannelOpenExRequest)
 {
 	if (!FDSAPI_DecodeUINT32(s, &virtualChannelOpenExRequest->sessionId)) return FALSE;
 	if (!FDSAPI_DecodeString(s, &virtualChannelOpenExRequest->virtualName)) return FALSE;
@@ -252,36 +252,36 @@ static BOOL FDSAPI_DecodeVirtualChannelOpenExRequest(wStream* s, FDSAPI_VIRTUAL_
 	return TRUE;
 }
 
-static void FDSAPI_EncodeVirtualChannelOpenExRequest(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPENEX_REQUEST* virtualChannelOpenExRequest)
+static void FDSAPI_EncodeVirtualChannelOpenExRequest(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST* virtualChannelOpenExRequest)
 {
 	FDSAPI_EncodeUINT32(s, virtualChannelOpenExRequest->sessionId);
 	FDSAPI_EncodeString(s, virtualChannelOpenExRequest->virtualName);
 	FDSAPI_EncodeUINT32(s, virtualChannelOpenExRequest->flags);
 }
 
-static void FDSAPI_FreeVirtualChannelOpenExRequest(FDSAPI_VIRTUAL_CHANNEL_OPENEX_REQUEST* virtualChannelOpenExRequest)
+static void FDSAPI_FreeVirtualChannelOpenExRequest(FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST* virtualChannelOpenExRequest)
 {
 	FDSAPI_FreeString(virtualChannelOpenExRequest->virtualName);
 }
 
-static UINT32 FDSAPI_SizeOfVirtualChannelOpenExResponse(FDSAPI_VIRTUAL_CHANNEL_OPENEX_RESPONSE* virtualChannelOpenExResponse)
+static UINT32 FDSAPI_SizeOfVirtualChannelOpenExResponse(FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE* virtualChannelOpenExResponse)
 {
 	return FDSAPI_SizeOfString(virtualChannelOpenExResponse->endPoint);
 }
 
-static BOOL FDSAPI_DecodeVirtualChannelOpenExResponse(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPENEX_RESPONSE* virtualChannelOpenExResponse)
+static BOOL FDSAPI_DecodeVirtualChannelOpenExResponse(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE* virtualChannelOpenExResponse)
 {
 	if (!FDSAPI_DecodeString(s, &virtualChannelOpenExResponse->endPoint)) return FALSE;
 
 	return TRUE;
 }
 
-static void FDSAPI_EncodeVirtualChannelOpenExResponse(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPENEX_RESPONSE* virtualChannelOpenExResponse)
+static void FDSAPI_EncodeVirtualChannelOpenExResponse(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE* virtualChannelOpenExResponse)
 {
 	FDSAPI_EncodeString(s, virtualChannelOpenExResponse->endPoint);
 }
 
-static void FDSAPI_FreeVirtualChannelOpenExResponse(FDSAPI_VIRTUAL_CHANNEL_OPENEX_RESPONSE* virtualChannelOpenExResponse)
+static void FDSAPI_FreeVirtualChannelOpenExResponse(FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE* virtualChannelOpenExResponse)
 {
 	FDSAPI_FreeString(virtualChannelOpenExResponse->endPoint);
 }
@@ -857,11 +857,11 @@ static wStream* FDSAPI_AllocateStream(FDSAPI_MESSAGE* msg)
 			size += FDSAPI_SizeOfVirtualChannelOpenResponse(&msg->u.virtualChannelOpenResponse);
 			break;
 
-		case FDSAPI_VIRTUAL_CHANNEL_OPENEX_REQUEST_ID:
+		case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST_ID:
 			size += FDSAPI_SizeOfVirtualChannelOpenExRequest(&msg->u.virtualChannelOpenExRequest);
 			break;
 
-		case FDSAPI_VIRTUAL_CHANNEL_OPENEX_RESPONSE_ID:
+		case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE_ID:
 			size += FDSAPI_SizeOfVirtualChannelOpenExResponse(&msg->u.virtualChannelOpenExResponse);
 			break;
 
@@ -962,11 +962,11 @@ BOOL FDSAPI_DecodeMessage(wStream* s, FDSAPI_MESSAGE* msg)
 			result = FDSAPI_DecodeVirtualChannelOpenResponse(s, &msg->u.virtualChannelOpenResponse);
 			break;
 
-		case FDSAPI_VIRTUAL_CHANNEL_OPENEX_REQUEST_ID:
+		case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST_ID:
 			result = FDSAPI_DecodeVirtualChannelOpenExRequest(s, &msg->u.virtualChannelOpenExRequest);
 			break;
 
-		case FDSAPI_VIRTUAL_CHANNEL_OPENEX_RESPONSE_ID:
+		case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE_ID:
 			result = FDSAPI_DecodeVirtualChannelOpenExResponse(s, &msg->u.virtualChannelOpenExResponse);
 			break;
 
@@ -1043,7 +1043,9 @@ wStream* FDSAPI_EncodeMessage(FDSAPI_MESSAGE* msg)
 
 	/* Allocate a new stream. */
 	s = FDSAPI_AllocateStream(msg);
-    if (s == NULL) return s;
+
+	if (!s)
+		return s;
 
 	/* Encode each of the messages. */
 	FDSAPI_EncodeUINT16(s, msg->messageId);
@@ -1067,11 +1069,11 @@ wStream* FDSAPI_EncodeMessage(FDSAPI_MESSAGE* msg)
 			FDSAPI_EncodeVirtualChannelOpenResponse(s, &msg->u.virtualChannelOpenResponse);
 			break;
 
-		case FDSAPI_VIRTUAL_CHANNEL_OPENEX_REQUEST_ID:
+		case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST_ID:
 			FDSAPI_EncodeVirtualChannelOpenExRequest(s, &msg->u.virtualChannelOpenExRequest);
 			break;
 
-		case FDSAPI_VIRTUAL_CHANNEL_OPENEX_RESPONSE_ID:
+		case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE_ID:
 			FDSAPI_EncodeVirtualChannelOpenExResponse(s, &msg->u.virtualChannelOpenExResponse);
 			break;
 
@@ -1171,11 +1173,11 @@ void FDSAPI_FreeMessage(FDSAPI_MESSAGE* msg)
 			FDSAPI_FreeVirtualChannelOpenResponse(&msg->u.virtualChannelOpenResponse);
 			break;
 
-		case FDSAPI_VIRTUAL_CHANNEL_OPENEX_REQUEST_ID:
+		case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST_ID:
 			FDSAPI_FreeVirtualChannelOpenExRequest(&msg->u.virtualChannelOpenExRequest);
 			break;
 
-		case FDSAPI_VIRTUAL_CHANNEL_OPENEX_RESPONSE_ID:
+		case FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE_ID:
 			FDSAPI_FreeVirtualChannelOpenExResponse(&msg->u.virtualChannelOpenExResponse);
 			break;
 
