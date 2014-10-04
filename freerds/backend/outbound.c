@@ -220,12 +220,6 @@ int freerds_client_outbound_logoff_user(rdsBackend* backend, RDS_MSG_LOGOFF_USER
 	return freerds_client_outbound_write_message(backend, (RDS_MSG_COMMON*) msg);
 }
 
-int freerds_client_outbound_icps_reply(rdsBackend* backend, RDS_MSG_ICPS_REPLY* msg)
-{
-	msg->type = RDS_CLIENT_ICPS_REPLY;
-	return freerds_client_outbound_write_message(backend, (RDS_MSG_COMMON*) msg);
-}
-
 int freerds_client_outbound_suppress_output(rdsBackend* backend, UINT32 suppress_output)
 {
 	int length;
@@ -267,7 +261,6 @@ rdsClientInterface* freerds_client_outbound_interface_new()
 		client->VBlankEvent = freerds_client_outbound_vblank_event;
 		client->LogonUser = freerds_client_outbound_logon_user;
 		client->LogoffUser = freerds_client_outbound_logoff_user;
-		client->Icps = freerds_client_outbound_icps_reply;
 		client->SuppressOutput = freerds_client_outbound_suppress_output;
 	}
 

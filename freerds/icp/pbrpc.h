@@ -47,9 +47,8 @@ typedef struct pbrpc_context pbRPCContext;
 
 struct pbrpc_payload
 {
-	char* data;
-	UINT32 dataLen;
-	char* errorDescription;
+	BYTE* buffer;
+	UINT32 length;
 };
 typedef struct pbrpc_payload pbRPCPayload;
 

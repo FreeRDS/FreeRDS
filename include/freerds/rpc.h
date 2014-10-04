@@ -49,7 +49,7 @@ struct _FDSAPI_MSG_PACKET
 };
 typedef struct _FDSAPI_MSG_PACKET FDSAPI_MSG_PACKET;
 
-#define FDSAPI_REQUEST_ID(_id)		(_id)
+#define FDSAPI_REQUEST_ID(_id)		(_id & ~(0x80000000))
 #define FDSAPI_RESPONSE_ID(_id)		(_id | 0x80000000)
 #define FDSAPI_IS_RESPONSE_ID(_id)	(_id & 0x80000000)
 

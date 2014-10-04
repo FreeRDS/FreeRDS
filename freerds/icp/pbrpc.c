@@ -141,7 +141,7 @@ void pbrpc_free_payload(pbRPCPayload* response)
 	if (!response)
 		return;
 
-	free(response->data);
+	free(response->buffer);
 	free(response);
 }
 
@@ -224,21 +224,21 @@ int pbrpc_send_message(pbRPCContext* context, FDSAPI_MSG_HEADER* header, BYTE* b
 	return 0;
 }
 
-static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase *rpcmessage)
+static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase *msg)
 {
-	pbRPCTransaction* ta = ListDictionary_GetItemValue(context->transactions, (void*)((UINT_PTR)rpcmessage->tag));
+	pbRPCTransaction* ta = ListDictionary_GetItemValue(context->transactions, (void*)((UINT_PTR)msg->tag));
 
 	if (!ta)
 	{
-		fprintf(stderr,"unsoliciated response - ignoring (tag %d)\n", rpcmessage->tag);
-		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
+		fprintf(stderr,"unsoliciated response - ignoring (tag %d)\n", msg->tag);
+		freerds__pbrpc__rpcbase__free_unpacked(msg, NULL);
 		return 1;
 	}
 
-	ListDictionary_Remove(context->transactions, (void*)((UINT_PTR)rpcmessage->tag));
+	ListDictionary_Remove(context->transactions, (void*)((UINT_PTR)msg->tag));
 
 	if (ta->responseCallback)
-		ta->responseCallback(rpcmessage->status, rpcmessage, ta->callbackArg);
+		ta->responseCallback(msg->status, msg, ta->callbackArg);
 
 	if (ta->freeAfterResponse)
 		free(ta);
@@ -278,12 +278,12 @@ static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCB
 	return status;
 }
 
-static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase* message)
+static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase* msg)
 {
 	pbRPCPayload* pl = (pbRPCPayload*) calloc(1, sizeof(pbRPCPayload));
 
-	pl->data = (char*) (message->payload.data);
-	pl->dataLen = message->payload.len;
+	pl->buffer = (BYTE*) (msg->payload.data);
+	pl->length = (UINT32) msg->payload.len;
 
 	return pl;
 }
@@ -305,8 +305,8 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload* response, UINT32 st
 		if (status == 0)
 		{
 			msg->has_payload = 1;
-			msg->payload.data = (BYTE*) response->data;
-			msg->payload.len = response->dataLen;
+			msg->payload.data = response->buffer;
+			msg->payload.len = response->length;
 		}
 	}
 
@@ -314,7 +314,7 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload* response, UINT32 st
 
 	if (response)
 	{
-		free(response->data);
+		free(response->buffer);
 		free(response);
 	}
 
@@ -323,7 +323,7 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload* response, UINT32 st
 	return ret;
 }
 
-static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* rpcmessage)
+static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg)
 {
 	int status = 0;
 	UINT32 msgType;
@@ -331,7 +331,7 @@ static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase*
 	pbRPCPayload* request = NULL;
 	pbRPCPayload* response = NULL;
 
-	msgType = rpcmessage->msgtype;
+	msgType = msg->msgtype;
 
 	switch (msgType)
 	{
@@ -350,25 +350,25 @@ static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase*
 
 	if (!cb)
 	{
-		fprintf(stderr, "server callback not found %d\n", rpcmessage->msgtype);
-		status = pbrpc_send_response(context, NULL, FREERDS__PBRPC__RPCBASE__RPCSTATUS__NOTFOUND, rpcmessage->msgtype, rpcmessage->tag);
-		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
+		fprintf(stderr, "server callback not found %d\n", msg->msgtype);
+		status = pbrpc_send_response(context, NULL, FREERDS__PBRPC__RPCBASE__RPCSTATUS__NOTFOUND, msg->msgtype, msg->tag);
+		freerds__pbrpc__rpcbase__free_unpacked(msg, NULL);
 		return status;
 	}
 
-	request = pbrpc_fill_payload(rpcmessage);
-	status = cb(rpcmessage->tag, request, &response);
+	request = pbrpc_fill_payload(msg);
+	status = cb(msg->tag, request, &response);
 	free(request);
 
 	/* If callback doesn't set a respond response needs to be sent async */
 	if (!response)
 	{
-		freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
+		freerds__pbrpc__rpcbase__free_unpacked(msg, NULL);
 		return 0;
 	}
 
-	status = pbrpc_send_response(context, response, status, rpcmessage->msgtype, rpcmessage->tag);
-	freerds__pbrpc__rpcbase__free_unpacked(rpcmessage, NULL);
+	status = pbrpc_send_response(context, response, status, msg->msgtype, msg->tag);
+	freerds__pbrpc__rpcbase__free_unpacked(msg, NULL);
 
 	return status;
 }
@@ -378,22 +378,27 @@ int pbrpc_process_message_in(pbRPCContext* context)
 	BYTE* buffer;
 	int status = 0;
 	FDSAPI_MSG_HEADER header;
-	Freerds__Pbrpc__RPCBase* rpcmessage;
+	Freerds__Pbrpc__RPCBase* msg;
 
 	if (pbrpc_receive_message(context, &header, &buffer) < 0)
 		return -1;
 
-	rpcmessage = freerds__pbrpc__rpcbase__unpack(NULL, header.msgSize, buffer);
+	msg = freerds__pbrpc__rpcbase__unpack(NULL, header.msgSize, buffer);
 
 	free(buffer);
 
-	if (!rpcmessage)
+	if (!msg)
 		return 1;
 
-	if (rpcmessage->isresponse)
-		status = pbrpc_process_response(context, rpcmessage);
+	printf("msg: rsp: %d/%d\n", msg->isresponse ? 1: 0, FDSAPI_IS_RESPONSE_ID(header.msgType) ? 1:0);
+	printf("msg: type: %d/%d\n", msg->msgtype, FDSAPI_REQUEST_ID(header.msgType));
+	printf("msg: status: %d/%d\n", msg->status, header.status);
+	printf("msg: tag: %d/%d\n", msg->tag, header.callId);
+
+	if (msg->isresponse)
+		status = pbrpc_process_response(context, msg);
 	else
-		status = pbrpc_process_request(context, rpcmessage);
+		status = pbrpc_process_request(context, msg);
 
 	return status;
 }
@@ -539,11 +544,11 @@ static void pbrpc_response_local_cb(PBRPCSTATUS reason, Freerds__Pbrpc__RPCBase*
 
 int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request, pbRPCPayload** response)
 {
-	Freerds__Pbrpc__RPCBase* msg;
-	pbRPCTransaction ta;
-	UINT32 ret = PBRPC_FAILED;
 	UINT32 tag;
 	DWORD wait_ret;
+	pbRPCTransaction ta;
+	UINT32 ret = PBRPC_FAILED;
+	Freerds__Pbrpc__RPCBase* msg;
 	struct pbrpc_local_call_context local_context;
 
 	if (!context->isConnected)
@@ -556,8 +561,8 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	msg->tag = tag;
 	msg->isresponse = FALSE;
 	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
-	msg->payload.data = (BYTE*) request->data;
-	msg->payload.len = request->dataLen;
+	msg->payload.data = request->buffer;
+	msg->payload.len = request->length;
 	msg->has_payload = 1;
 	msg->msgtype = type;
 
@@ -643,8 +648,8 @@ void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* r
 	msg->tag = tag;
 	msg->isresponse = FALSE;
 	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
-	msg->payload.data = (BYTE*) request->data;
-	msg->payload.len = request->dataLen;
+	msg->payload.data = request->buffer;
+	msg->payload.len = request->length;
 	msg->has_payload = 1;
 	msg->msgtype = type;
 

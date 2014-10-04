@@ -30,7 +30,7 @@
 #define ICP_CLIENT_STUB_SETUP(camel, expanded) \
 	UINT32 type = FREERDS__ICP__MSGTYPE__##camel ; \
 	pbRPCPayload pbrequest; \
-	pbRPCPayload *pbresponse = NULL; \
+	pbRPCPayload* pbresponse = NULL; \
 	int ret; \
 	Freerds__Icp__##camel ## Request request; \
 	Freerds__Icp__##camel ## Response *response = NULL; \
@@ -40,10 +40,10 @@
 	freerds__icp__ ##expanded ##_request__init(&request);
 
 #define ICP_CLIENT_STUB_CALL(camel, expanded) \
-	pbrequest.dataLen = freerds__icp__##expanded ##_request__get_packed_size(&request); \
-	pbrequest.data = malloc(pbrequest.dataLen); \
-	ret = freerds__icp__##expanded ##_request__pack(&request, (uint8_t*) pbrequest.data); \
-	if (ret == pbrequest.dataLen) \
+	pbrequest.length = freerds__icp__##expanded ##_request__get_packed_size(&request); \
+	pbrequest.buffer = (BYTE*) malloc(pbrequest.length); \
+	ret = freerds__icp__##expanded ##_request__pack(&request, pbrequest.buffer); \
+	if (ret == pbrequest.length) \
 	{ \
 		ret = pbrpc_call_method(context, type, &pbrequest, &pbresponse); \
 	} \
@@ -51,30 +51,30 @@
 	{ \
 		ret = PBRPC_BAD_REQEST_DATA; \
 	} \
-	free(pbrequest.data);
+	free(pbrequest.buffer);
 
 #define ICP_CLIENT_STUB_UNPACK_RESPONSE(camel, expanded) \
-	response = freerds__icp__##expanded ##_response__unpack(NULL, pbresponse->dataLen, (uint8_t*) pbresponse->data); \
+	response = freerds__icp__##expanded ##_response__unpack(NULL, pbresponse->length, pbresponse->buffer); \
 	pbrpc_free_payload(pbresponse);
 
 #define ICP_CLIENT_STUB_CLEANUP(camel, expanded) \
 	freerds__icp__##expanded ##_response__free_unpacked(response, NULL);
 
 #define ICP_CLIENT_SEND_PREPARE(camel, expanded) \
-			Freerds__Icp__##camel ##Response response; \
-			freerds__icp__##expanded ##_response__init(&response);
+	Freerds__Icp__##camel ##Response response; \
+	freerds__icp__##expanded ##_response__init(&response);
 
 #define ICP_CLIENT_SEND_PACK(camel, expanded) \
-			pbresponse->dataLen = freerds__icp__##expanded ##_response__get_packed_size(&response); \
-			pbresponse->data = malloc(pbresponse->dataLen); \
-			ret = freerds__icp__##expanded ##_response__pack(&response, (uint8_t*) pbresponse->data);
+	pbresponse->length = freerds__icp__##expanded ##_response__get_packed_size(&response); \
+	pbresponse->buffer = (BYTE*) malloc(pbresponse->length); \
+	ret = freerds__icp__##expanded ##_response__pack(&response, pbresponse->buffer);
 
 int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success)
 {
-	int rtype = 0;
-	pbRPCPayload *pbresponse = pbrpc_payload_new();
-	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 	int ret = 0;
+	int rtype = 0;
+	pbRPCPayload* pbresponse = pbrpc_payload_new();
+	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 
 	if (!context)
 		return -1;
@@ -103,7 +103,7 @@ int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL succes
 			break;
 	}
 
-	if (ret != pbresponse->dataLen)
+	if (ret != pbresponse->length)
 	{
 		fprintf(stderr, "%s pack error for %d", __FUNCTION__, type);
 		pbrpc_free_payload(pbresponse);

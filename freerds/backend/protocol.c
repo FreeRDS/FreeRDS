@@ -353,43 +353,6 @@ int freerds_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg)
 	return 0;
 }
 
-int freerds_read_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg)
-{
-	if (Stream_GetRemainingLength(s) < 16)
-		return -1;
-
-	Stream_Read_UINT32(s, msg->status);
-	Stream_Read_UINT32(s, msg->tag);
-	Stream_Read_UINT32(s, msg->icpsType);
-	Stream_Read_UINT32(s, msg->dataLen);
-
-	if (Stream_GetRemainingLength(s) < msg->dataLen)
-		return -1;
-
-	msg->data = malloc(msg->dataLen);
-	Stream_Read(s, msg->data, msg->dataLen);
-	return 0;
-}
-
-int freerds_write_icps_reply(wStream* s, RDS_MSG_ICPS_REPLY* msg)
-{
-	msg->msgFlags = 0;
-	msg->length = freerds_write_common_header(0, (RDS_MSG_COMMON*) msg) + 16 +
-			msg->dataLen;
-
-	if (!s)
-		return msg->length;
-
-	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
-
-	Stream_Write_UINT32(s, msg->status);
-	Stream_Write_UINT32(s, msg->tag);
-	Stream_Write_UINT32(s, msg->icpsType);
-	Stream_Write_UINT32(s, msg->dataLen);
-	Stream_Write(s, msg->data, msg->dataLen);
-	return 0;
-}
-
 int freerds_read_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg)
 {
 	if (Stream_GetRemainingLength(s) < 4)
@@ -2151,106 +2114,9 @@ static RDS_MSG_DEFINITION RDS_MSG_LOGOFF_USER_DEFINITION =
 	(pRdsMessageFree) freerds_logoff_user_free
 };
 
-
-/**
- * ICPS
- */
-
-int freerds_read_icps_request(wStream* s, RDS_MSG_ICPS_REQUEST* msg)
-{
-	if (Stream_GetRemainingLength(s) < 12)
-		return -1;
-
-	Stream_Read_UINT32(s, msg->icpsType);
-	Stream_Read_UINT32(s, msg->tag);
-	Stream_Read_UINT32(s, msg->dataLen);
-	if (Stream_GetRemainingLength(s) < msg->dataLen)
-		return -1;
-	msg->data = malloc(msg->dataLen);
-	memcpy(msg->data, Stream_Pointer(s), msg->dataLen);
-	return 0;
-}
-
-int freerds_write_icps_request(wStream* s, RDS_MSG_ICPS_REQUEST* msg)
-{
-	msg->msgFlags = 0;
-
-	msg->length = freerds_write_common_header(NULL, (RDS_MSG_COMMON*) msg) +
-			12 + msg->dataLen;
-
-	if (!s)
-		return msg->length;
-
-	freerds_write_common_header(s, (RDS_MSG_COMMON*) msg);
-
-	Stream_Write_UINT32(s, msg->icpsType);
-	Stream_Write_UINT32(s, msg->tag);
-	Stream_Write_UINT32(s, msg->dataLen);
-	Stream_Write(s, msg->data, msg->dataLen);
-	return 0;
-}
-
-
-void* freerds_icps_request_copy(RDS_MSG_ICPS_REQUEST* msg)
-{
-	RDS_MSG_ICPS_REQUEST* dup = NULL;
-
-	dup = (RDS_MSG_ICPS_REQUEST*) malloc(sizeof(RDS_MSG_ICPS_REQUEST));
-	CopyMemory(dup, msg, sizeof(RDS_MSG_ICPS_REQUEST));
-	if (msg->dataLen)
-	{
-		dup->data = malloc(msg->dataLen);
-		memcpy(dup->data, msg->data, msg->dataLen);
-	}
-
-	return (void *)dup;
-}
-
-void freerds_icps_request_free(RDS_MSG_ICPS_REQUEST* msg)
-{
-	if (msg->data)
-		free(msg->data);
-	free(msg);
-}
-
-static RDS_MSG_DEFINITION RDS_MSG_ICPS_REQUEST_DEFINITION =
-{
-		sizeof(RDS_MSG_ICPS_REQUEST), "ICPS request",
-		(pRdsMessageRead) freerds_read_icps_request,
-		(pRdsMessageWrite) freerds_write_icps_request,
-		(pRdsMessageCopy) freerds_icps_request_copy,
-		(pRdsMessageFree) freerds_icps_request_free
-};
-
 /**
  * Generic Functions
  */
-
-/**
- * Client
- */
-
-void* freerds_icps_reply_copy(RDS_MSG_ICPS_REPLY* msg)
-{
-	RDS_MSG_ICPS_REPLY* dup = NULL;
-
-	dup = (RDS_MSG_ICPS_REPLY*) malloc(sizeof(RDS_MSG_ICPS_REPLY));
-	CopyMemory(dup, msg, sizeof(RDS_MSG_ICPS_REPLY));
-	if (msg->dataLen)
-	{
-		dup->data = malloc(msg->dataLen);
-		memcpy(dup->data, msg->data, msg->dataLen);
-	}
-
-	return (void *)dup;
-}
-
-void freerds_icps_reply_free(RDS_MSG_ICPS_REPLY* msg)
-{
-	if (msg->data)
-		free(msg->data);
-	free(msg);
-}
 
 void* freerds_suppress_output_copy(RDS_MSG_SUPPRESS_OUTPUT* msg)
 {
@@ -2266,17 +2132,6 @@ void freerds_suppress_output_free(RDS_MSG_SUPPRESS_OUTPUT* msg)
 {
 	free(msg);
 }
-
-
-static RDS_MSG_DEFINITION RDS_MSG_ICPS_REPLY_DEFINITION =
-{
-		sizeof(RDS_MSG_ICPS_REPLY), "ICPS reply",
-		(pRdsMessageRead) freerds_read_icps_reply,
-		(pRdsMessageWrite) freerds_write_icps_reply,
-		(pRdsMessageCopy) freerds_icps_reply_copy,
-		(pRdsMessageFree) freerds_icps_reply_free
-};
-
 
 static RDS_MSG_DEFINITION RDS_MSG_SUPPRESS_OUTPUT_DEFINITION =
 {
@@ -2304,7 +2159,7 @@ static RDS_MSG_DEFINITION* RDS_CLIENT_MSG_DEFINITIONS[32] =
 	NULL, /* 10 */
 	&RDS_MSG_LOGON_USER_DEFINITION, /* 11 */
 	&RDS_MSG_LOGOFF_USER_DEFINITION, /* 12 */
-	&RDS_MSG_ICPS_REPLY_DEFINITION, /* 13 */
+	NULL, /* 13 */
 	&RDS_MSG_SUPPRESS_OUTPUT_DEFINITION, /* 14 */
 	NULL, /* 15 */
 	NULL, /* 16 */
@@ -2468,7 +2323,7 @@ static RDS_MSG_DEFINITION* RDS_SERVER_MSG_DEFINITIONS[32] =
 	&RDS_MSG_SET_SYSTEM_POINTER_DEFINITION, /* 23 */
 	&RDS_MSG_LOGON_USER_DEFINITION, /* 24 */
 	&RDS_MSG_LOGOFF_USER_DEFINITION, /* 25 */
-	&RDS_MSG_ICPS_REQUEST_DEFINITION, /* 26 */
+	NULL, /* 26 */
 	NULL, /* 27 */
 	NULL, /* 28 */
 	NULL, /* 29 */
