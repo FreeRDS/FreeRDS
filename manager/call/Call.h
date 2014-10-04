@@ -23,6 +23,8 @@
 #include <string>
 #include <stdint.h>
 
+#include <freerds/rpc.h>
+
 namespace freerds
 {
 	namespace call

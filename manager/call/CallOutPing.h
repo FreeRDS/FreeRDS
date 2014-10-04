@@ -44,6 +44,8 @@ namespace freerds
 		private:
 			bool mPong;
 
+			FDSAPI_HEARTBEAT_REQUEST request;
+			FDSAPI_HEARTBEAT_RESPONSE response;
 		};
 	}
 }

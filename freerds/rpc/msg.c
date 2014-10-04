@@ -1050,6 +1050,126 @@ static RDS_RPC_PACK_FUNC g_FDSAPI_END_SESSION_RESPONSE =
 	(pRdsRpcFree) freerds_free_end_session_response
 };
 
+/* FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST */
+
+static wStream* freerds_pack_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST* request, wStream* s)
+{
+	msgpack_packer pk;
+
+	STREAM_PACK_PREPARE(s);
+
+	msgpack_stream_packer_init(&pk, s);
+
+	msgpack_pack_array(&pk, 1);
+	msgpack_pack_cstr(&pk, request->ChannelEndpoint);
+
+	STREAM_PACK_FINALIZE(s);
+
+	return s;
+}
+
+static BOOL freerds_unpack_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST* request, const BYTE* buffer, UINT32 size)
+{
+	size_t count;
+	msgpack_unpacked pk;
+	msgpack_object* obj;
+	msgpack_object* root;
+
+	msgpack_unpacked_init(&pk);
+
+	if (!msgpack_unpack_next(&pk, (const char*) buffer, size, NULL))
+		return FALSE;
+
+	root = &(pk.data);
+	obj = root->via.array.ptr;
+
+	if (!msgpack_unpack_array_min(root, &count, 1))
+		return FALSE;
+
+	if (!msgpack_unpack_cstr(obj++, &(request->ChannelEndpoint)))
+		return FALSE;
+
+	msgpack_unpacked_destroy(&pk);
+
+	return TRUE;
+}
+
+static void freerds_free_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST* request)
+{
+	free(request->ChannelEndpoint);
+}
+
+static RDS_RPC_PACK_FUNC g_FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST =
+{
+	FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID,
+	sizeof(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST),
+	(pRdsRpcPack) freerds_pack_channel_endpoint_open_request,
+	(pRdsRpcUnpack) freerds_unpack_channel_endpoint_open_request,
+	(pRdsRpcFree) freerds_free_channel_endpoint_open_request
+};
+
+/* FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE */
+
+static wStream* freerds_pack_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE* response, wStream* s)
+{
+	msgpack_packer pk;
+
+	STREAM_PACK_PREPARE(s);
+
+	msgpack_stream_packer_init(&pk, s);
+
+	msgpack_pack_array(&pk, 2);
+	msgpack_pack_uint32(&pk, response->status);
+	msgpack_pack_uint64(&pk, response->ChannelHandle);
+
+	STREAM_PACK_FINALIZE(s);
+
+	return s;
+}
+
+static BOOL freerds_unpack_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE* response, const BYTE* buffer, UINT32 size)
+{
+	size_t count;
+	msgpack_unpacked pk;
+	msgpack_object* obj;
+	msgpack_object* root;
+
+	msgpack_unpacked_init(&pk);
+
+	if (!msgpack_unpack_next(&pk, (const char*) buffer, size, NULL))
+		return FALSE;
+
+	root = &(pk.data);
+	obj = root->via.array.ptr;
+
+	if (!msgpack_unpack_array_min(root, &count, 2))
+		return FALSE;
+
+	if (!msgpack_unpack_uint32(obj++, &(response->status)))
+		return FALSE;
+
+	if (!msgpack_unpack_uint64(obj++, &(response->ChannelHandle)))
+		return FALSE;
+
+	msgpack_unpacked_destroy(&pk);
+
+	return TRUE;
+}
+
+static void freerds_free_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE* response)
+{
+
+}
+
+static RDS_RPC_PACK_FUNC g_FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE =
+{
+	FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE_ID,
+	sizeof(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE),
+	(pRdsRpcPack) freerds_pack_channel_endpoint_open_response,
+	(pRdsRpcUnpack) freerds_unpack_channel_endpoint_open_response,
+	(pRdsRpcFree) freerds_free_channel_endpoint_open_response
+};
+
 /* Function Table */
 
 RDS_RPC_PACK_FUNC* g_MSG_FUNCS[] =
@@ -1070,5 +1190,7 @@ RDS_RPC_PACK_FUNC* g_MSG_FUNCS[] =
 	&g_FDSAPI_START_SESSION_RESPONSE,
 	&g_FDSAPI_END_SESSION_REQUEST,
 	&g_FDSAPI_END_SESSION_RESPONSE,
+	&g_FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST,
+	&g_FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE,
 	NULL
 };

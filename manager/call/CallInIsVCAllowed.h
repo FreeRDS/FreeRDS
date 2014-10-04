@@ -44,8 +44,10 @@ namespace freerds
 
 		private:
 			std::string mVirtualChannelName;
-			bool        mVirtualChannelAllowed;
+			bool mVirtualChannelAllowed;
 
+			FDSAPI_CHANNEL_ALLOWED_REQUEST request;
+			FDSAPI_CHANNEL_ALLOWED_RESPONSE response;
 		};
 
 		FACTORY_REGISTER_DWORD(CallFactory,CallInIsVCAllowed,freerds::icp::IsChannelAllowed);

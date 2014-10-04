@@ -70,6 +70,15 @@ BOOL msgpack_unpack_uint32(msgpack_object* obj, UINT32* d)
 	return TRUE;
 }
 
+BOOL msgpack_unpack_uint64(msgpack_object* obj, UINT64* d)
+{
+	if (obj->type != MSGPACK_OBJECT_POSITIVE_INTEGER)
+		return FALSE;
+
+	*d = (UINT64) obj->via.u64;
+	return TRUE;
+}
+
 int msgpack_pack_cstr(msgpack_packer* pk, const char* cstr)
 {
 	size_t length;

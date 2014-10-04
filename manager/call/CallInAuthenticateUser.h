@@ -57,6 +57,9 @@ namespace freerds
 			int mAuthStatus;
 			UINT32 mSessionId;
 			std::string mPipeName;
+
+			FDSAPI_START_SESSION_REQUEST request;
+			FDSAPI_START_SESSION_RESPONSE response;
 		};
 
 		FACTORY_REGISTER_DWORD(CallFactory, CallInAuthenticateUser, freerds::icps::AuthenticateUser);

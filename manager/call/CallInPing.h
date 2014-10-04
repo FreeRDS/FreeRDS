@@ -45,6 +45,8 @@ namespace freerds
 
 		private:
 
+			FDSAPI_HEARTBEAT_REQUEST request;
+			FDSAPI_HEARTBEAT_RESPONSE response;
 		};
 
 		FACTORY_REGISTER_DWORD(CallFactory,CallInPing,freerds::icp::Ping);

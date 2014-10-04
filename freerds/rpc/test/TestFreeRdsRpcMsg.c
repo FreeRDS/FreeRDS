@@ -90,5 +90,7 @@ int TestFreeRdsRpcMsg(int argc, char* argv[])
 {
 	test_rpc_msg1();
 	test_rpc_msg2();
+
+	return 0;
 }
 

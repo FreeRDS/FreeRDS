@@ -54,6 +54,7 @@ BOOL msgpack_unpack_array(msgpack_object* obj, size_t* n);
 BOOL msgpack_unpack_array_min(msgpack_object* obj, size_t* n, size_t min);
 
 BOOL msgpack_unpack_uint32(msgpack_object* obj, UINT32* d);
+BOOL msgpack_unpack_uint64(msgpack_object* obj, UINT64* d);
 
 int msgpack_pack_cstr(msgpack_packer* pk, const char* cstr);
 BOOL msgpack_unpack_cstr(msgpack_object* obj, char** cstr);

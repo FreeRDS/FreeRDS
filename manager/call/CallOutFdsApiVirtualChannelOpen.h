@@ -47,6 +47,9 @@ namespace freerds
 			long mSessionID;
 			std::string mVirtualName;
 			std::string mConnectionString;
+
+			FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST request;
+			FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE response;
 		};
 	}
 }

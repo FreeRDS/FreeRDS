@@ -45,6 +45,9 @@ namespace freerds
 		private:
 			long mConnectionId;
 			bool mLoggedOff;
+
+			FDSAPI_LOGOFF_USER_REQUEST request;
+			FDSAPI_LOGOFF_USER_RESPONSE response;
 		};
 
 		FACTORY_REGISTER_DWORD(CallFactory,CallInLogOffUserSession,freerds::icp::LogOffUserSession);

@@ -45,6 +45,9 @@ namespace freerds
 		private:
 			long mSessionId;
 			bool mSuccess;
+
+			FDSAPI_END_SESSION_REQUEST request;
+			FDSAPI_END_SESSION_RESPONSE response;
 		};
 
 		FACTORY_REGISTER_DWORD(CallFactory,CallInEndSession,freerds::icps::EndSession);

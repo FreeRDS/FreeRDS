@@ -48,6 +48,9 @@ namespace freerds
 			long mConnectionId;
 			std::string mServiceEndpoint;
 			bool mSuccess;
+
+			FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST request;
+			FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE response;
 		};
 	}
 }
