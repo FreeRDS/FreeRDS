@@ -26,20 +26,11 @@
 
 static pbRPCContext* g_pbContext = NULL;
 
-static pbRPCMethod g_IcpMethods[] =
-{
-	{ FREERDS__ICP__MSGTYPE__Ping, ping },
-	{ FREERDS__ICP__MSGTYPE__SwitchTo, switchTo },
-	{ FREERDS__ICP__MSGTYPE__LogOffUserSession, logOffUserSession },
-	{ 0, NULL }
-};
-
 int freerds_icp_start()
 {
 	if (!g_pbContext)
 	{
 		g_pbContext = pbrpc_server_new();
-		pbrpc_register_methods(g_pbContext, g_IcpMethods);
 		pbrpc_server_start(g_pbContext);
 	}
 

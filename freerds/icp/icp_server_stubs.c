@@ -53,24 +53,24 @@ int ping(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
 	ICP_SERVER_STUB_SETUP(Ping, ping)
 
-	// call functions with parameters from request and set answer to response
 	response.pong = TRUE;
 
 	ICP_SERVER_STUB_RESPOND(Ping, ping)
-
-	// freeup response data if necessary
 
 	return PBRPC_SUCCESS;
 }
 
 int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
-	rdsConnection *connection = NULL;
+	rdsConnection* connection = NULL;
+
 	ICP_SERVER_STUB_SETUP(SwitchTo, switch_to)
+
 	connection = app_context_get_connection(request->connectionid);
+
 	if (connection)
 	{
-		struct rds_notification_msg_switch *msg = malloc(sizeof(struct rds_notification_msg_switch));
+		struct rds_notification_msg_switch* msg = malloc(sizeof(struct rds_notification_msg_switch));
 		msg->tag = tag;
 		msg->endpoint = _strdup(request->serviceendpoint);
 		MessageQueue_Post(connection->notifications, (void *)connection, NOTIFY_SWITCHTO, (void*) msg, NULL);
@@ -91,14 +91,17 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 
 int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
-	rdsConnection *connection = NULL;
+	rdsConnection* connection = NULL;
+
 	ICP_SERVER_STUB_SETUP(LogOffUserSession, log_off_user_session)
+
 	connection = app_context_get_connection(request->connectionid);
+
 	if (connection)
 	{
-		struct rds_notification_msg_logoff *msg = malloc(sizeof(struct rds_notification_msg_logoff));
+		struct rds_notification_msg_logoff* msg = malloc(sizeof(struct rds_notification_msg_logoff));
 		msg->tag = tag;
-		MessageQueue_Post(connection->notifications, (void *)connection, NOTIFY_LOGOFF, (void*) msg, NULL);
+		MessageQueue_Post(connection->notifications, (void*) connection, NOTIFY_LOGOFF, (void*) msg, NULL);
 		freerds__icp__log_off_user_session_request__free_unpacked(request, NULL);
 		// response is sent after processing the notification
 		*pbresponse = NULL;

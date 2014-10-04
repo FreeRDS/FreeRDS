@@ -55,12 +55,6 @@ typedef struct pbrpc_payload pbRPCPayload;
 
 typedef int (*pbRPCCallback)(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
 
-struct pbrpc_method
-{
-	UINT32 type;
-	pbRPCCallback cb;
-};
-
 /* Return codes 0-100 are used from the pbrpc protocol itself */
 typedef enum pbrpc_status
 {
@@ -83,7 +77,6 @@ int pbrpc_server_stop(pbRPCContext* context);
 int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request, pbRPCPayload** response);
 void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 		pbRpcResponseCallback callback, void *callback_args);
-void pbrpc_register_methods(pbRPCContext* context, pbRPCMethod* methods);
 int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 status, UINT32 type, UINT32 tag);
 
 /* utils */
@@ -93,7 +86,6 @@ Freerds__Pbrpc__RPCBase *pbrpc_message_new();
 void pbrpc_message_free(Freerds__Pbrpc__RPCBase* msg, BOOL freePayload);
 void pbrpc_prepare_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg);
 void pbrpc_prepare_response(Freerds__Pbrpc__RPCBase* msg, UINT32 tag);
-void pbrpc_prepare_error(Freerds__Pbrpc__RPCBase* msg, UINT32 tag, char* error);
 pbRPCPayload* pbrpc_payload_new();
 void pbrpc_free_payload(pbRPCPayload* response);
 

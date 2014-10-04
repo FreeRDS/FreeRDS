@@ -27,6 +27,9 @@
 #include <arpa/inet.h>
 #endif
 
+#include "ICP.pb-c.h"
+#include "icp_server_stubs.h"
+
 #include "pbRPC.pb-c.h"
 #include "pbrpc.h"
 
@@ -110,24 +113,19 @@ DWORD pbrpc_getTag(pbRPCContext *context)
 Freerds__Pbrpc__RPCBase* pbrpc_message_new()
 {
 	Freerds__Pbrpc__RPCBase* msg = malloc(sizeof(Freerds__Pbrpc__RPCBase));
+
 	if (!msg)
 		return msg;
 
 	freerds__pbrpc__rpcbase__init(msg);
+
 	return msg;
 }
 
 void pbrpc_message_free(Freerds__Pbrpc__RPCBase* msg, BOOL freePayload)
 {
 	if (freePayload && msg->payload.data)
-	{
 		free(msg->payload.data);
-	}
-
-	if (freePayload && msg->errordescription)
-	{
-		free(msg->errordescription);
-	}
 
 	free(msg);
 }
@@ -145,13 +143,6 @@ void pbrpc_prepare_response(Freerds__Pbrpc__RPCBase* msg, UINT32 tag)
 	msg->tag = tag;
 }
 
-void pbrpc_prepare_error(Freerds__Pbrpc__RPCBase* msg, UINT32 tag, char *error)
-{
-	pbrpc_prepare_response(msg, tag);
-	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__FAILED;
-	msg->errordescription = error;
-}
-
 pbRPCPayload* pbrpc_payload_new()
 {
 	pbRPCPayload* pl = calloc(1, sizeof(pbRPCPayload));
@@ -164,9 +155,6 @@ void pbrpc_free_payload(pbRPCPayload* response)
 		return;
 
 	free(response->data);
-
-	if (response->errorDescription)
-		free(response->errorDescription);
 
 	free(response);
 }
@@ -291,6 +279,7 @@ static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCB
 	BYTE* buffer;
 	FDSAPI_MSG_HEADER header;
 
+	header.msgType = 0;
 	header.msgSize = freerds__pbrpc__rpcbase__get_packed_size(msg);
 
 	buffer = malloc(header.msgSize);
@@ -310,33 +299,12 @@ static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCB
 	return status;
 }
 
-static pbRPCCallback pbrpc_callback_find(pbRPCContext* context, UINT32 type)
-{
-	int i = 0;
-	pbRPCMethod* cb = NULL;
-
-	if (!context->methods)
-		return NULL;
-
-	while ((cb = &(context->methods[i++])))
-	{
-		if ((cb->type == 0) && (cb->cb == NULL))
-			return NULL;
-
-		if (cb->type == type)
-			return cb->cb;
-	}
-
-	return NULL;
-}
-
-static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase *message)
+static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase* message)
 {
 	pbRPCPayload* pl = pbrpc_payload_new();
 
 	pl->data = (char*)(message->payload.data);
 	pl->dataLen = message->payload.len;
-	pl->errorDescription = message->errordescription;
 
 	return pl;
 }
@@ -347,6 +315,7 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload* response, UINT32 st
 	Freerds__Pbrpc__RPCBase* pbresponse = pbrpc_message_new();
 
 	pbrpc_prepare_response(pbresponse, tag);
+
 	pbresponse->msgtype = type;
 	pbresponse->status = status;
 
@@ -357,10 +326,6 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload* response, UINT32 st
 			pbresponse->has_payload = 1;
 			pbresponse->payload.data = (BYTE*) response->data;
 			pbresponse->payload.len = response->dataLen;
-		}
-		else
-		{
-			pbresponse->errordescription = response->errorDescription;
 		}
 	}
 
@@ -374,14 +339,30 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload* response, UINT32 st
 	return ret;
 }
 
-static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase *rpcmessage)
+static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* rpcmessage)
 {
 	int status = 0;
+	UINT32 msgType;
 	pbRPCCallback cb;
 	pbRPCPayload* request = NULL;
 	pbRPCPayload* response = NULL;
 
-	cb = pbrpc_callback_find(context, rpcmessage->msgtype);
+	msgType = rpcmessage->msgtype;
+
+	switch (msgType)
+	{
+		case FREERDS__ICP__MSGTYPE__Ping:
+			cb = ping;
+			break;
+
+		case FREERDS__ICP__MSGTYPE__SwitchTo:
+			cb = switchTo;
+			break;
+
+		case FREERDS__ICP__MSGTYPE__LogOffUserSession:
+			cb = logOffUserSession;
+			break;
+	}
 
 	if (!cb)
 	{
@@ -482,7 +463,7 @@ static void pbrpc_reconnect(pbRPCContext* context)
 	pbrpc_connect(context);
 }
 
-static void pbrpc_mainloop(pbRPCContext* context)
+static void pbrpc_main_loop(pbRPCContext* context)
 {
 	int status;
 	DWORD nCount;
@@ -544,7 +525,7 @@ static void pbrpc_mainloop(pbRPCContext* context)
 int pbrpc_server_start(pbRPCContext* context)
 {
 	context->isConnected = FALSE;
-	context->thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) pbrpc_mainloop, context, 0, NULL);
+	context->thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) pbrpc_main_loop, context, 0, NULL);
 	return 0;
 }
 
@@ -620,7 +601,7 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 
 	if (wait_ret != WAIT_OBJECT_0)
 	{
-		if(!ListDictionary_Remove(context->transactions, (void*)((UINT_PTR)(tag))))
+		if (!ListDictionary_Remove(context->transactions, (void*)((UINT_PTR)(tag))))
 		{
 			// special case - timeout occurred but request is already processing, see comment above
 			WaitForSingleObject(local_context.event, INFINITE);
@@ -649,11 +630,6 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	}
 
 	return ret;
-}
-
-void pbrpc_register_methods(pbRPCContext* context, pbRPCMethod *methods)
-{
-	context->methods = methods;
 }
 
 void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* request,

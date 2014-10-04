@@ -415,8 +415,8 @@ namespace freerds
 			FDSAPI_MSG_HEADER header;
 			DWORD lpNumberOfBytesWritten;
 
-			header.msgSize = (UINT32) data.size();
 			header.msgType = 0;
+			header.msgSize = data.size();
 
 			fSuccess = WriteFile(mhClientPipe, &header.msgSize,
 					FDSAPI_MSG_HEADER_SIZE, &lpNumberOfBytesWritten, NULL);
