@@ -5,8 +5,7 @@ set(MODULE_PREFIX "TEST_FREERDS_RPC")
 set(${MODULE_PREFIX}_DRIVER ${MODULE_NAME}.c)
 
 set(${MODULE_PREFIX}_TESTS
-	TestFreeRdsRpcS2M.c
-	TestFreeRdsRpcM2S.c)
+	TestFreeRdsRpcMsg.c)
 
 create_test_sourcelist(${MODULE_PREFIX}_SRCS
 	${${MODULE_PREFIX}_DRIVER}

@@ -1,7 +1,44 @@
 
 #include <freerds/rpc.h>
 
-int TestFreeRdsRpcM2S(int argc, char* argv[])
+int test_rpc_msg1()
+{
+	wStream* s;
+	UINT32 msgType;
+	FDSAPI_START_SESSION_REQUEST request;
+
+	request.SessionId = 123;
+	request.User = "User";
+	request.Domain = NULL;
+	request.Password = "Password";
+
+	s = Stream_New(NULL, 8192);
+
+	if (!s)
+		return 1;
+
+	msgType = FDSAPI_START_SESSION_REQUEST_ID;
+
+	s = freerds_rpc_msg_pack(msgType, &request, s);
+
+	if (!s)
+		return 1;
+
+	ZeroMemory(&request, sizeof(request));
+
+	freerds_rpc_msg_unpack(msgType, &request, Stream_Buffer(s), Stream_Length(s));
+
+	fprintf(stderr, "SessionId: %d User: %s Domain: %s Password: %s\n",
+			request.SessionId, request.User, request.Domain, request.Password);
+
+	freerds_rpc_msg_free(msgType, &request);
+
+	Stream_Free(s, TRUE);
+
+	return 0;
+}
+
+int test_rpc_msg2()
 {
 	wStream* s;
 	UINT32 msgType;
@@ -48,3 +85,10 @@ int TestFreeRdsRpcM2S(int argc, char* argv[])
 
 	return 0;
 }
+
+int TestFreeRdsRpcMsg(int argc, char* argv[])
+{
+	test_rpc_msg1();
+	test_rpc_msg2();
+}
+

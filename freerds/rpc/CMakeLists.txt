@@ -19,8 +19,7 @@ set(MODULE_PREFIX "FREERDS_RPC")
 
 set(${MODULE_PREFIX}_SRCS
 	pack.c
-	m2s.c
-	s2m.c
+	msg.c
 	rpc.c)
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})

@@ -136,8 +136,7 @@ BOOL msgpack_unpack_bool(msgpack_object* obj, BOOL* b)
 
 /* Function Tables */
 
-extern RDS_RPC_PACK_FUNC* g_S2M_FUNCS[];
-extern RDS_RPC_PACK_FUNC* g_M2S_FUNCS[];
+extern RDS_RPC_PACK_FUNC* g_MSG_FUNCS[];
 
 RDS_RPC_PACK_FUNC* freerds_rpc_msg_find_func(UINT32 msgType)
 {
@@ -146,24 +145,7 @@ RDS_RPC_PACK_FUNC* freerds_rpc_msg_find_func(UINT32 msgType)
 	RDS_RPC_PACK_FUNC** func;
 
 	index = 0;
-	func = g_S2M_FUNCS;
-
-	while (func[index])
-	{
-		if (msgType == func[index]->msgType)
-		{
-			found = TRUE;
-			break;
-		}
-
-		index++;
-	}
-
-	if (found)
-		return func[index];
-
-	index = 0;
-	func = g_M2S_FUNCS;
+	func = g_MSG_FUNCS;
 
 	while (func[index])
 	{

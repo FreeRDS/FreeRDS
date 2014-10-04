@@ -7,8 +7,7 @@
 
 
 /* Forward declare test functions. */
-int TestFreeRdsRpcS2M(int, char*[]);
-int TestFreeRdsRpcM2S(int, char*[]);
+int TestFreeRdsRpcMsg(int, char*[]);
 
 
 /* Create map.  */
@@ -22,12 +21,8 @@ typedef struct
 
 functionMapEntry cmakeGeneratedFunctionMapEntries[] = {
     {
-    "TestFreeRdsRpcS2M",
-    TestFreeRdsRpcS2M
-  },
-  {
-    "TestFreeRdsRpcM2S",
-    TestFreeRdsRpcM2S
+    "TestFreeRdsRpcMsg",
+    TestFreeRdsRpcMsg
   },
 
   {0,0}
