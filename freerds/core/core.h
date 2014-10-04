@@ -34,6 +34,7 @@
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
+#include <freerds/rpc.h>
 #include <freerds/backend.h>
 
 #include "encoder.h"
@@ -88,23 +89,6 @@ struct rds_backend_connector
 	freerdp* instance;
 	rdpSettings* settings;
 	rdsConnection* connection;
-};
-
-struct rds_notification_msg_switch
-{
-	UINT32 tag;
-	char *endpoint;
-};
-
-struct rds_notification_msg_logoff
-{
-	UINT32 tag;
-};
-
-enum notifications
-{
-	NOTIFY_SWITCHTO = 0,
-	NOTIFY_LOGOFF,
 };
 
 #ifdef __cplusplus

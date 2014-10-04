@@ -26,9 +26,11 @@
 #include <freerds/rpc.h>
 
 int freerds_icp_IsChannelAllowed(FDSAPI_CHANNEL_ALLOWED_REQUEST* pRequest, FDSAPI_CHANNEL_ALLOWED_RESPONSE* pResponse);
-int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected);
-int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff);
+int freerds_icp_DisconnectUserSession(FDSAPI_DISCONNECT_USER_REQUEST* pRequest, FDSAPI_DISCONNECT_USER_RESPONSE* pResponse);
+int freerds_icp_LogOffUserSession(FDSAPI_LOGOFF_USER_REQUEST* pRequest, FDSAPI_LOGOFF_USER_RESPONSE* pResponse);
 int freerds_icp_LogonUser(FDSAPI_LOGON_USER_REQUEST* pRequest, FDSAPI_LOGON_USER_RESPONSE* pResponse);
-int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success);
+
+int freerds_icp_LogoffUserResponse(FDSAPI_LOGOFF_USER_RESPONSE* pResponse);
+int freerds_icp_SwitchServiceEndpointResponse(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE* pResponse);
 
 #endif // _ICP_CLIENT_STUBS_H

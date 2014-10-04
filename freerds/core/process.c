@@ -429,16 +429,25 @@ BOOL freerds_client_process_switch_session(rdsConnection* connection, wMessage* 
 	int error = 0;
 	BOOL status = FALSE;
 	rdsBackendConnector* connector = NULL;
-	struct rds_notification_msg_switch *notification = (struct rds_notification_msg_switch*) message->wParam;
+	FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST* request;
+	FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE response;
+
+	request = (FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST*) message->wParam;
 
 	freerds_connector_free(connection->connector);
 	connection->connector = connector = freerds_connector_new(connection);
-	connector->Endpoint = notification->endpoint;
+	connector->Endpoint = request->ServiceEndpoint;
 
 	status = freerds_connector_connect(connector);
 
-	error = freerds_icp_sendResponse(notification->tag, message->id, 0, status);
-	free(notification);
+	response.status = status ? 0 : 1;
+	response.callId = request->callId;
+	response.msgType = FDSAPI_RESPONSE_ID(request->msgType);
+
+	error = freerds_icp_SwitchServiceEndpointResponse(&response);
+
+	free(request->ServiceEndpoint);
+	free(request);
 
 	if (error != 0)
 	{
@@ -448,17 +457,30 @@ BOOL freerds_client_process_switch_session(rdsConnection* connection, wMessage* 
 
 	return TRUE;
 }
+
 BOOL freerds_client_process_logoff(rdsConnection* connection, wMessage* message)
 {
-	int error = 0;
-	struct rds_notification_msg_logoff *notification = (struct rds_notification_msg_logoff*) message->wParam;
-	freerds_connector_free(connection->connector);
-	connection->connector = NULL;
+	int status = 0;
+	FDSAPI_LOGOFF_USER_REQUEST* request;
+	FDSAPI_LOGOFF_USER_RESPONSE response;
+
+	request = (FDSAPI_LOGOFF_USER_REQUEST*) message->wParam;
+
+	if (connection->connector)
+	{
+		freerds_connector_free(connection->connector);
+		connection->connector = NULL;
+	}
 
 	connection->client->Close(connection->client);
 
-	error = freerds_icp_sendResponse(notification->tag, message->id, 0, TRUE);
-	free(notification);
+	response.status = 0;
+	response.callId = request->callId;
+	response.msgType = FDSAPI_RESPONSE_ID(request->msgType);
+
+	status = freerds_icp_LogoffUserResponse(&response);
+	free(request);
+
 	return FALSE;
 }
 
@@ -468,11 +490,11 @@ BOOL freerds_client_process_notification(rdsConnection* connection, wMessage* me
 
 	switch (message->id)
 	{
-		case NOTIFY_SWITCHTO:
+		case FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID:
 			status = freerds_client_process_switch_session(connection, message);
 			break;
 
-		case NOTIFY_LOGOFF:
+		case FDSAPI_LOGOFF_USER_REQUEST_ID:
 			status = freerds_client_process_logoff(connection, message);
 			break;
 
@@ -498,7 +520,6 @@ void* freerds_connection_main_thread(void* arg)
 	rdpSettings* settings;
 	rdsBackendConnector* connector = NULL;
 	freerdp_peer* client = (freerdp_peer*) arg;
-	BOOL disconnected = FALSE;
 #ifndef _WIN32
 	sigset_t set;
 	int ret;
@@ -607,6 +628,7 @@ void* freerds_connection_main_thread(void* arg)
 				}
 			}
 		}
+
 		if (WaitForSingleObject(NotificationEvent, 0) == WAIT_OBJECT_0)
 		{
 			wMessage message;
@@ -622,11 +644,16 @@ void* freerds_connection_main_thread(void* arg)
 
 	if (connection->connector)
 	{
-		freerds_connector_free(connection->connector);
-		connection->connector = 0;
+		FDSAPI_DISCONNECT_USER_REQUEST request;
+		FDSAPI_DISCONNECT_USER_RESPONSE response;
 
-		freerds_icp_DisconnectUserSession(connection->id, &disconnected);
+		freerds_connector_free(connection->connector);
+		connection->connector = NULL;
+
+		request.ConnectionId = connection->id;
+		freerds_icp_DisconnectUserSession(&request, &response);
 	}
+
 	client->Disconnect(client);
 	app_context_remove_connection(connection->id);
 

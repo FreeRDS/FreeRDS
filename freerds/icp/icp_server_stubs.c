@@ -75,12 +75,16 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 
 	if (connection)
 	{
-		struct rds_notification_msg_switch* msg = malloc(sizeof(struct rds_notification_msg_switch));
-		msg->tag = tag;
-		msg->endpoint = _strdup(request->serviceendpoint);
-		MessageQueue_Post(connection->notifications, (void *)connection, NOTIFY_SWITCHTO, (void*) msg, NULL);
+		FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST* pRequest;
+
+		pRequest = (FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST*) malloc(sizeof(FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST));
+
+		pRequest->callId = tag;
+		pRequest->msgType = FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID;
+		pRequest->ServiceEndpoint = _strdup(request->serviceendpoint);
 		freerds__icp__switch_to_request__free_unpacked(request, NULL);
-		// response is sent after processing the notification
+
+		MessageQueue_Post(connection->notifications, (void*) connection, pRequest->msgType, (void*) pRequest, NULL);
 		*pbresponse = NULL;
 		return 0;
 	}
@@ -126,11 +130,16 @@ int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbrespon
 
 	if (connection)
 	{
-		struct rds_notification_msg_logoff* msg = malloc(sizeof(struct rds_notification_msg_logoff));
-		msg->tag = tag;
-		MessageQueue_Post(connection->notifications, (void*) connection, NOTIFY_LOGOFF, (void*) msg, NULL);
+		FDSAPI_LOGOFF_USER_REQUEST* pRequest;
+
+		pRequest = (FDSAPI_LOGOFF_USER_REQUEST*) malloc(sizeof(FDSAPI_LOGOFF_USER_REQUEST));
+
+		pRequest->callId = tag;
+		pRequest->msgType = FDSAPI_LOGOFF_USER_REQUEST_ID;
 		freerds__icp__log_off_user_session_request__free_unpacked(request, NULL);
-		// response is sent after processing the notification
+
+		MessageQueue_Post(connection->notifications, (void*) connection, pRequest->msgType, (void*) pRequest, NULL);
+
 		*pbresponse = NULL;
 		return 0;
 	}
