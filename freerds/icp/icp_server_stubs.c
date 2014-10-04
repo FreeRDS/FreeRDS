@@ -24,47 +24,52 @@
 #include "pbrpc.h"
 #include "../core/app_context.h"
 
-#define ICP_SERVER_STUB_SETUP(camel, expanded) \
-	Freerds__Icp__##camel ##Request *request; \
-	Freerds__Icp__##camel ##Response response; \
-	pbRPCPayload* payload; \
-	int ret = 0; \
-	freerds__icp__##expanded ##_response__init(&response); \
-	request = freerds__icp__##expanded ##_request__unpack(NULL, pbrequest->length, pbrequest->buffer); \
-	if (!request) \
-	{ \
-		return PBRPC_BAD_REQEST_DATA; \
-	}
-
-#define ICP_SERVER_STUB_RESPOND(camel, expanded) \
-	freerds__icp__##expanded ##_request__free_unpacked(request, NULL); \
-	payload = pbrpc_payload_new(); \
-	payload->length = freerds__icp__##expanded ##_response__get_packed_size(&response); \
-	payload->buffer = malloc(payload->length); \
-	ret = freerds__icp__##expanded ##_response__pack(&response, payload->buffer); \
-	if (ret != payload->length) \
-	{ \
-		free(payload->buffer); \
-		return PBRPC_BAD_RESPONSE; \
-	} \
-	*pbresponse = payload;
-
 int ping(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
-	ICP_SERVER_STUB_SETUP(Ping, ping)
+	int ret = 0;
+	pbRPCPayload* payload;
+	Freerds__Icp__PingRequest* request;
+	Freerds__Icp__PingResponse response;
+
+	freerds__icp__ping_response__init(&response);
+	request = freerds__icp__ping_request__unpack(NULL, pbrequest->length, pbrequest->buffer);
+
+	if (!request)
+		return PBRPC_BAD_REQEST_DATA;
 
 	response.pong = TRUE;
 
-	ICP_SERVER_STUB_RESPOND(Ping, ping)
+	freerds__icp__ping_request__free_unpacked(request, NULL);
+
+	payload = pbrpc_payload_new();
+	payload->length = freerds__icp__ping_response__get_packed_size(&response);
+	payload->buffer = malloc(payload->length);
+
+	ret = freerds__icp__ping_response__pack(&response, payload->buffer);
+
+	if (ret != payload->length)
+	{
+		free(payload->buffer);
+		return PBRPC_BAD_RESPONSE;
+	}
+	*pbresponse = payload;
 
 	return PBRPC_SUCCESS;
 }
 
 int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
+	int ret = 0;
+	pbRPCPayload* payload;
 	rdsConnection* connection = NULL;
+	Freerds__Icp__SwitchToRequest* request;
+	Freerds__Icp__SwitchToResponse response;
 
-	ICP_SERVER_STUB_SETUP(SwitchTo, switch_to)
+	freerds__icp__switch_to_response__init(&response);
+	request = freerds__icp__switch_to_request__unpack(NULL, pbrequest->length, pbrequest->buffer);
+
+	if (!request)
+		return PBRPC_BAD_REQEST_DATA;
 
 	connection = app_context_get_connection(request->connectionid);
 
@@ -85,15 +90,37 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 		response.success = FALSE;
 	}
 
-	ICP_SERVER_STUB_RESPOND(SwitchTo, switch_to)
+	freerds__icp__switch_to_request__free_unpacked(request, NULL);
+
+	payload = pbrpc_payload_new();
+	payload->length = freerds__icp__switch_to_response__get_packed_size(&response);
+	payload->buffer = malloc(payload->length);
+
+	ret = freerds__icp__switch_to_response__pack(&response, payload->buffer);
+
+	if (ret != payload->length)
+	{
+		free(payload->buffer);
+		return PBRPC_BAD_RESPONSE;
+	}
+	*pbresponse = payload;
+
 	return PBRPC_SUCCESS;
 }
 
 int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
+	int ret = 0;
+	pbRPCPayload* payload;
 	rdsConnection* connection = NULL;
+	Freerds__Icp__LogOffUserSessionRequest* request;
+	Freerds__Icp__LogOffUserSessionResponse response;
 
-	ICP_SERVER_STUB_SETUP(LogOffUserSession, log_off_user_session)
+	freerds__icp__log_off_user_session_response__init(&response);
+	request = freerds__icp__log_off_user_session_request__unpack(NULL, pbrequest->length, pbrequest->buffer);
+
+	if (!request)
+		return PBRPC_BAD_REQEST_DATA;
 
 	connection = app_context_get_connection(request->connectionid);
 
@@ -113,6 +140,20 @@ int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbrespon
 		response.loggedoff = FALSE;
 	}
 
-	ICP_SERVER_STUB_RESPOND(LogOffUserSession, log_off_user_session)
+	freerds__icp__log_off_user_session_request__free_unpacked(request, NULL);
+
+	payload = pbrpc_payload_new();
+	payload->length = freerds__icp__log_off_user_session_response__get_packed_size(&response);
+	payload->buffer = malloc(payload->length);
+
+	ret = freerds__icp__log_off_user_session_response__pack(&response, payload->buffer);
+
+	if (ret != payload->length)
+	{
+		free(payload->buffer);
+		return PBRPC_BAD_RESPONSE;
+	}
+	*pbresponse = payload;
+
 	return PBRPC_SUCCESS;
 }
