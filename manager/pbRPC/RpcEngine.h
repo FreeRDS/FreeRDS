@@ -21,6 +21,9 @@
 #define RPCENGINE_H_
 
 #include <winpr/synch.h>
+
+#include <freerds/rpc.h>
+
 #include <pbRPC.pb.h>
 #include <call/Call.h>
 #include <call/CallOut.h>
@@ -68,7 +71,7 @@ namespace freerds
 			DWORD mPacktLength;
 
 			DWORD mHeaderRead;
-			BYTE mHeaderBuffer[4];
+			BYTE mHeaderBuffer[FDSAPI_MSG_HEADER_SIZE];
 
 			DWORD mPayloadRead;
 			BYTE mPayloadBuffer[PIPE_BUFFER_SIZE];

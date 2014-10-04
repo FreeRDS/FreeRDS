@@ -225,15 +225,17 @@ int pbrpc_receive_message(pbRPCContext* context, char** msg, UINT32* msgLen)
 {
 	char* recvbuffer;
 	int status = 0;
+	FDSAPI_MSG_HEADER header;
 
-	status = tp_npipe_read(context, (char*) msgLen, 4);
+	status = tp_npipe_read(context, (char*) &header, FDSAPI_MSG_HEADER_SIZE);
 
 	if (status < 0)
 		return status;
 
-	recvbuffer = malloc(*msgLen);
+	*msgLen = header.msgSize;
+	recvbuffer = malloc(header.msgSize);
 
-	status = tp_npipe_read(context, recvbuffer, *msgLen);
+	status = tp_npipe_read(context, recvbuffer, header.msgSize);
 
 	if (status < 0)
 	{
@@ -249,8 +251,12 @@ int pbrpc_receive_message(pbRPCContext* context, char** msg, UINT32* msgLen)
 int pbrpc_send_message(pbRPCContext* context, char* msg, UINT32 msgLen)
 {
 	int status;
+	FDSAPI_MSG_HEADER header;
 
-	status = tp_npipe_write(context, (char*) &msgLen, 4);
+	header.msgSize = msgLen;
+	header.msgType = 0;
+
+	status = tp_npipe_write(context, (char*) &header, FDSAPI_MSG_HEADER_SIZE);
 
 	if (status < 0)
 		return status;

@@ -207,7 +207,7 @@ namespace freerds
 			DWORD lpNumberOfBytesRead = 0;
 
 			fSuccess = ReadFile(mhClientPipe, mHeaderBuffer + mHeaderRead,
-					4 - mHeaderRead, &lpNumberOfBytesRead, NULL);
+					FDSAPI_MSG_HEADER_SIZE - mHeaderRead, &lpNumberOfBytesRead, NULL);
 
 			if (!fSuccess || (lpNumberOfBytesRead == 0))
 			{
@@ -217,10 +217,11 @@ namespace freerds
 
 			mHeaderRead += lpNumberOfBytesRead;
 
-			if (mHeaderRead == 4)
+			if (mHeaderRead == FDSAPI_MSG_HEADER_SIZE)
 			{
-				mPacktLength = *((UINT32*) mHeaderBuffer);
-				WLog_Print(logger_RPCEngine, WLOG_TRACE, "header read, packet size %d",mPacktLength);
+				FDSAPI_MSG_HEADER* header = (FDSAPI_MSG_HEADER*) mHeaderBuffer;
+				mPacktLength = header->msgSize;
+				WLog_Print(logger_RPCEngine, WLOG_TRACE, "header read, packet size %d", mPacktLength);
 			}
 
 			return CLIENT_SUCCESS;
@@ -411,11 +412,14 @@ namespace freerds
 		int RpcEngine::sendInternal(std::string data)
 		{
 			BOOL fSuccess;
+			FDSAPI_MSG_HEADER header;
 			DWORD lpNumberOfBytesWritten;
-			UINT32 messageSize = (UINT32) data.size();
 
-			fSuccess = WriteFile(mhClientPipe, &messageSize,
-					4, &lpNumberOfBytesWritten, NULL);
+			header.msgSize = (UINT32) data.size();
+			header.msgType = 0;
+
+			fSuccess = WriteFile(mhClientPipe, &header.msgSize,
+					FDSAPI_MSG_HEADER_SIZE, &lpNumberOfBytesWritten, NULL);
 
 			if (!fSuccess || (lpNumberOfBytesWritten == 0))
 			{
