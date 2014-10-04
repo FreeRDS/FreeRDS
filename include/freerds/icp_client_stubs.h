@@ -23,31 +23,12 @@
 
 #include <winpr/wtypes.h>
 
-struct _FREERDS_ICP_LOGON_USER_DATA
-{
-	char* Username;
-	char* Password;
-	char* Domain;
-	UINT32 DesktopWidth;
-	UINT32 DesktopHeight;
-	UINT32 ColorDepth;
-	char* ClientName;
-	char* ClientAddress;
-	UINT32 ClientBuildNumber;
-	UINT32 ClientProductId;
-	UINT32 ClientHardwareId;
-	UINT32 ClientProtocolType;
-	char* InitialProgram;
-	char* ApplicationName;
-	char* WorkingDirectory;
-};
-typedef struct _FREERDS_ICP_LOGON_USER_DATA FREERDS_ICP_LOGON_USER_DATA;
+#include <freerds/rpc.h>
 
-int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed);
-int freerds_icp_Ping(BOOL* pong);
+int freerds_icp_IsChannelAllowed(FDSAPI_CHANNEL_ALLOWED_REQUEST* pRequest, FDSAPI_CHANNEL_ALLOWED_RESPONSE* pResponse);
 int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected);
 int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff);
-int freerds_icp_LogonUser(UINT32 connectionId, FREERDS_ICP_LOGON_USER_DATA* pLogonUserData, char** serviceEndpoint);
+int freerds_icp_LogonUser(FDSAPI_LOGON_USER_REQUEST* pRequest, FDSAPI_LOGON_USER_RESPONSE* pResponse);
 int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL success);
 
 #endif // _ICP_CLIENT_STUBS_H

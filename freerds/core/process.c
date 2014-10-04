@@ -205,7 +205,8 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	int error_code;
 	char* endpoint;
 	rdpSettings* settings;
-	FREERDS_ICP_LOGON_USER_DATA LogonUserData;
+	FDSAPI_LOGON_USER_REQUEST request;
+	FDSAPI_LOGON_USER_RESPONSE response;
 	rdsConnection* connection = (rdsConnection*) client->context;
 	rdsBackendConnector* connector = connection->connector;
 
@@ -218,34 +219,32 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	settings = client->settings;
 
 	if (settings->Password)
-		settings->AutoLogonEnabled = 1;
+		settings->AutoLogonEnabled = TRUE;
 
-	// TODO: add NS codec in the candidates as soon as the encoder will be able
-	//  	to create pdu that fit in fastpath pdu max size
 	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
 							settings->SurfaceFrameMarkerEnabled);
 	
 	fprintf(stderr, "codec mode %d\n", connection->codecMode);
 
-	ZeroMemory(&LogonUserData, sizeof(FREERDS_ICP_LOGON_USER_DATA));
+	ZeroMemory(&request, sizeof(request));
 
-	LogonUserData.Username = settings->Username;
-	LogonUserData.Password = settings->Password;
-	LogonUserData.Domain = settings->Domain;
-	LogonUserData.DesktopWidth = settings->DesktopWidth;
-	LogonUserData.DesktopHeight = settings->DesktopHeight;
-	LogonUserData.ColorDepth = settings->ColorDepth;
-	LogonUserData.ClientName = settings->ClientHostname;
-	LogonUserData.ClientAddress = settings->ClientAddress;
-	LogonUserData.ClientBuildNumber = settings->ClientBuild;
-	LogonUserData.ClientProductId = 1;
-	LogonUserData.ClientHardwareId = 0;
-	LogonUserData.ClientProtocolType = 2;
-	LogonUserData.InitialProgram = NULL;
-	LogonUserData.ApplicationName = NULL;
-	LogonUserData.WorkingDirectory = NULL;
+	request.ConnectionId = connection->id;
+	request.User = settings->Username;
+	request.Password = settings->Password;
+	request.Domain = settings->Domain;
+	request.DesktopWidth = settings->DesktopWidth;
+	request.DesktopHeight = settings->DesktopHeight;
+	request.ColorDepth = settings->ColorDepth;
+	request.ClientName = settings->ClientHostname;
+	request.ClientAddress = settings->ClientAddress;
+	request.ClientBuild = settings->ClientBuild;
+	request.ClientProductId = 1;
+	request.ClientHardwareId = 0;
+	request.ClientProtocolType = 2;
 
-	error_code = freerds_icp_LogonUser((UINT32)(connection->id), &LogonUserData, &endpoint);
+	error_code = freerds_icp_LogonUser(&request, &response);
+
+	endpoint = response.ServiceEndpoint;
 
 	if (error_code != 0)
 	{

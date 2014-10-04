@@ -26,6 +26,18 @@
 
 #include <freerds/icp_client_stubs.h>
 
+BOOL freerds_channels_is_channel_allowed(UINT32 SessionId, char* ChannelName)
+{
+	FDSAPI_CHANNEL_ALLOWED_REQUEST request;
+	FDSAPI_CHANNEL_ALLOWED_RESPONSE response;
+
+	response.ChannelAllowed = FALSE;
+
+	freerds_icp_IsChannelAllowed(&request, &response);
+
+	return response.ChannelAllowed;
+}
+
 int freerds_channels_post_connect(rdsConnection* session)
 {
 #ifdef WITH_FREERDS_CHANNELS
@@ -33,8 +45,7 @@ int freerds_channels_post_connect(rdsConnection* session)
 
 	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "cliprdr"))
 	{
-		allowed = FALSE;
-		freerds_icp_IsChannelAllowed(session->id, "cliprdr", &allowed);
+		allowed = freerds_channels_is_channel_allowed(session->id, "cliprdr");
 		printf("channel %s is %s\n", "cliprdr", allowed ? "allowed" : "not allowed");
 
 		printf("Channel %s registered\n", "cliprdr");
@@ -44,8 +55,7 @@ int freerds_channels_post_connect(rdsConnection* session)
 
 	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "rdpdr"))
 	{
-		allowed = FALSE;
-		freerds_icp_IsChannelAllowed(session->id, "rdpdr", &allowed);
+		allowed = freerds_channels_is_channel_allowed(session->id, "rdpdr");
 		printf("channel %s is %s\n", "rdpdr", allowed ? "allowed" : "not allowed");
 
 		printf("Channel %s registered\n", "rdpdr");
@@ -55,8 +65,7 @@ int freerds_channels_post_connect(rdsConnection* session)
 
 	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "rdpsnd"))
 	{
-		allowed = FALSE;
-		freerds_icp_IsChannelAllowed(session->id, "rdpsnd", &allowed);
+		allowed = freerds_channels_is_channel_allowed(session->id, "rdpsnd");
 		printf("channel %s is %s\n", "rdpsnd", allowed ? "allowed" : "not allowed");
 
 		printf("Channel %s registered\n", "rdpsnd");

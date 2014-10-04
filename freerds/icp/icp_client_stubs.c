@@ -102,78 +102,36 @@ int freerds_icp_sendResponse(UINT32 tag, UINT32 type, UINT32 status, BOOL succes
 			return -1;
 			break;
 	}
+
 	if (ret != pbresponse->dataLen)
 	{
 		fprintf(stderr, "%s pack error for %d", __FUNCTION__, type);
 		pbrpc_free_payload(pbresponse);
 		return -1;
 	}
+
 	return  pbrpc_send_response(context, pbresponse, status, rtype, tag);
 }
 
-int freerds_icp_IsChannelAllowed(UINT32 connectionId, char* channelName, BOOL* isAllowed)
+int freerds_icp_IsChannelAllowed(FDSAPI_CHANNEL_ALLOWED_REQUEST* pRequest, FDSAPI_CHANNEL_ALLOWED_RESPONSE* pResponse)
 {
 	ICP_CLIENT_STUB_SETUP(IsChannelAllowed, is_channel_allowed)
 
-	// set call specific parameters
-	request.channelname = channelName;
+	request.channelname = pRequest->ChannelName;
 
 	ICP_CLIENT_STUB_CALL(IsChannelAllowed, is_channel_allowed)
 
 	if (ret != 0)
-	{
-		// handle function specific frees
 		return ret;
-	}
 
 	ICP_CLIENT_STUB_UNPACK_RESPONSE(IsChannelAllowed, is_channel_allowed)
 
-	if (NULL == response)
-	{
-		// unpack error
-		// free function specific stuff
+	if (!response)
 		return PBRPC_BAD_RESPONSE;
-	}
 
-	// assign returned stuff here!
-	// don't use pointers since response get's freed (copy might be required..)
-	*isAllowed = response->channelallowed;
-
-	// free function specific stuff
+	pResponse->ChannelAllowed = response->channelallowed ? TRUE : FALSE;
 
 	ICP_CLIENT_STUB_CLEANUP(IsChannelAllowed, is_channel_allowed)
-
-	return PBRPC_SUCCESS;
-}
-
-int freerds_icp_Ping(BOOL* pong)
-{
-	ICP_CLIENT_STUB_SETUP(Ping, ping)
-
-	ICP_CLIENT_STUB_CALL(Ping, ping)
-
-	if (ret != 0)
-	{
-		// handle function specific frees
-		return ret;
-	}
-
-	ICP_CLIENT_STUB_UNPACK_RESPONSE(Ping, ping)
-
-	if (NULL == response)
-	{
-		// unpack error
-		// free function specific stuff
-		return PBRPC_BAD_RESPONSE;
-	}
-
-	// assign returned stuff here!
-	// don't use pointers since response get's freed (copy might be required..)
-	*pong = response->pong;
-
-	// free function specific stuff
-
-	ICP_CLIENT_STUB_CLEANUP(Ping, ping)
 
 	return PBRPC_SUCCESS;
 }
@@ -187,18 +145,12 @@ int freerds_icp_DisconnectUserSession(UINT32 connectionId, BOOL* disconnected)
 	ICP_CLIENT_STUB_CALL(DisconnectUserSession, disconnect_user_session)
 
 	if (ret != 0)
-	{
-		// handle function specific frees
 		return ret;
-	}
 
 	ICP_CLIENT_STUB_UNPACK_RESPONSE(DisconnectUserSession, disconnect_user_session)
 
-	if (NULL == response)
-	{
-		// unpack error
+	if (!response)
 		return PBRPC_BAD_RESPONSE;
-	}
 
 	*disconnected = response->disconnected;
 
@@ -216,18 +168,12 @@ int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff)
 	ICP_CLIENT_STUB_CALL(LogOffUserSession, log_off_user_session)
 
 	if (ret != 0)
-	{
-		// handle function specific frees
 		return ret;
-	}
 
 	ICP_CLIENT_STUB_UNPACK_RESPONSE(LogOffUserSession, log_off_user_session)
 
-	if (NULL == response)
-	{
-		// unpack error
+	if (!response)
 		return PBRPC_BAD_RESPONSE;
-	}
 
 	*loggedoff = response->loggedoff;
 
@@ -236,46 +182,35 @@ int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff)
 	return PBRPC_SUCCESS;
 }
 
-int freerds_icp_LogonUser(UINT32 connectionId, FREERDS_ICP_LOGON_USER_DATA* pLogonUserData, char** serviceEndpoint)
+int freerds_icp_LogonUser(FDSAPI_LOGON_USER_REQUEST* pRequest, FDSAPI_LOGON_USER_RESPONSE* pResponse)
 {
 	ICP_CLIENT_STUB_SETUP(LogonUser, logon_user)
 
-	request.connectionid = connectionId;
-	request.domain = pLogonUserData->Domain;
-	request.username = pLogonUserData->Username;
-	request.password = pLogonUserData->Password;
-	request.width = pLogonUserData->DesktopWidth;
-	request.height = pLogonUserData->DesktopHeight;
-	request.colordepth = pLogonUserData->ColorDepth;
-	request.clientname = pLogonUserData->ClientName;
-	request.clientaddress = pLogonUserData->ClientAddress;
-	request.clientbuildnumber = pLogonUserData->ClientBuildNumber;
-	request.clientproductid = pLogonUserData->ClientProductId;
-	request.clienthardwareid = pLogonUserData->ClientHardwareId;
-	request.clientprotocoltype = 2;
+	request.connectionid = pRequest->ConnectionId;
+	request.domain = pRequest->Domain;
+	request.username = pRequest->User;
+	request.password = pRequest->Password;
+	request.width = pRequest->DesktopWidth;
+	request.height = pRequest->DesktopHeight;
+	request.colordepth = pRequest->ColorDepth;
+	request.clientname = pRequest->ClientName;
+	request.clientaddress = pRequest->ClientAddress;
+	request.clientbuildnumber = pRequest->ClientBuild;
+	request.clientproductid = pRequest->ClientProductId;
+	request.clienthardwareid = pRequest->ClientHardwareId;
+	request.clientprotocoltype = pRequest->ClientProtocolType;
 
 	ICP_CLIENT_STUB_CALL(LogonUser, logon_user)
 
 	if (ret != 0)
-	{
-		// handle function specific frees
 		return ret;
-	}
 
 	ICP_CLIENT_STUB_UNPACK_RESPONSE(LogonUser, logon_user)
 
-	if (NULL == response)
-	{
-		// unpack error
-		// free function specific stuff
+	if (!response)
 		return PBRPC_BAD_RESPONSE;
-	}
 
-	// assign returned stuff here!
-	// don't use pointers since response get's freed (copy might be required..)
-	*serviceEndpoint = _strdup(response->serviceendpoint);
-
-	// free function specific stuff
+	pResponse->ServiceEndpoint = _strdup(response->serviceendpoint);
 
 	ICP_CLIENT_STUB_CLEANUP(LogonUser, logon_user)
 
