@@ -221,42 +221,36 @@ void pbrpc_server_free(pbRPCContext* context)
 	free(context);
 }
 
-// errors < 0 transport erros, errors > 0 pb errors
-int pbrpc_receive_message(pbRPCContext* context, char** msg, int* msgLen)
+int pbrpc_receive_message(pbRPCContext* context, char** msg, UINT32* msgLen)
 {
-	UINT32 msgLenWire, len;
-	char *recvbuffer;
-	int ret = 0;
+	char* recvbuffer;
+	int status = 0;
 
-	ret = tp_npipe_read(context, (char *)&msgLenWire, 4);
+	status = tp_npipe_read(context, (char*) msgLen, 4);
 
-	if (ret < 0)
-		return ret;
+	if (status < 0)
+		return status;
 
-	len = ntohl(msgLenWire);
-	*msgLen = len;
-	recvbuffer = malloc(len);
+	recvbuffer = malloc(*msgLen);
 
-	ret = tp_npipe_read(context, recvbuffer, len);
+	status = tp_npipe_read(context, recvbuffer, *msgLen);
 
-	if (ret < 0)
+	if (status < 0)
 	{
 		free(recvbuffer);
-		return ret;
+		return status;
 	}
 
 	*msg = recvbuffer;
-	return ret;
+
+	return status;
 }
 
-int pbrpc_send_message(pbRPCContext* context, char *msg, UINT32 msgLen)
+int pbrpc_send_message(pbRPCContext* context, char* msg, UINT32 msgLen)
 {
 	int status;
-	UINT32 msgLenWire;
 
-	msgLenWire = htonl(msgLen);
-
-	status = tp_npipe_write(context, (char *)&msgLenWire, 4);
+	status = tp_npipe_write(context, (char*) &msgLen, 4);
 
 	if (status < 0)
 		return status;
@@ -340,7 +334,7 @@ static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase *message)
 	return pl;
 }
 
-int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 status, UINT32 type, UINT32 tag)
+int pbrpc_send_response(pbRPCContext* context, pbRPCPayload* response, UINT32 status, UINT32 type, UINT32 tag)
 {
 	int ret;
 	Freerds__Pbrpc__RPCBase* pbresponse = pbrpc_message_new();
@@ -410,7 +404,7 @@ static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase 
 int pbrpc_process_message_in(pbRPCContext* context)
 {
 	char* msg;
-	int msgLen;
+	UINT32 msgLen;
 	int status = 0;
 	Freerds__Pbrpc__RPCBase* rpcmessage;
 

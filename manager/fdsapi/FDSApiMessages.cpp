@@ -26,9 +26,9 @@
 /* Base types */
 
 #define FDSAPI_SizeOfBOOL()		1
-#define FDSAPI_SizeOfUINT8()	1
-#define FDSAPI_SizeOfUINT16()	2
-#define FDSAPI_SizeOfUINT32()	4
+#define FDSAPI_SizeOfUINT8()		1
+#define FDSAPI_SizeOfUINT16()		2
+#define FDSAPI_SizeOfUINT32()		4
 
 static BOOL FDSAPI_DecodeBOOL(wStream* s, BOOL* boolValue)
 {

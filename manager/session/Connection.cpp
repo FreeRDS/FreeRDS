@@ -105,13 +105,13 @@ namespace freerds
 
 			delete auth;
 
-			if (mAuthStatus == 0) {
+			if (mAuthStatus == 0)
+			{
 				mUsername = username;
 				mDomain = domain;
 			}
 
 			return mAuthStatus;
-
 		}
 
 		pCLIENT_INFORMATION Connection::getClientInformation() {

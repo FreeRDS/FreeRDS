@@ -26,6 +26,183 @@
 #include <winpr/stream.h>
 #include <winpr/collections.h>
 
+#define FDSAPI_REQUEST_ID(_id)		(_id)
+#define FDSAPI_RESPONSE_ID(_id)		(_id | 0x80000000)
+#define FDSAPI_IS_RESPONSE_ID(_id)	(_id & 0x80000000)
+
+/* Server to Manager */
+
+#define FDSAPI_CHANNEL_ALLOWED_REQUEST_ID			FDSAPI_REQUEST_ID(1001)
+#define FDSAPI_CHANNEL_ALLOWED_RESPONSE_ID			FDSAPI_RESPONSE_ID(1001)
+#define FDSAPI_HEARTBEAT_REQUEST_ID				FDSAPI_REQUEST_ID(1002)
+#define FDSAPI_HEARTBEAT_RESPONSE_ID				FDSAPI_RESPONSE_ID(1002)
+#define FDSAPI_LOGON_USER_REQUEST_ID				FDSAPI_REQUEST_ID(1003)
+#define FDSAPI_LOGON_USER_RESPONSE_ID				FDSAPI_RESPONSE_ID(1003)
+#define FDSAPI_LOGOFF_USER_REQUEST_ID				FDSAPI_REQUEST_ID(1004)
+#define FDSAPI_LOGOFF_USER_RESPONSE_ID				FDSAPI_RESPONSE_ID(1004)
+#define FDSAPI_DISCONNECT_USER_REQUEST_ID			FDSAPI_REQUEST_ID(1005)
+#define FDSAPI_DISCONNECT_USER_RESPONSE_ID			FDSAPI_RESPONSE_ID(1005)
+#define FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID		FDSAPI_REQUEST_ID(1006)
+#define FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID		FDSAPI_RESPONSE_ID(1006)
+
+struct _FDSAPI_CHANNEL_ALLOWED_REQUEST
+{
+	UINT32 msgType;
+
+	char* ChannelName;
+};
+typedef struct _FDSAPI_CHANNEL_ALLOWED_REQUEST FDSAPI_CHANNEL_ALLOWED_REQUEST;
+
+struct _FDSAPI_CHANNEL_ALLOWED_RESPONSE
+{
+	UINT32 msgType;
+
+	UINT32 status;
+	BOOL ChannelAllowed;
+};
+typedef struct _FDSAPI_CHANNEL_ALLOWED_RESPONSE FDSAPI_CHANNEL_ALLOWED_RESPONSE;
+
+struct _FDSAPI_HEARTBEAT_REQUEST
+{
+	UINT32 msgType;
+
+	UINT32 HeartbeatId;
+};
+typedef struct _FDSAPI_HEARTBEAT_REQUEST FDSAPI_HEARTBEAT_REQUEST;
+
+struct _FDSAPI_HEARTBEAT_RESPONSE
+{
+	UINT32 msgType;
+
+	UINT32 status;
+	UINT32 HeartbeatId;
+};
+typedef struct _FDSAPI_HEARTBEAT_RESPONSE FDSAPI_HEARTBEAT_RESPONSE;
+
+struct _FDSAPI_LOGON_USER_REQUEST
+{
+	UINT32 msgType;
+
+	UINT32 ConnectionId;
+	char* User;
+	char* Domain;
+	char* Password;
+	UINT32 DesktopWidth;
+	UINT32 DesktopHeight;
+	UINT32 ColorDepth;
+	char* ClientName;
+	char* ClientAddress;
+	UINT32 ClientBuild;
+	UINT32 ClientProductId;
+	UINT32 ClientHardwareId;
+	UINT32 ClientProtocolType;
+};
+typedef struct _FDSAPI_LOGON_USER_REQUEST FDSAPI_LOGON_USER_REQUEST;
+
+struct _FDSAPI_LOGON_USER_RESPONSE
+{
+	UINT32 msgType;
+
+	UINT32 status;
+	char* ServiceEndpoint;
+};
+typedef struct _FDSAPI_LOGON_USER_RESPONSE FDSAPI_LOGON_USER_RESPONSE;
+
+struct _FDSAPI_LOGOFF_USER_REQUEST
+{
+	UINT32 msgType;
+
+	UINT32 ConnectionId;
+};
+typedef struct _FDSAPI_LOGOFF_USER_REQUEST FDSAPI_LOGOFF_USER_REQUEST;
+
+struct _FDSAPI_LOGOFF_USER_RESPONSE
+{
+	UINT32 msgType;
+
+	UINT32 status;
+	UINT32 ConnectionId;
+};
+typedef struct _FDSAPI_LOGOFF_USER_RESPONSE FDSAPI_LOGOFF_USER_RESPONSE;
+
+struct _FDSAPI_DISCONNECT_USER_REQUEST
+{
+	UINT32 msgType;
+
+	UINT32 ConnectionId;
+};
+typedef struct _FDSAPI_DISCONNECT_USER_REQUEST FDSAPI_DISCONNECT_USER_REQUEST;
+
+struct _FDSAPI_DISCONNECT_USER_RESPONSE
+{
+	UINT32 msgType;
+
+	UINT32 status;
+	UINT32 ConnectionId;
+};
+typedef struct _FDSAPI_DISCONNECT_USER_RESPONSE FDSAPI_DISCONNECT_USER_RESPONSE;
+
+struct _FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST
+{
+	UINT32 msgType;
+
+	UINT32 ConnectionId;
+	char* ServiceEndpoint;
+};
+typedef struct _FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST;
+
+struct _FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE
+{
+	UINT32 msgType;
+
+	UINT32 status;
+};
+typedef struct _FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE;
+
+/* Server to Manager */
+
+#define FDSAPI_START_SESSION_REQUEST_ID				FDSAPI_REQUEST_ID(2001)
+#define FDSAPI_START_SESSION_RESPONSE_ID			FDSAPI_RESPONSE_ID(2001)
+#define FDSAPI_END_SESSION_REQUEST_ID				FDSAPI_REQUEST_ID(2002)
+#define FDSAPI_END_SESSION_RESPONSE_ID				FDSAPI_RESPONSE_ID(2002)
+
+struct _FDSAPI_START_SESSION_REQUEST
+{
+	UINT32 msgType;
+
+	UINT32 SessionId;
+	char* User;
+	char* Domain;
+	char* Password;
+};
+typedef struct _FDSAPI_START_SESSION_REQUEST FDSAPI_START_SESSION_REQUEST;
+
+struct _FDSAPI_START_SESSION_RESPONSE
+{
+	UINT32 msgType;
+
+	UINT32 status;
+	char* ServiceEndpoint;
+};
+typedef struct _FDSAPI_START_SESSION_RESPONSE FDSAPI_START_SESSION_RESPONSE;
+
+struct _FDSAPI_END_SESSION_REQUEST
+{
+	UINT32 msgType;
+
+	UINT32 SessionId;
+};
+typedef struct _FDSAPI_END_SESSION_REQUEST FDSAPI_END_SESSION_REQUEST;
+
+struct _FDSAPI_END_SESSION_RESPONSE
+{
+	UINT32 msgType;
+
+	UINT32 status;
+	UINT32 SessionId;
+};
+typedef struct _FDSAPI_END_SESSION_RESPONSE FDSAPI_END_SESSION_RESPONSE;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -82,6 +259,12 @@ void freerds_rpc_client_free(rdsRpcClient* rpcClient);
 int freerds_rpc_client_start(rdsRpcClient* rpcClient);
 int freerds_rpc_client_stop(rdsRpcClient* rpcClient);
 int freerds_rpc_client_send_message(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
+
+/* RPC message packing */
+
+wStream* freerds_rpc_msg_pack(void* data, wStream* s);
+BOOL freerds_rpc_msg_unpack(void* data, const BYTE* buffer, UINT32 size);
+void freerds_rpc_msg_free(void* data);
 
 #ifdef __cplusplus
 }

@@ -27,9 +27,8 @@ namespace freerds
 {
 	namespace call
 	{
-
-	class Call
-	{
+		class Call
+		{
 		public:
 			Call();
 			virtual ~Call();
