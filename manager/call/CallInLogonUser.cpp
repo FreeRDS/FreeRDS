@@ -35,9 +35,10 @@ namespace freerds
 		static wLog* logger_CallInLogonUser = WLog_Get("freerds.SessionManager.call.callinlogonuser");
 
 		CallInLogonUser::CallInLogonUser()
-		: mConnectionId(0), mAuthStatus(0),mWidth(0),mHeight(0),mColorDepth(0),
-		  mClientName(),mClientAddress(),mClientBuildNumber(0),mClientProductId(0),
-		  mClientHardwareId(0),mClientProtocolType(0)
+		: mConnectionId(0), mAuthStatus(0), mWidth(0), mHeight(0), mColorDepth(0),
+		  mClientName(), mClientAddress(), mClientBuildNumber(0), mClientProductId(0),
+		  mClientHardwareId(0), mClientProtocolType(0),
+		  m_RequestId(FDSAPI_LOGON_USER_REQUEST_ID), m_ResponseId(FDSAPI_LOGON_USER_RESPONSE_ID)
 		{
 
 		};
@@ -54,78 +55,67 @@ namespace freerds
 
 		int CallInLogonUser::decodeRequest()
 		{
-			// decode protocol buffers
-			LogonUserRequest req;
+			BYTE* buffer;
+			UINT32 length;
 
-			if (!req.ParseFromString(mEncodedRequest))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
 
-			mUserName = req.username();
+			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
 
-			mConnectionId = req.connectionid();
+			mConnectionId = m_Request.ConnectionId;
+			mUserName = m_Request.User ? m_Request.User : "";
+			mDomainName = m_Request.Domain ? m_Request.Domain : "";
+			mPassword = m_Request.Password ? m_Request.Password : "";
+			mWidth = m_Request.DesktopWidth;
+			mHeight = m_Request.DesktopHeight;
+			mColorDepth = m_Request.ColorDepth;
+			mClientName = m_Request.ClientName ? m_Request.ClientName : "";
+			mClientAddress = m_Request.ClientAddress ? m_Request.ClientAddress : "";
+			mClientBuildNumber = m_Request.ClientBuild;
+			mClientProductId = m_Request.ClientProductId;
+			mClientHardwareId = m_Request.ClientHardwareId;
+			mClientProtocolType = m_Request.ClientProtocolType;
 
-			mDomainName = req.domain();
-
-			mPassword = req.password();
-
-			mWidth = req.width();
-
-			mHeight = req.height();
-
-			mColorDepth = req.colordepth();
-
-			mClientName = req.clientname();
-
-			mClientAddress = req.clientaddress();
-
-			mClientBuildNumber = req.clientbuildnumber();
-
-			mClientProductId = req.clientproductid();
-
-			mClientHardwareId = req.clienthardwareid();
-
-			mClientProtocolType = req.clientprotocoltype();
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
 
 			return 0;
 		};
 
 		int CallInLogonUser::encodeResponse()
 		{
-			// encode protocol buffers
-			LogonUserResponse resp;
+			wStream* s;
 
-			resp.set_serviceendpoint(mPipeName);
+			m_Response.ServiceEndpoint = (char*) mPipeName.c_str();
 
-			if (!resp.SerializeToString(&mEncodedResponse))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
 
 			return 0;
 		};
 
-		int CallInLogonUser::authenticateUser() {
-
+		int CallInLogonUser::authenticateUser()
+		{
 			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
-			if (currentConnection == NULL) {
+
+			if (currentConnection == NULL)
+			{
 				WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Cannot get Connection for connectionId %lu",mConnectionId);
 				mAuthStatus = -1;
 				return -1;
 			}
-			return currentConnection->authenticateUser(mUserName,mDomainName,mPassword);
+
+			return currentConnection->authenticateUser(mUserName, mDomainName, mPassword);
 		}
 
-		int CallInLogonUser::getUserSession() {
-
-			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
-			sessionNS::SessionPtr currentSession;
+		int CallInLogonUser::getUserSession()
+		{
 			bool reconnectAllowed;
+			sessionNS::SessionPtr currentSession;
+			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getOrCreateConnection(mConnectionId);
 
 			if (!APP_CONTEXT.getPropertyManager()->getPropertyBool("session.reconnect", reconnectAllowed)) {
 				reconnectAllowed = true;
@@ -273,11 +263,12 @@ namespace freerds
 			int authStatus;
 
 			authStatus = authenticateUser();
-			if (authStatus != 0) {
+
+			if (authStatus != 0)
 				getAuthSession();
-			} else {
+			else
 				getUserSession();
-			}
+
 			return 0;
 		}
 	}

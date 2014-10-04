@@ -69,11 +69,14 @@ namespace freerds
 			UINT32 mConnectionId;
 			std::string mPipeName;
 
-			FDSAPI_LOGON_USER_REQUEST request;
-			FDSAPI_LOGON_USER_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_LOGON_USER_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_LOGON_USER_RESPONSE m_Response;
 		};
 
-		FACTORY_REGISTER_DWORD(CallFactory, CallInLogonUser, freerds::icp::LogonUser);
+		FACTORY_REGISTER_DWORD(CallFactory, CallInLogonUser, FDSAPI_LOGON_USER_REQUEST_ID);
 	}
 }
 

@@ -21,7 +21,7 @@
 #define _PBRPC_H
 
 #include <winpr/synch.h>
-#include <winpr/wtypes.h>
+#include <winpr/stream.h>
 #include <winpr/collections.h>
 
 #include <freerds/rpc.h>
@@ -47,6 +47,7 @@ typedef struct pbrpc_context pbRPCContext;
 
 struct pbrpc_payload
 {
+	wStream* s;
 	BYTE* buffer;
 	UINT32 length;
 };

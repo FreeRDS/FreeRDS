@@ -390,11 +390,6 @@ int pbrpc_process_message_in(pbRPCContext* context)
 	if (!msg)
 		return 1;
 
-	printf("msg: rsp: %d/%d\n", msg->isresponse ? 1: 0, FDSAPI_IS_RESPONSE_ID(header.msgType) ? 1:0);
-	printf("msg: type: %d/%d\n", msg->msgtype, FDSAPI_REQUEST_ID(header.msgType));
-	printf("msg: status: %d/%d\n", msg->status, header.status);
-	printf("msg: tag: %d/%d\n", msg->tag, header.callId);
-
 	if (msg->isresponse)
 		status = pbrpc_process_response(context, msg);
 	else

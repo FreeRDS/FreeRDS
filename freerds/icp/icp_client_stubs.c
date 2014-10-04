@@ -208,55 +208,29 @@ int freerds_icp_LogOffUserSession(UINT32 connectionId, BOOL* loggedoff)
 
 int freerds_icp_LogonUser(FDSAPI_LOGON_USER_REQUEST* pRequest, FDSAPI_LOGON_USER_RESPONSE* pResponse)
 {
-	int ret;
+	int status;
 	pbRPCPayload pbrequest;
 	pbRPCPayload* pbresponse = NULL;
-	Freerds__Icp__LogonUserRequest request;
-	Freerds__Icp__LogonUserResponse* response = NULL;
-	UINT32 type = FREERDS__ICP__MSGTYPE__LogonUser;
-
+	UINT32 type = FDSAPI_LOGON_USER_REQUEST_ID;
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 
 	if (!context)
 		return PBRPC_FAILED;
 
-	freerds__icp__logon_user_request__init(&request);
+	pbrequest.s = freerds_rpc_msg_pack(type, pRequest, NULL);
+	pbrequest.buffer = Stream_Buffer(pbrequest.s);
+	pbrequest.length = Stream_Length(pbrequest.s);
 
-	request.connectionid = pRequest->ConnectionId;
-	request.domain = pRequest->Domain;
-	request.username = pRequest->User;
-	request.password = pRequest->Password;
-	request.width = pRequest->DesktopWidth;
-	request.height = pRequest->DesktopHeight;
-	request.colordepth = pRequest->ColorDepth;
-	request.clientname = pRequest->ClientName;
-	request.clientaddress = pRequest->ClientAddress;
-	request.clientbuildnumber = pRequest->ClientBuild;
-	request.clientproductid = pRequest->ClientProductId;
-	request.clienthardwareid = pRequest->ClientHardwareId;
-	request.clientprotocoltype = pRequest->ClientProtocolType;
+	status = pbrpc_call_method(context, FDSAPI_REQUEST_ID(type), &pbrequest, &pbresponse);
 
-	pbrequest.length = freerds__icp__logon_user_request__get_packed_size(&request);
-	pbrequest.buffer = (BYTE*) malloc(pbrequest.length);
-	ret = freerds__icp__logon_user_request__pack(&request, pbrequest.buffer);
-	if (ret == pbrequest.length)
-		ret = pbrpc_call_method(context, type, &pbrequest, &pbresponse);
-	else
-		ret = PBRPC_BAD_REQEST_DATA;
-	free(pbrequest.buffer);
+	Stream_Free(pbrequest.s, TRUE);
 
-	if (ret != 0)
-		return ret;
+	if (status != 0)
+		return status;
 
-	response = freerds__icp__logon_user_response__unpack(NULL, pbresponse->length, pbresponse->buffer);
+	freerds_rpc_msg_unpack(FDSAPI_RESPONSE_ID(type), pResponse, pbresponse->buffer, pbresponse->length);
+
 	pbrpc_free_payload(pbresponse);
-
-	if (!response)
-		return PBRPC_BAD_RESPONSE;
-
-	pResponse->ServiceEndpoint = _strdup(response->serviceendpoint);
-
-	freerds__icp__logon_user_response__free_unpacked(response, NULL);
 
 	return PBRPC_SUCCESS;
 }
