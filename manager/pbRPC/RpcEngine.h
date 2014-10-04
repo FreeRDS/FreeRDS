@@ -58,7 +58,7 @@ namespace freerds
 			int processData();
 			int send(freerds::call::Call * call);
 			int sendError(uint32_t callID, uint32_t callType);
-			int sendInternal(std::string data);
+			int sendInternal(FDSAPI_MSG_HEADER* header, BYTE* buffer);
 			int processOutgoingCall(freerds::call::Call* call);
 
 		private:
@@ -70,13 +70,15 @@ namespace freerds
 
 			DWORD mPacktLength;
 
-			DWORD mHeaderRead;
-			BYTE mHeaderBuffer[FDSAPI_MSG_HEADER_SIZE];
-
 			DWORD mPayloadRead;
 			BYTE mPayloadBuffer[PIPE_BUFFER_SIZE];
 
 			RPCBase mpbRPC;
+
+			DWORD mHeaderRead;
+			BYTE* mHeaderBuffer;
+			FDSAPI_MSG_HEADER m_Header;
+
 			std::list<callNS::CallOut*> mAnswerWaitingQueue;
 
 			long mNextOutCall;

@@ -36,7 +36,7 @@
 int tp_npipe_open(pbRPCContext* context, int timeout)
 {
 	HANDLE hNamedPipe = 0;
-	char pipeName[] = "\\\\.\\pipe\\FreeRDS_SessionManager";
+	char pipeName[] = "\\\\.\\pipe\\FreeRDS_Manager";
 
 	if (!WaitNamedPipeA(pipeName, timeout))
 	{
@@ -130,19 +130,6 @@ void pbrpc_message_free(Freerds__Pbrpc__RPCBase* msg, BOOL freePayload)
 	free(msg);
 }
 
-void pbrpc_prepare_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg)
-{
-	msg->tag = pbrpc_getTag(context);
-	msg->isresponse = FALSE;
-	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
-}
-
-void pbrpc_prepare_response(Freerds__Pbrpc__RPCBase* msg, UINT32 tag)
-{
-	msg->isresponse = TRUE;
-	msg->tag = tag;
-}
-
 pbRPCPayload* pbrpc_payload_new()
 {
 	pbRPCPayload* pl = calloc(1, sizeof(pbRPCPayload));
@@ -155,21 +142,7 @@ void pbrpc_free_payload(pbRPCPayload* response)
 		return;
 
 	free(response->data);
-
 	free(response);
-}
-
-static pbRPCTransaction* pbrpc_transaction_new()
-{
-	pbRPCTransaction* ta = calloc(1, sizeof(pbRPCTransaction));
-	ta->freeAfterResponse = TRUE;
-	return ta;
-}
-
-void pbrpc_transaction_free(pbRPCTransaction* ta)
-{
-	if (ta)
-		free(ta);
 }
 
 static void queue_item_free(void* obj)
@@ -180,7 +153,7 @@ static void queue_item_free(void* obj)
 static void list_dictionary_item_free(void* item)
 {
 	wListDictionaryItem* di = (wListDictionaryItem*) item;
-	pbrpc_transaction_free((pbRPCTransaction*)(di->value));
+	free((pbRPCTransaction*)(di->value));
 }
 
 pbRPCContext* pbrpc_server_new()
@@ -273,14 +246,20 @@ static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase
 	return 0;
 }
 
-static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCBase *msg)
+static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg)
 {
 	int status;
 	BYTE* buffer;
 	FDSAPI_MSG_HEADER header;
 
-	header.msgType = 0;
-	header.msgSize = freerds__pbrpc__rpcbase__get_packed_size(msg);
+	if (!msg->isresponse)
+		header.msgType = FDSAPI_REQUEST_ID(msg->msgtype);
+	else
+		header.msgType = FDSAPI_RESPONSE_ID(msg->msgtype);
+
+	header.msgSize = (UINT32) freerds__pbrpc__rpcbase__get_packed_size(msg);
+	header.callId = (UINT32) msg->tag;
+	header.status = (UINT32) msg->status;
 
 	buffer = malloc(header.msgSize);
 
@@ -301,9 +280,9 @@ static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCB
 
 static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase* message)
 {
-	pbRPCPayload* pl = pbrpc_payload_new();
+	pbRPCPayload* pl = (pbRPCPayload*) calloc(1, sizeof(pbRPCPayload));
 
-	pl->data = (char*)(message->payload.data);
+	pl->data = (char*) (message->payload.data);
 	pl->dataLen = message->payload.len;
 
 	return pl;
@@ -312,29 +291,34 @@ static pbRPCPayload* pbrpc_fill_payload(Freerds__Pbrpc__RPCBase* message)
 int pbrpc_send_response(pbRPCContext* context, pbRPCPayload* response, UINT32 status, UINT32 type, UINT32 tag)
 {
 	int ret;
-	Freerds__Pbrpc__RPCBase* pbresponse = pbrpc_message_new();
+	Freerds__Pbrpc__RPCBase* msg;
 
-	pbrpc_prepare_response(pbresponse, tag);
+	msg = pbrpc_message_new();
 
-	pbresponse->msgtype = type;
-	pbresponse->status = status;
+	msg->tag = tag;
+	msg->isresponse = TRUE;
+	msg->msgtype = type;
+	msg->status = status;
 
 	if (response)
 	{
 		if (status == 0)
 		{
-			pbresponse->has_payload = 1;
-			pbresponse->payload.data = (BYTE*) response->data;
-			pbresponse->payload.len = response->dataLen;
+			msg->has_payload = 1;
+			msg->payload.data = (BYTE*) response->data;
+			msg->payload.len = response->dataLen;
 		}
 	}
 
-	ret = pbrpc_process_message_out(context, pbresponse);
+	ret = pbrpc_process_message_out(context, msg);
 
 	if (response)
-		pbrpc_free_payload(response);
+	{
+		free(response->data);
+		free(response);
+	}
 
-	pbrpc_message_free(pbresponse, FALSE);
+	pbrpc_message_free(msg, FALSE);
 
 	return ret;
 }
@@ -555,7 +539,7 @@ static void pbrpc_response_local_cb(PBRPCSTATUS reason, Freerds__Pbrpc__RPCBase*
 
 int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request, pbRPCPayload** response)
 {
-	Freerds__Pbrpc__RPCBase* message;
+	Freerds__Pbrpc__RPCBase* msg;
 	pbRPCTransaction ta;
 	UINT32 ret = PBRPC_FAILED;
 	UINT32 tag;
@@ -563,17 +547,19 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	struct pbrpc_local_call_context local_context;
 
 	if (!context->isConnected)
-	{
 		return PBRCP_TRANSPORT_ERROR;
-	}
 
-	message = pbrpc_message_new();
-	pbrpc_prepare_request(context, message);
-	message->payload.data = (BYTE*) request->data;
-	message->payload.len = request->dataLen;
-	message->has_payload = 1;
-	message->msgtype = type;
-	tag = message->tag;
+	tag = pbrpc_getTag(context);
+
+	msg = pbrpc_message_new();
+
+	msg->tag = tag;
+	msg->isresponse = FALSE;
+	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
+	msg->payload.data = (BYTE*) request->data;
+	msg->payload.len = request->dataLen;
+	msg->has_payload = 1;
+	msg->msgtype = type;
 
 	ZeroMemory(&local_context, sizeof(local_context));
 	local_context.event = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -594,8 +580,8 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	//    ...
 	// 	Unlock(context->transactions)
 
-	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(message->tag)), &ta);
-	Queue_Enqueue(context->writeQueue, message);
+	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(msg->tag)), &ta);
+	Queue_Enqueue(context->writeQueue, msg);
 
 	wait_ret = WaitForSingleObject(local_context.event, PBRPC_TIMEOUT);
 
@@ -613,9 +599,9 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	}
 
 	CloseHandle(local_context.event);
-	message = local_context.response;
+	msg = local_context.response;
 
-	if (!message)
+	if (!msg)
 	{
 		if (local_context.status)
 			ret = local_context.status;
@@ -624,9 +610,9 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	}
 	else
 	{
-		*response = pbrpc_fill_payload(message);
-		ret = message->status;
-		pbrpc_message_free(message, FALSE);
+		*response = pbrpc_fill_payload(msg);
+		ret = msg->status;
+		pbrpc_message_free(msg, FALSE);
 	}
 
 	return ret;
@@ -635,7 +621,9 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 		pbRpcResponseCallback callback, void *callback_args)
 {
-	Freerds__Pbrpc__RPCBase* message;
+	UINT32 tag;
+	pbRPCTransaction* ta;
+	Freerds__Pbrpc__RPCBase* msg;
 
 	if (!context->isConnected)
 	{
@@ -643,17 +631,23 @@ void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* r
 		return;
 	}
 
-	pbRPCTransaction *ta = pbrpc_transaction_new();
+	ta = (pbRPCTransaction*) calloc(1, sizeof(pbRPCTransaction));
+	ta->freeAfterResponse = TRUE;
 	ta->responseCallback = callback;
 	ta->callbackArg = callback_args;
 
-	message = pbrpc_message_new();
-	pbrpc_prepare_request(context, message);
-	message->payload.data = (unsigned char*)request->data;
-	message->payload.len = request->dataLen;
-	message->has_payload = 1;
-	message->msgtype = type;
+	tag = pbrpc_getTag(context);
 
-	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(message->tag)), ta);
-	Queue_Enqueue(context->writeQueue, message);
+	msg = pbrpc_message_new();
+
+	msg->tag = tag;
+	msg->isresponse = FALSE;
+	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
+	msg->payload.data = (BYTE*) request->data;
+	msg->payload.len = request->dataLen;
+	msg->has_payload = 1;
+	msg->msgtype = type;
+
+	ListDictionary_Add(context->transactions, (void*)((UINT_PTR)(msg->tag)), ta);
+	Queue_Enqueue(context->writeQueue, msg);
 }

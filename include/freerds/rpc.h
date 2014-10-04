@@ -26,14 +26,28 @@
 #include <winpr/stream.h>
 #include <winpr/collections.h>
 
-#define FDSAPI_MSG_HEADER_SIZE	8
+#define FDSAPI_MSG_HEADER_SIZE	16
 
 struct _FDSAPI_MSG_HEADER
 {
 	UINT32 msgSize;
 	UINT32 msgType;
+	UINT32 callId;
+	UINT32 status;
 };
 typedef struct _FDSAPI_MSG_HEADER FDSAPI_MSG_HEADER;
+
+struct _FDSAPI_MSG_PACKET
+{
+	UINT32 msgSize;
+	UINT32 msgType;
+	UINT32 callId;
+	UINT32 status;
+
+	BYTE* buffer;
+	UINT32 length;
+};
+typedef struct _FDSAPI_MSG_PACKET FDSAPI_MSG_PACKET;
 
 #define FDSAPI_REQUEST_ID(_id)		(_id)
 #define FDSAPI_RESPONSE_ID(_id)		(_id | 0x80000000)

@@ -46,6 +46,7 @@ namespace freerds
 				mPacktLength(0), mHeaderRead(0), mPayloadRead(0), mNextOutCall(1),
 				mhClientPipe(0), mhServerPipe(0), mhServerThread(0)
 		{
+			mHeaderBuffer = (BYTE*) &m_Header;
 			mhStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
 			WLog_SetLogLevel(logger_RPCEngine, WLOG_ERROR);
 		}
@@ -101,11 +102,11 @@ namespace freerds
 
 		int RpcEngine::createServerPipe(void)
 		{
-			mhServerPipe = createServerPipe("\\\\.\\pipe\\FreeRDS_SessionManager");
+			mhServerPipe = createServerPipe("\\\\.\\pipe\\FreeRDS_Manager");
 
 			if (!mhServerPipe)
 			{
-				WLog_Print(logger_RPCEngine, WLOG_ERROR, "Could not create named pipe \\\\.\\pipe\\FreeRDS_SessionManager");
+				WLog_Print(logger_RPCEngine, WLOG_ERROR, "Could not create named pipe \\\\.\\pipe\\FreeRDS_Manager");
 				return CLIENT_ERROR;
 			}
 
@@ -248,11 +249,14 @@ namespace freerds
 
 		int RpcEngine::processData()
 		{
+			UINT32 callID;
+			UINT32 callType;
+
 			mpbRPC.Clear();
 			mpbRPC.ParseFromArray(mPayloadBuffer, mPayloadRead);
 
-			UINT32 callID = mpbRPC.tag();
-			UINT32 callType = mpbRPC.msgtype();
+			callID = mpbRPC.tag();
+			callType = mpbRPC.msgtype();
 
 			if (mpbRPC.isresponse())
 			{
@@ -344,15 +348,18 @@ namespace freerds
 
 		int RpcEngine::send(freerds::call::Call* call)
 		{
-			DWORD lpNumberOfBytesWritten;
 			std::string serialized;
+			FDSAPI_MSG_HEADER header;
+			DWORD lpNumberOfBytesWritten;
 
 			if (call->getDerivedType() == 1)
 			{
-				// this is a CallIn
 				callNS::CallIn* callIn = (callNS::CallIn*) call;
 
-				// create answer
+				header.msgType = FDSAPI_RESPONSE_ID(callIn->getCallType());
+				header.callId = callIn->getTag();
+				header.status = RPCBase_RPCSTATUS_SUCCESS;
+
 				mpbRPC.Clear();
 				mpbRPC.set_isresponse(true);
 				mpbRPC.set_tag(callIn->getTag());
@@ -360,28 +367,25 @@ namespace freerds
 
 				if (call->getResult())
 				{
-					WLog_Print(logger_RPCEngine, WLOG_TRACE, "call for callType=%d and callID=%d failed, sending error response",callIn->getCallType(),callIn->getTag());
 					mpbRPC.set_status(RPCBase_RPCSTATUS_FAILED);
-					std::string errordescription = callIn->getErrorDescription();
-
-					if (errordescription.size() > 0)
-					{
-						mpbRPC.set_errordescription(errordescription);
-					}
+					header.status = RPCBase_RPCSTATUS_FAILED;
 				}
 				else
 				{
-					WLog_Print(logger_RPCEngine, WLOG_TRACE, "call for callType=%d and callID=%d success, sending response",callIn->getCallType(),callIn->getTag());
 					mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
+					header.status = RPCBase_RPCSTATUS_SUCCESS;
+
 					mpbRPC.set_payload(callIn->getEncodedResponse());
 				}
 			}
 			else if (call->getDerivedType() == 2)
 			{
-				// this is a CallOut
 				callNS::CallOut* callOut = (callNS::CallOut*) call;
 
-				// create answer
+				header.msgType = FDSAPI_REQUEST_ID(callOut->getCallType());
+				header.callId = callOut->getTag();
+				header.status = RPCBase_RPCSTATUS_SUCCESS;
+
 				mpbRPC.Clear();
 				mpbRPC.set_isresponse(false);
 				mpbRPC.set_tag(callOut->getTag());
@@ -391,12 +395,19 @@ namespace freerds
 			}
 
 			mpbRPC.SerializeToString(&serialized);
-			return sendInternal(serialized);
+			header.msgSize = (UINT32) serialized.size();
+
+			return sendInternal(&header, (BYTE*) serialized.data());
 		}
 
 		int RpcEngine::sendError(uint32_t callID, uint32_t callType)
 		{
 			std::string serialized;
+			FDSAPI_MSG_HEADER header;
+
+			header.msgType = FDSAPI_RESPONSE_ID(callType);
+			header.callId = callID;
+			header.status = RPCBase_RPCSTATUS_NOTFOUND;
 
 			mpbRPC.Clear();
 			mpbRPC.set_isresponse(true);
@@ -405,20 +416,17 @@ namespace freerds
 			mpbRPC.set_status(RPCBase_RPCSTATUS_NOTFOUND);
 
 			mpbRPC.SerializeToString(&serialized);
+			header.msgSize = (UINT32) serialized.size();
 
-			return sendInternal(serialized);
+			return sendInternal(&header, (BYTE*) serialized.data());
 		}
 
-		int RpcEngine::sendInternal(std::string data)
+		int RpcEngine::sendInternal(FDSAPI_MSG_HEADER* header, BYTE* buffer)
 		{
 			BOOL fSuccess;
-			FDSAPI_MSG_HEADER header;
 			DWORD lpNumberOfBytesWritten;
 
-			header.msgType = 0;
-			header.msgSize = data.size();
-
-			fSuccess = WriteFile(mhClientPipe, &header.msgSize,
+			fSuccess = WriteFile(mhClientPipe, header,
 					FDSAPI_MSG_HEADER_SIZE, &lpNumberOfBytesWritten, NULL);
 
 			if (!fSuccess || (lpNumberOfBytesWritten == 0))
@@ -427,8 +435,8 @@ namespace freerds
 				return CLIENT_ERROR;
 			}
 
-			fSuccess = WriteFile(mhClientPipe, data.c_str(),
-					data.size(), &lpNumberOfBytesWritten, NULL);
+			fSuccess = WriteFile(mhClientPipe, buffer,
+					header->msgSize, &lpNumberOfBytesWritten, NULL);
 
 			if (!fSuccess || (lpNumberOfBytesWritten == 0))
 			{
@@ -507,22 +515,21 @@ namespace freerds
 		{
 			if (call->getDerivedType() == 2)
 			{
-					// this is a CallOut
-					callNS::CallOut* callOut = (callNS::CallOut*) call;
-					callOut->encodeRequest();
-					callOut->setTag(mNextOutCall++);
+				callNS::CallOut* callOut = (callNS::CallOut*) call;
+				callOut->encodeRequest();
+				callOut->setTag(mNextOutCall++);
 
-					if (send(call) == CLIENT_SUCCESS)
-					{
-						mAnswerWaitingQueue.push_back(callOut);
-						return CLIENT_SUCCESS;
-					}
-					else
-					{
-						WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending call, informing call");
-						callOut->setResult(1); // for failed
-						return CLIENT_ERROR;
-					}
+				if (send(call) == CLIENT_SUCCESS)
+				{
+					mAnswerWaitingQueue.push_back(callOut);
+					return CLIENT_SUCCESS;
+				}
+				else
+				{
+					WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending call, informing call");
+					callOut->setResult(1); // for failed
+					return CLIENT_ERROR;
+				}
 			}
 			else
 			{
