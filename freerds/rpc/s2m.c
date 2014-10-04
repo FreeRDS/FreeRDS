@@ -27,8 +27,6 @@
 
 #include <freerds/rpc.h>
 
-/* Server to Manager */
-
 /* FDSAPI_START_SESSION_REQUEST */
 
 static wStream* freerds_pack_start_session_request(FDSAPI_START_SESSION_REQUEST* request, wStream* s)

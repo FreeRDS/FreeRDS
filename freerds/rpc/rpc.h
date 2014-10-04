@@ -57,6 +57,9 @@ BOOL msgpack_unpack_uint32(msgpack_object* obj, UINT32* d);
 int msgpack_pack_cstr(msgpack_packer* pk, const char* cstr);
 BOOL msgpack_unpack_cstr(msgpack_object* obj, char** cstr);
 
+int msgpack_pack_bool(msgpack_packer* pk, BOOL b);
+BOOL msgpack_unpack_bool(msgpack_object* obj, BOOL* b);
+
 void msgpack_stream_packer_init(msgpack_packer* pk, wStream* s);
 int msgpack_stream_write(wStream* s, const BYTE* buf, size_t len);
 

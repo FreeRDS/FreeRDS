@@ -115,15 +115,55 @@ BOOL msgpack_unpack_cstr(msgpack_object* obj, char** cstr)
 	return TRUE;
 }
 
+int msgpack_pack_bool(msgpack_packer* pk, BOOL b)
+{
+	if (b)
+		msgpack_pack_true(pk);
+	else
+		msgpack_pack_false(pk);
+
+	return 0;
+}
+
+BOOL msgpack_unpack_bool(msgpack_object* obj, BOOL* b)
+{
+	if (obj->type != MSGPACK_OBJECT_BOOLEAN)
+		return FALSE;
+
+	*b = (BOOL) obj->via.boolean;
+	return TRUE;
+}
+
 /* Function Tables */
 
 extern RDS_RPC_PACK_FUNC* g_S2M_FUNCS[];
+extern RDS_RPC_PACK_FUNC* g_M2S_FUNCS[];
 
 RDS_RPC_PACK_FUNC* freerds_rpc_msg_find_func(UINT32 msgType)
 {
-	int index = 0;
+	int index;
 	BOOL found = FALSE;
-	RDS_RPC_PACK_FUNC** func = g_S2M_FUNCS;
+	RDS_RPC_PACK_FUNC** func;
+
+	index = 0;
+	func = g_S2M_FUNCS;
+
+	while (func[index])
+	{
+		if (msgType == func[index]->msgType)
+		{
+			found = TRUE;
+			break;
+		}
+
+		index++;
+	}
+
+	if (found)
+		return func[index];
+
+	index = 0;
+	func = g_M2S_FUNCS;
 
 	while (func[index])
 	{
