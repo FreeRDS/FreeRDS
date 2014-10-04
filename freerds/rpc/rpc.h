@@ -33,6 +33,7 @@ typedef void (*pRdsRpcFree)(void* data);
 struct _RDS_RPC_PACK_FUNC
 {
 	UINT32 msgType;
+	UINT32 msgSize;
 	pRdsRpcPack Pack;
 	pRdsRpcUnpack Unpack;
 	pRdsRpcFree Free;

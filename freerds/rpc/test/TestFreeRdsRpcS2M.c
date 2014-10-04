@@ -4,6 +4,7 @@
 int TestFreeRdsRpcS2M(int argc, char* argv[])
 {
 	wStream* s;
+	UINT32 msgType;
 	FDSAPI_START_SESSION_REQUEST request;
 
 	request.SessionId = 123;
@@ -16,22 +17,21 @@ int TestFreeRdsRpcS2M(int argc, char* argv[])
 	if (!s)
 		return 1;
 
-	request.msgType = FDSAPI_START_SESSION_REQUEST_ID;
+	msgType = FDSAPI_START_SESSION_REQUEST_ID;
 
-	s = freerds_rpc_msg_pack(&request, s);
+	s = freerds_rpc_msg_pack(msgType, &request, s);
 
 	if (!s)
 		return 1;
 
 	ZeroMemory(&request, sizeof(request));
-	request.msgType = FDSAPI_START_SESSION_REQUEST_ID;
 
-	freerds_rpc_msg_unpack(&request, Stream_Buffer(s), Stream_Length(s));
+	freerds_rpc_msg_unpack(msgType, &request, Stream_Buffer(s), Stream_Length(s));
 
 	fprintf(stderr, "SessionId: %d User: %s Domain: %s Password: %s\n",
 			request.SessionId, request.User, request.Domain, request.Password);
 
-	freerds_rpc_msg_free(&request);
+	freerds_rpc_msg_free(msgType, &request);
 
 	Stream_Free(s, TRUE);
 

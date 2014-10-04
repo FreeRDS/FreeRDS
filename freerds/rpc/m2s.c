@@ -76,6 +76,7 @@ static void freerds_free_channel_allowed_request(FDSAPI_CHANNEL_ALLOWED_REQUEST*
 static RDS_RPC_PACK_FUNC g_FDSAPI_CHANNEL_ALLOWED_REQUEST =
 {
 	FDSAPI_CHANNEL_ALLOWED_REQUEST_ID,
+	sizeof(FDSAPI_CHANNEL_ALLOWED_REQUEST),
 	(pRdsRpcPack) freerds_pack_channel_allowed_request,
 	(pRdsRpcUnpack) freerds_unpack_channel_allowed_request,
 	(pRdsRpcFree) freerds_free_channel_allowed_request
@@ -137,6 +138,7 @@ static void freerds_free_channel_allowed_response(FDSAPI_CHANNEL_ALLOWED_RESPONS
 static RDS_RPC_PACK_FUNC g_FDSAPI_CHANNEL_ALLOWED_RESPONSE =
 {
 	FDSAPI_CHANNEL_ALLOWED_RESPONSE_ID,
+	sizeof(FDSAPI_CHANNEL_ALLOWED_RESPONSE),
 	(pRdsRpcPack) freerds_pack_channel_allowed_response,
 	(pRdsRpcUnpack) freerds_unpack_channel_allowed_response,
 	(pRdsRpcFree) freerds_free_channel_allowed_response
@@ -194,6 +196,7 @@ static void freerds_free_heartbeat_request(FDSAPI_HEARTBEAT_REQUEST* request)
 static RDS_RPC_PACK_FUNC g_FDSAPI_HEARTBEAT_REQUEST =
 {
 	FDSAPI_HEARTBEAT_REQUEST_ID,
+	sizeof(FDSAPI_HEARTBEAT_REQUEST),
 	(pRdsRpcPack) freerds_pack_heartbeat_request,
 	(pRdsRpcUnpack) freerds_unpack_heartbeat_request,
 	(pRdsRpcFree) freerds_free_heartbeat_request
@@ -255,6 +258,7 @@ static void freerds_free_heartbeat_response(FDSAPI_HEARTBEAT_RESPONSE* response)
 static RDS_RPC_PACK_FUNC g_FDSAPI_HEARTBEAT_RESPONSE =
 {
 	FDSAPI_HEARTBEAT_RESPONSE_ID,
+	sizeof(FDSAPI_HEARTBEAT_RESPONSE),
 	(pRdsRpcPack) freerds_pack_heartbeat_response,
 	(pRdsRpcUnpack) freerds_unpack_heartbeat_response,
 	(pRdsRpcFree) freerds_free_heartbeat_response
@@ -364,6 +368,7 @@ static void freerds_free_logon_user_request(FDSAPI_LOGON_USER_REQUEST* request)
 static RDS_RPC_PACK_FUNC g_FDSAPI_LOGON_USER_REQUEST =
 {
 	FDSAPI_LOGON_USER_REQUEST_ID,
+	sizeof(FDSAPI_LOGON_USER_REQUEST),
 	(pRdsRpcPack) freerds_pack_logon_user_request,
 	(pRdsRpcUnpack) freerds_unpack_logon_user_request,
 	(pRdsRpcFree) freerds_free_logon_user_request
@@ -422,6 +427,15 @@ static void freerds_free_logon_user_response(FDSAPI_LOGON_USER_RESPONSE* respons
 	free(response->ServiceEndpoint);
 }
 
+static RDS_RPC_PACK_FUNC g_FDSAPI_LOGON_USER_RESPONSE =
+{
+	FDSAPI_LOGON_USER_RESPONSE_ID,
+	sizeof(FDSAPI_LOGON_USER_RESPONSE),
+	(pRdsRpcPack) freerds_pack_logon_user_response,
+	(pRdsRpcUnpack) freerds_unpack_logon_user_response,
+	(pRdsRpcFree) freerds_free_logon_user_response
+};
+
 /* FDSAPI_LOGOFF_USER_REQUEST */
 
 static wStream* freerds_pack_logoff_user_request(FDSAPI_LOGOFF_USER_REQUEST* request, wStream* s)
@@ -474,6 +488,7 @@ static void freerds_free_logoff_user_request(FDSAPI_LOGOFF_USER_REQUEST* request
 static RDS_RPC_PACK_FUNC g_FDSAPI_LOGOFF_USER_REQUEST =
 {
 	FDSAPI_LOGOFF_USER_REQUEST_ID,
+	sizeof(FDSAPI_LOGOFF_USER_REQUEST),
 	(pRdsRpcPack) freerds_pack_logoff_user_request,
 	(pRdsRpcUnpack) freerds_unpack_logoff_user_request,
 	(pRdsRpcFree) freerds_free_logoff_user_request
@@ -535,6 +550,7 @@ static void freerds_free_logoff_user_response(FDSAPI_LOGOFF_USER_RESPONSE* respo
 static RDS_RPC_PACK_FUNC g_FDSAPI_LOGOFF_USER_RESPONSE =
 {
 	FDSAPI_LOGOFF_USER_RESPONSE_ID,
+	sizeof(FDSAPI_LOGOFF_USER_RESPONSE),
 	(pRdsRpcPack) freerds_pack_logoff_user_response,
 	(pRdsRpcUnpack) freerds_unpack_logoff_user_response,
 	(pRdsRpcFree) freerds_free_logoff_user_response
@@ -592,6 +608,7 @@ static void freerds_free_disconnect_user_request(FDSAPI_DISCONNECT_USER_REQUEST*
 static RDS_RPC_PACK_FUNC g_FDSAPI_DISCONNECT_USER_REQUEST =
 {
 	FDSAPI_DISCONNECT_USER_REQUEST_ID,
+	sizeof(FDSAPI_DISCONNECT_USER_REQUEST),
 	(pRdsRpcPack) freerds_pack_disconnect_user_request,
 	(pRdsRpcUnpack) freerds_unpack_disconnect_user_request,
 	(pRdsRpcFree) freerds_free_disconnect_user_request
@@ -653,6 +670,7 @@ static void freerds_free_disconnect_user_response(FDSAPI_DISCONNECT_USER_RESPONS
 static RDS_RPC_PACK_FUNC g_FDSAPI_DISCONNECT_USER_RESPONSE =
 {
 	FDSAPI_DISCONNECT_USER_RESPONSE_ID,
+	sizeof(FDSAPI_DISCONNECT_USER_RESPONSE),
 	(pRdsRpcPack) freerds_pack_disconnect_user_response,
 	(pRdsRpcUnpack) freerds_unpack_disconnect_user_response,
 	(pRdsRpcFree) freerds_free_disconnect_user_response
@@ -714,6 +732,7 @@ static void freerds_free_switch_service_endpoint_request(FDSAPI_SWITCH_SERVICE_E
 static RDS_RPC_PACK_FUNC g_FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST =
 {
 	FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID,
+	sizeof(FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST),
 	(pRdsRpcPack) freerds_pack_switch_service_endpoint_request,
 	(pRdsRpcUnpack) freerds_unpack_switch_service_endpoint_request,
 	(pRdsRpcFree) freerds_free_switch_service_endpoint_request
@@ -771,17 +790,10 @@ static void freerds_free_switch_service_endpoint_response(FDSAPI_SWITCH_SERVICE_
 static RDS_RPC_PACK_FUNC g_FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE =
 {
 	FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID,
+	sizeof(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE),
 	(pRdsRpcPack) freerds_pack_switch_service_endpoint_response,
 	(pRdsRpcUnpack) freerds_unpack_switch_service_endpoint_response,
 	(pRdsRpcFree) freerds_free_switch_service_endpoint_response
-};
-
-static RDS_RPC_PACK_FUNC g_FDSAPI_LOGON_USER_RESPONSE =
-{
-	FDSAPI_LOGON_USER_RESPONSE_ID,
-	(pRdsRpcPack) freerds_pack_logon_user_response,
-	(pRdsRpcUnpack) freerds_unpack_logon_user_response,
-	(pRdsRpcFree) freerds_free_logon_user_response
 };
 
 /* Function Table */

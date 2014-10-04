@@ -179,16 +179,26 @@ RDS_RPC_PACK_FUNC* freerds_rpc_msg_find_func(UINT32 msgType)
 	return (found) ? func[index] : NULL;
 }
 
-wStream* freerds_rpc_msg_pack(void* data, wStream* s)
+UINT32 freerds_rpc_msg_size(UINT32 type)
 {
-	UINT32 msgType;
+	RDS_RPC_PACK_FUNC* func;
+
+	func = freerds_rpc_msg_find_func(type);
+
+	if (!func)
+		return 0;
+
+	return func->msgSize;
+}
+
+wStream* freerds_rpc_msg_pack(UINT32 type, void* data, wStream* s)
+{
 	RDS_RPC_PACK_FUNC* func;
 
 	if (!data)
 		return NULL;
 
-	msgType = *((UINT32*) data);
-	func = freerds_rpc_msg_find_func(msgType);
+	func = freerds_rpc_msg_find_func(type);
 
 	if (!func)
 		return NULL;
@@ -196,16 +206,14 @@ wStream* freerds_rpc_msg_pack(void* data, wStream* s)
 	return func->Pack(data, s);
 }
 
-BOOL freerds_rpc_msg_unpack(void* data, const BYTE* buffer, UINT32 size)
+BOOL freerds_rpc_msg_unpack(UINT32 type, void* data, const BYTE* buffer, UINT32 size)
 {
-	UINT32 msgType;
 	RDS_RPC_PACK_FUNC* func;
 
 	if (!data)
 		return FALSE;
 
-	msgType = *((UINT32*) data);
-	func = freerds_rpc_msg_find_func(msgType);
+	func = freerds_rpc_msg_find_func(type);
 
 	if (!func)
 		return FALSE;
@@ -213,16 +221,14 @@ BOOL freerds_rpc_msg_unpack(void* data, const BYTE* buffer, UINT32 size)
 	return func->Unpack(data, buffer, size);
 }
 
-void freerds_rpc_msg_free(void* data)
+void freerds_rpc_msg_free(UINT32 type, void* data)
 {
-	UINT32 msgType;
 	RDS_RPC_PACK_FUNC* func;
 
 	if (!data)
 		return;
 
-	msgType = *((UINT32*) data);
-	func = freerds_rpc_msg_find_func(msgType);
+	func = freerds_rpc_msg_find_func(type);
 
 	if (!func)
 		return;

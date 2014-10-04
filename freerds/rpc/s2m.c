@@ -93,6 +93,7 @@ static void freerds_free_start_session_request(FDSAPI_START_SESSION_REQUEST* req
 static RDS_RPC_PACK_FUNC g_FDSAPI_START_SESSION_REQUEST =
 {
 	FDSAPI_START_SESSION_REQUEST_ID,
+	sizeof(FDSAPI_START_SESSION_REQUEST),
 	(pRdsRpcPack) freerds_pack_start_session_request,
 	(pRdsRpcUnpack) freerds_unpack_start_session_request,
 	(pRdsRpcFree) freerds_free_start_session_request
@@ -154,6 +155,7 @@ static void freerds_free_start_session_response(FDSAPI_START_SESSION_RESPONSE* r
 static RDS_RPC_PACK_FUNC g_FDSAPI_START_SESSION_RESPONSE =
 {
 	FDSAPI_START_SESSION_RESPONSE_ID,
+	sizeof(FDSAPI_START_SESSION_RESPONSE),
 	(pRdsRpcPack) freerds_pack_start_session_response,
 	(pRdsRpcUnpack) freerds_unpack_start_session_response,
 	(pRdsRpcFree) freerds_free_start_session_response
@@ -211,6 +213,7 @@ static void freerds_free_end_session_request(FDSAPI_END_SESSION_REQUEST* request
 static RDS_RPC_PACK_FUNC g_FDSAPI_END_SESSION_REQUEST =
 {
 	FDSAPI_END_SESSION_REQUEST_ID,
+	sizeof(FDSAPI_END_SESSION_REQUEST),
 	(pRdsRpcPack) freerds_pack_end_session_request,
 	(pRdsRpcUnpack) freerds_unpack_end_session_request,
 	(pRdsRpcFree) freerds_free_end_session_request
@@ -272,6 +275,7 @@ static void freerds_free_end_session_response(FDSAPI_END_SESSION_RESPONSE* respo
 static RDS_RPC_PACK_FUNC g_FDSAPI_END_SESSION_RESPONSE =
 {
 	FDSAPI_END_SESSION_RESPONSE_ID,
+	sizeof(FDSAPI_END_SESSION_RESPONSE),
 	(pRdsRpcPack) freerds_pack_end_session_response,
 	(pRdsRpcUnpack) freerds_unpack_end_session_response,
 	(pRdsRpcFree) freerds_free_end_session_response

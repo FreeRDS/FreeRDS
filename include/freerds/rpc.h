@@ -262,9 +262,10 @@ int freerds_rpc_client_send_message(rdsRpcClient* rpcClient, BYTE* buffer, UINT3
 
 /* RPC message packing */
 
-wStream* freerds_rpc_msg_pack(void* data, wStream* s);
-BOOL freerds_rpc_msg_unpack(void* data, const BYTE* buffer, UINT32 size);
-void freerds_rpc_msg_free(void* data);
+UINT32 freerds_rpc_msg_size(UINT32 type);
+wStream* freerds_rpc_msg_pack(UINT32 type, void* data, wStream* s);
+BOOL freerds_rpc_msg_unpack(UINT32 type, void* data, const BYTE* buffer, UINT32 size);
+void freerds_rpc_msg_free(UINT32 type, void* data);
 
 #ifdef __cplusplus
 }
