@@ -28,11 +28,29 @@ include(FindPackageHandleStandardArgs)
 set(MODULE_NAME "Xrds")
 set(MODULE_PREFIX "XRDS")
 
-set(XSRCBASE_RELATIVE "xorg-server")
 set(XOBJBASE_RELATIVE "xorg-server")
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
-	message(FATAL_ERROR "xorg-server not found - see xorg-build/README how to build/prepare")
+set(XSRCBASE_RELATIVE "xorg-server")
+set(XSRCBASE_EXTERNAL_RELATIVE "xorg-build/external/Source/xorg-server")
+
+set(XSRCBASE_ABSOLUTE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_RELATIVE}")
+set(XSRCBASE_EXTERNAL_ABSOLUTE "${CMAKE_CURRENT_SOURCE_DIR}/${XSRCBASE_EXTERNAL_RELATIVE}")
+
+if((NOT EXISTS "${XSRCBASE_ABSOLUTE}") AND (NOT EXISTS "${XSRCBASE_EXTERNAL_ABSOLUTE}"))
+	message(STATUS "Building xorg-server sources automatically - see xorg-build/README for details")
+	execute_process(COMMAND ${CMAKE_COMMAND} .
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/xorg-build")
+	execute_process(COMMAND ${CMAKE_COMMAND} --build .
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/xorg-build")
+endif()
+
+if(EXISTS "${XSRCBASE_EXTERNAL_ABSOLUTE}")
+	execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+		"${XSRCBASE_EXTERNAL_ABSOLUTE}" "${XSRCBASE_ABSOLUTE}")
+endif()
+
+if(NOT EXISTS "${XSRCBASE_ABSOLUTE}")
+	message(FATAL_ERROR "xorg-server not found - see xorg-build/README")
 endif()
 
 message(STATUS "Using xorg-server sources in ${XSRCBASE_RELATIVE}")
@@ -354,7 +372,7 @@ merge_static_libs(combined ${${MODULE_PREFIX}_STATIC_LIBS})
 
 target_link_libraries(${MODULE_NAME} combined ${${MODULE_PREFIX}_STATIC_LIBS} ${${MODULE_PREFIX}_LIBS})
 
-if (ADDITIONAL_REQUIRED_LIBS)
+if(ADDITIONAL_REQUIRED_LIBS)
 	message(STATUS "Linking in additional libs")
 	target_link_libraries(${MODULE_NAME} ${ADDITIONAL_REQUIRED_LIBS})
 endif()
