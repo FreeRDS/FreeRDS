@@ -64,14 +64,14 @@ int tp_npipe_close(pbRPCContext* context)
 	return 0;
 }
 
-int tp_npipe_write(pbRPCContext* context, char* data, unsigned int datalen)
+int tp_npipe_write(pbRPCContext* context, BYTE* data, UINT32 size)
 {
 	DWORD bytesWritten;
 	BOOL fSuccess = FALSE;
 
-	fSuccess = WriteFile(context->hPipe, data, datalen, (LPDWORD) &bytesWritten, NULL);
+	fSuccess = WriteFile(context->hPipe, data, size, (LPDWORD) &bytesWritten, NULL);
 
-	if (!fSuccess || (bytesWritten < datalen))
+	if (!fSuccess || (bytesWritten < size))
 	{
 		return -1;
 	}
@@ -79,14 +79,14 @@ int tp_npipe_write(pbRPCContext* context, char* data, unsigned int datalen)
 	return bytesWritten;
 }
 
-int tp_npipe_read(pbRPCContext* context, char* data, unsigned int datalen)
+int tp_npipe_read(pbRPCContext* context, BYTE* data, UINT32 size)
 {
 	DWORD bytesRead;
 	BOOL fSuccess = FALSE;
 
-	fSuccess = ReadFile(context->hPipe, data, datalen, &bytesRead, NULL);
+	fSuccess = ReadFile(context->hPipe, data, size, &bytesRead, NULL);
 
-	if (!fSuccess || (bytesRead < datalen))
+	if (!fSuccess || (bytesRead < size))
 	{
 		return -1;
 	}
@@ -97,7 +97,7 @@ int tp_npipe_read(pbRPCContext* context, char* data, unsigned int datalen)
 struct pbrpc_transaction
 {
 	pbRpcResponseCallback responseCallback;
-	void *callbackArg;
+	void* callbackArg;
 	BOOL freeAfterResponse;
 };
 typedef struct pbrpc_transaction pbRPCTransaction;
@@ -221,47 +221,41 @@ void pbrpc_server_free(pbRPCContext* context)
 	free(context);
 }
 
-int pbrpc_receive_message(pbRPCContext* context, char** msg, UINT32* msgLen)
+int pbrpc_receive_message(pbRPCContext* context, FDSAPI_MSG_HEADER* header, BYTE** buffer)
 {
-	char* recvbuffer;
 	int status = 0;
-	FDSAPI_MSG_HEADER header;
 
-	status = tp_npipe_read(context, (char*) &header, FDSAPI_MSG_HEADER_SIZE);
+	status = tp_npipe_read(context, (BYTE*) header, FDSAPI_MSG_HEADER_SIZE);
 
 	if (status < 0)
 		return status;
 
-	*msgLen = header.msgSize;
-	recvbuffer = malloc(header.msgSize);
+	*buffer = malloc(header->msgSize);
 
-	status = tp_npipe_read(context, recvbuffer, header.msgSize);
+	if (!(*buffer))
+		return -1;
+
+	status = tp_npipe_read(context, *buffer, header->msgSize);
 
 	if (status < 0)
 	{
-		free(recvbuffer);
+		free(*buffer);
 		return status;
 	}
-
-	*msg = recvbuffer;
 
 	return status;
 }
 
-int pbrpc_send_message(pbRPCContext* context, char* msg, UINT32 msgLen)
+int pbrpc_send_message(pbRPCContext* context, FDSAPI_MSG_HEADER* header, BYTE* buffer)
 {
 	int status;
-	FDSAPI_MSG_HEADER header;
 
-	header.msgSize = msgLen;
-	header.msgType = 0;
-
-	status = tp_npipe_write(context, (char*) &header, FDSAPI_MSG_HEADER_SIZE);
+	status = tp_npipe_write(context, (BYTE*) header, FDSAPI_MSG_HEADER_SIZE);
 
 	if (status < 0)
 		return status;
 
-	status = tp_npipe_write(context, msg, msgLen);
+	status = tp_npipe_write(context, buffer, header->msgSize);
 
 	if (status < 0)
 		return status;
@@ -294,17 +288,24 @@ static int pbrpc_process_response(pbRPCContext* context, Freerds__Pbrpc__RPCBase
 static int pbrpc_process_message_out(pbRPCContext* context, Freerds__Pbrpc__RPCBase *msg)
 {
 	int status;
-	char msgLen = freerds__pbrpc__rpcbase__get_packed_size(msg);
-	char* buf = malloc(msgLen);
+	BYTE* buffer;
+	FDSAPI_MSG_HEADER header;
 
-	status = freerds__pbrpc__rpcbase__pack(msg, (uint8_t *)buf);
+	header.msgSize = freerds__pbrpc__rpcbase__get_packed_size(msg);
 
-	if (status != msgLen)
+	buffer = malloc(header.msgSize);
+
+	if (!buffer)
+		return -1;
+
+	status = freerds__pbrpc__rpcbase__pack(msg, buffer);
+
+	if (status != header.msgSize)
 		status = 1;
 	else
-		status = pbrpc_send_message(context, buf, msgLen);
+		status = pbrpc_send_message(context, &header, buffer);
 
-	free(buf);
+	free(buffer);
 
 	return status;
 }
@@ -409,17 +410,17 @@ static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase 
 
 int pbrpc_process_message_in(pbRPCContext* context)
 {
-	char* msg;
-	UINT32 msgLen;
+	BYTE* buffer;
 	int status = 0;
+	FDSAPI_MSG_HEADER header;
 	Freerds__Pbrpc__RPCBase* rpcmessage;
 
-	if (pbrpc_receive_message(context, &msg, &msgLen) < 0)
+	if (pbrpc_receive_message(context, &header, &buffer) < 0)
 		return -1;
 
-	rpcmessage = freerds__pbrpc__rpcbase__unpack(NULL, msgLen, (uint8_t*) msg);
+	rpcmessage = freerds__pbrpc__rpcbase__unpack(NULL, header.msgSize, buffer);
 
-	free(msg);
+	free(buffer);
 
 	if (!rpcmessage)
 		return 1;
