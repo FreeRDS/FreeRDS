@@ -40,7 +40,6 @@ BOOL freerds_channels_is_channel_allowed(UINT32 SessionId, char* ChannelName)
 
 int freerds_channels_post_connect(rdsConnection* session)
 {
-#ifdef WITH_FREERDS_CHANNELS
 	BOOL allowed;
 
 	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "cliprdr"))
@@ -48,9 +47,11 @@ int freerds_channels_post_connect(rdsConnection* session)
 		allowed = freerds_channels_is_channel_allowed(session->id, "cliprdr");
 		printf("channel %s is %s\n", "cliprdr", allowed ? "allowed" : "not allowed");
 
+#ifdef WITH_FREERDS_CHANNELS
 		printf("Channel %s registered\n", "cliprdr");
 		session->cliprdr = cliprdr_server_context_new(session->vcm);
 		session->cliprdr->Start(session->cliprdr);
+#endif
 	}
 
 	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "rdpdr"))
@@ -58,9 +59,11 @@ int freerds_channels_post_connect(rdsConnection* session)
 		allowed = freerds_channels_is_channel_allowed(session->id, "rdpdr");
 		printf("channel %s is %s\n", "rdpdr", allowed ? "allowed" : "not allowed");
 
+#ifdef WITH_FREERDS_CHANNELS
 		printf("Channel %s registered\n", "rdpdr");
 		session->rdpdr = rdpdr_server_context_new(session->vcm);
 		session->rdpdr->Start(session->rdpdr);
+#endif
 	}
 
 	if (WTSVirtualChannelManagerIsChannelJoined(session->vcm, "rdpsnd"))
@@ -68,11 +71,12 @@ int freerds_channels_post_connect(rdsConnection* session)
 		allowed = freerds_channels_is_channel_allowed(session->id, "rdpsnd");
 		printf("channel %s is %s\n", "rdpsnd", allowed ? "allowed" : "not allowed");
 
+#ifdef WITH_FREERDS_CHANNELS
 		printf("Channel %s registered\n", "rdpsnd");
 		session->rdpsnd = rdpsnd_server_context_new(session->vcm);
 		session->rdpsnd->Start(session->rdpsnd);
-	}
 #endif
+	}
 
 	return 0;
 }

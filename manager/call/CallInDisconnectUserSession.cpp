@@ -33,6 +33,7 @@ namespace freerds
 	namespace call
 	{
 		CallInDisconnectUserSession::CallInDisconnectUserSession()
+		: m_RequestId(FDSAPI_DISCONNECT_USER_REQUEST_ID), m_ResponseId(FDSAPI_DISCONNECT_USER_RESPONSE_ID)
 		{
 			mConnectionId = 0;
 			mDisconnected = false;
@@ -45,37 +46,37 @@ namespace freerds
 
 		unsigned long CallInDisconnectUserSession::getCallType()
 		{
-			return freerds::icp::DisconnectUserSession;
+			return m_RequestId;
 		};
 
 		int CallInDisconnectUserSession::decodeRequest()
 		{
-			// decode protocol buffers
-			DisconnectUserSessionRequest req;
-			if (!req.ParseFromString(mEncodedRequest))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
-			mConnectionId = req.connectionid();
+			BYTE* buffer;
+			UINT32 length;
+
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
+
+			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+
+			mConnectionId = m_Request.ConnectionId;
+
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
+
 			return 0;
 		};
 
 		int CallInDisconnectUserSession::encodeResponse()
 		{
-			// encode protocol buffers
-			DisconnectUserSessionResponse resp;
-			// stup do stuff here
+			wStream* s;
 
-			resp.set_disconnected(mDisconnected);
+			m_Response.ConnectionId = mConnectionId;
 
-			if (!resp.SerializeToString(&mEncodedResponse))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
 
 			return 0;
 		};

@@ -91,131 +91,87 @@ int freerds_icp_SwitchServiceEndpointResponse(FDSAPI_SWITCH_SERVICE_ENDPOINT_RES
 
 int freerds_icp_IsChannelAllowed(FDSAPI_CHANNEL_ALLOWED_REQUEST* pRequest, FDSAPI_CHANNEL_ALLOWED_RESPONSE* pResponse)
 {
-	int ret;
+	int status;
 	pbRPCPayload pbrequest;
 	pbRPCPayload* pbresponse = NULL;
-	Freerds__Icp__IsChannelAllowedRequest request;
-	Freerds__Icp__IsChannelAllowedResponse* response = NULL;
-	UINT32 type = FREERDS__ICP__MSGTYPE__IsChannelAllowed;
-
+	UINT32 type = FDSAPI_CHANNEL_ALLOWED_REQUEST_ID;
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 
 	if (!context)
 		return PBRPC_FAILED;
 
-	freerds__icp__is_channel_allowed_request__init(&request);
+	pbrequest.s = freerds_rpc_msg_pack(type, pRequest, NULL);
+	pbrequest.buffer = Stream_Buffer(pbrequest.s);
+	pbrequest.length = Stream_Length(pbrequest.s);
 
-	request.channelname = pRequest->ChannelName;
+	status = pbrpc_call_method(context, FDSAPI_REQUEST_ID(type), &pbrequest, &pbresponse);
 
-	pbrequest.length = freerds__icp__is_channel_allowed_request__get_packed_size(&request);
-	pbrequest.buffer = (BYTE*) malloc(pbrequest.length);
-	ret = freerds__icp__is_channel_allowed_request__pack(&request, pbrequest.buffer);
-	if (ret == pbrequest.length)
-		ret = pbrpc_call_method(context, type, &pbrequest, &pbresponse);
-	else
-		ret = PBRPC_BAD_REQEST_DATA;
-	free(pbrequest.buffer);
+	Stream_Free(pbrequest.s, TRUE);
 
-	if (ret != 0)
-		return ret;
+	if (status != 0)
+		return status;
 
-	response = freerds__icp__is_channel_allowed_response__unpack(NULL, pbresponse->length, pbresponse->buffer);
+	freerds_rpc_msg_unpack(FDSAPI_RESPONSE_ID(type), pResponse, pbresponse->buffer, pbresponse->length);
+
 	pbrpc_free_payload(pbresponse);
-
-	if (!response)
-		return PBRPC_BAD_RESPONSE;
-
-	pResponse->ChannelAllowed = response->channelallowed ? TRUE : FALSE;
-
-	freerds__icp__is_channel_allowed_response__free_unpacked(response, NULL);
 
 	return PBRPC_SUCCESS;
 }
 
 int freerds_icp_DisconnectUserSession(FDSAPI_DISCONNECT_USER_REQUEST* pRequest, FDSAPI_DISCONNECT_USER_RESPONSE* pResponse)
 {
-	int ret;
+	int status;
 	pbRPCPayload pbrequest;
 	pbRPCPayload* pbresponse = NULL;
-	Freerds__Icp__DisconnectUserSessionRequest request;
-	Freerds__Icp__DisconnectUserSessionResponse* response = NULL;
-	UINT32 type = FREERDS__ICP__MSGTYPE__DisconnectUserSession;
-
+	UINT32 type = FDSAPI_DISCONNECT_USER_REQUEST_ID;
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 
 	if (!context)
 		return PBRPC_FAILED;
 
-	freerds__icp__disconnect_user_session_request__init(&request);
+	pbrequest.s = freerds_rpc_msg_pack(type, pRequest, NULL);
+	pbrequest.buffer = Stream_Buffer(pbrequest.s);
+	pbrequest.length = Stream_Length(pbrequest.s);
 
-	request.connectionid = pRequest->ConnectionId;
+	status = pbrpc_call_method(context, FDSAPI_REQUEST_ID(type), &pbrequest, &pbresponse);
 
-	pbrequest.length = freerds__icp__disconnect_user_session_request__get_packed_size(&request);
-	pbrequest.buffer = (BYTE*) malloc(pbrequest.length);
-	ret = freerds__icp__disconnect_user_session_request__pack(&request, pbrequest.buffer);
+	Stream_Free(pbrequest.s, TRUE);
 
-	if (ret == pbrequest.length)
-		ret = pbrpc_call_method(context, type, &pbrequest, &pbresponse);
-	else
-		ret = PBRPC_BAD_REQEST_DATA;
+	if (status != 0)
+		return status;
 
-	free(pbrequest.buffer);
+	freerds_rpc_msg_unpack(FDSAPI_RESPONSE_ID(type), pResponse, pbresponse->buffer, pbresponse->length);
 
-	if (ret != 0)
-		return ret;
-
-	response = freerds__icp__disconnect_user_session_response__unpack(NULL, pbresponse->length, pbresponse->buffer);
 	pbrpc_free_payload(pbresponse);
-
-	if (!response)
-		return PBRPC_BAD_RESPONSE;
-
-	pResponse->ConnectionId = pRequest->ConnectionId;
-
-	freerds__icp__disconnect_user_session_response__free_unpacked(response, NULL);
 
 	return PBRPC_SUCCESS;
 }
 
 int freerds_icp_LogOffUserSession(FDSAPI_LOGOFF_USER_REQUEST* pRequest, FDSAPI_LOGOFF_USER_RESPONSE* pResponse)
 {
-	int ret;
+	int status;
 	pbRPCPayload pbrequest;
 	pbRPCPayload* pbresponse = NULL;
-	Freerds__Icp__LogOffUserSessionRequest request;
-	Freerds__Icp__LogOffUserSessionResponse* response = NULL;
-	UINT32 type = FREERDS__ICP__MSGTYPE__LogOffUserSession;
-
+	UINT32 type = FDSAPI_LOGOFF_USER_REQUEST_ID;
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 
 	if (!context)
 		return PBRPC_FAILED;
 
-	freerds__icp__log_off_user_session_request__init(&request);
+	pbrequest.s = freerds_rpc_msg_pack(type, pRequest, NULL);
+	pbrequest.buffer = Stream_Buffer(pbrequest.s);
+	pbrequest.length = Stream_Length(pbrequest.s);
 
-	request.connectionid = pRequest->ConnectionId;
+	status = pbrpc_call_method(context, FDSAPI_REQUEST_ID(type), &pbrequest, &pbresponse);
 
-	pbrequest.length = freerds__icp__log_off_user_session_request__get_packed_size(&request);
-	pbrequest.buffer = (BYTE*) malloc(pbrequest.length);
-	ret = freerds__icp__log_off_user_session_request__pack(&request, pbrequest.buffer);
-	if (ret == pbrequest.length)
-		ret = pbrpc_call_method(context, type, &pbrequest, &pbresponse);
-	else
-		ret = PBRPC_BAD_REQEST_DATA;
-	free(pbrequest.buffer);
+	Stream_Free(pbrequest.s, TRUE);
 
-	if (ret != 0)
-		return ret;
+	if (status != 0)
+		return status;
 
-	response = freerds__icp__log_off_user_session_response__unpack(NULL, pbresponse->length, pbresponse->buffer);
+	freerds_rpc_msg_unpack(FDSAPI_RESPONSE_ID(type), pResponse, pbresponse->buffer, pbresponse->length);
+
 	pbrpc_free_payload(pbresponse);
-
-	if (!response)
-		return PBRPC_BAD_RESPONSE;
-
-	pResponse->ConnectionId = pRequest->ConnectionId;
-
-	freerds__icp__log_off_user_session_response__free_unpacked(response, NULL);
 
 	return PBRPC_SUCCESS;
 }

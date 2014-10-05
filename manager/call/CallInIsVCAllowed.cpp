@@ -31,6 +31,8 @@ namespace freerds
 	namespace call
 	{
 		CallInIsVCAllowed::CallInIsVCAllowed()
+		: mVirtualChannelAllowed(false),
+		  m_RequestId(FDSAPI_CHANNEL_ALLOWED_REQUEST_ID), m_ResponseId(FDSAPI_CHANNEL_ALLOWED_RESPONSE_ID)
 		{
 
 		};
@@ -42,45 +44,43 @@ namespace freerds
 
 		unsigned long CallInIsVCAllowed::getCallType()
 		{
-			return freerds::icp::IsChannelAllowed;
+			return m_RequestId;
 		};
 
 		int CallInIsVCAllowed::decodeRequest()
 		{
-			// decode protocol buffers
-			IsChannelAllowedRequest req;
+			BYTE* buffer;
+			UINT32 length;
 
-			if (!req.ParseFromString(mEncodedRequest))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
 
-			mVirtualChannelName = req.channelname();
+			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+
+			mVirtualChannelName = m_Request.ChannelName ? m_Request.ChannelName : "";
+
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
 
 			return 0;
 		};
 
 		int CallInIsVCAllowed::encodeResponse()
 		{
-			// encode protocol buffers
-			IsChannelAllowedResponse resp;
-			resp.set_channelallowed(mVirtualChannelAllowed);
+			wStream* s;
 
-			if (!resp.SerializeToString(&mEncodedResponse))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			m_Response.ChannelAllowed = mVirtualChannelAllowed ? TRUE : FALSE;
+
+			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
 
 			return 0;
 		};
 
 		int CallInIsVCAllowed::doStuff()
 		{
-			// find out if Virtual Channel is allowed
 			mVirtualChannelAllowed = true;
 			return 0;
 		}

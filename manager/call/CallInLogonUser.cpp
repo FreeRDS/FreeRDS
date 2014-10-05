@@ -50,7 +50,7 @@ namespace freerds
 
 		unsigned long CallInLogonUser::getCallType()
 		{
-			return freerds::icp::LogonUser;
+			return m_RequestId;
 		};
 
 		int CallInLogonUser::decodeRequest()

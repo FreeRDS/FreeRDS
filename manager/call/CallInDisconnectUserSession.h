@@ -46,11 +46,14 @@ namespace freerds
 			long mConnectionId;
 			bool mDisconnected;
 
-			FDSAPI_DISCONNECT_USER_REQUEST request;
-			FDSAPI_DISCONNECT_USER_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_DISCONNECT_USER_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_DISCONNECT_USER_RESPONSE m_Response;
 		};
 
-		FACTORY_REGISTER_DWORD(CallFactory,CallInDisconnectUserSession,freerds::icp::DisconnectUserSession);
+		FACTORY_REGISTER_DWORD(CallFactory, CallInDisconnectUserSession, FDSAPI_DISCONNECT_USER_REQUEST_ID);
 	}
 }
 

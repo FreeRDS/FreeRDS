@@ -32,6 +32,7 @@ namespace freerds
 	namespace call
 	{
 		CallInLogOffUserSession::CallInLogOffUserSession()
+		: m_RequestId(FDSAPI_LOGOFF_USER_REQUEST_ID), m_ResponseId(FDSAPI_LOGOFF_USER_RESPONSE_ID)
 		{
 			mConnectionId = 0;
 			mLoggedOff = false;
@@ -44,48 +45,45 @@ namespace freerds
 
 		unsigned long CallInLogOffUserSession::getCallType()
 		{
-			return freerds::icp::LogOffUserSession;
+			return m_RequestId;
 		};
 
 		int CallInLogOffUserSession::decodeRequest()
 		{
-			// decode protocol buffers
-			LogOffUserSessionRequest req;
+			BYTE* buffer;
+			UINT32 length;
 
-			if (!req.ParseFromString(mEncodedRequest))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
 
-			mConnectionId = req.connectionid();
+			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+
+			mConnectionId = m_Request.ConnectionId;
+
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
 
 			return 0;
 		};
 
 		int CallInLogOffUserSession::encodeResponse()
 		{
-			// encode protocol buffers
-			LogOffUserSessionResponse resp;
-			// stup do stuff here
+			wStream* s;
 
-			resp.set_loggedoff(mLoggedOff);
+			m_Response.ConnectionId = mConnectionId;
 
-			if (!resp.SerializeToString(&mEncodedResponse))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
 
 			return 0;
 		};
 
 		int CallInLogOffUserSession::doStuff()
 		{
-
 			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+
 			if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
 				mLoggedOff = false;
 				return -1;
@@ -97,10 +95,7 @@ namespace freerds
 				return -1;
 			}
 
-
 			currentSession->stopModule();
-
-			// TODO check if more than 1 connection is connected to this session
 
 			APP_CONTEXT.getSessionStore()->removeSession(currentConnection->getSessionId());
 			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);

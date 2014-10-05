@@ -46,11 +46,14 @@ namespace freerds
 			long mConnectionId;
 			bool mLoggedOff;
 
-			FDSAPI_LOGOFF_USER_REQUEST request;
-			FDSAPI_LOGOFF_USER_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_LOGOFF_USER_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_LOGOFF_USER_RESPONSE m_Response;
 		};
 
-		FACTORY_REGISTER_DWORD(CallFactory,CallInLogOffUserSession,freerds::icp::LogOffUserSession);
+		FACTORY_REGISTER_DWORD(CallFactory, CallInLogOffUserSession, FDSAPI_LOGOFF_USER_REQUEST_ID);
 	}
 }
 
