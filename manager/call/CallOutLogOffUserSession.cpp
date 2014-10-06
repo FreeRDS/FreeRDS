@@ -53,7 +53,7 @@ namespace freerds
 
 			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
 
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+			mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
 			Stream_Free(s, TRUE);
 

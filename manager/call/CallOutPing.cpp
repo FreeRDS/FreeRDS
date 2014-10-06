@@ -51,7 +51,7 @@ namespace freerds
 
 			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
 
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+			mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
 			Stream_Free(s, TRUE);
 
@@ -63,14 +63,14 @@ namespace freerds
 			BYTE* buffer;
 			UINT32 length;
 
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
+			buffer = (BYTE*) mEncodedResponse.data();
+			length = (UINT32) mEncodedResponse.size();
 
 			freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
 
 			mPong = true;
 
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
+			freerds_rpc_msg_free(m_ResponseId, &m_Response);
 
 			return 0;
 		};

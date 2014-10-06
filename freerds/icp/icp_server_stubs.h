@@ -22,8 +22,9 @@
 
 #include "pbrpc.h"
 
-int ping(LONG tag, pbRPCPayload *request, pbRPCPayload **response);
-int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
-int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
+int freerds_icp_Heartbeat(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
+int freerds_icp_SwitchServiceEndpoint(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
+int freerds_icp_LogoffUser(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
+int freerds_icp_ChannelEndpointOpen(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
 
 #endif //_ICP_SERVER_STUBS_H

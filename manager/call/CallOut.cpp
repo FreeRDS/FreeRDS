@@ -69,7 +69,7 @@ namespace freerds
 
 		unsigned long CallOut::getDerivedType()
 		{
-			return 2; // for all CallIns
+			return 2;
 		}
 
 		void CallOut::setResult(uint32_t result)

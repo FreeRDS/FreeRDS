@@ -28,23 +28,24 @@ namespace freerds
 {
 	namespace call
 	{
-		class CallOutFdsApiVirtualChannelOpen: public CallOut
+		class CallOutVirtualChannelOpen: public CallOut
 		{
 		public:
-			CallOutFdsApiVirtualChannelOpen();
-			virtual ~CallOutFdsApiVirtualChannelOpen();
+			CallOutVirtualChannelOpen();
+			virtual ~CallOutVirtualChannelOpen();
 
 			virtual unsigned long getCallType();
 
 			virtual int encodeRequest();
 			virtual int decodeResponse();
 
-			void setSessionID(long sessionID);
+			void setSessionID(UINT32 sessionId);
 			void setVirtualName(std::string virtualName);
 			std::string getConnectionString();
 
 		private:
-			long mSessionID;
+			UINT32 m_SessionId;
+			UINT64 m_ChannelHandle;
 			std::string mVirtualName;
 			std::string mConnectionString;
 

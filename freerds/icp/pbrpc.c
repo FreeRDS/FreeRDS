@@ -308,15 +308,19 @@ static int pbrpc_process_request(pbRPCContext* context, FDSAPI_MSG_PACKET* msg)
 	switch (msgType)
 	{
 		case FDSAPI_HEARTBEAT_REQUEST_ID:
-			cb = ping;
+			cb = freerds_icp_Heartbeat;
 			break;
 
 		case FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID:
-			cb = switchTo;
+			cb = freerds_icp_SwitchServiceEndpoint;
 			break;
 
 		case FDSAPI_LOGOFF_USER_REQUEST_ID:
-			cb = logOffUserSession;
+			cb = freerds_icp_LogoffUser;
+			break;
+
+		case FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID:
+			cb = freerds_icp_ChannelEndpointOpen;
 			break;
 	}
 

@@ -400,7 +400,7 @@ namespace freerds
 			fSuccess = WriteFile(mhClientPipe, header,
 					FDSAPI_MSG_HEADER_SIZE, &lpNumberOfBytesWritten, NULL);
 
-			if (!fSuccess || (lpNumberOfBytesWritten == 0))
+			if (!fSuccess || (lpNumberOfBytesWritten != FDSAPI_MSG_HEADER_SIZE))
 			{
 				WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending");
 				return CLIENT_ERROR;
@@ -409,7 +409,7 @@ namespace freerds
 			fSuccess = WriteFile(mhClientPipe, buffer,
 					header->msgSize, &lpNumberOfBytesWritten, NULL);
 
-			if (!fSuccess || (lpNumberOfBytesWritten == 0))
+			if (!fSuccess || (lpNumberOfBytesWritten != header->msgSize))
 			{
 				WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending");
 				return CLIENT_ERROR;
@@ -487,6 +487,7 @@ namespace freerds
 			if (call->getDerivedType() == 2)
 			{
 				callNS::CallOut* callOut = (callNS::CallOut*) call;
+
 				callOut->encodeRequest();
 				callOut->setTag(mNextOutCall++);
 

@@ -21,69 +21,73 @@
 #include "config.h"
 #endif
 
-#include "CallOutFdsApiVirtualChannelOpen.h"
+#include "CallOutVirtualChannelOpen.h"
 #include <appcontext/ApplicationContext.h>
 
 namespace freerds
 {
 	namespace call
 	{
-		CallOutFdsApiVirtualChannelOpen::CallOutFdsApiVirtualChannelOpen()
-		: m_RequestId(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID),
+		CallOutVirtualChannelOpen::CallOutVirtualChannelOpen()
+		: m_SessionId(0),
+		  m_RequestId(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID),
 		  m_ResponseId(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE_ID)
 		{
-			mSessionID = 0;
+
 		};
 
-		CallOutFdsApiVirtualChannelOpen::~CallOutFdsApiVirtualChannelOpen()
+		CallOutVirtualChannelOpen::~CallOutVirtualChannelOpen()
 		{
 
 		};
 
-		unsigned long CallOutFdsApiVirtualChannelOpen::getCallType()
+		unsigned long CallOutVirtualChannelOpen::getCallType()
 		{
 			return m_RequestId;
 		};
 
-		int CallOutFdsApiVirtualChannelOpen::encodeRequest()
+		int CallOutVirtualChannelOpen::encodeRequest()
 		{
 			wStream* s;
 
+			m_Request.SessionId = m_SessionId;
 			m_Request.ChannelEndpoint = (char*) mVirtualName.c_str();
 
 			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
 
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+			mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
 			Stream_Free(s, TRUE);
 
 			return 0;
 		}
 
-		int CallOutFdsApiVirtualChannelOpen::decodeResponse()
+		int CallOutVirtualChannelOpen::decodeResponse()
 		{
 			BYTE* buffer;
 			UINT32 length;
 
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
+			buffer = (BYTE*) mEncodedResponse.data();
+			length = (UINT32) mEncodedResponse.size();
 
 			freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
 
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
+			m_ChannelHandle = m_Response.ChannelHandle;
+
+			freerds_rpc_msg_free(m_ResponseId, &m_Response);
 
 			return 0;
 		}
 
-		void CallOutFdsApiVirtualChannelOpen::setSessionID(long sessionID) {
-			mSessionID = sessionID;
+		void CallOutVirtualChannelOpen::setSessionID(UINT32 sessionId) {
+			m_SessionId = sessionId;
 		}
 
-		void CallOutFdsApiVirtualChannelOpen::setVirtualName(std::string virtualName) {
+		void CallOutVirtualChannelOpen::setVirtualName(std::string virtualName) {
 			mVirtualName = virtualName;
 		}
 
-		std::string CallOutFdsApiVirtualChannelOpen::getConnectionString() {
+		std::string CallOutVirtualChannelOpen::getConnectionString() {
 			return mConnectionString;
 		}
 	}

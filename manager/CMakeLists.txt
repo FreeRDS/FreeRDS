@@ -43,7 +43,7 @@ set(ICP_SOURCES
 	call/CallInLogonUser.cpp
 	call/CallInDisconnectUserSession.cpp
 	call/CallInLogOffUserSession.cpp
-	call/CallOutFdsApiVirtualChannelOpen.cpp
+	call/CallOutVirtualChannelOpen.cpp
 	call/CallInAuthenticateUser.cpp
 	call/CallOutSwitchTo.cpp
 	call/CallOutLogOffUserSession.cpp

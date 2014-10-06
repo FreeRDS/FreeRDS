@@ -23,7 +23,7 @@
 #include "pbrpc.h"
 #include "../core/app_context.h"
 
-int ping(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
+int freerds_icp_Heartbeat(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
 	pbRPCPayload* payload;
 	FDSAPI_HEARTBEAT_REQUEST request;
@@ -45,7 +45,7 @@ int ping(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 	return PBRPC_SUCCESS;
 }
 
-int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
+int freerds_icp_SwitchServiceEndpoint(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
 	pbRPCPayload* payload;
 	rdsConnection* connection = NULL;
@@ -89,7 +89,7 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 	return PBRPC_SUCCESS;
 }
 
-int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
+int freerds_icp_LogoffUser(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
 	pbRPCPayload* payload;
 	rdsConnection* connection = NULL;
@@ -123,6 +123,28 @@ int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbrespon
 		fprintf(stderr, "something went wrong\n");
 		response.status = 1;
 	}
+
+	payload = pbrpc_payload_new();
+	payload->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), &response, NULL);
+	payload->buffer = Stream_Buffer(payload->s);
+	payload->length = Stream_Length(payload->s);
+	*pbresponse = payload;
+
+	return PBRPC_SUCCESS;
+}
+
+int freerds_icp_ChannelEndpointOpen(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
+{
+	pbRPCPayload* payload;
+	FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST request;
+	FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE response;
+	UINT32 type = FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID;
+
+	freerds_rpc_msg_unpack(FDSAPI_REQUEST_ID(type), &request, pbrequest->buffer, pbrequest->length);
+
+	response.msgType = FDSAPI_RESPONSE_ID(type);
+	response.callId = request.callId;
+	response.status = 0;
 
 	payload = pbrpc_payload_new();
 	payload->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), &response, NULL);

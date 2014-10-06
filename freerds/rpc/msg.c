@@ -1060,7 +1060,8 @@ static wStream* freerds_pack_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOI
 
 	msgpack_stream_packer_init(&pk, s);
 
-	msgpack_pack_array(&pk, 1);
+	msgpack_pack_array(&pk, 2);
+	msgpack_pack_uint32(&pk, request->SessionId);
 	msgpack_pack_cstr(&pk, request->ChannelEndpoint);
 
 	STREAM_PACK_FINALIZE(s);
@@ -1083,7 +1084,10 @@ static BOOL freerds_unpack_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOINT
 	root = &(pk.data);
 	obj = root->via.array.ptr;
 
-	if (!msgpack_unpack_array_min(root, &count, 1))
+	if (!msgpack_unpack_array_min(root, &count, 2))
+		return FALSE;
+
+	if (!msgpack_unpack_uint32(obj++, &(request->SessionId)))
 		return FALSE;
 
 	if (!msgpack_unpack_cstr(obj++, &(request->ChannelEndpoint)))

@@ -32,6 +32,7 @@ namespace freerds
 		public:
 			CallOut();
 			~CallOut();
+
 			virtual unsigned long getDerivedType();
 
 			virtual int encodeRequest() = 0;

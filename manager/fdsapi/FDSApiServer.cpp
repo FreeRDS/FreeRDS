@@ -247,12 +247,9 @@ namespace freerds
 					WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSAPIHandler::authenticateUser");
 
 					responseMsg.u.authenticateUserResponse.result =
-							FDSApiHandler->authenticateUser(
-									authToken,
+							FDSApiHandler->authenticateUser(authToken,
 									requestMsg.u.authenticateUserRequest.sessionId,
-									username,
-									password,
-									domain);
+									username, password, domain);
 
 					break;
 				}
@@ -266,7 +263,7 @@ namespace freerds
 							requestMsg.u.virtualChannelOpenRequest.sessionId,
 							requestMsg.u.virtualChannelOpenRequest.virtualName);
 
-					responseMsg.u.virtualChannelOpenResponse.endPoint = endPoint.c_str();
+					//responseMsg.u.virtualChannelOpenResponse.endPoint = endPoint.c_str();
 
 					break;
 				}

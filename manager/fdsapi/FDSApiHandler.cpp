@@ -29,7 +29,7 @@
 #include <winpr/wlog.h>
 #include <winpr/wtsapi.h>
 
-#include <call/CallOutFdsApiVirtualChannelOpen.h>
+#include <call/CallOutVirtualChannelOpen.h>
 #include <call/TaskSwitchTo.h>
 
 namespace freerds
@@ -207,7 +207,8 @@ namespace freerds
 			const INT32 sessionId,
 			const std::string& virtualName)
 		{
-			callNS::CallOutFdsApiVirtualChannelOpen openCall;
+			callNS::CallOutVirtualChannelOpen openCall;
+
 			openCall.setSessionID(sessionId);
 			openCall.setVirtualName(virtualName);
 

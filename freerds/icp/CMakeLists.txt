@@ -26,8 +26,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(${MODULE_PREFIX}_SRCS
 	icp.c
 	pbrpc.c
-	icp_client_stubs.c
-	icp_server_stubs.c)
+	client.c
+	server.c)
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
