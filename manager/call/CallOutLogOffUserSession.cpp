@@ -32,6 +32,7 @@ namespace freerds
 	namespace call
 	{
 		CallOutLogOffUserSession::CallOutLogOffUserSession()
+		: m_RequestId(FDSAPI_LOGOFF_USER_REQUEST_ID), m_ResponseId(FDSAPI_LOGOFF_USER_RESPONSE_ID)
 		{
 			mConnectionId = 0;
 			mLoggedOff = false;
@@ -44,39 +45,37 @@ namespace freerds
 
 		unsigned long CallOutLogOffUserSession::getCallType()
 		{
-			return freerds::icp::LogOffUserSession;
+			return m_RequestId;
 		};
 
 		int CallOutLogOffUserSession::encodeRequest()
 		{
-			// decode protocol buffers
-			LogOffUserSessionRequest req;
-			req.set_connectionid(mConnectionId);
+			wStream* s;
 
-			if (!req.SerializeToString(&mEncodedRequest))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			m_Request.ConnectionId = mConnectionId;
+
+			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
 
 			return 0;
 		};
 
 		int CallOutLogOffUserSession::decodeResponse()
 		{
-			// encode protocol buffers
-			LogOffUserSessionResponse resp;
-			// stup do stuff here
+			BYTE* buffer;
+			UINT32 length;
 
-			if (!resp.ParseFromString(mEncodedResponse))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
 
-			mLoggedOff = resp.loggedoff();
+			freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
+
+			mLoggedOff = true;
+
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
 
 			return 0;
 		};

@@ -44,8 +44,11 @@ namespace freerds
 		private:
 			bool mPong;
 
-			FDSAPI_HEARTBEAT_REQUEST request;
-			FDSAPI_HEARTBEAT_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_HEARTBEAT_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_HEARTBEAT_RESPONSE m_Response;
 		};
 	}
 }

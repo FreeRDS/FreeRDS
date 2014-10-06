@@ -48,8 +48,11 @@ namespace freerds
 			std::string mVirtualName;
 			std::string mConnectionString;
 
-			FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST request;
-			FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE m_Response;
 		};
 	}
 }

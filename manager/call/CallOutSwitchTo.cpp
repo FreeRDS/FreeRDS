@@ -32,6 +32,8 @@ namespace freerds
 	namespace call
 	{
 		CallOutSwitchTo::CallOutSwitchTo()
+		: m_RequestId(FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID),
+		  m_ResponseId(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID)
 		{
 			mConnectionId = 0;
 			mSuccess = false;
@@ -44,36 +46,39 @@ namespace freerds
 
 		unsigned long CallOutSwitchTo::getCallType()
 		{
-			return freerds::icp::SwitchTo;
+			return m_RequestId;
 		};
-
 
 		int CallOutSwitchTo::encodeRequest()
 		{
-			SwitchToRequest req;
-			req.set_connectionid(mConnectionId);
-			req.set_serviceendpoint(mServiceEndpoint);
+			wStream* s;
 
-			if (!req.SerializeToString(&mEncodedRequest))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			m_Request.ConnectionId = mConnectionId;
+			m_Request.ServiceEndpoint = (char*) mServiceEndpoint.c_str();
+
+			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
+
 			return 0;
 		}
 
 		int CallOutSwitchTo::decodeResponse()
 		{
-			SwitchToResponse resp;
+			BYTE* buffer;
+			UINT32 length;
 
-			if (!resp.ParseFromString(mEncodedResponse))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
-			mSuccess = resp.success();
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
+
+			freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
+
+			mSuccess = true;
+
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
+
 			return 0;
 		}
 

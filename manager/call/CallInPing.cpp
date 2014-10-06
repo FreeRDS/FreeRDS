@@ -32,6 +32,7 @@ namespace freerds
 	namespace call
 	{
 		CallInPing::CallInPing()
+		: m_RequestId(FDSAPI_HEARTBEAT_REQUEST_ID), m_ResponseId(FDSAPI_HEARTBEAT_RESPONSE_ID)
 		{
 
 		};
@@ -43,36 +44,36 @@ namespace freerds
 
 		unsigned long CallInPing::getCallType()
 		{
-			return freerds::icp::Ping;
+			return m_RequestId;
 		};
 
 		int CallInPing::decodeRequest()
 		{
-			// decode protocol buffers
-			PingRequest req;
+			BYTE* buffer;
+			UINT32 length;
 
-			if (!req.ParseFromString(mEncodedRequest))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
+
+			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
 
 			return 0;
 		};
 
 		int CallInPing::encodeResponse()
 		{
-			// encode protocol buffers
-			PingResponse resp;
-			resp.set_pong(true);
+			wStream* s;
 
-			if (!resp.SerializeToString(&mEncodedResponse))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			m_Response.HeartbeatId = m_Request.HeartbeatId;
+
+			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
+
 			return 0;
 		};
 

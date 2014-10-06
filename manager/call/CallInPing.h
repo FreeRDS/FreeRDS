@@ -45,11 +45,14 @@ namespace freerds
 
 		private:
 
-			FDSAPI_HEARTBEAT_REQUEST request;
-			FDSAPI_HEARTBEAT_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_HEARTBEAT_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_HEARTBEAT_RESPONSE m_Response;
 		};
 
-		FACTORY_REGISTER_DWORD(CallFactory,CallInPing,freerds::icp::Ping);
+		FACTORY_REGISTER_DWORD(CallFactory, CallInPing, FDSAPI_HEARTBEAT_REQUEST_ID);
 	}
 }
 

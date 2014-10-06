@@ -26,32 +26,21 @@
 
 int ping(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
-	int ret = 0;
 	pbRPCPayload* payload;
-	Freerds__Icp__PingRequest* request;
-	Freerds__Icp__PingResponse response;
+	FDSAPI_HEARTBEAT_REQUEST request;
+	FDSAPI_HEARTBEAT_RESPONSE response;
+	UINT32 type = FDSAPI_HEARTBEAT_REQUEST_ID;
 
-	freerds__icp__ping_response__init(&response);
-	request = freerds__icp__ping_request__unpack(NULL, pbrequest->length, pbrequest->buffer);
+	freerds_rpc_msg_unpack(FDSAPI_REQUEST_ID(type), &request, pbrequest->buffer, pbrequest->length);
 
-	if (!request)
-		return PBRPC_BAD_REQEST_DATA;
-
-	response.pong = TRUE;
-
-	freerds__icp__ping_request__free_unpacked(request, NULL);
+	response.msgType = FDSAPI_RESPONSE_ID(type);
+	response.callId = request.callId;
+	response.HeartbeatId = request.HeartbeatId;
 
 	payload = pbrpc_payload_new();
-	payload->length = freerds__icp__ping_response__get_packed_size(&response);
-	payload->buffer = malloc(payload->length);
-
-	ret = freerds__icp__ping_response__pack(&response, payload->buffer);
-
-	if (ret != payload->length)
-	{
-		free(payload->buffer);
-		return PBRPC_BAD_RESPONSE;
-	}
+	payload->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), &response, NULL);
+	payload->buffer = Stream_Buffer(payload->s);
+	payload->length = Stream_Length(payload->s);
 	*pbresponse = payload;
 
 	return PBRPC_SUCCESS;
@@ -59,19 +48,18 @@ int ping(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 
 int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
-	int ret = 0;
 	pbRPCPayload* payload;
 	rdsConnection* connection = NULL;
-	Freerds__Icp__SwitchToRequest* request;
-	Freerds__Icp__SwitchToResponse response;
+	FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST request;
+	FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE response;
+	UINT32 type = FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID;
 
-	freerds__icp__switch_to_response__init(&response);
-	request = freerds__icp__switch_to_request__unpack(NULL, pbrequest->length, pbrequest->buffer);
+	freerds_rpc_msg_unpack(FDSAPI_REQUEST_ID(type), &request, pbrequest->buffer, pbrequest->length);
 
-	if (!request)
-		return PBRPC_BAD_REQEST_DATA;
+	response.msgType = FDSAPI_RESPONSE_ID(type);
+	response.callId = request.callId;
 
-	connection = app_context_get_connection(request->connectionid);
+	connection = app_context_get_connection(request.ConnectionId);
 
 	if (connection)
 	{
@@ -81,8 +69,7 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 
 		pRequest->callId = tag;
 		pRequest->msgType = FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID;
-		pRequest->ServiceEndpoint = _strdup(request->serviceendpoint);
-		freerds__icp__switch_to_request__free_unpacked(request, NULL);
+		pRequest->ServiceEndpoint = _strdup(request.ServiceEndpoint);
 
 		MessageQueue_Post(connection->notifications, (void*) connection, pRequest->msgType, (void*) pRequest, NULL);
 		*pbresponse = NULL;
@@ -91,22 +78,13 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 	else
 	{
 		fprintf(stderr, "something went wrong\n");
-		response.success = FALSE;
+		response.status = 1;
 	}
-
-	freerds__icp__switch_to_request__free_unpacked(request, NULL);
 
 	payload = pbrpc_payload_new();
-	payload->length = freerds__icp__switch_to_response__get_packed_size(&response);
-	payload->buffer = malloc(payload->length);
-
-	ret = freerds__icp__switch_to_response__pack(&response, payload->buffer);
-
-	if (ret != payload->length)
-	{
-		free(payload->buffer);
-		return PBRPC_BAD_RESPONSE;
-	}
+	payload->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), &response, NULL);
+	payload->buffer = Stream_Buffer(payload->s);
+	payload->length = Stream_Length(payload->s);
 	*pbresponse = payload;
 
 	return PBRPC_SUCCESS;
@@ -114,19 +92,18 @@ int switchTo(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 
 int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse)
 {
-	int ret = 0;
 	pbRPCPayload* payload;
 	rdsConnection* connection = NULL;
-	Freerds__Icp__LogOffUserSessionRequest* request;
-	Freerds__Icp__LogOffUserSessionResponse response;
+	FDSAPI_LOGOFF_USER_REQUEST request;
+	FDSAPI_LOGOFF_USER_RESPONSE response;
+	UINT32 type = FDSAPI_LOGOFF_USER_REQUEST_ID;
 
-	freerds__icp__log_off_user_session_response__init(&response);
-	request = freerds__icp__log_off_user_session_request__unpack(NULL, pbrequest->length, pbrequest->buffer);
+	freerds_rpc_msg_unpack(FDSAPI_REQUEST_ID(type), &request, pbrequest->buffer, pbrequest->length);
 
-	if (!request)
-		return PBRPC_BAD_REQEST_DATA;
+	response.msgType = FDSAPI_RESPONSE_ID(type);
+	response.callId = request.callId;
 
-	connection = app_context_get_connection(request->connectionid);
+	connection = app_context_get_connection(request.ConnectionId);
 
 	if (connection)
 	{
@@ -136,7 +113,6 @@ int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbrespon
 
 		pRequest->callId = tag;
 		pRequest->msgType = FDSAPI_LOGOFF_USER_REQUEST_ID;
-		freerds__icp__log_off_user_session_request__free_unpacked(request, NULL);
 
 		MessageQueue_Post(connection->notifications, (void*) connection, pRequest->msgType, (void*) pRequest, NULL);
 
@@ -146,22 +122,13 @@ int logOffUserSession(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbrespon
 	else
 	{
 		fprintf(stderr, "something went wrong\n");
-		response.loggedoff = FALSE;
+		response.status = 1;
 	}
-
-	freerds__icp__log_off_user_session_request__free_unpacked(request, NULL);
 
 	payload = pbrpc_payload_new();
-	payload->length = freerds__icp__log_off_user_session_response__get_packed_size(&response);
-	payload->buffer = malloc(payload->length);
-
-	ret = freerds__icp__log_off_user_session_response__pack(&response, payload->buffer);
-
-	if (ret != payload->length)
-	{
-		free(payload->buffer);
-		return PBRPC_BAD_RESPONSE;
-	}
+	payload->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), &response, NULL);
+	payload->buffer = Stream_Buffer(payload->s);
+	payload->length = Stream_Length(payload->s);
 	*pbresponse = payload;
 
 	return PBRPC_SUCCESS;

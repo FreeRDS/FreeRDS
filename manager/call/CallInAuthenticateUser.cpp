@@ -35,7 +35,8 @@ namespace freerds
 		static wLog* logger_CallInLogonUser = WLog_Get("freerds.SessionManager.call.callinauthenticateuser");
 
 		CallInAuthenticateUser::CallInAuthenticateUser()
-		: mSessionId(0), mAuthStatus(0)
+		: mSessionId(0), mAuthStatus(0),
+		  m_RequestId(FDSAPI_START_SESSION_REQUEST_ID), m_ResponseId(FDSAPI_START_SESSION_RESPONSE_ID)
 		{
 
 		};
@@ -47,50 +48,41 @@ namespace freerds
 
 		unsigned long CallInAuthenticateUser::getCallType()
 		{
-			return freerds::icps::AuthenticateUser;
+			return m_RequestId;
 		};
 
 		int CallInAuthenticateUser::decodeRequest()
 		{
-			// decode protocol buffers
-			AuthenticateUserRequest req;
+			BYTE* buffer;
+			UINT32 length;
 
-			if (!req.ParseFromString(mEncodedRequest))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
 
-			mUserName = req.username();
+			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
 
-			mSessionId = req.sessionid();
+			mSessionId = m_Request.SessionId;
+			mUserName = m_Request.User ? m_Request.User : "";
+			mDomainName = m_Request.Domain ? m_Request.Domain : "";
+			mPassword = m_Request.Password ? m_Request.Password : "";
 
-			mDomainName = req.domain();
-
-			mPassword = req.password();
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
 
 			return 0;
 		};
 
 		int CallInAuthenticateUser::encodeResponse()
 		{
-			// encode protocol buffers
-			AuthenticateUserResponse resp;
-			// stup do stuff here
+			wStream* s;
 
-			if (mAuthStatus == 0) {
-				resp.set_authstatus(freerds::icps::AuthenticateUserResponse_AUTH_STATUS_AUTH_SUCCESSFULL);
-			} else {
-				resp.set_authstatus(freerds::icps::AuthenticateUserResponse_AUTH_STATUS_AUTH_BAD_CREDENTIAL);
-			}
+			m_Response.ServiceEndpoint = NULL;
+			m_Response.status = (mAuthStatus == 0) ? 0 : 1;
 
-			if (!resp.SerializeToString(&mEncodedResponse))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
 
 			return 0;
 		};
@@ -106,7 +98,7 @@ namespace freerds
 				return -1;
 			}
 
-			mAuthStatus = currentConnection->authenticateUser(mUserName,mDomainName,mPassword);
+			mAuthStatus = currentConnection->authenticateUser(mUserName, mDomainName, mPassword);
 			return mAuthStatus;
 		}
 
@@ -183,7 +175,6 @@ namespace freerds
 		{
 			if (authenticateUser() == 0) {
 				if (mAuthStatus == 0) {
-					// user is authenticated
 					return getUserSession();
 				}
 			}

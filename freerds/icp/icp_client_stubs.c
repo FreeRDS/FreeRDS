@@ -29,62 +29,40 @@
 
 int freerds_icp_LogoffUserResponse(FDSAPI_LOGOFF_USER_RESPONSE* pResponse)
 {
-	int status = 0;
-	Freerds__Icp__LogOffUserSessionResponse response;
-	pbRPCPayload* pbresponse = pbrpc_payload_new();
+	pbRPCPayload* pbresponse;
+	UINT32 type = FDSAPI_LOGOFF_USER_REQUEST_ID;
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 
 	if (!context)
 		return -1;
 
-	//pResponse->msgType = FDSAPI_LOGOFF_USER_RESPONSE_ID;
-	pResponse->msgType = FREERDS__ICP__MSGTYPE__LogOffUserSession;
+	pResponse->status = 0;
+	pResponse->msgType = FDSAPI_LOGOFF_USER_RESPONSE_ID;
 
-	freerds__icp__log_off_user_session_response__init(&response);
-	response.loggedoff = pResponse->status ? FALSE : TRUE;
-
-	pbresponse->length = freerds__icp__log_off_user_session_response__get_packed_size(&response);
-	pbresponse->buffer = (BYTE*) malloc(pbresponse->length);
-
-	status = freerds__icp__log_off_user_session_response__pack(&response, pbresponse->buffer);
-
-	if (status != pbresponse->length)
-	{
-		fprintf(stderr, "%s pack error for %d", __FUNCTION__, pResponse->msgType);
-		pbrpc_free_payload(pbresponse);
-		return -1;
-	}
+	pbresponse = pbrpc_payload_new();
+	pbresponse->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), pResponse, NULL);
+	pbresponse->buffer = Stream_Buffer(pbresponse->s);
+	pbresponse->length = Stream_Length(pbresponse->s);
 
 	return pbrpc_send_response(context, pbresponse, pResponse->status, pResponse->msgType, pResponse->callId);
 }
 
 int freerds_icp_SwitchServiceEndpointResponse(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE* pResponse)
 {
-	int status = 0;
-	Freerds__Icp__SwitchToResponse response;
-	pbRPCPayload* pbresponse = pbrpc_payload_new();
+	pbRPCPayload* pbresponse;
+	UINT32 type = FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID;
 	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
 
 	if (!context)
 		return -1;
 
-	//pResponse->msgType = FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID;
-	pResponse->msgType = FREERDS__ICP__MSGTYPE__SwitchTo;
+	pResponse->status = 0;
+	pResponse->msgType = FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID;
 
-	freerds__icp__switch_to_response__init(&response);
-	response.success = pResponse->status ? FALSE : TRUE;
-
-	pbresponse->length = freerds__icp__switch_to_response__get_packed_size(&response);
-	pbresponse->buffer = (BYTE*) malloc(pbresponse->length);
-
-	status = freerds__icp__switch_to_response__pack(&response, pbresponse->buffer);
-
-	if (status != pbresponse->length)
-	{
-		fprintf(stderr, "%s pack error for %d", __FUNCTION__, pResponse->msgType);
-		pbrpc_free_payload(pbresponse);
-		return -1;
-	}
+	pbresponse = pbrpc_payload_new();
+	pbresponse->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), pResponse, NULL);
+	pbresponse->buffer = Stream_Buffer(pbresponse->s);
+	pbresponse->length = Stream_Length(pbresponse->s);
 
 	return pbrpc_send_response(context, pbresponse, pResponse->status, pResponse->msgType, pResponse->callId);
 }

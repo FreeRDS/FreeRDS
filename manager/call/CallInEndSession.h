@@ -46,11 +46,14 @@ namespace freerds
 			long mSessionId;
 			bool mSuccess;
 
-			FDSAPI_END_SESSION_REQUEST request;
-			FDSAPI_END_SESSION_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_END_SESSION_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_END_SESSION_RESPONSE m_Response;
 		};
 
-		FACTORY_REGISTER_DWORD(CallFactory,CallInEndSession,freerds::icps::EndSession);
+		FACTORY_REGISTER_DWORD(CallFactory, CallInEndSession, FDSAPI_END_SESSION_REQUEST_ID);
 	}
 }
 

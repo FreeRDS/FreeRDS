@@ -45,12 +45,15 @@ namespace freerds
 			bool isSuccess();
 
 		private:
+			bool mSuccess;
 			long mConnectionId;
 			std::string mServiceEndpoint;
-			bool mSuccess;
 
-			FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST request;
-			FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE m_Response;
 		};
 	}
 }

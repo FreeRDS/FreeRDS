@@ -45,7 +45,6 @@ namespace freerds
 			virtual int doStuff();
 
 		private:
-
 			int authenticateUser();
 			int getAuthSession();
 			int getUserSession();
@@ -58,11 +57,14 @@ namespace freerds
 			UINT32 mSessionId;
 			std::string mPipeName;
 
-			FDSAPI_START_SESSION_REQUEST request;
-			FDSAPI_START_SESSION_RESPONSE response;
+			UINT32 m_RequestId;
+			FDSAPI_START_SESSION_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_START_SESSION_RESPONSE m_Response;
 		};
 
-		FACTORY_REGISTER_DWORD(CallFactory, CallInAuthenticateUser, freerds::icps::AuthenticateUser);
+		FACTORY_REGISTER_DWORD(CallFactory, CallInAuthenticateUser, FDSAPI_START_SESSION_REQUEST_ID);
 	}
 }
 

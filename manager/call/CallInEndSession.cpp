@@ -33,6 +33,7 @@ namespace freerds
 	namespace call
 	{
 		CallInEndSession::CallInEndSession()
+		: m_RequestId(FDSAPI_END_SESSION_REQUEST_ID), m_ResponseId(FDSAPI_END_SESSION_RESPONSE_ID)
 		{
 			mSessionId = 0;
 			mSuccess = false;
@@ -45,36 +46,38 @@ namespace freerds
 
 		unsigned long CallInEndSession::getCallType()
 		{
-			return freerds::icps::EndSession;
+			return m_RequestId;
 		};
 
 		int CallInEndSession::decodeRequest()
 		{
-			// decode protocol buffers
-			EndSessionRequest req;
-			if (!req.ParseFromString(mEncodedRequest))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
-			mSessionId = req.sessionid();
+			BYTE* buffer;
+			UINT32 length;
+
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
+
+			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+
+			mSessionId = m_Request.SessionId;
+
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
+
 			return 0;
 		};
 
 		int CallInEndSession::encodeResponse()
 		{
-			// encode protocol buffers
-			EndSessionResponse resp;
+			wStream* s;
 
-			resp.set_success(mSuccess);
+			m_Response.status = 0;
+			m_Response.SessionId = m_Request.SessionId;
 
-			if (!resp.SerializeToString(&mEncodedResponse))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
 
 			return 0;
 		};

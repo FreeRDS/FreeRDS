@@ -32,6 +32,8 @@ namespace freerds
 	namespace call
 	{
 		CallOutFdsApiVirtualChannelOpen::CallOutFdsApiVirtualChannelOpen()
+		: m_RequestId(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID),
+		  m_ResponseId(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE_ID)
 		{
 			mSessionID = 0;
 		};
@@ -43,39 +45,38 @@ namespace freerds
 
 		unsigned long CallOutFdsApiVirtualChannelOpen::getCallType()
 		{
-			return freerds::icp::FdsApiVirtualChannelOpen;
+			return m_RequestId;
 		};
-
 
 		int CallOutFdsApiVirtualChannelOpen::encodeRequest()
 		{
-			FdsApiVirtualChannelOpenRequest req;
-			req.set_sessionid(mSessionID);
-			req.set_virtualname(mVirtualName);
+			wStream* s;
 
-			if (!req.SerializeToString(&mEncodedRequest))
-			{
-				// failed to serialize
-				mResult = 1;
-				return -1;
-			}
+			m_Request.ChannelEndpoint = (char*) mVirtualName.c_str();
+
+			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
+
+			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+			Stream_Free(s, TRUE);
+
 			return 0;
 		}
 
 		int CallOutFdsApiVirtualChannelOpen::decodeResponse()
 		{
-			FdsApiVirtualChannelOpenResponse resp;
+			BYTE* buffer;
+			UINT32 length;
 
-			if (!resp.ParseFromString(mEncodedResponse))
-			{
-				// failed to parse
-				mResult = 1;// will report error with answer
-				return -1;
-			}
-			mConnectionString = resp.connectionstring();
+			buffer = (BYTE*) mEncodedRequest.data();
+			length = (UINT32) mEncodedRequest.size();
+
+			freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
+
+			freerds_rpc_msg_free(m_RequestId, &m_Request);
+
 			return 0;
 		}
-
 
 		void CallOutFdsApiVirtualChannelOpen::setSessionID(long sessionID) {
 			mSessionID = sessionID;

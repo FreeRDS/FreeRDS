@@ -44,6 +44,12 @@ namespace freerds
 		private:
 			long mConnectionId;
 			bool mLoggedOff;
+
+			UINT32 m_RequestId;
+			FDSAPI_LOGOFF_USER_REQUEST m_Request;
+
+			UINT32 m_ResponseId;
+			FDSAPI_LOGOFF_USER_RESPONSE m_Response;
 		};
 	}
 }
