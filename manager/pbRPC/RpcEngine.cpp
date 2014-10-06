@@ -53,7 +53,7 @@ namespace freerds
 
 		RpcEngine::~RpcEngine()
 		{
-			google::protobuf::ShutdownProtobufLibrary();
+
 		}
 
 		HANDLE RpcEngine::createServerPipe(const char* endpoint)
@@ -282,17 +282,17 @@ namespace freerds
 				}
 				else
 				{
-					if (m_Header.status == RPCBase_RPCSTATUS_SUCCESS)
+					if (m_Header.status == FDSAPI_STATUS_SUCCESS)
 					{
 						foundCallOut->setEncodedeResponse(payload);
 						foundCallOut->decodeResponse();
 						foundCallOut->setResult(0);
 					}
-					else if (m_Header.status == RPCBase_RPCSTATUS_FAILED)
+					else if (m_Header.status == FDSAPI_STATUS_FAILED)
 					{
 						foundCallOut->setResult(1);
 					}
-					else if (m_Header.status == RPCBase_RPCSTATUS_NOTFOUND)
+					else if (m_Header.status == FDSAPI_STATUS_NOTFOUND)
 					{
 						foundCallOut->setResult(2);
 					}
@@ -352,15 +352,15 @@ namespace freerds
 
 				header.msgType = FDSAPI_RESPONSE_ID(callIn->getCallType());
 				header.callId = callIn->getTag();
-				header.status = RPCBase_RPCSTATUS_SUCCESS;
+				header.status = FDSAPI_STATUS_SUCCESS;
 
 				if (call->getResult())
 				{
-					header.status = RPCBase_RPCSTATUS_FAILED;
+					header.status = FDSAPI_STATUS_FAILED;
 				}
 				else
 				{
-					header.status = RPCBase_RPCSTATUS_SUCCESS;
+					header.status = FDSAPI_STATUS_SUCCESS;
 					serialized = callIn->getEncodedResponse();
 				}
 			}
@@ -370,7 +370,7 @@ namespace freerds
 
 				header.msgType = FDSAPI_REQUEST_ID(callOut->getCallType());
 				header.callId = callOut->getTag();
-				header.status = RPCBase_RPCSTATUS_SUCCESS;
+				header.status = FDSAPI_STATUS_SUCCESS;
 				serialized = callOut->getEncodedRequest();
 			}
 
@@ -386,7 +386,7 @@ namespace freerds
 
 			header.msgType = FDSAPI_RESPONSE_ID(callType);
 			header.callId = callID;
-			header.status = RPCBase_RPCSTATUS_NOTFOUND;
+			header.status = FDSAPI_STATUS_NOTFOUND;
 			header.msgSize = 0;
 
 			return sendInternal(&header, NULL);

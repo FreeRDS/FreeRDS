@@ -18,28 +18,22 @@
 set(MODULE_NAME "freerds-icp")
 set(MODULE_PREFIX "FREERDS_ICP")
 
-PROTOBUFC_GENERATE_C(PBRPC_PROTOC_SRC PBRPC_PROTOC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/../../protocols/protobuf/pbRPC.proto)
-
 set(PBRPC_SRC
-	pbrpc.c
-	${PBRPC_PROTOC_HDRS}
-	${PBRPC_PROTOC_SRC})
+	pbrpc.c)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(${MODULE_PREFIX}_SRCS
 	icp.c
+	pbrpc.c
 	icp_client_stubs.c
-	icp_server_stubs.c
-	${ICP_PROTOC_SRC}
-	${ICP_PROTOC_HDRS}
-	${PBRPC_SRC})
+	icp_server_stubs.c)
 
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-rpc)
 
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUFC_LIBRARIES})
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})

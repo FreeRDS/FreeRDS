@@ -49,6 +49,14 @@ struct _FDSAPI_MSG_PACKET
 };
 typedef struct _FDSAPI_MSG_PACKET FDSAPI_MSG_PACKET;
 
+/* RPC Status Code Definitions */
+
+#define FDSAPI_STATUS_SUCCESS		0
+#define FDSAPI_STATUS_FAILED		1
+#define FDSAPI_STATUS_NOTFOUND		2
+
+/* Message Type Id Macros */
+
 #define FDSAPI_REQUEST_ID(_id)		(_id & ~(0x80000000))
 #define FDSAPI_RESPONSE_ID(_id)		(_id | 0x80000000)
 #define FDSAPI_IS_RESPONSE_ID(_id)	(_id & 0x80000000)

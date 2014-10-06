@@ -32,10 +32,6 @@
 #include "freerds.h"
 
 #include <freerds/backend.h>
-#include <freerds/icp_client_stubs.h>
-#include <freerds/icp.h>
-#include "pbRPC.pb-c.h"
-#include "../icp/pbrpc.h"
 
 int freerds_client_inbound_begin_update(rdsBackend* backend, RDS_MSG_BEGIN_UPDATE* msg)
 {

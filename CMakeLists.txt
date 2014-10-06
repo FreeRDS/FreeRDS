@@ -104,14 +104,7 @@ endif()
 set(PIXMAN_FEATURE_PURPOSE "Pixel Manipulation")
 set(PIXMAN_FEATURE_DESCRIPTION "Pixel Manipulation Library")
 
-set(PROTOBUFC_FEATURE_TYPE "REQUIRED")
-set(PROTOBUFC_FEATURE_PURPOSE "Protobuf based RPC")
-set(PROTOBUFC_FEATURE_DESCRIPTION "google protocol buffers")
-
 find_feature(Pixman ${PIXMAN_FEATURE_TYPE} ${PIXMAN_FEATURE_PURPOSE} ${PIXMAN_FEATURE_DESCRIPTION})
-find_feature(ProtobufC ${PROTOBUFC_FEATURE_TYPE} ${PROTOBUFC_FEATURE_PURPOSE} ${PROTOBUFC_FEATURE_DESCRIPTION})
-
-include_directories(${PROTOBUFC_INCLUDE_DIRS})
 
 add_subdirectory(external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/msgpack/src)
@@ -144,9 +137,6 @@ if(${CMAKE_VERSION} VERSION_GREATER "2.8.10")
 	install(EXPORT FreeRDSTargets DESTINATION ${FREERDS_CMAKE_INSTALL_DIR})
 
 endif()
-
-FILE(GLOB protobuf_files "${CMAKE_CURRENT_SOURCE_DIR}/protocols/protobuf/*.proto")
-INSTALL(FILES ${protobuf_files} DESTINATION share/freerds/protobuf)
 
 if(NOT MSVC)
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/freerds-backend.pc.in ${CMAKE_CURRENT_BINARY_DIR}/freerds-backend.pc @ONLY)

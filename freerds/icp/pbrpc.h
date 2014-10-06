@@ -26,8 +26,6 @@
 
 #include <freerds/rpc.h>
 
-#include "pbRPC.pb-c.h"
-
 #define PBRPC_TIMEOUT 10000
 
 typedef struct pbrpc_method pbRPCMethod;

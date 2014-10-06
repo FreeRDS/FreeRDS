@@ -21,10 +21,6 @@ project(freerds-manager CXX)
 set(MODULE_PREFIX "FREERDS_MANAGER")
 set(MODULE_NAME "freerds-manager")
 
-find_feature(Protobuf REQUIRED "RPC" "Remote Procedure Call")
-
-PROTOBUF_GENERATE_CPP(PBRPC_PROTOBUF_SRC PBRPC_PROTOBUF_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/protobuf/pbRPC.proto)
-
 set(FDSAPI_SRCS
 	fdsapi/FDSApiHandler.cpp
 	fdsapi/FDSApiServer.cpp
@@ -33,7 +29,6 @@ set(FDSAPI_SRCS
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 
-include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -75,19 +70,15 @@ set(${MODULE_PREFIX}_SRCS
 	utils/StringHelpers.cpp
 	task/Executor.cpp
 	${ICP_SOURCES}
-	${FDSAPI_SRCS}
-	${PBRPC_PROTOBUF_SRC}
-	${PBRPC_PROTOBUF_HEADERS})
+	${FDSAPI_SRCS})
  
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS freerds-rpc)
 
 list(APPEND ${MODULE_PREFIX}_LIBS winpr)
-
-list(APPEND ${MODULE_PREFIX}_LIBS ${PROTOBUF_LIBRARY})
 	
-target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS} ${PROTOBUF_LIBRARY})
+target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 

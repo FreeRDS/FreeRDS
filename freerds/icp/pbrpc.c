@@ -25,7 +25,6 @@
 
 #include "icp_server_stubs.h"
 
-#include "pbRPC.pb-c.h"
 #include "pbrpc.h"
 
 int tp_npipe_open(pbRPCContext* context, int timeout)
@@ -324,7 +323,7 @@ static int pbrpc_process_request(pbRPCContext* context, FDSAPI_MSG_PACKET* msg)
 	if (!cb)
 	{
 		fprintf(stderr, "server callback not found %d\n", msg->msgType);
-		msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__NOTFOUND;
+		msg->status = FDSAPI_STATUS_NOTFOUND;
 		status = pbrpc_send_response(context, NULL, msg->status,
 				msg->msgType, msg->callId);
 		return status;
@@ -523,7 +522,7 @@ int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
 	msg = pbrpc_message_new();
 
 	msg->callId = tag;
-	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
+	msg->status = FDSAPI_STATUS_SUCCESS;
 	msg->buffer = request->buffer;
 	msg->length = request->length;
 	msg->msgType = FDSAPI_REQUEST_ID(type);
@@ -597,7 +596,7 @@ void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* r
 	msg = pbrpc_message_new();
 
 	msg->callId = tag;
-	msg->status = FREERDS__PBRPC__RPCBASE__RPCSTATUS__SUCCESS;
+	msg->status = FDSAPI_STATUS_SUCCESS;
 	msg->buffer = request->buffer;
 	msg->length = request->length;
 	msg->msgType = FDSAPI_REQUEST_ID(type);
