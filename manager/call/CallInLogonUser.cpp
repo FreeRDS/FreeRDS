@@ -25,9 +25,6 @@
 #include <appcontext/ApplicationContext.h>
 #include <module/AuthModule.h>
 
-using freerds::icp::LogonUserRequest;
-using freerds::icp::LogonUserResponse;
-
 namespace freerds
 {
 	namespace call

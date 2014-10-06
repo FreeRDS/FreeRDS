@@ -24,10 +24,12 @@
 
 #include <freerds/rpc.h>
 
+#include <list>
+
 #include <pbRPC.pb.h>
+
 #include <call/Call.h>
 #include <call/CallOut.h>
-#include <list>
 
 #define PIPE_BUFFER_SIZE	0xFFFF
 

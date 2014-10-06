@@ -23,9 +23,6 @@
 
 #include "CallInIsVCAllowed.h"
 
-using freerds::icp::IsChannelAllowedRequest;
-using freerds::icp::IsChannelAllowedResponse;
-
 namespace freerds
 {
 	namespace call

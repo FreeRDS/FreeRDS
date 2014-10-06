@@ -23,7 +23,6 @@
 
 #include <winpr/crt.h>
 
-#include "ICP.pb-c.h"
 #include "pbrpc.h"
 #include "../core/core.h"
 

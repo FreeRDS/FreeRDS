@@ -22,7 +22,6 @@
 
 #include "pbrpc.h"
 #include "icp_server_stubs.h"
-#include "ICP.pb-c.h"
 
 static pbRPCContext* g_pbContext = NULL;
 

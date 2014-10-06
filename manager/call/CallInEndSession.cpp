@@ -23,10 +23,8 @@
 
 #include "CallInEndSession.h"
 #include "TaskEndSession.h"
-#include <appcontext/ApplicationContext.h>
 
-using freerds::icps::EndSessionRequest;
-using freerds::icps::EndSessionResponse;
+#include <appcontext/ApplicationContext.h>
 
 namespace freerds
 {

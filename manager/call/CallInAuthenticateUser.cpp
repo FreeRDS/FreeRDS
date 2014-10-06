@@ -23,10 +23,8 @@
 
 #include "CallInAuthenticateUser.h"
 #include "TaskSwitchTo.h"
-#include <appcontext/ApplicationContext.h>
 
-using freerds::icps::AuthenticateUserRequest;
-using freerds::icps::AuthenticateUserResponse;
+#include <appcontext/ApplicationContext.h>
 
 namespace freerds
 {

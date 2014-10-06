@@ -25,9 +25,6 @@
 #include <appcontext/ApplicationContext.h>
 #include <call/TaskEndSession.h>
 
-using freerds::icp::DisconnectUserSessionRequest;
-using freerds::icp::DisconnectUserSessionResponse;
-
 namespace freerds
 {
 	namespace call

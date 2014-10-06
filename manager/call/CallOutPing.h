@@ -21,8 +21,8 @@
 #define __CALL_OUT_PING_H_
 
 #include <string>
+
 #include "CallOut.h"
-#include <ICP.pb.h>
 
 namespace freerds
 {

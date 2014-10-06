@@ -23,9 +23,6 @@
 
 #include "CallOutPing.h"
 
-using freerds::icp::PingRequest;
-using freerds::icp::PingResponse;
-
 namespace freerds
 {
 	namespace call

@@ -25,8 +25,6 @@
 #include "CallFactory.h"
 #include "CallIn.h"
 
-#include <ICPS.pb.h>
-
 namespace freerds
 {
 	namespace call

@@ -20,7 +20,6 @@
 
 #include "icp_server_stubs.h"
 
-#include "ICP.pb-c.h"
 #include "pbrpc.h"
 #include "../core/app_context.h"
 

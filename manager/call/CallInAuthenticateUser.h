@@ -24,10 +24,10 @@
 
 #include <winpr/crt.h>
 
-#include "CallFactory.h"
 #include <string>
+
+#include "CallFactory.h"
 #include "CallIn.h"
-#include <ICPS.pb.h>
 
 namespace freerds
 {

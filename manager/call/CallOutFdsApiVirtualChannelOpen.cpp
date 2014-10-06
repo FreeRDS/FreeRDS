@@ -24,9 +24,6 @@
 #include "CallOutFdsApiVirtualChannelOpen.h"
 #include <appcontext/ApplicationContext.h>
 
-using freerds::icp::FdsApiVirtualChannelOpenRequest;
-using freerds::icp::FdsApiVirtualChannelOpenResponse;
-
 namespace freerds
 {
 	namespace call

@@ -22,7 +22,6 @@
 
 #include <string>
 #include "CallOut.h"
-#include <ICP.pb.h>
 
 namespace freerds
 {

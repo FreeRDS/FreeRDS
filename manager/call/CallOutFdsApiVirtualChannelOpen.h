@@ -21,8 +21,8 @@
 #define CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_
 
 #include <string>
+
 #include "CallOut.h"
-#include <ICP.pb.h>
 
 namespace freerds
 {

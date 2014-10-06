@@ -24,9 +24,6 @@
 #include "CallOutSwitchTo.h"
 #include <appcontext/ApplicationContext.h>
 
-using freerds::icp::SwitchToRequest;
-using freerds::icp::SwitchToResponse;
-
 namespace freerds
 {
 	namespace call

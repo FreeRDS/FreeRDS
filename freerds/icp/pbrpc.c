@@ -23,11 +23,6 @@
 #include <winpr/thread.h>
 #include <winpr/interlocked.h>
 
-#ifndef _WIN32
-#include <arpa/inet.h>
-#endif
-
-#include "ICP.pb-c.h"
 #include "icp_server_stubs.h"
 
 #include "pbRPC.pb-c.h"
@@ -335,15 +330,15 @@ static int pbrpc_process_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase*
 
 	switch (msgType)
 	{
-		case FREERDS__ICP__MSGTYPE__Ping:
+		case FDSAPI_HEARTBEAT_REQUEST_ID:
 			cb = ping;
 			break;
 
-		case FREERDS__ICP__MSGTYPE__SwitchTo:
+		case FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID:
 			cb = switchTo;
 			break;
 
-		case FREERDS__ICP__MSGTYPE__LogOffUserSession:
+		case FDSAPI_LOGOFF_USER_REQUEST_ID:
 			cb = logOffUserSession;
 			break;
 	}

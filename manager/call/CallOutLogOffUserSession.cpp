@@ -24,9 +24,6 @@
 #include "CallOutLogOffUserSession.h"
 #include <appcontext/ApplicationContext.h>
 
-using freerds::icp::LogOffUserSessionRequest;
-using freerds::icp::LogOffUserSessionResponse;
-
 namespace freerds
 {
 	namespace call
