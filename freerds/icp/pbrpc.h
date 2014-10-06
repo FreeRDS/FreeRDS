@@ -68,7 +68,7 @@ typedef enum pbrpc_status
 } PBRPCSTATUS;
 
 
-typedef void (*pbRpcResponseCallback)(UINT32 reason, Freerds__Pbrpc__RPCBase* response, void *args);
+typedef void (*pbRpcResponseCallback)(UINT32 reason, FDSAPI_MSG_PACKET* response, void *args);
 
 pbRPCContext* pbrpc_server_new();
 void pbrpc_server_free(pbRPCContext* context);
@@ -82,10 +82,10 @@ int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 st
 /* utils */
 
 DWORD pbrpc_getTag(pbRPCContext *context);
-Freerds__Pbrpc__RPCBase *pbrpc_message_new();
-void pbrpc_message_free(Freerds__Pbrpc__RPCBase* msg, BOOL freePayload);
-void pbrpc_prepare_request(pbRPCContext* context, Freerds__Pbrpc__RPCBase* msg);
-void pbrpc_prepare_response(Freerds__Pbrpc__RPCBase* msg, UINT32 tag);
+FDSAPI_MSG_PACKET* pbrpc_message_new();
+void pbrpc_message_free(FDSAPI_MSG_PACKET* msg, BOOL freePayload);
+void pbrpc_prepare_request(pbRPCContext* context, FDSAPI_MSG_PACKET* msg);
+void pbrpc_prepare_response(FDSAPI_MSG_PACKET* msg, UINT32 tag);
 pbRPCPayload* pbrpc_payload_new();
 void pbrpc_free_payload(pbRPCPayload* response);
 

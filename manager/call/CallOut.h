@@ -43,8 +43,8 @@ namespace freerds
 			void   initAnswerHandle();
 			HANDLE getAnswerHandle();
 
-			void	setResult(uint32_t result);
-			void	setErrorDescription(std::string error);
+			void setResult(uint32_t result);
+			void setErrorDescription(std::string error);
 
 		private :
 			HANDLE mAnswer;

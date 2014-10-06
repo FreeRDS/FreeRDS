@@ -75,8 +75,6 @@ namespace freerds
 			DWORD mPayloadRead;
 			BYTE mPayloadBuffer[PIPE_BUFFER_SIZE];
 
-			RPCBase mpbRPC;
-
 			DWORD mHeaderRead;
 			BYTE* mHeaderBuffer;
 			FDSAPI_MSG_HEADER m_Header;

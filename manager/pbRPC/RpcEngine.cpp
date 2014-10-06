@@ -251,16 +251,15 @@ namespace freerds
 		{
 			UINT32 callID;
 			UINT32 callType;
+			std::string payload;
 
-			mpbRPC.Clear();
-			mpbRPC.ParseFromArray(mPayloadBuffer, mPayloadRead);
+			callID = m_Header.callId;
+			callType = m_Header.msgType;
 
-			callID = mpbRPC.tag();
-			callType = mpbRPC.msgtype();
+			payload.assign((const char*) mPayloadBuffer, (size_t) mPayloadRead);
 
-			if (mpbRPC.isresponse())
+			if (FDSAPI_IS_RESPONSE_ID(callType))
 			{
-				// search the stored call to fill back answer
 				callNS::CallOut* foundCallOut = 0;
 				std::list<callNS::CallOut*>::iterator it;
 
@@ -283,19 +282,17 @@ namespace freerds
 				}
 				else
 				{
-					// fill the answer and signal
-					if (mpbRPC.status() == RPCBase_RPCSTATUS_SUCCESS)
+					if (m_Header.status == RPCBase_RPCSTATUS_SUCCESS)
 					{
-						foundCallOut->setEncodedeResponse(mpbRPC.payload());
+						foundCallOut->setEncodedeResponse(payload);
 						foundCallOut->decodeResponse();
 						foundCallOut->setResult(0);
 					}
-					else if (mpbRPC.status() == RPCBase_RPCSTATUS_FAILED)
+					else if (m_Header.status == RPCBase_RPCSTATUS_FAILED)
 					{
-						foundCallOut->setErrorDescription(mpbRPC.errordescription());
 						foundCallOut->setResult(1);
 					}
-					else if (mpbRPC.status() == RPCBase_RPCSTATUS_NOTFOUND)
+					else if (m_Header.status == RPCBase_RPCSTATUS_NOTFOUND)
 					{
 						foundCallOut->setResult(2);
 					}
@@ -307,7 +304,6 @@ namespace freerds
 
 				if (!createdCall)
 				{
-					// call not found ... send error
 					WLog_Print(logger_RPCEngine, WLOG_ERROR, "no registered class for calltype=%d",callType);
 					sendError(callID, callType);
 					delete createdCall;
@@ -316,19 +312,17 @@ namespace freerds
 
 				if (createdCall->getDerivedType() == 1)
 				{
-					// we got an CallIn object ... so handle it
 					callNS::CallIn* createdCallIn = (callNS::CallIn*) createdCall;
-					createdCallIn->setEncodedRequest(mpbRPC.payload());
+
+					createdCallIn->setEncodedRequest(payload);
 					createdCallIn->setTag(callID);
 
 					WLog_Print(logger_RPCEngine, WLOG_TRACE, "call upacked for callType=%d and callID=%d",callType,callID);
 
-					// call the implementation ...
 					createdCallIn->decodeRequest();
 					createdCallIn->doStuff();
 					createdCallIn->encodeResponse();
 
-					// send the result
 					send(createdCall);
 					delete createdCall;
 				}
@@ -360,22 +354,14 @@ namespace freerds
 				header.callId = callIn->getTag();
 				header.status = RPCBase_RPCSTATUS_SUCCESS;
 
-				mpbRPC.Clear();
-				mpbRPC.set_isresponse(true);
-				mpbRPC.set_tag(callIn->getTag());
-				mpbRPC.set_msgtype(callIn->getCallType());
-
 				if (call->getResult())
 				{
-					mpbRPC.set_status(RPCBase_RPCSTATUS_FAILED);
 					header.status = RPCBase_RPCSTATUS_FAILED;
 				}
 				else
 				{
-					mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
 					header.status = RPCBase_RPCSTATUS_SUCCESS;
-
-					mpbRPC.set_payload(callIn->getEncodedResponse());
+					serialized = callIn->getEncodedResponse();
 				}
 			}
 			else if (call->getDerivedType() == 2)
@@ -385,16 +371,9 @@ namespace freerds
 				header.msgType = FDSAPI_REQUEST_ID(callOut->getCallType());
 				header.callId = callOut->getTag();
 				header.status = RPCBase_RPCSTATUS_SUCCESS;
-
-				mpbRPC.Clear();
-				mpbRPC.set_isresponse(false);
-				mpbRPC.set_tag(callOut->getTag());
-				mpbRPC.set_msgtype(callOut->getCallType());
-				mpbRPC.set_status(RPCBase_RPCSTATUS_SUCCESS);
-				mpbRPC.set_payload(callOut->getEncodedRequest());
+				serialized = callOut->getEncodedRequest();
 			}
 
-			mpbRPC.SerializeToString(&serialized);
 			header.msgSize = (UINT32) serialized.size();
 
 			return sendInternal(&header, (BYTE*) serialized.data());
@@ -408,17 +387,9 @@ namespace freerds
 			header.msgType = FDSAPI_RESPONSE_ID(callType);
 			header.callId = callID;
 			header.status = RPCBase_RPCSTATUS_NOTFOUND;
+			header.msgSize = 0;
 
-			mpbRPC.Clear();
-			mpbRPC.set_isresponse(true);
-			mpbRPC.set_tag(callID);
-			mpbRPC.set_msgtype(callType);
-			mpbRPC.set_status(RPCBase_RPCSTATUS_NOTFOUND);
-
-			mpbRPC.SerializeToString(&serialized);
-			header.msgSize = (UINT32) serialized.size();
-
-			return sendInternal(&header, (BYTE*) serialized.data());
+			return sendInternal(&header, NULL);
 		}
 
 		int RpcEngine::sendInternal(FDSAPI_MSG_HEADER* header, BYTE* buffer)
@@ -527,7 +498,7 @@ namespace freerds
 				else
 				{
 					WLog_Print(logger_RPCEngine, WLOG_ERROR, "error sending call, informing call");
-					callOut->setResult(1); // for failed
+					callOut->setResult(1);
 					return CLIENT_ERROR;
 				}
 			}
