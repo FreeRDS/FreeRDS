@@ -24,7 +24,7 @@
 
 namespace freerds
 {
-	class TaskSessionTimeout: public taskNS::Task
+	class TaskSessionTimeout: public Task
 	{
 	public:
 		virtual void run();
@@ -35,7 +35,5 @@ namespace freerds
 
 	typedef boost::shared_ptr<TaskSessionTimeout> TaskSessionTimeoutPtr;
 }
-
-namespace sessionNS = freerds;
 
 #endif /* __TASK_SESSION_TIMEOUT_ */

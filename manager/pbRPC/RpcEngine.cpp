@@ -258,12 +258,12 @@ namespace freerds
 
 		if (FDSAPI_IS_RESPONSE_ID(callType))
 		{
-			callNS::CallOut* foundCallOut = 0;
-			std::list<callNS::CallOut*>::iterator it;
+			CallOut* foundCallOut = 0;
+			std::list<CallOut*>::iterator it;
 
 			for (it = mAnswerWaitingQueue.begin(); it != mAnswerWaitingQueue.end(); it++)
 			{
-				callNS::CallOut* currentCallOut = (callNS::CallOut*)(*it);
+				CallOut* currentCallOut = (CallOut*)(*it);
 
 				if (currentCallOut->getTag() == callID)
 				{
@@ -298,7 +298,7 @@ namespace freerds
 		}
 		else
 		{
-			callNS::Call* createdCall = CALL_FACTORY.createClass(callType);
+			Call* createdCall = CALL_FACTORY.createClass(callType);
 
 			if (!createdCall)
 			{
@@ -310,7 +310,7 @@ namespace freerds
 
 			if (createdCall->getDerivedType() == 1)
 			{
-				callNS::CallIn* createdCallIn = (callNS::CallIn*) createdCall;
+				CallIn* createdCallIn = (CallIn*) createdCall;
 
 				createdCallIn->setEncodedRequest(payload);
 				createdCallIn->setTag(callID);
@@ -338,7 +338,7 @@ namespace freerds
 		return CLIENT_SUCCESS;
 	}
 
-	int RpcEngine::send(freerds::call::Call* call)
+	int RpcEngine::send(Call* call)
 	{
 		std::string serialized;
 		FDSAPI_MSG_HEADER header;
@@ -346,7 +346,7 @@ namespace freerds
 
 		if (call->getDerivedType() == 1)
 		{
-			callNS::CallIn* callIn = (callNS::CallIn*) call;
+			CallIn* callIn = (CallIn*) call;
 
 			header.msgType = FDSAPI_RESPONSE_ID(callIn->getCallType());
 			header.callId = callIn->getTag();
@@ -364,7 +364,7 @@ namespace freerds
 		}
 		else if (call->getDerivedType() == 2)
 		{
-			callNS::CallOut* callOut = (callNS::CallOut*) call;
+			CallOut* callOut = (CallOut*) call;
 
 			header.msgType = FDSAPI_REQUEST_ID(callOut->getCallType());
 			header.callId = callOut->getTag();
@@ -427,7 +427,7 @@ namespace freerds
 	{
 		DWORD status;
 		DWORD nCount;
-		SignalingQueue<callNS::Call*>* outgoingQueue = APP_CONTEXT.getRpcOutgoingQueue();
+		SignalingQueue<Call*>* outgoingQueue = APP_CONTEXT.getRpcOutgoingQueue();
 		HANDLE queueHandle = outgoingQueue->getSignalHandle();
 		HANDLE events[3];
 
@@ -465,7 +465,7 @@ namespace freerds
 			if (WaitForSingleObject(queueHandle, 0) == WAIT_OBJECT_0)
 			{
 				outgoingQueue->resetEventAndLockQueue();
-				callNS::Call* currentCall = outgoingQueue->getElementLockFree();
+				Call* currentCall = outgoingQueue->getElementLockFree();
 
 				while (currentCall)
 				{
@@ -480,11 +480,11 @@ namespace freerds
 		return retValue;
 	}
 
-	int RpcEngine::processOutgoingCall(freerds::call::Call* call)
+	int RpcEngine::processOutgoingCall(Call* call)
 	{
 		if (call->getDerivedType() == 2)
 		{
-			callNS::CallOut* callOut = (callNS::CallOut*) call;
+			CallOut* callOut = (CallOut*) call;
 
 			callOut->encodeRequest();
 			callOut->setTag(mNextOutCall++);

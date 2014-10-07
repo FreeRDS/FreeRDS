@@ -25,62 +25,59 @@
 
 namespace freerds
 {
-	namespace call
+	CallInIsVCAllowed::CallInIsVCAllowed()
+	: mVirtualChannelAllowed(false),
+	  m_RequestId(FDSAPI_CHANNEL_ALLOWED_REQUEST_ID), m_ResponseId(FDSAPI_CHANNEL_ALLOWED_RESPONSE_ID)
 	{
-		CallInIsVCAllowed::CallInIsVCAllowed()
-		: mVirtualChannelAllowed(false),
-		  m_RequestId(FDSAPI_CHANNEL_ALLOWED_REQUEST_ID), m_ResponseId(FDSAPI_CHANNEL_ALLOWED_RESPONSE_ID)
-		{
 
-		};
+	};
 
-		CallInIsVCAllowed::~CallInIsVCAllowed()
-		{
+	CallInIsVCAllowed::~CallInIsVCAllowed()
+	{
 
-		};
+	};
 
-		unsigned long CallInIsVCAllowed::getCallType()
-		{
-			return m_RequestId;
-		};
+	unsigned long CallInIsVCAllowed::getCallType()
+	{
+		return m_RequestId;
+	};
 
-		int CallInIsVCAllowed::decodeRequest()
-		{
-			BYTE* buffer;
-			UINT32 length;
+	int CallInIsVCAllowed::decodeRequest()
+	{
+		BYTE* buffer;
+		UINT32 length;
 
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
+		buffer = (BYTE*) mEncodedRequest.data();
+		length = (UINT32) mEncodedRequest.size();
 
-			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+		freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
 
-			mVirtualChannelName = m_Request.ChannelName ? m_Request.ChannelName : "";
+		mVirtualChannelName = m_Request.ChannelName ? m_Request.ChannelName : "";
 
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
+		freerds_rpc_msg_free(m_RequestId, &m_Request);
 
-			return 0;
-		};
+		return 0;
+	};
 
-		int CallInIsVCAllowed::encodeResponse()
-		{
-			wStream* s;
+	int CallInIsVCAllowed::encodeResponse()
+	{
+		wStream* s;
 
-			m_Response.ChannelAllowed = mVirtualChannelAllowed ? TRUE : FALSE;
+		m_Response.ChannelAllowed = mVirtualChannelAllowed ? TRUE : FALSE;
 
-			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+		s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
 
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+		mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
-			Stream_Free(s, TRUE);
+		Stream_Free(s, TRUE);
 
-			return 0;
-		};
+		return 0;
+	};
 
-		int CallInIsVCAllowed::doStuff()
-		{
-			mVirtualChannelAllowed = true;
-			return 0;
-		}
+	int CallInIsVCAllowed::doStuff()
+	{
+		mVirtualChannelAllowed = true;
+		return 0;
 	}
 }
 

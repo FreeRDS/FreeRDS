@@ -28,65 +28,62 @@
 
 namespace freerds
 {
-	namespace call
+	CallInEndSession::CallInEndSession()
+	: m_RequestId(FDSAPI_END_SESSION_REQUEST_ID), m_ResponseId(FDSAPI_END_SESSION_RESPONSE_ID)
 	{
-		CallInEndSession::CallInEndSession()
-		: m_RequestId(FDSAPI_END_SESSION_REQUEST_ID), m_ResponseId(FDSAPI_END_SESSION_RESPONSE_ID)
-		{
-			mSessionId = 0;
-			mSuccess = false;
-		};
+		mSessionId = 0;
+		mSuccess = false;
+	};
 
-		CallInEndSession::~CallInEndSession()
-		{
+	CallInEndSession::~CallInEndSession()
+	{
 
-		};
+	};
 
-		unsigned long CallInEndSession::getCallType()
-		{
-			return m_RequestId;
-		};
+	unsigned long CallInEndSession::getCallType()
+	{
+		return m_RequestId;
+	};
 
-		int CallInEndSession::decodeRequest()
-		{
-			BYTE* buffer;
-			UINT32 length;
+	int CallInEndSession::decodeRequest()
+	{
+		BYTE* buffer;
+		UINT32 length;
 
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
+		buffer = (BYTE*) mEncodedRequest.data();
+		length = (UINT32) mEncodedRequest.size();
 
-			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+		freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
 
-			mSessionId = m_Request.SessionId;
+		mSessionId = m_Request.SessionId;
 
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
+		freerds_rpc_msg_free(m_RequestId, &m_Request);
 
-			return 0;
-		};
+		return 0;
+	};
 
-		int CallInEndSession::encodeResponse()
-		{
-			wStream* s;
+	int CallInEndSession::encodeResponse()
+	{
+		wStream* s;
 
-			m_Response.status = 0;
-			m_Response.SessionId = m_Request.SessionId;
+		m_Response.status = 0;
+		m_Response.SessionId = m_Request.SessionId;
 
-			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+		s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
 
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+		mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
-			Stream_Free(s, TRUE);
+		Stream_Free(s, TRUE);
 
-			return 0;
-		};
+		return 0;
+	};
 
-		int CallInEndSession::doStuff()
-		{
-			callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
-			task->setSessionId(mSessionId);
-			APP_CONTEXT.addTask(task);
-			mSuccess = true;
-			return 0;
-		}
+	int CallInEndSession::doStuff()
+	{
+		TaskEndSessionPtr task = TaskEndSessionPtr(new TaskEndSession());
+		task->setSessionId(mSessionId);
+		APP_CONTEXT.addTask(task);
+		mSuccess = true;
+		return 0;
 	}
 }

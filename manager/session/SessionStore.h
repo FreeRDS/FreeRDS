@@ -30,7 +30,7 @@
 
 namespace freerds
 {
-	typedef std::map<long , SessionPtr> TSessionMap;
+	typedef std::map<long, SessionPtr> TSessionMap;
 	typedef std::pair<long, SessionPtr> TSessionPair;
 
 	class SessionStore
@@ -52,7 +52,5 @@ namespace freerds
 		CRITICAL_SECTION mCSection;
 	};
 }
-
-namespace sessionNS = freerds;
 
 #endif //__SESSIONSTORE_H_

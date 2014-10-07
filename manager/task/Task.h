@@ -20,8 +20,9 @@
 #ifndef __TASK_H_
 #define __TASK_H_
 
-#include <boost/shared_ptr.hpp>
 #include <winpr/synch.h>
+
+#include <boost/shared_ptr.hpp>
 
 namespace freerds
 {
@@ -49,7 +50,5 @@ namespace freerds
 
 	typedef boost::shared_ptr<Task> TaskPtr;
 }
-
-namespace taskNS = freerds;
 
 #endif /* __TASK_H_ */

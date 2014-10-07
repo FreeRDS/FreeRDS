@@ -28,155 +28,152 @@
 
 namespace freerds
 {
-	namespace call
+	static wLog* logger_CallInLogonUser = WLog_Get("freerds.CallInAuthenticateUser");
+
+	CallInAuthenticateUser::CallInAuthenticateUser()
+	: mSessionId(0), mAuthStatus(0),
+	  m_RequestId(FDSAPI_START_SESSION_REQUEST_ID), m_ResponseId(FDSAPI_START_SESSION_RESPONSE_ID)
 	{
-		static wLog* logger_CallInLogonUser = WLog_Get("freerds.SessionManager.call.callinauthenticateuser");
 
-		CallInAuthenticateUser::CallInAuthenticateUser()
-		: mSessionId(0), mAuthStatus(0),
-		  m_RequestId(FDSAPI_START_SESSION_REQUEST_ID), m_ResponseId(FDSAPI_START_SESSION_RESPONSE_ID)
-		{
+	};
 
-		};
+	CallInAuthenticateUser::~CallInAuthenticateUser()
+	{
 
-		CallInAuthenticateUser::~CallInAuthenticateUser()
-		{
+	};
 
-		};
+	unsigned long CallInAuthenticateUser::getCallType()
+	{
+		return m_RequestId;
+	};
 
-		unsigned long CallInAuthenticateUser::getCallType()
-		{
-			return m_RequestId;
-		};
+	int CallInAuthenticateUser::decodeRequest()
+	{
+		BYTE* buffer;
+		UINT32 length;
 
-		int CallInAuthenticateUser::decodeRequest()
-		{
-			BYTE* buffer;
-			UINT32 length;
+		buffer = (BYTE*) mEncodedRequest.data();
+		length = (UINT32) mEncodedRequest.size();
 
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
+		freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
 
-			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+		mSessionId = m_Request.SessionId;
+		mUserName = m_Request.User ? m_Request.User : "";
+		mDomainName = m_Request.Domain ? m_Request.Domain : "";
+		mPassword = m_Request.Password ? m_Request.Password : "";
 
-			mSessionId = m_Request.SessionId;
-			mUserName = m_Request.User ? m_Request.User : "";
-			mDomainName = m_Request.Domain ? m_Request.Domain : "";
-			mPassword = m_Request.Password ? m_Request.Password : "";
+		freerds_rpc_msg_free(m_RequestId, &m_Request);
 
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
+		return 0;
+	};
 
-			return 0;
-		};
+	int CallInAuthenticateUser::encodeResponse()
+	{
+		wStream* s;
 
-		int CallInAuthenticateUser::encodeResponse()
-		{
-			wStream* s;
+		m_Response.ServiceEndpoint = NULL;
+		m_Response.status = (mAuthStatus == 0) ? 0 : 1;
 
-			m_Response.ServiceEndpoint = NULL;
-			m_Response.status = (mAuthStatus == 0) ? 0 : 1;
+		s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
 
-			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+		mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+		Stream_Free(s, TRUE);
 
-			Stream_Free(s, TRUE);
+		return 0;
+	};
 
-			return 0;
-		};
+	int CallInAuthenticateUser::authenticateUser()
+	{
+		long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+		ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(connectionId);
 
-		int CallInAuthenticateUser::authenticateUser()
-		{
-			long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
-			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(connectionId);
-
-			if (currentConnection == NULL) {
-				WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Cannot get Connection for sessionId %lu for resolved connectionId %lu",mSessionId,connectionId);
-				mAuthStatus = -1;
-				return -1;
-			}
-
-			mAuthStatus = currentConnection->authenticateUser(mUserName, mDomainName, mPassword);
-			return mAuthStatus;
+		if (currentConnection == NULL) {
+			WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "Cannot get Connection for sessionId %lu for resolved connectionId %lu",mSessionId,connectionId);
+			mAuthStatus = -1;
+			return -1;
 		}
 
-		int CallInAuthenticateUser::getUserSession()
-		{
-			sessionNS::SessionPtr currentSession;
-			bool reconnectAllowed;
+		mAuthStatus = currentConnection->authenticateUser(mUserName, mDomainName, mPassword);
+		return mAuthStatus;
+	}
 
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyBool("session.reconnect", reconnectAllowed)) {
-				reconnectAllowed = true;
-			}
+	int CallInAuthenticateUser::getUserSession()
+	{
+		SessionPtr currentSession;
+		bool reconnectAllowed;
 
-			if (reconnectAllowed) {
-				currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
-			}
-
-			if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
-			{
-				// create new Session for this request
-				currentSession = APP_CONTEXT.getSessionStore()->createSession();
-				currentSession->setUserName(mUserName);
-				currentSession->setDomain(mDomainName);
-
-				if (!currentSession->generateUserToken())
-				{
-					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "generateUserToken failed for user %s with domain %s",mUserName.c_str(),mDomainName.c_str());
-					mResult = 1;// will report error with answer
-					return 1;
-				}
-
-				if (!currentSession->generateEnvBlockAndModify())
-				{
-					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "generateEnvBlockAndModify failed for user %s with domain %s",mUserName.c_str(),mDomainName.c_str());
-					mResult = 1;// will report error with answer
-					return 1;
-				}
-				std::string moduleConfigName;
-
-				if (!APP_CONTEXT.getPropertyManager()->getPropertyString("module",moduleConfigName)) {
-					moduleConfigName = "X11";
-				}
-				currentSession->setModuleConfigName(moduleConfigName);
-			}
-			else
-			{
-				currentSession->setConnectState(WTSConnectQuery);
-			}
-
-			long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
-			APP_CONTEXT.getConnectionStore()->getOrCreateConnection(connectionId)->setAbout2SwitchSessionId(currentSession->getSessionID());
-
-			if (currentSession->getConnectState() == WTSDown)
-			{
-				std::string pipeName;
-				if (!currentSession->startModule(pipeName))
-				{
-					WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "ModuleConfig %s does not start properly for user %s in domain %s",currentSession->getModuleConfigName().c_str(),mUserName.c_str(),mDomainName.c_str());
-					mResult = 1;// will report error with answer
-					return 1;
-				}
-			}
-
-			TaskSwitchToPtr switchToTask = TaskSwitchToPtr(new TaskSwitchTo());
-			switchToTask->setConnectionId(connectionId);
-			switchToTask->setServiceEndpoint(currentSession->getPipeName());
-			switchToTask->setOldSessionId(mSessionId);
-			switchToTask->setNewSessionId(currentSession->getSessionID());
-			APP_CONTEXT.addTask(switchToTask);
-
-			return 0;
+		if (!APP_CONTEXT.getPropertyManager()->getPropertyBool("session.reconnect", reconnectAllowed)) {
+			reconnectAllowed = true;
 		}
 
-		int CallInAuthenticateUser::doStuff()
-		{
-			if (authenticateUser() == 0) {
-				if (mAuthStatus == 0) {
-					return getUserSession();
-				}
-			}
-			return 0;
+		if (reconnectAllowed) {
+			currentSession = APP_CONTEXT.getSessionStore()->getFirstDisconnectedSessionUserName(mUserName, mDomainName);
 		}
+
+		if ((!currentSession) || (currentSession->getConnectState() != WTSDisconnected))
+		{
+			// create new Session for this request
+			currentSession = APP_CONTEXT.getSessionStore()->createSession();
+			currentSession->setUserName(mUserName);
+			currentSession->setDomain(mDomainName);
+
+			if (!currentSession->generateUserToken())
+			{
+				WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "generateUserToken failed for user %s with domain %s",mUserName.c_str(),mDomainName.c_str());
+				mResult = 1;// will report error with answer
+				return 1;
+			}
+
+			if (!currentSession->generateEnvBlockAndModify())
+			{
+				WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "generateEnvBlockAndModify failed for user %s with domain %s",mUserName.c_str(),mDomainName.c_str());
+				mResult = 1;// will report error with answer
+				return 1;
+			}
+			std::string moduleConfigName;
+
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyString("module",moduleConfigName)) {
+				moduleConfigName = "X11";
+			}
+			currentSession->setModuleConfigName(moduleConfigName);
+		}
+		else
+		{
+			currentSession->setConnectState(WTSConnectQuery);
+		}
+
+		long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+		APP_CONTEXT.getConnectionStore()->getOrCreateConnection(connectionId)->setAbout2SwitchSessionId(currentSession->getSessionID());
+
+		if (currentSession->getConnectState() == WTSDown)
+		{
+			std::string pipeName;
+			if (!currentSession->startModule(pipeName))
+			{
+				WLog_Print(logger_CallInLogonUser, WLOG_ERROR, "ModuleConfig %s does not start properly for user %s in domain %s",currentSession->getModuleConfigName().c_str(),mUserName.c_str(),mDomainName.c_str());
+				mResult = 1;// will report error with answer
+				return 1;
+			}
+		}
+
+		TaskSwitchToPtr switchToTask = TaskSwitchToPtr(new TaskSwitchTo());
+		switchToTask->setConnectionId(connectionId);
+		switchToTask->setServiceEndpoint(currentSession->getPipeName());
+		switchToTask->setOldSessionId(mSessionId);
+		switchToTask->setNewSessionId(currentSession->getSessionID());
+		APP_CONTEXT.addTask(switchToTask);
+
+		return 0;
+	}
+
+	int CallInAuthenticateUser::doStuff()
+	{
+		if (authenticateUser() == 0) {
+			if (mAuthStatus == 0) {
+				return getUserSession();
+			}
+		}
+		return 0;
 	}
 }

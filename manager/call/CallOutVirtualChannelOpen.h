@@ -26,38 +26,33 @@
 
 namespace freerds
 {
-	namespace call
+	class CallOutVirtualChannelOpen: public CallOut
 	{
-		class CallOutVirtualChannelOpen: public CallOut
-		{
-		public:
-			CallOutVirtualChannelOpen();
-			virtual ~CallOutVirtualChannelOpen();
+	public:
+		CallOutVirtualChannelOpen();
+		virtual ~CallOutVirtualChannelOpen();
 
-			virtual unsigned long getCallType();
+		virtual unsigned long getCallType();
 
-			virtual int encodeRequest();
-			virtual int decodeResponse();
+		virtual int encodeRequest();
+		virtual int decodeResponse();
 
-			void setSessionID(UINT32 sessionId);
-			void setVirtualName(std::string channelName);
-			std::string getConnectionString();
+		void setSessionID(UINT32 sessionId);
+		void setVirtualName(std::string channelName);
+		std::string getConnectionString();
 
-		private:
-			UINT32 m_SessionId;
-			UINT64 m_ChannelHandle;
-			std::string m_ChannelName;
-			std::string m_ChannelEndpoint;
+	private:
+		UINT32 m_SessionId;
+		UINT64 m_ChannelHandle;
+		std::string m_ChannelName;
+		std::string m_ChannelEndpoint;
 
-			UINT32 m_RequestId;
-			FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE m_Response;
-		};
-	}
+		UINT32 m_ResponseId;
+		FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE m_Response;
+	};
 }
-
-namespace callNS = freerds::call;
 
 #endif //CALL_OUT_FDS_API_VIRTUAL_CHANNEL_OPEN_H_

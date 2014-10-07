@@ -24,22 +24,18 @@
 
 namespace freerds
 {
-	namespace call
+	class TaskEndSession: public Task
 	{
-		class TaskEndSession: public taskNS::Task
-		{
-		public:
-			virtual void run();
-			void setSessionId(long sessionId);
-		private:
-			void stopSession();
-			long mSessionId;
-		};
+	public:
+		virtual void run();
+		void setSessionId(long sessionId);
 
-		typedef boost::shared_ptr<TaskEndSession> TaskEndSessionPtr;
-	}
+	private:
+		void stopSession();
+		long mSessionId;
+	};
+
+	typedef boost::shared_ptr<TaskEndSession> TaskEndSessionPtr;
 }
-
-namespace callNS = freerds::call;
 
 #endif /* __TASK_MODULE_SHUTDOWN_ */

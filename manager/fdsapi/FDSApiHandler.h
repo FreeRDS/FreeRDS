@@ -92,6 +92,5 @@ namespace freerds
 		virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass);
 	};
 }
-namespace fdsapiNS = freerds;
 
 #endif /* FDSAPISHANDLER_H_ */

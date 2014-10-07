@@ -24,26 +24,21 @@
 
 namespace freerds
 {
-	namespace call
+	class CallIn: public Call
 	{
-		class CallIn:public Call
-		{
-		public:
-			CallIn();
-			virtual ~CallIn();
-			virtual unsigned long getDerivedType();
+	public:
+		CallIn();
+		virtual ~CallIn();
+		virtual unsigned long getDerivedType();
 
-			void setEncodedRequest(std::string encodedRequest);
-			virtual int decodeRequest() = 0;
+		void setEncodedRequest(std::string encodedRequest);
+		virtual int decodeRequest() = 0;
 
-			virtual int encodeResponse() = 0;
-			std::string getEncodedResponse();
+		virtual int encodeResponse() = 0;
+		std::string getEncodedResponse();
 
-			virtual int doStuff() = 0;
-		};
-	}
+		virtual int doStuff() = 0;
+	};
 }
-
-namespace callNS = freerds::call;
 
 #endif /* CALLIN_H_ */

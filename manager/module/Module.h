@@ -53,6 +53,5 @@ namespace freerds
 		std::string mModuleName;
 	};
 }
-namespace moduleNS = freerds;
 
 #endif /* MODULE_H_ */

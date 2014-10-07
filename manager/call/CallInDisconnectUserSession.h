@@ -27,34 +27,29 @@
 
 namespace freerds
 {
-	namespace call
+	class CallInDisconnectUserSession: public CallIn
 	{
-		class CallInDisconnectUserSession: public CallIn
-		{
-		public:
-			CallInDisconnectUserSession();
-			virtual ~CallInDisconnectUserSession();
+	public:
+		CallInDisconnectUserSession();
+		virtual ~CallInDisconnectUserSession();
 
-			virtual unsigned long getCallType();
-			virtual int decodeRequest();
-			virtual int encodeResponse();
-			virtual int doStuff();
+		virtual unsigned long getCallType();
+		virtual int decodeRequest();
+		virtual int encodeResponse();
+		virtual int doStuff();
 
-		private:
-			long mConnectionId;
-			bool mDisconnected;
+	private:
+		long mConnectionId;
+		bool mDisconnected;
 
-			UINT32 m_RequestId;
-			FDSAPI_DISCONNECT_USER_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_DISCONNECT_USER_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_DISCONNECT_USER_RESPONSE m_Response;
-		};
+		UINT32 m_ResponseId;
+		FDSAPI_DISCONNECT_USER_RESPONSE m_Response;
+	};
 
-		FACTORY_REGISTER_DWORD(CallFactory, CallInDisconnectUserSession, FDSAPI_DISCONNECT_USER_REQUEST_ID);
-	}
+	FACTORY_REGISTER_DWORD(CallFactory, CallInDisconnectUserSession, FDSAPI_DISCONNECT_USER_REQUEST_ID);
 }
-
-namespace callNS = freerds::call;
 
 #endif

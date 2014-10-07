@@ -25,9 +25,10 @@
 
 #include "Connection.h"
 
-#include <string>
-#include <winpr/synch.h>
 #include <map>
+#include <string>
+
+#include <winpr/synch.h>
 
 namespace freerds
 {
@@ -53,7 +54,5 @@ namespace freerds
 		CRITICAL_SECTION mCSection;
 	};
 }
-
-namespace sessionNS = freerds;
 
 #endif //__CONNECTION_STORE_H_

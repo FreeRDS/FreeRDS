@@ -27,31 +27,28 @@
 
 namespace freerds
 {
-	namespace call
+	CallIn::CallIn()
 	{
-		CallIn::CallIn()
-		{
 
-		};
+	};
 
-		CallIn::~CallIn()
-		{
+	CallIn::~CallIn()
+	{
 
-		};
+	};
 
-		void CallIn::setEncodedRequest(std::string encodedRequest)
-		{
-			mEncodedRequest = encodedRequest;
-		}
+	void CallIn::setEncodedRequest(std::string encodedRequest)
+	{
+		mEncodedRequest = encodedRequest;
+	}
 
-		std::string CallIn::getEncodedResponse()
-		{
-			return mEncodedResponse;
-		}
+	std::string CallIn::getEncodedResponse()
+	{
+		return mEncodedResponse;
+	}
 
-		unsigned long CallIn::getDerivedType()
-		{
-			return 1;
-		}
+	unsigned long CallIn::getDerivedType()
+	{
+		return 1;
 	}
 }

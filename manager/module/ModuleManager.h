@@ -45,10 +45,8 @@ namespace freerds
 		char* defaultModuleName;
 		char* defaultGreeterModuleName;
 		int addModule(std::string path, std::string modulename);
-		std::map<std::string,Module*> mModulesMap;
+		std::map<std::string, Module*> mModulesMap;
 	};
 }
-
-namespace moduleNS = freerds;
 
 #endif /* MODULEMANAGER_H_ */

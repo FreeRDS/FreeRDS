@@ -26,57 +26,54 @@
 
 namespace freerds
 {
-	namespace call
+	CallInPing::CallInPing()
+	: m_RequestId(FDSAPI_HEARTBEAT_REQUEST_ID), m_ResponseId(FDSAPI_HEARTBEAT_RESPONSE_ID)
 	{
-		CallInPing::CallInPing()
-		: m_RequestId(FDSAPI_HEARTBEAT_REQUEST_ID), m_ResponseId(FDSAPI_HEARTBEAT_RESPONSE_ID)
-		{
 
-		};
+	};
 
-		CallInPing::~CallInPing()
-		{
+	CallInPing::~CallInPing()
+	{
 
-		};
+	};
 
-		unsigned long CallInPing::getCallType()
-		{
-			return m_RequestId;
-		};
+	unsigned long CallInPing::getCallType()
+	{
+		return m_RequestId;
+	};
 
-		int CallInPing::decodeRequest()
-		{
-			BYTE* buffer;
-			UINT32 length;
+	int CallInPing::decodeRequest()
+	{
+		BYTE* buffer;
+		UINT32 length;
 
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
+		buffer = (BYTE*) mEncodedRequest.data();
+		length = (UINT32) mEncodedRequest.size();
 
-			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+		freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
 
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
+		freerds_rpc_msg_free(m_RequestId, &m_Request);
 
-			return 0;
-		};
+		return 0;
+	};
 
-		int CallInPing::encodeResponse()
-		{
-			wStream* s;
+	int CallInPing::encodeResponse()
+	{
+		wStream* s;
 
-			m_Response.HeartbeatId = m_Request.HeartbeatId;
+		m_Response.HeartbeatId = m_Request.HeartbeatId;
 
-			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+		s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
 
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+		mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
-			Stream_Free(s, TRUE);
+		Stream_Free(s, TRUE);
 
-			return 0;
-		};
+		return 0;
+	};
 
-		int CallInPing::doStuff()
-		{
-			return 0;
-		}
+	int CallInPing::doStuff()
+	{
+		return 0;
 	}
 }

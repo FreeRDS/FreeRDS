@@ -54,10 +54,10 @@ namespace freerds
 		int readHeader();
 		int readPayload();
 		int processData();
-		int send(freerds::call::Call * call);
+		int send(Call * call);
 		int sendError(uint32_t callID, uint32_t callType);
 		int sendInternal(FDSAPI_MSG_HEADER* header, BYTE* buffer);
-		int processOutgoingCall(freerds::call::Call* call);
+		int processOutgoingCall(Call* call);
 
 	private:
 		HANDLE mhClientPipe;
@@ -75,12 +75,10 @@ namespace freerds
 		BYTE* mHeaderBuffer;
 		FDSAPI_MSG_HEADER m_Header;
 
-		std::list<callNS::CallOut*> mAnswerWaitingQueue;
+		std::list<CallOut*> mAnswerWaitingQueue;
 
 		long mNextOutCall;
 	};
 }
-
-namespace pbRPC = freerds;
 
 #endif /* RPCENGINE_H_ */

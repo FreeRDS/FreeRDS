@@ -26,33 +26,28 @@
 
 namespace freerds
 {
-	namespace call
+	class CallOutPing: public CallOut
 	{
-		class CallOutPing: public CallOut
-		{
-		public:
-			CallOutPing();
-			virtual ~CallOutPing();
+	public:
+		CallOutPing();
+		virtual ~CallOutPing();
 
-			virtual unsigned long getCallType();
+		virtual unsigned long getCallType();
 
-			virtual int encodeRequest();
-			virtual int decodeResponse();
+		virtual int encodeRequest();
+		virtual int decodeResponse();
 
-			bool getPong();
+		bool getPong();
 
-		private:
-			bool mPong;
+	private:
+		bool mPong;
 
-			UINT32 m_RequestId;
-			FDSAPI_HEARTBEAT_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_HEARTBEAT_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_HEARTBEAT_RESPONSE m_Response;
-		};
-	}
+		UINT32 m_ResponseId;
+		FDSAPI_HEARTBEAT_RESPONSE m_Response;
+	};
 }
-
-namespace callNS = freerds::call;
 
 #endif // __CALL_OUT_PING_H_

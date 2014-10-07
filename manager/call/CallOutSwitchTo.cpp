@@ -26,70 +26,67 @@
 
 namespace freerds
 {
-	namespace call
+	CallOutSwitchTo::CallOutSwitchTo()
+	: m_RequestId(FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID),
+	  m_ResponseId(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID)
 	{
-		CallOutSwitchTo::CallOutSwitchTo()
-		: m_RequestId(FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID),
-		  m_ResponseId(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID)
-		{
-			mConnectionId = 0;
-			mSuccess = false;
-		};
+		mConnectionId = 0;
+		mSuccess = false;
+	};
 
-		CallOutSwitchTo::~CallOutSwitchTo()
-		{
+	CallOutSwitchTo::~CallOutSwitchTo()
+	{
 
-		};
+	};
 
-		unsigned long CallOutSwitchTo::getCallType()
-		{
-			return m_RequestId;
-		};
+	unsigned long CallOutSwitchTo::getCallType()
+	{
+		return m_RequestId;
+	};
 
-		int CallOutSwitchTo::encodeRequest()
-		{
-			wStream* s;
+	int CallOutSwitchTo::encodeRequest()
+	{
+		wStream* s;
 
-			m_Request.ConnectionId = mConnectionId;
-			m_Request.ServiceEndpoint = (char*) mServiceEndpoint.c_str();
+		m_Request.ConnectionId = mConnectionId;
+		m_Request.ServiceEndpoint = (char*) mServiceEndpoint.c_str();
 
-			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
+		s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
 
-			mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+		mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
-			Stream_Free(s, TRUE);
+		Stream_Free(s, TRUE);
 
-			return 0;
-		}
+		return 0;
+	}
 
-		int CallOutSwitchTo::decodeResponse()
-		{
-			BYTE* buffer;
-			UINT32 length;
+	int CallOutSwitchTo::decodeResponse()
+	{
+		BYTE* buffer;
+		UINT32 length;
 
-			buffer = (BYTE*) mEncodedResponse.data();
-			length = (UINT32) mEncodedResponse.size();
+		buffer = (BYTE*) mEncodedResponse.data();
+		length = (UINT32) mEncodedResponse.size();
 
-			freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
+		freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
 
-			mSuccess = true;
+		mSuccess = true;
 
-			freerds_rpc_msg_free(m_ResponseId, &m_Response);
+		freerds_rpc_msg_free(m_ResponseId, &m_Response);
 
-			return 0;
-		}
+		return 0;
+	}
 
-		void CallOutSwitchTo::setConnectionId(long connectionId) {
-			mConnectionId = connectionId;
-		}
+	void CallOutSwitchTo::setConnectionId(long connectionId) {
+		mConnectionId = connectionId;
+	}
 
-		void CallOutSwitchTo::setServiceEndpoint(std::string serviceEndpoint) {
-			mServiceEndpoint = serviceEndpoint;
-		}
+	void CallOutSwitchTo::setServiceEndpoint(std::string serviceEndpoint) {
+		mServiceEndpoint = serviceEndpoint;
+	}
 
-		bool CallOutSwitchTo::isSuccess() {
-			return mSuccess;
-		}
+	bool CallOutSwitchTo::isSuccess() {
+		return mSuccess;
 	}
 }
 

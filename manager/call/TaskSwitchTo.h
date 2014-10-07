@@ -20,37 +20,32 @@
 #ifndef __TASK_MODULE_SWITCH_TO_
 #define __TASK_MODULE_SWITCH_TO_
 
-#include <task/Task.h>
 #include <string>
+
+#include <task/Task.h>
 
 namespace freerds
 {
-	namespace call
+	class TaskSwitchTo: public Task
 	{
-		class TaskSwitchTo: public taskNS::Task
-		{
-		public:
-			virtual void run();
+	public:
+		virtual void run();
 
-			void setConnectionId(long connectionId);
-			void setServiceEndpoint(std::string serviceEndpoint);
+		void setConnectionId(long connectionId);
+		void setServiceEndpoint(std::string serviceEndpoint);
 
-			void setOldSessionId(long sessionId);
-			void setNewSessionId(long sessionId);
+		void setOldSessionId(long sessionId);
+		void setNewSessionId(long sessionId);
 
-		private:
-			void cleanUpOnError();
-			long mConnectionId;
-			std::string mServiceEndpoint;
-			long mOldSessionId;
-			long mNewSessionId;
+	private:
+		void cleanUpOnError();
+		long mConnectionId;
+		std::string mServiceEndpoint;
+		long mOldSessionId;
+		long mNewSessionId;
+	};
 
-		};
-
-		typedef boost::shared_ptr<TaskSwitchTo> TaskSwitchToPtr;
-	}
+	typedef boost::shared_ptr<TaskSwitchTo> TaskSwitchToPtr;
 }
-
-namespace callNS = freerds::call;
 
 #endif /* __TASK_MODULE_SWITCH_TO_ */

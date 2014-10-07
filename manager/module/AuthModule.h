@@ -51,6 +51,4 @@ namespace freerds
 	};
 }
 
-namespace moduleNS = freerds;
-
 #endif /* AUTH_MODULE_H_ */

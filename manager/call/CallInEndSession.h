@@ -27,34 +27,29 @@
 
 namespace freerds
 {
-	namespace call
+	class CallInEndSession: public CallIn
 	{
-		class CallInEndSession: public CallIn
-		{
-		public:
-			CallInEndSession();
-			virtual ~CallInEndSession();
+	public:
+		CallInEndSession();
+		virtual ~CallInEndSession();
 
-			virtual unsigned long getCallType();
-			virtual int decodeRequest();
-			virtual int encodeResponse();
-			virtual int doStuff();
+		virtual unsigned long getCallType();
+		virtual int decodeRequest();
+		virtual int encodeResponse();
+		virtual int doStuff();
 
-		private:
-			long mSessionId;
-			bool mSuccess;
+	private:
+		long mSessionId;
+		bool mSuccess;
 
-			UINT32 m_RequestId;
-			FDSAPI_END_SESSION_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_END_SESSION_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_END_SESSION_RESPONSE m_Response;
-		};
+		UINT32 m_ResponseId;
+		FDSAPI_END_SESSION_RESPONSE m_Response;
+	};
 
-		FACTORY_REGISTER_DWORD(CallFactory, CallInEndSession, FDSAPI_END_SESSION_REQUEST_ID);
-	}
+	FACTORY_REGISTER_DWORD(CallFactory, CallInEndSession, FDSAPI_END_SESSION_REQUEST_ID);
 }
-
-namespace callNS = freerds::call;
 
 #endif

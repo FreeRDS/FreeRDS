@@ -25,34 +25,29 @@
 
 namespace freerds
 {
-	namespace call
+	class CallOutLogOffUserSession: public CallOut
 	{
-		class CallOutLogOffUserSession: public CallOut
-		{
-		public:
-			CallOutLogOffUserSession();
-			virtual ~CallOutLogOffUserSession();
+	public:
+		CallOutLogOffUserSession();
+		virtual ~CallOutLogOffUserSession();
 
-			virtual unsigned long getCallType();
-			virtual int encodeRequest();
-			virtual int decodeResponse();
+		virtual unsigned long getCallType();
+		virtual int encodeRequest();
+		virtual int decodeResponse();
 
-			void setConnectionId(long connectionId);
-			bool isLoggedOff();
+		void setConnectionId(long connectionId);
+		bool isLoggedOff();
 
-		private:
-			long mConnectionId;
-			bool mLoggedOff;
+	private:
+		long mConnectionId;
+		bool mLoggedOff;
 
-			UINT32 m_RequestId;
-			FDSAPI_LOGOFF_USER_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_LOGOFF_USER_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_LOGOFF_USER_RESPONSE m_Response;
-		};
-	}
+		UINT32 m_ResponseId;
+		FDSAPI_LOGOFF_USER_RESPONSE m_Response;
+	};
 }
-
-namespace callNS = freerds::call;
 
 #endif //__CALL_OUT_LOGOFF_USER_SESSION_H_

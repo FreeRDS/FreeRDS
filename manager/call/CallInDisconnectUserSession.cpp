@@ -27,91 +27,88 @@
 
 namespace freerds
 {
-	namespace call
+	CallInDisconnectUserSession::CallInDisconnectUserSession()
+	: m_RequestId(FDSAPI_DISCONNECT_USER_REQUEST_ID), m_ResponseId(FDSAPI_DISCONNECT_USER_RESPONSE_ID)
 	{
-		CallInDisconnectUserSession::CallInDisconnectUserSession()
-		: m_RequestId(FDSAPI_DISCONNECT_USER_REQUEST_ID), m_ResponseId(FDSAPI_DISCONNECT_USER_RESPONSE_ID)
-		{
-			mConnectionId = 0;
+		mConnectionId = 0;
+		mDisconnected = false;
+	};
+
+	CallInDisconnectUserSession::~CallInDisconnectUserSession()
+	{
+
+	};
+
+	unsigned long CallInDisconnectUserSession::getCallType()
+	{
+		return m_RequestId;
+	};
+
+	int CallInDisconnectUserSession::decodeRequest()
+	{
+		BYTE* buffer;
+		UINT32 length;
+
+		buffer = (BYTE*) mEncodedRequest.data();
+		length = (UINT32) mEncodedRequest.size();
+
+		freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+
+		mConnectionId = m_Request.ConnectionId;
+
+		freerds_rpc_msg_free(m_RequestId, &m_Request);
+
+		return 0;
+	};
+
+	int CallInDisconnectUserSession::encodeResponse()
+	{
+		wStream* s;
+
+		m_Response.ConnectionId = mConnectionId;
+
+		s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+		mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+		Stream_Free(s, TRUE);
+
+		return 0;
+	};
+
+	int CallInDisconnectUserSession::doStuff()
+	{
+		ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+
+		if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
 			mDisconnected = false;
-		};
-
-		CallInDisconnectUserSession::~CallInDisconnectUserSession()
-		{
-
-		};
-
-		unsigned long CallInDisconnectUserSession::getCallType()
-		{
-			return m_RequestId;
-		};
-
-		int CallInDisconnectUserSession::decodeRequest()
-		{
-			BYTE* buffer;
-			UINT32 length;
-
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
-
-			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
-
-			mConnectionId = m_Request.ConnectionId;
-
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
-
-			return 0;
-		};
-
-		int CallInDisconnectUserSession::encodeResponse()
-		{
-			wStream* s;
-
-			m_Response.ConnectionId = mConnectionId;
-
-			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
-
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
-
-			Stream_Free(s, TRUE);
-
-			return 0;
-		};
-
-		int CallInDisconnectUserSession::doStuff()
-		{
-			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
-
-			if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
-				mDisconnected = false;
-				return -1;
-			}
-
-			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
-
-			if (!currentSession)
-			{
-				mDisconnected = false;
-				return -1;
-			}
-
-			currentSession->setConnectState(WTSDisconnected);
-			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
-
-			long timeout;
-
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber("session.timeout", &timeout)) {
-				timeout = 0;
-			}
-
-			if (timeout == 0)  {
-				callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
-				task->setSessionId(currentSession->getSessionID());
-				APP_CONTEXT.addTask(task);
-			}
-
-			mDisconnected = true;
-			return 0;
+			return -1;
 		}
+
+		SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
+
+		if (!currentSession)
+		{
+			mDisconnected = false;
+			return -1;
+		}
+
+		currentSession->setConnectState(WTSDisconnected);
+		APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
+
+		long timeout;
+
+		if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber("session.timeout", &timeout)) {
+			timeout = 0;
+		}
+
+		if (timeout == 0)  {
+			TaskEndSessionPtr task = TaskEndSessionPtr(new TaskEndSession());
+			task->setSessionId(currentSession->getSessionID());
+			APP_CONTEXT.addTask(task);
+		}
+
+		mDisconnected = true;
+		return 0;
 	}
 }

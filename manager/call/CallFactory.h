@@ -26,19 +26,14 @@
 
 #include <string>
 
-#define CALL_FACTORY freerds::call::CallFactory::instance()
+#define CALL_FACTORY freerds::CallFactory::instance()
 
 namespace freerds
 {
-	namespace call
+	class CallFactory :public FactoryBase<Call,unsigned long>, public SingletonBase<CallFactory>
 	{
-		class CallFactory :public FactoryBase<Call,unsigned long>, public SingletonBase<CallFactory>
-		{
-			SINGLETON_ADD_INITIALISATION(CallFactory)
-		};
-	}
+		SINGLETON_ADD_INITIALISATION(CallFactory)
+	};
 }
-
-namespace callNS = freerds::call;
 
 #endif

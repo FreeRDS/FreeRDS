@@ -25,35 +25,29 @@
 
 namespace freerds
 {
-	namespace call
+	class CallOut: public Call
 	{
-		class CallOut:public Call
-		{
-		public:
-			CallOut();
-			~CallOut();
+	public:
+		CallOut();
+		~CallOut();
 
-			virtual unsigned long getDerivedType();
+		virtual unsigned long getDerivedType();
 
-			virtual int encodeRequest() = 0;
-			std::string getEncodedRequest();
+		virtual int encodeRequest() = 0;
+		std::string getEncodedRequest();
 
-			void setEncodedeResponse(std::string encodedResponse);
-			virtual int decodeResponse() = 0;
+		void setEncodedeResponse(std::string encodedResponse);
+		virtual int decodeResponse() = 0;
 
-			void   initAnswerHandle();
-			HANDLE getAnswerHandle();
+		void   initAnswerHandle();
+		HANDLE getAnswerHandle();
 
-			void setResult(uint32_t result);
-			void setErrorDescription(std::string error);
+		void setResult(uint32_t result);
+		void setErrorDescription(std::string error);
 
-		private :
-			HANDLE mAnswer;
-		};
-	}
+	private:
+		HANDLE mAnswer;
+	};
 }
-
-namespace callNS = freerds::call;
-
 
 #endif /* CALLOUT_H_ */

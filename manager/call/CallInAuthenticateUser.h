@@ -31,43 +31,38 @@
 
 namespace freerds
 {
-	namespace call
+	class CallInAuthenticateUser: public CallIn
 	{
-		class CallInAuthenticateUser: public CallIn
-		{
-		public:
-			CallInAuthenticateUser();
-			virtual ~CallInAuthenticateUser();
+	public:
+		CallInAuthenticateUser();
+		virtual ~CallInAuthenticateUser();
 
-			virtual unsigned long getCallType();
-			virtual int decodeRequest();
-			virtual int encodeResponse();
-			virtual int doStuff();
+		virtual unsigned long getCallType();
+		virtual int decodeRequest();
+		virtual int encodeResponse();
+		virtual int doStuff();
 
-		private:
-			int authenticateUser();
-			int getAuthSession();
-			int getUserSession();
+	private:
+		int authenticateUser();
+		int getAuthSession();
+		int getUserSession();
 
-			std::string mUserName;
-			std::string mDomainName;
-			std::string mPassword;
+		std::string mUserName;
+		std::string mDomainName;
+		std::string mPassword;
 
-			int mAuthStatus;
-			UINT32 mSessionId;
-			std::string mPipeName;
+		int mAuthStatus;
+		UINT32 mSessionId;
+		std::string mPipeName;
 
-			UINT32 m_RequestId;
-			FDSAPI_START_SESSION_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_START_SESSION_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_START_SESSION_RESPONSE m_Response;
-		};
+		UINT32 m_ResponseId;
+		FDSAPI_START_SESSION_RESPONSE m_Response;
+	};
 
-		FACTORY_REGISTER_DWORD(CallFactory, CallInAuthenticateUser, FDSAPI_START_SESSION_REQUEST_ID);
-	}
+	FACTORY_REGISTER_DWORD(CallFactory, CallInAuthenticateUser, FDSAPI_START_SESSION_REQUEST_ID);
 }
-
-namespace callNS = freerds::call;
 
 #endif// __CALL_IN_AUTHENTICATE_USER_H_

@@ -24,7 +24,7 @@
 
 namespace freerds
 {
-	class TaskModuleShutdown: public taskNS::Task
+	class TaskModuleShutdown: public Task
 	{
 	public:
 		virtual void run();
@@ -36,7 +36,5 @@ namespace freerds
 
 	typedef boost::shared_ptr<TaskModuleShutdown> TaskModuleShutdownPtr;
 }
-
-namespace moduleNS = freerds;
 
 #endif /* __TASK_MODULE_SHUTDOWN_ */

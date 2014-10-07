@@ -20,13 +20,14 @@
 #ifndef SESSION_H_
 #define SESSION_H_
 
-#include <config.h>
-#include <string>
 #include <list>
+#include <string>
 
 #include <winpr/handle.h>
-#include <freerds/module.h>
 #include <winpr/wtsapi.h>
+
+#include <freerds/module.h>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -91,7 +92,7 @@ namespace freerds
 
 	private:
 
-		char * dupEnv(char * orgBlock);
+		char* dupEnv(char* orgBlock);
 
 		UINT32 mSessionID;
 		bool mAuthSession;
@@ -126,7 +127,5 @@ namespace freerds
 
 	typedef boost::shared_ptr<Session> SessionPtr;
 }
-
-namespace sessionNS = freerds;
 
 #endif

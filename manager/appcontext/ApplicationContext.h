@@ -44,11 +44,11 @@ namespace freerds
 	class ApplicationContext: public SingletonBase<ApplicationContext>
 	{
 	public:
-		sessionNS::SessionStore* getSessionStore();
-		sessionNS::ConnectionStore* getConnectionStore();
-		configNS::PropertyManager* getPropertyManager();
-		moduleNS::ModuleManager* getModuleManager();
-		fdsapiNS::FDSApiServer* getFDSApiServer();
+		SessionStore* getSessionStore();
+		ConnectionStore* getConnectionStore();
+		PropertyManager* getPropertyManager();
+		ModuleManager* getModuleManager();
+		FDSApiServer* getFDSApiServer();
 
 		int startRPCEngine();
 		int stopRPCEngine();
@@ -56,7 +56,7 @@ namespace freerds
 		void startTaskExecutor();
 		void stopTaskExecutor();
 		void startSessionTimoutMonitor();
-		bool addTask(taskNS::TaskPtr task);
+		bool addTask(TaskPtr task);
 
 		std::string getHomePath();
 		std::string getLibraryPath();
@@ -64,7 +64,7 @@ namespace freerds
 		std::string getShareDataPath();
 		std::string getSystemConfigPath();
 
-		SignalingQueue<callNS::Call *> * getRpcOutgoingQueue();
+		SignalingQueue<Call*>* getRpcOutgoingQueue();
 
 		int loadModulesFromPath(std::string path);
 		void setupTestingPropValues();
@@ -83,21 +83,21 @@ namespace freerds
 
 		void configureExecutableSearchPath();
 
-		taskNS::Executor mTaskExecutor;
-		sessionNS::SessionStore mSessionStore;
-		sessionNS::ConnectionStore mConnectionStore;
-
-		configNS::PropertyManager mPropertyManager;
-		pbRPC::RpcEngine mRpcEngine;
-		SignalingQueue<callNS::Call *> mRpcOutgoingCalls;
 		wLog* mWLogRoot;
-		moduleNS::ModuleManager mModuleManager;
-		fdsapiNS::FDSApiServer mFDSApiServer;
+
+		Executor mTaskExecutor;
+		SessionStore mSessionStore;
+		ConnectionStore mConnectionStore;
+
+		PropertyManager mPropertyManager;
+		RpcEngine mRpcEngine;
+		SignalingQueue<Call*> mRpcOutgoingCalls;
+
+		ModuleManager mModuleManager;
+		FDSApiServer mFDSApiServer;
 
 		SINGLETON_ADD_INITIALISATION(ApplicationContext)
 	};
 }
-
-namespace appNS = freerds;
 
 #endif

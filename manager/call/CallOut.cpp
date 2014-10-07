@@ -28,60 +28,57 @@
 
 namespace freerds
 {
-	namespace call
+	CallOut::CallOut():mAnswer(NULL)
 	{
-		CallOut::CallOut():mAnswer(NULL)
-		{
-			initAnswerHandle();
-		};
+		initAnswerHandle();
+	};
 
-		CallOut::~CallOut()
+	CallOut::~CallOut()
+	{
+		if (mAnswer)
 		{
-			if (mAnswer)
-			{
-				CloseHandle(mAnswer);
-				mAnswer = NULL;
-			}
-
-		};
-
-		std::string CallOut::getEncodedRequest()
-		{
-			return mEncodedRequest;
+			CloseHandle(mAnswer);
+			mAnswer = NULL;
 		}
 
-		void CallOut::setEncodedeResponse(std::string encodedResponse)
-		{
-			mEncodedResponse = encodedResponse;
-		}
+	};
 
-		void CallOut::initAnswerHandle()
-		{
-			if (mAnswer == NULL) {
-				mAnswer = CreateEvent(NULL,TRUE,FALSE,NULL);
-			}
-		}
+	std::string CallOut::getEncodedRequest()
+	{
+		return mEncodedRequest;
+	}
 
-		HANDLE CallOut::getAnswerHandle()
-		{
-			return mAnswer;
-		}
+	void CallOut::setEncodedeResponse(std::string encodedResponse)
+	{
+		mEncodedResponse = encodedResponse;
+	}
 
-		unsigned long CallOut::getDerivedType()
-		{
-			return 2;
+	void CallOut::initAnswerHandle()
+	{
+		if (mAnswer == NULL) {
+			mAnswer = CreateEvent(NULL,TRUE,FALSE,NULL);
 		}
+	}
 
-		void CallOut::setResult(uint32_t result)
-		{
-			mResult = result;
-			SetEvent(mAnswer);
-		}
+	HANDLE CallOut::getAnswerHandle()
+	{
+		return mAnswer;
+	}
 
-		void CallOut::setErrorDescription(std::string error)
-		{
-			mErrorDescription = error;
-		}
+	unsigned long CallOut::getDerivedType()
+	{
+		return 2;
+	}
+
+	void CallOut::setResult(uint32_t result)
+	{
+		mResult = result;
+		SetEvent(mAnswer);
+	}
+
+	void CallOut::setErrorDescription(std::string error)
+	{
+		mErrorDescription = error;
 	}
 }
 

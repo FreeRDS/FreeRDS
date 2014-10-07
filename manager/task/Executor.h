@@ -20,9 +20,11 @@
 #ifndef __EXECUTOR_H_
 #define __EXECUTOR_H_
 
-#include "Task.h"
-#include <utils/SignalingQueue.h>
 #include <list>
+
+#include "Task.h"
+
+#include <utils/SignalingQueue.h>
 
 #define PIPE_BUFFER_SIZE	0xFFFF
 
@@ -62,7 +64,5 @@ namespace freerds
 		SignalingQueue<TaskPtr> mTasks;
 	};
 }
-
-namespace taskNS = freerds;
 
 #endif /* __EXECUTOR_H_ */

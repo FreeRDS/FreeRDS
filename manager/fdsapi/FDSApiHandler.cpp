@@ -58,10 +58,10 @@ namespace freerds
 	{
 		INT32 authStatus = -1;
 
-		configNS::PropertyManager* propertyManager = APP_CONTEXT.getPropertyManager();
-		sessionNS::ConnectionStore* connectionStore = APP_CONTEXT.getConnectionStore();
-		sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
-		sessionNS::SessionPtr authSession = sessionStore->getSession(sessionId);
+		PropertyManager* propertyManager = APP_CONTEXT.getPropertyManager();
+		ConnectionStore* connectionStore = APP_CONTEXT.getConnectionStore();
+		SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+		SessionPtr authSession = sessionStore->getSession(sessionId);
 
 		// Check to see if the session is valid.
 		if (!authSession || !authSession->isAuthSession())
@@ -74,7 +74,7 @@ namespace freerds
 
 		// Check for an associated connection.
 		long connectionId = connectionStore->getConnectionIdForSessionId(sessionId);
-		sessionNS::ConnectionPtr connection = connectionStore->getConnection(connectionId);
+		ConnectionPtr connection = connectionStore->getConnection(connectionId);
 		if (!connection)
 		{
 			WLog_Print(logger_FDSApiHandler, WLOG_ERROR,
@@ -96,7 +96,7 @@ namespace freerds
 		// The user has been authenticated.  Now we can either 1) connect
 		// to a disconnected session or 2) create a new user session.
 
-		sessionNS::SessionPtr userSession;
+		SessionPtr userSession;
 		bool isReconnectAllowed;
 		bool isNewSession;
 
@@ -185,8 +185,8 @@ namespace freerds
 			"Switching from session %d to session %d",
 			sessionId, userSession->getSessionID());
 
-		callNS::TaskSwitchToPtr switchToTask;
-		switchToTask = callNS::TaskSwitchToPtr(new callNS::TaskSwitchTo());
+		TaskSwitchToPtr switchToTask;
+		switchToTask = TaskSwitchToPtr(new TaskSwitchTo());
 		switchToTask->setConnectionId(connectionId);
 		switchToTask->setServiceEndpoint(userSession->getPipeName());
 		switchToTask->setOldSessionId(sessionId);
@@ -205,7 +205,7 @@ namespace freerds
 		const INT32 sessionId,
 		const std::string& virtualName)
 	{
-		callNS::CallOutVirtualChannelOpen openCall;
+		CallOutVirtualChannelOpen openCall;
 
 		openCall.setSessionID(sessionId);
 		openCall.setVirtualName(virtualName);
@@ -247,8 +247,8 @@ namespace freerds
 		const INT32 sessionId,
 		const bool wait)
 	{
-		sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
-		sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
+		SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+		SessionPtr session = sessionStore->getSession(sessionId);
 
 		if (session)
 		{
@@ -263,8 +263,8 @@ namespace freerds
 		const INT32 sessionId,
 		const bool wait)
 	{
-		sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
-		sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
+		SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+		SessionPtr session = sessionStore->getSession(sessionId);
 
 		if (session)
 		{
@@ -291,13 +291,13 @@ namespace freerds
 		DWORD count;
 		DWORD index;
 
-		sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
-		std::list<sessionNS::SessionPtr> sessions = sessionStore->getAllSessions();
+		SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+		std::list<SessionPtr> sessions = sessionStore->getAllSessions();
 
 		count = sessions.size();
 		TSessionInfoList list(count);
 
-		std::list<sessionNS::SessionPtr>::iterator session = sessions.begin();
+		std::list<SessionPtr>::iterator session = sessions.begin();
 
 		for (index = 0; index < count; index++)
 		{
@@ -318,8 +318,8 @@ namespace freerds
 		const INT32 sessionId,
 		const INT32 infoClass)
 	{
-		sessionNS::SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
-		sessionNS::SessionPtr session = sessionStore->getSession(sessionId);
+		SessionStore* sessionStore = APP_CONTEXT.getSessionStore();
+		SessionPtr session = sessionStore->getSession(sessionId);
 
 		_return.returnValue = false;
 

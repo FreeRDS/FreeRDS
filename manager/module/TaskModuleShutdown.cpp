@@ -42,7 +42,7 @@ namespace freerds
 		}
 		else
 		{
-			callNS::CallOutLogOffUserSession logoffSession;
+			CallOutLogOffUserSession logoffSession;
 			logoffSession.setConnectionId(connectionId);
 			APP_CONTEXT.getRpcOutgoingQueue()->addElement(&logoffSession);
 			WaitForSingleObject(logoffSession.getAnswerHandle(),INFINITE);
@@ -71,7 +71,7 @@ namespace freerds
 
 	void TaskModuleShutdown::stopSession()
 	{
-		sessionNS::SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
+		SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
 
 		if (session)
 		{

@@ -26,78 +26,75 @@
 
 namespace freerds
 {
-	namespace call
+	CallInLogOffUserSession::CallInLogOffUserSession()
+	: m_RequestId(FDSAPI_LOGOFF_USER_REQUEST_ID), m_ResponseId(FDSAPI_LOGOFF_USER_RESPONSE_ID)
 	{
-		CallInLogOffUserSession::CallInLogOffUserSession()
-		: m_RequestId(FDSAPI_LOGOFF_USER_REQUEST_ID), m_ResponseId(FDSAPI_LOGOFF_USER_RESPONSE_ID)
-		{
-			mConnectionId = 0;
+		mConnectionId = 0;
+		mLoggedOff = false;
+	};
+
+	CallInLogOffUserSession::~CallInLogOffUserSession()
+	{
+
+	};
+
+	unsigned long CallInLogOffUserSession::getCallType()
+	{
+		return m_RequestId;
+	};
+
+	int CallInLogOffUserSession::decodeRequest()
+	{
+		BYTE* buffer;
+		UINT32 length;
+
+		buffer = (BYTE*) mEncodedRequest.data();
+		length = (UINT32) mEncodedRequest.size();
+
+		freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
+
+		mConnectionId = m_Request.ConnectionId;
+
+		freerds_rpc_msg_free(m_RequestId, &m_Request);
+
+		return 0;
+	};
+
+	int CallInLogOffUserSession::encodeResponse()
+	{
+		wStream* s;
+
+		m_Response.ConnectionId = mConnectionId;
+
+		s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
+
+		mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+
+		Stream_Free(s, TRUE);
+
+		return 0;
+	};
+
+	int CallInLogOffUserSession::doStuff()
+	{
+		ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+
+		if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
 			mLoggedOff = false;
-		};
-
-		CallInLogOffUserSession::~CallInLogOffUserSession()
-		{
-
-		};
-
-		unsigned long CallInLogOffUserSession::getCallType()
-		{
-			return m_RequestId;
-		};
-
-		int CallInLogOffUserSession::decodeRequest()
-		{
-			BYTE* buffer;
-			UINT32 length;
-
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
-
-			freerds_rpc_msg_unpack(m_RequestId, &m_Request, buffer, length);
-
-			mConnectionId = m_Request.ConnectionId;
-
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
-
-			return 0;
-		};
-
-		int CallInLogOffUserSession::encodeResponse()
-		{
-			wStream* s;
-
-			m_Response.ConnectionId = mConnectionId;
-
-			s = freerds_rpc_msg_pack(m_ResponseId, &m_Response, NULL);
-
-			mEncodedResponse.assign((const char*) Stream_Buffer(s), Stream_Length(s));
-
-			Stream_Free(s, TRUE);
-
-			return 0;
-		};
-
-		int CallInLogOffUserSession::doStuff()
-		{
-			sessionNS::ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
-
-			if ((currentConnection == NULL) || (currentConnection->getSessionId() == 0)) {
-				mLoggedOff = false;
-				return -1;
-			}
-			sessionNS::SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
-
-			if (!currentSession) {
-				mLoggedOff = false;
-				return -1;
-			}
-
-			currentSession->stopModule();
-
-			APP_CONTEXT.getSessionStore()->removeSession(currentConnection->getSessionId());
-			APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
-			mLoggedOff = true;
-			return 0;
+			return -1;
 		}
+		SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(currentConnection->getSessionId());
+
+		if (!currentSession) {
+			mLoggedOff = false;
+			return -1;
+		}
+
+		currentSession->stopModule();
+
+		APP_CONTEXT.getSessionStore()->removeSession(currentConnection->getSessionId());
+		APP_CONTEXT.getConnectionStore()->removeConnection(mConnectionId);
+		mLoggedOff = true;
+		return 0;
 	}
 }

@@ -26,63 +26,60 @@
 
 namespace freerds
 {
-	namespace call
+	CallOutLogOffUserSession::CallOutLogOffUserSession()
+	: m_RequestId(FDSAPI_LOGOFF_USER_REQUEST_ID), m_ResponseId(FDSAPI_LOGOFF_USER_RESPONSE_ID)
 	{
-		CallOutLogOffUserSession::CallOutLogOffUserSession()
-		: m_RequestId(FDSAPI_LOGOFF_USER_REQUEST_ID), m_ResponseId(FDSAPI_LOGOFF_USER_RESPONSE_ID)
-		{
-			mConnectionId = 0;
-			mLoggedOff = false;
-		};
+		mConnectionId = 0;
+		mLoggedOff = false;
+	};
 
-		CallOutLogOffUserSession::~CallOutLogOffUserSession()
-		{
+	CallOutLogOffUserSession::~CallOutLogOffUserSession()
+	{
 
-		};
+	};
 
-		unsigned long CallOutLogOffUserSession::getCallType()
-		{
-			return m_RequestId;
-		};
+	unsigned long CallOutLogOffUserSession::getCallType()
+	{
+		return m_RequestId;
+	};
 
-		int CallOutLogOffUserSession::encodeRequest()
-		{
-			wStream* s;
+	int CallOutLogOffUserSession::encodeRequest()
+	{
+		wStream* s;
 
-			m_Request.ConnectionId = mConnectionId;
+		m_Request.ConnectionId = mConnectionId;
 
-			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
+		s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
 
-			mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+		mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
-			Stream_Free(s, TRUE);
+		Stream_Free(s, TRUE);
 
-			return 0;
-		};
+		return 0;
+	};
 
-		int CallOutLogOffUserSession::decodeResponse()
-		{
-			BYTE* buffer;
-			UINT32 length;
+	int CallOutLogOffUserSession::decodeResponse()
+	{
+		BYTE* buffer;
+		UINT32 length;
 
-			buffer = (BYTE*) mEncodedRequest.data();
-			length = (UINT32) mEncodedRequest.size();
+		buffer = (BYTE*) mEncodedRequest.data();
+		length = (UINT32) mEncodedRequest.size();
 
-			freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
+		freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
 
-			mLoggedOff = true;
+		mLoggedOff = true;
 
-			freerds_rpc_msg_free(m_RequestId, &m_Request);
+		freerds_rpc_msg_free(m_RequestId, &m_Request);
 
-			return 0;
-		};
+		return 0;
+	};
 
-		void CallOutLogOffUserSession::setConnectionId(long connectionId) {
-			mConnectionId = connectionId;
-		}
+	void CallOutLogOffUserSession::setConnectionId(long connectionId) {
+		mConnectionId = connectionId;
+	}
 
-		bool CallOutLogOffUserSession::isLoggedOff() {
-			return mLoggedOff;
-		}
+	bool CallOutLogOffUserSession::isLoggedOff() {
+		return mLoggedOff;
 	}
 }

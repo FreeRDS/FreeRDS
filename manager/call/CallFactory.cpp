@@ -25,16 +25,13 @@
 
 namespace freerds
 {
-	namespace call
+	CallFactory::CallFactory()
 	{
-		CallFactory::CallFactory()
-		{
 
-		};
+	};
 
-		CallFactory::~CallFactory()
-		{
+	CallFactory::~CallFactory()
+	{
 
-		};
-	}
+	};
 }

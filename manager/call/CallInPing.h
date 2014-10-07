@@ -28,32 +28,27 @@
 
 namespace freerds
 {
-	namespace call
+	class CallInPing: public CallIn
 	{
-		class CallInPing: public CallIn
-		{
-		public:
-			CallInPing();
-			virtual ~CallInPing();
+	public:
+		CallInPing();
+		virtual ~CallInPing();
 
-			virtual unsigned long getCallType();
-			virtual int decodeRequest();
-			virtual int encodeResponse();
-			virtual int doStuff();
+		virtual unsigned long getCallType();
+		virtual int decodeRequest();
+		virtual int encodeResponse();
+		virtual int doStuff();
 
-		private:
+	private:
 
-			UINT32 m_RequestId;
-			FDSAPI_HEARTBEAT_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_HEARTBEAT_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_HEARTBEAT_RESPONSE m_Response;
-		};
+		UINT32 m_ResponseId;
+		FDSAPI_HEARTBEAT_RESPONSE m_Response;
+	};
 
-		FACTORY_REGISTER_DWORD(CallFactory, CallInPing, FDSAPI_HEARTBEAT_REQUEST_ID);
-	}
+	FACTORY_REGISTER_DWORD(CallFactory, CallInPing, FDSAPI_HEARTBEAT_REQUEST_ID);
 }
-
-namespace callNS = freerds::call;
 
 #endif // _CALL_IN_PING_H_

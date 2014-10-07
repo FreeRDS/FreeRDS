@@ -55,7 +55,7 @@ namespace freerds
 		}
 
 		// Fire a session created event.
-		fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+		FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
 		FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_CREATE);
 	}
 
@@ -65,7 +65,7 @@ namespace freerds
 		setConnectState(WTSDown);
 
 		// Fire a session terminated event.
-		fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+		FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
 		FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_TERMINATE);
 	}
 
@@ -332,7 +332,7 @@ namespace freerds
 			return false;
 		}
 
-		moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
+		Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
 
 		if (!currentModule)
 		{
@@ -374,7 +374,7 @@ namespace freerds
 			return false;
 		}
 
-		moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
+		Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
 
 		if (!currentModule)
 		{
@@ -404,7 +404,7 @@ namespace freerds
 
 	void Session::setConnectState(WTS_CONNECTSTATE_CLASS state)
 	{
-		fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+		FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
 
 		if (mCurrentState != state)
 		{
@@ -480,5 +480,3 @@ namespace freerds
 		return stateChange;
 	}
 }
-
-

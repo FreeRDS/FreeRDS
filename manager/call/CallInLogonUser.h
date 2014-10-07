@@ -29,55 +29,50 @@
 
 namespace freerds
 {
-	namespace call
+	class CallInLogonUser: public CallIn
 	{
-		class CallInLogonUser: public CallIn
-		{
-		public:
-			CallInLogonUser();
-			virtual ~CallInLogonUser();
+	public:
+		CallInLogonUser();
+		virtual ~CallInLogonUser();
 
-			virtual unsigned long getCallType();
-			virtual int decodeRequest();
-			virtual int encodeResponse();
-			virtual int doStuff();
+		virtual unsigned long getCallType();
+		virtual int decodeRequest();
+		virtual int encodeResponse();
+		virtual int doStuff();
 
-		private:
+	private:
 
-			int authenticateUser();
-			int getAuthSession();
-			int getUserSession();
+		int authenticateUser();
+		int getAuthSession();
+		int getUserSession();
 
-			std::string mUserName;
-			std::string mDomainName;
-			std::string mPassword;
+		std::string mUserName;
+		std::string mDomainName;
+		std::string mPassword;
 
-			long mWidth;
-			long mHeight;
-			long mColorDepth;
+		long mWidth;
+		long mHeight;
+		long mColorDepth;
 
-			std::string mClientName;
-			std::string mClientAddress;
-			long mClientBuildNumber;
-			long mClientProductId;
-			long mClientHardwareId;
-			long mClientProtocolType;
+		std::string mClientName;
+		std::string mClientAddress;
+		long mClientBuildNumber;
+		long mClientProductId;
+		long mClientHardwareId;
+		long mClientProtocolType;
 
-			int mAuthStatus;
-			UINT32 mConnectionId;
-			std::string mPipeName;
+		int mAuthStatus;
+		UINT32 mConnectionId;
+		std::string mPipeName;
 
-			UINT32 m_RequestId;
-			FDSAPI_LOGON_USER_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_LOGON_USER_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_LOGON_USER_RESPONSE m_Response;
-		};
+		UINT32 m_ResponseId;
+		FDSAPI_LOGON_USER_RESPONSE m_Response;
+	};
 
-		FACTORY_REGISTER_DWORD(CallFactory, CallInLogonUser, FDSAPI_LOGON_USER_REQUEST_ID);
-	}
+	FACTORY_REGISTER_DWORD(CallFactory, CallInLogonUser, FDSAPI_LOGON_USER_REQUEST_ID);
 }
-
-namespace callNS = freerds::call;
 
 #endif //__CALL_IN_LOGON_USER_H_

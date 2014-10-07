@@ -66,6 +66,5 @@ namespace freerds
 		rdsRpcServer* mRpcServer;
 	};
 }
-namespace fdsapiNS = freerds;
 
 #endif /* FDSAPISERVER_H_ */

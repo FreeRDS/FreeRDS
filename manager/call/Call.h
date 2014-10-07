@@ -27,36 +27,31 @@
 
 namespace freerds
 {
-	namespace call
+	class Call
 	{
-		class Call
-		{
-		public:
-			Call();
-			virtual ~Call();
+	public:
+		Call();
+		virtual ~Call();
 
-			virtual unsigned long getCallType() = 0;
-			virtual unsigned long getDerivedType() = 0;
+		virtual unsigned long getCallType() = 0;
+		virtual unsigned long getDerivedType() = 0;
 
-			void setTag(uint32_t tag);
-			uint32_t getTag();
+		void setTag(uint32_t tag);
+		uint32_t getTag();
 
-			uint32_t getResult();
-			std::string getErrorDescription();
+		uint32_t getResult();
+		std::string getErrorDescription();
 
-		private:
-			uint32_t mTag;
+	private:
+		uint32_t mTag;
 
-		protected:
-			std::string mEncodedRequest;
-			std::string mEncodedResponse;
+	protected:
+		std::string mEncodedRequest;
+		std::string mEncodedResponse;
 
-			uint32_t mResult;
-			std::string mErrorDescription;
-		};
-	}
+		uint32_t mResult;
+		std::string mErrorDescription;
+	};
 }
-
-namespace callNS = freerds::call;
 
 #endif

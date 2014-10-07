@@ -93,7 +93,7 @@ namespace freerds
 			authModule = "PAM";
 		}
 
-		moduleNS::AuthModule* auth = moduleNS::AuthModule::loadFromName(authModule);
+		AuthModule* auth = AuthModule::loadFromName(authModule);
 
 		if (!auth) {
 			return 1;

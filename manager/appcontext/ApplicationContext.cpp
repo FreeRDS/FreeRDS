@@ -233,17 +233,17 @@ namespace freerds
 		}
 	}
 
-	sessionNS::SessionStore* ApplicationContext::getSessionStore()
+	SessionStore* ApplicationContext::getSessionStore()
 	{
 		return &mSessionStore;
 	}
 
-	sessionNS::ConnectionStore* ApplicationContext::getConnectionStore()
+	ConnectionStore* ApplicationContext::getConnectionStore()
 	{
 		return &mConnectionStore;
 	}
 
-	configNS::PropertyManager* ApplicationContext::getPropertyManager()
+	PropertyManager* ApplicationContext::getPropertyManager()
 	{
 		return &mPropertyManager;
 	}
@@ -260,7 +260,7 @@ namespace freerds
 		return mRpcEngine.stopEngine();
 	}
 
-	SignalingQueue<callNS::Call *> * ApplicationContext::getRpcOutgoingQueue()
+	SignalingQueue<Call*> * ApplicationContext::getRpcOutgoingQueue()
 	{
 		return &mRpcOutgoingCalls;
 	}
@@ -276,12 +276,12 @@ namespace freerds
 		return mModuleManager.loadModulesFromPathAndEnv(path, pattern);
 	}
 
-	moduleNS::ModuleManager* ApplicationContext::getModuleManager()
+	ModuleManager* ApplicationContext::getModuleManager()
 	{
 		return &mModuleManager;
 	}
 
-	fdsapiNS::FDSApiServer* ApplicationContext::getFDSApiServer()
+	FDSApiServer* ApplicationContext::getFDSApiServer()
 	{
 		return &mFDSApiServer;
 	}
@@ -324,24 +324,24 @@ namespace freerds
 	}
 
 	void ApplicationContext::startSessionTimoutMonitor(){
-		sessionNS::TaskSessionTimeoutPtr task(new sessionNS::TaskSessionTimeout());
+		TaskSessionTimeoutPtr task(new TaskSessionTimeout());
 		addTask(task);
 	}
 
-	bool ApplicationContext::addTask(taskNS::TaskPtr task) {
+	bool ApplicationContext::addTask(TaskPtr task) {
 		return mTaskExecutor.addTask(task);
 	}
 
 	void ApplicationContext::rpcDisconnected()
 	{
 		getConnectionStore()->reset();
-		std::list<sessionNS::SessionPtr> allSessions = getSessionStore()->getAllSessions();
+		std::list<SessionPtr> allSessions = getSessionStore()->getAllSessions();
 
-		std::list<sessionNS::SessionPtr>::iterator iterator;
+		std::list<SessionPtr>::iterator iterator;
 
 		for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator)
 		{
-			sessionNS::SessionPtr currentSession = (*iterator);
+			SessionPtr currentSession = (*iterator);
 
 			if (currentSession->isAuthSession())
 			{

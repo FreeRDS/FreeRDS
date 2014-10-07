@@ -58,6 +58,5 @@ namespace freerds
 		wIniFile* ini;
 	};
 }
-namespace configNS = freerds;
 
 #endif /* PROPERTYMANAGER_H_ */

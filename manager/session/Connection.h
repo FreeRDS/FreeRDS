@@ -78,6 +78,4 @@ namespace freerds
 	typedef boost::shared_ptr<Connection> ConnectionPtr;
 }
 
-namespace sessionNS = freerds;
-
 #endif // CONNECTION_H_

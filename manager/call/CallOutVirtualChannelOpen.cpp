@@ -26,70 +26,67 @@
 
 namespace freerds
 {
-	namespace call
+	CallOutVirtualChannelOpen::CallOutVirtualChannelOpen()
+	: m_SessionId(0), m_ChannelHandle(0),
+	  m_RequestId(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID),
+	  m_ResponseId(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE_ID)
 	{
-		CallOutVirtualChannelOpen::CallOutVirtualChannelOpen()
-		: m_SessionId(0), m_ChannelHandle(0),
-		  m_RequestId(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID),
-		  m_ResponseId(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE_ID)
-		{
 
-		};
+	};
 
-		CallOutVirtualChannelOpen::~CallOutVirtualChannelOpen()
-		{
+	CallOutVirtualChannelOpen::~CallOutVirtualChannelOpen()
+	{
 
-		};
+	};
 
-		unsigned long CallOutVirtualChannelOpen::getCallType()
-		{
-			return m_RequestId;
-		};
+	unsigned long CallOutVirtualChannelOpen::getCallType()
+	{
+		return m_RequestId;
+	};
 
-		int CallOutVirtualChannelOpen::encodeRequest()
-		{
-			wStream* s;
+	int CallOutVirtualChannelOpen::encodeRequest()
+	{
+		wStream* s;
 
-			m_Request.SessionId = m_SessionId;
-			m_Request.ChannelName = (char*) m_ChannelName.c_str();
+		m_Request.SessionId = m_SessionId;
+		m_Request.ChannelName = (char*) m_ChannelName.c_str();
 
-			s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
+		s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
 
-			mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
+		mEncodedRequest.assign((const char*) Stream_Buffer(s), Stream_Length(s));
 
-			Stream_Free(s, TRUE);
+		Stream_Free(s, TRUE);
 
-			return 0;
-		}
+		return 0;
+	}
 
-		int CallOutVirtualChannelOpen::decodeResponse()
-		{
-			BYTE* buffer;
-			UINT32 length;
+	int CallOutVirtualChannelOpen::decodeResponse()
+	{
+		BYTE* buffer;
+		UINT32 length;
 
-			buffer = (BYTE*) mEncodedResponse.data();
-			length = (UINT32) mEncodedResponse.size();
+		buffer = (BYTE*) mEncodedResponse.data();
+		length = (UINT32) mEncodedResponse.size();
 
-			freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
+		freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
 
-			m_ChannelHandle = m_Response.ChannelHandle;
-			m_ChannelEndpoint = m_Response.ChannelEndpoint ? m_Response.ChannelEndpoint : "";
+		m_ChannelHandle = m_Response.ChannelHandle;
+		m_ChannelEndpoint = m_Response.ChannelEndpoint ? m_Response.ChannelEndpoint : "";
 
-			freerds_rpc_msg_free(m_ResponseId, &m_Response);
+		freerds_rpc_msg_free(m_ResponseId, &m_Response);
 
-			return 0;
-		}
+		return 0;
+	}
 
-		void CallOutVirtualChannelOpen::setSessionID(UINT32 sessionId) {
-			m_SessionId = sessionId;
-		}
+	void CallOutVirtualChannelOpen::setSessionID(UINT32 sessionId) {
+		m_SessionId = sessionId;
+	}
 
-		void CallOutVirtualChannelOpen::setVirtualName(std::string channelName) {
-			m_ChannelName = channelName;
-		}
+	void CallOutVirtualChannelOpen::setVirtualName(std::string channelName) {
+		m_ChannelName = channelName;
+	}
 
-		std::string CallOutVirtualChannelOpen::getConnectionString() {
-			return m_ChannelEndpoint;
-		}
+	std::string CallOutVirtualChannelOpen::getConnectionString() {
+		return m_ChannelEndpoint;
 	}
 }

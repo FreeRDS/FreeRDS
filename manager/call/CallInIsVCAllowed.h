@@ -27,34 +27,29 @@
 
 namespace freerds
 {
-	namespace call
+	class CallInIsVCAllowed: public CallIn
 	{
-		class CallInIsVCAllowed: public CallIn
-		{
-		public:
-			CallInIsVCAllowed();
-			virtual ~CallInIsVCAllowed();
+	public:
+		CallInIsVCAllowed();
+		virtual ~CallInIsVCAllowed();
 
-			virtual unsigned long getCallType();
-			virtual int decodeRequest();
-			virtual int encodeResponse();
-			virtual int doStuff();
+		virtual unsigned long getCallType();
+		virtual int decodeRequest();
+		virtual int encodeResponse();
+		virtual int doStuff();
 
-		private:
-			std::string mVirtualChannelName;
-			bool mVirtualChannelAllowed;
+	private:
+		std::string mVirtualChannelName;
+		bool mVirtualChannelAllowed;
 
-			UINT32 m_RequestId;
-			FDSAPI_CHANNEL_ALLOWED_REQUEST m_Request;
+		UINT32 m_RequestId;
+		FDSAPI_CHANNEL_ALLOWED_REQUEST m_Request;
 
-			UINT32 m_ResponseId;
-			FDSAPI_CHANNEL_ALLOWED_RESPONSE m_Response;
-		};
+		UINT32 m_ResponseId;
+		FDSAPI_CHANNEL_ALLOWED_RESPONSE m_Response;
+	};
 
-		FACTORY_REGISTER_DWORD(CallFactory, CallInIsVCAllowed, FDSAPI_CHANNEL_ALLOWED_REQUEST_ID);
-	}
+	FACTORY_REGISTER_DWORD(CallFactory, CallInIsVCAllowed, FDSAPI_CHANNEL_ALLOWED_REQUEST_ID);
 }
-
-namespace callNS = freerds::call;
 
 #endif // CALL_IN_IS_VIRTUAL_CHANNEL_ALLOWED_H_

@@ -56,11 +56,11 @@ namespace freerds
 				// check all session if they need to be disconnected.
 				std::list<SessionPtr> allSessions = APP_CONTEXT.getSessionStore()->getAllSessions();
 				boost::posix_time::ptime currentTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
-				std::list<sessionNS::SessionPtr>::iterator iterator;
+				std::list<SessionPtr>::iterator iterator;
 
 				for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator)
 				{
-					sessionNS::SessionPtr currentSession = (*iterator);
+					SessionPtr currentSession = (*iterator);
 
 					if (currentSession->getConnectState() == WTSDisconnected)
 					{
@@ -73,7 +73,7 @@ namespace freerds
 						if ((timeout >= 0) &&(((currentTime - currentSession->getConnectStateChangeTime()).ticks()) / ((boost::posix_time::time_duration::ticks_per_second() * 60)) >= timeout)) {
 							// shutdown current Session
 							WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "Session with sessionId %d from user %s is stopped after %d minutes after the disconnect. ",currentSession->getSessionID(),currentSession->getUserName().c_str(),timeout);
-							callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
+							TaskEndSessionPtr task = TaskEndSessionPtr(new TaskEndSession());
 							task->setSessionId(currentSession->getSessionID());
 							APP_CONTEXT.addTask(task);
 						}
