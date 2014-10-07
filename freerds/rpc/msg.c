@@ -1062,7 +1062,7 @@ static wStream* freerds_pack_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOI
 
 	msgpack_pack_array(&pk, 2);
 	msgpack_pack_uint32(&pk, request->SessionId);
-	msgpack_pack_cstr(&pk, request->ChannelEndpoint);
+	msgpack_pack_cstr(&pk, request->ChannelName);
 
 	STREAM_PACK_FINALIZE(s);
 
@@ -1090,7 +1090,7 @@ static BOOL freerds_unpack_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOINT
 	if (!msgpack_unpack_uint32(obj++, &(request->SessionId)))
 		return FALSE;
 
-	if (!msgpack_unpack_cstr(obj++, &(request->ChannelEndpoint)))
+	if (!msgpack_unpack_cstr(obj++, &(request->ChannelName)))
 		return FALSE;
 
 	msgpack_unpacked_destroy(&pk);
@@ -1100,7 +1100,7 @@ static BOOL freerds_unpack_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOINT
 
 static void freerds_free_channel_endpoint_open_request(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST* request)
 {
-	free(request->ChannelEndpoint);
+	free(request->ChannelName);
 }
 
 static RDS_RPC_PACK_FUNC g_FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST =
@@ -1122,9 +1122,10 @@ static wStream* freerds_pack_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPO
 
 	msgpack_stream_packer_init(&pk, s);
 
-	msgpack_pack_array(&pk, 2);
+	msgpack_pack_array(&pk, 3);
 	msgpack_pack_uint32(&pk, response->status);
 	msgpack_pack_uint64(&pk, response->ChannelHandle);
+	msgpack_pack_cstr(&pk, response->ChannelEndpoint);
 
 	STREAM_PACK_FINALIZE(s);
 
@@ -1155,6 +1156,9 @@ static BOOL freerds_unpack_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOIN
 	if (!msgpack_unpack_uint64(obj++, &(response->ChannelHandle)))
 		return FALSE;
 
+	if (!msgpack_unpack_cstr(obj++, &(response->ChannelEndpoint)))
+		return FALSE;
+
 	msgpack_unpacked_destroy(&pk);
 
 	return TRUE;
@@ -1162,7 +1166,7 @@ static BOOL freerds_unpack_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOIN
 
 static void freerds_free_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE* response)
 {
-
+	free(response->ChannelEndpoint);
 }
 
 static RDS_RPC_PACK_FUNC g_FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE =

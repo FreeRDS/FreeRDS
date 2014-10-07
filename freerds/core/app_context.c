@@ -21,40 +21,40 @@
 #include "app_context.h"
 #include <winpr/interlocked.h>
 
-static rdsAppContext* gAppContext = NULL;
+static rdsAppContext* g_AppContext = NULL;
 
 void app_context_init()
 {
-	gAppContext = malloc(sizeof(rdsAppContext));
-	gAppContext->connections = ListDictionary_New(TRUE);
-	gAppContext->connectionId = 0;
+	g_AppContext = (rdsAppContext*) calloc(1, sizeof(rdsAppContext));
+	g_AppContext->connections = ListDictionary_New(TRUE);
+	g_AppContext->connectionId = 0;
 }
 
 void app_context_uninit()
 {
-	ListDictionary_Free(gAppContext->connections);	
-	free(gAppContext);
-	gAppContext = NULL;
+	ListDictionary_Free(g_AppContext->connections);
+	free(g_AppContext);
+	g_AppContext = NULL;
 }
 
-long app_context_get_connectionid()
+UINT32 app_context_get_connectionid()
 {
-	return InterlockedIncrement((volatile LONG*) &(gAppContext->connectionId));
+	return InterlockedIncrement((volatile LONG*) &(g_AppContext->connectionId));
 }
 
 void app_context_add_connection(rdsConnection* connection)
 {
-	ListDictionary_Add(gAppContext->connections, (void*) connection->id, connection);
+	ListDictionary_Add(g_AppContext->connections, (void*) (UINT_PTR) connection->id, connection);
 	printf("added connection %d\n", (int) connection->id);
 }
 
-void app_context_remove_connection(long id)
+void app_context_remove_connection(UINT32 id)
 {
-	ListDictionary_Remove(gAppContext->connections, (void*) id);
+	ListDictionary_Remove(g_AppContext->connections, (void*) (UINT_PTR) id);
 	printf("removed connection %d\n", (int) id);
 }
 
-rdsConnection* app_context_get_connection(long id)
+rdsConnection* app_context_get_connection(UINT32 id)
 {
-	return ListDictionary_GetItemValue(gAppContext->connections, (void*) id);
+	return ListDictionary_GetItemValue(g_AppContext->connections, (void*) (UINT_PTR) id);
 }

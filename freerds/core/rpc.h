@@ -51,7 +51,7 @@ struct pbrpc_payload
 };
 typedef struct pbrpc_payload pbRPCPayload;
 
-typedef int (*pbRPCCallback)(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
+typedef int (*pbRPCCallback)(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
 
 /* Return codes 0-100 are used from the pbrpc protocol itself */
 typedef enum pbrpc_status
@@ -89,11 +89,6 @@ void pbrpc_free_payload(pbRPCPayload* response);
 
 /* icp */
 
-int freerds_icp_Heartbeat(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
-int freerds_icp_SwitchServiceEndpoint(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
-int freerds_icp_LogoffUser(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
-int freerds_icp_ChannelEndpointOpen(LONG tag, pbRPCPayload* pbrequest, pbRPCPayload** pbresponse);
-
 int freerds_icp_IsChannelAllowed(FDSAPI_CHANNEL_ALLOWED_REQUEST* pRequest, FDSAPI_CHANNEL_ALLOWED_RESPONSE* pResponse);
 int freerds_icp_DisconnectUserSession(FDSAPI_DISCONNECT_USER_REQUEST* pRequest, FDSAPI_DISCONNECT_USER_RESPONSE* pResponse);
 int freerds_icp_LogOffUserSession(FDSAPI_LOGOFF_USER_REQUEST* pRequest, FDSAPI_LOGOFF_USER_RESPONSE* pResponse);
@@ -101,6 +96,11 @@ int freerds_icp_LogonUser(FDSAPI_LOGON_USER_REQUEST* pRequest, FDSAPI_LOGON_USER
 
 int freerds_icp_LogoffUserResponse(FDSAPI_LOGOFF_USER_RESPONSE* pResponse);
 int freerds_icp_SwitchServiceEndpointResponse(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE* pResponse);
+
+int freerds_icp_Heartbeat(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
+int freerds_icp_SwitchServiceEndpoint(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
+int freerds_icp_LogoffUser(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
+int freerds_icp_ChannelEndpointOpen(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
 
 int freerds_icp_start();
 int freerds_icp_shutdown();

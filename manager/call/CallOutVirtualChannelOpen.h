@@ -40,14 +40,14 @@ namespace freerds
 			virtual int decodeResponse();
 
 			void setSessionID(UINT32 sessionId);
-			void setVirtualName(std::string virtualName);
+			void setVirtualName(std::string channelName);
 			std::string getConnectionString();
 
 		private:
 			UINT32 m_SessionId;
 			UINT64 m_ChannelHandle;
-			std::string mVirtualName;
-			std::string mConnectionString;
+			std::string m_ChannelName;
+			std::string m_ChannelEndpoint;
 
 			UINT32 m_RequestId;
 			FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST m_Request;
