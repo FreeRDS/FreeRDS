@@ -20,4 +20,4 @@ add_subdirectory(rpc)
 add_subdirectory(auth)
 add_subdirectory(core)
 add_subdirectory(backend)
-add_subdirectory(icp)
+

@@ -38,10 +38,10 @@
 #include <sys/signal.h>
 
 #include <freerds/auth.h>
-#include <freerds/icp_client_stubs.h>
 
 #include <winpr/tools/makecert.h>
 
+#include "rpc.h"
 #include "channels.h"
 #include "app_context.h"
 

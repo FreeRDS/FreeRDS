@@ -30,13 +30,12 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #ifndef WIN32
 #include <signal.h>
 #endif
 
 #include "freerds.h"
-
-#include <freerds/icp.h>
 
 #include <winpr/crt.h>
 #include <winpr/path.h>
@@ -46,7 +45,7 @@
 #include <winpr/library.h>
 #include <winpr/wtsapi.h>
 
-#include <freerds/icp_client_stubs.h>
+#include "rpc.h"
 #include "app_context.h"
 
 static HANDLE g_TermEvent = NULL;

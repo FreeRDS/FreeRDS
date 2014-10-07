@@ -24,7 +24,7 @@
 
 //#define WITH_FREERDS_CHANNELS	1
 
-#include <freerds/icp_client_stubs.h>
+#include "rpc.h"
 
 BOOL freerds_channels_is_channel_allowed(UINT32 SessionId, char* ChannelName)
 {

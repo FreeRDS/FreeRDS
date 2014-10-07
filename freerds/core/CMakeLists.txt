@@ -25,6 +25,8 @@ set(${MODULE_PREFIX}_SRCS
 	app_context.c
 	core.c
 	core.h
+	rpc.c
+	rpc.h
 	encoder.c
 	encoder.h
 	channels.c
@@ -44,9 +46,9 @@ list(APPEND ${MODULE_PREFIX}_LIBS freerdp-server)
 list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 list(APPEND ${MODULE_PREFIX}_LIBS winpr-makecert-tool)
 
+list(APPEND ${MODULE_PREFIX}_LIBS freerds-rpc)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-auth)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
-list(APPEND ${MODULE_PREFIX}_LIBS freerds-icp)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
