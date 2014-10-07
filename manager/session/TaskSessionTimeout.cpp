@@ -30,55 +30,52 @@
 
 namespace freerds
 {
-	namespace session
+	static wLog* logger_TaskSessionTimeout = WLog_Get("freerds.TaskSessionTimeout");
+
+	bool TaskSessionTimeout::isThreaded() {
+		return true;
+	};
+
+	void TaskSessionTimeout::run()
 	{
-		static wLog* logger_TaskSessionTimeout = WLog_Get("freerds.SessionManager.session.tasksessiontimeout");
+		long timeout;
+		DWORD status;
+		boost::posix_time::ptime myEpoch(boost::gregorian::date(1970,boost::gregorian::Jan, 1));
 
-		bool TaskSessionTimeout::isThreaded() {
-			return true;
-		};
-
-		void TaskSessionTimeout::run()
+		for (;;)
 		{
-			long timeout;
-			DWORD status;
-			boost::posix_time::ptime myEpoch(boost::gregorian::date(1970,boost::gregorian::Jan, 1));
+			status = WaitForSingleObject(mhStop,10 * 1000);
 
-			for (;;)
+			if (status == WAIT_OBJECT_0) {
+				// shutdown
+				return;
+			}
+
+			if (status == WAIT_TIMEOUT)
 			{
-				status = WaitForSingleObject(mhStop,10 * 1000);
+				// check all session if they need to be disconnected.
+				std::list<SessionPtr> allSessions = APP_CONTEXT.getSessionStore()->getAllSessions();
+				boost::posix_time::ptime currentTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
+				std::list<sessionNS::SessionPtr>::iterator iterator;
 
-				if (status == WAIT_OBJECT_0) {
-					// shutdown
-					return;
-				}
-
-				if (status == WAIT_TIMEOUT)
+				for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator)
 				{
-					// check all session if they need to be disconnected.
-					std::list<SessionPtr> allSessions = APP_CONTEXT.getSessionStore()->getAllSessions();
-					boost::posix_time::ptime currentTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
-					std::list<sessionNS::SessionPtr>::iterator iterator;
+					sessionNS::SessionPtr currentSession = (*iterator);
 
-					for (iterator = allSessions.begin(); iterator != allSessions.end(); ++iterator)
+					if (currentSession->getConnectState() == WTSDisconnected)
 					{
-						sessionNS::SessionPtr currentSession = (*iterator);
+						//currentSession->getUserName()
+						if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber("session.timeout", &timeout)) {
+							WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "session.timeout was not found for session %d, using value of 0", currentSession->getSessionID());
+							timeout = 0;
+						}
 
-						if (currentSession->getConnectState() == WTSDisconnected)
-						{
-							//currentSession->getUserName()
-							if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber("session.timeout", &timeout)) {
-								WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "session.timeout was not found for session %d, using value of 0", currentSession->getSessionID());
-								timeout = 0;
-							}
-
-							if ((timeout >= 0) &&(((currentTime - currentSession->getConnectStateChangeTime()).ticks()) / ((boost::posix_time::time_duration::ticks_per_second() * 60)) >= timeout)) {
-								// shutdown current Session
-								WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "Session with sessionId %d from user %s is stopped after %d minutes after the disconnect. ",currentSession->getSessionID(),currentSession->getUserName().c_str(),timeout);
-								callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
-								task->setSessionId(currentSession->getSessionID());
-								APP_CONTEXT.addTask(task);
-							}
+						if ((timeout >= 0) &&(((currentTime - currentSession->getConnectStateChangeTime()).ticks()) / ((boost::posix_time::time_duration::ticks_per_second() * 60)) >= timeout)) {
+							// shutdown current Session
+							WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "Session with sessionId %d from user %s is stopped after %d minutes after the disconnect. ",currentSession->getSessionID(),currentSession->getUserName().c_str(),timeout);
+							callNS::TaskEndSessionPtr task = callNS::TaskEndSessionPtr(new callNS::TaskEndSession());
+							task->setSessionId(currentSession->getSessionID());
+							APP_CONTEXT.addTask(task);
 						}
 					}
 				}

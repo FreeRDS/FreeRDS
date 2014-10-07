@@ -36,39 +36,36 @@ using boost::shared_ptr;
 
 namespace freerds
 {
-	namespace fdsapi
+	class FDSApiServer
 	{
-		class FDSApiServer
-		{
-		public:
-			FDSApiServer();
-			virtual ~FDSApiServer();
+	public:
+		FDSApiServer();
+		virtual ~FDSApiServer();
 
-			void startFDSApi();
-			void stopFDSApi();
+		void startFDSApi();
+		void stopFDSApi();
 
-			void setPort(DWORD port);
-			DWORD getPort();
+		void setPort(DWORD port);
+		DWORD getPort();
 
-			CRITICAL_SECTION* getCritSection();
+		CRITICAL_SECTION* getCritSection();
 
-			void fireSessionEvent(UINT32 sessionId, UINT32 stateChange);
+		void fireSessionEvent(UINT32 sessionId, UINT32 stateChange);
 
-		private:
-			static int RpcConnectionAccepted(rdsRpcClient* rpcClient);
-			static int RpcConnectionClosed(rdsRpcClient* rpcClient);
-			static int RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
+	private:
+		static int RpcConnectionAccepted(rdsRpcClient* rpcClient);
+		static int RpcConnectionClosed(rdsRpcClient* rpcClient);
+		static int RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
 
-			CRITICAL_SECTION mCSection;
-			HANDLE mServerThread;
-			DWORD mPort;
+		CRITICAL_SECTION mCSection;
+		HANDLE mServerThread;
+		DWORD mPort;
 
-			static shared_ptr<FDSApiHandler> mFDSApiHandler;
+		static shared_ptr<FDSApiHandler> mFDSApiHandler;
 
-			rdsRpcServer* mRpcServer;
-		};
-	}
+		rdsRpcServer* mRpcServer;
+	};
 }
-namespace fdsapiNS = freerds::fdsapi;
+namespace fdsapiNS = freerds;
 
 #endif /* FDSAPISERVER_H_ */

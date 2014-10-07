@@ -24,21 +24,18 @@
 
 namespace freerds
 {
-	namespace session
+	class TaskSessionTimeout: public taskNS::Task
 	{
-		class TaskSessionTimeout: public taskNS::Task
-		{
-		public:
-			virtual void run();
-			virtual bool isThreaded();
+	public:
+		virtual void run();
+		virtual bool isThreaded();
 
-		private:
-		};
+	private:
+	};
 
-		typedef boost::shared_ptr<TaskSessionTimeout> TaskSessionTimeoutPtr;
-	}
+	typedef boost::shared_ptr<TaskSessionTimeout> TaskSessionTimeoutPtr;
 }
 
-namespace sessionNS = freerds::session;
+namespace sessionNS = freerds;
 
 #endif /* __TASK_SESSION_TIMEOUT_ */

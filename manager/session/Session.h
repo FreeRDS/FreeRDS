@@ -34,102 +34,99 @@
 
 namespace freerds
 {
-	namespace session
+	class Session
 	{
-		class Session
-		{
-		public:
-			Session(long sessionID);
-			~Session();
+	public:
+		Session(long sessionID);
+		~Session();
 
-			std::string getDomain();
-			void setDomain(std::string domainName);
-			std::string getUserName();
-			void setUserName(std::string username);
-			std::string getWinStationName();
-			void setWinStationName(std::string winStationName);
-			UINT32 getSessionID();
-			std::string getPipeName();
+		std::string getDomain();
+		void setDomain(std::string domainName);
+		std::string getUserName();
+		void setUserName(std::string username);
+		std::string getWinStationName();
+		void setWinStationName(std::string winStationName);
+		UINT32 getSessionID();
+		std::string getPipeName();
 
-			void setClientName(std::string name);
-			std::string getClientName();
-			void setClientAddress(std::string address);
-			std::string getClientAddress();
-			void setClientBuildNumber(UINT32 buildNumber);
-			UINT32 getClientBuildNumber();
-			void setClientProductId(UINT16 productId);
-			UINT16 getClientProductId();
-			void setClientHardwareId(UINT32 hardwareId);
-			UINT32 getClientHardwareId();
-			void setClientDisplayWidth(UINT32 displayWidth);
-			UINT32 getClientDisplayWidth();
-			void setClientDisplayHeight(UINT32 displayHeight);
-			UINT32 getClientDisplayHeight();
-			void setClientDisplayColorDepth(UINT32 displayColorDepth);
-			UINT32 getClientDisplayColorDepth();
-			void setClientProtocolType(UINT16 protocolType);
-			UINT16 getClientProtocolType();
+		void setClientName(std::string name);
+		std::string getClientName();
+		void setClientAddress(std::string address);
+		std::string getClientAddress();
+		void setClientBuildNumber(UINT32 buildNumber);
+		UINT32 getClientBuildNumber();
+		void setClientProductId(UINT16 productId);
+		UINT16 getClientProductId();
+		void setClientHardwareId(UINT32 hardwareId);
+		UINT32 getClientHardwareId();
+		void setClientDisplayWidth(UINT32 displayWidth);
+		UINT32 getClientDisplayWidth();
+		void setClientDisplayHeight(UINT32 displayHeight);
+		UINT32 getClientDisplayHeight();
+		void setClientDisplayColorDepth(UINT32 displayColorDepth);
+		UINT32 getClientDisplayColorDepth();
+		void setClientProtocolType(UINT16 protocolType);
+		UINT16 getClientProtocolType();
 
-			bool generateUserToken();
-			bool generateEnvBlockAndModify();
-			bool generateAuthEnvBlockAndModify();
+		bool generateUserToken();
+		bool generateEnvBlockAndModify();
+		bool generateAuthEnvBlockAndModify();
 
-			char** getPEnvBlock();
+		char** getPEnvBlock();
 
-			bool isAuthSession();
-			void setAuthSession(bool authSession);
-			int authenticate(std::string username, std::string domain, std::string password);
+		bool isAuthSession();
+		void setAuthSession(bool authSession);
+		int authenticate(std::string username, std::string domain, std::string password);
 
-			void setModuleConfigName(std::string configName);
-			std::string getModuleConfigName();
-			bool startModule(std::string & pipeName);
-			bool stopModule();
+		void setModuleConfigName(std::string configName);
+		std::string getModuleConfigName();
+		bool startModule(std::string & pipeName);
+		bool stopModule();
 
-			WTS_CONNECTSTATE_CLASS getConnectState();
-			boost::posix_time::ptime getConnectStateChangeTime();
-			void setConnectState(WTS_CONNECTSTATE_CLASS state);
+		WTS_CONNECTSTATE_CLASS getConnectState();
+		boost::posix_time::ptime getConnectStateChangeTime();
+		void setConnectState(WTS_CONNECTSTATE_CLASS state);
 
-			UINT32 getStateChange(WTS_CONNECTSTATE_CLASS oldState, WTS_CONNECTSTATE_CLASS newState);
+		UINT32 getStateChange(WTS_CONNECTSTATE_CLASS oldState, WTS_CONNECTSTATE_CLASS newState);
 
-		private:
+	private:
 
-			char * dupEnv(char * orgBlock);
+		char * dupEnv(char * orgBlock);
 
-			UINT32 mSessionID;
-			bool mAuthSession;
-			bool mSessionStarted;
+		UINT32 mSessionID;
+		bool mAuthSession;
+		bool mSessionStarted;
 
-			std::string mUsername;
-			std::string mDomain;
-			std::string mWinStationName;
+		std::string mUsername;
+		std::string mDomain;
+		std::string mWinStationName;
 
-			UINT32 mClientBuildNumber;
-			std::string mClientName;
-			UINT16 mClientProductId;
-			UINT32 mClientHardwareId;
-			std::string mClientAddress;
-			UINT32 mClientDisplayWidth;
-			UINT32 mClientDisplayHeight;
-			UINT32 mClientDisplayColorDepth;
-			UINT16 mClientProtocolType;
+		UINT32 mClientBuildNumber;
+		std::string mClientName;
+		UINT16 mClientProductId;
+		UINT32 mClientHardwareId;
+		std::string mClientAddress;
+		UINT32 mClientDisplayWidth;
+		UINT32 mClientDisplayHeight;
+		UINT32 mClientDisplayColorDepth;
+		UINT16 mClientProtocolType;
 
-			std::string mPipeName;
+		std::string mPipeName;
 
-			HANDLE mUserToken;
-			char* mpEnvBlock;
+		HANDLE mUserToken;
+		char* mpEnvBlock;
 
-			std::string mModuleConfigName;
-			std::string mModuleName;
-			RDS_MODULE_COMMON* mCurrentModuleContext;
-			WTS_CONNECTSTATE_CLASS mCurrentState;
-			boost::posix_time::ptime mCurrentStateChangeTime;
-			CRITICAL_SECTION mCSection;
-		};
+		std::string mModuleConfigName;
+		std::string mModuleName;
+		RDS_MODULE_COMMON* mCurrentModuleContext;
+		WTS_CONNECTSTATE_CLASS mCurrentState;
+		boost::posix_time::ptime mCurrentStateChangeTime;
+		CRITICAL_SECTION mCSection;
+	};
 
-		typedef boost::shared_ptr<Session> SessionPtr;
-	}
+	typedef boost::shared_ptr<Session> SessionPtr;
 }
 
-namespace sessionNS = freerds::session;
+namespace sessionNS = freerds;
 
 #endif

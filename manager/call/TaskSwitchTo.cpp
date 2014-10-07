@@ -31,7 +31,7 @@ namespace freerds
 {
 	namespace call
 	{
-		static wLog* logger_taskSwitchTo = WLog_Get("freerds.SessionManager.call.taskswitchto");
+		static wLog* logger_taskSwitchTo = WLog_Get("freerds.call.taskswitchto");
 
 		void TaskSwitchTo::run()
 		{
@@ -40,8 +40,7 @@ namespace freerds
 			switchToCall.setConnectionId(mConnectionId);
 
 			APP_CONTEXT.getRpcOutgoingQueue()->addElement(&switchToCall);
-			WaitForSingleObject(switchToCall.getAnswerHandle(),INFINITE);
-
+			WaitForSingleObject(switchToCall.getAnswerHandle(), INFINITE);
 
 			if (switchToCall.getResult() != 0) {
 				WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo answer: RPC error %d!",switchToCall.getResult());
@@ -110,12 +109,15 @@ namespace freerds
 
 			if (currentSession)
 			{
-				if (currentSession->getConnectState() == WTSActive) {
+				if (currentSession->getConnectState() == WTSActive)
+				{
 					// this was a new session for the connection, remove it
 					currentSession->stopModule();
 					APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
 					WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: cleaning up session with sessionId %d",mNewSessionId);
-				} else if (currentSession->getConnectState() == WTSConnectQuery){
+				}
+				else if (currentSession->getConnectState() == WTSConnectQuery)
+				{
 					// was a previous disconnected session
 					currentSession->setConnectState(WTSDisconnected);
 				}

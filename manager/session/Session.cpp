@@ -40,447 +40,444 @@
 
 namespace freerds
 {
-	namespace session
+	static wLog* logger_Session= WLog_Get("freerds.Session");
+
+	Session::Session(long sessionID): mSessionID(sessionID),
+			mSessionStarted(false), mpEnvBlock(NULL),
+			mCurrentState(WTSDown), mUserToken(NULL),
+			mCurrentModuleContext(NULL), mAuthSession(false),
+			mClientDisplayColorDepth(0), mClientDisplayWidth(0), mClientDisplayHeight(0),
+			mClientHardwareId(0), mClientBuildNumber(0), mClientProductId(0), mClientProtocolType(0)
 	{
-		static wLog* logger_Session= WLog_Get("freerds.sessionmanager.session.session");
-
-		Session::Session(long sessionID): mSessionID(sessionID),
-				mSessionStarted(false), mpEnvBlock(NULL),
-				mCurrentState(WTSDown), mUserToken(NULL),
-				mCurrentModuleContext(NULL), mAuthSession(false),
-				mClientDisplayColorDepth(0), mClientDisplayWidth(0), mClientDisplayHeight(0),
-				mClientHardwareId(0), mClientBuildNumber(0), mClientProductId(0), mClientProtocolType(0)
+		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 		{
-			if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
-			{
-				 WLog_Print(logger_Session, WLOG_FATAL, "cannot init Session critical section!");
-			}
-
-			// Fire a session created event.
-			fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
-			FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_CREATE);
+			 WLog_Print(logger_Session, WLOG_FATAL, "cannot init Session critical section!");
 		}
 
-		Session::~Session()
-		{
-			// Mark the session as down.
-			setConnectState(WTSDown);
+		// Fire a session created event.
+		fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+		FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_CREATE);
+	}
 
-			// Fire a session terminated event.
-			fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
-			FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_TERMINATE);
+	Session::~Session()
+	{
+		// Mark the session as down.
+		setConnectState(WTSDown);
+
+		// Fire a session terminated event.
+		fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+		FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_TERMINATE);
+	}
+
+	std::string Session::getDomain()
+	{
+		return mDomain;
+	}
+
+	void Session::setDomain(std::string domainName)
+	{
+		mDomain = domainName;
+	}
+
+	std::string Session::getUserName()
+	{
+		return mUsername;
+	}
+
+	void Session::setUserName(std::string username)
+	{
+		mUsername = username;
+	}
+
+	std::string Session::getWinStationName()
+	{
+		return mWinStationName;
+	}
+
+	void Session::setWinStationName(std::string winStationName)
+	{
+		mWinStationName = winStationName;
+	}
+
+	UINT32 Session::getSessionID()
+	{
+		return mSessionID;
+	}
+
+	std::string Session::getClientName()
+	{
+		return mClientName;
+	}
+
+	void Session::setClientName(std::string name)
+	{
+		mClientName = name;
+	}
+
+	std::string Session::getClientAddress()
+	{
+		return mClientAddress;
+	}
+
+	void Session::setClientAddress(std::string address)
+	{
+		mClientAddress = address;
+	}
+
+	UINT32 Session::getClientBuildNumber()
+	{
+		return mClientBuildNumber;
+	}
+
+	void Session::setClientBuildNumber(UINT32 buildNumber)
+	{
+		mClientBuildNumber = buildNumber;
+	}
+
+	UINT16 Session::getClientProductId()
+	{
+		return mClientProductId;
+	}
+
+	void Session::setClientProductId(UINT16 productId)
+	{
+		mClientProductId = productId;
+	}
+
+	UINT32 Session::getClientHardwareId()
+	{
+		return mClientHardwareId;
+	}
+
+	void Session::setClientHardwareId(UINT32 hardwareId)
+	{
+		mClientHardwareId = hardwareId;
+	}
+
+	UINT32 Session::getClientDisplayWidth()
+	{
+		return mClientDisplayWidth;
+	}
+
+	void Session::setClientDisplayWidth(UINT32 displayWidth)
+	{
+		mClientDisplayWidth = displayWidth;
+	}
+
+	UINT32 Session::getClientDisplayHeight()
+	{
+		return mClientDisplayHeight;
+	}
+
+	void Session::setClientDisplayHeight(UINT32 displayHeight)
+	{
+		mClientDisplayHeight = displayHeight;
+	}
+
+	UINT32 Session::getClientDisplayColorDepth()
+	{
+		return mClientDisplayColorDepth;
+	}
+
+	void Session::setClientDisplayColorDepth(UINT32 displayColorDepth)
+	{
+		mClientDisplayColorDepth = displayColorDepth;
+	}
+
+	UINT16 Session::getClientProtocolType()
+	{
+		return mClientProtocolType;
+	}
+
+	void Session::setClientProtocolType(UINT16 protocolType)
+	{
+		mClientProtocolType = protocolType;
+	}
+
+	bool Session::isAuthSession()
+	{
+		return mAuthSession;
+	}
+
+	void Session::setAuthSession(bool authSession)
+	{
+		mAuthSession = authSession;
+	}
+
+	bool Session::generateUserToken()
+	{
+		if (mUsername.length() == 0)
+		{
+			 WLog_Print(logger_Session, WLOG_ERROR, "generate UserToken failed, no username!");
+			return false;
 		}
 
-		std::string Session::getDomain()
+		return LogonUserA(mUsername.c_str(), mDomain.c_str(), NULL,
+				LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &mUserToken);
+	}
+
+	bool Session::generateEnvBlockAndModify()
+	{
+		struct passwd* pwnam;
+		char envstr[256];
+
+		if (mUsername.length() == 0)
 		{
-			return mDomain;
+			 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed, no username!");
+			return false;
 		}
 
-		void Session::setDomain(std::string domainName)
+		if (mpEnvBlock)
 		{
-			mDomain = domainName;
+			free(mpEnvBlock);
+			mpEnvBlock = NULL;
 		}
 
-		std::string Session::getUserName()
+		pwnam = getpwnam(mUsername.c_str());
+
+		if (!pwnam)
 		{
-			return mUsername;
+			 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed to get user information (getpwnam) for username %s!",mUsername.c_str());
+			return false;
 		}
 
-		void Session::setUserName(std::string username)
+		sprintf_s(envstr, sizeof(envstr), "%d", (int) pwnam->pw_uid);
+		SetEnvironmentVariableEBA(&mpEnvBlock, "UID", envstr);
+		SetEnvironmentVariableEBA(&mpEnvBlock, "SHELL", pwnam->pw_shell);
+		SetEnvironmentVariableEBA(&mpEnvBlock, "USER", pwnam->pw_name);
+		SetEnvironmentVariableEBA(&mpEnvBlock, "HOME", pwnam->pw_dir);
+
+		return true;
+	}
+
+	bool Session::generateAuthEnvBlockAndModify()
+	{
+		struct passwd* pwnam;
+		char envstr[256];
+
+		if (mpEnvBlock)
 		{
-			mUsername = username;
+			free(mpEnvBlock);
+			mpEnvBlock = NULL;
 		}
 
-		std::string Session::getWinStationName()
+		if (mUsername.length() != 0)
 		{
-			return mWinStationName;
+			SetEnvironmentVariableEBA(&mpEnvBlock, "FREERDS_USER", mUsername.c_str());
 		}
 
-		void Session::setWinStationName(std::string winStationName)
+		if (mDomain.length() != 0)
 		{
-			mWinStationName = winStationName;
+			SetEnvironmentVariableEBA(&mpEnvBlock, "FREERDS_DOMAIN", mDomain.c_str());
 		}
 
-		UINT32 Session::getSessionID()
+		return true;
+	}
+
+	char** Session::getPEnvBlock()
+	{
+		return &mpEnvBlock;
+	}
+
+	void Session::setModuleConfigName(std::string configName)
+	{
+		mModuleConfigName = configName;
+	}
+
+	std::string Session::getModuleConfigName()
+	{
+		return mModuleConfigName;
+	}
+
+	char* Session::dupEnv(char* orgBlock)
+	{
+		char* penvb = orgBlock;
+		int length;
+		int currentLength;
+		char* lpszEnvironmentBlock;
+
+		if (!orgBlock)
+			return NULL;
+
+		length = 0;
+
+		while (*penvb && *(penvb+1))
 		{
-			return mSessionID;
+			currentLength = strlen(penvb) + 1;
+			length += currentLength;
+			penvb += (currentLength);
 		}
 
-		std::string Session::getClientName()
+		lpszEnvironmentBlock = (char*) malloc((length + 2) * sizeof(CHAR));
+		memcpy(lpszEnvironmentBlock,orgBlock,length + 1);
+
+		return lpszEnvironmentBlock;
+	}
+
+	bool Session::startModule(std::string& pipeName)
+	{
+		std::string pName;
+
+		if (mSessionStarted)
 		{
-			return mClientName;
+			WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, session has already be started, stop first.");
+			return false;
 		}
 
-		void Session::setClientName(std::string name)
-		{
-			mClientName = name;
+		std::string configBaseName = std::string("module.")+mModuleConfigName;
+		std::string queryString = configBaseName+std::string(".modulename");
+
+		if (!APP_CONTEXT.getPropertyManager()->getPropertyString(queryString,mModuleName)) {
+			WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, Property %s not found.",queryString.c_str());
+			return false;
 		}
 
-		std::string Session::getClientAddress()
+		moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
+
+		if (!currentModule)
 		{
-			return mClientAddress;
+			WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no module found for name %s", mModuleName.c_str());
+			return false;
 		}
 
-		void Session::setClientAddress(std::string address)
+		mCurrentModuleContext = currentModule->newContext();
+		mCurrentModuleContext->sessionId = mSessionID;
+
+		mCurrentModuleContext->userName = _strdup(mUsername.c_str());
+
+		mCurrentModuleContext->userToken = mUserToken;
+		mCurrentModuleContext->envBlock = dupEnv(mpEnvBlock);
+		mCurrentModuleContext->baseConfigPath = _strdup(configBaseName.c_str());
+
+		pName = currentModule->start(mCurrentModuleContext);
+
+		if (pName.length() == 0)
 		{
-			mClientAddress = address;
+			WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no pipeName was returned");
+			return false;
 		}
-
-		UINT32 Session::getClientBuildNumber()
+		else
 		{
-			return mClientBuildNumber;
-		}
-
-		void Session::setClientBuildNumber(UINT32 buildNumber)
-		{
-			mClientBuildNumber = buildNumber;
-		}
-
-		UINT16 Session::getClientProductId()
-		{
-			return mClientProductId;
-		}
-
-		void Session::setClientProductId(UINT16 productId)
-		{
-			mClientProductId = productId;
-		}
-
-		UINT32 Session::getClientHardwareId()
-		{
-			return mClientHardwareId;
-		}
-
-		void Session::setClientHardwareId(UINT32 hardwareId)
-		{
-			mClientHardwareId = hardwareId;
-		}
-
-		UINT32 Session::getClientDisplayWidth()
-		{
-			return mClientDisplayWidth;
-		}
-
-		void Session::setClientDisplayWidth(UINT32 displayWidth)
-		{
-			mClientDisplayWidth = displayWidth;
-		}
-
-		UINT32 Session::getClientDisplayHeight()
-		{
-			return mClientDisplayHeight;
-		}
-
-		void Session::setClientDisplayHeight(UINT32 displayHeight)
-		{
-			mClientDisplayHeight = displayHeight;
-		}
-
-		UINT32 Session::getClientDisplayColorDepth()
-		{
-			return mClientDisplayColorDepth;
-		}
-
-		void Session::setClientDisplayColorDepth(UINT32 displayColorDepth)
-		{
-			mClientDisplayColorDepth = displayColorDepth;
-		}
-
-		UINT16 Session::getClientProtocolType()
-		{
-			return mClientProtocolType;
-		}
-
-		void Session::setClientProtocolType(UINT16 protocolType)
-		{
-			mClientProtocolType = protocolType;
-		}
-
-		bool Session::isAuthSession()
-		{
-			return mAuthSession;
-		}
-
-		void Session::setAuthSession(bool authSession)
-		{
-			mAuthSession = authSession;
-		}
-
-		bool Session::generateUserToken()
-		{
-			if (mUsername.length() == 0)
-			{
-				 WLog_Print(logger_Session, WLOG_ERROR, "generate UserToken failed, no username!");
-				return false;
-			}
-
-			return LogonUserA(mUsername.c_str(), mDomain.c_str(), NULL,
-					LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &mUserToken);
-		}
-
-		bool Session::generateEnvBlockAndModify()
-		{
-			struct passwd* pwnam;
-			char envstr[256];
-
-			if (mUsername.length() == 0)
-			{
-				 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed, no username!");
-				return false;
-			}
-
-			if (mpEnvBlock)
-			{
-				free(mpEnvBlock);
-				mpEnvBlock = NULL;
-			}
-
-			pwnam = getpwnam(mUsername.c_str());
-
-			if (!pwnam)
-			{
-				 WLog_Print(logger_Session, WLOG_ERROR, "generateEnvBlockAndModify failed to get user information (getpwnam) for username %s!",mUsername.c_str());
-				return false;
-			}
-
-			sprintf_s(envstr, sizeof(envstr), "%d", (int) pwnam->pw_uid);
-			SetEnvironmentVariableEBA(&mpEnvBlock, "UID", envstr);
-			SetEnvironmentVariableEBA(&mpEnvBlock, "SHELL", pwnam->pw_shell);
-			SetEnvironmentVariableEBA(&mpEnvBlock, "USER", pwnam->pw_name);
-			SetEnvironmentVariableEBA(&mpEnvBlock, "HOME", pwnam->pw_dir);
-
+			pipeName = pName;
+			mPipeName = pName;
+			mSessionStarted = true;
+			setConnectState(WTSConnected);
 			return true;
 		}
+	}
 
-		bool Session::generateAuthEnvBlockAndModify()
+	bool Session::stopModule()
+	{
+		if (!mSessionStarted)
 		{
-			struct passwd* pwnam;
-			char envstr[256];
-
-			if (mpEnvBlock)
-			{
-				free(mpEnvBlock);
-				mpEnvBlock = NULL;
-			}
-
-			if (mUsername.length() != 0)
-			{
-				SetEnvironmentVariableEBA(&mpEnvBlock, "FREERDS_USER", mUsername.c_str());
-			}
-
-			if (mDomain.length() != 0)
-			{
-				SetEnvironmentVariableEBA(&mpEnvBlock, "FREERDS_DOMAIN", mDomain.c_str());
-			}
-
-			return true;
+			WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no session has started yet.");
+			return false;
 		}
 
-		char** Session::getPEnvBlock()
+		moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
+
+		if (!currentModule)
 		{
-			return &mpEnvBlock;
+			WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no module found for name %s", mModuleName.c_str());
+			return false;
 		}
 
-		void Session::setModuleConfigName(std::string configName)
+		currentModule->stop(mCurrentModuleContext);
+
+		currentModule->freeContext(mCurrentModuleContext);
+		mCurrentModuleContext = NULL;
+		mPipeName.clear();
+		setConnectState(WTSDown);
+
+		return true;
+	}
+
+	std::string Session::getPipeName()
+	{
+		return mPipeName;
+	}
+
+	WTS_CONNECTSTATE_CLASS Session::getConnectState()
+	{
+		return mCurrentState;
+	}
+
+	void Session::setConnectState(WTS_CONNECTSTATE_CLASS state)
+	{
+		fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
+
+		if (mCurrentState != state)
 		{
-			mModuleConfigName = configName;
-		}
+			UINT32 stateChange = getStateChange(mCurrentState, state);
 
-		std::string Session::getModuleConfigName()
-		{
-			return mModuleConfigName;
-		}
+			mCurrentState = state;
+			mCurrentStateChangeTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
 
-		char* Session::dupEnv(char* orgBlock)
-		{
-			char* penvb = orgBlock;
-			int length;
-			int currentLength;
-			char* lpszEnvironmentBlock;
-
-			if (!orgBlock)
-				return NULL;
-
-			length = 0;
-
-			while (*penvb && *(penvb+1))
+			if ((state != WTSConnected) && (state != WTSActive))
 			{
-				currentLength = strlen(penvb) + 1;
-				length += currentLength;
-				penvb += (currentLength);
+				// Clear out the client information.
+				setClientName("");
+				setClientAddress("");
+				setClientBuildNumber(0);
+				setClientProductId(0);
+				setClientHardwareId(0);
+				setClientProtocolType(0);
 			}
 
-			lpszEnvironmentBlock = (char*) malloc((length + 2) * sizeof(CHAR));
-			memcpy(lpszEnvironmentBlock,orgBlock,length + 1);
-
-			return lpszEnvironmentBlock;
-		}
-
-		bool Session::startModule(std::string& pipeName)
-		{
-			std::string pName;
-
-			if (mSessionStarted)
+			if (stateChange != 0)
 			{
-				WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, session has already be started, stop first.");
-				return false;
-			}
-
-			std::string configBaseName = std::string("module.")+mModuleConfigName;
-			std::string queryString = configBaseName+std::string(".modulename");
-
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyString(queryString,mModuleName)) {
-				WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, Property %s not found.",queryString.c_str());
-				return false;
-			}
-
-			moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
-
-			if (!currentModule)
-			{
-				WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no module found for name %s", mModuleName.c_str());
-				return false;
-			}
-
-			mCurrentModuleContext = currentModule->newContext();
-			mCurrentModuleContext->sessionId = mSessionID;
-
-			mCurrentModuleContext->userName = _strdup(mUsername.c_str());
-
-			mCurrentModuleContext->userToken = mUserToken;
-			mCurrentModuleContext->envBlock = dupEnv(mpEnvBlock);
-			mCurrentModuleContext->baseConfigPath = _strdup(configBaseName.c_str());
-
-			pName = currentModule->start(mCurrentModuleContext);
-
-			if (pName.length() == 0)
-			{
-				WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, no pipeName was returned");
-				return false;
-			}
-			else
-			{
-				pipeName = pName;
-				mPipeName = pName;
-				mSessionStarted = true;
-				setConnectState(WTSConnected);
-				return true;
+				// Fire a session state change event.
+				FDSApiServer->fireSessionEvent(mSessionID, stateChange);
 			}
 		}
+	}
 
-		bool Session::stopModule()
+	boost::posix_time::ptime Session::getConnectStateChangeTime()
+	{
+		return mCurrentStateChangeTime;
+	}
+
+	UINT32 Session::getStateChange(WTS_CONNECTSTATE_CLASS oldState, WTS_CONNECTSTATE_CLASS newState)
+	{
+		// Based on the transition from the old state to the new state,
+		// this method returns the corresponding state change (if any).
+		// These are the same state change notifications that can occur
+		// as a result of a WM_WTSSESSION_CHANGE message.
+
+		UINT32 stateChange = 0;
+
+		switch (newState)
 		{
-			if (!mSessionStarted)
-			{
-				WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no session has started yet.");
-				return false;
-			}
-
-			moduleNS::Module* currentModule = APP_CONTEXT.getModuleManager()->getModule(mModuleName);
-
-			if (!currentModule)
-			{
-				WLog_Print(logger_Session, WLOG_ERROR, "stopModule failed, no module found for name %s", mModuleName.c_str());
-				return false;
-			}
-
-			currentModule->stop(mCurrentModuleContext);
-
-			currentModule->freeContext(mCurrentModuleContext);
-			mCurrentModuleContext = NULL;
-			mPipeName.clear();
-			setConnectState(WTSDown);
-
-			return true;
-		}
-
-		std::string Session::getPipeName()
-		{
-			return mPipeName;
-		}
-
-		WTS_CONNECTSTATE_CLASS Session::getConnectState()
-		{
-			return mCurrentState;
-		}
-
-		void Session::setConnectState(WTS_CONNECTSTATE_CLASS state)
-		{
-			fdsapiNS::FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
-
-			if (mCurrentState != state)
-			{
-				UINT32 stateChange = getStateChange(mCurrentState, state);
-
-				mCurrentState = state;
-				mCurrentStateChangeTime = boost::date_time::second_clock<boost::posix_time::ptime>::universal_time();
-
-				if ((state != WTSConnected) && (state != WTSActive))
+			case WTSConnected:
+				if (newState != oldState)
 				{
-					// Clear out the client information.
-					setClientName("");
-					setClientAddress("");
-					setClientBuildNumber(0);
-					setClientProductId(0);
-					setClientHardwareId(0);
-					setClientProtocolType(0);
+					stateChange = WTS_REMOTE_CONNECT;
 				}
+				break;
 
-				if (stateChange != 0)
+			case WTSDisconnected:
+				if (newState != oldState)
 				{
-					// Fire a session state change event.
-					FDSApiServer->fireSessionEvent(mSessionID, stateChange);
+					stateChange = WTS_REMOTE_DISCONNECT;
 				}
-			}
+				break;
+
+			case WTSActive:
+				if (newState != oldState)
+				{
+					stateChange = WTS_SESSION_LOGON;
+				}
+				break;
+
+			default:
+				if ((oldState == WTSActive) || (oldState == WTSDisconnected))
+				{
+					stateChange = WTS_SESSION_LOGOFF;
+				}
+				break;
 		}
 
-		boost::posix_time::ptime Session::getConnectStateChangeTime()
-		{
-			return mCurrentStateChangeTime;
-		}
-
-		UINT32 Session::getStateChange(WTS_CONNECTSTATE_CLASS oldState, WTS_CONNECTSTATE_CLASS newState)
-		{
-			// Based on the transition from the old state to the new state,
-			// this method returns the corresponding state change (if any).
-			// These are the same state change notifications that can occur
-			// as a result of a WM_WTSSESSION_CHANGE message.
-
-			UINT32 stateChange = 0;
-
-			switch (newState)
-			{
-				case WTSConnected:
-					if (newState != oldState)
-					{
-						stateChange = WTS_REMOTE_CONNECT;
-					}
-					break;
-
-				case WTSDisconnected:
-					if (newState != oldState)
-					{
-						stateChange = WTS_REMOTE_DISCONNECT;
-					}
-					break;
-
-				case WTSActive:
-					if (newState != oldState)
-					{
-						stateChange = WTS_SESSION_LOGON;
-					}
-					break;
-
-				default:
-					if ((oldState == WTSActive) || (oldState == WTSDisconnected))
-					{
-						stateChange = WTS_SESSION_LOGOFF;
-					}
-					break;
-			}
-
-			return stateChange;
-		}
+		return stateChange;
 	}
 }
 

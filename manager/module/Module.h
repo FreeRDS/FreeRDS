@@ -20,41 +20,39 @@
 #ifndef MODULE_H_
 #define MODULE_H_
 
+#include <string>
+
 #include "Module.h"
+
 #include <winpr/wtypes.h>
 #include <freerds/module.h>
-#include <string>
 
 namespace freerds
 {
-	namespace module
+	class Module
 	{
-		class Module
-		{
-		public:
-			Module();
-			int initModule(HMODULE libHandle, std::string moduleFileName, RDS_MODULE_ENTRY_POINTS* entrypoints);
-			virtual ~Module();
-			std::string getName();
+	public:
+		Module();
+		int initModule(HMODULE libHandle, std::string moduleFileName, RDS_MODULE_ENTRY_POINTS* entrypoints);
+		virtual ~Module();
+		std::string getName();
 
-			RDS_MODULE_COMMON* newContext();
-			void freeContext(RDS_MODULE_COMMON* context);
+		RDS_MODULE_COMMON* newContext();
+		void freeContext(RDS_MODULE_COMMON* context);
 
-			std::string start(RDS_MODULE_COMMON* context);
-			int stop(RDS_MODULE_COMMON* context);
+		std::string start(RDS_MODULE_COMMON* context);
+		int stop(RDS_MODULE_COMMON* context);
 
-		private:
-			pRdsModuleNew mfpNew;
-			pRdsModuleFree mfpFree;
+	private:
+		pRdsModuleNew mfpNew;
+		pRdsModuleFree mfpFree;
 
-			pRdsModuleStart mfpStart;
-			pRdsModuleStop mfpStop;
-			std::string mModuleFile;
-			std::string mModuleName;
-		};
-	}
+		pRdsModuleStart mfpStart;
+		pRdsModuleStop mfpStop;
+		std::string mModuleFile;
+		std::string mModuleName;
+	};
 }
-
-namespace moduleNS = freerds::module;
+namespace moduleNS = freerds;
 
 #endif /* MODULE_H_ */

@@ -30,17 +30,13 @@
 
 namespace freerds
 {
-	namespace module
-	{
-		static wLog* logger_CallBacks = WLog_Get("freerds.SessionManager.module.callbacks");
+	static wLog* logger_CallBacks = WLog_Get("freerds.Callbacks");
 
-		int CallBacks::shutdown(long sessionId)
-		{
-			moduleNS::TaskModuleShutdownPtr task = moduleNS::TaskModuleShutdownPtr(new moduleNS::TaskModuleShutdown());
-			task->setSessionId(sessionId);
-			APP_CONTEXT.addTask(task);
-			return 0;
-		}
+	int CallBacks::shutdown(long sessionId)
+	{
+		moduleNS::TaskModuleShutdownPtr task = moduleNS::TaskModuleShutdownPtr(new moduleNS::TaskModuleShutdown());
+		task->setSessionId(sessionId);
+		APP_CONTEXT.addTask(task);
+		return 0;
 	}
 }
-

@@ -33,34 +33,31 @@
 
 namespace freerds
 {
-	namespace config
+	class PropertyManager
 	{
-		class PropertyManager
-		{
-		public:
-			PropertyManager();
-			~PropertyManager();
+	public:
+		PropertyManager();
+		~PropertyManager();
 
-			int getKeyValueInt(const char* section, const char* key);
-			const char* getKeyValueString(const char* section, const char* key);
+		int getKeyValueInt(const char* section, const char* key);
+		const char* getKeyValueString(const char* section, const char* key);
 
-			BOOL getPropertyBool(std::string path, BOOL* value);
-			BOOL getPropertyBool(std::string path, bool &value);
-			BOOL getPropertyNumber(std::string path, long* value);
-			BOOL getPropertyString(std::string path, std::string &value);
+		BOOL getPropertyBool(std::string path, BOOL* value);
+		BOOL getPropertyBool(std::string path, bool &value);
+		BOOL getPropertyNumber(std::string path, long* value);
+		BOOL getPropertyString(std::string path, std::string &value);
 
-			int setPropertyBool(std::string path, bool value);
-			int setPropertyNumber(std::string path, long value);
-			int setPropertyString(std::string path, std::string value);
+		int setPropertyBool(std::string path, bool value);
+		int setPropertyNumber(std::string path, long value);
+		int setPropertyString(std::string path, std::string value);
 
-			int saveProperties(std::string filename);
-			int loadProperties(std::string filename);
+		int saveProperties(std::string filename);
+		int loadProperties(std::string filename);
 
-		private:
-			wIniFile* ini;
-		};
-	}
+	private:
+		wIniFile* ini;
+	};
 }
-namespace configNS = freerds::config;
+namespace configNS = freerds;
 
 #endif /* PROPERTYMANAGER_H_ */

@@ -20,37 +20,35 @@
 #ifndef MODULEMANAGER_H_
 #define MODULEMANAGER_H_
 
-#include "Module.h"
-#include <string>
 #include <map>
+#include <string>
+
+#include "Module.h"
 
 #define MODULE_ENV_VAR "FREERDS_ADDITIONAL_MODULES"
 
 namespace freerds
 {
-	namespace module
+	class ModuleManager
 	{
-		class ModuleManager
-		{
-		public:
-			ModuleManager();
-			virtual ~ModuleManager();
+	public:
+		ModuleManager();
+		virtual ~ModuleManager();
 
-			int loadModulesFromPath(std::string path, std::string pattern);
-			int loadModulesFromPathAndEnv(std::string path, std::string pattern);
+		int loadModulesFromPath(std::string path, std::string pattern);
+		int loadModulesFromPathAndEnv(std::string path, std::string pattern);
 
-			Module* getModule(std::string moduleName);
+		Module* getModule(std::string moduleName);
 
-		private:
-			char pathSeparator;
-			char* defaultModuleName;
-			char* defaultGreeterModuleName;
-			int addModule(std::string path, std::string modulename);
-			std::map<std::string,Module *> mModulesMap;
-		};
-	}
+	private:
+		char pathSeparator;
+		char* defaultModuleName;
+		char* defaultGreeterModuleName;
+		int addModule(std::string path, std::string modulename);
+		std::map<std::string,Module*> mModulesMap;
+	};
 }
 
-namespace moduleNS = freerds::module;
+namespace moduleNS = freerds;
 
 #endif /* MODULEMANAGER_H_ */

@@ -28,46 +28,41 @@
 
 namespace freerds
 {
-	namespace task
+	class Executor
 	{
-		class Executor
-		{
-		public:
-			Executor();
-			~Executor();
+	public:
+		Executor();
+		~Executor();
 
-			int start();
-			int stop();
+		int start();
+		int stop();
 
-			void runExecutor();
+		void runExecutor();
 
-			bool addTask(TaskPtr task);
+		bool addTask(TaskPtr task);
 
+	private:
+		static void* execThread(void* arg);
+		static void* execTask(void* arg);
 
-		private:
-			static void* execThread(void* arg);
-			static void* execTask(void* arg);
+		bool checkThreadHandles(const HANDLE value) const;
+		bool waitThreadHandles(const HANDLE value) const;
 
-			bool checkThreadHandles(const HANDLE value) const;
-			bool waitThreadHandles(const HANDLE value) const;
+	private:
+		HANDLE mhStopEvent;
+		HANDLE mhServerThread;
 
+		HANDLE mhStopThreads;
+		HANDLE mhTaskThreadStarted;
 
-		private:
-			HANDLE mhStopEvent;
-			HANDLE mhServerThread;
+		bool mRunning;
 
-			HANDLE mhStopThreads;
-			HANDLE mhTaskThreadStarted;
-
-			bool mRunning;
-
-			std::list<HANDLE> mTaskThreadList;
-			CRITICAL_SECTION mCSection;
-			SignalingQueue<TaskPtr> mTasks;
-		};
-	}
+		std::list<HANDLE> mTaskThreadList;
+		CRITICAL_SECTION mCSection;
+		SignalingQueue<TaskPtr> mTasks;
+	};
 }
 
-namespace taskNS = freerds::task;
+namespace taskNS = freerds;
 
 #endif /* __EXECUTOR_H_ */

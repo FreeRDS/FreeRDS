@@ -25,34 +25,31 @@
 
 namespace freerds
 {
-	namespace task
+	class Task
 	{
-		class Task
-		{
-		public:
-			Task():mhStop(0),mhStarted(0) {};
-			virtual ~Task() {};
-			virtual void run() = 0;
-			virtual bool isThreaded() {
-				return false;
-			}
-			void setHandles(HANDLE stopHandle,HANDLE startedHandle) {
-				mhStop = stopHandle;
-				mhStarted = startedHandle;
-			}
-			void informStarted() {
-				SetEvent(mhStarted);
-			}
-		private:
-			HANDLE mhStarted;
-		protected:
-			HANDLE mhStop;
-		};
+	public:
+		Task():mhStop(0),mhStarted(0) {};
+		virtual ~Task() {};
+		virtual void run() = 0;
+		virtual bool isThreaded() {
+			return false;
+		}
+		void setHandles(HANDLE stopHandle,HANDLE startedHandle) {
+			mhStop = stopHandle;
+			mhStarted = startedHandle;
+		}
+		void informStarted() {
+			SetEvent(mhStarted);
+		}
+	private:
+		HANDLE mhStarted;
+	protected:
+		HANDLE mhStop;
+	};
 
-		typedef boost::shared_ptr<Task> TaskPtr;
-	}
+	typedef boost::shared_ptr<Task> TaskPtr;
 }
 
-namespace taskNS = freerds::task;
+namespace taskNS = freerds;
 
 #endif /* __TASK_H_ */

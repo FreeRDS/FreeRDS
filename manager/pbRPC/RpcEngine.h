@@ -33,57 +33,54 @@
 
 namespace freerds
 {
-	namespace pbrpc
+	class RpcEngine
 	{
-		class RpcEngine
-		{
-		public:
-			RpcEngine();
-			~RpcEngine();
+	public:
+		RpcEngine();
+		~RpcEngine();
 
-			int startEngine();
-			int stopEngine();
+		int startEngine();
+		int stopEngine();
 
-			HANDLE acceptClient();
-			int serveClient();
-			void resetStatus();
+		HANDLE acceptClient();
+		int serveClient();
+		void resetStatus();
 
-		private:
-			int createServerPipe(void);
-			HANDLE createServerPipe(const char* endpoint);
-			static void* listenerThread(void* arg);
-			int read();
-			int readHeader();
-			int readPayload();
-			int processData();
-			int send(freerds::call::Call * call);
-			int sendError(uint32_t callID, uint32_t callType);
-			int sendInternal(FDSAPI_MSG_HEADER* header, BYTE* buffer);
-			int processOutgoingCall(freerds::call::Call* call);
+	private:
+		int createServerPipe(void);
+		HANDLE createServerPipe(const char* endpoint);
+		static void* listenerThread(void* arg);
+		int read();
+		int readHeader();
+		int readPayload();
+		int processData();
+		int send(freerds::call::Call * call);
+		int sendError(uint32_t callID, uint32_t callType);
+		int sendInternal(FDSAPI_MSG_HEADER* header, BYTE* buffer);
+		int processOutgoingCall(freerds::call::Call* call);
 
-		private:
-			HANDLE mhClientPipe;
-			HANDLE mhServerPipe;
-			HANDLE mhServerThread;
+	private:
+		HANDLE mhClientPipe;
+		HANDLE mhServerPipe;
+		HANDLE mhServerThread;
 
-			HANDLE mhStopEvent;
+		HANDLE mhStopEvent;
 
-			DWORD mPacktLength;
+		DWORD mPacktLength;
 
-			DWORD mPayloadRead;
-			BYTE mPayloadBuffer[PIPE_BUFFER_SIZE];
+		DWORD mPayloadRead;
+		BYTE mPayloadBuffer[PIPE_BUFFER_SIZE];
 
-			DWORD mHeaderRead;
-			BYTE* mHeaderBuffer;
-			FDSAPI_MSG_HEADER m_Header;
+		DWORD mHeaderRead;
+		BYTE* mHeaderBuffer;
+		FDSAPI_MSG_HEADER m_Header;
 
-			std::list<callNS::CallOut*> mAnswerWaitingQueue;
+		std::list<callNS::CallOut*> mAnswerWaitingQueue;
 
-			long mNextOutCall;
-		};
-	}
+		long mNextOutCall;
+	};
 }
 
-namespace pbRPC = freerds::pbrpc;
+namespace pbRPC = freerds;
 
 #endif /* RPCENGINE_H_ */

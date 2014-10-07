@@ -74,27 +74,24 @@ public:
 
 namespace freerds
 {
-	namespace fdsapi
+	class FDSApiHandler
 	{
-		class FDSApiHandler
-		{
-		public:
-			FDSApiHandler();
-			virtual ~FDSApiHandler();
+	public:
+		FDSApiHandler();
+		virtual ~FDSApiHandler();
 
-			virtual INT32 ping(const INT32 input);
-			virtual INT32 authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain);
-			virtual void virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
-			virtual void virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags);
-			virtual bool virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
-			virtual bool disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait);
-			virtual bool logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait);
-			virtual bool shutdownSystem(const std::string& authToken, const INT32 shutdownFlag);
-			virtual void enumerateSessions(TReturnEnumerateSessions& _return, const std::string& authToken, const INT32 Version);
-			virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass);
-		};
-	}
+		virtual INT32 ping(const INT32 input);
+		virtual INT32 authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain);
+		virtual void virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+		virtual void virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags);
+		virtual bool virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+		virtual bool disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait);
+		virtual bool logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait);
+		virtual bool shutdownSystem(const std::string& authToken, const INT32 shutdownFlag);
+		virtual void enumerateSessions(TReturnEnumerateSessions& _return, const std::string& authToken, const INT32 Version);
+		virtual void querySessionInformation(TReturnQuerySessionInformation& _return, const std::string& authToken, const INT32 sessionId, const INT32 infoClass);
+	};
 }
-namespace fdsapiNS = freerds::fdsapi;
+namespace fdsapiNS = freerds;
 
 #endif /* FDSAPISHANDLER_H_ */

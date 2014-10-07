@@ -31,32 +31,29 @@
 
 namespace freerds
 {
-	namespace session
+	typedef std::map<long , ConnectionPtr> TConnectionMap;
+	typedef std::pair<long, ConnectionPtr> TConnectionPair;
+
+	class ConnectionStore
 	{
-		typedef std::map<long , ConnectionPtr> TConnectionMap;
-		typedef std::pair<long, ConnectionPtr> TConnectionPair;
+	public:
+		ConnectionStore();
+		~ConnectionStore();
 
-		class ConnectionStore
-		{
-		public:
-			ConnectionStore();
-			~ConnectionStore();
+		ConnectionPtr getOrCreateConnection(long connectionID);
+		ConnectionPtr getConnection(long connectionID);
+		int removeConnection(long connectionID);
 
-			ConnectionPtr getOrCreateConnection(long connectionID);
-			ConnectionPtr getConnection(long connectionID);
-			int removeConnection(long connectionID);
+		long getConnectionIdForSessionId(long mSessionId);
 
-			long getConnectionIdForSessionId(long mSessionId);
+		void reset();
 
-			void reset();
-
-		private:
-			TConnectionMap mConnectionMap;
-			CRITICAL_SECTION mCSection;
-		};
-	}
+	private:
+		TConnectionMap mConnectionMap;
+		CRITICAL_SECTION mCSection;
+	};
 }
 
-namespace sessionNS = freerds::session;
+namespace sessionNS = freerds;
 
 #endif //__CONNECTION_STORE_H_

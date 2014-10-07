@@ -33,58 +33,51 @@
 
 namespace freerds
 {
-	namespace session
+	typedef struct _CLIENT_INFORMATION
 	{
-		typedef struct _CLIENT_INFORMATION
-		{
-			long with;
-			long height;
-			long colordepth;
-		} CLIENT_INFORMATION, * pCLIENT_INFORMATION;
+		long with;
+		long height;
+		long colordepth;
+	} CLIENT_INFORMATION, * pCLIENT_INFORMATION;
 
-		class Connection
-		{
-		public:
-			Connection(DWORD connectionId);
-			~Connection();
+	class Connection
+	{
+	public:
+		Connection(DWORD connectionId);
+		~Connection();
 
-			std::string getDomain();
-			std::string getUserName();
+		std::string getDomain();
+		std::string getUserName();
 
-			void setSessionId(long sessionId);
-			long getSessionId();
+		void setSessionId(long sessionId);
+		long getSessionId();
 
-			long getAbout2SwitchSessionId();
-			void setAbout2SwitchSessionId(long switchSessionId);
+		long getAbout2SwitchSessionId();
+		void setAbout2SwitchSessionId(long switchSessionId);
 
+		pCLIENT_INFORMATION getClientInformation();
 
-			pCLIENT_INFORMATION getClientInformation();
+		long getConnectionId();
 
-			long getConnectionId();
+		int authenticateUser(std::string username, std::string domain, std::string password);
 
-			int authenticateUser(std::string username, std::string domain, std::string password);
+	private:
+		DWORD mConnectionId;
+		DWORD mSessionId;
+		DWORD mAbout2SwitchSessionId;
 
-		private:
-			DWORD mConnectionId;
-			DWORD mSessionId;
-			DWORD mAbout2SwitchSessionId;
+		int mAuthStatus;
 
-			int mAuthStatus;
+		CLIENT_INFORMATION mClientInformation;
 
-			CLIENT_INFORMATION mClientInformation;
+		std::string mUsername;
+		std::string mDomain;
+		CRITICAL_SECTION mCSection;
+	};
 
-			std::string mUsername;
-			std::string mDomain;
-			CRITICAL_SECTION mCSection;
-
-
-
-		};
-
-		typedef boost::shared_ptr<Connection> ConnectionPtr;
-	}
+	typedef boost::shared_ptr<Connection> ConnectionPtr;
 }
 
-namespace sessionNS = freerds::session;
+namespace sessionNS = freerds;
 
 #endif // CONNECTION_H_

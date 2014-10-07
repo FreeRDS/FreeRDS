@@ -20,43 +20,39 @@
 #ifndef __SESSIONSTORE_H_
 #define __SESSIONSTORE_H_
 
-#include <config.h>
-
 #include "Session.h"
 
-#include <string>
-#include <list>
-#include <winpr/synch.h>
 #include <map>
+#include <list>
+#include <string>
+
+#include <winpr/synch.h>
 
 namespace freerds
 {
-	namespace session
+	typedef std::map<long , SessionPtr> TSessionMap;
+	typedef std::pair<long, SessionPtr> TSessionPair;
+
+	class SessionStore
 	{
-		typedef std::map<long , SessionPtr> TSessionMap;
-		typedef std::pair<long, SessionPtr> TSessionPair;
+	public:
+		SessionStore();
+		~SessionStore();
 
-		class SessionStore
-		{
-		public:
-			SessionStore();
-			~SessionStore();
+		SessionPtr getSession(long sessionId);
+		SessionPtr getFirstSessionUserName(std::string username, std::string domain);
+		SessionPtr getFirstDisconnectedSessionUserName(std::string username, std::string domain);
+		SessionPtr createSession();
+		std::list<SessionPtr> getAllSessions();
+		int removeSession(long sessionId);
 
-			SessionPtr getSession(long sessionId);
-			SessionPtr getFirstSessionUserName(std::string username, std::string domain);
-			SessionPtr getFirstDisconnectedSessionUserName(std::string username, std::string domain);
-			SessionPtr createSession();
-			std::list<SessionPtr> getAllSessions();
-			int removeSession(long sessionId);
-
-		private:
-			TSessionMap mSessionMap;
-			long mNextSessionId;
-			CRITICAL_SECTION mCSection;
-		};
-	}
+	private:
+		TSessionMap mSessionMap;
+		long mNextSessionId;
+		CRITICAL_SECTION mCSection;
+	};
 }
 
-namespace sessionNS = freerds::session;
+namespace sessionNS = freerds;
 
 #endif //__SESSIONSTORE_H_

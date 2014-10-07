@@ -22,14 +22,11 @@
 
 namespace freerds
 {
-	namespace module
+	class CallBacks
 	{
-		class CallBacks
-		{
-		public:
-			static int shutdown(long sessionId);
-		};
-	}
+	public:
+		static int shutdown(long sessionId);
+	};
 }
 
 #endif /* __CALLBACKS_H_ */

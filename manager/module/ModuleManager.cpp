@@ -40,168 +40,165 @@
 
 namespace freerds
 {
-	namespace module
+	static wLog* logger_ModuleManager = WLog_Get("freerds.ModuleManager");
+
+	ModuleManager::ModuleManager()
 	{
-		static wLog* logger_ModuleManager = WLog_Get("freerds.sessionmanager.module.modulemanager");
+		this->pathSeparator = PathGetSeparatorA(PATH_STYLE_NATIVE);
+	}
 
-		ModuleManager::ModuleManager()
+	ModuleManager::~ModuleManager()
+	{
+		free(this->defaultModuleName);
+	}
+
+	int ModuleManager::loadModulesFromPathAndEnv(std::string path, std::string pattern)
+	{
+		// the the Environment variable
+		DWORD nSize = GetEnvironmentVariableA(MODULE_ENV_VAR, NULL, 0);
+
+		if (nSize)
 		{
-			this->pathSeparator = PathGetSeparatorA(PATH_STYLE_NATIVE);
-		}
+			// we found the env variable
+			char* lpBuffer = (LPSTR) malloc(nSize);
+			nSize = GetEnvironmentVariableA(MODULE_ENV_VAR, lpBuffer, nSize);
 
-		ModuleManager::~ModuleManager()
-		{
-			free(this->defaultModuleName);
-		}
+			WLog_Print(logger_ModuleManager, WLOG_TRACE,
+					"found env variable %s with content %s", MODULE_ENV_VAR, lpBuffer);
 
-		int ModuleManager::loadModulesFromPathAndEnv(std::string path, std::string pattern)
-		{
-			// the the Environment variable
-			DWORD nSize = GetEnvironmentVariableA(MODULE_ENV_VAR, NULL, 0);
+			std::string envpath(lpBuffer);
+			std::vector<std::string> pathList = split<std::string>(envpath, ":");
 
-			if (nSize)
+			for (int run = 0; run < pathList.size(); run++)
 			{
-				// we found the env variable
-				char* lpBuffer = (LPSTR) malloc(nSize);
-				nSize = GetEnvironmentVariableA(MODULE_ENV_VAR, lpBuffer, nSize);
-
-				WLog_Print(logger_ModuleManager, WLOG_TRACE,
-						"found env variable %s with content %s", MODULE_ENV_VAR, lpBuffer);
-
-				std::string envpath(lpBuffer);
-				std::vector<std::string> pathList = split<std::string>(envpath, ":");
-
-				for (int run = 0; run < pathList.size(); run++)
-				{
-					loadModulesFromPath(pathList[run], pattern);
-				}
+				loadModulesFromPath(pathList[run], pattern);
 			}
-			else
-			{
-				WLog_Print(logger_ModuleManager, WLOG_TRACE, "did not find env variable %s", MODULE_ENV_VAR);
-			}
-
-			loadModulesFromPath(path, pattern);
-
-			return 0;
+		}
+		else
+		{
+			WLog_Print(logger_ModuleManager, WLOG_TRACE, "did not find env variable %s", MODULE_ENV_VAR);
 		}
 
-		int ModuleManager::loadModulesFromPath(std::string path, std::string pattern)
-		{
-			 HANDLE hFind;
-			 WIN32_FIND_DATA FindFileData;
-			 std::string fullsearch = path + pathSeparator + pattern;
+		loadModulesFromPath(path, pattern);
 
-			 hFind = FindFirstFile(fullsearch.c_str(), &FindFileData);
-			 WLog_Print(logger_ModuleManager, WLOG_TRACE, "scanning with in directory %s for modules", fullsearch.c_str());
+		return 0;
+	}
 
-			 if (hFind == INVALID_HANDLE_VALUE)
+	int ModuleManager::loadModulesFromPath(std::string path, std::string pattern)
+	{
+		 HANDLE hFind;
+		 WIN32_FIND_DATA FindFileData;
+		 std::string fullsearch = path + pathSeparator + pattern;
+
+		 hFind = FindFirstFile(fullsearch.c_str(), &FindFileData);
+		 WLog_Print(logger_ModuleManager, WLOG_TRACE, "scanning with in directory %s for modules", fullsearch.c_str());
+
+		 if (hFind == INVALID_HANDLE_VALUE)
+		 {
+			 WLog_Print(logger_ModuleManager, WLOG_ERROR, "FindFirstFile (path = %s) failed", fullsearch.c_str());
+			 return -1;
+		 }
+
+		 do
+		 {
+			 if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			 {
-				 WLog_Print(logger_ModuleManager, WLOG_ERROR, "FindFirstFile (path = %s) failed", fullsearch.c_str());
-				 return -1;
+				 // do nothing
 			 }
-
-			 do
+			 else
 			 {
-				 if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				 {
-					 // do nothing
-				 }
-				 else
-				 {
-					 // try to add this module ...
-					 addModule(path, std::string(FindFileData.cFileName));
+				 // try to add this module ...
+				 addModule(path, std::string(FindFileData.cFileName));
 
-				 }
 			 }
-			 while (FindNextFile(hFind, &FindFileData) != 0);
-			 return 0;
+		 }
+		 while (FindNextFile(hFind, &FindFileData) != 0);
+		 return 0;
+	}
+
+	int ModuleManager::addModule(std::string path, std::string modulename)
+	{
+		HMODULE hLib;
+		int result = 0;
+		pRdsModuleEntry entry;
+		RDS_MODULE_ENTRY_POINTS entrypoints;
+
+		std::string fullFileName = path + pathSeparator + modulename;
+
+		WLog_Print(logger_ModuleManager, WLOG_TRACE, "loading library %s", fullFileName.c_str());
+
+		hLib = LoadLibrary(fullFileName.c_str());
+
+		if (!hLib)
+		{
+			WLog_Print(logger_ModuleManager, WLOG_ERROR, "loading library %s failed", fullFileName.c_str());
+			return -1;
 		}
 
-		int ModuleManager::addModule(std::string path, std::string modulename)
+		// get the exports
+		entry = (pRdsModuleEntry) GetProcAddress(hLib, RDS_MODULE_ENTRY_POINT_NAME);
+
+		if (entry)
 		{
-			HMODULE hLib;
-			int result = 0;
-			pRdsModuleEntry entry;
-			RDS_MODULE_ENTRY_POINTS entrypoints;
+			ZeroMemory(&entrypoints, sizeof(RDS_MODULE_ENTRY_POINTS));
 
-			std::string fullFileName = path + pathSeparator + modulename;
+			entrypoints.config.getPropertyNumber = getPropertyNumber;
+			entrypoints.config.getPropertyString = getPropertyString;
+			entrypoints.status.shutdown = CallBacks::shutdown;
+			result = entry(&entrypoints);
 
-			WLog_Print(logger_ModuleManager, WLOG_TRACE, "loading library %s", fullFileName.c_str());
-
-			hLib = LoadLibrary(fullFileName.c_str());
-
-			if (!hLib)
+			if (result == 0)
 			{
-				WLog_Print(logger_ModuleManager, WLOG_ERROR, "loading library %s failed", fullFileName.c_str());
-				return -1;
-			}
+				// no error occurred
+				Module* module = new Module();
 
-			// get the exports
-			entry = (pRdsModuleEntry) GetProcAddress(hLib, RDS_MODULE_ENTRY_POINT_NAME);
-
-			if (entry)
-			{
-				ZeroMemory(&entrypoints, sizeof(RDS_MODULE_ENTRY_POINTS));
-
-				entrypoints.config.getPropertyNumber = getPropertyNumber;
-				entrypoints.config.getPropertyString = getPropertyString;
-				entrypoints.status.shutdown = CallBacks::shutdown;
-				result = entry(&entrypoints);
-
-				if (result == 0)
+				if (module->initModule(hLib, fullFileName, &entrypoints) == 0)
 				{
-					// no error occurred
-					Module* module = new Module();
-
-					if (module->initModule(hLib, fullFileName, &entrypoints) == 0)
+					// check if module with same name is registered.
+					if (mModulesMap.count(module->getName()))
 					{
-						// check if module with same name is registered.
-						if (mModulesMap.count(module->getName()))
-						{
-							WLog_Print(logger_ModuleManager, WLOG_INFO,
-									"library %s loaded, but another library has already registered module name %s", module->getName().c_str());
-							delete module;
-							return -1;
-						}
-						else
-						{
-							WLog_Print(logger_ModuleManager, WLOG_INFO, "library %s loaded properly", fullFileName.c_str());
-							// add this module to the map
-							mModulesMap.insert(std::pair<std::string,Module *>(module->getName(), module));
-						}
+						WLog_Print(logger_ModuleManager, WLOG_INFO,
+								"library %s loaded, but another library has already registered module name %s", module->getName().c_str());
+						delete module;
+						return -1;
 					}
 					else
 					{
-						WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s not loaded", fullFileName.c_str());
-						delete module;
-						return -1;
+						WLog_Print(logger_ModuleManager, WLOG_INFO, "library %s loaded properly", fullFileName.c_str());
+						// add this module to the map
+						mModulesMap.insert(std::pair<std::string,Module *>(module->getName(), module));
 					}
 				}
 				else
 				{
-					WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s function %s reported error %d", fullFileName.c_str(), RDS_MODULE_ENTRY_POINT_NAME, result);
+					WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s not loaded", fullFileName.c_str());
+					delete module;
 					return -1;
 				}
 			}
 			else
 			{
-				WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s does not export function %s", fullFileName.c_str(), RDS_MODULE_ENTRY_POINT_NAME);
+				WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s function %s reported error %d", fullFileName.c_str(), RDS_MODULE_ENTRY_POINT_NAME, result);
 				return -1;
 			}
-			return 0;
 		}
-
-		Module* ModuleManager::getModule(std::string moduleName)
+		else
 		{
-			if (mModulesMap.count(moduleName))
-			{
-				return mModulesMap[moduleName];
-			}
-			else
-			{
-				return NULL;
-			}
+			WLog_Print(logger_ModuleManager, WLOG_ERROR, "library %s does not export function %s", fullFileName.c_str(), RDS_MODULE_ENTRY_POINT_NAME);
+			return -1;
+		}
+		return 0;
+	}
+
+	Module* ModuleManager::getModule(std::string moduleName)
+	{
+		if (mModulesMap.count(moduleName))
+		{
+			return mModulesMap[moduleName];
+		}
+		else
+		{
+			return NULL;
 		}
 	}
 }

@@ -29,104 +29,101 @@
 
 namespace freerds
 {
-	namespace session
+	static wLog* logger_SessionStore = WLog_Get("freerds.SessionStore");
+
+	SessionStore::SessionStore()
 	{
-		static wLog* logger_SessionStore = WLog_Get("freerds.SessionManager.session.sessionstore");
-
-		SessionStore::SessionStore()
+		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 		{
-			if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
+			 WLog_Print(logger_SessionStore, WLOG_FATAL, "cannot init SessionStore critical section!");
+		}
+		mNextSessionId = 1;
+	}
+
+	SessionStore::~SessionStore()
+	{
+		DeleteCriticalSection(&mCSection);
+	}
+
+	SessionPtr SessionStore::getSession(long sessionId)
+	{
+		CSGuard guard(&mCSection);
+
+		if (mSessionMap.find(sessionId) != mSessionMap.end()) {
+			return mSessionMap[sessionId];
+		}
+
+		return SessionPtr();
+	}
+
+	SessionPtr SessionStore::createSession()
+	{
+		CSGuard guard(&mCSection);
+		SessionPtr session(new Session(mNextSessionId++));
+		mSessionMap[session->getSessionID()] = session;
+		return session;
+	}
+
+	SessionPtr SessionStore::getFirstSessionUserName(std::string username,std::string domain)
+	{
+		CSGuard guard(&mCSection);
+
+		SessionPtr session;
+		TSessionMap::iterator iter;
+
+		for (iter = mSessionMap.begin(); iter != mSessionMap.end(); iter++)
+		{
+			if ((iter->second->getUserName().compare(username) == 0) &&
+					(iter->second->getDomain().compare(domain) == 0))
 			{
-				 WLog_Print(logger_SessionStore, WLOG_FATAL, "cannot init SessionStore critical section!");
+				session = iter->second;
+				break;
 			}
-			mNextSessionId = 1;
 		}
 
-		SessionStore::~SessionStore()
+		return session;
+	}
+
+	SessionPtr SessionStore::getFirstDisconnectedSessionUserName(
+			std::string username, std::string domain)
+	{
+		CSGuard guard(&mCSection);
+
+		SessionPtr session;
+		TSessionMap::iterator iter;
+
+		for (iter = mSessionMap.begin(); iter != mSessionMap.end();iter++)
 		{
-			DeleteCriticalSection(&mCSection);
-		}
-
-		SessionPtr SessionStore::getSession(long sessionId)
-		{
-			CSGuard guard(&mCSection);
-
-			if (mSessionMap.find(sessionId) != mSessionMap.end()) {
-				return mSessionMap[sessionId];
-			}
-
-			return SessionPtr();
-		}
-
-		SessionPtr SessionStore::createSession()
-		{
-			CSGuard guard(&mCSection);
-			SessionPtr session(new Session(mNextSessionId++));
-			mSessionMap[session->getSessionID()] = session;
-			return session;
-		}
-
-		SessionPtr SessionStore::getFirstSessionUserName(std::string username,std::string domain)
-		{
-			CSGuard guard(&mCSection);
-
-			SessionPtr session;
-			TSessionMap::iterator iter;
-
-			for (iter = mSessionMap.begin(); iter != mSessionMap.end(); iter++)
+			if((iter->second->getUserName().compare(username) == 0) &&
+					(iter->second->getDomain().compare(domain) == 0))
 			{
-				if ((iter->second->getUserName().compare(username) == 0) &&
-						(iter->second->getDomain().compare(domain) == 0))
-				{
+				if (iter->second->getConnectState() == WTSDisconnected) {
 					session = iter->second;
 					break;
 				}
 			}
-
-			return session;
 		}
 
-		SessionPtr SessionStore::getFirstDisconnectedSessionUserName(
-				std::string username, std::string domain)
-		{
-			CSGuard guard(&mCSection);
+		return session;
+	}
 
-			SessionPtr session;
-			TSessionMap::iterator iter;
+	int SessionStore::removeSession(long sessionId)
+	{
+		CSGuard guard(&mCSection);
+		mSessionMap.erase(sessionId);
+		return 0;
+	}
 
-			for (iter = mSessionMap.begin(); iter != mSessionMap.end();iter++)
-			{
-				if((iter->second->getUserName().compare(username) == 0) &&
-						(iter->second->getDomain().compare(domain) == 0))
-				{
-					if (iter->second->getConnectState() == WTSDisconnected) {
-						session = iter->second;
-						break;
-					}
-				}
-			}
+	std::list<SessionPtr> SessionStore::getAllSessions()
+	{
+		CSGuard guard(&mCSection);
+		std::list<SessionPtr> list;
 
-			return session;
+		for (TSessionMap::const_iterator it = mSessionMap.begin(); it != mSessionMap.end(); ++it) {
+			list.push_back(it->second);
 		}
 
-		int SessionStore::removeSession(long sessionId)
-		{
-			CSGuard guard(&mCSection);
-			mSessionMap.erase(sessionId);
-			return 0;
-		}
-
-		std::list<SessionPtr> SessionStore::getAllSessions()
-		{
-			CSGuard guard(&mCSection);
-			std::list<SessionPtr> list;
-
-			for (TSessionMap::const_iterator it = mSessionMap.begin(); it != mSessionMap.end(); ++it) {
-				list.push_back(it->second);
-			}
-
-			return list;
-		}
+		return list;
 	}
 }
 
