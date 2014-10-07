@@ -29,8 +29,8 @@ namespace freerds
 	CallOutLogOffUserSession::CallOutLogOffUserSession()
 	: m_RequestId(FDSAPI_LOGOFF_USER_REQUEST_ID), m_ResponseId(FDSAPI_LOGOFF_USER_RESPONSE_ID)
 	{
-		mConnectionId = 0;
-		mLoggedOff = false;
+		m_ConnectionId = 0;
+		m_LoggedOff = false;
 	};
 
 	CallOutLogOffUserSession::~CallOutLogOffUserSession()
@@ -47,7 +47,7 @@ namespace freerds
 	{
 		wStream* s;
 
-		m_Request.ConnectionId = mConnectionId;
+		m_Request.ConnectionId = m_ConnectionId;
 
 		s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
 
@@ -68,18 +68,18 @@ namespace freerds
 
 		freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
 
-		mLoggedOff = true;
+		m_LoggedOff = true;
 
 		freerds_rpc_msg_free(m_RequestId, &m_Request);
 
 		return 0;
 	};
 
-	void CallOutLogOffUserSession::setConnectionId(long connectionId) {
-		mConnectionId = connectionId;
+	void CallOutLogOffUserSession::setConnectionId(UINT32 connectionId) {
+		m_ConnectionId = connectionId;
 	}
 
 	bool CallOutLogOffUserSession::isLoggedOff() {
-		return mLoggedOff;
+		return m_LoggedOff;
 	}
 }

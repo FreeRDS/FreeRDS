@@ -34,27 +34,30 @@ namespace freerds
 
 	void TaskEndSession::run()
 	{
-		long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+		UINT32 connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(m_SessionId);
 
 		if (connectionId == 0)
 		{
-			// no connection found for this session ... just shut down!
 			stopSession();
 		}
 		else
 		{
 			CallOutLogOffUserSession logoffSession;
+
 			logoffSession.setConnectionId(connectionId);
+
 			APP_CONTEXT.getRpcOutgoingQueue()->addElement(&logoffSession);
 			WaitForSingleObject(logoffSession.getAnswerHandle(),INFINITE);
 
 			if (logoffSession.getResult() == 0)
 			{
-				// no error
-				if (logoffSession.isLoggedOff()) {
+				if (logoffSession.isLoggedOff())
+				{
 					stopSession();
 					APP_CONTEXT.getConnectionStore()->removeConnection(connectionId);
-				} else {
+				}
+				else
+				{
 					WLog_Print(logger_EndSessionTask, WLOG_ERROR, "CallOutLogOffUserSession reported that logoff in freerds was not successful!");
 				}
 			}
@@ -66,22 +69,22 @@ namespace freerds
 		}
 	}
 
-	void TaskEndSession::setSessionId(long sessionId) {
-		mSessionId = sessionId;
+	void TaskEndSession::setSessionId(UINT32 sessionId) {
+		m_SessionId = sessionId;
 	}
 
 	void TaskEndSession::stopSession()
 	{
-		SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
+		SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(m_SessionId);
 
 		if (session)
 		{
 			session->stopModule();
-			APP_CONTEXT.getSessionStore()->removeSession(mSessionId);
+			APP_CONTEXT.getSessionStore()->removeSession(m_SessionId);
 		}
 		else
 		{
-			WLog_Print(logger_EndSessionTask, WLOG_ERROR, "session for id %d was not found!",mSessionId);
+			WLog_Print(logger_EndSessionTask, WLOG_ERROR, "session for id %d was not found!", m_SessionId);
 		}
 	}
 }

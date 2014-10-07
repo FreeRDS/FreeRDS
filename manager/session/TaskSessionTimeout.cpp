@@ -66,15 +66,15 @@ namespace freerds
 					{
 						//currentSession->getUserName()
 						if (!APP_CONTEXT.getPropertyManager()->getPropertyNumber("session.timeout", &timeout)) {
-							WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "session.timeout was not found for session %d, using value of 0", currentSession->getSessionID());
+							WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "session.timeout was not found for session %d, using value of 0", currentSession->getSessionId());
 							timeout = 0;
 						}
 
 						if ((timeout >= 0) &&(((currentTime - currentSession->getConnectStateChangeTime()).ticks()) / ((boost::posix_time::time_duration::ticks_per_second() * 60)) >= timeout)) {
 							// shutdown current Session
-							WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "Session with sessionId %d from user %s is stopped after %d minutes after the disconnect. ",currentSession->getSessionID(),currentSession->getUserName().c_str(),timeout);
+							WLog_Print(logger_TaskSessionTimeout, WLOG_INFO, "Session with sessionId %d from user %s is stopped after %d minutes after the disconnect. ",currentSession->getSessionId(),currentSession->getUserName().c_str(),timeout);
 							TaskEndSessionPtr task = TaskEndSessionPtr(new TaskEndSession());
-							task->setSessionId(currentSession->getSessionID());
+							task->setSessionId(currentSession->getSessionId());
 							APP_CONTEXT.addTask(task);
 						}
 					}

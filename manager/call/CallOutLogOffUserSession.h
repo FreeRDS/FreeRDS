@@ -35,12 +35,12 @@ namespace freerds
 		virtual int encodeRequest();
 		virtual int decodeResponse();
 
-		void setConnectionId(long connectionId);
+		void setConnectionId(UINT32 connectionId);
 		bool isLoggedOff();
 
 	private:
-		long mConnectionId;
-		bool mLoggedOff;
+		UINT32 m_ConnectionId;
+		bool m_LoggedOff;
 
 		UINT32 m_RequestId;
 		FDSAPI_LOGOFF_USER_REQUEST m_Request;

@@ -85,7 +85,7 @@ namespace freerds
 
 	int CallInAuthenticateUser::authenticateUser()
 	{
-		long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+		UINT32 connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
 		ConnectionPtr currentConnection = APP_CONTEXT.getConnectionStore()->getConnection(connectionId);
 
 		if (currentConnection == NULL) {
@@ -133,7 +133,7 @@ namespace freerds
 			}
 			std::string moduleConfigName;
 
-			if (!APP_CONTEXT.getPropertyManager()->getPropertyString("module",moduleConfigName)) {
+			if (!APP_CONTEXT.getPropertyManager()->getPropertyString("module", moduleConfigName)) {
 				moduleConfigName = "X11";
 			}
 			currentSession->setModuleConfigName(moduleConfigName);
@@ -143,8 +143,8 @@ namespace freerds
 			currentSession->setConnectState(WTSConnectQuery);
 		}
 
-		long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
-		APP_CONTEXT.getConnectionStore()->getOrCreateConnection(connectionId)->setAbout2SwitchSessionId(currentSession->getSessionID());
+		UINT32 connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+		APP_CONTEXT.getConnectionStore()->getOrCreateConnection(connectionId)->setAbout2SwitchSessionId(currentSession->getSessionId());
 
 		if (currentSession->getConnectState() == WTSDown)
 		{
@@ -161,7 +161,7 @@ namespace freerds
 		switchToTask->setConnectionId(connectionId);
 		switchToTask->setServiceEndpoint(currentSession->getPipeName());
 		switchToTask->setOldSessionId(mSessionId);
-		switchToTask->setNewSessionId(currentSession->getSessionID());
+		switchToTask->setNewSessionId(currentSession->getSessionId());
 		APP_CONTEXT.addTask(switchToTask);
 
 		return 0;

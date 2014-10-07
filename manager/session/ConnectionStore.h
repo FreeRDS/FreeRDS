@@ -32,8 +32,8 @@
 
 namespace freerds
 {
-	typedef std::map<long , ConnectionPtr> TConnectionMap;
-	typedef std::pair<long, ConnectionPtr> TConnectionPair;
+	typedef std::map<UINT32, ConnectionPtr> TConnectionMap;
+	typedef std::pair<UINT32, ConnectionPtr> TConnectionPair;
 
 	class ConnectionStore
 	{
@@ -41,17 +41,17 @@ namespace freerds
 		ConnectionStore();
 		~ConnectionStore();
 
-		ConnectionPtr getOrCreateConnection(long connectionID);
-		ConnectionPtr getConnection(long connectionID);
-		int removeConnection(long connectionID);
+		ConnectionPtr getOrCreateConnection(UINT32 connectionId);
+		ConnectionPtr getConnection(UINT32 connectionId);
+		int removeConnection(UINT32 connectionId);
 
-		long getConnectionIdForSessionId(long mSessionId);
+		UINT32 getConnectionIdForSessionId(UINT32 sessionId);
 
 		void reset();
 
 	private:
-		TConnectionMap mConnectionMap;
-		CRITICAL_SECTION mCSection;
+		TConnectionMap m_ConnectionMap;
+		CRITICAL_SECTION m_CSection;
 	};
 }
 

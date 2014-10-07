@@ -30,7 +30,7 @@
 
 namespace freerds
 {
-	int CallBacks::shutdown(long sessionId)
+	int CallBacks::shutdown(UINT32 sessionId)
 	{
 		TaskModuleShutdownPtr task = TaskModuleShutdownPtr(new TaskModuleShutdown());
 		task->setSessionId(sessionId);

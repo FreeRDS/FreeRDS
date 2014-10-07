@@ -42,12 +42,13 @@ namespace freerds
 {
 	static wLog* logger_Session= WLog_Get("freerds.Session");
 
-	Session::Session(long sessionID): mSessionID(sessionID),
-			mSessionStarted(false), mpEnvBlock(NULL),
-			mCurrentState(WTSDown), mUserToken(NULL),
-			mCurrentModuleContext(NULL), mAuthSession(false),
-			mClientDisplayColorDepth(0), mClientDisplayWidth(0), mClientDisplayHeight(0),
-			mClientHardwareId(0), mClientBuildNumber(0), mClientProductId(0), mClientProtocolType(0)
+	Session::Session(UINT32 sessionId)
+	: m_SessionId(sessionId),
+	  mSessionStarted(false), mpEnvBlock(NULL),
+	  mCurrentState(WTSDown), mUserToken(NULL),
+	  mCurrentModuleContext(NULL), mAuthSession(false),
+	  mClientDisplayColorDepth(0), mClientDisplayWidth(0), mClientDisplayHeight(0),
+	  mClientHardwareId(0), mClientBuildNumber(0), mClientProductId(0), mClientProtocolType(0)
 	{
 		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
 		{
@@ -56,7 +57,7 @@ namespace freerds
 
 		// Fire a session created event.
 		FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
-		FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_CREATE);
+		FDSApiServer->fireSessionEvent(m_SessionId, WTS_SESSION_CREATE);
 	}
 
 	Session::~Session()
@@ -66,7 +67,7 @@ namespace freerds
 
 		// Fire a session terminated event.
 		FDSApiServer* FDSApiServer = APP_CONTEXT.getFDSApiServer();
-		FDSApiServer->fireSessionEvent(mSessionID, WTS_SESSION_TERMINATE);
+		FDSApiServer->fireSessionEvent(m_SessionId, WTS_SESSION_TERMINATE);
 	}
 
 	std::string Session::getDomain()
@@ -99,9 +100,9 @@ namespace freerds
 		mWinStationName = winStationName;
 	}
 
-	UINT32 Session::getSessionID()
+	UINT32 Session::getSessionId()
 	{
-		return mSessionID;
+		return m_SessionId;
 	}
 
 	std::string Session::getClientName()
@@ -341,7 +342,7 @@ namespace freerds
 		}
 
 		mCurrentModuleContext = currentModule->newContext();
-		mCurrentModuleContext->sessionId = mSessionID;
+		mCurrentModuleContext->sessionId = m_SessionId;
 
 		mCurrentModuleContext->userName = _strdup(mUsername.c_str());
 
@@ -427,7 +428,7 @@ namespace freerds
 			if (stateChange != 0)
 			{
 				// Fire a session state change event.
-				FDSApiServer->fireSessionEvent(mSessionID, stateChange);
+				FDSApiServer->fireSessionEvent(m_SessionId, stateChange);
 			}
 		}
 	}

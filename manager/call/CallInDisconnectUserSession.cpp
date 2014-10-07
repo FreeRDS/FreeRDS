@@ -104,7 +104,7 @@ namespace freerds
 
 		if (timeout == 0)  {
 			TaskEndSessionPtr task = TaskEndSessionPtr(new TaskEndSession());
-			task->setSessionId(currentSession->getSessionID());
+			task->setSessionId(currentSession->getSessionId());
 			APP_CONTEXT.addTask(task);
 		}
 

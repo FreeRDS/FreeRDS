@@ -174,7 +174,7 @@ namespace freerds
 			currentSession->setModuleConfigName(moduleConfigName);
 		}
 
-		currentConnection->setSessionId(currentSession->getSessionID());
+		currentConnection->setSessionId(currentSession->getSessionId());
 
 		currentConnection->getClientInformation()->with = mWidth;
 		currentConnection->getClientInformation()->height = mHeight;
@@ -233,7 +233,7 @@ namespace freerds
 			return 1;
 		}
 
-		currentConnection->setSessionId(currentSession->getSessionID());
+		currentConnection->setSessionId(currentSession->getSessionId());
 
 		currentConnection->getClientInformation()->with = mWidth;
 		currentConnection->getClientInformation()->height = mHeight;

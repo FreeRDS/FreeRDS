@@ -30,8 +30,8 @@
 
 namespace freerds
 {
-	typedef std::map<long, SessionPtr> TSessionMap;
-	typedef std::pair<long, SessionPtr> TSessionPair;
+	typedef std::map<UINT32, SessionPtr> TSessionMap;
+	typedef std::pair<UINT32, SessionPtr> TSessionPair;
 
 	class SessionStore
 	{
@@ -39,17 +39,17 @@ namespace freerds
 		SessionStore();
 		~SessionStore();
 
-		SessionPtr getSession(long sessionId);
+		SessionPtr getSession(UINT32 sessionId);
 		SessionPtr getFirstSessionUserName(std::string username, std::string domain);
 		SessionPtr getFirstDisconnectedSessionUserName(std::string username, std::string domain);
 		SessionPtr createSession();
 		std::list<SessionPtr> getAllSessions();
-		int removeSession(long sessionId);
+		int removeSession(UINT32 sessionId);
 
 	private:
-		TSessionMap mSessionMap;
-		long mNextSessionId;
-		CRITICAL_SECTION mCSection;
+		TSessionMap m_SessionMap;
+		UINT32 m_NextSessionId;
+		CRITICAL_SECTION m_CSection;
 	};
 }
 

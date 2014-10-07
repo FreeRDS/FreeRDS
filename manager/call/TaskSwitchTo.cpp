@@ -34,17 +34,18 @@ namespace freerds
 	void TaskSwitchTo::run()
 	{
 		CallOutSwitchTo switchToCall;
-		switchToCall.setServiceEndpoint(mServiceEndpoint);
-		switchToCall.setConnectionId(mConnectionId);
+
+		switchToCall.setServiceEndpoint(m_ServiceEndpoint);
+		switchToCall.setConnectionId(m_ConnectionId);
 
 		APP_CONTEXT.getRpcOutgoingQueue()->addElement(&switchToCall);
 		WaitForSingleObject(switchToCall.getAnswerHandle(), INFINITE);
 
 		if (switchToCall.getResult() != 0) {
-			WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo answer: RPC error %d!",switchToCall.getResult());
+			WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo answer: RPC error %d!", switchToCall.getResult());
 			return cleanUpOnError();
 		}
-		// first unpack the answer
+
 		if (switchToCall.decodeResponse()) {
 			//
 			WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: decoding of switchto answer failed!");
@@ -56,18 +57,18 @@ namespace freerds
 		}
 		SessionPtr currentSession;
 
-		if (mOldSessionId != 0)
+		if (m_OldSessionId != 0)
 		{
-			currentSession = APP_CONTEXT.getSessionStore()->getSession(mOldSessionId);
+			currentSession = APP_CONTEXT.getSessionStore()->getSession(m_OldSessionId);
 
 			if (currentSession) {
 				currentSession->stopModule();
-				APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
-				WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: session with sessionId %d was stopped!",mOldSessionId);
+				APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionId());
+				WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: session with sessionId %d was stopped!", m_OldSessionId);
 			}
 			else
 			{
-				WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mOldSessionId);
+				WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!", m_OldSessionId);
 			}
 		}
 		else
@@ -75,35 +76,35 @@ namespace freerds
 			WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no oldSessionId was set!");
 		}
 
-		ConnectionPtr connection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+		ConnectionPtr connection = APP_CONTEXT.getConnectionStore()->getConnection(m_ConnectionId);
 
 		if (connection) {
-			connection->setSessionId(mNewSessionId);
+			connection->setSessionId(m_NewSessionId);
 			connection->setAbout2SwitchSessionId(0);
 		}
 
 		return;
 	}
 
-	void TaskSwitchTo::setConnectionId(long connectionId) {
-		mConnectionId = connectionId;
+	void TaskSwitchTo::setConnectionId(UINT32 connectionId) {
+		m_ConnectionId = connectionId;
 	}
 
 	void TaskSwitchTo::setServiceEndpoint(std::string serviceEndpoint) {
-		mServiceEndpoint = serviceEndpoint;
+		m_ServiceEndpoint = serviceEndpoint;
 	}
 
-	void TaskSwitchTo::setOldSessionId(long sessionId) {
-		mOldSessionId = sessionId;
+	void TaskSwitchTo::setOldSessionId(UINT32 sessionId) {
+		m_OldSessionId = sessionId;
 	}
 
-	void TaskSwitchTo::setNewSessionId(long sessionId) {
-		mNewSessionId = sessionId;
+	void TaskSwitchTo::setNewSessionId(UINT32 sessionId) {
+		m_NewSessionId = sessionId;
 	}
 
 	void TaskSwitchTo::cleanUpOnError()
 	{
-		SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(mNewSessionId);
+		SessionPtr currentSession = APP_CONTEXT.getSessionStore()->getSession(m_NewSessionId);
 
 		if (currentSession)
 		{
@@ -111,8 +112,8 @@ namespace freerds
 			{
 				// this was a new session for the connection, remove it
 				currentSession->stopModule();
-				APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionID());
-				WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: cleaning up session with sessionId %d",mNewSessionId);
+				APP_CONTEXT.getSessionStore()->removeSession(currentSession->getSessionId());
+				WLog_Print(logger_taskSwitchTo, WLOG_INFO, "TaskSwitchTo: cleaning up session with sessionId %d", m_NewSessionId);
 			}
 			else if (currentSession->getConnectState() == WTSConnectQuery)
 			{
@@ -122,10 +123,10 @@ namespace freerds
 		}
 		else
 		{
-			WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!",mNewSessionId);
+			WLog_Print(logger_taskSwitchTo, WLOG_ERROR, "TaskSwitchTo: no session was found for sessionId %d!", m_NewSessionId);
 		}
 
-		ConnectionPtr connection = APP_CONTEXT.getConnectionStore()->getConnection(mConnectionId);
+		ConnectionPtr connection = APP_CONTEXT.getConnectionStore()->getConnection(m_ConnectionId);
 
 		if (connection) {
 			connection->setAbout2SwitchSessionId(0);

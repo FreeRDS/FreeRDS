@@ -182,7 +182,7 @@ namespace freerds
 
 	void* Executor::execTask(void* arg)
 	{
-		TaskPtr *taskptr = static_cast<TaskPtr*>(arg);
+		TaskPtr* taskptr = static_cast<TaskPtr*>(arg);
 		TaskPtr task = *taskptr;
 		task->informStarted();
 
@@ -204,7 +204,7 @@ namespace freerds
 
 	bool Executor::waitThreadHandles(const HANDLE value) const
 	{
-		if (WaitForSingleObject(value,INFINITE) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(value, INFINITE) == WAIT_OBJECT_0)
 			return true;
 
 		return false;

@@ -30,8 +30,8 @@ namespace freerds
 	: m_RequestId(FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID),
 	  m_ResponseId(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID)
 	{
-		mConnectionId = 0;
-		mSuccess = false;
+		m_ConnectionId = 0;
+		m_Success = false;
 	};
 
 	CallOutSwitchTo::~CallOutSwitchTo()
@@ -48,8 +48,8 @@ namespace freerds
 	{
 		wStream* s;
 
-		m_Request.ConnectionId = mConnectionId;
-		m_Request.ServiceEndpoint = (char*) mServiceEndpoint.c_str();
+		m_Request.ConnectionId = m_ConnectionId;
+		m_Request.ServiceEndpoint = (char*) m_ServiceEndpoint.c_str();
 
 		s = freerds_rpc_msg_pack(m_RequestId, &m_Request, NULL);
 
@@ -70,23 +70,23 @@ namespace freerds
 
 		freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
 
-		mSuccess = true;
+		m_Success = true;
 
 		freerds_rpc_msg_free(m_ResponseId, &m_Response);
 
 		return 0;
 	}
 
-	void CallOutSwitchTo::setConnectionId(long connectionId) {
-		mConnectionId = connectionId;
+	void CallOutSwitchTo::setConnectionId(UINT32 connectionId) {
+		m_ConnectionId = connectionId;
 	}
 
 	void CallOutSwitchTo::setServiceEndpoint(std::string serviceEndpoint) {
-		mServiceEndpoint = serviceEndpoint;
+		m_ServiceEndpoint = serviceEndpoint;
 	}
 
 	bool CallOutSwitchTo::isSuccess() {
-		return mSuccess;
+		return m_Success;
 	}
 }
 

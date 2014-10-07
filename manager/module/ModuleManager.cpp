@@ -43,6 +43,7 @@ namespace freerds
 	static wLog* logger_ModuleManager = WLog_Get("freerds.ModuleManager");
 
 	ModuleManager::ModuleManager()
+	: defaultModuleName(NULL), defaultGreeterModuleName(NULL)
 	{
 		this->pathSeparator = PathGetSeparatorA(PATH_STYLE_NATIVE);
 	}
@@ -113,6 +114,7 @@ namespace freerds
 			 }
 		 }
 		 while (FindNextFile(hFind, &FindFileData) != 0);
+
 		 return 0;
 	}
 

@@ -346,7 +346,7 @@ namespace freerds
 			if (currentSession->isAuthSession())
 			{
 				currentSession->stopModule();
-				getSessionStore()->removeSession(currentSession->getSessionID());
+				getSessionStore()->removeSession(currentSession->getSessionId());
 			}
 			else
 			{

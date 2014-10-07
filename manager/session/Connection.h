@@ -49,30 +49,30 @@ namespace freerds
 		std::string getDomain();
 		std::string getUserName();
 
-		void setSessionId(long sessionId);
-		long getSessionId();
+		void setSessionId(UINT32 sessionId);
+		UINT32 getSessionId();
 
-		long getAbout2SwitchSessionId();
-		void setAbout2SwitchSessionId(long switchSessionId);
+		UINT32 getAbout2SwitchSessionId();
+		void setAbout2SwitchSessionId(UINT32 switchSessionId);
 
 		pCLIENT_INFORMATION getClientInformation();
 
-		long getConnectionId();
+		UINT32 getConnectionId();
 
 		int authenticateUser(std::string username, std::string domain, std::string password);
 
 	private:
-		DWORD mConnectionId;
-		DWORD mSessionId;
-		DWORD mAbout2SwitchSessionId;
+		UINT32 m_ConnectionId;
+		UINT32 m_SessionId;
+		UINT32 m_About2SwitchSessionId;
 
-		int mAuthStatus;
+		int m_AuthStatus;
 
-		CLIENT_INFORMATION mClientInformation;
+		CLIENT_INFORMATION m_ClientInformation;
 
-		std::string mUsername;
-		std::string mDomain;
-		CRITICAL_SECTION mCSection;
+		std::string m_Username;
+		std::string m_Domain;
+		CRITICAL_SECTION m_CSection;
 	};
 
 	typedef boost::shared_ptr<Connection> ConnectionPtr;

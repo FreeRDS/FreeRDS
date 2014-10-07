@@ -33,7 +33,7 @@ namespace freerds
 
 	void TaskModuleShutdown::run()
 	{
-		long connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(mSessionId);
+		UINT32 connectionId = APP_CONTEXT.getConnectionStore()->getConnectionIdForSessionId(m_SessionId);
 
 		if (connectionId == 0)
 		{
@@ -65,22 +65,22 @@ namespace freerds
 		}
 	}
 
-	void TaskModuleShutdown::setSessionId(long sessionId) {
-		mSessionId = sessionId;
+	void TaskModuleShutdown::setSessionId(UINT32 sessionId) {
+		m_SessionId = sessionId;
 	}
 
 	void TaskModuleShutdown::stopSession()
 	{
-		SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(mSessionId);
+		SessionPtr session = APP_CONTEXT.getSessionStore()->getSession(m_SessionId);
 
 		if (session)
 		{
 			session->stopModule();
-			APP_CONTEXT.getSessionStore()->removeSession(mSessionId);
+			APP_CONTEXT.getSessionStore()->removeSession(m_SessionId);
 		}
 		else
 		{
-			WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "session for id %d was not found!",mSessionId);
+			WLog_Print(logger_TaskModuleShutdown, WLOG_ERROR, "session for id %d was not found!", m_SessionId);
 		}
 	}
 }

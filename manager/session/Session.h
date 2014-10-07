@@ -38,7 +38,7 @@ namespace freerds
 	class Session
 	{
 	public:
-		Session(long sessionID);
+		Session(UINT32 sessionId);
 		~Session();
 
 		std::string getDomain();
@@ -47,7 +47,7 @@ namespace freerds
 		void setUserName(std::string username);
 		std::string getWinStationName();
 		void setWinStationName(std::string winStationName);
-		UINT32 getSessionID();
+		UINT32 getSessionId();
 		std::string getPipeName();
 
 		void setClientName(std::string name);
@@ -94,7 +94,7 @@ namespace freerds
 
 		char* dupEnv(char* orgBlock);
 
-		UINT32 mSessionID;
+		UINT32 m_SessionId;
 		bool mAuthSession;
 		bool mSessionStarted;
 

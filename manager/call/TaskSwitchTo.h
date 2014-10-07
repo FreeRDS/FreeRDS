@@ -31,18 +31,19 @@ namespace freerds
 	public:
 		virtual void run();
 
-		void setConnectionId(long connectionId);
+		void setConnectionId(UINT32 connectionId);
 		void setServiceEndpoint(std::string serviceEndpoint);
 
-		void setOldSessionId(long sessionId);
-		void setNewSessionId(long sessionId);
+		void setOldSessionId(UINT32 sessionId);
+		void setNewSessionId(UINT32 sessionId);
 
 	private:
 		void cleanUpOnError();
-		long mConnectionId;
-		std::string mServiceEndpoint;
-		long mOldSessionId;
-		long mNewSessionId;
+
+		UINT32 m_ConnectionId;
+		UINT32 m_OldSessionId;
+		UINT32 m_NewSessionId;
+		std::string m_ServiceEndpoint;
 	};
 
 	typedef boost::shared_ptr<TaskSwitchTo> TaskSwitchToPtr;

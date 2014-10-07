@@ -33,24 +33,24 @@ namespace freerds
 
 	SessionStore::SessionStore()
 	{
-		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
+		if (!InitializeCriticalSectionAndSpinCount(&m_CSection, 0x00000400))
 		{
 			 WLog_Print(logger_SessionStore, WLOG_FATAL, "cannot init SessionStore critical section!");
 		}
-		mNextSessionId = 1;
+		m_NextSessionId = 1;
 	}
 
 	SessionStore::~SessionStore()
 	{
-		DeleteCriticalSection(&mCSection);
+		DeleteCriticalSection(&m_CSection);
 	}
 
-	SessionPtr SessionStore::getSession(long sessionId)
+	SessionPtr SessionStore::getSession(UINT32 sessionId)
 	{
-		CSGuard guard(&mCSection);
+		CSGuard guard(&m_CSection);
 
-		if (mSessionMap.find(sessionId) != mSessionMap.end()) {
-			return mSessionMap[sessionId];
+		if (m_SessionMap.find(sessionId) != m_SessionMap.end()) {
+			return m_SessionMap[sessionId];
 		}
 
 		return SessionPtr();
@@ -58,20 +58,20 @@ namespace freerds
 
 	SessionPtr SessionStore::createSession()
 	{
-		CSGuard guard(&mCSection);
-		SessionPtr session(new Session(mNextSessionId++));
-		mSessionMap[session->getSessionID()] = session;
+		CSGuard guard(&m_CSection);
+		SessionPtr session(new Session(m_NextSessionId++));
+		m_SessionMap[session->getSessionId()] = session;
 		return session;
 	}
 
 	SessionPtr SessionStore::getFirstSessionUserName(std::string username,std::string domain)
 	{
-		CSGuard guard(&mCSection);
+		CSGuard guard(&m_CSection);
 
 		SessionPtr session;
 		TSessionMap::iterator iter;
 
-		for (iter = mSessionMap.begin(); iter != mSessionMap.end(); iter++)
+		for (iter = m_SessionMap.begin(); iter != m_SessionMap.end(); iter++)
 		{
 			if ((iter->second->getUserName().compare(username) == 0) &&
 					(iter->second->getDomain().compare(domain) == 0))
@@ -87,12 +87,12 @@ namespace freerds
 	SessionPtr SessionStore::getFirstDisconnectedSessionUserName(
 			std::string username, std::string domain)
 	{
-		CSGuard guard(&mCSection);
+		CSGuard guard(&m_CSection);
 
 		SessionPtr session;
 		TSessionMap::iterator iter;
 
-		for (iter = mSessionMap.begin(); iter != mSessionMap.end();iter++)
+		for (iter = m_SessionMap.begin(); iter != m_SessionMap.end();iter++)
 		{
 			if((iter->second->getUserName().compare(username) == 0) &&
 					(iter->second->getDomain().compare(domain) == 0))
@@ -107,19 +107,19 @@ namespace freerds
 		return session;
 	}
 
-	int SessionStore::removeSession(long sessionId)
+	int SessionStore::removeSession(UINT32 sessionId)
 	{
-		CSGuard guard(&mCSection);
-		mSessionMap.erase(sessionId);
+		CSGuard guard(&m_CSection);
+		m_SessionMap.erase(sessionId);
 		return 0;
 	}
 
 	std::list<SessionPtr> SessionStore::getAllSessions()
 	{
-		CSGuard guard(&mCSection);
+		CSGuard guard(&m_CSection);
 		std::list<SessionPtr> list;
 
-		for (TSessionMap::const_iterator it = mSessionMap.begin(); it != mSessionMap.end(); ++it) {
+		for (TSessionMap::const_iterator it = m_SessionMap.begin(); it != m_SessionMap.end(); ++it) {
 			list.push_back(it->second);
 		}
 

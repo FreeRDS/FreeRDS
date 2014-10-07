@@ -73,7 +73,7 @@ namespace freerds
 		}
 
 		// Check for an associated connection.
-		long connectionId = connectionStore->getConnectionIdForSessionId(sessionId);
+		UINT32 connectionId = connectionStore->getConnectionIdForSessionId(sessionId);
 		ConnectionPtr connection = connectionStore->getConnection(connectionId);
 		if (!connection)
 		{
@@ -158,7 +158,7 @@ namespace freerds
 		}
 		userSession->setModuleConfigName(moduleConfigName);
 
-		connection->setSessionId(userSession->getSessionID());
+		connection->setSessionId(userSession->getSessionId());
 
 		connection->getClientInformation()->with = userSession->getClientDisplayWidth();
 		connection->getClientInformation()->height = userSession->getClientDisplayHeight();
@@ -183,14 +183,14 @@ namespace freerds
 
 		WLog_Print(logger_FDSApiHandler, WLOG_INFO,
 			"Switching from session %d to session %d",
-			sessionId, userSession->getSessionID());
+			sessionId, userSession->getSessionId());
 
 		TaskSwitchToPtr switchToTask;
 		switchToTask = TaskSwitchToPtr(new TaskSwitchTo());
 		switchToTask->setConnectionId(connectionId);
 		switchToTask->setServiceEndpoint(userSession->getPipeName());
 		switchToTask->setOldSessionId(sessionId);
-		switchToTask->setNewSessionId(userSession->getSessionID());
+		switchToTask->setNewSessionId(userSession->getSessionId());
 		APP_CONTEXT.addTask(switchToTask);
 
 		// The user session is now active.
@@ -301,7 +301,7 @@ namespace freerds
 
 		for (index = 0; index < count; index++)
 		{
-			list.at(index).sessionId = (*session)->getSessionID();
+			list.at(index).sessionId = (*session)->getSessionId();
 			list.at(index).winStationName = (*session)->getWinStationName();
 			list.at(index).connectState = (*session)->getConnectState();
 			session++;
@@ -340,7 +340,7 @@ namespace freerds
 			switch (infoClass)
 			{
 				case WTSSessionId:
-					_return.infoValue.int32Value = session->getSessionID();
+					_return.infoValue.int32Value = session->getSessionId();
 					_return.returnValue = true;
 					break;
 

@@ -28,10 +28,11 @@ namespace freerds
 	{
 	public:
 		virtual void run();
-		void setSessionId(long sessionId);
+		void setSessionId(UINT32 sessionId);
+
 	private:
 		void stopSession();
-		long mSessionId;
+		UINT32 m_SessionId;
 	};
 
 	typedef boost::shared_ptr<TaskModuleShutdown> TaskModuleShutdownPtr;

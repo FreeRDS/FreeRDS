@@ -25,7 +25,7 @@ namespace freerds
 	class CallBacks
 	{
 	public:
-		static int shutdown(long sessionId);
+		static int shutdown(UINT32 sessionId);
 	};
 }
 

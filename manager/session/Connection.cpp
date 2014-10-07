@@ -42,15 +42,15 @@ namespace freerds
 	static wLog* logger_Connection = WLog_Get("freerds.Connection");
 
 	Connection::Connection(DWORD connectionId)
-		: mConnectionId(connectionId), mSessionId(0),
-		  mAuthStatus(-1), mAbout2SwitchSessionId(0)
+		: m_ConnectionId(connectionId), m_SessionId(0),
+		  m_AuthStatus(-1), m_About2SwitchSessionId(0)
 	{
-		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
+		if (!InitializeCriticalSectionAndSpinCount(&m_CSection, 0x00000400))
 		{
 			 WLog_Print(logger_Connection, WLOG_FATAL, "cannot init SessionStore critical section!");
 		}
 
-		ZeroMemory(&mClientInformation, sizeof(mClientInformation));
+		ZeroMemory(&m_ClientInformation, sizeof(m_ClientInformation));
 	}
 
 	Connection::~Connection()
@@ -59,30 +59,30 @@ namespace freerds
 	}
 
 	std::string Connection::getDomain() {
-		return mDomain;
+		return m_Domain;
 	}
 
 	std::string Connection::getUserName() {
-		return mUsername;
+		return m_Username;
 	}
 
-	void Connection::setSessionId(long sessionId) {
-		mSessionId = sessionId;
+	void Connection::setSessionId(UINT32 sessionId) {
+		m_SessionId = sessionId;
 	}
 
-	long Connection::getSessionId() {
-		return mSessionId;
+	UINT32 Connection::getSessionId() {
+		return m_SessionId;
 	}
 
-	long Connection::getConnectionId() {
-		return mConnectionId;
+	UINT32 Connection::getConnectionId() {
+		return m_ConnectionId;
 	}
 
 	int Connection::authenticateUser(std::string username, std::string domain, std::string password)
 	{
-		CSGuard guard(&mCSection);
+		CSGuard guard(&m_CSection);
 
-		if (mAuthStatus == 0) {
+		if (m_AuthStatus == 0) {
 			// a Connection can only be authorized once
 			return -1;
 		}
@@ -99,29 +99,29 @@ namespace freerds
 			return 1;
 		}
 
-		mAuthStatus = auth->logonUser(username, domain, password);
+		m_AuthStatus = auth->logonUser(username, domain, password);
 
 		delete auth;
 
-		if (mAuthStatus == 0)
+		if (m_AuthStatus == 0)
 		{
-			mUsername = username;
-			mDomain = domain;
+			m_Username = username;
+			m_Domain = domain;
 		}
 
-		return mAuthStatus;
+		return m_AuthStatus;
 	}
 
 	pCLIENT_INFORMATION Connection::getClientInformation() {
-		return &mClientInformation;
+		return &m_ClientInformation;
 	}
 
-	long Connection::getAbout2SwitchSessionId() {
-		return mAbout2SwitchSessionId;
+	UINT32 Connection::getAbout2SwitchSessionId() {
+		return m_About2SwitchSessionId;
 	}
 
-	void Connection::setAbout2SwitchSessionId(long switchSessionId) {
-		mAbout2SwitchSessionId = switchSessionId;
+	void Connection::setAbout2SwitchSessionId(UINT32 switchSessionId) {
+		m_About2SwitchSessionId = switchSessionId;
 	}
 }
 

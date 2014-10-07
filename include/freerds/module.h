@@ -45,7 +45,7 @@ struct _RDS_MODULE_CONFIG_CALLBACKS
 };
 typedef struct _RDS_MODULE_CONFIG_CALLBACKS RDS_MODULE_CONFIG_CALLBACKS;
 
-typedef int (*pShutdown)(long sessionID);
+typedef int (*pShutdown)(UINT32 sessionId);
 
 struct _RDS_MODULE_STATUS_CALLBACKS
 {

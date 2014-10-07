@@ -37,15 +37,15 @@ namespace freerds
 		virtual int encodeRequest();
 		virtual int decodeResponse();
 
-		void setConnectionId(long connectionId);
+		void setConnectionId(UINT32 connectionId);
 		void setServiceEndpoint(std::string serviceEndpoint);
 
 		bool isSuccess();
 
 	private:
-		bool mSuccess;
-		long mConnectionId;
-		std::string mServiceEndpoint;
+		bool m_Success;
+		long m_ConnectionId;
+		std::string m_ServiceEndpoint;
 
 		UINT32 m_RequestId;
 		FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST m_Request;
