@@ -57,25 +57,6 @@ int freerds_set_bounds_rect(rdsConnection* connection, rdsRect* rect)
 	return 0;
 }
 
-int freerds_connection_init(rdsConnection* connection, rdpSettings* settings)
-{
-	connection->id = app_context_get_connectionid();
-	connection->settings = settings;
-
-	connection->bytesPerPixel = 4;
-
-	connection->FrameList = ListDictionary_New(TRUE);
-
-	return 0;
-}
-
-void freerds_connection_uninit(rdsConnection* connection)
-{
-	freerds_bitmap_encoder_free(connection->encoder);
-
-	ListDictionary_Free(connection->FrameList);
-}
-
 /**
  * Original XRDP stubbed interface
  */

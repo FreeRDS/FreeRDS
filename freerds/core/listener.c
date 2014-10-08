@@ -29,12 +29,79 @@
 #include <sys/select.h>
 #include <sys/signal.h>
 
-void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
+void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
-	freerds_connection_create(client);
+	FILE* fp = NULL;
+	rdpSettings* settings = client->settings;
+
+	settings->OsMajorType = OSMAJORTYPE_UNIX;
+	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
+	settings->ColorDepth = 32;
+	settings->RemoteFxCodec = TRUE;
+	settings->BitmapCacheV3Enabled = TRUE;
+	settings->FrameMarkerCommandEnabled = TRUE;
+	settings->SurfaceFrameMarkerEnabled = TRUE;
+
+	settings->RdpKeyFile = strdup("freerds.pem");
+
+	fp = fopen(settings->RdpKeyFile, "rb");
+
+	if (!fp)
+	{
+		/*
+		 * This is the first time FreeRDS has been executed and
+		 * the RSA keys do not exist.  Go ahead and create them
+		 * using the OpenSSL command line utilities.
+		 */
+
+		char command[256];
+
+		sprintf(command, "openssl genrsa -out %s 1024", settings->RdpKeyFile);
+		system(command);
+	}
+	else
+	{
+		fclose(fp);
+	}
+
+	context->id = app_context_get_connectionid();
+	context->settings = settings;
+
+	context->bytesPerPixel = 4;
+
+	context->FrameList = ListDictionary_New(TRUE);
+
+	context->client = client;
+	context->vcm = WTSOpenServerA((LPSTR) client->context);
 }
 
-rdsListener* freerds_listener_create(void)
+void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
+{
+	freerds_bitmap_encoder_free(context->encoder);
+
+	ListDictionary_Free(context->FrameList);
+
+	WTSCloseServer((HANDLE) context->vcm);
+}
+
+void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
+{
+	rdsConnection* connection;
+
+	client->ContextSize = sizeof(rdsConnection);
+	client->ContextNew = (psPeerContextNew) freerds_peer_context_new;
+	client->ContextFree = (psPeerContextFree) freerds_peer_context_free;
+	freerdp_peer_context_new(client);
+
+	connection = (rdsConnection*) client->context;
+
+	connection->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	connection->notifications = MessageQueue_New(NULL);
+
+	connection->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) freerds_connection_main_thread, client, 0, NULL);
+}
+
+rdsListener* freerds_listener_new(void)
 {
 	freerdp_listener* listener;
 
@@ -44,7 +111,7 @@ rdsListener* freerds_listener_create(void)
 	return (rdsListener*) listener;
 }
 
-void freerds_listener_delete(rdsListener* self)
+void freerds_listener_free(rdsListener* self)
 {
 	freerdp_listener_free((freerdp_listener*) self);
 }

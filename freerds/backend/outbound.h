@@ -1,7 +1,7 @@
 /**
- * FreeRDP: A Remote Desktop Protocol Implementation
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-#ifndef FREERDS_NG_OUTBOUND_H
-#define FREERDS_NG_OUTBOUND_H
+#ifndef FREERDS_BACKEND_OUTBOUND_H
+#define FREERDS_BACKEND_OUTBOUND_H
 
 #include <freerds/backend.h>
 
-#endif /* FREERDS_OUTBOUND_H */
+#endif /* FREERDS_BACKEND_OUTBOUND_H */

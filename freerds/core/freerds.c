@@ -289,7 +289,8 @@ int main(int argc, char** argv)
 		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		/* end of daemonizing code */
 	}
-#ifndef WIN32
+
+#ifndef _WIN32
 	/* unbock required signals */
 	sigemptyset(&set);
 	sigaddset(&set, SIGINT);
@@ -298,7 +299,7 @@ int main(int argc, char** argv)
 	sigprocmask(SIG_UNBLOCK, &set, NULL);
 #endif
 
-	g_listen = freerds_listener_create();
+	g_listen = freerds_listener_new();
 
 	signal(SIGINT, freerds_shutdown);
 	signal(SIGTERM, freerds_shutdown);
@@ -313,7 +314,7 @@ int main(int argc, char** argv)
 	freerds_icp_start();
 
 	freerds_listener_main_loop(g_listen);
-	freerds_listener_delete(g_listen);
+	freerds_listener_free(g_listen);
 
 	CloseHandle(g_TermEvent);
 	freerds_icp_shutdown();

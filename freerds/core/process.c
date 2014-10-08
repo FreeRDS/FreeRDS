@@ -1,7 +1,7 @@
 /**
- * xrdp: A Remote Desktop Protocol server.
+ * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright (C) Jay Sorg 2004-2012
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * main rdp process
  */
 
 #ifdef HAVE_CONFIG_H
@@ -44,82 +42,6 @@
 #include "rpc.h"
 #include "channels.h"
 #include "app_context.h"
-
-void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
-{
-	rdpSettings* settings = client->settings;
-	FILE* fp = NULL;
-
-	settings->OsMajorType = OSMAJORTYPE_UNIX;
-	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
-	settings->ColorDepth = 32;
-	settings->RemoteFxCodec = TRUE;
-	settings->BitmapCacheV3Enabled = TRUE;
-	settings->FrameMarkerCommandEnabled = TRUE;
-	settings->SurfaceFrameMarkerEnabled = TRUE;
-
-	settings->RdpKeyFile = strdup("freerds.pem");
-
-	fp = fopen(settings->RdpKeyFile, "rb");
-
-	if (!fp)
-	{
-		/*
-		 * This is the first time FreeRDS has been executed and
-		 * the RSA keys do not exist.  Go ahead and create them
-		 * using the OpenSSL command line utilities.
-		 */
-
-		char command[256];
-
-		sprintf(command, "openssl genrsa -out %s 1024", settings->RdpKeyFile);
-		system(command);
-	}
-	else
-	{
-		fclose(fp);
-	}
-
-	freerds_connection_init(context, settings);
-
-	context->client = client;
-	context->vcm = WTSOpenServerA((LPSTR) client->context);
-}
-
-void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
-{
-	freerds_connection_uninit(context);
-	WTSCloseServer((HANDLE) context->vcm);
-}
-
-rdsConnection* freerds_connection_create(freerdp_peer* client)
-{
-	rdsConnection* xfp;
-
-	client->ContextSize = sizeof(rdsConnection);
-	client->ContextNew = (psPeerContextNew) freerds_peer_context_new;
-	client->ContextFree = (psPeerContextFree) freerds_peer_context_free;
-	freerdp_peer_context_new(client);
-
-	xfp = (rdsConnection*) client->context;
-
-	xfp->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	xfp->notifications = MessageQueue_New(NULL);
-
-	xfp->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) freerds_connection_main_thread, client, 0, NULL);
-
-	return xfp;
-}
-
-void freerds_connection_delete(rdsConnection* self)
-{
-	CloseHandle(self->TermEvent);
-}
-
-HANDLE freerds_connection_get_term_event(rdsConnection* self)
-{
-	return self->TermEvent;
-}
 
 BOOL freerds_peer_capabilities(freerdp_peer* client)
 {

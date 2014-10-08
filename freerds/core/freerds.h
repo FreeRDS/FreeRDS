@@ -1,7 +1,7 @@
 /**
  * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,21 +33,19 @@
 
 #include <freerds/backend.h>
 
-typedef struct xrdp_listener rdsListener;
+typedef struct freerdp_listener rdsListener;
 
 #include "core.h"
+#include "app_context.h"
 
 int g_is_term(void);
-void g_set_term(int in_val);
+void g_set_term(int value);
 HANDLE g_get_term_event(void);
 
-rdsConnection* freerds_connection_create(freerdp_peer* client);
-void freerds_connection_delete(rdsConnection* self);
-HANDLE freerds_connection_get_term_event(rdsConnection* self);
 void* freerds_connection_main_thread(void* arg);
 
-rdsListener* freerds_listener_create(void);
-void freerds_listener_delete(rdsListener* self);
+rdsListener* freerds_listener_new(void);
+void freerds_listener_free(rdsListener* self);
 int freerds_listener_main_loop(rdsListener* self);
 
 rdsBackendConnector* freerds_connector_new(rdsConnection* connection);
