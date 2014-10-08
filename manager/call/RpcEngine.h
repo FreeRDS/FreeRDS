@@ -55,29 +55,27 @@ namespace freerds
 		int readPayload();
 		int processData();
 		int send(Call * call);
-		int sendError(uint32_t callID, uint32_t callType);
+		int sendError(UINT32 callId, UINT32 msgType);
 		int sendInternal(FDSAPI_MSG_HEADER* header, BYTE* buffer);
 		int processOutgoingCall(Call* call);
 
 	private:
-		HANDLE mhClientPipe;
-		HANDLE mhServerPipe;
-		HANDLE mhServerThread;
+		HANDLE m_hClientPipe;
+		HANDLE m_hServerPipe;
+		HANDLE m_hServerThread;
+		HANDLE m_hStopEvent;
 
-		HANDLE mhStopEvent;
+		DWORD m_PacketLength;
 
-		DWORD mPacktLength;
+		DWORD m_PayloadRead;
+		BYTE m_PayloadBuffer[PIPE_BUFFER_SIZE];
 
-		DWORD mPayloadRead;
-		BYTE mPayloadBuffer[PIPE_BUFFER_SIZE];
-
-		DWORD mHeaderRead;
-		BYTE* mHeaderBuffer;
+		DWORD m_HeaderRead;
+		BYTE* m_HeaderBuffer;
 		FDSAPI_MSG_HEADER m_Header;
 
-		std::list<CallOut*> mAnswerWaitingQueue;
-
-		long mNextOutCall;
+		UINT32 m_NextOutCall;
+		std::list<CallOut*> m_AnswerWaitingQueue;
 	};
 }
 

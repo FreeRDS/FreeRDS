@@ -30,7 +30,7 @@
 #include <call/CallIn.h>
 #include <call/CallFactory.h>
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 #define CLIENT_DISCONNECTED	2
 #define CLIENT_ERROR		-1
@@ -40,12 +40,12 @@ namespace freerds
 {
 	static wLog* logger_RPCEngine = WLog_Get("freerds.RpcEngine");
 
-	RpcEngine::RpcEngine() :
-			mPacktLength(0), mHeaderRead(0), mPayloadRead(0), mNextOutCall(1),
-			mhClientPipe(0), mhServerPipe(0), mhServerThread(0)
+	RpcEngine::RpcEngine()
+	: m_PacketLength(0), m_HeaderRead(0), m_PayloadRead(0), m_NextOutCall(1),
+	  m_hClientPipe(0), m_hServerPipe(0), m_hServerThread(0)
 	{
-		mHeaderBuffer = (BYTE*) &m_Header;
-		mhStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+		m_HeaderBuffer = (BYTE*) &m_Header;
+		m_hStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
 		WLog_SetLogLevel(logger_RPCEngine, WLOG_ERROR);
 	}
 
@@ -76,23 +76,23 @@ namespace freerds
 
 	int RpcEngine::startEngine()
 	{
-		mhServerThread = CreateThread(NULL, 0,
+		m_hServerThread = CreateThread(NULL, 0,
 				(LPTHREAD_START_ROUTINE) RpcEngine::listenerThread, (void*) this,
 				CREATE_SUSPENDED, NULL);
 
-		ResumeThread(mhServerThread);
+		ResumeThread(m_hServerThread);
 
 		return CLIENT_SUCCESS;
 	}
 
 	int RpcEngine::stopEngine()
 	{
-		if (mhServerThread)
+		if (m_hServerThread)
 		{
-			SetEvent(mhStopEvent);
-			WaitForSingleObject(mhServerThread, INFINITE);
-			CloseHandle(mhServerThread);
-			mhServerThread = NULL;
+			SetEvent(m_hStopEvent);
+			WaitForSingleObject(m_hServerThread, INFINITE);
+			CloseHandle(m_hServerThread);
+			m_hServerThread = NULL;
 		}
 
 		return CLIENT_SUCCESS;
@@ -100,9 +100,9 @@ namespace freerds
 
 	int RpcEngine::createServerPipe(void)
 	{
-		mhServerPipe = createServerPipe("\\\\.\\pipe\\FreeRDS_Manager");
+		m_hServerPipe = createServerPipe("\\\\.\\pipe\\FreeRDS_Manager");
 
-		if (!mhServerPipe)
+		if (!m_hServerPipe)
 		{
 			WLog_Print(logger_RPCEngine, WLOG_ERROR, "Could not create named pipe \\\\.\\pipe\\FreeRDS_Manager");
 			return CLIENT_ERROR;
@@ -149,27 +149,27 @@ namespace freerds
 		DWORD nCount;
 		HANDLE events[2];
 
-		if (!mhServerPipe)
+		if (!m_hServerPipe)
 			return NULL;
 
 		nCount = 0;
-		events[nCount++] = mhStopEvent;
-		events[nCount++] = mhServerPipe;
+		events[nCount++] = m_hStopEvent;
+		events[nCount++] = m_hServerPipe;
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-		if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(m_hStopEvent, 0) == WAIT_OBJECT_0)
 		{
 			WLog_Print(logger_RPCEngine, WLOG_TRACE, "got shutdown signal");
 			return NULL;
 		}
 
-		if (WaitForSingleObject(mhServerPipe, 0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(m_hServerPipe, 0) == WAIT_OBJECT_0)
 		{
 			BOOL fConnected;
 			DWORD dwPipeMode;
 
-			fConnected = ConnectNamedPipe(mhServerPipe, NULL);
+			fConnected = ConnectNamedPipe(m_hServerPipe, NULL);
 
 			if (!fConnected)
 				fConnected = (GetLastError() == ERROR_PIPE_CONNECTED);
@@ -180,13 +180,13 @@ namespace freerds
 				return NULL;
 			}
 
-			mhClientPipe = mhServerPipe;
+			m_hClientPipe = m_hServerPipe;
 
 			dwPipeMode = PIPE_WAIT;
-			SetNamedPipeHandleState(mhClientPipe, &dwPipeMode, NULL, NULL);
-			WLog_Print(logger_RPCEngine, WLOG_TRACE, "connect client with handle %x",mhClientPipe);
+			SetNamedPipeHandleState(m_hClientPipe, &dwPipeMode, NULL, NULL);
+			WLog_Print(logger_RPCEngine, WLOG_TRACE, "connect client with handle %x", m_hClientPipe);
 
-			return mhClientPipe;
+			return m_hClientPipe;
 		}
 
 		return NULL;
@@ -194,7 +194,7 @@ namespace freerds
 
 	int RpcEngine::read()
 	{
-		if (mPacktLength > 0)
+		if (m_PacketLength > 0)
 			return readPayload();
 		else
 			return readHeader();
@@ -205,8 +205,8 @@ namespace freerds
 		BOOL fSuccess;
 		DWORD lpNumberOfBytesRead = 0;
 
-		fSuccess = ReadFile(mhClientPipe, mHeaderBuffer + mHeaderRead,
-				FDSAPI_MSG_HEADER_SIZE - mHeaderRead, &lpNumberOfBytesRead, NULL);
+		fSuccess = ReadFile(m_hClientPipe, m_HeaderBuffer + m_HeaderRead,
+				FDSAPI_MSG_HEADER_SIZE - m_HeaderRead, &lpNumberOfBytesRead, NULL);
 
 		if (!fSuccess || (lpNumberOfBytesRead == 0))
 		{
@@ -214,13 +214,13 @@ namespace freerds
 			return CLIENT_DISCONNECTED;
 		}
 
-		mHeaderRead += lpNumberOfBytesRead;
+		m_HeaderRead += lpNumberOfBytesRead;
 
-		if (mHeaderRead == FDSAPI_MSG_HEADER_SIZE)
+		if (m_HeaderRead == FDSAPI_MSG_HEADER_SIZE)
 		{
-			FDSAPI_MSG_HEADER* header = (FDSAPI_MSG_HEADER*) mHeaderBuffer;
-			mPacktLength = header->msgSize;
-			WLog_Print(logger_RPCEngine, WLOG_TRACE, "header read, packet size %d", mPacktLength);
+			FDSAPI_MSG_HEADER* header = (FDSAPI_MSG_HEADER*) m_HeaderBuffer;
+			m_PacketLength = header->msgSize;
+			WLog_Print(logger_RPCEngine, WLOG_TRACE, "header read, packet size %d", m_PacketLength);
 		}
 
 		return CLIENT_SUCCESS;
@@ -231,8 +231,8 @@ namespace freerds
 		BOOL fSuccess;
 		DWORD lpNumberOfBytesRead = 0;
 
-		fSuccess = ReadFile(mhClientPipe, mPayloadBuffer + mPayloadRead,
-				mPacktLength - mPayloadRead, &lpNumberOfBytesRead, NULL);
+		fSuccess = ReadFile(m_hClientPipe, m_PayloadBuffer + m_PayloadRead,
+				m_PacketLength - m_PayloadRead, &lpNumberOfBytesRead, NULL);
 
 		if (!fSuccess || (lpNumberOfBytesRead == 0))
 		{
@@ -240,7 +240,7 @@ namespace freerds
 			return CLIENT_DISCONNECTED;
 		}
 
-		mPayloadRead += lpNumberOfBytesRead;
+		m_PayloadRead += lpNumberOfBytesRead;
 
 		return CLIENT_SUCCESS;
 	}
@@ -254,21 +254,21 @@ namespace freerds
 		callID = m_Header.callId;
 		callType = m_Header.msgType;
 
-		payload.assign((const char*) mPayloadBuffer, (size_t) mPayloadRead);
+		payload.assign((const char*) m_PayloadBuffer, (size_t) m_PayloadRead);
 
 		if (FDSAPI_IS_RESPONSE_ID(callType))
 		{
 			CallOut* foundCallOut = 0;
 			std::list<CallOut*>::iterator it;
 
-			for (it = mAnswerWaitingQueue.begin(); it != mAnswerWaitingQueue.end(); it++)
+			for (it = m_AnswerWaitingQueue.begin(); it != m_AnswerWaitingQueue.end(); it++)
 			{
 				CallOut* currentCallOut = (CallOut*)(*it);
 
 				if (currentCallOut->getTag() == callID)
 				{
 					foundCallOut = currentCallOut;
-					mAnswerWaitingQueue.remove(foundCallOut);
+					m_AnswerWaitingQueue.remove(foundCallOut);
 					break;
 				}
 			}
@@ -377,13 +377,13 @@ namespace freerds
 		return sendInternal(&header, (BYTE*) serialized.data());
 	}
 
-	int RpcEngine::sendError(uint32_t callID, uint32_t callType)
+	int RpcEngine::sendError(UINT32 callId, UINT32 msgType)
 	{
 		std::string serialized;
 		FDSAPI_MSG_HEADER header;
 
-		header.msgType = FDSAPI_RESPONSE_ID(callType);
-		header.callId = callID;
+		header.msgType = FDSAPI_RESPONSE_ID(msgType);
+		header.callId = callId;
 		header.status = FDSAPI_STATUS_NOTFOUND;
 		header.msgSize = 0;
 
@@ -395,7 +395,7 @@ namespace freerds
 		BOOL fSuccess;
 		DWORD lpNumberOfBytesWritten;
 
-		fSuccess = WriteFile(mhClientPipe, header,
+		fSuccess = WriteFile(m_hClientPipe, header,
 				FDSAPI_MSG_HEADER_SIZE, &lpNumberOfBytesWritten, NULL);
 
 		if (!fSuccess || (lpNumberOfBytesWritten != FDSAPI_MSG_HEADER_SIZE))
@@ -404,7 +404,7 @@ namespace freerds
 			return CLIENT_ERROR;
 		}
 
-		fSuccess = WriteFile(mhClientPipe, buffer,
+		fSuccess = WriteFile(m_hClientPipe, buffer,
 				header->msgSize, &lpNumberOfBytesWritten, NULL);
 
 		if (!fSuccess || (lpNumberOfBytesWritten != header->msgSize))
@@ -418,9 +418,9 @@ namespace freerds
 
 	void RpcEngine::resetStatus()
 	{
-		mPacktLength = 0;
-		mHeaderRead = 0;
-		mPayloadRead = 0;
+		m_PacketLength = 0;
+		m_HeaderRead = 0;
+		m_PayloadRead = 0;
 	}
 
 	int RpcEngine::serveClient()
@@ -432,8 +432,8 @@ namespace freerds
 		HANDLE events[3];
 
 		nCount = 0;
-		events[nCount++] = mhStopEvent;
-		events[nCount++] = mhClientPipe;
+		events[nCount++] = m_hStopEvent;
+		events[nCount++] = m_hClientPipe;
 		events[nCount++] = queueHandle;
 
 		int retValue = 0;
@@ -442,20 +442,20 @@ namespace freerds
 		{
 			status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-			if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0)
+			if (WaitForSingleObject(m_hStopEvent, 0) == WAIT_OBJECT_0)
 			{
 				retValue = CLIENT_ERROR;
 				break;
 			}
 
-			if (WaitForSingleObject(mhClientPipe, 0) == WAIT_OBJECT_0)
+			if (WaitForSingleObject(m_hClientPipe, 0) == WAIT_OBJECT_0)
 			{
 				retValue = read();
 
 				if (retValue)
 					break;
 
-				if (mPayloadRead == mPacktLength)
+				if (m_PayloadRead == m_PacketLength)
 				{
 					processData();
 					resetStatus();
@@ -487,11 +487,11 @@ namespace freerds
 			CallOut* callOut = (CallOut*) call;
 
 			callOut->encodeRequest();
-			callOut->setTag(mNextOutCall++);
+			callOut->setTag(m_NextOutCall++);
 
 			if (send(call) == CLIENT_SUCCESS)
 			{
-				mAnswerWaitingQueue.push_back(callOut);
+				m_AnswerWaitingQueue.push_back(callOut);
 				return CLIENT_SUCCESS;
 			}
 			else

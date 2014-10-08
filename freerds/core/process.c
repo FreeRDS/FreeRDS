@@ -504,7 +504,7 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 	freerds_rpc_msg_free(request->msgType, request);
 	free(request);
 
-	return FALSE;
+	return TRUE;
 }
 
 BOOL freerds_client_process_notification(rdsConnection* connection, wMessage* message)
@@ -660,7 +660,7 @@ void* freerds_connection_main_thread(void* arg)
 		{
 			wMessage message;
 
-			MessageQueue_Peek(connection->notifications, (void *)(&message), TRUE);
+			MessageQueue_Peek(connection->notifications, &message, TRUE);
 
 			if (!freerds_client_process_notification(connection, &message))
 				break;

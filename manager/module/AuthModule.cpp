@@ -27,7 +27,7 @@
 
 #include <freerds/auth.h>
 
-#include "appcontext/ApplicationContext.h"
+#include "session/ApplicationContext.h"
 
 #include "AuthModule.h"
 

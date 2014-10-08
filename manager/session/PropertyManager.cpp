@@ -30,7 +30,7 @@
 
 #include <winpr/wlog.h>
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 namespace freerds
 {

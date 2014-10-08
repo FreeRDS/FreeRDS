@@ -24,7 +24,7 @@
 #include "CallInEndSession.h"
 #include "TaskEndSession.h"
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 namespace freerds
 {

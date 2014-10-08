@@ -22,7 +22,7 @@
 #include "FDSApiHandler.h"
 
 #include <session/SessionStore.h>
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 #include <winpr/thread.h>
 #include <winpr/synch.h>

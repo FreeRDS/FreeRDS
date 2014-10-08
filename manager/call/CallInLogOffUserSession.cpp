@@ -22,7 +22,8 @@
 #endif
 
 #include "CallInLogOffUserSession.h"
-#include <appcontext/ApplicationContext.h>
+
+#include <session/ApplicationContext.h>
 
 namespace freerds
 {

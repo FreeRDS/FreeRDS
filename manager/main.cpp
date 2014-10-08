@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 #include <winpr/wtypes.h>
 #include <winpr/synch.h>

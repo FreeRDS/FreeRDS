@@ -30,10 +30,10 @@
 
 #include <call/CallOut.h>
 #include <task/Executor.h>
-#include <pbRPC/RpcEngine.h>
+#include <call/RpcEngine.h>
 
 #include <module/ModuleManager.h>
-#include <config/PropertyManager.h>
+#include <session/PropertyManager.h>
 
 #include <fdsapi/FDSApiServer.h>
 

@@ -22,7 +22,7 @@
 #endif
 
 #include "CallInLogonUser.h"
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 #include <module/AuthModule.h>
 
 namespace freerds

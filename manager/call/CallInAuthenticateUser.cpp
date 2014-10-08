@@ -24,7 +24,7 @@
 #include "CallInAuthenticateUser.h"
 #include "TaskSwitchTo.h"
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 namespace freerds
 {

@@ -27,7 +27,7 @@
 #include <winpr/wlog.h>
 
 #include <utils/CSGuard.h>
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 #include <functional>
 
@@ -37,17 +37,17 @@ namespace freerds
 
 	Executor::Executor()
 	{
-		mhStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
-		mhTaskThreadStarted = CreateEvent(NULL,TRUE,FALSE,NULL);
-		mhStopThreads = CreateEvent(NULL,TRUE,FALSE,NULL);
+		m_hStopEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+		m_hTaskThreadStarted = CreateEvent(NULL,TRUE,FALSE,NULL);
+		m_hStopThreads = CreateEvent(NULL,TRUE,FALSE,NULL);
 
-		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
+		if (!InitializeCriticalSectionAndSpinCount(&m_CSection, 0x00000400))
 		{
 			WLog_Print(logger_Executor, WLOG_FATAL, "cannot init Executor critical section!");
 		}
 
-		mhServerThread = NULL;
-		mRunning = false;
+		m_hServerThread = NULL;
+		m_Running = false;
 	}
 
 	Executor::~Executor()
@@ -56,36 +56,36 @@ namespace freerds
 
 	int Executor::start()
 	{
-		CSGuard guard(&mCSection);
+		CSGuard guard(&m_CSection);
 
-		if (mRunning)
+		if (m_Running)
 		{
 			WLog_Print(logger_Executor, WLOG_ERROR, "Executor Thread already started!");
 			return 1;
 		}
 
-		mhServerThread = CreateThread(NULL, 0,
+		m_hServerThread = CreateThread(NULL, 0,
 				(LPTHREAD_START_ROUTINE) Executor::execThread, (void*) this,
 				CREATE_SUSPENDED, NULL);
 
-		ResumeThread(mhServerThread);
-		mRunning = true;
+		ResumeThread(m_hServerThread);
+		m_Running = true;
 
 		return 0;
 	}
 
 	int Executor::stop()
 	{
-		CSGuard guard(&mCSection);
+		CSGuard guard(&m_CSection);
 
-		mRunning = false;
+		m_Running = false;
 
-		if (mhServerThread)
+		if (m_hServerThread)
 		{
-			SetEvent(mhStopEvent);
-			WaitForSingleObject(mhServerThread, INFINITE);
-			CloseHandle(mhServerThread);
-			mhServerThread = NULL;
+			SetEvent(m_hStopEvent);
+			WaitForSingleObject(m_hServerThread, INFINITE);
+			CloseHandle(m_hServerThread);
+			m_hServerThread = NULL;
 		}
 		else
 		{
@@ -100,29 +100,29 @@ namespace freerds
 	{
 		DWORD status;
 		DWORD nCount;
-		HANDLE queueHandle = mTasks.getSignalHandle();
+		HANDLE queueHandle = m_Tasks.getSignalHandle();
 		HANDLE events[2];
 
 		nCount = 0;
-		events[nCount++] = mhStopEvent;
+		events[nCount++] = m_hStopEvent;
 		events[nCount++] = queueHandle;
 
 		while (1)
 		{
 			status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
-			if (WaitForSingleObject(mhStopEvent, 0) == WAIT_OBJECT_0)
+			if (WaitForSingleObject(m_hStopEvent, 0) == WAIT_OBJECT_0)
 			{
-				SetEvent(mhStopThreads);
+				SetEvent(m_hStopThreads);
 				// shut down all threads
-				mTaskThreadList.remove_if(std::bind1st(std::mem_fun(&Executor::waitThreadHandles),this));
+				m_TaskThreadList.remove_if(std::bind1st(std::mem_fun(&Executor::waitThreadHandles),this));
 				break;
 			}
 
 			if (WaitForSingleObject(queueHandle, 0) == WAIT_OBJECT_0)
 			{
-				mTasks.resetEventAndLockQueue();
-				TaskPtr currentTask = mTasks.getElementLockFree();
+				m_Tasks.resetEventAndLockQueue();
+				TaskPtr currentTask = m_Tasks.getElementLockFree();
 
 				while (currentTask)
 				{
@@ -135,33 +135,33 @@ namespace freerds
 					{
 						// start Task as thread
 
-						currentTask->setHandles(mhStopThreads, mhTaskThreadStarted);
+						currentTask->setHandles(m_hStopThreads, m_hTaskThreadStarted);
 
 						HANDLE taskThread = CreateThread(NULL, 0,
 								(LPTHREAD_START_ROUTINE) Executor::execTask, (void*) &currentTask,
 								CREATE_SUSPENDED, NULL);
 
 						ResumeThread(taskThread);
-						mTaskThreadList.push_back(taskThread);
-						WaitForSingleObject(mhTaskThreadStarted,INFINITE);
-						ResetEvent(mhTaskThreadStarted);
+						m_TaskThreadList.push_back(taskThread);
+						WaitForSingleObject(m_hTaskThreadStarted, INFINITE);
+						ResetEvent(m_hTaskThreadStarted);
 						currentTask.reset();
 					}
-					currentTask = mTasks.getElementLockFree();
-					mTaskThreadList.remove_if(std::bind1st(std::mem_fun(&Executor::checkThreadHandles),this));
+					currentTask = m_Tasks.getElementLockFree();
+					m_TaskThreadList.remove_if(std::bind1st(std::mem_fun(&Executor::checkThreadHandles),this));
 				}
 
-				mTasks.unlockQueue();
+				m_Tasks.unlockQueue();
 			}
 		}
 	}
 
 	bool Executor::addTask(TaskPtr task)
 	{
-		CSGuard guard(&mCSection);
+		CSGuard guard(&m_CSection);
 
-		if (mRunning) {
-			mTasks.addElement(task);
+		if (m_Running) {
+			m_Tasks.addElement(task);
 			return true;
 		} else {
 			return false;

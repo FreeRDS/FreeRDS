@@ -36,7 +36,7 @@
 
 #include <module/AuthModule.h>
 #include <fdsapi/FDSApiServer.h>
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 namespace freerds
 {

@@ -27,7 +27,7 @@
 
 #include <string>
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 BOOL getPropertyBool(char* path, BOOL* value)
 {

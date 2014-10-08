@@ -25,7 +25,8 @@
 
 #include "TaskSwitchTo.h"
 #include "CallOutSwitchTo.h"
-#include <appcontext/ApplicationContext.h>
+
+#include <session/ApplicationContext.h>
 
 namespace freerds
 {

@@ -23,6 +23,8 @@
 
 #include "ModuleManager.h"
 
+#include <vector>
+
 #include <winpr/crt.h>
 #include <winpr/wlog.h>
 #include <winpr/file.h>
@@ -30,13 +32,9 @@
 #include <winpr/library.h>
 #include <winpr/environment.h>
 
-#include <config/PropertyCWrapper.h>
-#include <utils/StringHelpers.h>
-
-#include <vector>
-
-#include <config/PropertyCWrapper.h>
 #include "CallBacks.h"
+#include <session/PropertyCWrapper.h>
+#include <utils/StringHelpers.h>
 
 namespace freerds
 {

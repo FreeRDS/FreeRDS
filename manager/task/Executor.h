@@ -51,17 +51,17 @@ namespace freerds
 		bool waitThreadHandles(const HANDLE value) const;
 
 	private:
-		HANDLE mhStopEvent;
-		HANDLE mhServerThread;
+		HANDLE m_hStopEvent;
+		HANDLE m_hServerThread;
 
-		HANDLE mhStopThreads;
-		HANDLE mhTaskThreadStarted;
+		HANDLE m_hStopThreads;
+		HANDLE m_hTaskThreadStarted;
 
-		bool mRunning;
+		bool m_Running;
 
-		std::list<HANDLE> mTaskThreadList;
-		CRITICAL_SECTION mCSection;
-		SignalingQueue<TaskPtr> mTasks;
+		std::list<HANDLE> m_TaskThreadList;
+		CRITICAL_SECTION m_CSection;
+		SignalingQueue<TaskPtr> m_Tasks;
 	};
 }
 

@@ -26,7 +26,7 @@
 #include "CallBacks.h"
 #include "TaskModuleShutdown.h"
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 namespace freerds
 {

@@ -22,7 +22,8 @@
 #endif
 
 #include "CallInDisconnectUserSession.h"
-#include <appcontext/ApplicationContext.h>
+
+#include <session/ApplicationContext.h>
 #include <call/TaskEndSession.h>
 
 namespace freerds

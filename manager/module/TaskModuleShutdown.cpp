@@ -24,7 +24,7 @@
 #include <winpr/wlog.h>
 
 #include "TaskModuleShutdown.h"
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 #include <call/CallOutLogOffUserSession.h>
 
 namespace freerds

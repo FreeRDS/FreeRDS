@@ -260,7 +260,7 @@ namespace freerds
 		return mRpcEngine.stopEngine();
 	}
 
-	SignalingQueue<Call*> * ApplicationContext::getRpcOutgoingQueue()
+	SignalingQueue<Call*>* ApplicationContext::getRpcOutgoingQueue()
 	{
 		return &mRpcOutgoingCalls;
 	}

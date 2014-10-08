@@ -31,7 +31,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 #include <module/AuthModule.h>
 #include <utils/CSGuard.h>
 

@@ -25,7 +25,7 @@
 
 #include "TaskSessionTimeout.h"
 #include <call/TaskEndSession.h>
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace freerds

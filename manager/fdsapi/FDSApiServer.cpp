@@ -25,7 +25,7 @@
 
 #include <freerds/rpc.h>
 
-#include <appcontext/ApplicationContext.h>
+#include <session/ApplicationContext.h>
 
 #include "FDSApiHandler.h"
 #include "FDSApiMessages.h"
