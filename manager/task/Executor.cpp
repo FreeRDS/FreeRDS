@@ -135,7 +135,8 @@ namespace freerds
 					{
 						// start Task as thread
 
-						currentTask->setHandles(mhStopThreads,mhTaskThreadStarted);
+						currentTask->setHandles(mhStopThreads, mhTaskThreadStarted);
+
 						HANDLE taskThread = CreateThread(NULL, 0,
 								(LPTHREAD_START_ROUTINE) Executor::execTask, (void*) &currentTask,
 								CREATE_SUSPENDED, NULL);
@@ -172,11 +173,11 @@ namespace freerds
 		Executor* executor;
 
 		executor = (Executor*) arg;
-		WLog_Print(logger_Executor, WLOG_INFO, "started Executor thread");
+		WLog_Print(logger_Executor, WLOG_DEBUG, "started Executor thread");
 
 		executor->runExecutor();
 
-		WLog_Print(logger_Executor, WLOG_INFO, "stopped Executor thread");
+		WLog_Print(logger_Executor, WLOG_DEBUG, "stopped Executor thread");
 		return NULL;
 	}
 

@@ -36,7 +36,7 @@ namespace freerds
 {
 	static wLog* logger_FDSApiServer = WLog_Get("FreeRDS.FDSApiServer");
 
-	shared_ptr<FDSApiHandler> FDSApiServer::mFDSApiHandler;
+	shared_ptr<FDSApiHandler> FDSApiServer::m_FDSApiHandler;
 
 	int FDSApiServer::RpcConnectionAccepted(rdsRpcClient* rpcClient)
 	{
@@ -57,7 +57,7 @@ namespace freerds
 		FDSAPI_MESSAGE requestMsg;
 		FDSAPI_MESSAGE responseMsg;
 		static const std::string authToken = "HUGO";
-		shared_ptr<FDSApiHandler> FDSApiHandler = FDSApiServer::mFDSApiHandler;
+		shared_ptr<FDSApiHandler> FDSApiHandler = FDSApiServer::m_FDSApiHandler;
 
 		WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "received message (buffer=%p, length=%u)", buffer, length);
 
@@ -261,7 +261,7 @@ namespace freerds
 						requestMsg.u.virtualChannelOpenRequest.sessionId,
 						requestMsg.u.virtualChannelOpenRequest.virtualName);
 
-				//responseMsg.u.virtualChannelOpenResponse.endPoint = endPoint.c_str();
+				responseMsg.u.virtualChannelOpenResponse.endPoint = _strdup(endPoint.c_str());
 
 				break;
 			}
@@ -276,7 +276,7 @@ namespace freerds
 						requestMsg.u.virtualChannelOpenExRequest.virtualName,
 						requestMsg.u.virtualChannelOpenExRequest.flags);
 
-				responseMsg.u.virtualChannelOpenExResponse.endPoint = endPoint.c_str();
+				responseMsg.u.virtualChannelOpenExResponse.endPoint = _strdup(endPoint.c_str());
 
 				break;
 			}
@@ -306,23 +306,22 @@ namespace freerds
 
 	FDSApiServer::FDSApiServer()
 	{
-		if (!InitializeCriticalSectionAndSpinCount(&mCSection, 0x00000400))
+		if (!InitializeCriticalSectionAndSpinCount(&m_CSection, 0x00000400))
 		{
 			WLog_Print(logger_FDSApiServer, WLOG_ERROR, "FDSApiServer: InitializeCriticalSectionAndSpinCount failed!");
 		}
 
-		mServerThread = NULL;
-		mPort = 9091;
+		m_ServerThread = NULL;
 
 		shared_ptr<FDSApiHandler> handler(new FDSApiHandler());
 
-		mFDSApiHandler = handler;
+		m_FDSApiHandler = handler;
 
-		mRpcServer = freerds_rpc_server_new("FDSAPI");
-		mRpcServer->custom = (void*) this;
-		mRpcServer->ConnectionAccepted = FDSApiServer::RpcConnectionAccepted;
-		mRpcServer->ConnectionClosed = FDSApiServer::RpcConnectionClosed;
-		mRpcServer->MessageReceived = FDSApiServer::RpcMessageReceived;
+		m_RpcServer = freerds_rpc_server_new("FDSAPI");
+		m_RpcServer->custom = (void*) this;
+		m_RpcServer->ConnectionAccepted = FDSApiServer::RpcConnectionAccepted;
+		m_RpcServer->ConnectionClosed = FDSApiServer::RpcConnectionClosed;
+		m_RpcServer->MessageReceived = FDSApiServer::RpcMessageReceived;
 	}
 
 	FDSApiServer::~FDSApiServer()
@@ -330,25 +329,15 @@ namespace freerds
 
 	}
 
-	void FDSApiServer::setPort(DWORD port)
-	{
-		mPort = port;
-	}
-
-	DWORD FDSApiServer::getPort()
-	{
-		return mPort;
-	}
-
 	CRITICAL_SECTION* FDSApiServer::getCritSection()
 	{
-		return &mCSection;
+		return &m_CSection;
 	}
 
 	void FDSApiServer::fireSessionEvent(UINT32 sessionId, UINT32 stateChange)
 	{
+		wStream* s;
 		FDSAPI_MESSAGE msg;
-		wStream *s;
 
 		WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "sessionId=%u, stateChange=%u", sessionId, stateChange);
 
@@ -362,19 +351,19 @@ namespace freerds
 
 		if (s)
 		{
-			freerds_rpc_server_broadcast_message(mRpcServer, Stream_Buffer(s), Stream_Length(s));
+			freerds_rpc_server_broadcast_message(m_RpcServer, Stream_Buffer(s), Stream_Length(s));
 		}
 	}
 
 	void FDSApiServer::startFDSApi()
 	{
-		freerds_rpc_server_start(mRpcServer);
+		freerds_rpc_server_start(m_RpcServer);
 	}
 
 	void FDSApiServer::stopFDSApi()
 	{
 		WLog_Print(logger_FDSApiServer, WLOG_INFO, "Stopping FDSApiServer ...");
-		freerds_rpc_server_stop(mRpcServer);
+		freerds_rpc_server_stop(m_RpcServer);
 	}
 }
 

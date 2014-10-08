@@ -94,16 +94,19 @@ int freerds_icp_DisconnectUserSession(FDSAPI_DISCONNECT_USER_REQUEST* pRequest, 
 int freerds_icp_LogOffUserSession(FDSAPI_LOGOFF_USER_REQUEST* pRequest, FDSAPI_LOGOFF_USER_RESPONSE* pResponse);
 int freerds_icp_LogonUser(FDSAPI_LOGON_USER_REQUEST* pRequest, FDSAPI_LOGON_USER_RESPONSE* pResponse);
 
-int freerds_icp_LogoffUserResponse(FDSAPI_LOGOFF_USER_RESPONSE* pResponse);
-int freerds_icp_SwitchServiceEndpointResponse(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE* pResponse);
-
 int freerds_icp_Heartbeat(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
+
+int freerds_icp_SwitchServiceEndpointResponse(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE* pResponse);
 int freerds_icp_SwitchServiceEndpoint(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
+
+int freerds_icp_LogoffUserResponse(FDSAPI_LOGOFF_USER_RESPONSE* pResponse);
 int freerds_icp_LogoffUser(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
+
+int freerds_icp_ChannelEndpointOpenResponse(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE* pResponse);
 int freerds_icp_ChannelEndpointOpen(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
 
 int freerds_icp_start();
 int freerds_icp_shutdown();
-void *freerds_icp_get_context();
+void* freerds_icp_get_context();
 
 #endif //_PBRPC_H

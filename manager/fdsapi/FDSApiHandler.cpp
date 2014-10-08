@@ -75,6 +75,7 @@ namespace freerds
 		// Check for an associated connection.
 		UINT32 connectionId = connectionStore->getConnectionIdForSessionId(sessionId);
 		ConnectionPtr connection = connectionStore->getConnection(connectionId);
+
 		if (!connection)
 		{
 			WLog_Print(logger_FDSApiHandler, WLOG_ERROR,
@@ -206,9 +207,11 @@ namespace freerds
 		const std::string& virtualName)
 	{
 		CallOutVirtualChannelOpen openCall;
+		ConnectionStore* connectionStore = APP_CONTEXT.getConnectionStore();
+		UINT32 connectionId = connectionStore->getConnectionIdForSessionId(sessionId);
 
-		openCall.setSessionID(sessionId);
-		openCall.setVirtualName(virtualName);
+		openCall.setConnectionId(connectionId);
+		openCall.setChannelName(virtualName);
 
 		APP_CONTEXT.getRpcOutgoingQueue()->addElement(&openCall);
 		WaitForSingleObject(openCall.getAnswerHandle(), INFINITE);
@@ -216,7 +219,7 @@ namespace freerds
 		if (openCall.getResult() == 0)
 		{
 			// no error
-			_return = openCall.getConnectionString();
+			_return = openCall.getChannelEndpoint();
 		}
 		else
 		{

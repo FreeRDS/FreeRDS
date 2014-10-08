@@ -37,12 +37,12 @@ namespace freerds
 		virtual int encodeRequest();
 		virtual int decodeResponse();
 
-		void setSessionID(UINT32 sessionId);
-		void setVirtualName(std::string channelName);
-		std::string getConnectionString();
+		void setConnectionId(UINT32 connectionId);
+		void setChannelName(std::string channelName);
+		std::string getChannelEndpoint();
 
 	private:
-		UINT32 m_SessionId;
+		UINT32 m_ConnectionId;
 		UINT64 m_ChannelHandle;
 		std::string m_ChannelName;
 		std::string m_ChannelEndpoint;

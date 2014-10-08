@@ -484,6 +484,29 @@ BOOL freerds_client_process_logoff(rdsConnection* connection, wMessage* message)
 	return FALSE;
 }
 
+BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMessage* message)
+{
+	int status = 0;
+	FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST* request;
+	FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE response;
+
+	request = (FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST*) message->wParam;
+
+	response.status = 0;
+	response.callId = request->callId;
+	response.msgType = FDSAPI_RESPONSE_ID(request->msgType);
+
+	response.ChannelHandle = 123;
+	response.ChannelEndpoint = _strdup("SVC_PIPE");
+
+	status = freerds_icp_ChannelEndpointOpenResponse(&response);
+
+	freerds_rpc_msg_free(request->msgType, request);
+	free(request);
+
+	return FALSE;
+}
+
 BOOL freerds_client_process_notification(rdsConnection* connection, wMessage* message)
 {
 	BOOL status = FALSE;
@@ -496,6 +519,10 @@ BOOL freerds_client_process_notification(rdsConnection* connection, wMessage* me
 
 		case FDSAPI_LOGOFF_USER_REQUEST_ID:
 			status = freerds_client_process_logoff(connection, message);
+			break;
+
+		case FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID:
+			status = freerds_client_process_channel_endpoint_open(connection, message);
 			break;
 
 		default:

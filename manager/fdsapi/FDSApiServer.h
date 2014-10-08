@@ -45,9 +45,6 @@ namespace freerds
 		void startFDSApi();
 		void stopFDSApi();
 
-		void setPort(DWORD port);
-		DWORD getPort();
-
 		CRITICAL_SECTION* getCritSection();
 
 		void fireSessionEvent(UINT32 sessionId, UINT32 stateChange);
@@ -57,13 +54,12 @@ namespace freerds
 		static int RpcConnectionClosed(rdsRpcClient* rpcClient);
 		static int RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
 
-		CRITICAL_SECTION mCSection;
-		HANDLE mServerThread;
-		DWORD mPort;
+		CRITICAL_SECTION m_CSection;
+		HANDLE m_ServerThread;
 
-		static shared_ptr<FDSApiHandler> mFDSApiHandler;
+		static shared_ptr<FDSApiHandler> m_FDSApiHandler;
 
-		rdsRpcServer* mRpcServer;
+		rdsRpcServer* m_RpcServer;
 	};
 }
 

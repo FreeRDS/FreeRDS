@@ -147,6 +147,7 @@ namespace freerds
 			entrypoints.config.getPropertyNumber = getPropertyNumber;
 			entrypoints.config.getPropertyString = getPropertyString;
 			entrypoints.status.shutdown = CallBacks::shutdown;
+
 			result = entry(&entrypoints);
 
 			if (result == 0)
@@ -159,14 +160,14 @@ namespace freerds
 					// check if module with same name is registered.
 					if (mModulesMap.count(module->getName()))
 					{
-						WLog_Print(logger_ModuleManager, WLOG_INFO,
+						WLog_Print(logger_ModuleManager, WLOG_DEBUG,
 								"library %s loaded, but another library has already registered module name %s", module->getName().c_str());
 						delete module;
 						return -1;
 					}
 					else
 					{
-						WLog_Print(logger_ModuleManager, WLOG_INFO, "library %s loaded properly", fullFileName.c_str());
+						WLog_Print(logger_ModuleManager, WLOG_DEBUG, "library %s loaded properly", fullFileName.c_str());
 						// add this module to the map
 						mModulesMap.insert(std::pair<std::string,Module *>(module->getName(), module));
 					}

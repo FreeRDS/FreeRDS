@@ -639,46 +639,6 @@ void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* r
 
 /* RPC Client Stubs */
 
-int freerds_icp_LogoffUserResponse(FDSAPI_LOGOFF_USER_RESPONSE* pResponse)
-{
-	pbRPCPayload* pbresponse;
-	UINT32 type = FDSAPI_LOGOFF_USER_REQUEST_ID;
-	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
-
-	if (!context)
-		return -1;
-
-	pResponse->status = 0;
-	pResponse->msgType = FDSAPI_LOGOFF_USER_RESPONSE_ID;
-
-	pbresponse = pbrpc_payload_new();
-	pbresponse->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), pResponse, NULL);
-	pbresponse->buffer = Stream_Buffer(pbresponse->s);
-	pbresponse->length = Stream_Length(pbresponse->s);
-
-	return pbrpc_send_response(context, pbresponse, pResponse->status, pResponse->msgType, pResponse->callId);
-}
-
-int freerds_icp_SwitchServiceEndpointResponse(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE* pResponse)
-{
-	pbRPCPayload* pbresponse;
-	UINT32 type = FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID;
-	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
-
-	if (!context)
-		return -1;
-
-	pResponse->status = 0;
-	pResponse->msgType = FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE_ID;
-
-	pbresponse = pbrpc_payload_new();
-	pbresponse->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), pResponse, NULL);
-	pbresponse->buffer = Stream_Buffer(pbresponse->s);
-	pbresponse->length = Stream_Length(pbresponse->s);
-
-	return pbrpc_send_response(context, pbresponse, pResponse->status, pResponse->msgType, pResponse->callId);
-}
-
 int freerds_icp_IsChannelAllowed(FDSAPI_CHANNEL_ALLOWED_REQUEST* pRequest, FDSAPI_CHANNEL_ALLOWED_RESPONSE* pResponse)
 {
 	int status;
@@ -820,6 +780,33 @@ int freerds_icp_Heartbeat(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse)
 	return PBRPC_SUCCESS;
 }
 
+int freerds_icp_SwitchServiceEndpointResponse(FDSAPI_SWITCH_SERVICE_ENDPOINT_RESPONSE* pResponse)
+{
+	int status;
+	wStream* s;
+	FDSAPI_MSG_PACKET msg;
+	UINT32 type = FDSAPI_SWITCH_SERVICE_ENDPOINT_REQUEST_ID;
+	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
+
+	if (!context)
+		return -1;
+
+	pResponse->status = 0;
+	pResponse->msgType = FDSAPI_RESPONSE_ID(type);
+
+	CopyMemory(&msg, pResponse, sizeof(FDSAPI_MSG_HEADER));
+
+	s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), pResponse, NULL);
+	msg.buffer = Stream_Buffer(s);
+	msg.length = Stream_Length(s);
+
+	status = pbrpc_process_message_out(context, &msg);
+
+	Stream_Free(s, TRUE);
+
+	return status;
+}
+
 int freerds_icp_SwitchServiceEndpoint(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse)
 {
 	rdsConnection* connection = NULL;
@@ -846,12 +833,37 @@ int freerds_icp_SwitchServiceEndpoint(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbr
 		return -1;
 	}
 
-	pRequest->ServiceEndpoint = _strdup(pRequest->ServiceEndpoint);
-
 	MessageQueue_Post(connection->notifications, (void*) connection, pRequest->msgType, (void*) pRequest, NULL);
 	*pbresponse = NULL;
 
 	return PBRPC_SUCCESS;
+}
+
+int freerds_icp_LogoffUserResponse(FDSAPI_LOGOFF_USER_RESPONSE* pResponse)
+{
+	int status;
+	wStream* s;
+	FDSAPI_MSG_PACKET msg;
+	UINT32 type = FDSAPI_LOGOFF_USER_REQUEST_ID;
+	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
+
+	if (!context)
+		return -1;
+
+	pResponse->status = 0;
+	pResponse->msgType = FDSAPI_RESPONSE_ID(type);
+
+	CopyMemory(&msg, pResponse, sizeof(FDSAPI_MSG_HEADER));
+
+	s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), pResponse, NULL);
+	msg.buffer = Stream_Buffer(s);
+	msg.length = Stream_Length(s);
+
+	status = pbrpc_process_message_out(context, &msg);
+
+	Stream_Free(s, TRUE);
+
+	return status;
 }
 
 int freerds_icp_LogoffUser(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse)
@@ -886,11 +898,37 @@ int freerds_icp_LogoffUser(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse)
 	return PBRPC_SUCCESS;
 }
 
+int freerds_icp_ChannelEndpointOpenResponse(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE* pResponse)
+{
+	int status;
+	wStream* s;
+	FDSAPI_MSG_PACKET msg;
+	UINT32 type = FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID;
+	pbRPCContext* context = (pbRPCContext*) freerds_icp_get_context();
+
+	if (!context)
+		return -1;
+
+	pResponse->status = 0;
+	pResponse->msgType = FDSAPI_RESPONSE_ID(type);
+
+	CopyMemory(&msg, pResponse, sizeof(FDSAPI_MSG_HEADER));
+
+	s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), pResponse, NULL);
+	msg.buffer = Stream_Buffer(s);
+	msg.length = Stream_Length(s);
+
+	status = pbrpc_process_message_out(context, &msg);
+
+	Stream_Free(s, TRUE);
+
+	return status;
+}
+
 int freerds_icp_ChannelEndpointOpen(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse)
 {
-	pbRPCPayload* payload;
+	rdsConnection* connection = NULL;
 	FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST* pRequest;
-	FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE response;
 	UINT32 type = FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID;
 
 	pRequest = (FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST*) calloc(1, sizeof(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST));
@@ -901,19 +939,14 @@ int freerds_icp_ChannelEndpointOpen(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbres
 	freerds_rpc_msg_unpack(FDSAPI_REQUEST_ID(type), pRequest, msg->buffer, msg->length);
 	CopyMemory(pRequest, msg, sizeof(FDSAPI_MSG_HEADER));
 
-	response.msgType = FDSAPI_RESPONSE_ID(type);
-	response.callId = pRequest->callId;
-	response.status = 0;
+	connection = app_context_get_connection(pRequest->ConnectionId);
 
-	payload = pbrpc_payload_new();
-	payload->s = freerds_rpc_msg_pack(FDSAPI_RESPONSE_ID(type), &response, NULL);
-	payload->buffer = Stream_Buffer(payload->s);
-	payload->length = Stream_Length(payload->s);
-	*pbresponse = payload;
+	if (!connection)
+		return -1;
 
-	freerds_rpc_msg_free(FDSAPI_REQUEST_ID(type), pRequest);
-	free(pRequest);
+	MessageQueue_Post(connection->notifications, (void*) connection, pRequest->msgType, (void*) pRequest, NULL);
+	*pbresponse = NULL;
 
-	return PBRPC_SUCCESS;
+	return 0;
 }
 
