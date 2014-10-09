@@ -75,6 +75,7 @@ struct rds_connection
 	DrdynvcServerContext* drdynvc;
 	wMessageQueue* notifications;
 
+	rdsServer* server;
 	rdsChannelServer* channels;
 };
 

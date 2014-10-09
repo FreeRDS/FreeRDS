@@ -91,41 +91,6 @@ int freerds_channels_post_connect(rdsConnection* session)
 	return 0;
 }
 
-/* channel */
-
-rdsChannel* freerds_channel_new(rdsConnection* connection, const char* name)
-{
-	rdsChannel* channel;
-
-	channel = (rdsChannel*) calloc(1, sizeof(rdsChannel));
-
-	if (channel)
-	{
-		RPC_CSTR rpcString = NULL;
-
-		channel->name = _strdup(name);
-
-		UuidCreateSequential(&(channel->guid));
-
-		UuidToStringA(&(channel->guid), &rpcString);
-		channel->guidString = _strdup(rpcString);
-		RpcStringFreeA(&rpcString);
-	}
-
-	return channel;
-}
-
-void freerds_channel_free(rdsChannel* channel)
-{
-	if (!channel)
-		return;
-
-	free(channel->name);
-	free(channel->guidString);
-
-	free(channel);
-}
-
 /* channel server */
 
 int freerds_detect_ephemeral_port_range(int* begPort, int* endPort)
@@ -233,46 +198,70 @@ int freerds_channel_server_close(rdsChannelServer* channels)
 	return 1;
 }
 
-HANDLE freerds_channel_server_get_event_handle(rdsChannelServer* channels)
+HANDLE freerds_channel_server_listen_event(rdsChannelServer* channels)
 {
 	return channels->listenEvent;
 }
 
-int freerds_channel_server_check_socket(rdsChannelServer* channels)
+int freerds_channel_server_accept(rdsChannelServer* channels)
 {
 	int status;
 	int optlen = 0;
 	UINT32 optval = 0;
-	SOCKET clientSocket;
+	SOCKET socket;
 	char guidString[36 + 1];
+	rdsChannel* channel = NULL;
 
-	clientSocket = accept(channels->listenerSocket, NULL, NULL);
+	socket = accept(channels->listenerSocket, NULL, NULL);
 
-	if (clientSocket == INVALID_SOCKET)
+	if (socket == INVALID_SOCKET)
 	{
 		fprintf(stderr, "accept failed with error: %d\n", WSAGetLastError());
 		return -1;
 	}
 
-	fprintf(stderr, "channel connection accepted!\n");
-
 	/* receive channel connection GUID */
 
 	guidString[36] = '\0';
-	status = _recv(clientSocket, guidString, 36, 0);
+	status = _recv(socket, guidString, 36, 0);
 
 	if (status != 36)
 	{
+		closesocket(socket);
 		return -1;
 	}
 
-	fprintf(stderr, "channel GUID: %s\n", guidString);
+	channel = (rdsChannel*) HashTable_GetItemValue(channels->table, guidString);
+
+	if (channel && channel->connected)
+		channel = NULL;
+
+	if (!channel)
+	{
+		closesocket(socket);
+		return -1;
+	}
 
 	optval = TRUE;
 	optlen = sizeof(optval);
 
-	_setsockopt(clientSocket, IPPROTO_TCP, TCP_NODELAY, (char*) &optval, optlen);
+	_setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char*) &optval, optlen);
 
+	channel->socket = socket;
+	channel->connected = TRUE;
+
+	return 1;
+}
+
+int freerds_channel_server_add(rdsChannelServer* channels, rdsChannel* channel)
+{
+	HashTable_Add(channels->table, channel->guidString, channel);
+	return 1;
+}
+
+int freerds_channel_server_remove(rdsChannelServer* channels, rdsChannel* channel)
+{
+	HashTable_Remove(channels->table, channel->guidString);
 	return 1;
 }
 
@@ -284,8 +273,21 @@ rdsChannelServer* freerds_channel_server_new()
 
 	if (channels)
 	{
-		channels->listenPort = 40123;
+		channels->listenPort = 0;
 		channels->listenAddress = _strdup("127.0.0.1");
+
+		channels->table = HashTable_New(TRUE);
+
+		if (!channels->table)
+		{
+			free(channels);
+			return NULL;
+		}
+
+		channels->table->hash = HashTable_StringHash;
+		channels->table->keyCompare = HashTable_StringCompare;
+		channels->table->keyClone = HashTable_StringClone;
+		channels->table->keyFree = HashTable_StringFree;
 	}
 
 	return channels;
@@ -296,6 +298,59 @@ void freerds_channel_server_free(rdsChannelServer* channels)
 	if (!channels)
 		return;
 
+	free(channels->listenAddress);
+
+	if (channels->table)
+	{
+		HashTable_Free(channels->table);
+		channels->table = NULL;
+	}
+
 	free(channels);
 }
 
+/* channel */
+
+rdsChannel* freerds_channel_new(rdsConnection* connection, const char* name)
+{
+	rdsChannel* channel;
+
+	channel = (rdsChannel*) calloc(1, sizeof(rdsChannel));
+
+	if (channel)
+	{
+		RPC_CSTR rpcString = NULL;
+
+		channel->connection = connection;
+		channel->server = connection->server;
+		channel->channels = connection->channels;
+
+		channel->name = _strdup(name);
+
+		channel->connected = FALSE;
+		channel->port = channel->channels->listenPort;
+
+		UuidCreateSequential(&(channel->guid));
+
+		UuidToStringA(&(channel->guid), &rpcString);
+		channel->guidString = _strdup(rpcString);
+		RpcStringFreeA(&rpcString);
+
+		freerds_channel_server_add(channel->channels, channel);
+	}
+
+	return channel;
+}
+
+void freerds_channel_free(rdsChannel* channel)
+{
+	if (!channel)
+		return;
+
+	freerds_channel_server_remove(channel->channels, channel);
+
+	free(channel->name);
+	free(channel->guidString);
+
+	free(channel);
+}

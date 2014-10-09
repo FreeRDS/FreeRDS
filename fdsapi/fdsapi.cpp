@@ -34,6 +34,10 @@
 #include <winpr/wtsapi.h>
 #include <winpr/winsock.h>
 
+#ifndef _WIN32
+#include <netinet/tcp.h>
+#endif
+
 #include <freerds/rpc.h>
 
 #include "FDSApiMessages.h"
@@ -41,6 +45,93 @@
 static DWORD g_currentSessionId = 0xFFFFFFFF;
 
 rdsRpcClient* g_RpcClient = NULL;
+
+struct _FDSAPI_CHANNEL
+{
+	char* guid;
+	UINT32 port;
+	SOCKET socket;
+};
+typedef struct _FDSAPI_CHANNEL FDSAPI_CHANNEL;
+
+FDSAPI_CHANNEL* FDSAPI_Channel_New()
+{
+	FDSAPI_CHANNEL* pChannel;
+
+	pChannel = (FDSAPI_CHANNEL*) calloc(1, sizeof(FDSAPI_CHANNEL));
+
+	if (pChannel)
+	{
+
+	}
+
+	return pChannel;
+}
+
+int FDSAPI_Channel_Connect(FDSAPI_CHANNEL* pChannel, const char* guid, UINT32 port)
+{
+	int status;
+	int optlen = 0;
+	UINT32 optval = 0;
+	unsigned long addr;
+	struct sockaddr_in sockAddr;
+
+	if (strlen(guid) != 36)
+		return -1001;
+
+	pChannel->port = port;
+
+	pChannel->guid = _strdup(guid);
+
+	if (!pChannel->guid)
+		return -1002;
+
+	pChannel->socket = _socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	if (pChannel->socket == INVALID_SOCKET)
+		return -1003;
+
+	addr = _inet_addr("127.0.0.1");
+
+	sockAddr.sin_family = AF_INET;
+	sockAddr.sin_addr.s_addr = addr;
+	sockAddr.sin_port = htons(port);
+
+	status = _connect(pChannel->socket, (struct sockaddr*) &sockAddr, sizeof(sockAddr));
+
+	if (status != 0)
+	{
+		closesocket(pChannel->socket);
+		pChannel->socket = 0;
+		return -1004;
+	}
+
+	status = _send(pChannel->socket, guid, 36, 0);
+
+	if (status != 36)
+	{
+		closesocket(pChannel->socket);
+		pChannel->socket = 0;
+		return -1005;
+	}
+
+	optval = TRUE;
+	optlen = sizeof(optval);
+
+	_setsockopt(pChannel->socket, IPPROTO_TCP, TCP_NODELAY, (char*) &optval, optlen);
+
+	return 1;
+}
+
+void FDSAPI_Channel_Free(FDSAPI_CHANNEL* pChannel)
+{
+	if (!pChannel)
+		return;
+
+	free(pChannel->guid);
+
+	free(pChannel);
+}
 
 /*
  * Most calls result in a request/response message being sent and
@@ -1261,12 +1352,14 @@ FreeRDS_WTSVirtualChannelOpen(
 	LPSTR pVirtualName
 )
 {
+	int status;
 	BOOL bSuccess;
 	HANDLE hChannel;
 	UINT32 channelPort;
 	const char* channelGuid;
 	FDSAPI_MESSAGE requestMsg;
 	FDSAPI_MESSAGE responseMsg;
+	FDSAPI_CHANNEL* pChannel;
 
 	SetLastError(0);
 
@@ -1306,6 +1399,22 @@ FreeRDS_WTSVirtualChannelOpen(
 
 	if (!channelGuid || !channelPort)
 		return NULL;
+
+	pChannel = FDSAPI_Channel_New();
+
+	if (!pChannel)
+		return NULL;
+
+	status = FDSAPI_Channel_Connect(pChannel, channelGuid, channelPort);
+
+	if (status < 0)
+	{
+		fprintf(stderr, "FDSAPI_Channel_Connect failure: %d\n", status);
+		FDSAPI_Channel_Free(pChannel);
+		return NULL;
+	}
+
+	hChannel = (HANDLE) pChannel;
 
 	return hChannel;
 }
@@ -1376,7 +1485,7 @@ FreeRDS_WTSVirtualChannelRead(
 	PULONG pBytesRead
 )
 {
-	return TRUE;
+	return FALSE;
 }
 
 BOOL WINAPI
@@ -1387,7 +1496,7 @@ FreeRDS_WTSVirtualChannelWrite(
 	PULONG pBytesWritten
 )
 {
-	return TRUE;
+	return FALSE;
 }
 
 BOOL WINAPI

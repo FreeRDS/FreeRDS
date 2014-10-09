@@ -26,6 +26,7 @@
 #include <winpr/crt.h>
 #include <winpr/synch.h>
 #include <winpr/stream.h>
+#include <winpr/collections.h>
 
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
@@ -58,7 +59,6 @@ int g_is_term(void);
 void g_set_term(int value);
 HANDLE g_get_term_event(void);
 
-UINT32 freerds_server_get_connection_id(rdsServer* server);
 void freerds_server_add_connection(rdsServer* server, rdsConnection* connection);
 void freerds_server_remove_connection(rdsServer* server, UINT32 id);
 rdsConnection* freerds_server_get_connection(rdsServer* server, UINT32 id);

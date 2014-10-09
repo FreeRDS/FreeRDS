@@ -422,15 +422,13 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 	response.callId = request->callId;
 	response.msgType = FDSAPI_RESPONSE_ID(request->msgType);
 
-	response.ChannelPort = 123;
+	response.ChannelPort = channel->port;
 	response.ChannelGuid = _strdup(channel->guidString);
 
 	status = freerds_icp_ChannelEndpointOpenResponse(&response);
 
 	freerds_rpc_msg_free(request->msgType, request);
 	free(request);
-
-	freerds_channel_free(channel);
 
 	return TRUE;
 }

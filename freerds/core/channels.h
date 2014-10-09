@@ -22,6 +22,7 @@
 #include "freerds.h"
 
 #include <winpr/winsock.h>
+#include <winpr/collections.h>
 
 struct rds_channel_server
 {
@@ -29,6 +30,7 @@ struct rds_channel_server
 	char* listenAddress;
 	SOCKET listenerSocket;
 	HANDLE listenEvent;
+	wHashTable* table;
 };
 
 struct rds_channel
@@ -37,7 +39,11 @@ struct rds_channel
 	UINT32 port;
 	GUID guid;
 	char* guidString;
+	BOOL connected;
+	SOCKET socket;
+	rdsServer* server;
 	rdsConnection* connection;
+	rdsChannelServer* channels;
 };
 
 int freerds_channels_post_connect(rdsConnection* session);
@@ -48,8 +54,8 @@ void freerds_channel_free(rdsChannel* channel);
 int freerds_channel_server_open(rdsChannelServer* channels);
 int freerds_channel_server_close(rdsChannelServer* channels);
 
-HANDLE freerds_channel_server_get_event_handle(rdsChannelServer* channels);
-int freerds_channel_server_check_socket(rdsChannelServer* channels);
+HANDLE freerds_channel_server_listen_event(rdsChannelServer* channels);
+int freerds_channel_server_accept(rdsChannelServer* channels);
 
 rdsChannelServer* freerds_channel_server_new();
 void freerds_channel_server_free(rdsChannelServer* channels);

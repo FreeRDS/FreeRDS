@@ -36,14 +36,6 @@
 
 rdsServer* g_Server = NULL;
 
-UINT32 freerds_server_get_connection_id(rdsServer* server)
-{
-	if (!server)
-		server = g_Server;
-
-	return InterlockedIncrement((volatile LONG*) &(server->connectionId));
-}
-
 void freerds_server_add_connection(rdsServer* server, rdsConnection* connection)
 {
 	if (!server)
@@ -103,15 +95,21 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 		fclose(fp);
 	}
 
-	context->id = freerds_server_get_connection_id(g_Server);
-	context->settings = settings;
+	context->server = g_Server;
+	context->channels = context->server->channels;
 
+	context->id = context->server->connectionId++;
+
+	context->settings = settings;
 	context->bytesPerPixel = 4;
 
 	context->FrameList = ListDictionary_New(TRUE);
 
 	context->client = client;
 	context->vcm = WTSOpenServerA((LPSTR) client->context);
+
+	context->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	context->notifications = MessageQueue_New(NULL);
 }
 
 void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
@@ -134,10 +132,8 @@ void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 
 	connection = (rdsConnection*) client->context;
 
-	connection->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	connection->notifications = MessageQueue_New(NULL);
-
-	connection->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) freerds_connection_main_thread, client, 0, NULL);
+	connection->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)
+			freerds_connection_main_thread, client, 0, NULL);
 }
 
 int freerds_server_main_loop(rdsServer* server)
@@ -160,7 +156,7 @@ int freerds_server_main_loop(rdsServer* server)
 	freerds_channel_server_open(server->channels);
 
 	TermEvent = g_get_term_event();
-	ChannelEvent = freerds_channel_server_get_event_handle(channels);
+	ChannelEvent = freerds_channel_server_listen_event(channels);
 
 	while (1)
 	{
@@ -189,7 +185,7 @@ int freerds_server_main_loop(rdsServer* server)
 
 		if (WaitForSingleObject(ChannelEvent, 0) == WAIT_OBJECT_0)
 		{
-			freerds_channel_server_check_socket(channels);
+			freerds_channel_server_accept(channels);
 			break;
 		}
 	}
