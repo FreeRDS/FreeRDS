@@ -200,12 +200,13 @@ namespace freerds
 		return authStatus;
 	}
 
-	void FDSApiHandler::virtualChannelOpen(
+	UINT32 FDSApiHandler::virtualChannelOpen(
 		std::string& _return,
 		const std::string& authToken,
 		const INT32 sessionId,
 		const std::string& virtualName)
 	{
+		UINT32 channelPort = 0;
 		CallOutVirtualChannelOpen openCall;
 		ConnectionStore* connectionStore = APP_CONTEXT.getConnectionStore();
 		UINT32 connectionId = connectionStore->getConnectionIdForSessionId(sessionId);
@@ -218,23 +219,25 @@ namespace freerds
 
 		if (openCall.getResult() == 0)
 		{
-			// no error
-			_return = openCall.getChannelEndpoint();
+			_return = openCall.getChannelGuid();
+			channelPort = openCall.getChannelPort();
 		}
 		else
 		{
-			// report error
 			_return = "";
 		}
+
+		return channelPort;
 	}
 
-	void FDSApiHandler::virtualChannelOpenEx(
+	UINT32 FDSApiHandler::virtualChannelOpenEx(
 		std::string& _return,
 		const std::string& authToken,
 		const INT32 sessionId,
 		const std::string& virtualName,
 		const INT32 flags)
 	{
+		return 0;
 	}
 
 	bool FDSApiHandler::virtualChannelClose(

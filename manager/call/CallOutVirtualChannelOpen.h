@@ -39,13 +39,15 @@ namespace freerds
 
 		void setConnectionId(UINT32 connectionId);
 		void setChannelName(std::string channelName);
-		std::string getChannelEndpoint();
+
+		UINT32 getChannelPort();
+		std::string getChannelGuid();
 
 	private:
 		UINT32 m_ConnectionId;
-		UINT64 m_ChannelHandle;
+		UINT32 m_ChannelPort;
 		std::string m_ChannelName;
-		std::string m_ChannelEndpoint;
+		std::string m_ChannelGuid;
 
 		UINT32 m_RequestId;
 		FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST m_Request;

@@ -26,22 +26,18 @@
 
 #include <freerds/rpc.h>
 
-#define PBRPC_TIMEOUT 10000
+#include "freerds.h"
 
-typedef struct pbrpc_method pbRPCMethod;
-
-struct  pbrpc_context
+struct pbrpc_context
 {
+	LONG tag;
 	HANDLE hPipe;
 	HANDLE stopEvent;
 	HANDLE thread;
-	wListDictionary* transactions;
-	wQueue* writeQueue;
 	BOOL isConnected;
-	LONG tag;
-	pbRPCMethod* methods;
+	wQueue* writeQueue;
+	wListDictionary* transactions;
 };
-typedef struct pbrpc_context pbRPCContext;
 
 struct pbrpc_payload
 {
@@ -53,39 +49,24 @@ typedef struct pbrpc_payload pbRPCPayload;
 
 typedef int (*pbRPCCallback)(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
 
-/* Return codes 0-100 are used from the pbrpc protocol itself */
 typedef enum pbrpc_status
 {
-	PBRPC_SUCCESS = 0, // everything is fine
-	PBRPC_FAILED = 1, // request failed optional error string might be set
-	PBRPC_NOTFOUND = 2, // method was not found on server
-	PBRPC_BAD_REQEST_DATA = 100, // request couldn't be serialized
-	PBRPC_BAD_RESPONSE = 101, // response couldn't be  unserialized
-	PBRCP_TRANSPORT_ERROR = 102, // problem with transport
-	PBRCP_CALL_TIMEOUT = 103 // problem with transport
+	PBRPC_SUCCESS = 0,
+	PBRPC_FAILED = 1,
+	PBRPC_NOTFOUND = 2,
+	PBRPC_BAD_REQEST_DATA = 100,
+	PBRPC_BAD_RESPONSE = 101,
+	PBRCP_TRANSPORT_ERROR = 102,
+	PBRCP_CALL_TIMEOUT = 103
 } PBRPCSTATUS;
-
 
 typedef void (*pbRpcResponseCallback)(UINT32 reason, FDSAPI_MSG_PACKET* response, void *args);
 
-pbRPCContext* pbrpc_server_new();
-void pbrpc_server_free(pbRPCContext* context);
 int pbrpc_server_start(pbRPCContext* context);
 int pbrpc_server_stop(pbRPCContext* context);
-int pbrpc_call_method(pbRPCContext* context, UINT32 type, pbRPCPayload* request, pbRPCPayload** response);
-void pbrcp_call_method_async(pbRPCContext* context, UINT32 type, pbRPCPayload* request,
-		pbRpcResponseCallback callback, void *callback_args);
-int pbrpc_send_response(pbRPCContext* context, pbRPCPayload *response, UINT32 status, UINT32 type, UINT32 tag);
 
-/* utils */
-
-DWORD pbrpc_getTag(pbRPCContext *context);
-FDSAPI_MSG_PACKET* pbrpc_message_new();
-void pbrpc_message_free(FDSAPI_MSG_PACKET* msg, BOOL freePayload);
-void pbrpc_prepare_request(pbRPCContext* context, FDSAPI_MSG_PACKET* msg);
-void pbrpc_prepare_response(FDSAPI_MSG_PACKET* msg, UINT32 tag);
-pbRPCPayload* pbrpc_payload_new();
-void pbrpc_free_payload(pbRPCPayload* response);
+pbRPCContext* pbrpc_server_new();
+void pbrpc_server_free(pbRPCContext* context);
 
 /* icp */
 
@@ -104,9 +85,5 @@ int freerds_icp_LogoffUser(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
 
 int freerds_icp_ChannelEndpointOpenResponse(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE* pResponse);
 int freerds_icp_ChannelEndpointOpen(FDSAPI_MSG_PACKET* msg, pbRPCPayload** pbresponse);
-
-int freerds_icp_start();
-int freerds_icp_shutdown();
-void* freerds_icp_get_context();
 
 #endif //_PBRPC_H

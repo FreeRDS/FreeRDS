@@ -24,6 +24,7 @@
 #include <winpr/rpc.h>
 #include <winpr/file.h>
 #include <winpr/path.h>
+#include <winpr/platform.h>
 
 #ifndef _WIN32
 #include <netinet/tcp.h>
@@ -127,47 +128,76 @@ void freerds_channel_free(rdsChannel* channel)
 
 /* channel server */
 
-int freerds_channels_open(rdsChannels* channels)
+int freerds_detect_ephemeral_port_range(int* begPort, int* endPort)
 {
-	int status = 0;
-	char servname[64] = { 0 };
-	struct addrinfo hints = { 0 };
-	struct addrinfo* result = NULL;
+	/* IANA port range */
+	*begPort = 49152;
+	*endPort = 65535;
 
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_PASSIVE;
+#ifdef __linux__
+	/* default linux port range */
+	*begPort = 32768;
+	*endPort = 61000;
+#endif
 
-	sprintf_s(servname, sizeof(servname), "%d", channels->listenPort);
-	getaddrinfo(channels->listenAddress, servname, &hints, &result);
+	return 1;
+}
+
+int freerds_bind_local_ephemeral_port(SOCKET* pSocket)
+{
+	SOCKET s;
+	int port;
+	int status;
+	int begPort;
+	int endPort;
+	int optlen = 0;
+	UINT32 optval = 0;
+	unsigned long addr;
+	struct sockaddr_in sockAddr;
+
+	*pSocket = 0;
+
+	freerds_detect_ephemeral_port_range(&begPort, &endPort);
+
+	s = _socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	if (s == INVALID_SOCKET)
+		return -1;
+
+	*pSocket = s;
+
+	_setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*) &optval, sizeof(optlen));
+
+	status = -1;
+	addr = _inet_addr("127.0.0.1");
+
+	for (port = begPort; port <= endPort; port++)
+	{
+		sockAddr.sin_family = AF_INET;
+		sockAddr.sin_addr.s_addr = addr;
+		sockAddr.sin_port = htons(port);
+
+		status = _bind(s, (struct sockaddr*) &sockAddr, sizeof(sockAddr));
+
+		if (status == 0)
+			break;
+	}
 
 	if (status != 0)
 	{
-		fprintf(stderr, "getaddrinfo failure: %d\n", status);
+		closesocket(s);
+		*pSocket = 0;
 		return -1;
 	}
 
-	channels->listenerSocket = _socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	return port;
+}
 
-	if (channels->listenerSocket == INVALID_SOCKET)
-	{
-		fprintf(stderr, "socket failure: %d\n", WSAGetLastError());
-		freeaddrinfo(result);
-		return -1;
-	}
+int freerds_channel_server_open(rdsChannelServer* channels)
+{
+	int status = 0;
 
-	status = _bind(channels->listenerSocket, result->ai_addr, (int) result->ai_addrlen);
-
-	if (status == SOCKET_ERROR)
-	{
-		fprintf(stderr, "bind failure: %d\n", WSAGetLastError());
-		freeaddrinfo(result);
-		closesocket(channels->listenerSocket);
-		return -1;
-	}
-
-	freeaddrinfo(result);
+	channels->listenPort = freerds_bind_local_ephemeral_port(&(channels->listenerSocket));
 
 	status = _listen(channels->listenerSocket, SOMAXCONN);
 
@@ -175,6 +205,7 @@ int freerds_channels_open(rdsChannels* channels)
 	{
 		fprintf(stderr, "listen failure: %d\n", WSAGetLastError());
 		closesocket(channels->listenerSocket);
+		channels->listenerSocket = 0;
 		return -1;
 	}
 
@@ -185,7 +216,7 @@ int freerds_channels_open(rdsChannels* channels)
 	return 1;
 }
 
-int freerds_channels_close(rdsChannels* channels)
+int freerds_channel_server_close(rdsChannelServer* channels)
 {
 	if (channels->listenerSocket)
 	{
@@ -202,12 +233,12 @@ int freerds_channels_close(rdsChannels* channels)
 	return 1;
 }
 
-HANDLE freerds_channels_get_event_handle(rdsChannels* channels)
+HANDLE freerds_channel_server_get_event_handle(rdsChannelServer* channels)
 {
 	return channels->listenEvent;
 }
 
-int freerds_channels_check_socket(rdsChannels* channels)
+int freerds_channel_server_check_socket(rdsChannelServer* channels)
 {
 	int status;
 	int optlen = 0;
@@ -245,11 +276,11 @@ int freerds_channels_check_socket(rdsChannels* channels)
 	return 1;
 }
 
-rdsChannels* freerds_channels_new()
+rdsChannelServer* freerds_channel_server_new()
 {
-	rdsChannels* channels;
+	rdsChannelServer* channels;
 
-	channels = (rdsChannels*) calloc(1, sizeof(rdsChannels));
+	channels = (rdsChannelServer*) calloc(1, sizeof(rdsChannelServer));
 
 	if (channels)
 	{
@@ -260,7 +291,7 @@ rdsChannels* freerds_channels_new()
 	return channels;
 }
 
-void freerds_channels_free(rdsChannels* channels)
+void freerds_channel_server_free(rdsChannelServer* channels)
 {
 	if (!channels)
 		return;

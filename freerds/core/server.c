@@ -26,10 +26,47 @@
 
 #include <winpr/crt.h>
 #include <winpr/thread.h>
+#include <winpr/interlocked.h>
 
 #include <errno.h>
 #include <sys/select.h>
 #include <sys/signal.h>
+
+#include "rpc.h"
+
+rdsServer* g_Server = NULL;
+
+UINT32 freerds_server_get_connection_id(rdsServer* server)
+{
+	if (!server)
+		server = g_Server;
+
+	return InterlockedIncrement((volatile LONG*) &(server->connectionId));
+}
+
+void freerds_server_add_connection(rdsServer* server, rdsConnection* connection)
+{
+	if (!server)
+		server = g_Server;
+
+	ListDictionary_Add(server->connections, (void*) (UINT_PTR) connection->id, connection);
+}
+
+void freerds_server_remove_connection(rdsServer* server, UINT32 id)
+{
+	if (!server)
+		server = g_Server;
+
+	ListDictionary_Remove(server->connections, (void*) (UINT_PTR) id);
+}
+
+rdsConnection* freerds_server_get_connection(rdsServer* server, UINT32 id)
+{
+	if (!server)
+		server = g_Server;
+
+	return ListDictionary_GetItemValue(g_Server->connections, (void*) (UINT_PTR) id);
+}
 
 void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
@@ -66,7 +103,7 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 		fclose(fp);
 	}
 
-	context->id = app_context_get_connectionid();
+	context->id = freerds_server_get_connection_id(g_Server);
 	context->settings = settings;
 
 	context->bytesPerPixel = 4;
@@ -103,40 +140,27 @@ void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 	connection->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) freerds_connection_main_thread, client, 0, NULL);
 }
 
-rdsListener* freerds_listener_new(void)
-{
-	freerdp_listener* listener;
-
-	listener = freerdp_listener_new();
-	listener->PeerAccepted = freerds_peer_accepted;
-
-	return (rdsListener*) listener;
-}
-
-void freerds_listener_free(rdsListener* self)
-{
-	freerdp_listener_free((freerdp_listener*) self);
-}
-
-int freerds_listener_main_loop(rdsListener* self)
+int freerds_server_main_loop(rdsServer* server)
 {
 	DWORD status;
 	DWORD nCount;
 	HANDLE events[32];
 	HANDLE TermEvent;
 	HANDLE ChannelEvent;
-	rdsChannels* channels;
+	rdsChannelServer* channels;
 	freerdp_listener* listener;
 
-	listener = (freerdp_listener*) self;
+	listener = server->listener;
+	channels = server->channels;
+
+	server->rpc = pbrpc_server_new();
+	pbrpc_server_start(server->rpc);
 
 	listener->Open(listener, NULL, 3389);
-
-	channels = freerds_channels_new();
-	freerds_channels_open(channels);
+	freerds_channel_server_open(server->channels);
 
 	TermEvent = g_get_term_event();
-	ChannelEvent = freerds_channels_get_event_handle(channels);
+	ChannelEvent = freerds_channel_server_get_event_handle(channels);
 
 	while (1)
 	{
@@ -157,7 +181,7 @@ int freerds_listener_main_loop(rdsListener* self)
 			break;
 		}
 
-		if (listener->CheckFileDescriptor(listener) != TRUE)
+		if (!listener->CheckFileDescriptor(listener))
 		{
 			fprintf(stderr, "Failed to check FreeRDP file descriptor\n");
 			break;
@@ -165,16 +189,63 @@ int freerds_listener_main_loop(rdsListener* self)
 
 		if (WaitForSingleObject(ChannelEvent, 0) == WAIT_OBJECT_0)
 		{
-			freerds_channels_check_socket(channels);
+			freerds_channel_server_check_socket(channels);
 			break;
 		}
 	}
 
-	listener->Close(listener);
+	if (server->rpc)
+	{
+		pbrpc_server_stop(server->rpc);
+		pbrpc_server_free(server->rpc);
+		server->rpc = NULL;
+	}
 
-	freerds_channels_close(channels);
-	freerds_channels_free(channels);
+	listener->Close(listener);
 
 	return 0;
 }
 
+rdsServer* freerds_server_new(void)
+{
+	rdsServer* server;
+
+	server = (rdsServer*) calloc(1, sizeof(rdsServer));
+
+	if (server)
+	{
+		server->listener = freerdp_listener_new();
+		server->listener->PeerAccepted = freerds_peer_accepted;
+
+		server->channels = freerds_channel_server_new();
+
+		server->connectionId = 0;
+		server->connections = ListDictionary_New(TRUE);
+	}
+
+	return server;
+}
+
+void freerds_server_free(rdsServer* server)
+{
+	if (server->listener)
+	{
+		freerdp_listener_free(server->listener);
+		server->listener = NULL;
+	}
+
+	if (server->channels)
+	{
+		freerds_channel_server_close(server->channels);
+		freerds_channel_server_free(server->channels);
+		server->channels = NULL;
+	}
+
+	if (server->connections)
+	{
+		ListDictionary_Free(server->connections);
+		server->connections = NULL;
+	}
+
+	free(server);
+}

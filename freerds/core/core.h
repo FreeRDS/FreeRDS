@@ -39,10 +39,7 @@
 
 #include "encoder.h"
 
-typedef struct rds_channel rdsChannel;
-typedef struct rds_channels rdsChannels;
-
-typedef struct rds_backend_connector rdsBackendConnector;
+#include "freerds.h"
 
 struct rds_rect
 {
@@ -78,9 +75,8 @@ struct rds_connection
 	DrdynvcServerContext* drdynvc;
 	wMessageQueue* notifications;
 
-	rdsChannels* channels;
+	rdsChannelServer* channels;
 };
-
 
 struct rds_backend_connector
 {

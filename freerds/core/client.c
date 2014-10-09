@@ -33,6 +33,95 @@
 
 #include <freerds/backend.h>
 
+void* freerds_client_thread(void* arg)
+{
+	int fps;
+	DWORD status;
+	DWORD nCount;
+	HANDLE events[8];
+	HANDLE PackTimer;
+	LARGE_INTEGER due;
+	rdsBackendConnector* connector = (rdsBackendConnector*) arg;
+
+	fps = connector->fps;
+	PackTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+
+	due.QuadPart = 0;
+	SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+
+	nCount = 0;
+	events[nCount++] = PackTimer;
+	events[nCount++] = connector->StopEvent;
+	events[nCount++] = connector->hClientPipe;
+
+	while (1)
+	{
+		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
+
+		if (WaitForSingleObject(connector->StopEvent, 0) == WAIT_OBJECT_0)
+		{
+			break;
+		}
+
+		if (WaitForSingleObject(connector->hClientPipe, 0) == WAIT_OBJECT_0)
+		{
+			if (freerds_transport_receive((rdsBackend*) connector) < 0)
+				break;
+		}
+
+		if (status == WAIT_OBJECT_0)
+		{
+			freerds_message_server_queue_pack(connector);
+
+			if (connector->fps != fps)
+			{
+				fps = connector->fps;
+				due.QuadPart = 0;
+				SetWaitableTimer(PackTimer, &due, 1000 / fps, NULL, NULL, 0);
+			}
+		}
+	}
+
+	CloseHandle(PackTimer);
+
+	return NULL;
+}
+
+int freerds_client_get_event_handles(rdsBackend* backend, HANDLE* events, DWORD* nCount)
+{
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
+
+	if (connector)
+	{
+		if (connector->ServerQueue)
+		{
+			events[*nCount] = MessageQueue_Event(connector->ServerQueue);
+			(*nCount)++;
+		}
+	}
+
+	return 0;
+}
+
+int freerds_client_check_event_handles(rdsBackend* backend)
+{
+	int status = 0;
+
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
+
+	if (!connector)
+		return 0;
+
+	while (WaitForSingleObject(MessageQueue_Event(connector->ServerQueue), 0) == WAIT_OBJECT_0)
+	{
+		status = freerds_message_server_queue_process_pending_messages(connector);
+	}
+
+	return status;
+}
+
+/* server callbacks */
+
 int freerds_client_inbound_begin_update(rdsBackend* backend, RDS_MSG_BEGIN_UPDATE* msg)
 {
 	freerds_orders_begin_paint(((rdsBackendConnector*) backend)->connection);

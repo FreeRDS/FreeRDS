@@ -215,24 +215,26 @@ static void FDSAPI_FreeVirtualChannelOpenRequest(FDSAPI_VIRTUAL_CHANNEL_OPEN_REQ
 
 static UINT32 FDSAPI_SizeOfVirtualChannelOpenResponse(FDSAPI_VIRTUAL_CHANNEL_OPEN_RESPONSE* virtualChannelOpenResponse)
 {
-	return FDSAPI_SizeOfString(virtualChannelOpenResponse->endPoint);
+	return FDSAPI_SizeOfUINT32() + FDSAPI_SizeOfString(virtualChannelOpenResponse->channelGuid);
 }
 
 static BOOL FDSAPI_DecodeVirtualChannelOpenResponse(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPEN_RESPONSE* virtualChannelOpenResponse)
 {
-	if (!FDSAPI_DecodeString(s, &virtualChannelOpenResponse->endPoint)) return FALSE;
+	if (!FDSAPI_DecodeUINT32(s, &virtualChannelOpenResponse->channelPort)) return FALSE;
+	if (!FDSAPI_DecodeString(s, &virtualChannelOpenResponse->channelGuid)) return FALSE;
 
 	return TRUE;
 }
 
 static void FDSAPI_EncodeVirtualChannelOpenResponse(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPEN_RESPONSE* virtualChannelOpenResponse)
 {
-	FDSAPI_EncodeString(s, virtualChannelOpenResponse->endPoint);
+	FDSAPI_EncodeUINT32(s, virtualChannelOpenResponse->channelPort);
+	FDSAPI_EncodeString(s, virtualChannelOpenResponse->channelGuid);
 }
 
 static void FDSAPI_FreeVirtualChannelOpenResponse(FDSAPI_VIRTUAL_CHANNEL_OPEN_RESPONSE* virtualChannelOpenResponse)
 {
-	FDSAPI_FreeString(virtualChannelOpenResponse->endPoint);
+	FDSAPI_FreeString(virtualChannelOpenResponse->channelGuid);
 }
 
 
@@ -266,24 +268,26 @@ static void FDSAPI_FreeVirtualChannelOpenExRequest(FDSAPI_VIRTUAL_CHANNEL_OPEN_E
 
 static UINT32 FDSAPI_SizeOfVirtualChannelOpenExResponse(FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE* virtualChannelOpenExResponse)
 {
-	return FDSAPI_SizeOfString(virtualChannelOpenExResponse->endPoint);
+	return FDSAPI_SizeOfUINT32() + FDSAPI_SizeOfString(virtualChannelOpenExResponse->channelGuid);
 }
 
 static BOOL FDSAPI_DecodeVirtualChannelOpenExResponse(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE* virtualChannelOpenExResponse)
 {
-	if (!FDSAPI_DecodeString(s, &virtualChannelOpenExResponse->endPoint)) return FALSE;
+	if (!FDSAPI_DecodeUINT32(s, &virtualChannelOpenExResponse->channelPort)) return FALSE;
+	if (!FDSAPI_DecodeString(s, &virtualChannelOpenExResponse->channelGuid)) return FALSE;
 
 	return TRUE;
 }
 
 static void FDSAPI_EncodeVirtualChannelOpenExResponse(wStream* s, FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE* virtualChannelOpenExResponse)
 {
-	FDSAPI_EncodeString(s, virtualChannelOpenExResponse->endPoint);
+	FDSAPI_EncodeUINT32(s, virtualChannelOpenExResponse->channelPort);
+	FDSAPI_EncodeString(s, virtualChannelOpenExResponse->channelGuid);
 }
 
 static void FDSAPI_FreeVirtualChannelOpenExResponse(FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE* virtualChannelOpenExResponse)
 {
-	FDSAPI_FreeString(virtualChannelOpenExResponse->endPoint);
+	FDSAPI_FreeString(virtualChannelOpenExResponse->channelGuid);
 }
 
 

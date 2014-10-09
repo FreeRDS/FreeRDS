@@ -46,10 +46,10 @@
 #include <winpr/wtsapi.h>
 
 #include "rpc.h"
-#include "app_context.h"
+
+extern rdsServer* g_Server;
 
 static HANDLE g_TermEvent = NULL;
-static rdsListener* g_listen = NULL;
 static char* freerds_home_path = NULL;
 
 char* freerds_get_home_path()
@@ -81,8 +81,7 @@ char* freerds_get_home_path()
 COMMAND_LINE_ARGUMENT_A freerds_args[] =
 {
 	{ "kill", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "kill daemon" },
-	{ "nodaemon", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "no daemon" },
-	{ "module", COMMAND_LINE_VALUE_REQUIRED, "<module name>", NULL, NULL, -1, NULL, "module name" },
+	{ "no-daemon", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, "nodaemon", "no daemon" },
 	{ NULL, 0, NULL, NULL, NULL, -1, NULL, NULL }
 };
 
@@ -132,8 +131,9 @@ int main(int argc, char** argv)
 	int kill_process;
 	char text[256];
 	char pid_file[256];
+	rdsServer* server;
 	COMMAND_LINE_ARGUMENT_A* arg;
-#ifndef WIN32
+#ifndef _WIN32
 	sigset_t set;
 #endif
 
@@ -160,7 +160,7 @@ int main(int argc, char** argv)
 		{
 			kill_process = 1;
 		}
-		CommandLineSwitchCase(arg, "nodaemon")
+		CommandLineSwitchCase(arg, "no-daemon")
 		{
 			no_daemon = 1;
 		}
@@ -299,7 +299,8 @@ int main(int argc, char** argv)
 	sigprocmask(SIG_UNBLOCK, &set, NULL);
 #endif
 
-	g_listen = freerds_listener_new();
+	server = freerds_server_new();
+	g_Server = server;
 
 	signal(SIGINT, freerds_shutdown);
 	signal(SIGTERM, freerds_shutdown);
@@ -309,16 +310,13 @@ int main(int argc, char** argv)
 
 	freerds_get_home_path();
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	app_context_init();
 
-	freerds_icp_start();
+	freerds_server_main_loop(server);
 
-	freerds_listener_main_loop(g_listen);
-	freerds_listener_free(g_listen);
+	freerds_server_free(server);
+	g_Server = NULL;
 
 	CloseHandle(g_TermEvent);
-	freerds_icp_shutdown();
-	app_context_uninit();
 
 	/* only main process should delete pid file */
 	if ((!no_daemon) && (pid == GetCurrentProcessId()))

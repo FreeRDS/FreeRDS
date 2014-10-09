@@ -28,7 +28,6 @@
 #include <freerdp/codec/bitmap.h>
 
 #include "core.h"
-#include "app_context.h"
 
 /**
  * Custom helpers

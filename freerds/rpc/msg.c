@@ -1124,8 +1124,8 @@ static wStream* freerds_pack_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPO
 
 	msgpack_pack_array(&pk, 3);
 	msgpack_pack_uint32(&pk, response->status);
-	msgpack_pack_uint64(&pk, response->ChannelHandle);
-	msgpack_pack_cstr(&pk, response->ChannelEndpoint);
+	msgpack_pack_uint32(&pk, response->ChannelPort);
+	msgpack_pack_cstr(&pk, response->ChannelGuid);
 
 	STREAM_PACK_FINALIZE(s);
 
@@ -1153,10 +1153,10 @@ static BOOL freerds_unpack_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOIN
 	if (!msgpack_unpack_uint32(obj++, &(response->status)))
 		return FALSE;
 
-	if (!msgpack_unpack_uint64(obj++, &(response->ChannelHandle)))
+	if (!msgpack_unpack_uint32(obj++, &(response->ChannelPort)))
 		return FALSE;
 
-	if (!msgpack_unpack_cstr(obj++, &(response->ChannelEndpoint)))
+	if (!msgpack_unpack_cstr(obj++, &(response->ChannelGuid)))
 		return FALSE;
 
 	msgpack_unpacked_destroy(&pk);
@@ -1166,7 +1166,7 @@ static BOOL freerds_unpack_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOIN
 
 static void freerds_free_channel_endpoint_open_response(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE* response)
 {
-	free(response->ChannelEndpoint);
+	free(response->ChannelGuid);
 }
 
 static RDS_RPC_PACK_FUNC g_FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE =

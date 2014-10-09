@@ -28,7 +28,7 @@
 namespace freerds
 {
 	CallOutVirtualChannelOpen::CallOutVirtualChannelOpen()
-	: m_ConnectionId(0), m_ChannelHandle(0),
+	: m_ConnectionId(0), m_ChannelPort(0),
 	  m_RequestId(FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST_ID),
 	  m_ResponseId(FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE_ID)
 	{
@@ -71,8 +71,8 @@ namespace freerds
 
 		freerds_rpc_msg_unpack(m_ResponseId, &m_Response, buffer, length);
 
-		m_ChannelHandle = m_Response.ChannelHandle;
-		m_ChannelEndpoint = m_Response.ChannelEndpoint ? m_Response.ChannelEndpoint : "";
+		m_ChannelPort = m_Response.ChannelPort;
+		m_ChannelGuid = m_Response.ChannelGuid ? m_Response.ChannelGuid : "";
 
 		freerds_rpc_msg_free(m_ResponseId, &m_Response);
 
@@ -87,7 +87,11 @@ namespace freerds
 		m_ChannelName = channelName;
 	}
 
-	std::string CallOutVirtualChannelOpen::getChannelEndpoint() {
-		return m_ChannelEndpoint;
+	UINT32 CallOutVirtualChannelOpen::getChannelPort() {
+		return m_ChannelPort;
+	}
+
+	std::string CallOutVirtualChannelOpen::getChannelGuid() {
+		return m_ChannelGuid;
 	}
 }

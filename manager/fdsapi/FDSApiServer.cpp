@@ -51,7 +51,8 @@ namespace freerds
 	int FDSApiServer::RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length)
 	{
 		int status;
-		std::string endPoint;
+		UINT32 channelPort;
+		std::string channelGuid;
 		wStream* requestStream;
 		wStream* responseStream;
 		FDSAPI_MESSAGE requestMsg;
@@ -257,11 +258,12 @@ namespace freerds
 				responseMsg.messageId = FDSAPI_VIRTUAL_CHANNEL_OPEN_RESPONSE_ID;
 				responseMsg.requestId = requestMsg.requestId;
 
-				FDSApiHandler->virtualChannelOpen(endPoint, authToken,
-						requestMsg.u.virtualChannelOpenRequest.sessionId,
-						requestMsg.u.virtualChannelOpenRequest.virtualName);
+				responseMsg.u.virtualChannelOpenResponse.channelPort =
+						FDSApiHandler->virtualChannelOpen(channelGuid, authToken,
+								requestMsg.u.virtualChannelOpenRequest.sessionId,
+								requestMsg.u.virtualChannelOpenRequest.virtualName);
 
-				responseMsg.u.virtualChannelOpenResponse.endPoint = _strdup(endPoint.c_str());
+				responseMsg.u.virtualChannelOpenResponse.channelGuid = _strdup(channelGuid.c_str());
 
 				break;
 			}
@@ -271,12 +273,13 @@ namespace freerds
 				responseMsg.messageId = FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE_ID;
 				responseMsg.requestId = requestMsg.requestId;
 
-				FDSApiHandler->virtualChannelOpenEx(endPoint, authToken,
-						requestMsg.u.virtualChannelOpenExRequest.sessionId,
-						requestMsg.u.virtualChannelOpenExRequest.virtualName,
-						requestMsg.u.virtualChannelOpenExRequest.flags);
+				responseMsg.u.virtualChannelOpenExResponse.channelPort =
+						FDSApiHandler->virtualChannelOpenEx(channelGuid, authToken,
+								requestMsg.u.virtualChannelOpenExRequest.sessionId,
+								requestMsg.u.virtualChannelOpenExRequest.virtualName,
+								requestMsg.u.virtualChannelOpenExRequest.flags);
 
-				responseMsg.u.virtualChannelOpenExResponse.endPoint = _strdup(endPoint.c_str());
+				responseMsg.u.virtualChannelOpenExResponse.channelGuid = _strdup(channelGuid.c_str());
 
 				break;
 			}

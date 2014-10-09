@@ -22,7 +22,6 @@ include_directories(".")
 set(${MODULE_PREFIX}_SRCS
 	freerds.c
 	freerds.h
-	app_context.c
 	core.c
 	core.h
 	rpc.c
@@ -31,12 +30,11 @@ set(${MODULE_PREFIX}_SRCS
 	encoder.h
 	channels.c
 	channels.h
-	listener.c
+	client.c
+	server.c
 	pipeline.c
 	process.c
-	backend.c
-	client_module.c
-	server_module.c)
+	backend.c)
 
 add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 

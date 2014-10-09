@@ -82,8 +82,8 @@ namespace freerds
 
 		virtual INT32 ping(const INT32 input);
 		virtual INT32 authenticateUser(const std::string& authToken, const INT32 sessionId, const std::string& username, const std::string& password, const std::string& domain);
-		virtual void virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
-		virtual void virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags);
+		virtual UINT32 virtualChannelOpen(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
+		virtual UINT32 virtualChannelOpenEx(std::string& _return, const std::string& authToken, const INT32 sessionId, const std::string& virtualName, const INT32 flags);
 		virtual bool virtualChannelClose(const std::string& authToken, const INT32 sessionId, const std::string& virtualName);
 		virtual bool disconnectSession(const std::string& authToken, const INT32 sessionId, const bool wait);
 		virtual bool logoffSession(const std::string& authToken, const INT32 sessionId, const bool wait);

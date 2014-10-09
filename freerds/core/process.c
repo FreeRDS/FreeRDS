@@ -41,7 +41,8 @@
 
 #include "rpc.h"
 #include "channels.h"
-#include "app_context.h"
+
+extern rdsServer* g_Server;
 
 BOOL freerds_peer_capabilities(freerdp_peer* client)
 {
@@ -421,8 +422,8 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 	response.callId = request->callId;
 	response.msgType = FDSAPI_RESPONSE_ID(request->msgType);
 
-	response.ChannelHandle = 123;
-	response.ChannelEndpoint = _strdup(channel->guidString);
+	response.ChannelPort = 123;
+	response.ChannelGuid = _strdup(channel->guidString);
 
 	status = freerds_icp_ChannelEndpointOpenResponse(&response);
 
@@ -484,7 +485,7 @@ void* freerds_connection_main_thread(void* arg)
 	connection = (rdsConnection*) client->context;
 	settings = client->settings;
 
-	app_context_add_connection(connection);
+	freerds_server_add_connection(g_Server, connection);
 	freerds_generate_certificate(settings);
 
 	settings->RdpSecurity = TRUE;
@@ -609,7 +610,7 @@ void* freerds_connection_main_thread(void* arg)
 	}
 
 	client->Disconnect(client);
-	app_context_remove_connection(connection->id);
+	freerds_server_remove_connection(g_Server, connection->id);
 
 	freerdp_peer_context_free(client);
 	freerdp_peer_free(client);

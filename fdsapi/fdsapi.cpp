@@ -1263,7 +1263,8 @@ FreeRDS_WTSVirtualChannelOpen(
 {
 	BOOL bSuccess;
 	HANDLE hChannel;
-	const char* endPoint;
+	UINT32 channelPort;
+	const char* channelGuid;
 	FDSAPI_MESSAGE requestMsg;
 	FDSAPI_MESSAGE responseMsg;
 
@@ -1281,7 +1282,7 @@ FreeRDS_WTSVirtualChannelOpen(
 	if (!pVirtualName)
 		return FALSE;
 
-	printf("WTSVirtualChannelOpen: %s\n", pVirtualName);
+	fprintf(stderr, "WTSVirtualChannelOpen: %s\n", pVirtualName);
 
 	/* Execute session manager RPC. */
 	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
@@ -1293,20 +1294,17 @@ FreeRDS_WTSVirtualChannelOpen(
 
 	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
 
-	printf("WTSVirtualChannelOpen: status: %d endPoint: %s\n", bSuccess,
-			responseMsg.u.virtualChannelOpenResponse.endPoint);
-
 	if (!bSuccess)
 		return NULL;
 
-	endPoint = responseMsg.u.virtualChannelOpenResponse.endPoint;
+	hChannel = 0;
 
-	if (!endPoint)
-		return NULL;
+	channelPort = responseMsg.u.virtualChannelOpenResponse.channelPort;
+	channelGuid = responseMsg.u.virtualChannelOpenResponse.channelGuid;
 
-	hChannel = CreateFileA(endPoint, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	fprintf(stderr, "WTSVirtualChannelOpen: %s:%d\n", channelGuid, channelPort);
 
-	if (!hChannel || (hChannel == INVALID_HANDLE_VALUE))
+	if (!channelGuid || !channelPort)
 		return NULL;
 
 	return hChannel;
@@ -1321,7 +1319,8 @@ FreeRDS_WTSVirtualChannelOpenEx(
 {
 	BOOL bSuccess;
 	HANDLE hChannel;
-	const char* endPoint;
+	UINT32 channelPort;
+	const char* channelGuid;
 	FDSAPI_MESSAGE requestMsg;
 	FDSAPI_MESSAGE responseMsg;
 
@@ -1349,14 +1348,12 @@ FreeRDS_WTSVirtualChannelOpenEx(
 	if (!bSuccess)
 		return NULL;
 
-	endPoint = responseMsg.u.virtualChannelOpenExResponse.endPoint;
+	hChannel = 0;
 
-	if (!endPoint)
-		return NULL;
+	channelPort = responseMsg.u.virtualChannelOpenExResponse.channelPort;
+	channelGuid = responseMsg.u.virtualChannelOpenExResponse.channelGuid;
 
-	hChannel = CreateFileA(endPoint, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-
-	if (!hChannel || (hChannel == INVALID_HANDLE_VALUE))
+	if (!channelGuid || !channelPort)
 		return NULL;
 
 	return NULL;

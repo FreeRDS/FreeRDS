@@ -113,7 +113,8 @@ FDSAPI_VIRTUAL_CHANNEL_OPEN_REQUEST;
 
 typedef struct
 {
-	const char* endPoint;
+	UINT32 channelPort;
+	const char* channelGuid;
 }
 FDSAPI_VIRTUAL_CHANNEL_OPEN_RESPONSE;
 
@@ -127,7 +128,8 @@ FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_REQUEST;
 
 typedef struct
 {
-	const char* endPoint;
+	UINT32 channelPort;
+	const char* channelGuid;
 }
 FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE;
 
