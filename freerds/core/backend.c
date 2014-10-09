@@ -29,63 +29,63 @@
 
 rdsBackendConnector* freerds_connector_new(rdsConnection* connection)
 {
-        rdpSettings* settings;
-        rdsBackendConnector* connector;
+	rdpSettings* settings;
+	rdsBackendConnector* connector;
 
-        settings = (connection) ? connection->settings : NULL;
+	settings = (connection) ? connection->settings : NULL;
 
-        connector = (rdsBackendConnector*) malloc(sizeof(rdsBackendConnector));
-        ZeroMemory(connector, sizeof(rdsBackendConnector));
+	connector = (rdsBackendConnector*) calloc(1, sizeof(rdsBackendConnector));
 
-        connector->connection = connection;
-        connector->settings = settings;
+	connector->connection = connection;
+	connector->settings = settings;
 
-        connector->client = freerds_client_outbound_interface_new();
-        connector->server = freerds_server_outbound_interface_new();
+	connector->client = freerds_client_outbound_interface_new();
+	connector->server = freerds_server_outbound_interface_new();
 
-        connector->OutboundStream = Stream_New(NULL, 8192);
-        connector->InboundStream = Stream_New(NULL, 8192);
+	connector->OutboundStream = Stream_New(NULL, 8192);
+	connector->InboundStream = Stream_New(NULL, 8192);
 
-        connector->InboundTotalLength = 0;
-        connector->InboundTotalCount = 0;
+	connector->InboundTotalLength = 0;
+	connector->InboundTotalCount = 0;
 
-        connector->OutboundTotalLength = 0;
-        connector->OutboundTotalCount = 0;
+	connector->OutboundTotalLength = 0;
+	connector->OutboundTotalCount = 0;
 
-        connector->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	connector->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-        return connector;
+	return connector;
 }
 
 void freerds_connector_free(rdsBackendConnector* connector)
 {
-        SetEvent(connector->StopEvent);
+	SetEvent(connector->StopEvent);
 
-        WaitForSingleObject(connector->ServerThread, INFINITE);
-        CloseHandle(connector->ServerThread);
+	WaitForSingleObject(connector->ServerThread, INFINITE);
+	CloseHandle(connector->ServerThread);
 
-        Stream_Free(connector->OutboundStream, TRUE);
-        Stream_Free(connector->InboundStream, TRUE);
+	Stream_Free(connector->OutboundStream, TRUE);
+	Stream_Free(connector->InboundStream, TRUE);
 
-        CloseHandle(connector->StopEvent);
-        CloseHandle(connector->hClientPipe);
+	CloseHandle(connector->StopEvent);
+	CloseHandle(connector->hClientPipe);
 
-        if (connector->ServerList)
-        	LinkedList_Free(connector->ServerList);
+	if (connector->ServerList)
+		LinkedList_Free(connector->ServerList);
 
-        if (connector->ServerQueue)
-        	MessageQueue_Free(connector->ServerQueue);
+	if (connector->ServerQueue)
+		MessageQueue_Free(connector->ServerQueue);
 
-        if (connector->Endpoint)
-        	free(connector->Endpoint);
+	if (connector->Endpoint)
+		free(connector->Endpoint);
 
-        if (connector->framebuffer.fbAttached)
-        {
-           shmdt(connector->framebuffer.fbSharedMemory);
-           fprintf(stderr, "connector_free: detached shm %d from %p\n",
-           connector->framebuffer.fbSegmentId, connector->framebuffer.fbSharedMemory);
-        }
-        free(connector);
+	if (connector->framebuffer.fbAttached)
+	{
+		shmdt(connector->framebuffer.fbSharedMemory);
+		fprintf(stderr, "connector_free: detached shm %d from %p\n",
+				connector->framebuffer.fbSegmentId, connector->framebuffer.fbSharedMemory);
+	}
+
+	free(connector);
 }
 
 BOOL freerds_connector_connect(rdsBackendConnector* connector)

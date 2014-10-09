@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+#include "channels.h"
+
 #include "freerds.h"
 
 #include <winpr/crt.h>
@@ -122,18 +124,25 @@ int freerds_listener_main_loop(rdsListener* self)
 	DWORD nCount;
 	HANDLE events[32];
 	HANDLE TermEvent;
+	HANDLE ChannelEvent;
+	rdsChannels* channels;
 	freerdp_listener* listener;
 
 	listener = (freerdp_listener*) self;
 
 	listener->Open(listener, NULL, 3389);
 
+	channels = freerds_channels_new();
+	freerds_channels_open(channels);
+
 	TermEvent = g_get_term_event();
+	ChannelEvent = freerds_channels_get_event_handle(channels);
 
 	while (1)
 	{
 		nCount = 0;
 		events[nCount++] = TermEvent;
+		events[nCount++] = ChannelEvent;
 
 		if (listener->GetEventHandles(listener, events, &nCount) < 0)
 		{
@@ -153,9 +162,18 @@ int freerds_listener_main_loop(rdsListener* self)
 			fprintf(stderr, "Failed to check FreeRDP file descriptor\n");
 			break;
 		}
+
+		if (WaitForSingleObject(ChannelEvent, 0) == WAIT_OBJECT_0)
+		{
+			freerds_channels_check_socket(channels);
+			break;
+		}
 	}
 
 	listener->Close(listener);
+
+	freerds_channels_close(channels);
+	freerds_channels_free(channels);
 
 	return 0;
 }

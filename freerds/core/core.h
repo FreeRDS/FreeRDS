@@ -39,6 +39,9 @@
 
 #include "encoder.h"
 
+typedef struct rds_channel rdsChannel;
+typedef struct rds_channels rdsChannels;
+
 typedef struct rds_backend_connector rdsBackendConnector;
 
 struct rds_rect
@@ -54,7 +57,7 @@ struct rds_connection
 {
 	rdpContext context;
 
-	long id;
+	UINT32 id;
 	rdsBackendConnector* connector;
 	HANDLE Thread;
 	HANDLE TermEvent;
@@ -74,6 +77,8 @@ struct rds_connection
 	RdpsndServerContext* rdpsnd;
 	DrdynvcServerContext* drdynvc;
 	wMessageQueue* notifications;
+
+	rdsChannels* channels;
 };
 
 

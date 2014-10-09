@@ -373,7 +373,7 @@ BOOL freerds_client_process_switch_session(rdsConnection* connection, wMessage* 
 
 	if (error != 0)
 	{
-		fprintf(stderr, "problem occured while switching session \n");
+		fprintf(stderr, "problem occured while switching session\n");
 		return FALSE;
 	}
 
@@ -409,22 +409,27 @@ BOOL freerds_client_process_logoff(rdsConnection* connection, wMessage* message)
 BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMessage* message)
 {
 	int status = 0;
+	rdsChannel* channel;
 	FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST* request;
 	FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE response;
 
 	request = (FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST*) message->wParam;
+
+	channel = freerds_channel_new(connection, request->ChannelName);
 
 	response.status = 0;
 	response.callId = request->callId;
 	response.msgType = FDSAPI_RESPONSE_ID(request->msgType);
 
 	response.ChannelHandle = 123;
-	response.ChannelEndpoint = _strdup("SVC_PIPE");
+	response.ChannelEndpoint = _strdup(channel->guidString);
 
 	status = freerds_icp_ChannelEndpointOpenResponse(&response);
 
 	freerds_rpc_msg_free(request->msgType, request);
 	free(request);
+
+	freerds_channel_free(channel);
 
 	return TRUE;
 }

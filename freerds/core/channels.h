@@ -21,6 +21,36 @@
 
 #include "freerds.h"
 
+#include <winpr/winsock.h>
+
+struct rds_channels
+{
+	int listenPort;
+	char* listenAddress;
+	SOCKET listenerSocket;
+	HANDLE listenEvent;
+};
+
+struct rds_channel
+{
+	char* name;
+	GUID guid;
+	char* guidString;
+	rdsConnection* connection;
+};
+
 int freerds_channels_post_connect(rdsConnection* session);
+
+rdsChannel* freerds_channel_new(rdsConnection* connection, const char* name);
+void freerds_channel_free(rdsChannel* channel);
+
+int freerds_channels_open(rdsChannels* channels);
+int freerds_channels_close(rdsChannels* channels);
+
+HANDLE freerds_channels_get_event_handle(rdsChannels* channels);
+int freerds_channels_check_socket(rdsChannels* channels);
+
+rdsChannels* freerds_channels_new();
+void freerds_channels_free(rdsChannels* channels);
 
 #endif /* FREERDS_CHANNELS_H */
