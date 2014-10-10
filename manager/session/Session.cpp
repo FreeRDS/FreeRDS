@@ -23,16 +23,15 @@
 
 #include "Session.h"
 
-#include <string.h>
+#ifndef _WIN32
 #include <pwd.h>
+#endif
 
+#include <winpr/crt.h>
+#include <winpr/wnd.h>
 #include <winpr/wlog.h>
 #include <winpr/sspicli.h>
 #include <winpr/environment.h>
-#include <winpr/wnd.h>
-
-#include <winpr/crt.h>
-#include <winpr/tchar.h>
 
 #include <module/AuthModule.h>
 #include <fdsapi/FDSApiServer.h>
@@ -234,6 +233,7 @@ namespace freerds
 			mpEnvBlock = NULL;
 		}
 
+#ifndef _WIN32
 		pwnam = getpwnam(mUsername.c_str());
 
 		if (!pwnam)
@@ -247,6 +247,7 @@ namespace freerds
 		SetEnvironmentVariableEBA(&mpEnvBlock, "SHELL", pwnam->pw_shell);
 		SetEnvironmentVariableEBA(&mpEnvBlock, "USER", pwnam->pw_name);
 		SetEnvironmentVariableEBA(&mpEnvBlock, "HOME", pwnam->pw_dir);
+#endif
 
 		return true;
 	}

@@ -45,7 +45,7 @@ pRdsAuthModuleEntry freerds_load_auth_module(const char* name)
         if (!library)
                 return NULL;
 
-        moduleEntry = GetProcAddress(library, RDS_AUTH_MODULE_ENTRY_POINT_NAME);
+        moduleEntry = (pRdsAuthModuleEntry) GetProcAddress(library, RDS_AUTH_MODULE_ENTRY_POINT_NAME);
 
         if (moduleEntry)
                 return moduleEntry;

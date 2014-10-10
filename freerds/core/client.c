@@ -20,14 +20,18 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include <winpr/crt.h>
 
 #include <errno.h>
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifndef _WIN32
 #include <sys/shm.h>
 #include <sys/stat.h>
+#endif
 
 #include "freerds.h"
 

@@ -24,8 +24,11 @@
 
 #include "freerds.h"
 #include <freerds/backend.h>
-#include <sys/types.h>
+
+#ifndef _WIN32
 #include <sys/shm.h>
+#include <sys/types.h>
+#endif
 
 rdsBackendConnector* freerds_connector_new(rdsConnection* connection)
 {

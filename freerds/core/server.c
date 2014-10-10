@@ -29,8 +29,11 @@
 #include <winpr/interlocked.h>
 
 #include <errno.h>
+
+#ifndef _WIN32
 #include <sys/select.h>
 #include <sys/signal.h>
+#endif
 
 #include "rpc.h"
 

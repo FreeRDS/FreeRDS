@@ -1,6 +1,6 @@
 # FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
-# Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+# Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/icp)
 
 add_subdirectory(rpc)
 add_subdirectory(auth)

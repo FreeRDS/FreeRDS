@@ -1,6 +1,6 @@
 # FreeRDS: FreeRDP Remote Desktop Services (RDS)
 #
-# Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+# Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,12 +32,14 @@ install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # Authentication Modules
 
-set(PAM_FEATURE_TYPE "REQUIRED")
-set(PAM_FEATURE_PURPOSE "authentication")
-set(PAM_FEATURE_DESCRIPTION "user authentication")
+if(UNIX)
+	set(PAM_FEATURE_TYPE "REQUIRED")
+	set(PAM_FEATURE_PURPOSE "authentication")
+	set(PAM_FEATURE_DESCRIPTION "user authentication")
 
-find_feature(PAM ${PAM_FEATURE_TYPE} ${PAM_FEATURE_PURPOSE} ${PAM_FEATURE_DESCRIPTION})
+	find_feature(PAM ${PAM_FEATURE_TYPE} ${PAM_FEATURE_PURPOSE} ${PAM_FEATURE_DESCRIPTION})
 
-if(PAM_FOUND)
-	add_subdirectory(pam)
+	if(PAM_FOUND)
+		add_subdirectory(pam)
+	endif()
 endif()

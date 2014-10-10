@@ -23,8 +23,10 @@
 
 #include <winpr/crt.h>
 
+#ifndef _WIN32
 #include <sys/shm.h>
 #include <sys/stat.h>
+#endif
 
 #include <freerdp/freerdp.h>
 #include <freerdp/settings.h>

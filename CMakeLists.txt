@@ -96,15 +96,6 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 	set(BUILD_SHARED_LIBS ON)
 endif()
 
-if((NOT WIN32) AND (NOT APPLE))
-	set(PIXMAN_FEATURE_TYPE "REQUIRED")
-endif()
-
-set(PIXMAN_FEATURE_PURPOSE "Pixel Manipulation")
-set(PIXMAN_FEATURE_DESCRIPTION "Pixel Manipulation Library")
-
-find_feature(Pixman ${PIXMAN_FEATURE_TYPE} ${PIXMAN_FEATURE_PURPOSE} ${PIXMAN_FEATURE_DESCRIPTION})
-
 add_subdirectory(external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/msgpack/src)
 
