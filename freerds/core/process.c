@@ -445,7 +445,9 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 	freerds_channel_server_remove(connection->channelServer, channel);
 
 	client = connection->client;
+
 	channel->rdpChannel = client->VirtualChannelOpen(client, channel->name, 0);
+	client->VirtualChannelSetData(client, channel->rdpChannel, (void*) channel);
 
 	freerds_client_add_channel(connection, channel);
 

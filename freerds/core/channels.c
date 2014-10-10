@@ -88,13 +88,6 @@ int freerds_channels_post_connect(rdsConnection* session)
 	return 0;
 }
 
-int freerdp_client_virtual_channel_read(freerdp_peer* client, HANDLE hChannel, BYTE* buffer, UINT32 length)
-{
-	fprintf(stderr, "freerdp_client_virtual_channel_read: %d\n", length);
-
-	return (int) length;
-}
-
 /* channel server */
 
 int freerds_detect_ephemeral_port_range(int* begPort, int* endPort)
@@ -330,6 +323,36 @@ int freerds_client_remove_channel(rdsConnection* connection, rdsChannel* channel
 	return 1;
 }
 
+int freerdp_client_virtual_channel_read(freerdp_peer* client, HANDLE hChannel, BYTE* buffer, UINT32 length)
+{
+	int status = 1;
+	int offset = 0;
+	rdsChannel* channel;
+
+	if (!hChannel)
+		return -1;
+
+	channel = (rdsChannel*) client->VirtualChannelGetData(client, hChannel);
+
+	if (!channel)
+		return -1;
+
+	while (offset < length)
+	{
+		status = _send(channel->socket, (char*) &buffer[offset], length - offset, 0);
+
+		if (status < 1)
+			break;
+
+		offset += status;
+	}
+
+	if (offset == length)
+		status = offset;
+
+	return status;
+}
+
 int freerds_channel_check_socket(rdsConnection* connection, rdsChannel* channel)
 {
 	int status;
@@ -344,9 +367,6 @@ int freerds_channel_check_socket(rdsConnection* connection, rdsChannel* channel)
 
 	if (status < 1)
 		return status;
-
-	fprintf(stderr, "read %d bytes from channel %s\n",
-			status, channel->name);
 
 	client->VirtualChannelWrite(client, channel->rdpChannel, buffer, status);
 
