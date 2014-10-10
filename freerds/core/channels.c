@@ -24,11 +24,8 @@
 #include <winpr/rpc.h>
 #include <winpr/file.h>
 #include <winpr/path.h>
+#include <winpr/winsock.h>
 #include <winpr/platform.h>
-
-#ifndef _WIN32
-#include <netinet/tcp.h>
-#endif
 
 #include "channels.h"
 

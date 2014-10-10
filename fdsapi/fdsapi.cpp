@@ -34,10 +34,6 @@
 #include <winpr/wtsapi.h>
 #include <winpr/winsock.h>
 
-#ifndef _WIN32
-#include <netinet/tcp.h>
-#endif
-
 #include <freerds/rpc.h>
 
 #include "FDSApiMessages.h"
@@ -51,6 +47,7 @@ struct _FDSAPI_CHANNEL
 	char* guid;
 	UINT32 port;
 	SOCKET socket;
+	HANDLE event;
 };
 typedef struct _FDSAPI_CHANNEL FDSAPI_CHANNEL;
 
@@ -120,6 +117,8 @@ int FDSAPI_Channel_Connect(FDSAPI_CHANNEL* pChannel, const char* guid, UINT32 po
 
 	_setsockopt(pChannel->socket, IPPROTO_TCP, TCP_NODELAY, (char*) &optval, optlen);
 
+	pChannel->event = CreateFileDescriptorEvent(NULL, FALSE, FALSE, (int) pChannel->socket);
+
 	return 1;
 }
 
@@ -127,6 +126,18 @@ void FDSAPI_Channel_Free(FDSAPI_CHANNEL* pChannel)
 {
 	if (!pChannel)
 		return;
+
+	if (pChannel->socket)
+	{
+		closesocket(pChannel->socket);
+		pChannel->socket = 0;
+	}
+
+	if (pChannel->event)
+	{
+		CloseHandle(pChannel->event);
+		pChannel->event = NULL;
+	}
 
 	free(pChannel->guid);
 
@@ -1361,19 +1372,29 @@ FreeRDS_WTSVirtualChannelOpen(
 	FDSAPI_MESSAGE responseMsg;
 	FDSAPI_CHANNEL* pChannel;
 
-	SetLastError(0);
+	if (!pVirtualName)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
 
 	if (!ConnectClient())
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
 		return NULL;
+	}
 
 	if (hServer != WTS_CURRENT_SERVER_HANDLE)
+	{
+		SetLastError(ERROR_NOT_SUPPORTED);
 		return FALSE;
+	}
 
 	if (!CheckSessionId(&SessionId))
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
-
-	if (!pVirtualName)
-		return FALSE;
+	}
 
 	fprintf(stderr, "WTSVirtualChannelOpen: %s\n", pVirtualName);
 
@@ -1388,7 +1409,10 @@ FreeRDS_WTSVirtualChannelOpen(
 	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
 
 	if (!bSuccess)
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
 		return NULL;
+	}
 
 	hChannel = 0;
 
@@ -1398,12 +1422,18 @@ FreeRDS_WTSVirtualChannelOpen(
 	fprintf(stderr, "WTSVirtualChannelOpen: %s:%d\n", channelGuid, channelPort);
 
 	if (!channelGuid || !channelPort)
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
 		return NULL;
+	}
 
 	pChannel = FDSAPI_Channel_New();
 
 	if (!pChannel)
+	{
+		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
 		return NULL;
+	}
 
 	status = FDSAPI_Channel_Connect(pChannel, channelGuid, channelPort);
 
@@ -1426,23 +1456,32 @@ FreeRDS_WTSVirtualChannelOpenEx(
 	DWORD flags
 )
 {
+	int status;
 	BOOL bSuccess;
 	HANDLE hChannel;
 	UINT32 channelPort;
 	const char* channelGuid;
 	FDSAPI_MESSAGE requestMsg;
 	FDSAPI_MESSAGE responseMsg;
-
-	SetLastError(0);
-
-	if (!ConnectClient())
-		return NULL;
-
-	if (!CheckSessionId(&SessionId))
-		return FALSE;
+	FDSAPI_CHANNEL* pChannel;
 
 	if (!pVirtualName)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
+
+	if (!ConnectClient())
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
+		return NULL;
+	}
+
+	if (!CheckSessionId(&SessionId))
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
 
 	/* Execute session manager RPC. */
 	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
@@ -1455,7 +1494,10 @@ FreeRDS_WTSVirtualChannelOpenEx(
 	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
 
 	if (!bSuccess)
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
 		return NULL;
+	}
 
 	hChannel = 0;
 
@@ -1463,9 +1505,32 @@ FreeRDS_WTSVirtualChannelOpenEx(
 	channelGuid = responseMsg.u.virtualChannelOpenExResponse.channelGuid;
 
 	if (!channelGuid || !channelPort)
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
 		return NULL;
+	}
 
-	return NULL;
+	pChannel = FDSAPI_Channel_New();
+
+	if (!pChannel)
+	{
+		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+		return NULL;
+	}
+
+	status = FDSAPI_Channel_Connect(pChannel, channelGuid, channelPort);
+
+	if (status < 0)
+	{
+		fprintf(stderr, "FDSAPI_Channel_Connect failure: %d\n", status);
+		FDSAPI_Channel_Free(pChannel);
+		SetLastError(ERROR_OPEN_FAILED);
+		return NULL;
+	}
+
+	hChannel = (HANDLE) pChannel;
+
+	return hChannel;
 }
 
 BOOL WINAPI
@@ -1473,6 +1538,18 @@ FreeRDS_WTSVirtualChannelClose(
 	HANDLE hChannelHandle
 )
 {
+	FDSAPI_CHANNEL* pChannel;
+
+	if (!hChannelHandle)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return FALSE;
+	}
+
+	pChannel = (FDSAPI_CHANNEL*) hChannelHandle;
+
+	FDSAPI_Channel_Free(pChannel);
+
 	return TRUE;
 }
 
@@ -1485,7 +1562,59 @@ FreeRDS_WTSVirtualChannelRead(
 	PULONG pBytesRead
 )
 {
-	return FALSE;
+	int status;
+	DWORD waitStatus;
+	FDSAPI_CHANNEL* pChannel;
+
+	if (!hChannelHandle)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return FALSE;
+	}
+
+	if (!Buffer && BufferSize)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
+
+	if (!pBytesRead)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
+
+	pChannel = (FDSAPI_CHANNEL*) hChannelHandle;
+
+	*pBytesRead = 0;
+
+	if (TimeOut)
+	{
+		waitStatus = WaitForSingleObject(pChannel->event, TimeOut);
+
+		if (waitStatus == WAIT_TIMEOUT)
+		{
+			SetLastError(ERROR_IO_INCOMPLETE);
+			return FALSE;
+		}
+		else if (waitStatus != WAIT_OBJECT_0)
+		{
+			SetLastError(ERROR_INTERNAL_ERROR);
+			return FALSE;
+		}
+	}
+
+	status = _recv(pChannel->socket, Buffer, BufferSize, 0);
+
+	if (status < 0)
+	{
+		SetLastError(ERROR_BROKEN_PIPE);
+		return FALSE;
+	}
+
+	*pBytesRead = (ULONG) status;
+
+	return TRUE;
 }
 
 BOOL WINAPI
@@ -1496,7 +1625,42 @@ FreeRDS_WTSVirtualChannelWrite(
 	PULONG pBytesWritten
 )
 {
-	return FALSE;
+	int status;
+	FDSAPI_CHANNEL* pChannel;
+
+	if (!hChannelHandle)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return FALSE;
+	}
+
+	if (!Buffer && Length)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
+
+	if (!pBytesWritten)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
+
+	pChannel = (FDSAPI_CHANNEL*) hChannelHandle;
+
+	*pBytesWritten = 0;
+
+	status = _send(pChannel->socket, Buffer, Length, 0);
+
+	if (status < 0)
+	{
+		SetLastError(ERROR_BROKEN_PIPE);
+		return FALSE;
+	}
+
+	*pBytesWritten = (ULONG) status;
+
+	return TRUE;
 }
 
 BOOL WINAPI
@@ -1504,6 +1668,12 @@ FreeRDS_WTSVirtualChannelPurgeInput(
 	HANDLE hChannelHandle
 )
 {
+	if (!hChannelHandle)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -1512,6 +1682,12 @@ FreeRDS_WTSVirtualChannelPurgeOutput(
 	HANDLE hChannelHandle
 )
 {
+	if (!hChannelHandle)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -1523,6 +1699,47 @@ FreeRDS_WTSVirtualChannelQuery(
 	DWORD* pBytesReturned
 )
 {
+	FDSAPI_CHANNEL* pChannel;
+
+	if (!hChannelHandle)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return FALSE;
+	}
+
+	if (!ppBuffer || !pBytesReturned)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
+
+	pChannel = (FDSAPI_CHANNEL*) hChannelHandle;
+
+	if (WtsVirtualClass == WTSVirtualFileHandle)
+	{
+		/* overlapped i/o is not supported */
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
+	else if (WtsVirtualClass == WTSVirtualEventHandle)
+	{
+		*pBytesReturned = sizeof(HANDLE);
+		*ppBuffer = malloc(*pBytesReturned);
+
+		if (*ppBuffer == NULL)
+		{
+			SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+			return FALSE;
+		}
+
+		CopyMemory(*ppBuffer, &(pChannel->event), *pBytesReturned);
+	}
+	else
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
