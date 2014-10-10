@@ -55,11 +55,11 @@ struct rds_connection
 	rdpContext context;
 
 	UINT32 id;
-	rdsBackendConnector* connector;
 	HANDLE Thread;
 	HANDLE TermEvent;
 	freerdp_peer* client;
 	rdpSettings* settings;
+	rdsBackendConnector* connector;
 
 	BOOL codecMode;
 	int bytesPerPixel;
@@ -76,7 +76,8 @@ struct rds_connection
 	wMessageQueue* notifications;
 
 	rdsServer* server;
-	rdsChannelServer* channels;
+	wArrayList* channels;
+	rdsChannelServer* channelServer;
 };
 
 struct rds_backend_connector

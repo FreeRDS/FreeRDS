@@ -411,6 +411,7 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 {
 	int status = 0;
 	rdsChannel* channel;
+	freerdp_peer* client;
 	FDSAPI_CHANNEL_ENDPOINT_OPEN_REQUEST* request;
 	FDSAPI_CHANNEL_ENDPOINT_OPEN_RESPONSE response;
 
@@ -420,6 +421,8 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 
 	if (!channel)
 		return FALSE;
+
+	freerds_channel_server_add(connection->channelServer, channel);
 
 	response.status = 0;
 	response.callId = request->callId;
@@ -438,6 +441,13 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 		freerds_channel_free(channel);
 		return FALSE;
 	}
+
+	freerds_channel_server_remove(connection->channelServer, channel);
+
+	client = connection->client;
+	channel->rdpChannel = client->VirtualChannelOpen(client, channel->name, 0);
+
+	freerds_client_add_channel(connection, channel);
 
 	return TRUE;
 }
@@ -472,7 +482,7 @@ void* freerds_connection_main_thread(void* arg)
 {
 	DWORD status;
 	DWORD nCount;
-	HANDLE events[32];
+	HANDLE events[128];
 	HANDLE ClientEvent;
 	HANDLE ChannelEvent;
 	HANDLE LocalTermEvent;
@@ -544,8 +554,10 @@ void* freerds_connection_main_thread(void* arg)
 			connector = (rdsBackendConnector*) connection->connector;
 
 			if (connector && connector->GetEventHandles)
-				connector->GetEventHandles((rdsBackend *)connector, events, &nCount);
+				connector->GetEventHandles((rdsBackend*) connector, events, &nCount);
 		}
+
+		freerds_client_get_channel_event_handles(connection, events, &nCount);
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
@@ -579,11 +591,13 @@ void* freerds_connection_main_thread(void* arg)
 			}
 		}
 
+		freerds_client_check_channel_event_handles(connection);
+
 		if (client->activated)
 		{
 			if (connector && connector->CheckEventHandles)
 			{
-				if (connector->CheckEventHandles((rdsBackend *)connector) < 0)
+				if (connector->CheckEventHandles((rdsBackend*) connector) < 0)
 				{
 					fprintf(stderr, "ModuleClient->CheckEventHandles failure\n");
 					break;

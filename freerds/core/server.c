@@ -96,7 +96,7 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 	}
 
 	context->server = g_Server;
-	context->channels = context->server->channels;
+	context->channelServer = context->server->channels;
 
 	context->id = context->server->connectionId++;
 
@@ -110,6 +110,9 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 
 	context->TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	context->notifications = MessageQueue_New(NULL);
+
+	context->channels = ArrayList_New(TRUE);
+	client->VirtualChannelRead = freerdp_client_virtual_channel_read;
 }
 
 void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
@@ -119,6 +122,8 @@ void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
 	ListDictionary_Free(context->FrameList);
 
 	WTSCloseServer((HANDLE) context->vcm);
+
+	ArrayList_Free(context->channels);
 }
 
 void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)

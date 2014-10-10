@@ -40,8 +40,10 @@ struct rds_channel
 	GUID guid;
 	char* guidString;
 	SOCKET socket;
+	HANDLE event;
 	BOOL connected;
 	HANDLE readyEvent;
+	HANDLE rdpChannel;
 	rdsServer* server;
 	rdsConnection* connection;
 	rdsChannelServer* channels;
@@ -49,11 +51,22 @@ struct rds_channel
 
 int freerds_channels_post_connect(rdsConnection* session);
 
+int freerdp_client_virtual_channel_read(freerdp_peer* client, HANDLE hChannel, BYTE* buffer, UINT32 length);
+
+int freerds_client_add_channel(rdsConnection* connection, rdsChannel* channel);
+int freerds_client_remove_channel(rdsConnection* connection, rdsChannel* channel);
+
+int freerds_client_get_channel_event_handles(rdsConnection* connection, HANDLE* events, DWORD* nCount);
+int freerds_client_check_channel_event_handles(rdsConnection* connection);
+
 rdsChannel* freerds_channel_new(rdsConnection* connection, const char* name);
 void freerds_channel_free(rdsChannel* channel);
 
 int freerds_channel_server_open(rdsChannelServer* channels);
 int freerds_channel_server_close(rdsChannelServer* channels);
+
+int freerds_channel_server_add(rdsChannelServer* channels, rdsChannel* channel);
+int freerds_channel_server_remove(rdsChannelServer* channels, rdsChannel* channel);
 
 HANDLE freerds_channel_server_listen_event(rdsChannelServer* channels);
 int freerds_channel_server_accept(rdsChannelServer* channels);

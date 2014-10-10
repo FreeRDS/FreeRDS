@@ -88,6 +88,13 @@ int freerds_channels_post_connect(rdsConnection* session)
 	return 0;
 }
 
+int freerdp_client_virtual_channel_read(freerdp_peer* client, HANDLE hChannel, BYTE* buffer, UINT32 length)
+{
+	fprintf(stderr, "freerdp_client_virtual_channel_read: %d\n", length);
+
+	return (int) length;
+}
+
 /* channel server */
 
 int freerds_detect_ephemeral_port_range(int* begPort, int* endPort)
@@ -245,6 +252,8 @@ int freerds_channel_server_accept(rdsChannelServer* channels)
 	_setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char*) &optval, optlen);
 
 	channel->socket = socket;
+	channel->event = CreateFileDescriptorEvent(NULL, FALSE, FALSE, (int) channel->socket);
+
 	channel->connected = TRUE;
 	SetEvent(channel->readyEvent);
 
@@ -309,6 +318,92 @@ void freerds_channel_server_free(rdsChannelServer* channels)
 
 /* channel */
 
+int freerds_client_add_channel(rdsConnection* connection, rdsChannel* channel)
+{
+	ArrayList_Add(connection->channels, channel);
+	return 1;
+}
+
+int freerds_client_remove_channel(rdsConnection* connection, rdsChannel* channel)
+{
+	ArrayList_Remove(connection->channels, channel);
+	return 1;
+}
+
+int freerds_channel_check_socket(rdsConnection* connection, rdsChannel* channel)
+{
+	int status;
+	int length;
+	BYTE buffer[8198];
+	freerdp_peer* client;
+
+	length = sizeof(buffer);
+	client = connection->client;
+
+	status = _recv(channel->socket, (char*) buffer, length, 0);
+
+	if (status < 1)
+		return status;
+
+	fprintf(stderr, "read %d bytes from channel %s\n",
+			status, channel->name);
+
+	client->VirtualChannelWrite(client, channel->rdpChannel, buffer, status);
+
+	return status;
+}
+
+int freerds_client_get_channel_event_handles(rdsConnection* connection, HANDLE* events, DWORD* nCount)
+{
+	int index;
+	int count;
+	ULONG_PTR* items;
+	rdsChannel* channel;
+
+	count = ArrayList_Items(connection->channels, &items);
+
+	for (index = 0; index < count; index++)
+	{
+		channel = (rdsChannel*) items[index];
+		events[*nCount] = channel->event;
+		(*nCount)++;
+	}
+
+	return 1;
+}
+
+int freerds_client_check_channel_event_handles(rdsConnection* connection)
+{
+	int index = 0;
+	int count = 0;
+	int status = 1;
+	ULONG_PTR* items = NULL;
+	rdsChannel* channel = NULL;
+
+	count = ArrayList_Items(connection->channels, &items);
+
+	for (index = 0; index < count; index++)
+	{
+		channel = (rdsChannel*) items[index];
+
+		if (WaitForSingleObject(channel->event, 0) == WAIT_OBJECT_0)
+		{
+			status = freerds_channel_check_socket(connection, channel);
+
+			if (status < 1)
+				break;
+		}
+	}
+
+	if (status < 1)
+	{
+		freerds_client_remove_channel(connection, channel);
+		freerds_channel_free(channel);
+	}
+
+	return 1;
+}
+
 rdsChannel* freerds_channel_new(rdsConnection* connection, const char* name)
 {
 	rdsChannel* channel;
@@ -321,7 +416,7 @@ rdsChannel* freerds_channel_new(rdsConnection* connection, const char* name)
 
 		channel->connection = connection;
 		channel->server = connection->server;
-		channel->channels = connection->channels;
+		channel->channels = connection->channelServer;
 
 		channel->name = _strdup(name);
 
@@ -335,8 +430,6 @@ rdsChannel* freerds_channel_new(rdsConnection* connection, const char* name)
 		RpcStringFreeA(&rpcString);
 
 		channel->readyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-
-		freerds_channel_server_add(channel->channels, channel);
 	}
 
 	return channel;
@@ -347,11 +440,10 @@ void freerds_channel_free(rdsChannel* channel)
 	if (!channel)
 		return;
 
-	freerds_channel_server_remove(channel->channels, channel);
-
 	free(channel->name);
 	free(channel->guidString);
 
+	CloseHandle(channel->event);
 	CloseHandle(channel->readyEvent);
 
 	free(channel);
