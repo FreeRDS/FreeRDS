@@ -186,7 +186,6 @@ int freerds_server_main_loop(rdsServer* server)
 		if (WaitForSingleObject(ChannelEvent, 0) == WAIT_OBJECT_0)
 		{
 			freerds_channel_server_accept(channels);
-			break;
 		}
 	}
 

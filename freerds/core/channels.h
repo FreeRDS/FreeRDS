@@ -39,8 +39,9 @@ struct rds_channel
 	UINT32 port;
 	GUID guid;
 	char* guidString;
-	BOOL connected;
 	SOCKET socket;
+	BOOL connected;
+	HANDLE readyEvent;
 	rdsServer* server;
 	rdsConnection* connection;
 	rdsChannelServer* channels;

@@ -246,6 +246,7 @@ int freerds_channel_server_accept(rdsChannelServer* channels)
 
 	channel->socket = socket;
 	channel->connected = TRUE;
+	SetEvent(channel->readyEvent);
 
 	return 1;
 }
@@ -333,6 +334,8 @@ rdsChannel* freerds_channel_new(rdsConnection* connection, const char* name)
 		channel->guidString = _strdup(rpcString);
 		RpcStringFreeA(&rpcString);
 
+		channel->readyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
 		freerds_channel_server_add(channel->channels, channel);
 	}
 
@@ -348,6 +351,8 @@ void freerds_channel_free(rdsChannel* channel)
 
 	free(channel->name);
 	free(channel->guidString);
+
+	CloseHandle(channel->readyEvent);
 
 	free(channel);
 }

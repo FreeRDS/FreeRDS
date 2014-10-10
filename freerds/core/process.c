@@ -418,6 +418,9 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 
 	channel = freerds_channel_new(connection, request->ChannelName);
 
+	if (!channel)
+		return FALSE;
+
 	response.status = 0;
 	response.callId = request->callId;
 	response.msgType = FDSAPI_RESPONSE_ID(request->msgType);
@@ -429,6 +432,12 @@ BOOL freerds_client_process_channel_endpoint_open(rdsConnection* connection, wMe
 
 	freerds_rpc_msg_free(request->msgType, request);
 	free(request);
+
+	if (WaitForSingleObject(channel->readyEvent, 5000) != WAIT_OBJECT_0)
+	{
+		freerds_channel_free(channel);
+		return FALSE;
+	}
 
 	return TRUE;
 }
