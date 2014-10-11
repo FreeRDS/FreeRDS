@@ -20,7 +20,9 @@
 #ifndef MODULES_H_
 #define MODULES_H_
 
+#include <freerds/api.h>
 #include <freerds/properties.h>
+
 #include <winpr/wtypes.h>
 
 typedef struct rds_module_entry_points_v1 RDS_MODULE_ENTRY_POINTS_V1;

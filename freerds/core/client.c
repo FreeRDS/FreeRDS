@@ -287,12 +287,15 @@ int freerds_client_inbound_glyph_index(rdsBackend* backend, RDS_MSG_GLYPH_INDEX*
 	return 0;
 }
 
-static void detach_framebuffer(RDS_FRAMEBUFFER *framebuffer)
+static void detach_framebuffer(RDS_FRAMEBUFFER* framebuffer)
 {
-
+#ifndef _WIN32
 	fprintf(stderr, "detaching segment %d from %p\n",
 			framebuffer->fbSegmentId, framebuffer->fbSharedMemory);
+
 	shmdt(framebuffer->fbSharedMemory);
+#endif
+
 	ZeroMemory(framebuffer, sizeof(RDS_FRAMEBUFFER));
 }
 
@@ -323,6 +326,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 		backend->framebuffer.fbBitsPerPixel = msg->bitsPerPixel;
 		backend->framebuffer.fbBytesPerPixel = msg->bytesPerPixel;
 
+#ifndef _WIN32
 		addr = shmat(backend->framebuffer.fbSegmentId, 0, SHM_RDONLY);
 
 		if (addr == ((void*) (size_t) (-1)))
@@ -331,6 +335,9 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 					backend->framebuffer.fbSegmentId, errno);
 			return 1;
 		}
+#else
+		addr = NULL;
+#endif
 
 		backend->framebuffer.fbSharedMemory = (BYTE*) addr;
 		backend->framebuffer.fbAttached = 1;

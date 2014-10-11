@@ -20,6 +20,8 @@
 #ifndef FREERDS_RPC_H
 #define FREERDS_RPC_H
 
+#include <freerds/api.h>
+
 #include <winpr/crt.h>
 #include <winpr/synch.h>
 #include <winpr/wtypes.h>
@@ -268,26 +270,26 @@ struct rds_rpc_client
 	pRdsRpcMessageReceived MessageReceived;
 };
 
-rdsRpcServer* freerds_rpc_server_new(const char* Endpoint);
-void freerds_rpc_server_free(rdsRpcServer* rpcServer);
+FREERDS_EXPORT rdsRpcServer* freerds_rpc_server_new(const char* Endpoint);
+FREERDS_EXPORT void freerds_rpc_server_free(rdsRpcServer* rpcServer);
 
-int freerds_rpc_server_start(rdsRpcServer* rpcServer);
-int freerds_rpc_server_stop(rdsRpcServer* rpcServer);
-int freerds_rpc_server_broadcast_message(rdsRpcServer* rpcServer, BYTE* buffer, UINT32 length);
+FREERDS_EXPORT int freerds_rpc_server_start(rdsRpcServer* rpcServer);
+FREERDS_EXPORT int freerds_rpc_server_stop(rdsRpcServer* rpcServer);
+FREERDS_EXPORT int freerds_rpc_server_broadcast_message(rdsRpcServer* rpcServer, BYTE* buffer, UINT32 length);
 
-rdsRpcClient* freerds_rpc_client_new(const char* Endpoint);
-void freerds_rpc_client_free(rdsRpcClient* rpcClient);
+FREERDS_EXPORT rdsRpcClient* freerds_rpc_client_new(const char* Endpoint);
+FREERDS_EXPORT void freerds_rpc_client_free(rdsRpcClient* rpcClient);
 
-int freerds_rpc_client_start(rdsRpcClient* rpcClient);
-int freerds_rpc_client_stop(rdsRpcClient* rpcClient);
-int freerds_rpc_client_send_message(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
+FREERDS_EXPORT int freerds_rpc_client_start(rdsRpcClient* rpcClient);
+FREERDS_EXPORT int freerds_rpc_client_stop(rdsRpcClient* rpcClient);
+FREERDS_EXPORT int freerds_rpc_client_send_message(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 length);
 
 /* RPC message packing */
 
-UINT32 freerds_rpc_msg_size(UINT32 type);
-wStream* freerds_rpc_msg_pack(UINT32 type, void* data, wStream* s);
-BOOL freerds_rpc_msg_unpack(UINT32 type, void* data, const BYTE* buffer, UINT32 size);
-void freerds_rpc_msg_free(UINT32 type, void* data);
+FREERDS_EXPORT UINT32 freerds_rpc_msg_size(UINT32 type);
+FREERDS_EXPORT wStream* freerds_rpc_msg_pack(UINT32 type, void* data, wStream* s);
+FREERDS_EXPORT BOOL freerds_rpc_msg_unpack(UINT32 type, void* data, const BYTE* buffer, UINT32 size);
+FREERDS_EXPORT void freerds_rpc_msg_free(UINT32 type, void* data);
 
 #ifdef __cplusplus
 }

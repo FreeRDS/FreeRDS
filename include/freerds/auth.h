@@ -20,6 +20,8 @@
 #ifndef FREERDS_AUTH_H
 #define FREERDS_AUTH_H
 
+#include <freerds/api.h>
+
 #include <winpr/wtypes.h>
 
 typedef struct rds_auth_module_entry_points_v1 RDS_AUTH_MODULE_ENTRY_POINTS_V1;
@@ -62,7 +64,7 @@ struct rds_auth_module_entry_points_v1
 
 typedef int (*pRdsAuthModuleEntry)(RDS_AUTH_MODULE_ENTRY_POINTS* pEntryPoints);
 
-pRdsAuthModuleEntry freerds_load_auth_module(const char* name);
+FREERDS_EXPORT pRdsAuthModuleEntry freerds_load_auth_module(const char* name);
 
 #ifdef __cplusplus
 }

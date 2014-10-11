@@ -171,6 +171,7 @@ int main(int argc, char** argv)
 
 	sprintf_s(pid_file, 255, "%s/freerds.pid", FREERDS_PID_PATH);
 
+#ifndef _WIN32
 	if (kill_process)
 	{
 		printf("stopping FreeRDS\n");
@@ -204,6 +205,7 @@ int main(int argc, char** argv)
 
 		return 0;
 	}
+#endif
 
 	if (PathFileExistsA(pid_file))
 	{
@@ -243,7 +245,6 @@ int main(int argc, char** argv)
 	/* block all signals per default */
 	sigfillset(&set);
 	sigprocmask(SIG_BLOCK, &set, NULL);
-#endif
 
 	if (!no_daemon)
 	{
@@ -290,7 +291,6 @@ int main(int argc, char** argv)
 		/* end of daemonizing code */
 	}
 
-#ifndef _WIN32
 	/* unbock required signals */
 	sigemptyset(&set);
 	sigaddset(&set, SIGINT);
@@ -302,9 +302,11 @@ int main(int argc, char** argv)
 	server = freerds_server_new();
 	g_Server = server;
 
+#ifndef _WIN32
 	signal(SIGINT, freerds_shutdown);
 	signal(SIGTERM, freerds_shutdown);
 	signal(SIGPIPE, pipe_sig);
+#endif
 
 	pid = GetCurrentProcessId();
 

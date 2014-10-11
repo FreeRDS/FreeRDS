@@ -1,7 +1,7 @@
 /**
  * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright 2013 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 
 #ifndef BACKEND_H
 #define BACKEND_H
+
+#include <freerds/api.h>
 
 #include <winpr/crt.h>
 #include <winpr/synch.h>
@@ -243,35 +245,35 @@ typedef struct _RDS_MSG_SUPPRESS_OUTPUT RDS_MSG_SUPPRESS_OUTPUT;
 extern "C" {
 #endif
 
-int freerds_read_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
-int freerds_write_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
+FREERDS_EXPORT int freerds_read_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
+FREERDS_EXPORT int freerds_write_synchronize_keyboard_event(wStream* s, RDS_MSG_SYNCHRONIZE_KEYBOARD_EVENT* msg);
 
-int freerds_read_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
-int freerds_write_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
+FREERDS_EXPORT int freerds_read_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
+FREERDS_EXPORT int freerds_write_virtual_keyboard_event(wStream* s, RDS_MSG_VIRTUAL_KEYBOARD_EVENT* msg);
 
-int freerds_read_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
-int freerds_write_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
+FREERDS_EXPORT int freerds_read_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
+FREERDS_EXPORT int freerds_write_scancode_keyboard_event(wStream* s, RDS_MSG_SCANCODE_KEYBOARD_EVENT* msg);
 
-int freerds_read_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
-int freerds_write_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
+FREERDS_EXPORT int freerds_read_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
+FREERDS_EXPORT int freerds_write_unicode_keyboard_event(wStream* s, RDS_MSG_UNICODE_KEYBOARD_EVENT* msg);
 
-int freerds_read_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
-int freerds_write_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
+FREERDS_EXPORT int freerds_read_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
+FREERDS_EXPORT int freerds_write_mouse_event(wStream* s, RDS_MSG_MOUSE_EVENT* msg);
 
-int freerds_read_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
-int freerds_write_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
+FREERDS_EXPORT int freerds_read_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
+FREERDS_EXPORT int freerds_write_extended_mouse_event(wStream* s, RDS_MSG_EXTENDED_MOUSE_EVENT* msg);
 
-int freerds_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
-int freerds_write_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
+FREERDS_EXPORT int freerds_read_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
+FREERDS_EXPORT int freerds_write_capabilities(wStream* s, RDS_MSG_CAPABILITIES* msg);
 
-int freerds_read_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
-int freerds_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
+FREERDS_EXPORT int freerds_read_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
+FREERDS_EXPORT int freerds_write_refresh_rect(wStream* s, RDS_MSG_REFRESH_RECT* msg);
 
-int freerds_read_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
-int freerds_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
+FREERDS_EXPORT int freerds_read_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
+FREERDS_EXPORT int freerds_write_vblank_event(wStream* s, RDS_MSG_VBLANK_EVENT* msg);
 
-int freerds_read_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg);
-int freerds_write_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg);
+FREERDS_EXPORT int freerds_read_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg);
+FREERDS_EXPORT int freerds_write_suppress_output(wStream* s, RDS_MSG_SUPPRESS_OUTPUT* msg);
 
 #ifdef __cplusplus
 }
@@ -764,64 +766,63 @@ struct rds_backend
 extern "C" {
 #endif
 
-FREERDP_API int freerds_client_message_size(UINT32 type);
-FREERDP_API char* freerds_client_message_name(UINT32 type);
+FREERDS_EXPORT int freerds_client_message_size(UINT32 type);
+FREERDS_EXPORT char* freerds_client_message_name(UINT32 type);
 
-FREERDP_API int freerds_client_message_read(wStream* s, RDS_MSG_COMMON* msg);
-FREERDP_API int freerds_client_message_write(wStream* s, RDS_MSG_COMMON* msg);
+FREERDS_EXPORT int freerds_client_message_read(wStream* s, RDS_MSG_COMMON* msg);
+FREERDS_EXPORT int freerds_client_message_write(wStream* s, RDS_MSG_COMMON* msg);
 
-FREERDP_API void* freerds_client_message_copy(RDS_MSG_COMMON* msg);
-FREERDP_API void freerds_client_message_free(RDS_MSG_COMMON* msg);
+FREERDS_EXPORT void* freerds_client_message_copy(RDS_MSG_COMMON* msg);
+FREERDS_EXPORT void freerds_client_message_free(RDS_MSG_COMMON* msg);
 
-FREERDP_API int freerds_server_message_size(UINT32 type);
-FREERDP_API char* freerds_server_message_name(UINT32 type);
+FREERDS_EXPORT int freerds_server_message_size(UINT32 type);
+FREERDS_EXPORT char* freerds_server_message_name(UINT32 type);
 
-FREERDP_API int freerds_server_message_read(wStream* s, RDS_MSG_COMMON* msg);
-FREERDP_API int freerds_server_message_write(wStream* s, RDS_MSG_COMMON* msg);
+FREERDS_EXPORT int freerds_server_message_read(wStream* s, RDS_MSG_COMMON* msg);
+FREERDS_EXPORT int freerds_server_message_write(wStream* s, RDS_MSG_COMMON* msg);
 
-FREERDP_API void* freerds_server_message_copy(RDS_MSG_COMMON* msg);
-FREERDP_API void freerds_server_message_free(RDS_MSG_COMMON* msg);
+FREERDS_EXPORT void* freerds_server_message_copy(RDS_MSG_COMMON* msg);
+FREERDS_EXPORT void freerds_server_message_free(RDS_MSG_COMMON* msg);
 
-// Todo
-FREERDP_API rdsClientInterface* freerds_client_outbound_interface_new(void);
-FREERDP_API rdsServerInterface* freerds_server_outbound_interface_new(void);
+FREERDS_EXPORT rdsClientInterface* freerds_client_outbound_interface_new(void);
+FREERDS_EXPORT rdsServerInterface* freerds_server_outbound_interface_new(void);
 
-FREERDP_API rdsServerInterface* freerds_client_inbound_interface_new(void);
-FREERDP_API rdsClientInterface* freerds_server_inbound_interface_new(void);
+FREERDS_EXPORT rdsServerInterface* freerds_client_inbound_interface_new(void);
+FREERDS_EXPORT rdsClientInterface* freerds_server_inbound_interface_new(void);
 
-FREERDP_API int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length);
-FREERDP_API int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length);
+FREERDS_EXPORT int freerds_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length);
+FREERDS_EXPORT int freerds_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length);
 
-FREERDP_API int freerds_server_outbound_write_message(rdsBackend* backend, RDS_MSG_COMMON* msg);
+FREERDS_EXPORT int freerds_server_outbound_write_message(rdsBackend* backend, RDS_MSG_COMMON* msg);
 
-FREERDP_API void freerds_named_pipe_get_endpoint_name(DWORD id, const char *endpoint, char *dest, int len);
-FREERDP_API int freerds_named_pipe_clean(const char* pipeName);
-FREERDP_API HANDLE freerds_named_pipe_connect(const char* pipeName, DWORD nTimeOut);
-FREERDP_API HANDLE freerds_named_pipe_connect_endpoint(DWORD id, const char* endpoint, DWORD nTimeOut);
-FREERDP_API int freerds_transport_receive(rdsBackend* backend);
+FREERDS_EXPORT void freerds_named_pipe_get_endpoint_name(DWORD id, const char *endpoint, char *dest, int len);
+FREERDS_EXPORT int freerds_named_pipe_clean(const char* pipeName);
+FREERDS_EXPORT HANDLE freerds_named_pipe_connect(const char* pipeName, DWORD nTimeOut);
+FREERDS_EXPORT HANDLE freerds_named_pipe_connect_endpoint(DWORD id, const char* endpoint, DWORD nTimeOut);
+FREERDS_EXPORT int freerds_transport_receive(rdsBackend* backend);
 
-FREERDP_API HANDLE freerds_named_pipe_create(const char* pipeName);
-FREERDP_API int freerds_named_pipe_clean_endpoint(DWORD id, const char* endpoint);
-FREERDP_API HANDLE freerds_named_pipe_create_endpoint(DWORD id, const char* endpoint);
-FREERDP_API HANDLE freerds_named_pipe_accept(HANDLE hServerPipe);
+FREERDS_EXPORT HANDLE freerds_named_pipe_create(const char* pipeName);
+FREERDS_EXPORT int freerds_named_pipe_clean_endpoint(DWORD id, const char* endpoint);
+FREERDS_EXPORT HANDLE freerds_named_pipe_create_endpoint(DWORD id, const char* endpoint);
+FREERDS_EXPORT HANDLE freerds_named_pipe_accept(HANDLE hServerPipe);
 
-FREERDP_API rdsBackendService* freerds_service_new(DWORD SessionId, const char* endpoint);
-FREERDP_API void freerds_service_free(rdsBackendService* service);
-FREERDP_API int freerds_service_start(rdsBackendService* service);
-FREERDP_API int freerds_service_stop(rdsBackendService* service);
+FREERDS_EXPORT rdsBackendService* freerds_service_new(DWORD SessionId, const char* endpoint);
+FREERDS_EXPORT void freerds_service_free(rdsBackendService* service);
+FREERDS_EXPORT int freerds_service_start(rdsBackendService* service);
+FREERDS_EXPORT int freerds_service_stop(rdsBackendService* service);
 typedef int (*pRdsServiceAccept)(rdsBackendService* service);
 
 /* helpers */
 
 #include <freerds/module.h>
 
-FREERDP_API BOOL getPropertyNumberWrapper(char* basePath,
+FREERDS_EXPORT BOOL getPropertyNumberWrapper(char* basePath,
 		RDS_MODULE_CONFIG_CALLBACKS* config, char* path, long* value);
 
-FREERDP_API BOOL getPropertyStringWrapper(char* basePath,
+FREERDS_EXPORT BOOL getPropertyStringWrapper(char* basePath,
 		RDS_MODULE_CONFIG_CALLBACKS* config, char* path, char* value, unsigned int valueLength);
 
-FREERDP_API void initResolutions(char* basePath,
+FREERDS_EXPORT void initResolutions(char* basePath,
 		RDS_MODULE_CONFIG_CALLBACKS* config, char** envBlock, long* xres, long* yres, long* colordepth);
 
 #ifdef __cplusplus

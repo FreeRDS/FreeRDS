@@ -52,6 +52,8 @@ COMMAND_LINE_ARGUMENT_A freerds_session_manager_args[] =
 	{ NULL, 0, NULL, NULL, NULL, -1, NULL, NULL }
 };
 
+#ifndef _WIN32
+
 int freerds_kill_daemon(const char* pid_file)
 {
 	int pid;
@@ -151,6 +153,13 @@ int freerds_daemonize_process(const char* pid_file)
 	return 1;
 }
 
+#else
+
+int freerds_kill_daemon(const char* pid_file) { return -1; }
+int freerds_daemonize_process(const char* pid_file) { return -1; }
+
+#endif
+
 int main(int argc, char** argv)
 {
 	int status;
@@ -221,6 +230,7 @@ int main(int argc, char** argv)
 
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
+#ifndef _WIN32
 	signal(SIGINT, shutdown);
 	signal(SIGKILL, shutdown);
 	signal(SIGTERM, shutdown);
@@ -231,6 +241,7 @@ int main(int argc, char** argv)
 	 * It shouldn't result in terminating the entire process.
 	 */
 	signal(SIGPIPE, SIG_IGN);
+#endif
 
 	APP_CONTEXT.startRPCEngine();
 	APP_CONTEXT.loadModulesFromPath(APP_CONTEXT.getLibraryPath());

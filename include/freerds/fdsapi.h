@@ -20,6 +20,8 @@
 #ifndef FREERDS_FDSAPI_H
 #define FREERDS_FDSAPI_H
 
+#include <freerds/api.h>
+
 #include <winpr/wtsapi.h>
 
 #ifdef __cplusplus
@@ -30,12 +32,8 @@ extern "C" {
  * WTSAPI Private Interface
  */
 
-int WINAPI
-FreeRDS_AuthenticateUser(
-	UINT32 SessionId,
-	LPCSTR Username,
-	LPCSTR Password,
-	LPCSTR Domain);
+FREERDS_EXPORT int WINAPI FreeRDS_AuthenticateUser(UINT32 SessionId,
+	LPCSTR Username, LPCSTR Password, LPCSTR Domain);
 
 #ifdef __cplusplus
 }

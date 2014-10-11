@@ -61,7 +61,7 @@ int rds_client_scancode_keyboard_event(rdsBackend* backend, DWORD flags, DWORD c
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientScancodeKeyboardEvent");
 
 	context = (rdpContext*) rds;
-	freerdp_input_send_keyboard_event(context->input, flags, code);
+	freerdp_input_send_keyboard_event(context->input, (UINT16) flags, (UINT16) code);
 
 	return 0;
 }
@@ -79,7 +79,7 @@ int rds_client_virtual_keyboard_event(rdsBackend* backend, DWORD flags, DWORD co
 	settings = context->settings;
 
 	scancode = GetVirtualScanCodeFromVirtualKeyCode(code, settings->KeyboardType);
-	freerdp_input_send_keyboard_event(context->input, flags, scancode);
+	freerdp_input_send_keyboard_event(context->input, (UINT16) flags, (UINT16) scancode);
 
 	return 0;
 }
@@ -92,7 +92,7 @@ int rds_client_unicode_keyboard_event(rdsBackend* connector, DWORD flags, DWORD 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientUnicodeKeyboardEvent");
 
 	context = (rdpContext*) rds;
-	freerdp_input_send_unicode_keyboard_event(context->input, flags, code);
+	freerdp_input_send_unicode_keyboard_event(context->input, (UINT16) flags, (UINT16) code);
 
 	return 0;
 }
@@ -105,7 +105,7 @@ int rds_client_mouse_event(rdsBackend* connector, DWORD flags, DWORD x, DWORD y)
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsClientMouseEvent");
 
 	context = (rdpContext*) rds;
-	freerdp_input_send_mouse_event(context->input, flags, x, y);
+	freerdp_input_send_mouse_event(context->input, (UINT16) flags, (UINT16) x, (UINT16) y);
 
 	return 0;
 }
@@ -311,10 +311,14 @@ BOOL rds_post_connect(freerdp* instance)
 	rds->framebuffer.fbScanline = rds->framebuffer.fbWidth * rds->framebuffer.fbBytesPerPixel;
 	rds->framebufferSize = rds->framebuffer.fbScanline * rds->framebuffer.fbHeight;
 
+#ifndef _WIN32
 	rds->framebuffer.fbSegmentId = shmget(IPC_PRIVATE, rds->framebufferSize,
 			IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 	rds->framebuffer.fbSharedMemory = (BYTE*) shmat(rds->framebuffer.fbSegmentId, 0, 0);
+#else
+	rds->framebuffer.fbSharedMemory = NULL;
+#endif
 
 	gdi_init(instance, flags, rds->framebuffer.fbSharedMemory);
 	gdi = instance->context->gdi;
