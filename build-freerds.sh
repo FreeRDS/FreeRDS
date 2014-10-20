@@ -18,8 +18,8 @@
 #
 #   1. Run the command "cd /opt/FreeRDS/bin".
 #   2. Open 2 more Terminal windows as root (e.g., "sudo gnome-terminal &").
-#   3. Run "./freerds --nodaemon" in Terminal window 1.
-#   4. Run "./freerds-session-manager --nodaemon" in Terminal window 2.
+#   3. Run "./freerds-server --nodaemon" in Terminal window 1.
+#   4. Run "./freerds-manager --nodaemon" in Terminal window 2.
 #   5. Connect with FreeRDP using "./xfreerdp /v:localhost /cert-ignore".
 #
 # Supported platforms include:
@@ -163,7 +163,6 @@ case $LINUX_DISTRO_NAME in
     libexpat1-dev libxml-libxml-perl libtool bison flex xsltproc \
     libfreetype6-dev libfontconfig1-dev libpixman-1-dev xutils-dev \
     x11proto-gl-dev mesa-common-dev libgl1-mesa-dev xorg-dev \
-    protobuf-c-compiler libprotobuf-c0 libprotobuf-dev libprotobuf-c0-dev \
     libboost-dev qt4-dev-tools
     ;;
 
@@ -176,90 +175,6 @@ case $LINUX_DISTRO_NAME in
     boost-devel qt4-devel
     ;;
 esac
-
-#
-# Install the correct version of Apache Thrift
-#
-THRIFT_VERSION=0.9.0
-THRIFT_FOLDER=thrift-$THRIFT_VERSION
-THRIFT_ARCHIVE=$THRIFT_FOLDER.tar.gz
-THRIFT_URL=http://archive.apache.org/dist/thrift/$THRIFT_VERSION/$THRIFT_ARCHIVE
-
-RESULT=`thrift --version`
-if [ "$RESULT" == "" ]; then
-  # Download compressed archive
-  pushd ~/Downloads
-  wget $THRIFT_URL
-  popd
-
-  # Unpack compressed archive
-  pushd ~/Downloads
-  tar xvf $THRIFT_ARCHIVE
-  pushd $THRIFT_FOLDER
-  ./configure --without-python --without-java --without-c_glib --with-pic --without-csharp --without-haskell --without-go --without-d --without-qt4
-  make
-  sudo make install
-  popd
-  rm $THRIFT_ARCHIVE
-  popd
-else
-  echo Found $RESULT
-fi
-
-#
-# Install the correct version of Google protocol buffers
-#
-PROTOBUF_VERSION=2.4.1
-PROTOBUF_FOLDER=protobuf-$PROTOBUF_VERSION
-PROTOBUF_ARCHIVE=$PROTOBUF_FOLDER.tar.gz
-PROTOBUF_URL=https://protobuf.googlecode.com/files/$PROTOBUF_ARCHIVE
-
-RESULT=`protoc --version`
-if [ "$RESULT" == "" ]; then
-  # Download compressed archive
-  pushd ~/Downloads
-  wget $PROTOBUF_URL
-  popd
-
-  # Unpack compressed archive
-  pushd ~/Downloads
-  tar xvf $PROTOBUF_ARCHIVE
-  pushd $PROTOBUF_FOLDER
-  ./configure --prefix=/usr
-  make
-  sudo make install
-  popd
-  rm $PROTOBUF_ARCHIVE
-  popd
-else
-  echo Found $RESULT
-fi
-
-PROTOBUFC_VERSION=0.15
-PROTOBUFC_FOLDER=protobuf-c-$PROTOBUFC_VERSION
-PROTOBUFC_ARCHIVE=$PROTOBUFC_FOLDER.tar.gz
-PROTOBUFC_URL=https://protobuf-c.googlecode.com/files/$PROTOBUFC_ARCHIVE
-
-RESULT=`protoc-c --version`
-if [ "$RESULT" == "" ]; then
-  # Download compressed archive
-  pushd ~/Downloads
-  wget $PROTOBUFC_URL
-  popd
-
-  # Unpack compressed archive
-  pushd ~/Downloads
-  tar xvf $PROTOBUFC_ARCHIVE
-  pushd $PROTOBUFC_FOLDER
-  ./configure --prefix=/usr
-  make
-  sudo make install
-  popd
-  rm $PROTOBUFC_ARCHIVE
-  popd
-else
-  echo Found $RESULT
-fi
 
 #
 # Create the installation directory.
@@ -278,7 +193,7 @@ X -version
 # Build X11rdp
 #
 pushd $GIT_ROOT_DIR/FreeRDP/server/FreeRDS
-pushd session-manager/module/X11/service/xorg-build
+pushd manager/module/X11/service/xorg-build
 cmake .
 make
 cd ..
