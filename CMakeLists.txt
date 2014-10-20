@@ -105,6 +105,7 @@ add_subdirectory(scripts)
 add_subdirectory(manager)
 add_subdirectory(fdsapi)
 add_subdirectory(module)
+add_subdirectory(widgets)
 
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.10")
 
