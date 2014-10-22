@@ -271,9 +271,16 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
-	if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath, &g_Config, "startwm", startupname, 256))
+	if (x11->commonModule.userToken == 0)
 	{
-		strcpy(startupname, "startwm.sh");
+		strcpy(startupname, "simple_greeter");
+	}
+	else
+	{
+		if (!getPropertyStringWrapper(x11->commonModule.baseConfigPath, &g_Config, "startwm", startupname, 256))
+		{
+			strcpy(startupname, "startwm.sh");
+		}
 	}
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, startupname,
