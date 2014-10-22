@@ -185,15 +185,26 @@ if [ ! -d $FREERDS_INSTALL_DIR ]; then
 fi
 
 #
+# Clean the CMake cache.
+#
+if [ "$1" == "clean" ]; then
+  pushd $GIT_ROOT_DIR/FreeRDP
+  make clean
+  rm CMakeCache.txt
+  find . -name "CMakeFiles" | xargs rm -rf
+  popd
+fi
+
+#
 # Report the currently installed X server version.
 #
 X -version
 
 #
-# Build X11rdp
+# Build Xrds
 #
 pushd $GIT_ROOT_DIR/FreeRDP/server/FreeRDS
-pushd manager/module/X11/service/xorg-build
+pushd module/X11/service/xorg-build
 cmake .
 make
 cd ..
@@ -205,7 +216,7 @@ popd
 # Build FreeRDP (with FreeRDS)
 #
 pushd $GIT_ROOT_DIR/FreeRDP
-cmake -DCMAKE_INSTALL_PREFIX=$FREERDS_INSTALL_DIR -DCMAKE_BUILD_TYPE=Debug -DSTATIC_CHANNELS=on -DMONOLITHIC_BUILD=on -DWITH_FDSAPI=on -DWITH_SERVER=on -DWITH_X11RDP=on .
+cmake -DCMAKE_INSTALL_PREFIX=$FREERDS_INSTALL_DIR -DCMAKE_BUILD_TYPE=Debug -DSTATIC_CHANNELS=on -DMONOLITHIC_BUILD=on -DWITH_SERVER=on -DWITH_XRDS=on .
 make
 sudo make install
 popd
