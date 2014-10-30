@@ -41,17 +41,19 @@ FREERDS_INSTALL_DIR=/opt/FreeRDS
 # Determine the Linux distro
 #
 if [ -e /etc/centos-release ]; then
-  LINUX_DISTRO_NAME=CentOS
+  LINUX_DISTRO_FILE=/etc/centos-release
 else
-  LINUX_DISTRO_NAME=`cat /etc/issue|head -1|awk '{ print $1 }'`
+  LINUX_DISTRO_FILE=/etc/issue
 fi
+
+LINUX_DISTRO_NAME=`cat $LINUX_DISTRO_FILE|head -1|awk '{ print $1 }'`
 
 case $LINUX_DISTRO_NAME in
   Ubuntu|Debian)
-    LINUX_DISTRO_VERSION=`cat /etc/issue|head -1|awk '{ print $2 }'`
+    LINUX_DISTRO_VERSION=`cat $LINUX_DISTRO_FILE|head -1|awk '{ print $2 }'`
     ;;		
   CentOS)
-    LINUX_DISTRO_VERSION=`cat /etc/issue|head -1|awk '{ print $3 }'`
+    LINUX_DISTRO_VERSION=`cat $LINUX_DISTRO_FILE|head -1|awk '{ print $3 }'`
     ;;
   *)
     echo "Unsupported Linux distro '$LINUX_DISTRO_NAME'"
