@@ -4,10 +4,10 @@
 #
 # build-freerds.sh
 #
-# This script builds and installs FreeRDS on a clean Ubuntu or CentOS Linux
+# This script builds and installs FreeRDS on a clean Linux
 # distribution.  Complete the following steps:
 #
-#   1. Install Ubuntu or CentOS.
+#   1. Install the Linux distro.
 #   2. Open a Terminal window.
 #   3. Download this script.
 #   4. Run the command "chmod +x build-freerds.sh".
@@ -25,8 +25,8 @@
 # Supported platforms include:
 #
 #   Ubuntu (12.10, 13.x, 14.x)
-#   CentOS (6.x)
-#   Debian 7
+#   CentOS (6.x, 7.x)
+#   Debian 7.x
 #
 #===========================================================================
 
@@ -40,7 +40,11 @@ FREERDS_INSTALL_DIR=/opt/FreeRDS
 #
 # Determine the Linux distro
 #
-LINUX_DISTRO_NAME=`cat /etc/issue|head -1|awk '{ print $1 }'`
+if [ -e /etc/centos-release ]; then
+  LINUX_DISTRO_NAME=CentOS
+else
+  LINUX_DISTRO_NAME=`cat /etc/issue|head -1|awk '{ print $1 }'`
+fi
 
 case $LINUX_DISTRO_NAME in
   Ubuntu|Debian)
