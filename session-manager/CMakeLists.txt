@@ -54,6 +54,7 @@ if(WITH_FDSAPI)
 	)
 endif()
 
+set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost REQUIRED)
 include_directories( ${Boost_INCLUDE_DIR} )
 
