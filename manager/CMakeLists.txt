@@ -21,7 +21,7 @@ project(freerds-manager CXX)
 set(MODULE_PREFIX "FREERDS_MANAGER")
 set(MODULE_NAME "freerds-manager")
 
-set(Boost_BOOST_NO_CMAKE ON)
+set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 
