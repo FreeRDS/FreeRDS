@@ -4,10 +4,10 @@
 #
 # build-freerds.sh
 #
-# This script builds and installs FreeRDS on a clean Ubuntu or CentOS Linux
-# distribution.  Complete the following steps:
+# This script builds and installs FreeRDS on a clean Linux distribution.
+# Complete the following steps:
 #
-#   1. Install Ubuntu or CentOS.
+#   1. Install the Linux distro.
 #   2. Open a Terminal window.
 #   3. Download this script.
 #   4. Run the command "chmod +x build-freerds.sh".
@@ -25,8 +25,8 @@
 # Supported platforms include:
 #
 #   Ubuntu (12.10, 13.x, 14.x)
-#   CentOS (6.x)
-#   Debian 7
+#   CentOS (6.x, 7.x)
+#   Debian 7.x
 #
 #===========================================================================
 
@@ -40,14 +40,20 @@ FREERDS_INSTALL_DIR=/opt/FreeRDS
 #
 # Determine the Linux distro
 #
-LINUX_DISTRO_NAME=`cat /etc/issue|head -1|awk '{ print $1 }'`
+if [ -e /etc/centos-release ]; then
+  LINUX_DISTRO_FILE=/etc/centos-release
+else
+  LINUX_DISTRO_FILE=/etc/issue
+fi
+
+LINUX_DISTRO_NAME=`cat $LINUX_DISTRO_FILE|head -1|awk '{ print $1 }'`
 
 case $LINUX_DISTRO_NAME in
   Ubuntu|Debian)
-    LINUX_DISTRO_VERSION=`cat /etc/issue|head -1|awk '{ print $2 }'`
+    LINUX_DISTRO_VERSION=`cat $LINUX_DISTRO_FILE|head -1|awk '{ print $2 }'`
     ;;		
   CentOS)
-    LINUX_DISTRO_VERSION=`cat /etc/issue|head -1|awk '{ print $3 }'`
+    LINUX_DISTRO_VERSION=`cat $LINUX_DISTRO_FILE|head -1|awk '{ print $3 }'`
     ;;
   *)
     echo "Unsupported Linux distro '$LINUX_DISTRO_NAME'"
@@ -190,8 +196,8 @@ fi
 if [ "$1" == "clean" ]; then
   pushd $GIT_ROOT_DIR/FreeRDP
   make clean
-  rm CMakeCache.txt
-  find . -name "CMakeFiles" | xargs rm -rf
+  sudo find . -name "CMakeCache.txt" | xargs rm -f
+  sudo find . -name "CMakeFiles" | xargs rm -rf
   popd
 fi
 
