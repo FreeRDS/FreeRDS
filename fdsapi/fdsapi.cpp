@@ -27,6 +27,7 @@
 
 #include <winpr/crt.h>
 #include <winpr/wnd.h>
+#include <winpr/wlog.h>
 #include <winpr/pipe.h>
 #include <winpr/file.h>
 #include <winpr/print.h>
@@ -40,7 +41,9 @@
 
 static DWORD g_currentSessionId = 0xFFFFFFFF;
 
-rdsRpcClient* g_RpcClient = NULL;
+static rdsRpcClient* g_RpcClient = NULL;
+
+static wLog* g_logger = NULL;
 
 struct _FDSAPI_CHANNEL
 {
@@ -51,7 +54,7 @@ struct _FDSAPI_CHANNEL
 };
 typedef struct _FDSAPI_CHANNEL FDSAPI_CHANNEL;
 
-FDSAPI_CHANNEL* FDSAPI_Channel_New()
+static FDSAPI_CHANNEL* FDSAPI_Channel_New()
 {
 	FDSAPI_CHANNEL* pChannel;
 
@@ -65,7 +68,7 @@ FDSAPI_CHANNEL* FDSAPI_Channel_New()
 	return pChannel;
 }
 
-int FDSAPI_Channel_Connect(FDSAPI_CHANNEL* pChannel, const char* guid, UINT32 port)
+static int FDSAPI_Channel_Connect(FDSAPI_CHANNEL* pChannel, const char* guid, UINT32 port)
 {
 	int status;
 	int optlen = 0;
@@ -122,7 +125,7 @@ int FDSAPI_Channel_Connect(FDSAPI_CHANNEL* pChannel, const char* guid, UINT32 po
 	return 1;
 }
 
-void FDSAPI_Channel_Free(FDSAPI_CHANNEL* pChannel)
+static void FDSAPI_Channel_Free(FDSAPI_CHANNEL* pChannel)
 {
 	if (!pChannel)
 		return;
@@ -181,20 +184,25 @@ static BOOL FDSAPI_SendRequest(FDSAPI_MESSAGE* requestMsg, FDSAPI_MESSAGE* respo
 	/* Leave critical section. */
 	ArrayList_Unlock(g_activeRequestList);
 
-	printf("FDSAPI_SendRequest: sending request %d\n", requestMsg->requestId);
+	WLog_Print(g_logger, WLOG_DEBUG, "sending request %d", requestMsg->requestId);
 
 	/* Encode the request. */
-
 	s = FDSAPI_EncodeMessage(requestMsg);
 
 	if (!s)
+	{
+		WLog_Print(g_logger, WLOG_ERROR, "failed to encode request");
 		return FALSE;
+	}
 
 	/* Add the request to the list. */
 	requestItem.hWaitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	if (!requestItem.hWaitEvent)
+	{
+		WLog_Print(g_logger, WLOG_ERROR, "failed to create event");
 		goto EXCEPTION;
+	}
 
 	requestItem.requestMsg = requestMsg;
 	requestItem.responseMsg = responseMsg;
@@ -206,18 +214,22 @@ static BOOL FDSAPI_SendRequest(FDSAPI_MESSAGE* requestMsg, FDSAPI_MESSAGE* respo
 
 	if (status == Stream_Length(s))
 	{
-		printf("FDSAPI_SendRequest: waiting for response\n");
+		WLog_Print(g_logger, WLOG_DEBUG, "waiting for response");
 
 		/* Wait for the response. */
 		WaitForSingleObject(requestItem.hWaitEvent, INFINITE);
 
-		printf("FDSAPI_SendRequest: received response %d\n", responseMsg->requestId);
+		WLog_Print(g_logger, WLOG_DEBUG, "received response %d", responseMsg->requestId);
 
 		/* Check for the expected response. */
 		if (requestMsg->requestId == responseMsg->requestId)
 		{
 			success = TRUE;
 		}
+	}
+	else
+	{
+		WLog_Print(g_logger, WLOG_ERROR, "failed to send request");
 	}
 
 	/* Remove the request from the list. */	
@@ -416,6 +428,8 @@ static int FDSAPI_HandleSessionEvent(rdsRpcClient* rpcClient, FDSAPI_SESSION_EVE
 
 int FDSAPI_RpcConnectionClosed(rdsRpcClient* rpcClient)
 {
+	WLog_Print(g_logger, WLOG_DEBUG, "connection closed");
+
 	return 0;
 }
 
@@ -427,11 +441,16 @@ int FDSAPI_RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 leng
 
 	status = -1;
 
+	WLog_Print(g_logger, WLOG_DEBUG, "message received");
+
 	/* Allocate a stream. */
 	s = Stream_New(buffer, length);
 
 	if (!s)
+	{
+		WLog_Print(g_logger, WLOG_ERROR, "failed to allocate stream");
 		return -1;
+	}
 
 	/* Decode the message. */
 	if (FDSAPI_DecodeMessage(s, &msg))
@@ -447,6 +466,10 @@ int FDSAPI_RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 leng
 				break;
 		}
 	}
+	else
+	{
+		WLog_Print(g_logger, WLOG_ERROR, "failed to decode message");
+	}
 
 	/* Free the stream. */
 	Stream_Free(s, FALSE);
@@ -456,8 +479,15 @@ int FDSAPI_RpcMessageReceived(rdsRpcClient* rpcClient, BYTE* buffer, UINT32 leng
 
 static BOOL ConnectClient()
 {
+	if (!g_logger)
+	{
+		g_logger = WLog_Get("freerds.fdsapi");
+	}
+
 	if (!g_RpcClient)
 	{
+		WLog_Print(g_logger, WLOG_DEBUG, "connecting to FDSAPI server");
+
 		g_activeRequestList = ArrayList_New(TRUE);
 		g_sessionEventObserverList = ArrayList_New(TRUE);
 
@@ -676,7 +706,8 @@ FreeRDS_WTSEnumerateSessionsA(
 
 	if (bSuccess)
 	{
-		printf("WTSEnumerateSessionsA: result=%u, count=%u\n",
+		WLog_Print(g_logger, WLOG_DEBUG,
+			"WTSEnumerateSessionsA: result=%u, count=%u",
 			responseMsg.u.enumerateSessionsResponse.result,
 			responseMsg.u.enumerateSessionsResponse.cSessions);
 
@@ -883,21 +914,34 @@ FreeRDS_WTSQuerySessionInformationA(
 	FDSAPI_MESSAGE responseMsg;
 	FDSAPI_SESSION_INFO_VALUE* infoValue;
 
-	if (!ConnectClient())
-		return FALSE;
-
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
 
 	if (!CheckSessionId(&SessionId))
 		return FALSE;
 
 	if (!ppBuffer)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
 
 	if (!pBytesReturned)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
+
+	/* Connect to the session manager. */
+	if (!ConnectClient())
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
+		return FALSE;
+	}
 
 	*ppBuffer = NULL;
 	*pBytesReturned = 0;
@@ -914,10 +958,17 @@ FreeRDS_WTSQuerySessionInformationA(
 	bSuccess = FDSAPI_SendRequest(&requestMsg, &responseMsg);
 
 	if (!bSuccess)
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
 		return FALSE;
+	}
 
 	if (!responseMsg.u.querySessionInformationResponse.result)
+	{
+		FDSAPI_FreeMessage(&responseMsg);
+		SetLastError(ERROR_INTERNAL_ERROR);
 		return FALSE;
+	}
 
 	/* Return the result. */
 	switch (WTSInfoClass)
@@ -930,7 +981,12 @@ FreeRDS_WTSQuerySessionInformationA(
 			ULONG* pulValue = (ULONG*) malloc(sizeof(ULONG));
 
 			if (!pulValue)
+			{
+				WLog_Print(g_logger, WLOG_ERROR, "memory allocation error");
+				FDSAPI_FreeMessage(&responseMsg);
+				SetLastError(ERROR_NOT_ENOUGH_MEMORY);
 				return FALSE;
+			}
 
 			*pulValue = (ULONG) infoValue->u.uint32Value;
 
@@ -946,7 +1002,12 @@ FreeRDS_WTSQuerySessionInformationA(
 			USHORT* pusValue = (USHORT*) malloc(sizeof(USHORT));
 
 			if (!pusValue)
+			{
+				WLog_Print(g_logger, WLOG_ERROR, "memory allocation error");
+				FDSAPI_FreeMessage(&responseMsg);
+				SetLastError(ERROR_NOT_ENOUGH_MEMORY);
 				return FALSE;
+			}
 
 			*pusValue = (USHORT) infoValue->u.uint16Value;
 
@@ -967,7 +1028,12 @@ FreeRDS_WTSQuerySessionInformationA(
 			LPSTR pszValue = (LPSTR) malloc(size);
 
 			if (!pszValue)
+			{
+				WLog_Print(g_logger, WLOG_ERROR, "memory allocation error");
+				FDSAPI_FreeMessage(&responseMsg);
+				SetLastError(ERROR_NOT_ENOUGH_MEMORY);
 				return FALSE;
+			}
 
 			strncpy(pszValue, stringValue, size);
 
@@ -986,7 +1052,12 @@ FreeRDS_WTSQuerySessionInformationA(
 			WTS_CLIENT_ADDRESS* pClientAddress = (WTS_CLIENT_ADDRESS*) calloc(1, size);
 
 			if (!pClientAddress)
+			{
+				WLog_Print(g_logger, WLOG_ERROR, "memory allocation error");
+				FDSAPI_FreeMessage(&responseMsg);
+				SetLastError(ERROR_NOT_ENOUGH_MEMORY);
 				return FALSE;
+			}
 
 			/* TODO: Need to convert IPV4 or IPV6 address from string to binary. */
 
@@ -1012,7 +1083,12 @@ FreeRDS_WTSQuerySessionInformationA(
 			WTS_CLIENT_DISPLAY* pClientDisplay = (WTS_CLIENT_DISPLAY*) malloc(size);
 
 			if (!pClientDisplay)
+			{
+				WLog_Print(g_logger, WLOG_ERROR, "memory allocation error");
+				FDSAPI_FreeMessage(&responseMsg);
+				SetLastError(ERROR_NOT_ENOUGH_MEMORY);
 				return FALSE;
+			}
 
 			pClientDisplay->HorizontalResolution = infoValue->u.displayValue.displayWidth;
 			pClientDisplay->VerticalResolution = infoValue->u.displayValue.displayHeight;
@@ -1182,15 +1258,25 @@ FreeRDS_WTSDisconnectSession(
 	FDSAPI_MESSAGE requestMsg;
 	FDSAPI_MESSAGE responseMsg;
 
-	if (!ConnectClient())
-		return FALSE;
-
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
 
 	if (!CheckSessionId(&SessionId))
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
+
+	/* Connect to the session manager. */
+	if (!ConnectClient())
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
+		return FALSE;
+	}
 
 	/* Execute session manager RPC. */
 	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
@@ -1205,6 +1291,8 @@ FreeRDS_WTSDisconnectSession(
 	if (bSuccess)
 	{
 		bSuccess = responseMsg.u.disconnectSessionResponse.result;
+
+		FDSAPI_FreeMessage(&responseMsg);
 	}
 
 	/* Return the result. */
@@ -1222,15 +1310,25 @@ FreeRDS_WTSLogoffSession(
 	FDSAPI_MESSAGE requestMsg;
 	FDSAPI_MESSAGE responseMsg;
 
-	if (!ConnectClient())
-		return FALSE;
-
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
 
 	if (!CheckSessionId(&SessionId))
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
+
+	/* Connect to the session manager. */
+	if (!ConnectClient())
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
+		return FALSE;
+	}
 
 	/* Execute session manager RPC. */
 	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
@@ -1245,6 +1343,8 @@ FreeRDS_WTSLogoffSession(
 	if (bSuccess)
 	{
 		bSuccess = responseMsg.u.logoffSessionResponse.result;
+
+		FDSAPI_FreeMessage(&responseMsg);
 	}
 
 	/* Return the result. */
@@ -1261,12 +1361,19 @@ FreeRDS_WTSShutdownSystem(
 	FDSAPI_MESSAGE responseMsg;
 	BOOL bSuccess;
 
-	if (!ConnectClient())
-		return FALSE;
-
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
+
+	/* Connect to the session manager. */
+	if (!ConnectClient())
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
+		return FALSE;
+	}
 
 	/* Execute session manager RPC. */
 	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
@@ -1280,6 +1387,8 @@ FreeRDS_WTSShutdownSystem(
 	if (bSuccess)
 	{
 		bSuccess = responseMsg.u.shutdownSystemResponse.result;
+
+		FDSAPI_FreeMessage(&responseMsg);
 	}
 
 	/* Return the result. */
@@ -1293,28 +1402,44 @@ FreeRDS_WTSWaitSystemEvent(
 	DWORD* pEventFlags
 )
 {
+	DWORD dwErrorCode;
 	BOOL bSuccess = FALSE;
 	HANDLE hEvent = NULL;
 	FDSAPI_SESSION_EVENT_OBSERVER* pSessionEventObserver = NULL;
 
-	if (!ConnectClient())
-		return FALSE;
-
 	/* Check parameters. */
 	if (hServer != WTS_CURRENT_SERVER_HANDLE)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
+	}
+
+	/* Connect to the FDSAPI server. */
+	if (!ConnectClient())
+	{
+		SetLastError(ERROR_INTERNAL_ERROR);
+		return FALSE;
+	}
 
 	/* Create an event. */
 	hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	if (!hEvent)
-		goto EXCEPTION;
+	{
+		dwErrorCode = GetLastError();
+		WLog_Print(g_logger, WLOG_ERROR, "error creating event");
+		goto CLEANUP;
+	}
 
 	/* Create a session event observer. */
 	pSessionEventObserver = (FDSAPI_SESSION_EVENT_OBSERVER*) calloc(1, sizeof(FDSAPI_SESSION_EVENT_OBSERVER));
 
 	if (!pSessionEventObserver)
-		goto EXCEPTION;
+	{
+		dwErrorCode = ERROR_NOT_ENOUGH_MEMORY;
+		WLog_Print(g_logger, WLOG_ERROR, "memory allocation error");
+		goto CLEANUP;
+	}
 
 	pSessionEventObserver->type = FDSAPI_WAIT_SYSTEM_EVENT_TYPE;
 	pSessionEventObserver->u.waitSystemEvent.hWaitEvent = hEvent;
@@ -1329,6 +1454,12 @@ FreeRDS_WTSWaitSystemEvent(
 	if (WaitForSingleObject(hEvent, INFINITE) == WAIT_OBJECT_0)
 	{
 		bSuccess = TRUE;
+		dwErrorCode = ERROR_SUCCESS;
+	}
+	else
+	{
+		dwErrorCode = GetLastError();
+		WLog_Print(g_logger, WLOG_ERROR, "event wait failed");
 	}
 
 	/* Remove the session event observer from a list. */
@@ -1342,7 +1473,7 @@ FreeRDS_WTSWaitSystemEvent(
 		*pEventFlags = pSessionEventObserver->u.waitSystemEvent.dwEventFlags;
 	}
 
-EXCEPTION:
+CLEANUP:
 	if (hEvent)
 	{
 		CloseHandle(hEvent);
@@ -1352,6 +1483,8 @@ EXCEPTION:
 	{
 		free(pSessionEventObserver);
 	}
+
+	SetLastError(dwErrorCode);
 
 	return bSuccess;
 }
@@ -1365,12 +1498,12 @@ FreeRDS_WTSVirtualChannelOpen(
 {
 	int status;
 	BOOL bSuccess;
-	HANDLE hChannel;
+	DWORD dwErrorCode;
 	UINT32 channelPort;
 	const char* channelGuid;
 	FDSAPI_MESSAGE requestMsg;
 	FDSAPI_MESSAGE responseMsg;
-	FDSAPI_CHANNEL* pChannel;
+	FDSAPI_CHANNEL* pChannel = NULL;
 
 	if (!pVirtualName)
 	{
@@ -1396,7 +1529,7 @@ FreeRDS_WTSVirtualChannelOpen(
 		return FALSE;
 	}
 
-	fprintf(stderr, "WTSVirtualChannelOpen: %s\n", pVirtualName);
+	WLog_Print(g_logger, WLOG_DEBUG, "WTSVirtualChannelOpen: %s", pVirtualName);
 
 	/* Execute session manager RPC. */
 	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
@@ -1414,39 +1547,51 @@ FreeRDS_WTSVirtualChannelOpen(
 		return NULL;
 	}
 
-	hChannel = 0;
-
 	channelPort = responseMsg.u.virtualChannelOpenResponse.channelPort;
 	channelGuid = responseMsg.u.virtualChannelOpenResponse.channelGuid;
 
-	fprintf(stderr, "WTSVirtualChannelOpen: %s:%d\n", channelGuid, channelPort);
+	WLog_Print(g_logger, WLOG_DEBUG, "WTSVirtualChannelOpen: %s:%d", channelGuid, channelPort);
 
 	if (!channelGuid || !channelPort)
 	{
-		SetLastError(ERROR_INTERNAL_ERROR);
-		return NULL;
+		dwErrorCode = ERROR_INTERNAL_ERROR;
+		goto CLEANUP;
 	}
 
 	pChannel = FDSAPI_Channel_New();
 
 	if (!pChannel)
 	{
-		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-		return NULL;
+		dwErrorCode = ERROR_NOT_ENOUGH_MEMORY;
+		goto CLEANUP;
 	}
 
 	status = FDSAPI_Channel_Connect(pChannel, channelGuid, channelPort);
 
 	if (status < 0)
 	{
-		fprintf(stderr, "FDSAPI_Channel_Connect failure: %d\n", status);
-		FDSAPI_Channel_Free(pChannel);
-		return NULL;
+		dwErrorCode = ERROR_OPEN_FAILED;
+		WLog_Print(g_logger, WLOG_ERROR, "FDSAPI_Channel_Connect failure: %d", status);
+		goto CLEANUP;
 	}
 
-	hChannel = (HANDLE) pChannel;
+	FDSAPI_FreeMessage(&responseMsg);
 
-	return hChannel;
+	SetLastError(ERROR_SUCCESS);
+
+	return (HANDLE) pChannel;
+
+CLEANUP:
+	if (pChannel)
+	{
+		FDSAPI_Channel_Free(pChannel);
+	}
+
+	FDSAPI_FreeMessage(&responseMsg);
+
+	SetLastError(dwErrorCode);
+
+	return NULL;
 }
 
 HANDLE WINAPI
@@ -1458,12 +1603,12 @@ FreeRDS_WTSVirtualChannelOpenEx(
 {
 	int status;
 	BOOL bSuccess;
-	HANDLE hChannel;
+	DWORD dwErrorCode;
 	UINT32 channelPort;
 	const char* channelGuid;
 	FDSAPI_MESSAGE requestMsg;
 	FDSAPI_MESSAGE responseMsg;
-	FDSAPI_CHANNEL* pChannel;
+	FDSAPI_CHANNEL* pChannel = NULL;
 
 	if (!pVirtualName)
 	{
@@ -1483,6 +1628,8 @@ FreeRDS_WTSVirtualChannelOpenEx(
 		return FALSE;
 	}
 
+	WLog_Print(g_logger, WLOG_DEBUG, "WTSVirtualChannelOpenEx: %s, 0x%x", pVirtualName, flags);
+
 	/* Execute session manager RPC. */
 	ZeroMemory(&requestMsg, sizeof(FDSAPI_MESSAGE));
 	ZeroMemory(&responseMsg, sizeof(FDSAPI_MESSAGE));
@@ -1499,38 +1646,51 @@ FreeRDS_WTSVirtualChannelOpenEx(
 		return NULL;
 	}
 
-	hChannel = 0;
-
 	channelPort = responseMsg.u.virtualChannelOpenExResponse.channelPort;
 	channelGuid = responseMsg.u.virtualChannelOpenExResponse.channelGuid;
 
+	WLog_Print(g_logger, WLOG_DEBUG, "WTSVirtualChannelOpenEx: %s:%d", channelGuid, channelPort);
+
 	if (!channelGuid || !channelPort)
 	{
-		SetLastError(ERROR_INTERNAL_ERROR);
-		return NULL;
+		dwErrorCode = ERROR_INTERNAL_ERROR;
+		goto CLEANUP;
 	}
 
 	pChannel = FDSAPI_Channel_New();
 
 	if (!pChannel)
 	{
-		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-		return NULL;
+		dwErrorCode = ERROR_NOT_ENOUGH_MEMORY;
+		goto CLEANUP;
 	}
 
 	status = FDSAPI_Channel_Connect(pChannel, channelGuid, channelPort);
 
 	if (status < 0)
 	{
-		fprintf(stderr, "FDSAPI_Channel_Connect failure: %d\n", status);
-		FDSAPI_Channel_Free(pChannel);
-		SetLastError(ERROR_OPEN_FAILED);
-		return NULL;
+		dwErrorCode = ERROR_OPEN_FAILED;
+		WLog_Print(g_logger, WLOG_ERROR, "FDSAPI_Channel_Connect failure: %d", status);
+		goto CLEANUP;
 	}
 
-	hChannel = (HANDLE) pChannel;
+	FDSAPI_FreeMessage(&responseMsg);
 
-	return hChannel;
+	SetLastError(ERROR_SUCCESS);
+
+	return (HANDLE) pChannel;
+
+CLEANUP:
+	if (pChannel)
+	{
+		FDSAPI_Channel_Free(pChannel);
+	}
+
+	FDSAPI_FreeMessage(&responseMsg);
+
+	SetLastError(dwErrorCode);
+
+	return NULL;
 }
 
 BOOL WINAPI
@@ -1539,6 +1699,8 @@ FreeRDS_WTSVirtualChannelClose(
 )
 {
 	FDSAPI_CHANNEL* pChannel;
+
+	WLog_Print(g_logger, WLOG_DEBUG, "WTSVirtualChannelClose: %p", hChannelHandle);
 
 	if (!hChannelHandle)
 	{
@@ -1565,6 +1727,8 @@ FreeRDS_WTSVirtualChannelRead(
 	int status;
 	DWORD waitStatus;
 	FDSAPI_CHANNEL* pChannel;
+
+	WLog_Print(g_logger, WLOG_DEBUG, "WTSVirtualChannelRead: %p %lu %p %lu %p", hChannelHandle, TimeOut, Buffer, BufferSize, pBytesRead);
 
 	if (!hChannelHandle)
 	{
@@ -1606,7 +1770,7 @@ FreeRDS_WTSVirtualChannelRead(
 
 	status = _recv(pChannel->socket, Buffer, BufferSize, 0);
 
-	if (status < 0)
+	if (status <= 0)
 	{
 		SetLastError(ERROR_BROKEN_PIPE);
 		return FALSE;
@@ -1627,6 +1791,8 @@ FreeRDS_WTSVirtualChannelWrite(
 {
 	int status;
 	FDSAPI_CHANNEL* pChannel;
+
+	WLog_Print(g_logger, WLOG_DEBUG, "WTSVirtualChannelWrite: %p %p %lu %p", hChannelHandle, Buffer, Length, pBytesWritten);
 
 	if (!hChannelHandle)
 	{
