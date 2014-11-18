@@ -82,6 +82,8 @@ namespace freerds
 				responseMsg.messageId = FDSAPI_DISCONNECT_SESSION_RESPONSE_ID;
 				responseMsg.requestId = requestMsg.requestId;
 
+				WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSApiHandler::disconnectSession");
+
 				responseMsg.u.disconnectSessionResponse.result =
 						FDSApiHandler->disconnectSession(authToken,
 								requestMsg.u.disconnectSessionRequest.sessionId,
@@ -94,6 +96,8 @@ namespace freerds
 			{
 				responseMsg.messageId = FDSAPI_LOGOFF_SESSION_RESPONSE_ID;
 				responseMsg.requestId = requestMsg.requestId;
+
+				WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSApiHandler::logoffSession");
 
 				responseMsg.u.logoffSessionResponse.result =
 						FDSApiHandler->logoffSession(
@@ -108,6 +112,8 @@ namespace freerds
 			{
 				responseMsg.messageId = FDSAPI_SHUTDOWN_SYSTEM_RESPONSE_ID;
 				responseMsg.requestId = requestMsg.requestId;
+
+				WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSApiHandler::shutdownSystem");
 
 				responseMsg.u.shutdownSystemResponse.result =
 						FDSApiHandler->shutdownSystem(
@@ -258,6 +264,8 @@ namespace freerds
 				responseMsg.messageId = FDSAPI_VIRTUAL_CHANNEL_OPEN_RESPONSE_ID;
 				responseMsg.requestId = requestMsg.requestId;
 
+				WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSApiHandler::virtualChannelOpen");
+
 				responseMsg.u.virtualChannelOpenResponse.channelPort =
 						FDSApiHandler->virtualChannelOpen(channelGuid, authToken,
 								requestMsg.u.virtualChannelOpenRequest.sessionId,
@@ -272,6 +280,8 @@ namespace freerds
 			{
 				responseMsg.messageId = FDSAPI_VIRTUAL_CHANNEL_OPEN_EX_RESPONSE_ID;
 				responseMsg.requestId = requestMsg.requestId;
+
+				WLog_Print(logger_FDSApiServer, WLOG_DEBUG, "calling FDSApiHandler::virtualChannelOpenEx");
 
 				responseMsg.u.virtualChannelOpenExResponse.channelPort =
 						FDSApiHandler->virtualChannelOpenEx(channelGuid, authToken,

@@ -29,6 +29,7 @@
 #include <winpr/path.h>
 #include <winpr/print.h>
 #include <winpr/thread.h>
+#include <winpr/wlog.h>
 
 #define RDS_RPC_HEADER_LENGTH		4
 #define RDS_RPC_PIPE_BUFFER_SIZE	0xFFFF
@@ -36,6 +37,8 @@
 #define RDS_RPC_CONNECT_TIMEOUT		20
 #define RDS_RPC_CONNECT_RETRIES		10
 #define RDS_RPC_RECONNECT_INTERVAL	15000
+
+static wLog* g_logger;
 
 /**
  *
@@ -116,6 +119,8 @@ HANDLE freerds_rpc_named_pipe_connect(const char* pipeName)
 
 	for (i = 0; i < RDS_RPC_CONNECT_RETRIES; i++)
 	{
+		WLog_Print(g_logger, WLOG_TRACE, "connecting to %s", pipeName);
+
 		/* Wait for an instance of the named pipe to become available. */
 		if (!WaitNamedPipeA(pipeName, RDS_RPC_CONNECT_TIMEOUT))
 			continue;
@@ -129,10 +134,12 @@ HANDLE freerds_rpc_named_pipe_connect(const char* pipeName)
 		if (hNamedPipe == INVALID_HANDLE_VALUE)
 			continue;
 
-		printf("freerds_rpc_named_pipe_connect: connected to %s\n", pipeName);
+		WLog_Print(g_logger, WLOG_TRACE, "connected to %s", pipeName);
 
 		return hNamedPipe;
 	}
+
+	WLog_Print(g_logger, WLOG_ERROR, "failed connection to %s", pipeName);
 
 	return NULL;
 }
@@ -154,12 +161,19 @@ int freerds_rpc_named_pipe_read(HANDLE hNamedPipe, BYTE* data, DWORD length)
 
 	NumberOfBytesRead = 0;
 
+	WLog_Print(g_logger, WLOG_TRACE, "reading named pipe - hNamedPipe=%p, data=%p, length=%lu", hNamedPipe, data, length);
+
+	WaitForSingleObject(hNamedPipe, INFINITE);
+
 	fSuccess = ReadFile(hNamedPipe, data, length, &NumberOfBytesRead, NULL);
 
 	if (!fSuccess || (NumberOfBytesRead == 0))
 	{
+		WLog_Print(g_logger, WLOG_ERROR, "read failed - success=%d, numberOfBytesRead=%lu", fSuccess ? 1 : 0, NumberOfBytesRead);
 		return -1;
 	}
+
+	WLog_Print(g_logger, WLOG_TRACE, "%d bytes read", NumberOfBytesRead);
 
 	TotalNumberOfBytesRead += NumberOfBytesRead;
 	length -= NumberOfBytesRead;
@@ -174,6 +188,8 @@ int freerds_rpc_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length)
 	DWORD NumberOfBytesWritten;
 	DWORD TotalNumberOfBytesWritten = 0;
 
+	WLog_Print(g_logger, WLOG_TRACE, "writing named pipe - hNamedPipe=%p, data=%p, length=%lu", hNamedPipe, data, length);
+
 	while (length > 0)
 	{
 		NumberOfBytesWritten = 0;
@@ -182,6 +198,7 @@ int freerds_rpc_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length)
 
 		if (!fSuccess || (NumberOfBytesWritten == 0))
 		{
+			WLog_Print(g_logger, WLOG_ERROR, "write failed - success=%d, numberOfBytesWritten=%lu", fSuccess ? 1 : 0, NumberOfBytesWritten);
 			return -1;
 		}
 
@@ -189,6 +206,8 @@ int freerds_rpc_named_pipe_write(HANDLE hNamedPipe, BYTE* data, DWORD length)
 		length -= NumberOfBytesWritten;
 		data += NumberOfBytesWritten;
 	}
+
+	WLog_Print(g_logger, WLOG_TRACE, "%d bytes written", TotalNumberOfBytesWritten);
 
 	return TotalNumberOfBytesWritten;
 }
@@ -272,6 +291,11 @@ rdsRpcClient* freerds_rpc_client_new(const char* Endpoint)
 {
 	rdsRpcClient* rpcClient;
 
+	if (!g_logger)
+	{
+		g_logger = WLog_Get("freerds.rpc");
+	}
+
 	rpcClient = (rdsRpcClient*) calloc(1, sizeof(rdsRpcClient));
 
 	if (rpcClient)
@@ -354,12 +378,15 @@ void* freerds_rpc_client_thread(void* arg)
 			switch (WaitForMultipleObjects(nCount, hObjects, FALSE, INFINITE))
 			{
 				case WAIT_OBJECT_0:
+					WLog_Print(g_logger, WLOG_TRACE, "stop event signalled");
 					bRunning = FALSE;
 					break;
 
 				case WAIT_OBJECT_0 + 1:
 					if (freerds_rpc_transport_receive(rpcClient) < 0)
 					{
+						WLog_Print(g_logger, WLOG_TRACE, "connection closed");
+
 						/* The connection to the peer has been closed. */
 						CloseHandle(rpcClient->hClientPipe);
 						rpcClient->hClientPipe = NULL;
@@ -411,11 +438,11 @@ int freerds_rpc_client_start(rdsRpcClient* rpcClient)
 
 	if (rpcClient->hClientPipe == NULL)
 	{
-		fprintf(stderr, "Failed to create named pipe %s\n", rpcClient->PipeName);
+		WLog_Print(g_logger, WLOG_ERROR, "failed to create named pipe %s", rpcClient->PipeName);
 		return -1;
 	}
 
-	fprintf(stderr, "Connected to endpoint: %s, named pipe: %s\n", rpcClient->Endpoint, rpcClient->PipeName);
+	WLog_Print(g_logger, WLOG_TRACE, "connected to endpoint: %s, named pipe: %s", rpcClient->Endpoint, rpcClient->PipeName);
 
 	ResetEvent(rpcClient->hStopEvent);
 
@@ -425,7 +452,7 @@ int freerds_rpc_client_start(rdsRpcClient* rpcClient)
 
 	if (rpcClient->hClientThread == NULL)
 	{
-		fprintf(stderr, "Failed to create client thread\n");
+		WLog_Print(g_logger, WLOG_ERROR, "failed to create client thread");
 		CloseHandle(rpcClient->hClientPipe);
 		rpcClient->hClientPipe = NULL;
 		return -1;
@@ -479,6 +506,11 @@ int freerds_rpc_client_send_message(rdsRpcClient* rpcClient, BYTE* buffer, UINT3
 rdsRpcServer* freerds_rpc_server_new(const char* Endpoint)
 {
 	rdsRpcServer* rpcServer;
+
+	if (!g_logger)
+	{
+		g_logger = WLog_Get("freerds.rpc");
+	}
 
 	rpcServer = (rdsRpcServer*) calloc(1, sizeof(rdsRpcServer));
 
@@ -534,12 +566,15 @@ void* freerds_rpc_server_thread(void* arg)
 		/* Accept a connection from the client. */
 		hClientPipe = freerds_rpc_named_pipe_accept(rpcServer->PipeName);
 
+		WLog_Print(g_logger, WLOG_TRACE, "accepted connection - hClientPipe=%p", hClientPipe);
+
 		if (!hClientPipe)
 			break;
 
 		/* If the stop event was signalled... */
 		if (WaitForSingleObject(rpcServer->hStopEvent, 0) == WAIT_OBJECT_0)
 		{
+			WLog_Print(g_logger, WLOG_TRACE, "stop event signalled");
 			CloseHandle(hClientPipe);
 			break;
 		}
@@ -548,11 +583,16 @@ void* freerds_rpc_server_thread(void* arg)
 		rpcClient = freerds_rpc_client_new(rpcServer->Endpoint);
 
 		if (!rpcClient)
+		{
+			WLog_Print(g_logger, WLOG_ERROR, "failed to create new rpc client");
 			break;
+		}
 
 		rpcClient->RpcServer = rpcServer;
 
 		rpcClient->hClientPipe = hClientPipe;
+
+		rpcClient->custom = rpcServer->custom;
 
 		rpcClient->ConnectionClosed = rpcServer->ConnectionClosed;
 		rpcClient->MessageReceived = rpcServer->MessageReceived;
