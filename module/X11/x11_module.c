@@ -66,6 +66,8 @@ struct rds_module_x11
 
 	HANDLE monitorThread;
 	HANDLE monitorStopEvent;
+	STARTUPINFO CSStartupInfo;
+	PROCESS_INFORMATION CSProcessInformation;
 	STARTUPINFO WMStartupInfo;
 	PROCESS_INFORMATION WMProcessInformation;
 	UINT32 displayNum;
@@ -110,6 +112,12 @@ void monitoring_thread(void* arg)
 		{
 			ret = clean_up_process(&(x11->X11ProcessInformation));
 			WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: X11 process exited with %d (monitoring thread)", x11->commonModule.sessionId, ret);
+			break;
+		}
+		if (waitpid(x11->CSProcessInformation.dwProcessId, &status, WNOHANG) != 0)
+		{
+			ret = clean_up_process(&(x11->CSProcessInformation));
+			WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: CS process exited with %d (monitoring thread)", x11->commonModule.sessionId, ret);
 			break;
 		}
 		if (waitpid(x11->WMProcessInformation.dwProcessId, &status, WNOHANG) != 0)
@@ -206,6 +214,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	BOOL status = TRUE;
 	DWORD SessionId;
 	char envstr[256];
+	char* envstrp;
 	rdsModuleX11* x11;
 	char lpCommandLine[256];
 	char startupname[256];
@@ -266,11 +275,48 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 		return NULL;
 	}
 
+	x11_rds_module_reset_process_informations(&(x11->CSStartupInfo), &(x11->CSProcessInformation));
 	x11_rds_module_reset_process_informations(&(x11->WMStartupInfo), &(x11->WMProcessInformation));
 
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
 
+	envstrp = getenv("WLOG_APPENDER");
+	if (envstrp)
+	{
+		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "WLOG_APPENDER", envstrp);
+	}
+
+	envstrp = getenv("WLOG_FILTER");
+	if (envstrp)
+	{
+		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "WLOG_FILTER", envstrp);
+	}
+
+	envstrp = getenv("WLOG_LEVEL");
+	if (envstrp)
+	{
+		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "WLOG_LEVEL", envstrp);
+	}
+
+	/* Start the FreeRDS channel server. */
+	strcpy(startupname, "freerds-channels");
+
+	status = CreateProcessA(NULL, startupname,
+		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
+		&(x11->CSStartupInfo), &(x11->CSProcessInformation));
+
+	if (!status)
+	{
+		WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, problem starting %s (status %d)", SessionId, startupname, status);
+		x11_rds_stop_process(&(x11->X11ProcessInformation));
+		free(pipeName);
+		return NULL;
+	}
+
+	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: CS process started: %d (pid %d)", SessionId, status, x11->CSProcessInformation.dwProcessId);
+
+	/* Start the window manager. */
 	if (x11->commonModule.userToken == 0)
 	{
 		strcpy(startupname, "simple_greeter");
@@ -284,18 +330,21 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	}
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, startupname,
-			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
-			&(x11->WMStartupInfo), &(x11->WMProcessInformation));
+		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
+		&(x11->WMStartupInfo), &(x11->WMProcessInformation));
 
 	if (!status)
 	{
 		WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, problem starting %s (status %d)", SessionId, startupname, status);
 		x11_rds_stop_process(&(x11->X11ProcessInformation));
+		x11_rds_stop_process(&(x11->CSProcessInformation));
 		free(pipeName);
 		return NULL;
 	}
 
 	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: WM process started: %d (pid %d)", SessionId, status, x11->WMProcessInformation.dwProcessId);
+
+	/* Start the monitoring thread. */
 	x11->monitorThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) monitoring_thread, x11, 0, NULL);
 
 	return pipeName;
@@ -313,6 +362,7 @@ int x11_rds_module_stop(RDS_MODULE_COMMON* module)
 	WaitForSingleObject(x11->monitorThread, INFINITE);
 
 	ret = x11_rds_stop_process(&(x11->WMProcessInformation));
+	ret = x11_rds_stop_process(&(x11->CSProcessInformation));
 	ret = x11_rds_stop_process(&(x11->X11ProcessInformation));
 
 	/* clean up in case x server wasn't shut down cleanly */
