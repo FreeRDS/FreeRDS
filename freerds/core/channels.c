@@ -356,19 +356,41 @@ int freerdp_client_virtual_channel_read(freerdp_peer* client, HANDLE hChannel, B
 int freerds_channel_check_socket(rdsConnection* connection, rdsChannel* channel)
 {
 	int status;
-	int length;
-	BYTE buffer[8198];
+	UINT32 length;
+	BYTE* buffer;
 	freerdp_peer* client;
 
 	length = sizeof(buffer);
 	client = connection->client;
 
+	status = _recv(channel->socket, (char*) &length, sizeof(length), 0);
+
+	if (status != sizeof(length))
+	{
+		fprintf(stderr, "socket recv failed with status %d (lasterror=%d)\n", status, WSAGetLastError());
+		return -1;
+	}
+
+	buffer = (BYTE*) malloc(length);
+
+	if (!buffer)
+	{
+		fprintf(stderr, "memory allocation error\n");
+		return -1;
+	}
+
 	status = _recv(channel->socket, (char*) buffer, length, 0);
 
-	if (status < 1)
-		return status;
+	if (status != length)
+	{
+		fprintf(stderr, "recv failed with status %d (lasterror=%d)\n", status, WSAGetLastError());
+		free(buffer);
+		return -1;
+	}
 
 	client->VirtualChannelWrite(client, channel->rdpChannel, buffer, status);
+
+	free(buffer);
 
 	return status;
 }

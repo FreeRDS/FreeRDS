@@ -1816,6 +1816,14 @@ FreeRDS_WTSVirtualChannelWrite(
 
 	*pBytesWritten = 0;
 
+	status = _send(pChannel->socket, (const char *) &Length, sizeof(Length), 0);
+
+	if (status < 0)
+	{
+		SetLastError(ERROR_BROKEN_PIPE);
+		return FALSE;
+	}
+
 	status = _send(pChannel->socket, Buffer, Length, 0);
 
 	if (status < 0)
