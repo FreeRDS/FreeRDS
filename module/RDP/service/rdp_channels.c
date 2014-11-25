@@ -21,7 +21,6 @@
 #include "config.h"
 #endif
 
-#include <freerdp/utils/event.h>
 #include <freerdp/client/channels.h>
 
 #include "rdp_client.h"
@@ -40,39 +39,6 @@ void rds_OnChannelDisconnectedEventHandler(rdpContext* context, ChannelDisconnec
 	rdsContext* rds = (rdsContext*) context;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "OnChannelDisconnected: %s", e->name);
-}
-
-void rds_process_channel_event(rdpChannels* channels, freerdp* instance)
-{
-	rdsContext* rds;
-	wMessage* event;
-
-	rds = (rdsContext*) instance->context;
-
-	event = freerdp_channels_pop_event(channels);
-
-	if (event)
-	{
-		switch (GetMessageClass(event->id))
-		{
-			case RailChannel_Class:
-				break;
-
-			case TsmfChannel_Class:
-				break;
-
-			case CliprdrChannel_Class:
-				break;
-
-			case RdpeiChannel_Class:
-				break;
-
-			default:
-				break;
-		}
-
-		freerdp_event_free(event);
-	}
 }
 
 void* rds_channels_thread(void* arg)
@@ -104,15 +70,9 @@ void* rds_channels_thread(void* arg)
 
 		if (!status)
 			break;
-
-		rds_process_channel_event(channels, instance);
 	}
 
 	ExitThread(0);
 	return NULL;
 }
 
-int rds_receive_channel_data(freerdp* instance, UINT16 channelId, BYTE* data, int size, int flags, int totalSize)
-{
-	return freerdp_channels_data(instance, channelId, data, size, flags, totalSize);
-}

@@ -169,7 +169,7 @@ case $LINUX_DISTRO_NAME in
     libexpat1-dev libxml-libxml-perl libtool bison flex xsltproc \
     libfreetype6-dev libfontconfig1-dev libpixman-1-dev xutils-dev \
     x11proto-gl-dev mesa-common-dev libgl1-mesa-dev xorg-dev \
-    libboost-dev qt4-dev-tools
+    libboost-dev qt4-dev-tools libjson-c-dev libsndfile-1-dev
     ;;
 
   CentOS)

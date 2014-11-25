@@ -27,6 +27,4 @@ void* rds_channels_thread(void* arg);
 void rds_OnChannelConnectedEventHandler(rdpContext* context, ChannelConnectedEventArgs* e);
 void rds_OnChannelDisconnectedEventHandler(rdpContext* context, ChannelDisconnectedEventArgs* e);
 
-int rds_receive_channel_data(freerdp* instance, UINT16 channelId, BYTE* data, int size, int flags, int totalSize);
-
 #endif /* FREERDS_MODULE_RDP_SERVICE_CHANNELS_H */

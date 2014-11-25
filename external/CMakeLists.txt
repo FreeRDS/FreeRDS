@@ -22,7 +22,7 @@ include(FindPulse)
 set(EXTERNAL_PROJECTS_BASE "${CMAKE_CURRENT_BINARY_DIR}")
 set_property(DIRECTORY PROPERTY "EP_BASE" ${EXTERNAL_PROJECTS_BASE})
 
-message(STATUS "Using pulseaudio sources version ${PULSE_VERSION}")
+message(STATUS "Using pulseaudio sources version ${PULSE_VERSION_MAJOR}.${PULSE_VERSION_MINOR}")
 
 set(EXTERNAL_PROJECT "pulseaudio")
 set(${EXTERNAL_PROJECT}_VERSION "${PULSE_VERSION}")

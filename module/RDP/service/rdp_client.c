@@ -498,7 +498,6 @@ int rds_freerdp_client_new(freerdp* instance, rdpContext* context)
 
 	instance->PreConnect = rds_pre_connect;
 	instance->PostConnect = rds_post_connect;
-	instance->ReceiveChannelData = rds_receive_channel_data;
 
 	context->channels = freerdp_channels_new();
 
