@@ -44,7 +44,6 @@
 #include <pulse/rtclock.h>
 #include <pulse/timeval.h>
 #include <pulse/xmalloc.h>
-#include <pulse/i18n.h>
 
 #include <pulsecore/core-error.h>
 #include <pulsecore/sink.h>

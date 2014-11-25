@@ -45,7 +45,7 @@ set(${MODULE_PREFIX}_SRCS
  
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS pulsecore-${PULSE_VERSION} pulsecommon-${PULSE_VERSION} pulse freerds-rpc winpr)
+set(${MODULE_PREFIX}_LIBS ${PULSE_LIBRARY} freerds-rpc winpr)
 
 set_target_properties(${MODULE_NAME} PROPERTIES PREFIX "")
 

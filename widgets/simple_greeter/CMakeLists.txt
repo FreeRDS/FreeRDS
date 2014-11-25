@@ -56,10 +56,7 @@ add_executable(${MODULE_NAME}
 
 set(${MODULE_PREFIX}_LIBS "")
 
-set_complex_link_libraries(VARIABLE ${MODULE_PREFIX}_LIBS
-	MONOLITHIC ${MONOLITHIC_BUILD}
-	MODULE winpr
-	MODULES winpr-crt winpr-utils winpr-synch winpr-error winpr-file winpr-path winpr-pipe winpr-library winpr-sspicli)
+list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 
 list(APPEND ${MODULE_PREFIX}_LIBS ${QT_LIBRARIES} freerds-fdsapi)
 	
