@@ -93,9 +93,7 @@ static miPointerScreenFuncRec g_rdpPointerCursorFuncs =
 	/* these are in rdpinput.c */
 	rdpCursorOffScreen,
 	rdpCrossScreen,
-	rdpPointerWarpCursor,
-	rdpPointerEnqueueEvent,
-	rdpPointerNewEventScreen
+	rdpPointerWarpCursor
 };
 
 /* returns error, zero is good */

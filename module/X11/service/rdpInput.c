@@ -444,19 +444,9 @@ void rdpPointerWarpCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y)
 	miPointerWarpCursor(pDev, pScr, x, y);
 }
 
-void rdpPointerEnqueueEvent(DeviceIntPtr pDev, InternalEvent* event)
-{
-
-}
-
-void rdpPointerNewEventScreen(DeviceIntPtr pDev, ScreenPtr pScr, Bool fromDIX)
-{
-
-}
-
 Bool rdpSpriteRealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs)
 {
-	return 1;
+	return TRUE;
 }
 
 Bool rdpSpriteUnrealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs)
