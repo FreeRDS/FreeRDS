@@ -5,7 +5,11 @@ if [ -r /etc/default/locale ]; then
   export LANG LANGUAGE
 fi
 
-if [ -r /bin/mate-session ]; then
+# /usr/share/xsessions contains available X11 session types
+
+if [ -r /usr/lib/gnome-panel/gnome-session-flashback ]; then
+  exec /usr/lib/gnome-panel/gnome-session-flashback
+elif [ -r /bin/mate-session ]; then
   exec /bin/mate-session
 elif [ -r /etc/X11/Xsession ]; then
   . /etc/X11/Xsession
