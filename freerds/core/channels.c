@@ -38,7 +38,10 @@ BOOL freerds_channels_is_channel_allowed(UINT32 SessionId, char* ChannelName)
 	FDSAPI_CHANNEL_ALLOWED_REQUEST request;
 	FDSAPI_CHANNEL_ALLOWED_RESPONSE response;
 
-	response.ChannelAllowed = FALSE;
+	ZeroMemory(&request, sizeof(request));
+	ZeroMemory(&response, sizeof(response));
+
+	request.ChannelName = ChannelName;
 
 	freerds_icp_IsChannelAllowed(&request, &response);
 
