@@ -77,14 +77,11 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	DesktopHeight = settings->DesktopHeight;
 	ColorDepth = settings->ColorDepth;
 
+	if (settings->MultifragMaxRequestSize < 0x3F0000)
+		settings->NSCodec = FALSE; /* NSCodec compressor does not support fragmentation yet */
+
 	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
 		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
-
-	//if ((DesktopWidth % 4) != 0)
-	//	DesktopWidth += (DesktopWidth % 4);
-
-	//if ((DesktopHeight % 4) != 0)
-	//	DesktopHeight += (DesktopHeight % 4);
 
 	if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight)
 			|| (ColorDepth != settings->ColorDepth))
@@ -102,8 +99,8 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 
 	freerds_channels_post_connect(connection);
 
-	connection->encoder = freerds_bitmap_encoder_new(settings->DesktopWidth,
-			settings->DesktopHeight, settings->ColorDepth);
+	connection->encoder = freerds_encoder_new(connection,
+			settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
 
 	return TRUE;
 }
@@ -136,13 +133,25 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	rdsConnection* connection = (rdsConnection*) client->context;
 	rdsBackendConnector* connector = connection->connector;
 
+	settings = client->settings;
+
+	if (settings->ClientDir && (strcmp(settings->ClientDir, "librdp") == 0))
+	{
+		/* Hack for Mac/iOS/Android Microsoft RDP clients */
+
+		settings->RemoteFxCodec = FALSE;
+
+		settings->NSCodec = FALSE;
+		settings->NSCodecAllowSubsampling = FALSE;
+
+		settings->SurfaceFrameMarkerEnabled = FALSE;
+	}
+
 	if (connector)
 	{
 		fprintf(stderr, "reactivation\n");
 		return TRUE;
 	}
-
-	settings = client->settings;
 
 	if (settings->Password)
 		settings->AutoLogonEnabled = TRUE;

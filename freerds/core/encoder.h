@@ -21,43 +21,46 @@
 #define FREERDS_CORE_ENCODER_H
 
 #include <freerdp/freerdp.h>
-#include <freerdp/codec/rfx.h>
-#include <freerdp/codec/nsc.h>
-#include <freerdp/codec/bitmap.h>
+#include <freerdp/codecs.h>
 
 #include <winpr/crt.h>
 #include <winpr/stream.h>
 
-struct rds_bitmap_encoder
+struct rds_encoder
 {
-	int maxWidth;
-	int maxHeight;
+	rdsConnection* connection;
 
-	int desktopWidth;
-	int desktopHeight;
-
-	UINT32 bitsPerPixel;
-	UINT32 bytesPerPixel;
-
-	wStream* bs;
-	wStream* bts;
-
-	BITMAP_PLANAR_CONTEXT* planar_context;
-
-	wStream* rfx_s;
-	RFX_CONTEXT* rfx_context;
-
-	wStream* nsc_s;
-	NSC_CONTEXT* nsc_context;
+	int width;
+	int height;
+	UINT32 codecs;
 
 	BYTE** grid;
 	int gridWidth;
 	int gridHeight;
 	BYTE* gridBuffer;
-};
-typedef struct rds_bitmap_encoder rdsBitmapEncoder;
+	int maxTileWidth;
+	int maxTileHeight;
 
-rdsBitmapEncoder* freerds_bitmap_encoder_new(int desktopWidth, int desktopHeight, int colorDepth);
-void freerds_bitmap_encoder_free(rdsBitmapEncoder* encoder);
+	wStream* bs;
+
+	RFX_CONTEXT* rfx;
+	NSC_CONTEXT* nsc;
+	BITMAP_PLANAR_CONTEXT* planar;
+	BITMAP_INTERLEAVED_CONTEXT* interleaved;
+
+	int fps;
+	int maxFps;
+	BOOL frameAck;
+	UINT32 frameId;
+	wListDictionary* frameList;
+};
+typedef struct rds_encoder rdsEncoder;
+
+int freerds_encoder_reset(rdsEncoder* encoder);
+int freerds_encoder_prepare(rdsEncoder* encoder, UINT32 codecs);
+int freerds_encoder_create_frame_id(rdsEncoder* encoder);
+
+rdsEncoder* freerds_encoder_new(rdsConnection* connection, int width, int height, int bpp);
+void freerds_encoder_free(rdsEncoder* encoder);
 
 #endif /* FREERDS_CORE_ENCODER_H */

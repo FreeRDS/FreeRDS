@@ -68,13 +68,17 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 	FILE* fp = NULL;
 	rdpSettings* settings = client->settings;
 
-	settings->OsMajorType = OSMAJORTYPE_UNIX;
-	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
 	settings->ColorDepth = 32;
+	settings->NSCodec = TRUE;
 	settings->RemoteFxCodec = TRUE;
 	settings->BitmapCacheV3Enabled = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
 	settings->SurfaceFrameMarkerEnabled = TRUE;
+	settings->SupportGraphicsPipeline = FALSE;
+
+	settings->DrawAllowSkipAlpha = TRUE;
+	settings->DrawAllowColorSubsampling = TRUE;
+	settings->DrawAllowDynamicColorFidelity = TRUE;
 
 	settings->RdpKeyFile = strdup("freerds.pem");
 
@@ -120,7 +124,7 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 
 void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
 {
-	freerds_bitmap_encoder_free(context->encoder);
+	freerds_encoder_free(context->encoder);
 
 	ListDictionary_Free(context->FrameList);
 
