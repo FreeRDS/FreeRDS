@@ -40,8 +40,6 @@
 
 #include <freerds/auth.h>
 
-#include <winpr/tools/makecert.h>
-
 #include "rpc.h"
 #include "channels.h"
 
@@ -200,63 +198,6 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	}
 
 	return TRUE;
-}
-
-const char* makecert_argv[4] =
-{
-	"makecert",
-	"-rdp",
-	"-live",
-	"-silent"
-};
-
-int makecert_argc = (sizeof(makecert_argv) / sizeof(char*));
-
-int freerds_generate_certificate(rdpSettings* settings)
-{
-	char* config_home;
-	char* server_file_path;
-	MAKECERT_CONTEXT* context;
-
-	config_home = GetKnownPath(KNOWN_PATH_XDG_CONFIG_HOME);
-
-	if (!PathFileExistsA(config_home))
-		CreateDirectoryA(config_home, 0);
-
-	free(config_home);
-
-	if (!PathFileExistsA(settings->ConfigPath))
-		CreateDirectoryA(settings->ConfigPath, 0);
-
-	server_file_path = GetCombinedPath(settings->ConfigPath, "server");
-
-	if (!PathFileExistsA(server_file_path))
-		CreateDirectoryA(server_file_path, 0);
-
-	settings->CertificateFile = GetCombinedPath(server_file_path, "server.crt");
-	settings->PrivateKeyFile = GetCombinedPath(server_file_path, "server.key");
-
-	if ((!PathFileExistsA(settings->CertificateFile)) ||
-			(!PathFileExistsA(settings->PrivateKeyFile)))
-	{
-		context = makecert_context_new();
-
-		makecert_context_process(context, makecert_argc, (char**) makecert_argv);
-
-		makecert_context_set_output_file_name(context, "server");
-
-		if (!PathFileExistsA(settings->CertificateFile))
-			makecert_context_output_certificate_file(context, server_file_path);
-
-		if (!PathFileExistsA(settings->PrivateKeyFile))
-			makecert_context_output_private_key_file(context, server_file_path);
-
-		makecert_context_free(context);
-	}
-
-	free(server_file_path);
-
-	return 0;
 }
 
 void freerds_input_synchronize_event(rdpInput* input, UINT32 flags)
@@ -519,7 +460,6 @@ void* freerds_connection_main_thread(void* arg)
 	settings = client->settings;
 
 	freerds_server_add_connection(g_Server, connection);
-	freerds_generate_certificate(settings);
 
 	settings->RdpSecurity = TRUE;
 	settings->TlsSecurity = TRUE;

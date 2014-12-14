@@ -59,6 +59,8 @@ int g_is_term(void);
 void g_set_term(int value);
 HANDLE g_get_term_event(void);
 
+char* freerds_get_home_path();
+
 void freerds_server_add_connection(rdsServer* server, rdsConnection* connection);
 void freerds_server_remove_connection(rdsServer* server, UINT32 id);
 rdsConnection* freerds_server_get_connection(rdsServer* server, UINT32 id);

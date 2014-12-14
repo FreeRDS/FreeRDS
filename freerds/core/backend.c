@@ -85,9 +85,6 @@ void freerds_connector_free(rdsBackendConnector* connector)
 	{
 #ifndef _WIN32
 		shmdt(connector->framebuffer.fbSharedMemory);
-
-		fprintf(stderr, "connector_free: detached shm %d from %p\n",
-				connector->framebuffer.fbSegmentId, connector->framebuffer.fbSharedMemory);
 #endif
 	}
 

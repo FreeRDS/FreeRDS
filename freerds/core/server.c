@@ -25,8 +25,13 @@
 #include "freerds.h"
 
 #include <winpr/crt.h>
+#include <winpr/file.h>
+#include <winpr/path.h>
+#include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/interlocked.h>
+
+#include <winpr/tools/makecert.h>
 
 #include <errno.h>
 
@@ -38,6 +43,56 @@
 #include "rpc.h"
 
 rdsServer* g_Server = NULL;
+
+const char* makecert_argv[4] =
+{
+	"makecert",
+	"-rdp",
+	"-live",
+	"-silent"
+};
+
+int makecert_argc = (sizeof(makecert_argv) / sizeof(char*));
+
+int freerds_generate_certificate(rdpSettings* settings)
+{
+	char* freerds_home;
+	char* server_file_path;
+	MAKECERT_CONTEXT* context;
+
+	freerds_home = freerds_get_home_path();
+
+	server_file_path = GetCombinedPath(freerds_home, "etc/freerds");
+
+	if (!PathFileExistsA(server_file_path))
+		CreateDirectoryA(server_file_path, 0);
+
+	settings->CertificateFile = GetCombinedPath(server_file_path, "server.crt");
+	settings->PrivateKeyFile = GetCombinedPath(server_file_path, "server.key");
+	settings->RdpKeyFile = GetCombinedPath(server_file_path, "server.key");
+
+	if ((!PathFileExistsA(settings->CertificateFile)) ||
+			(!PathFileExistsA(settings->PrivateKeyFile)))
+	{
+		context = makecert_context_new();
+
+		makecert_context_process(context, makecert_argc, (char**) makecert_argv);
+
+		makecert_context_set_output_file_name(context, "server");
+
+		if (!PathFileExistsA(settings->CertificateFile))
+			makecert_context_output_certificate_file(context, server_file_path);
+
+		if (!PathFileExistsA(settings->PrivateKeyFile))
+			makecert_context_output_private_key_file(context, server_file_path);
+
+		makecert_context_free(context);
+	}
+
+	free(server_file_path);
+
+	return 0;
+}
 
 void freerds_server_add_connection(rdsServer* server, rdsConnection* connection)
 {
@@ -65,7 +120,6 @@ rdsConnection* freerds_server_get_connection(rdsServer* server, UINT32 id)
 
 void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 {
-	FILE* fp = NULL;
 	rdpSettings* settings = client->settings;
 
 	settings->ColorDepth = 32;
@@ -80,27 +134,7 @@ void freerds_peer_context_new(freerdp_peer* client, rdsConnection* context)
 	settings->DrawAllowColorSubsampling = TRUE;
 	settings->DrawAllowDynamicColorFidelity = TRUE;
 
-	settings->RdpKeyFile = strdup("freerds.pem");
-
-	fp = fopen(settings->RdpKeyFile, "rb");
-
-	if (!fp)
-	{
-		/*
-		 * This is the first time FreeRDS has been executed and
-		 * the RSA keys do not exist.  Go ahead and create them
-		 * using the OpenSSL command line utilities.
-		 */
-
-		char command[256];
-
-		sprintf(command, "openssl genrsa -out %s 1024", settings->RdpKeyFile);
-		system(command);
-	}
-	else
-	{
-		fclose(fp);
-	}
+	freerds_generate_certificate(settings);
 
 	context->server = g_Server;
 	context->channelServer = context->server->channels;

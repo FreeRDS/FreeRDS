@@ -312,9 +312,6 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 
 	attach = (msg->flags & RDS_FRAMEBUFFER_FLAG_ATTACH) ? TRUE : FALSE;
 
-	fprintf(stderr, "freerds_client_inbound_shared_framebuffer: segmentId: %d width: %d height: %d attach: %d\n",
-			msg->segmentId, msg->width, msg->height, attach);
-
 	if (attach)
 	{
 		void* addr;
