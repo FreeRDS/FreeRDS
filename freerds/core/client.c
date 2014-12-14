@@ -302,14 +302,23 @@ static void detach_framebuffer(RDS_FRAMEBUFFER* framebuffer)
 int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARED_FRAMEBUFFER* msg)
 {
 	int attach;
+	rdpUpdate* update;
+	rdpContext* context;
+	rdsBackendConnector* connector;
+
+	connector = (rdsBackendConnector*) backend;
+	context = (rdpContext*) connector->connection;
+	update = context->update;
 
 	attach = (msg->flags & RDS_FRAMEBUFFER_FLAG_ATTACH) ? TRUE : FALSE;
+
+	fprintf(stderr, "freerds_client_inbound_shared_framebuffer: segmentId: %d width: %d height: %d attach: %d\n",
+			msg->segmentId, msg->width, msg->height, attach);
 
 	if (attach)
 	{
 		void* addr;
 		RDS_MSG_PAINT_RECT fm;
-		rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 		rdpSettings* settings = connector->settings;
 		UINT32 DesktopWidth = msg->width;
 		UINT32 DesktopHeight = msg->height;
@@ -352,7 +361,7 @@ int freerds_client_inbound_shared_framebuffer(rdsBackend* backend, RDS_MSG_SHARE
 			settings->DesktopWidth = DesktopWidth;
 			settings->DesktopHeight = DesktopHeight;
 
-			connector->connection->client->update->DesktopResize(connector->connection->client->update->context);
+			update->DesktopResize(context);
 		}
 
 		fm.type = RDS_SERVER_PAINT_RECT;

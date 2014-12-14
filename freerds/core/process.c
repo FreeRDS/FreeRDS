@@ -47,6 +47,24 @@
 
 extern rdsServer* g_Server;
 
+int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
+{
+	RDS_MSG_CAPABILITIES capabilities;
+
+	ZeroMemory(&capabilities, sizeof(RDS_MSG_CAPABILITIES));
+	capabilities.type = RDS_CLIENT_CAPABILITIES;
+	capabilities.Version = 1;
+	capabilities.DesktopWidth = settings->DesktopWidth;
+	capabilities.DesktopHeight = settings->DesktopHeight;
+	capabilities.KeyboardLayout = settings->KeyboardLayout;
+	capabilities.KeyboardType = settings->KeyboardType;
+	capabilities.KeyboardSubType = settings->KeyboardSubType;
+
+	freerds_write_capabilities(s, &capabilities);
+
+	return freerds_named_pipe_write(hClientPipe, Stream_Buffer(s), Stream_GetPosition(s));
+}
+
 BOOL freerds_peer_capabilities(freerdp_peer* client)
 {
 	return TRUE;
@@ -54,14 +72,20 @@ BOOL freerds_peer_capabilities(freerdp_peer* client)
 
 BOOL freerds_peer_post_connect(freerdp_peer* client)
 {
+	int error_code;
+	char* endpoint;
 	UINT32 ColorDepth;
 	UINT32 DesktopWidth;
 	UINT32 DesktopHeight;
 	rdpSettings* settings;
 	rdsConnection* connection;
+	rdsBackendConnector* connector;
+	FDSAPI_LOGON_USER_REQUEST request;
+	FDSAPI_LOGON_USER_RESPONSE response;
 
 	settings = client->settings;
 	connection = (rdsConnection*) client->context;
+	connector = connection->connector;
 
 	fprintf(stderr, "Client %s is connected", client->hostname);
 
@@ -93,73 +117,9 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 		settings->ColorDepth = ColorDepth;
 
 		client->update->DesktopResize(client->update->context);
-
-		return TRUE;
 	}
 
 	freerds_channels_post_connect(connection);
-
-	connection->encoder = freerds_encoder_new(connection,
-			settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
-
-	return TRUE;
-}
-
-int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
-{
-	RDS_MSG_CAPABILITIES capabilities;
-
-	ZeroMemory(&capabilities, sizeof(RDS_MSG_CAPABILITIES));
-	capabilities.type = RDS_CLIENT_CAPABILITIES;
-	capabilities.Version = 1;
-	capabilities.DesktopWidth = settings->DesktopWidth;
-	capabilities.DesktopHeight = settings->DesktopHeight;
-	capabilities.KeyboardLayout = settings->KeyboardLayout;
-	capabilities.KeyboardType = settings->KeyboardType;
-	capabilities.KeyboardSubType = settings->KeyboardSubType;
-
-	freerds_write_capabilities(s, &capabilities);
-
-	return freerds_named_pipe_write(hClientPipe, Stream_Buffer(s), Stream_GetPosition(s));
-}
-
-BOOL freerds_peer_activate(freerdp_peer* client)
-{
-	int error_code;
-	char* endpoint;
-	rdpSettings* settings;
-	FDSAPI_LOGON_USER_REQUEST request;
-	FDSAPI_LOGON_USER_RESPONSE response;
-	rdsConnection* connection = (rdsConnection*) client->context;
-	rdsBackendConnector* connector = connection->connector;
-
-	settings = client->settings;
-
-	if (settings->ClientDir && (strcmp(settings->ClientDir, "librdp") == 0))
-	{
-		/* Hack for Mac/iOS/Android Microsoft RDP clients */
-
-		settings->RemoteFxCodec = FALSE;
-
-		settings->NSCodec = FALSE;
-		settings->NSCodecAllowSubsampling = FALSE;
-
-		settings->SurfaceFrameMarkerEnabled = FALSE;
-	}
-
-	if (connector)
-	{
-		fprintf(stderr, "reactivation\n");
-		return TRUE;
-	}
-
-	if (settings->Password)
-		settings->AutoLogonEnabled = TRUE;
-
-	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
-							settings->SurfaceFrameMarkerEnabled);
-	
-	fprintf(stderr, "codec mode %d\n", connection->codecMode);
 
 	ZeroMemory(&request, sizeof(request));
 
@@ -196,6 +156,48 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 		return FALSE;
 
 	fprintf(stderr, "Client Activated\n");
+
+	return TRUE;
+}
+
+BOOL freerds_peer_activate(freerdp_peer* client)
+{
+	rdpSettings* settings;
+	rdsConnection* connection = (rdsConnection*) client->context;
+
+	settings = client->settings;
+
+	if (settings->ClientDir && (strcmp(settings->ClientDir, "librdp") == 0))
+	{
+		/* Hack for Mac/iOS/Android Microsoft RDP clients */
+
+		settings->RemoteFxCodec = FALSE;
+
+		settings->NSCodec = FALSE;
+		settings->NSCodecAllowSubsampling = FALSE;
+
+		settings->SurfaceFrameMarkerEnabled = FALSE;
+	}
+
+	if (settings->Username && settings->Password)
+		settings->AutoLogonEnabled = TRUE;
+
+	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
+						settings->SurfaceFrameMarkerEnabled);
+	
+	fprintf(stderr, "codec mode %d\n", connection->codecMode);
+
+	if (!connection->encoder)
+	{
+		connection->encoder = freerds_encoder_new(connection,
+				settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
+	}
+	else
+	{
+		connection->encoder->width = settings->DesktopWidth;
+		connection->encoder->height = settings->DesktopHeight;
+		freerds_encoder_reset(connection->encoder);
+	}
 
 	return TRUE;
 }
