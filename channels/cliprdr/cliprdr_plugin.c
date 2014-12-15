@@ -26,14 +26,14 @@
 
 typedef struct
 {
-	wLog *log;
+	wLog* log;
 
 	HANDLE hVC;
 	HANDLE hThread;
 	DWORD dwThreadId;
 
 	/* Used to implement the CLIPRDR protocol. */
-	CliprdrServerContext *cliprdrServer;
+	CliprdrServerContext* cliprdrServer;
 } CLIPRDR_PLUGIN_CONTEXT;
 
 
@@ -41,14 +41,14 @@ typedef struct
  * Constructor/Destructor
  **************************************/
 
-static CLIPRDR_PLUGIN_CONTEXT *cliprdr_plugin_context_new()
+static CLIPRDR_PLUGIN_CONTEXT* cliprdr_plugin_context_new()
 {
-	CLIPRDR_PLUGIN_CONTEXT *context;
+	CLIPRDR_PLUGIN_CONTEXT* context;
 
-	context = (CLIPRDR_PLUGIN_CONTEXT *) malloc(sizeof(CLIPRDR_PLUGIN_CONTEXT));
-	if (!context) return NULL;
+	context = (CLIPRDR_PLUGIN_CONTEXT*) calloc(1, sizeof(CLIPRDR_PLUGIN_CONTEXT));
 
-	ZeroMemory(context, sizeof(CLIPRDR_PLUGIN_CONTEXT));
+	if (!context)
+		return NULL;
 
 	return context;
 }
@@ -63,25 +63,27 @@ static void cliprdr_plugin_context_free(CLIPRDR_PLUGIN_CONTEXT *context)
  * Plugin Initialization/Termination
  **************************************/
 
-static BOOL cliprdr_plugin_on_plugin_initialize(VCPlugin *plugin)
+static BOOL cliprdr_plugin_on_plugin_initialize(VCPlugin* plugin)
 {
-	CLIPRDR_PLUGIN_CONTEXT *context;
+	CLIPRDR_PLUGIN_CONTEXT* context;
 
 	context = cliprdr_plugin_context_new();
-	if (!context) return FALSE;
+
+	if (!context)
+		return FALSE;
 
 	context->log = WLog_Get("freerds.channels.cliprdr");
 
-	plugin->context = (void *) context;
+	plugin->context = (void*) context;
 
 	return TRUE;
 }
 
-static void cliprdr_plugin_on_plugin_terminate(VCPlugin *plugin)
+static void cliprdr_plugin_on_plugin_terminate(VCPlugin* plugin)
 {
-	CLIPRDR_PLUGIN_CONTEXT *context;
+	CLIPRDR_PLUGIN_CONTEXT* context;
 
-	context = (CLIPRDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
 
 	cliprdr_plugin_context_free(context);
 }
@@ -91,43 +93,47 @@ static void cliprdr_plugin_on_plugin_terminate(VCPlugin *plugin)
  * Terminal Service Event Handlers
  **************************************/
 
-static void cliprdr_plugin_on_session_create(VCPlugin *plugin)
+static void cliprdr_plugin_on_session_create(VCPlugin* plugin)
 {
-	CLIPRDR_PLUGIN_CONTEXT *context;
+	CLIPRDR_PLUGIN_CONTEXT* context;
 
-	context = (CLIPRDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
 
-	if (!context) return;
+	if (!context)
+		return;
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_create");
 }
 
-static void cliprdr_plugin_on_session_delete(VCPlugin *plugin)
+static void cliprdr_plugin_on_session_delete(VCPlugin* plugin)
 {
-	CLIPRDR_PLUGIN_CONTEXT *context;
+	CLIPRDR_PLUGIN_CONTEXT* context;
 
-	context = (CLIPRDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
 
-	if (!context) return;
+	if (!context)
+		return;
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_delete");
 }
 
-static void cliprdr_plugin_on_session_connect(VCPlugin *plugin)
+static void cliprdr_plugin_on_session_connect(VCPlugin* plugin)
 {
-	CLIPRDR_PLUGIN_CONTEXT *context;
+	CLIPRDR_PLUGIN_CONTEXT* context;
 
-	context = (CLIPRDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
 
-	if (!context) return;
+	if (!context)
+		return;
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_connect");
 
 	if (!context->cliprdrServer)
 	{
-		CliprdrServerContext *cliprdrServer;
+		CliprdrServerContext* cliprdrServer;
 
 		cliprdrServer = cliprdr_server_context_new(WTS_CURRENT_SERVER_HANDLE);
+
 		if (!cliprdrServer)
 		{
 			WLog_Print(context->log, WLOG_ERROR, "Failed to create CLIPRDR server context");
@@ -135,16 +141,19 @@ static void cliprdr_plugin_on_session_connect(VCPlugin *plugin)
 		}
 
 		context->cliprdrServer = cliprdrServer;
+
+		cliprdrServer->Start(cliprdrServer);
 	}
 }
 
-static void cliprdr_plugin_on_session_disconnect(VCPlugin *plugin)
+static void cliprdr_plugin_on_session_disconnect(VCPlugin* plugin)
 {
-	CLIPRDR_PLUGIN_CONTEXT *context;
+	CLIPRDR_PLUGIN_CONTEXT* context;
 
-	context = (CLIPRDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
 
-	if (!context) return;
+	if (!context)
+		return;
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_disconnect");
 
@@ -160,7 +169,7 @@ static void cliprdr_plugin_on_session_disconnect(VCPlugin *plugin)
  * Plugin Entry Point
  **************************************/
 
-BOOL VCPluginEntry(VCPlugin *plugin)
+BOOL VCPluginEntry(VCPlugin* plugin)
 {
 	plugin->name = "CLIPRDR";
 
