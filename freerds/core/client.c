@@ -167,10 +167,8 @@ int freerds_client_inbound_screen_blt(rdsBackend* backend, RDS_MSG_SCREEN_BLT* m
 int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* msg)
 {
 	int bpp;
-	int inFlightFrames;
-	SURFACE_FRAME* frame;
-	rdsConnection* connection;
 	rdpSettings* settings;
+	rdsConnection* connection;
 	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 
 	connection = connector->connection;
@@ -188,36 +186,7 @@ int freerds_client_inbound_paint_rect(rdsBackend* backend, RDS_MSG_PAINT_RECT* m
 	if (connection->codecMode)
 	{
 		bpp = msg->framebuffer->fbBitsPerPixel;
-
-		inFlightFrames = ListDictionary_Count(connection->FrameList);
-
-		if (inFlightFrames > settings->FrameAcknowledge)
-		{
-			connector->fps = (100 / (inFlightFrames + 1) * connector->MaxFps) / 100;
-		}
-		else
-		{
-			connector->fps += 2;
-
-			if (connector->fps > connector->MaxFps)
-				connector->fps = connector->MaxFps;
-		}
-
-		if (connector->fps < 1)
-			connector->fps = 1;
-
-		frame = (SURFACE_FRAME*) malloc(sizeof(SURFACE_FRAME));
-
-		frame->frameId = ++connection->frameId;
-		ListDictionary_Add(connection->FrameList, (void*) (size_t) frame->frameId, frame);
-
-		if (settings->SurfaceFrameMarkerEnabled)
-			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_BEGIN, frame->frameId);
-
 		freerds_send_surface_bits(connection, bpp, msg);
-
-		if (settings->SurfaceFrameMarkerEnabled)
-			freerds_orders_send_frame_marker(connection, SURFACECMD_FRAMEACTION_END, frame->frameId);
 	}
 	else
 	{

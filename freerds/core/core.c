@@ -93,8 +93,8 @@ int freerds_send_bitmap_update(rdsConnection* connection, int bpp, RDS_MSG_PAINT
 	BITMAP_DATA* bitmapData;
 	BITMAP_UPDATE bitmapUpdate;
 
-	nXSrc = msg->nXSrc;
-	nYSrc = msg->nYSrc;
+	nXSrc = msg->nLeftRect;
+	nYSrc = msg->nTopRect;
 	nWidth = msg->nWidth;
 	nHeight = msg->nHeight;
 
@@ -666,8 +666,8 @@ int freerds_send_surface_bits(rdsConnection* connection, int bpp, RDS_MSG_PAINT_
 	rdsEncoder* encoder;
 	SURFACE_BITS_COMMAND cmd;
 
-	nXSrc = msg->nXSrc;
-	nYSrc = msg->nYSrc;
+	nXSrc = msg->nLeftRect;
+	nYSrc = msg->nTopRect;
 	nWidth = msg->nWidth;
 	nHeight = msg->nHeight;
 
