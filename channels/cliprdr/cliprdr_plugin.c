@@ -20,6 +20,8 @@
 #include <winpr/wlog.h>
 #include <winpr/wtypes.h>
 
+#include <X11/Xlib.h>
+
 #include <freerdp/server/cliprdr.h>
 
 #include "channel_plugin.h"
@@ -32,10 +34,49 @@ typedef struct
 	HANDLE hThread;
 	DWORD dwThreadId;
 
-	/* Used to implement the CLIPRDR protocol. */
-	CliprdrServerContext* cliprdrServer;
+	CliprdrServerContext* cliprdr;
+
+	GC gc;
+	int xfds;
+	int depth;
+	HANDLE event;
+	Display* display;
+	Screen* screen;
+	Visual* visual;
+	Window root_window;
+	int screen_number;
+	unsigned long border;
+	unsigned long background;
+
 } CLIPRDR_PLUGIN_CONTEXT;
 
+static int freerds_cliprdr_client_format_list(CliprdrServerContext* context, CLIPRDR_FORMAT_LIST* formatList)
+{
+	CLIPRDR_FORMAT_LIST_RESPONSE formatListResponse;
+
+	formatListResponse.msgType = CB_FORMAT_LIST_RESPONSE;
+	formatListResponse.msgFlags = CB_RESPONSE_OK;
+	formatListResponse.dataLen = 0;
+
+	context->ServerFormatListResponse(context, &formatListResponse);
+
+	return 1;
+}
+
+static int freerds_cliprdr_client_format_list_response(CliprdrServerContext* context, CLIPRDR_FORMAT_LIST_RESPONSE* formatListResponse)
+{
+	return 1;
+}
+
+static int freerds_cliprdr_client_format_data_request(CliprdrServerContext* context, CLIPRDR_FORMAT_DATA_REQUEST* formatDataRequest)
+{
+	return 1;
+}
+
+static int freerds_cliprdr_client_format_data_response(CliprdrServerContext* context, CLIPRDR_FORMAT_DATA_RESPONSE* formatDataResponse)
+{
+	return 1;
+}
 
 /***************************************
  * Constructor/Destructor
@@ -76,6 +117,26 @@ static BOOL cliprdr_plugin_on_plugin_initialize(VCPlugin* plugin)
 
 	plugin->context = (void*) context;
 
+	context->display = XOpenDisplay(NULL);
+
+	if (!context->display)
+	{
+		WLog_Print(context->log, WLOG_ERROR, "Cannot open display");
+		return FALSE;
+	}
+
+	context->xfds = ConnectionNumber(context->display);
+	context->event = CreateFileDescriptorEvent(NULL, FALSE, FALSE, context->xfds);
+
+	context->screen_number = DefaultScreen(context->display);
+	context->screen = ScreenOfDisplay(context->display, context->screen_number);
+	context->visual = DefaultVisual(context->display, context->screen_number);
+	context->gc = DefaultGC(context->display, context->screen_number);
+	context->depth = DefaultDepthOfScreen(context->screen);
+	context->root_window = RootWindow(context->display, context->screen_number);
+	context->border = BlackPixel(context->display, context->screen_number);
+	context->background = WhitePixel(context->display, context->screen_number);
+
 	return TRUE;
 }
 
@@ -84,6 +145,9 @@ static void cliprdr_plugin_on_plugin_terminate(VCPlugin* plugin)
 	CLIPRDR_PLUGIN_CONTEXT* context;
 
 	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
+
+	XCloseDisplay(context->display);
+	CloseHandle(context->event);
 
 	cliprdr_plugin_context_free(context);
 }
@@ -120,6 +184,7 @@ static void cliprdr_plugin_on_session_delete(VCPlugin* plugin)
 static void cliprdr_plugin_on_session_connect(VCPlugin* plugin)
 {
 	CLIPRDR_PLUGIN_CONTEXT* context;
+	CliprdrServerContext* cliprdr;
 
 	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
 
@@ -128,21 +193,25 @@ static void cliprdr_plugin_on_session_connect(VCPlugin* plugin)
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_connect");
 
-	if (!context->cliprdrServer)
+	if (!context->cliprdr)
 	{
-		CliprdrServerContext* cliprdrServer;
+		cliprdr = cliprdr_server_context_new(WTS_CURRENT_SERVER_HANDLE);
 
-		cliprdrServer = cliprdr_server_context_new(WTS_CURRENT_SERVER_HANDLE);
-
-		if (!cliprdrServer)
+		if (!cliprdr)
 		{
 			WLog_Print(context->log, WLOG_ERROR, "Failed to create CLIPRDR server context");
 			return;
 		}
 
-		context->cliprdrServer = cliprdrServer;
+		context->cliprdr = cliprdr;
+		cliprdr->custom = (void*) context;
 
-		cliprdrServer->Start(cliprdrServer);
+		cliprdr->ClientFormatList = freerds_cliprdr_client_format_list;
+		cliprdr->ClientFormatListResponse = freerds_cliprdr_client_format_list_response;
+		cliprdr->ClientFormatDataRequest = freerds_cliprdr_client_format_data_request;
+		cliprdr->ClientFormatDataResponse = freerds_cliprdr_client_format_data_response;
+
+		cliprdr->Start(cliprdr);
 	}
 }
 
@@ -157,10 +226,10 @@ static void cliprdr_plugin_on_session_disconnect(VCPlugin* plugin)
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_disconnect");
 
-	if (context->cliprdrServer)
+	if (context->cliprdr)
 	{
-		cliprdr_server_context_free(context->cliprdrServer);
-		context->cliprdrServer = NULL;
+		cliprdr_server_context_free(context->cliprdr);
+		context->cliprdr = NULL;
 	}
 }
 
