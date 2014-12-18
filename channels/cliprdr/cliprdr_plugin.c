@@ -30,16 +30,15 @@ typedef struct
 {
 	wLog* log;
 
-	HANDLE hVC;
-	HANDLE hThread;
-	DWORD dwThreadId;
-
+	HANDLE Thread;
+	HANDLE StopEvent;
+	HANDLE X11Event;
+	HANDLE ChannelEvent;
 	CliprdrServerContext* cliprdr;
 
 	GC gc;
 	int xfds;
 	int depth;
-	HANDLE event;
 	Display* display;
 	Screen* screen;
 	Visual* visual;
@@ -49,6 +48,11 @@ typedef struct
 	unsigned long background;
 
 } CLIPRDR_PLUGIN_CONTEXT;
+
+static int freerds_cliprdr_client_capabilities(CliprdrServerContext* context, CLIPRDR_CAPABILITIES* capabilities)
+{
+	return 1;
+}
 
 static int freerds_cliprdr_client_format_list(CliprdrServerContext* context, CLIPRDR_FORMAT_LIST* formatList)
 {
@@ -76,6 +80,70 @@ static int freerds_cliprdr_client_format_data_request(CliprdrServerContext* cont
 static int freerds_cliprdr_client_format_data_response(CliprdrServerContext* context, CLIPRDR_FORMAT_DATA_RESPONSE* formatDataResponse)
 {
 	return 1;
+}
+
+static int freerds_cliprdr_server_init(CliprdrServerContext* context)
+{
+	UINT32 generalFlags;
+	CLIPRDR_CAPABILITIES capabilities;
+	CLIPRDR_MONITOR_READY monitorReady;
+	CLIPRDR_GENERAL_CAPABILITY_SET generalCapabilitySet;
+
+	ZeroMemory(&capabilities, sizeof(capabilities));
+	ZeroMemory(&monitorReady, sizeof(monitorReady));
+
+	generalFlags = 0;
+	generalFlags |= CB_USE_LONG_FORMAT_NAMES;
+
+	capabilities.msgType = CB_CLIP_CAPS;
+	capabilities.msgFlags = 0;
+	capabilities.dataLen = 4 + CB_CAPSTYPE_GENERAL_LEN;
+
+	capabilities.cCapabilitiesSets = 1;
+	capabilities.capabilitySets = (CLIPRDR_CAPABILITY_SET*) &generalCapabilitySet;
+
+	generalCapabilitySet.capabilitySetType = CB_CAPSTYPE_GENERAL;
+	generalCapabilitySet.capabilitySetLength = CB_CAPSTYPE_GENERAL_LEN;
+	generalCapabilitySet.version = CB_CAPS_VERSION_2;
+	generalCapabilitySet.generalFlags = generalFlags;
+
+	context->ServerCapabilities(context, &capabilities);
+	context->MonitorReady(context, &monitorReady);
+
+	return 1;
+}
+
+static void* freerds_cliprdr_server_thread(CLIPRDR_PLUGIN_CONTEXT* context)
+{
+	DWORD status;
+	DWORD nCount;
+	HANDLE events[8];
+	HANDLE ChannelEvent;
+	CliprdrServerContext* cliprdr = context->cliprdr;
+
+	ChannelEvent = cliprdr->GetEventHandle(cliprdr);
+
+	nCount = 0;
+	events[nCount++] = context->StopEvent;
+	events[nCount++] = ChannelEvent;
+
+	while (1)
+	{
+		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
+
+		if (WaitForSingleObject(context->StopEvent, 0) == WAIT_OBJECT_0)
+		{
+			break;
+		}
+
+		if (WaitForSingleObject(ChannelEvent, 0) == WAIT_OBJECT_0)
+		{
+			if (cliprdr->CheckEventHandle(cliprdr) < 0)
+				break;
+		}
+	}
+
+	return NULL;
 }
 
 /***************************************
@@ -126,7 +194,7 @@ static BOOL cliprdr_plugin_on_plugin_initialize(VCPlugin* plugin)
 	}
 
 	context->xfds = ConnectionNumber(context->display);
-	context->event = CreateFileDescriptorEvent(NULL, FALSE, FALSE, context->xfds);
+	context->X11Event = CreateFileDescriptorEvent(NULL, FALSE, FALSE, context->xfds);
 
 	context->screen_number = DefaultScreen(context->display);
 	context->screen = ScreenOfDisplay(context->display, context->screen_number);
@@ -147,7 +215,7 @@ static void cliprdr_plugin_on_plugin_terminate(VCPlugin* plugin)
 	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
 
 	XCloseDisplay(context->display);
-	CloseHandle(context->event);
+	CloseHandle(context->X11Event);
 
 	cliprdr_plugin_context_free(context);
 }
@@ -206,12 +274,19 @@ static void cliprdr_plugin_on_session_connect(VCPlugin* plugin)
 		context->cliprdr = cliprdr;
 		cliprdr->custom = (void*) context;
 
+		cliprdr->ClientCapabilities = freerds_cliprdr_client_capabilities;
 		cliprdr->ClientFormatList = freerds_cliprdr_client_format_list;
 		cliprdr->ClientFormatListResponse = freerds_cliprdr_client_format_list_response;
 		cliprdr->ClientFormatDataRequest = freerds_cliprdr_client_format_data_request;
 		cliprdr->ClientFormatDataResponse = freerds_cliprdr_client_format_data_response;
 
-		cliprdr->Start(cliprdr);
+		cliprdr->Open(cliprdr);
+		freerds_cliprdr_server_init(cliprdr);
+
+		context->StopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+		context->Thread = CreateThread(NULL, 0,
+				(LPTHREAD_START_ROUTINE) freerds_cliprdr_server_thread, (void*) context, 0, NULL);
 	}
 }
 
@@ -225,6 +300,14 @@ static void cliprdr_plugin_on_session_disconnect(VCPlugin* plugin)
 		return;
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_disconnect");
+
+	if (context->StopEvent)
+	{
+		SetEvent(context->StopEvent);
+		WaitForSingleObject(context->Thread, INFINITE);
+		CloseHandle(context->Thread);
+		CloseHandle(context->StopEvent);
+	}
 
 	if (context->cliprdr)
 	{
