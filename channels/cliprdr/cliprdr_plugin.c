@@ -17,10 +17,20 @@
  * limitations under the License.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <winpr/wlog.h>
 #include <winpr/wtypes.h>
+#include <winpr/clipboard.h>
 
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
+
+#ifdef WITH_XFIXES
+#include <X11/extensions/Xfixes.h>
+#endif
 
 #include <freerdp/server/cliprdr.h>
 
@@ -30,10 +40,12 @@ typedef struct
 {
 	wLog* log;
 
+	BOOL sync;
 	HANDLE Thread;
 	HANDLE StopEvent;
 	HANDLE X11Event;
 	HANDLE ChannelEvent;
+	wClipboard* system;
 	CliprdrServerContext* cliprdr;
 
 	GC gc;
@@ -42,47 +54,81 @@ typedef struct
 	Display* display;
 	Screen* screen;
 	Visual* visual;
+	Window owner;
+	Window window;
 	Window root_window;
 	int screen_number;
 	unsigned long border;
 	unsigned long background;
 
+	Atom incr_atom;
+	Atom targets_atom;
+	Atom timestamp_atom;
+	Atom clipboard_atom;
+	Atom property_atom;
+	Atom identity_atom;
+
+	int xfixes_event_base;
+	int xfixes_error_base;
+	BOOL xfixes_supported;
+
 } CLIPRDR_PLUGIN_CONTEXT;
 
-static int freerds_cliprdr_client_capabilities(CliprdrServerContext* context, CLIPRDR_CAPABILITIES* capabilities)
+static int freerds_cliprdr_client_capabilities(CliprdrServerContext* cliprdr, CLIPRDR_CAPABILITIES* capabilities)
 {
+	CLIPRDR_PLUGIN_CONTEXT* context = (CLIPRDR_PLUGIN_CONTEXT*) cliprdr->custom;
+	context->sync = TRUE;
 	return 1;
 }
 
-static int freerds_cliprdr_client_format_list(CliprdrServerContext* context, CLIPRDR_FORMAT_LIST* formatList)
+static int freerds_cliprdr_client_format_list(CliprdrServerContext* cliprdr, CLIPRDR_FORMAT_LIST* formatList)
 {
+	UINT32 index;
 	CLIPRDR_FORMAT_LIST_RESPONSE formatListResponse;
+
+	fprintf(stderr, "ClientFormatList\n");
+
+	for (index = 0; index < formatList->numFormats; index++)
+	{
+		fprintf(stderr, "[%d]\tFormat Id: 0x%04X Name: %s\n",
+				index, formatList->formats[index].formatId, formatList->formats[index].formatName);
+	}
 
 	formatListResponse.msgType = CB_FORMAT_LIST_RESPONSE;
 	formatListResponse.msgFlags = CB_RESPONSE_OK;
 	formatListResponse.dataLen = 0;
 
-	context->ServerFormatListResponse(context, &formatListResponse);
+	cliprdr->ServerFormatListResponse(cliprdr, &formatListResponse);
 
 	return 1;
 }
 
-static int freerds_cliprdr_client_format_list_response(CliprdrServerContext* context, CLIPRDR_FORMAT_LIST_RESPONSE* formatListResponse)
+static int freerds_cliprdr_client_format_list_response(CliprdrServerContext* cliprdr, CLIPRDR_FORMAT_LIST_RESPONSE* formatListResponse)
 {
+	fprintf(stderr, "ClientFormatListResponse\n");
+
 	return 1;
 }
 
-static int freerds_cliprdr_client_format_data_request(CliprdrServerContext* context, CLIPRDR_FORMAT_DATA_REQUEST* formatDataRequest)
+static int freerds_cliprdr_client_format_data_request(CliprdrServerContext* cliprdr, CLIPRDR_FORMAT_DATA_REQUEST* formatDataRequest)
 {
+	UINT32 formatId;
+
+	formatId = formatDataRequest->requestedFormatId;
+
+	fprintf(stderr, "ClientFormatDataRequest\n");
+
 	return 1;
 }
 
-static int freerds_cliprdr_client_format_data_response(CliprdrServerContext* context, CLIPRDR_FORMAT_DATA_RESPONSE* formatDataResponse)
+static int freerds_cliprdr_client_format_data_response(CliprdrServerContext* cliprdr, CLIPRDR_FORMAT_DATA_RESPONSE* formatDataResponse)
 {
+	fprintf(stderr, "ClientFormatDataResponse\n");
+
 	return 1;
 }
 
-static int freerds_cliprdr_server_init(CliprdrServerContext* context)
+static int freerds_cliprdr_server_init(CliprdrServerContext* cliprdr)
 {
 	UINT32 generalFlags;
 	CLIPRDR_CAPABILITIES capabilities;
@@ -107,8 +153,265 @@ static int freerds_cliprdr_server_init(CliprdrServerContext* context)
 	generalCapabilitySet.version = CB_CAPS_VERSION_2;
 	generalCapabilitySet.generalFlags = generalFlags;
 
-	context->ServerCapabilities(context, &capabilities);
-	context->MonitorReady(context, &monitorReady);
+	cliprdr->ServerCapabilities(cliprdr, &capabilities);
+	cliprdr->MonitorReady(cliprdr, &monitorReady);
+
+	return 1;
+}
+
+int freerds_cliprdr_send_server_format_list(CLIPRDR_PLUGIN_CONTEXT* context)
+{
+	UINT32 index;
+	UINT32 formatId;
+	UINT32 numFormats;
+	UINT32* pFormatIds;
+	const char* formatName;
+	CLIPRDR_FORMAT* formats;
+	CLIPRDR_FORMAT_LIST formatList;
+	CliprdrServerContext* cliprdr = context->cliprdr;
+
+	ZeroMemory(&formatList, sizeof(CLIPRDR_FORMAT_LIST));
+
+	pFormatIds = NULL;
+	numFormats = ClipboardGetFormatIds(context->system, &pFormatIds);
+
+	formats = (CLIPRDR_FORMAT*) calloc(numFormats, sizeof(CLIPRDR_FORMAT));
+
+	if (!formats)
+		return -1;
+
+	for (index = 0; index < numFormats; index++)
+	{
+		formatId = pFormatIds[index];
+		formatName = ClipboardGetFormatName(context->system, formatId);
+
+		formats[index].formatId = formatId;
+		formats[index].formatName = NULL;
+
+		if ((formatId > CF_MAX) && formatName)
+			formats[index].formatName = _strdup(formatName);
+	}
+
+	formatList.msgFlags = 0;
+	formatList.numFormats = numFormats;
+	formatList.formats = formats;
+
+	cliprdr->ServerFormatList(cliprdr, &formatList);
+
+	for (index = 0; index < numFormats; index++)
+	{
+		free(formats[index].formatName);
+	}
+
+	free(pFormatIds);
+	free(formats);
+
+	return 1;
+}
+
+int freerds_cliprdr_process_xfixes_selection_notify_event(CLIPRDR_PLUGIN_CONTEXT* context, XEvent* xevent)
+{
+	XFixesSelectionNotifyEvent* notify = (XFixesSelectionNotifyEvent*) xevent;
+
+	if (notify->subtype == XFixesSetSelectionOwnerNotify)
+	{
+		fprintf(stderr, "XFixesSetSelectionOwnerNotify\n");
+
+		if (notify->selection != context->clipboard_atom)
+			return 1;
+
+		if (notify->owner == context->window)
+			return 1;
+
+		if (notify->owner != context->owner)
+		{
+			context->owner = notify->owner;
+
+			/* send server format list */
+
+			XConvertSelection(context->display, context->clipboard_atom, context->targets_atom,
+					context->property_atom, context->window, notify->timestamp);
+		}
+	}
+	else if (notify->subtype == XFixesSelectionWindowDestroyNotify)
+	{
+		fprintf(stderr, "XFixesSelectionWindowDestroyNotify\n");
+	}
+	else if (notify->subtype == XFixesSelectionClientCloseNotify)
+	{
+		fprintf(stderr, "XFixesSelectionClientCloseNotify\n");
+	}
+
+	return 1;
+}
+
+char** freerds_cliprdr_get_target_list(CLIPRDR_PLUGIN_CONTEXT* context, int* count)
+{
+	int index;
+	Atom atom;
+	char* target;
+	char** targets;
+	Atom* atoms = NULL;
+	int format_property;
+	unsigned long length;
+	unsigned long bytes_left;
+
+	*count = 0;
+
+	XGetWindowProperty(context->display, context->window, context->property_atom,
+		0, 200, 0, XA_ATOM, &atom, &format_property, &length, &bytes_left, (BYTE**) &atoms);
+
+	targets = (char**) malloc(sizeof(char*) * length);
+
+	if (!targets)
+		return NULL;
+
+	*count = length;
+
+	for (index = 0; index < length; index++)
+	{
+		target = XGetAtomName(context->display, atoms[index]);
+		targets[index] = _strdup(target);
+		XFree(target);
+	}
+
+	XFree(atoms);
+
+	return targets;
+}
+
+void freerds_cliprdr_free_target_list(char** targets, int count)
+{
+	int index;
+
+	for (index = 0; index < count; index++)
+	{
+		free(targets[index]);
+	}
+
+	free(targets);
+}
+
+int freerds_cliprdr_process_selection_notify(CLIPRDR_PLUGIN_CONTEXT* context, XEvent* xevent)
+{
+	int index;
+	int count;
+	char** targets;
+	UINT32 formatId = 0;
+	XSelectionEvent* xselection = (XSelectionEvent*) xevent;
+
+	fprintf(stderr, "SelectionNotify\n");
+
+	if (xselection->target == context->targets_atom)
+	{
+		if (xselection->property)
+		{
+			targets = freerds_cliprdr_get_target_list(context, &count);
+
+			for (index = 0; index < count; index++)
+			{
+				if (strcmp(targets[index], "UTF8_STRING") == 0)
+				{
+					formatId = ClipboardGetFormatId(context->system, "UTF8_STRING");
+					break;
+				}
+			}
+
+			if (formatId)
+			{
+				ClipboardSetData(context->system, formatId, NULL, 0);
+			}
+			else
+			{
+				ClipboardEmpty(context->system);
+			}
+
+			freerds_cliprdr_free_target_list(targets, count);
+
+			freerds_cliprdr_send_server_format_list(context);
+		}
+	}
+	else
+	{
+
+	}
+
+	return 1;
+}
+
+int freerds_cliprdr_process_selection_request(CLIPRDR_PLUGIN_CONTEXT* context, XEvent* xevent)
+{
+	fprintf(stderr, "SelectionRequest\n");
+	return 1;
+}
+
+int freerds_cliprdr_process_selection_clear(CLIPRDR_PLUGIN_CONTEXT* context, XEvent* xevent)
+{
+	fprintf(stderr, "SelectionClear\n");
+
+	context->owner = XGetSelectionOwner(context->display, context->clipboard_atom);
+
+	if (context->owner != context->window)
+	{
+		XDeleteProperty(context->display, context->root_window, context->property_atom);
+	}
+
+	return 1;
+}
+
+int freerds_cliprdr_process_property_notify(CLIPRDR_PLUGIN_CONTEXT* context, XEvent* xevent)
+{
+	fprintf(stderr, "PropertyNotify\n");
+	return 1;
+}
+
+int freerds_cliprdr_process_xevent(CLIPRDR_PLUGIN_CONTEXT* context, XEvent* xevent)
+{
+#ifdef WITH_XFIXES
+	if (context->xfixes_supported)
+	{
+		if (xevent->type == (XFixesSelectionNotify + context->xfixes_event_base))
+		{
+			return freerds_cliprdr_process_xfixes_selection_notify_event(context, xevent);
+		}
+	}
+#endif
+
+	switch (xevent->type)
+	{
+		case SelectionNotify:
+			freerds_cliprdr_process_selection_notify(context, xevent);
+			break;
+
+		case SelectionRequest:
+			freerds_cliprdr_process_selection_request(context, xevent);
+			break;
+
+		case SelectionClear:
+			freerds_cliprdr_process_selection_clear(context, xevent);
+			break;
+
+		case PropertyNotify:
+			freerds_cliprdr_process_property_notify(context, xevent);
+			break;
+
+		default:
+			break;
+	}
+
+	return 1;
+}
+
+int freerds_cliprdr_check_x11(CLIPRDR_PLUGIN_CONTEXT* context)
+{
+	XEvent xevent;
+
+	while (XPending(context->display) > 0)
+	{
+		ZeroMemory(&xevent, sizeof(xevent));
+		XNextEvent(context->display, &xevent);
+		freerds_cliprdr_process_xevent(context, &xevent);
+	}
 
 	return 1;
 }
@@ -126,6 +429,7 @@ static void* freerds_cliprdr_server_thread(CLIPRDR_PLUGIN_CONTEXT* context)
 	nCount = 0;
 	events[nCount++] = context->StopEvent;
 	events[nCount++] = ChannelEvent;
+	events[nCount++] = context->X11Event;
 
 	while (1)
 	{
@@ -139,6 +443,12 @@ static void* freerds_cliprdr_server_thread(CLIPRDR_PLUGIN_CONTEXT* context)
 		if (WaitForSingleObject(ChannelEvent, 0) == WAIT_OBJECT_0)
 		{
 			if (cliprdr->CheckEventHandle(cliprdr) < 0)
+				break;
+		}
+
+		if (WaitForSingleObject(context->X11Event, 0) == WAIT_OBJECT_0)
+		{
+			if (freerds_cliprdr_check_x11(context) < 0)
 				break;
 		}
 	}
@@ -174,6 +484,8 @@ static void cliprdr_plugin_context_free(CLIPRDR_PLUGIN_CONTEXT *context)
 
 static BOOL cliprdr_plugin_on_plugin_initialize(VCPlugin* plugin)
 {
+	UINT32 id;
+	int major, minor;
 	CLIPRDR_PLUGIN_CONTEXT* context;
 
 	context = cliprdr_plugin_context_new();
@@ -184,6 +496,8 @@ static BOOL cliprdr_plugin_on_plugin_initialize(VCPlugin* plugin)
 	context->log = WLog_Get("freerds.channels.cliprdr");
 
 	plugin->context = (void*) context;
+
+	context->system = ClipboardCreate();
 
 	context->display = XOpenDisplay(NULL);
 
@@ -205,6 +519,41 @@ static BOOL cliprdr_plugin_on_plugin_initialize(VCPlugin* plugin)
 	context->border = BlackPixel(context->display, context->screen_number);
 	context->background = WhitePixel(context->display, context->screen_number);
 
+#ifdef WITH_XFIXES
+	if (XFixesQueryExtension(context->display, &context->xfixes_event_base, &context->xfixes_error_base))
+	{
+		if (XFixesQueryVersion(context->display, &major, &minor))
+		{
+			XFixesSelectSelectionInput(context->display, context->root_window,
+				context->clipboard_atom, XFixesSetSelectionOwnerNotifyMask);
+			context->xfixes_supported = TRUE;
+		}
+	}
+#endif
+
+	context->incr_atom = XInternAtom(context->display, "INCR", False);
+	context->targets_atom = XInternAtom(context->display, "TARGETS", False);
+	context->timestamp_atom = XInternAtom(context->display, "TIMESTAMP", False);
+	context->clipboard_atom = XInternAtom(context->display, "CLIPBOARD", False);
+
+	context->property_atom = XInternAtom(context->display, "_FREERDS_CLIPRDR", False);
+	context->identity_atom = XInternAtom(context->display, "_FREERDS_CLIPRDR_ID", False);
+
+	context->window = XCreateSimpleWindow(context->display,
+			context->root_window, 0, 0, 1, 1, 0, 0, 0);
+
+	XChangeProperty(context->display, context->window, context->identity_atom,
+				XA_INTEGER, 32, PropModeReplace, (BYTE*) &id, 1);
+
+	XSelectInput(context->display, context->window,
+			StructureNotifyMask | PropertyChangeMask);
+
+	XFixesSelectSelectionInput(context->display, context->window,
+			context->clipboard_atom,
+			XFixesSetSelectionOwnerNotifyMask |
+			XFixesSelectionWindowDestroyNotifyMask |
+			XFixesSelectionClientCloseNotifyMask);
+
 	return TRUE;
 }
 
@@ -214,8 +563,12 @@ static void cliprdr_plugin_on_plugin_terminate(VCPlugin* plugin)
 
 	context = (CLIPRDR_PLUGIN_CONTEXT*) plugin->context;
 
+	XDestroyWindow(context->display, context->window);
+
 	XCloseDisplay(context->display);
 	CloseHandle(context->X11Event);
+
+	ClipboardDestroy(context->system);
 
 	cliprdr_plugin_context_free(context);
 }
