@@ -87,6 +87,9 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 
 	fprintf(stderr, "Client %s is connected", client->hostname);
 
+	if (settings->Username && settings->Password)
+		settings->AutoLogonEnabled = TRUE;
+
 	if (client->settings->AutoLogonEnabled)
 	{
 		fprintf(stderr, " and wants to login automatically as %s\\%s",
@@ -153,8 +156,6 @@ BOOL freerds_peer_post_connect(freerdp_peer* client)
 	if (!freerds_connector_connect(connector))
 		return FALSE;
 
-	fprintf(stderr, "Client Activated\n");
-
 	return TRUE;
 }
 
@@ -162,6 +163,8 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 {
 	rdpSettings* settings;
 	rdsConnection* connection = (rdsConnection*) client->context;
+
+	fprintf(stderr, "Client Activated\n");
 
 	settings = client->settings;
 
@@ -177,25 +180,17 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 		settings->SurfaceFrameMarkerEnabled = FALSE;
 	}
 
-	if (settings->Username && settings->Password)
-		settings->AutoLogonEnabled = TRUE;
-
 	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
 						settings->SurfaceFrameMarkerEnabled);
-	
-	fprintf(stderr, "codec mode %d\n", connection->codecMode);
 
-	if (!connection->encoder)
+	if (connection->encoder)
 	{
-		connection->encoder = freerds_encoder_new(connection,
-				settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
+		freerds_encoder_free(connection->encoder);
+		connection->encoder = NULL;
 	}
-	else
-	{
-		connection->encoder->width = settings->DesktopWidth;
-		connection->encoder->height = settings->DesktopHeight;
-		freerds_encoder_reset(connection->encoder);
-	}
+
+	connection->encoder = freerds_encoder_new(connection,
+		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
 
 	return TRUE;
 }

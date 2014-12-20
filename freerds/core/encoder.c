@@ -230,6 +230,8 @@ int freerds_encoder_init(rdsEncoder* encoder)
 
 int freerds_encoder_uninit_rfx(rdsEncoder* encoder)
 {
+	encoder->frameId = 0;
+
 	if (encoder->rfx)
 	{
 		rfx_context_free(encoder->rfx);
