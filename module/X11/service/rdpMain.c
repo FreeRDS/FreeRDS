@@ -458,7 +458,7 @@ int ddxProcessArgument(int argc, char** argv, int i)
 			UseMsg();
 		}
 
-		rdpWriteMonitorConfig(g_rdpScreen.width, g_rdpScreen.height);
+		rdpWriteMonitorConfig(g_pScreen, g_rdpScreen.width, g_rdpScreen.height);
 
 		return 2;
 	}
