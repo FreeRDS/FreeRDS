@@ -326,11 +326,11 @@ namespace freerds
 			return false;
 		}
 
-		std::string configBaseName = std::string("module.")+mModuleConfigName;
+		std::string configBaseName = std::string("module.") + mModuleConfigName;
 		std::string queryString = configBaseName+std::string(".modulename");
 
 		if (!APP_CONTEXT.getPropertyManager()->getPropertyString(queryString,mModuleName)) {
-			WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, Property %s not found.",queryString.c_str());
+			WLog_Print(logger_Session, WLOG_ERROR, "startModule failed, Property %s not found.", queryString.c_str());
 			return false;
 		}
 
@@ -350,6 +350,9 @@ namespace freerds
 		mCurrentModuleContext->userToken = mUserToken;
 		mCurrentModuleContext->envBlock = dupEnv(mpEnvBlock);
 		mCurrentModuleContext->baseConfigPath = _strdup(configBaseName.c_str());
+
+		mCurrentModuleContext->desktopWidth = (int) getClientDisplayWidth();
+		mCurrentModuleContext->desktopHeight = (int) getClientDisplayHeight();
 
 		pName = currentModule->start(mCurrentModuleContext);
 

@@ -215,12 +215,11 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	DWORD SessionId;
 	char envstr[256];
 	char* envstrp;
+	char* filename;
+	char* pipeName;
 	rdsModuleX11* x11;
 	char lpCommandLine[256];
 	char startupname[256];
-	char* filename;
-	char* pipeName;
-	long xres, yres, colordepth;
 
 	x11 = (rdsModuleX11*) module;
 	x11->monitorStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -245,11 +244,8 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (x11->displayNum));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
-	initResolutions(x11->commonModule.baseConfigPath, &g_Config,
-			&x11->commonModule.envBlock, &xres, &yres, &colordepth);
-
 	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -dpi 96",
-			"Xrds", (int) (x11->displayNum), (int) xres, (int) yres, (int) 24);
+			"Xrds", (int) (x11->displayNum), module->desktopWidth, module->desktopHeight, 24);
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
