@@ -468,6 +468,10 @@ int freerds_cliprdr_process_selection_notify(CLIPRDR_PLUGIN_CONTEXT* context, XE
 
 			freerds_cliprdr_send_server_format_list(context);
 		}
+		else
+		{
+			fprintf(stderr, "xselection->property == None\n");
+		}
 	}
 	else
 	{
@@ -476,30 +480,40 @@ int freerds_cliprdr_process_selection_notify(CLIPRDR_PLUGIN_CONTEXT* context, XE
 		UINT32 SrcSize;
 		BYTE* pSrcData;
 		char* type_name;
+		Atom target_atom;
 		BYTE* data = NULL;
 		int format_property;
 		unsigned long length;
-		unsigned long bytes_left;
+		unsigned long remaining;
+
+		target_atom = context->requestedFormatAtom;
 
 		XGetWindowProperty(context->display, context->window,
-			context->property_atom, 0, 0, 0, context->requestedFormatAtom,
-			&type, &format_property, &length, &bytes_left, &data);
+			context->property_atom, 0, 0, 0, target_atom,
+			&type, &format_property, &length, &remaining, &data);
+
+		XFree(data);
+		data = NULL;
 
 		type_name = XGetAtomName(context->display, type);
 
-		fprintf(stderr, "Type: %s Length: %d BytesLeft: %d\n", type_name, length, bytes_left);
+		XGetWindowProperty(context->display, context->window,
+			context->property_atom, 0, remaining, 0, target_atom,
+			&type, &format_property, &length, &remaining, &data);
 
 		if (strcmp(type_name, "UTF8_STRING") == 0)
 		{
 			formatId = ClipboardGetFormatId(context->system, "UTF8_STRING");
 
 			SrcSize = (UINT32) length;
-			pSrcData = (BYTE*) malloc(SrcSize);
+			pSrcData = (BYTE*) malloc(SrcSize + 1);
 
 			if (!pSrcData)
 				return -1;
 
 			CopyMemory(pSrcData, data, SrcSize);
+			pSrcData[SrcSize] = '\0';
+			SrcSize++;
 
 			bSuccess = ClipboardSetData(context->system, formatId, (void*) pSrcData, SrcSize);
 		}
@@ -599,15 +613,12 @@ int freerds_cliprdr_process_xfixes_selection_notify_event(CLIPRDR_PLUGIN_CONTEXT
 		if (notify->owner == context->window)
 			return 1;
 
-		if (notify->owner != context->owner)
-		{
-			context->owner = notify->owner;
+		context->owner = notify->owner;
 
-			/* send server format list */
+		/* send server format list */
 
-			XConvertSelection(context->display, context->clipboard_atom, context->targets_atom,
-					context->property_atom, context->window, notify->timestamp);
-		}
+		XConvertSelection(context->display, context->clipboard_atom, context->targets_atom,
+				context->property_atom, context->window, notify->timestamp);
 	}
 	else if (notify->subtype == XFixesSelectionWindowDestroyNotify)
 	{
