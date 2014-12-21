@@ -335,6 +335,9 @@ int freerds_cliprdr_build_target_list(CLIPRDR_PLUGIN_CONTEXT* context)
 
 	targets = (char**) calloc(numTargetsMax, sizeof(char*));
 
+	if (!targets)
+		return -1;
+
 	freerds_cliprdr_add_target_to_list(targets, &numTargets, "TIMESTAMP");
 	freerds_cliprdr_add_target_to_list(targets, &numTargets, "TARGETS");
 
@@ -357,7 +360,7 @@ int freerds_cliprdr_build_target_list(CLIPRDR_PLUGIN_CONTEXT* context)
 					break;
 			}
 		}
-		else
+		else if (format->formatName)
 		{
 			freerds_cliprdr_add_target_to_list(targets, &numTargets, format->formatName);
 
