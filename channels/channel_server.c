@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <signal.h>
+
 #include <winpr/collections.h>
 #include <winpr/file.h>
 #include <winpr/library.h>
@@ -320,6 +322,14 @@ static void process_ts_events()
 	fire_session_event(WTS_EVENT_DELETE);
 }
 
+void shutdown(int signal)
+{
+	WLog_Print(g_logger, WLOG_DEBUG, "Shutdown due to signal %d\n", signal);
+
+	fire_session_event(WTS_EVENT_LOGOFF);
+	fire_session_event(WTS_EVENT_DELETE);
+}
+
 int main(int argc, char **argv)
 {
 	g_logger = WLog_Get("freerds.channels.server");
@@ -339,6 +349,10 @@ int main(int argc, char **argv)
 	}
 
 	WLog_Print(g_logger, WLOG_INFO, "Channel server started in session %lu, X11 display %lu", g_ulSessionId, g_ulX11DisplayNum);
+
+	signal(SIGINT, shutdown);
+	signal(SIGKILL, shutdown);
+	signal(SIGTERM, shutdown);
 
 	load_vc_plugins();
 
