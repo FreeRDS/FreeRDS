@@ -14,21 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-project(freerds-rdpdr-plugin CXX)
+project(freerds-rdpdr-plugin C)
 
 set(MODULE_PREFIX "FREERDS_RDPDR_PLUGIN")
 set(MODULE_NAME "freerds-rdpdr-plugin")
+
+include(FindFUSE)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(${MODULE_PREFIX}_SRCS
 	rdpdr_plugin.c
+	rdpdr_fuse.c
 	../channel_utils.c)
  
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
-set(${MODULE_PREFIX}_LIBS rdpdr-server winpr)
+set(${MODULE_PREFIX}_LIBS ${FUSE_LIBRARY} rdpdr-server winpr)
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 

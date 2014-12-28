@@ -17,45 +17,48 @@
  * limitations under the License.
  */
 
-#include <winpr/wlog.h>
-#include <winpr/wtypes.h>
-
-#include <freerdp/server/rdpdr.h>
-
 #include "channel_plugin.h"
-
-typedef struct
-{
-	wLog *log;
-
-	HANDLE hVC;
-	HANDLE hThread;
-	DWORD dwThreadId;
-
-	/* Used to implement the RDPDR protocol. */
-	RdpdrServerContext *rdpdrServer;
-} RDPDR_PLUGIN_CONTEXT;
-
+#include "rdpdr_plugin.h"
+#include "rdpdr_fuse.h"
 
 /***************************************
  * Constructor/Destructor
  **************************************/
 
-static RDPDR_PLUGIN_CONTEXT *rdpdr_plugin_context_new()
+static RdpdrPluginContext *rdpdr_plugin_context_new()
 {
-	RDPDR_PLUGIN_CONTEXT *context;
+	RdpdrPluginContext *context;
 
-	context = (RDPDR_PLUGIN_CONTEXT *) malloc(sizeof(RDPDR_PLUGIN_CONTEXT));
+	context = (RdpdrPluginContext *) malloc(sizeof(RdpdrPluginContext));
 	if (!context) return NULL;
 
-	ZeroMemory(context, sizeof(RDPDR_PLUGIN_CONTEXT));
+	ZeroMemory(context, sizeof(RdpdrPluginContext));
 
 	return context;
 }
 
-static void rdpdr_plugin_context_free(RDPDR_PLUGIN_CONTEXT *context)
+static void rdpdr_plugin_context_free(RdpdrPluginContext *context)
 {
 	free(context);
+}
+
+
+/***************************************
+ * RDPDR FUSE Thread
+ **************************************/
+
+DWORD rdpdr_plugin_fuse_thread(LPVOID lpParameter)
+{
+	RdpdrPluginContext *context;
+
+	context = (RdpdrPluginContext *) lpParameter;
+
+	for (;;)
+	{
+		rdpdr_fuse_check_wait_objs();
+
+		Sleep(10);
+	}
 }
 
 
@@ -65,7 +68,7 @@ static void rdpdr_plugin_context_free(RDPDR_PLUGIN_CONTEXT *context)
 
 static BOOL rdpdr_plugin_on_plugin_initialize(VCPlugin *plugin)
 {
-	RDPDR_PLUGIN_CONTEXT *context;
+	RdpdrPluginContext *context;
 
 	context = rdpdr_plugin_context_new();
 	if (!context) return FALSE;
@@ -79,9 +82,9 @@ static BOOL rdpdr_plugin_on_plugin_initialize(VCPlugin *plugin)
 
 static void rdpdr_plugin_on_plugin_terminate(VCPlugin *plugin)
 {
-	RDPDR_PLUGIN_CONTEXT *context;
+	RdpdrPluginContext *context;
 
-	context = (RDPDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpdrPluginContext *) plugin->context;
 
 	rdpdr_plugin_context_free(context);
 }
@@ -93,9 +96,9 @@ static void rdpdr_plugin_on_plugin_terminate(VCPlugin *plugin)
 
 static void rdpdr_plugin_on_session_create(VCPlugin *plugin)
 {
-	RDPDR_PLUGIN_CONTEXT *context;
+	RdpdrPluginContext *context;
 
-	context = (RDPDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpdrPluginContext *) plugin->context;
 
 	if (!context) return;
 
@@ -104,9 +107,9 @@ static void rdpdr_plugin_on_session_create(VCPlugin *plugin)
 
 static void rdpdr_plugin_on_session_delete(VCPlugin *plugin)
 {
-	RDPDR_PLUGIN_CONTEXT *context;
+	RdpdrPluginContext *context;
 
-	context = (RDPDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpdrPluginContext *) plugin->context;
 
 	if (!context) return;
 
@@ -115,13 +118,35 @@ static void rdpdr_plugin_on_session_delete(VCPlugin *plugin)
 
 static void rdpdr_plugin_on_session_connect(VCPlugin *plugin)
 {
-	RDPDR_PLUGIN_CONTEXT *context;
+	RdpdrPluginContext *context;
 
-	context = (RDPDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpdrPluginContext *) plugin->context;
 
 	if (!context) return;
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_connect");
+}
+
+static void rdpdr_plugin_on_session_disconnect(VCPlugin *plugin)
+{
+	RdpdrPluginContext *context;
+
+	context = (RdpdrPluginContext *) plugin->context;
+
+	if (!context) return;
+
+	WLog_Print(context->log, WLOG_DEBUG, "on_session_disconnect");
+}
+
+static void rdpdr_plugin_on_session_logon(VCPlugin *plugin)
+{
+	RdpdrPluginContext *context;
+
+	context = (RdpdrPluginContext *) plugin->context;
+
+	if (!context) return;
+
+	WLog_Print(context->log, WLOG_DEBUG, "on_session_logon");
 
 	if (!context->rdpdrServer)
 	{
@@ -133,23 +158,42 @@ static void rdpdr_plugin_on_session_connect(VCPlugin *plugin)
 			WLog_Print(context->log, WLOG_ERROR, "Failed to create RDPDR server context");
 			return;
 		}
-
 		context->rdpdrServer = rdpdrServer;
+
+		rdpdrServer->data = (void *) context;
+
+		rdpdrServer->supportsDrives = TRUE;
+		//rdpdrServer->supportsPorts = TRUE;
+		//rdpdrServer->supportsPrinters = TRUE;
+		//rdpdrServer->supportsSmartcards = TRUE;
+
+		rdpdr_fuse_init(context);
+
+		context->hThread = CreateThread(NULL, 0, rdpdr_plugin_fuse_thread, context, 0, &context->dwThreadId);
+
+		if (rdpdrServer->Start(rdpdrServer) != 0)
+		{
+			WLog_Print(context->log, WLOG_ERROR, "failed to initialize RDPDR server");
+			rdpdr_server_context_free(rdpdrServer);
+			return;
+		}
 	}
 }
 
-static void rdpdr_plugin_on_session_disconnect(VCPlugin *plugin)
+static void rdpdr_plugin_on_session_logoff(VCPlugin *plugin)
 {
-	RDPDR_PLUGIN_CONTEXT *context;
+	RdpdrPluginContext *context;
 
-	context = (RDPDR_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpdrPluginContext *) plugin->context;
 
 	if (!context) return;
 
-	WLog_Print(context->log, WLOG_DEBUG, "on_session_disconnect");
+	WLog_Print(context->log, WLOG_DEBUG, "on_session_logoff");
 
 	if (context->rdpdrServer)
 	{
+		rdpdr_fuse_deinit();
+
 		rdpdr_server_context_free(context->rdpdrServer);
 		context->rdpdrServer = NULL;
 	}
@@ -171,6 +215,8 @@ BOOL VCPluginEntry(VCPlugin *plugin)
 	plugin->OnSessionDelete = rdpdr_plugin_on_session_delete;
 	plugin->OnSessionConnect = rdpdr_plugin_on_session_connect;
 	plugin->OnSessionDisconnect = rdpdr_plugin_on_session_disconnect;
+	plugin->OnSessionLogon = rdpdr_plugin_on_session_logon;
+	plugin->OnSessionLogoff = rdpdr_plugin_on_session_logoff;
 
 	return TRUE;
 }

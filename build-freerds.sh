@@ -169,7 +169,8 @@ case $LINUX_DISTRO_NAME in
     libexpat1-dev libxml-libxml-perl libtool bison flex xsltproc \
     libfreetype6-dev libfontconfig1-dev libpixman-1-dev xutils-dev \
     x11proto-gl-dev mesa-common-dev libgl1-mesa-dev xorg-dev \
-    libboost-dev qt4-dev-tools libjson-c-dev libsndfile-1-dev
+    libboost-dev qt4-dev-tools libjson-c-dev libsndfile-1-dev \
+    fuse-dev
     ;;
 
   CentOS)
@@ -178,7 +179,7 @@ case $LINUX_DISTRO_NAME in
     libpciaccess-devel openssl-devel gettext file pam-devel libjpeg-devel pixman-devel \
     libX11-devel libXfixes-devel libXfont-devel xorg-x11-proto-devel xorg-x11-xtrans-devel \
     flex bison libxslt perl-libxml-perl xorg-x11-font-utils xmlto-tex docbook-utils-pdf \
-    boost-devel qt4-devel
+    boost-devel qt4-devel fuse-devel
     ;;
 esac
 
@@ -212,7 +213,13 @@ X -version
 pushd $GIT_ROOT_DIR/FreeRDP/server/FreeRDS
 pushd module/X11/service/xorg-build
 cmake .
+if [[ $? != 0 ]]; then
+  exit
+fi
 make
+if [[ $? != 0 ]]; then
+  exit
+fi
 cd ..
 ln -s xorg-build/external/Source/xorg-server .
 popd
@@ -224,5 +231,8 @@ popd
 pushd $GIT_ROOT_DIR/FreeRDP
 cmake -DCMAKE_INSTALL_PREFIX=$FREERDS_INSTALL_DIR -DCMAKE_BUILD_TYPE=Debug -DSTATIC_CHANNELS=on -DWITH_SERVER=on -DWITH_XRDS=on .
 make
+if [[ $? != 0 ]]; then
+  exit
+fi
 sudo make install
 popd
