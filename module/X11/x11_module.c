@@ -302,7 +302,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	/* Start the FreeRDS channel server. */
 	strcpy(startupname, "freerds-channels");
 
-	status = CreateProcessA(NULL, startupname,
+	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, startupname,
 		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 		&(x11->CSStartupInfo), &(x11->CSProcessInformation));
 
