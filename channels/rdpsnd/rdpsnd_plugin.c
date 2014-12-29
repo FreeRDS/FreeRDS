@@ -39,7 +39,7 @@ typedef struct
 	/* Used to implement the RDPSND protocol. */
 	RdpsndServerContext *rdpsndServer;
 }
-RDPSND_PLUGIN_CONTEXT;
+RdpsndPluginContext;
 
 static AUDIO_FORMAT g_server_audio_formats[] =
 {
@@ -76,19 +76,19 @@ static int g_num_server_audio_formats = sizeof(g_server_audio_formats) / sizeof(
  * Constructor/Destructor
  **************************************/
 
-static RDPSND_PLUGIN_CONTEXT *rdpsnd_plugin_context_new()
+static RdpsndPluginContext *rdpsnd_plugin_context_new()
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) malloc(sizeof(RDPSND_PLUGIN_CONTEXT));
+	context = (RdpsndPluginContext *) malloc(sizeof(RdpsndPluginContext));
 	if (!context) return NULL;
 
-	ZeroMemory(context, sizeof(RDPSND_PLUGIN_CONTEXT));
+	ZeroMemory(context, sizeof(RdpsndPluginContext));
 
 	return context;
 }
 
-static void rdpsnd_plugin_context_free(RDPSND_PLUGIN_CONTEXT *context)
+static void rdpsnd_plugin_context_free(RdpsndPluginContext *context)
 {
 	free(context);
 }
@@ -100,15 +100,15 @@ static void rdpsnd_plugin_context_free(RDPSND_PLUGIN_CONTEXT *context)
 
 static BOOL rdpsnd_plugin_handle_play_audio(rdsRpcClient *rpcClient, wStream *request)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
-	wStream *response;
+	RdpsndPluginContext *context;
+	//wStream *response;
 	UINT32 audioSize;
 	BYTE *audioData;
 	int nFrames;
 	UINT16 wTimestamp;
 	BOOL status;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) rpcClient->custom;
+	context = (RdpsndPluginContext *) rpcClient->custom;
 
 	/* Parse the request. */
 	Stream_Read_UINT32(request, audioSize);
@@ -161,9 +161,9 @@ static BOOL rdpsnd_plugin_handle_play_audio(rdsRpcClient *rpcClient, wStream *re
 
 static int rdpsnd_plugin_connection_accepted(rdsRpcClient *rpcClient)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) rpcClient->custom;
+	context = (RdpsndPluginContext *) rpcClient->custom;
 
 	WLog_Print(context->log, WLOG_DEBUG, "connection_accepted");
 
@@ -172,9 +172,9 @@ static int rdpsnd_plugin_connection_accepted(rdsRpcClient *rpcClient)
 
 static int rdpsnd_plugin_connection_closed(rdsRpcClient *rpcClient)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) rpcClient->custom;
+	context = (RdpsndPluginContext *) rpcClient->custom;
 
 	WLog_Print(context->log, WLOG_DEBUG, "connection_closed");
 
@@ -183,14 +183,14 @@ static int rdpsnd_plugin_connection_closed(rdsRpcClient *rpcClient)
 
 static int rdpsnd_plugin_message_received(rdsRpcClient *rpcClient, BYTE *buffer, UINT32 length)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 	UINT16 messageId;
 	BOOL success;
 	wStream *s;
 
 	success = FALSE;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) rpcClient->custom;
+	context = (RdpsndPluginContext *) rpcClient->custom;
 
 	WLog_Print(context->log, WLOG_DEBUG, "message_received");
 
@@ -221,9 +221,9 @@ static int rdpsnd_plugin_message_received(rdsRpcClient *rpcClient, BYTE *buffer,
 
 static void rdpsnd_plugin_server_activated(RdpsndServerContext *rdpsndServer)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) rdpsndServer->data;
+	context = (RdpsndPluginContext *) rdpsndServer->data;
 
 	WLog_Print(context->log, WLOG_DEBUG, "RDPSND server activated");
 
@@ -267,7 +267,7 @@ static void rdpsnd_plugin_server_activated(RdpsndServerContext *rdpsndServer)
 
 static BOOL rdpsnd_plugin_on_plugin_initialize(VCPlugin *plugin)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
 	context = rdpsnd_plugin_context_new();
 	if (!context) return FALSE;
@@ -281,9 +281,9 @@ static BOOL rdpsnd_plugin_on_plugin_initialize(VCPlugin *plugin)
 
 static void rdpsnd_plugin_on_plugin_terminate(VCPlugin *plugin)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpsndPluginContext *) plugin->context;
 
 	//WLog_Free(context->log);
 
@@ -297,9 +297,9 @@ static void rdpsnd_plugin_on_plugin_terminate(VCPlugin *plugin)
 
 static void rdpsnd_plugin_on_session_create(VCPlugin *plugin)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpsndPluginContext *) plugin->context;
 
 	if (!context) return;
 
@@ -308,9 +308,9 @@ static void rdpsnd_plugin_on_session_create(VCPlugin *plugin)
 
 static void rdpsnd_plugin_on_session_delete(VCPlugin *plugin)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpsndPluginContext *) plugin->context;
 
 	if (!context) return;
 
@@ -319,9 +319,9 @@ static void rdpsnd_plugin_on_session_delete(VCPlugin *plugin)
 
 static void rdpsnd_plugin_on_session_connect(VCPlugin *plugin)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpsndPluginContext *) plugin->context;
 
 	if (!context) return;
 
@@ -399,9 +399,9 @@ static void rdpsnd_plugin_on_session_connect(VCPlugin *plugin)
 
 static void rdpsnd_plugin_on_session_disconnect(VCPlugin *plugin)
 {
-	RDPSND_PLUGIN_CONTEXT *context;
+	RdpsndPluginContext *context;
 
-	context = (RDPSND_PLUGIN_CONTEXT *) plugin->context;
+	context = (RdpsndPluginContext *) plugin->context;
 
 	if (!context) return;
 
