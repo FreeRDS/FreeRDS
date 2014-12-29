@@ -247,14 +247,6 @@ static void rdpdr_fuse_update_fs_size();
 static void rdpdr_fuse_enum_dir(fuse_req_t req, fuse_ino_t ino, size_t size,
                            off_t off, struct fuse_file_info *fi);
 
-/* this is not a callback, but its's used by xfuse_cb_readdir() */
-static void rdpdr_fuse_dirbuf_add(fuse_req_t req, struct dirbuf *b,
-                             const char *name, fuse_ino_t ino);
-
-static int rdpdr_fuse_dirbuf1_add(fuse_req_t req, struct dirbuf1 *b,
-                             const char *name, fuse_ino_t ino);
-
-/* this is not a callback, but it is used by the above two functions */
 static void rdpdr_fuse_remove_dir_or_file(fuse_req_t req, fuse_ino_t parent,
                                      const char *name, int type);
 
@@ -373,19 +365,6 @@ int rdpdr_fuse_init(RdpdrPluginContext *rdpdrPluginContext)
         return -1;
     }
 
-	/* setup RDPDR server callbacks */
-	g_rdpdrServerContext->OnDriveCreate = rdpdr_fuse_on_drive_create;
-	g_rdpdrServerContext->OnDriveDelete = rdpdr_fuse_on_drive_delete;
-	g_rdpdrServerContext->OnDriveCreateDirectoryComplete = rdpdr_fuse_on_drive_create_directory_complete;
-	g_rdpdrServerContext->OnDriveDeleteDirectoryComplete = rdpdr_fuse_on_drive_delete_directory_complete;
-	g_rdpdrServerContext->OnDriveQueryDirectoryComplete = rdpdr_fuse_on_drive_query_directory_complete;
-	g_rdpdrServerContext->OnDriveOpenFileComplete = rdpdr_fuse_on_drive_open_file_complete;
-	g_rdpdrServerContext->OnDriveReadFileComplete = rdpdr_fuse_on_drive_read_file_complete;
-	g_rdpdrServerContext->OnDriveWriteFileComplete = rdpdr_fuse_on_drive_write_file_complete;
-	g_rdpdrServerContext->OnDriveCloseFileComplete = rdpdr_fuse_on_drive_close_file_complete;
-	g_rdpdrServerContext->OnDriveDeleteFileComplete = rdpdr_fuse_on_drive_delete_file_complete;
-	g_rdpdrServerContext->OnDriveRenameFileComplete = rdpdr_fuse_on_drive_rename_file_complete;
-
     /* define FUSE mount point to ~/freerds_client */
     WLog_Print(g_logger, WLOG_DEBUG, "defining fuse mount point");
     snprintf(g_fuse_root_path, 255, "%s/freerds_client", getenv("HOME"));
@@ -444,6 +423,19 @@ int rdpdr_fuse_init(RdpdrPluginContext *rdpdrPluginContext)
         return -1;
     }
 
+	/* setup RDPDR server callbacks */
+	g_rdpdrServerContext->OnDriveCreate = rdpdr_fuse_on_drive_create;
+	g_rdpdrServerContext->OnDriveDelete = rdpdr_fuse_on_drive_delete;
+	g_rdpdrServerContext->OnDriveCreateDirectoryComplete = rdpdr_fuse_on_drive_create_directory_complete;
+	g_rdpdrServerContext->OnDriveDeleteDirectoryComplete = rdpdr_fuse_on_drive_delete_directory_complete;
+	g_rdpdrServerContext->OnDriveQueryDirectoryComplete = rdpdr_fuse_on_drive_query_directory_complete;
+	g_rdpdrServerContext->OnDriveOpenFileComplete = rdpdr_fuse_on_drive_open_file_complete;
+	g_rdpdrServerContext->OnDriveReadFileComplete = rdpdr_fuse_on_drive_read_file_complete;
+	g_rdpdrServerContext->OnDriveWriteFileComplete = rdpdr_fuse_on_drive_write_file_complete;
+	g_rdpdrServerContext->OnDriveCloseFileComplete = rdpdr_fuse_on_drive_close_file_complete;
+	g_rdpdrServerContext->OnDriveDeleteFileComplete = rdpdr_fuse_on_drive_delete_file_complete;
+	g_rdpdrServerContext->OnDriveRenameFileComplete = rdpdr_fuse_on_drive_rename_file_complete;
+
     g_rdpdr_fuse_inited = 1;
 
     return 0;
@@ -494,8 +486,10 @@ int rdpdr_fuse_deinit()
     g_logger = NULL;
 
     g_rdpdrPluginContext = NULL;
+    g_rdpdrServerContext = NULL;
 
     g_rdpdr_fuse_inited = 0;
+
     return 0;
 }
 
@@ -2349,21 +2343,21 @@ static void rdpdr_fuse_remove_dir_or_file(fuse_req_t req, fuse_ino_t parent, con
 
     switch (type)
     {
-        case 1: /* file */
-            /* Send a request to delete the file. */
-            if (!g_rdpdrServerContext->DriveDeleteFile(g_rdpdrServerContext, (void *) fip, device_id, cptr))
+        case 1: /* directory */
+            /* Send a request to delete the directory. */
+            if (!g_rdpdrServerContext->DriveDeleteDirectory(g_rdpdrServerContext, (void *) fip, device_id, cptr))
             {
-                WLog_Print(g_logger, WLOG_ERROR, "failed to send delete file command");
+                WLog_Print(g_logger, WLOG_ERROR, "failed to send delete directory command");
                 fuse_reply_err(req, EREMOTEIO);
                 free(fip);
             }
             break;
 
-        case 2: /* directory */
-            /* Send a request to delete the directory. */
-            if (!g_rdpdrServerContext->DriveDeleteDirectory(g_rdpdrServerContext, (void *) fip, device_id, cptr))
+        case 2: /* file */
+            /* Send a request to delete the file. */
+            if (!g_rdpdrServerContext->DriveDeleteFile(g_rdpdrServerContext, (void *) fip, device_id, cptr))
             {
-                WLog_Print(g_logger, WLOG_ERROR, "failed to send delete directory command");
+                WLog_Print(g_logger, WLOG_ERROR, "failed to send delete file command");
                 fuse_reply_err(req, EREMOTEIO);
                 free(fip);
             }
