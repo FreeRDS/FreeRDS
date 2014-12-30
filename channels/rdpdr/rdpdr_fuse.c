@@ -2522,8 +2522,8 @@ static void rdpdr_fuse_create_dir_or_file(fuse_req_t req, fuse_ino_t parent,
 
     full_path[0] = 0;
 
-    WLog_Print(g_logger, WLOG_DEBUG, "entered: parent_ino=%d name=%s type=%s",
-              (int) parent, name, (type == S_IFDIR) ? "dir" : "file");
+    WLog_Print(g_logger, WLOG_DEBUG, "entered: parent_ino=%d name=%s mode=%d type=%s",
+              (int) parent, name, (int) mode, (type == S_IFDIR) ? "dir" : "file");
 
     /* name must be valid */
     if ((name == NULL) || (strlen(name) == 0))
@@ -2586,11 +2586,23 @@ static void rdpdr_fuse_create_dir_or_file(fuse_req_t req, fuse_ino_t parent,
 		cptr = "/";
 	}
 
-    /* Send a request to open the file on the client. */
-    if (!g_rdpdrServerContext->DriveOpenFile(g_rdpdrServerContext, (void *) fip, device_id, cptr, FILE_WRITE_DATA, FILE_CREATE))
+    if (type == S_IFDIR)
     {
-        WLog_Print(g_logger, WLOG_ERROR, "failed to send drive open file cmd");
-        fuse_reply_err(req, EREMOTEIO);
+        /* Send a request to create the directory on the client. */
+        if (!g_rdpdrServerContext->DriveCreateDirectory(g_rdpdrServerContext, (void *) fip, device_id, cptr))
+        {
+            WLog_Print(g_logger, WLOG_ERROR, "failed to send drive create directory cmd");
+            fuse_reply_err(req, EREMOTEIO);
+        }
+    }
+    else
+    {
+        /* Send a request to create the file on the client. */
+        if (!g_rdpdrServerContext->DriveOpenFile(g_rdpdrServerContext, (void *) fip, device_id, cptr, FILE_WRITE_DATA, FILE_CREATE))
+        {
+            WLog_Print(g_logger, WLOG_ERROR, "failed to send drive open file cmd");
+            fuse_reply_err(req, EREMOTEIO);
+        }
     }
 }
 
