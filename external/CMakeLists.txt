@@ -17,10 +17,16 @@
 add_subdirectory(msgpack)
 
 include(ExternalProject)
-include(FindPulse)
 
 set(EXTERNAL_PROJECTS_BASE "${CMAKE_CURRENT_BINARY_DIR}")
 set_property(DIRECTORY PROPERTY "EP_BASE" ${EXTERNAL_PROJECTS_BASE})
+
+
+#
+# pulseaudio (used by RDPSND)
+#
+
+include(FindPulse)
 
 message(STATUS "Using pulseaudio sources version ${PULSE_VERSION_MAJOR}.${PULSE_VERSION_MINOR}")
 
@@ -43,3 +49,30 @@ ExternalProject_Add(${EXTERNAL_PROJECT}
 	BUILD_IN_SOURCE 1
 	INSTALL_COMMAND "")
 
+
+#
+# FUSE - Filesystem in User Space (used by RDPDR)
+#
+
+if(FALSE)
+
+set(EXTERNAL_PROJECT "fuse")
+set(${EXTERNAL_PROJECT}_VERSION "2.9.3")
+set(${EXTERNAL_PROJECT}_NAME "${EXTERNAL_PROJECT}-${${EXTERNAL_PROJECT}_VERSION}")
+set(${EXTERNAL_PROJECT}_EXT ".tar.gz")
+set(${EXTERNAL_PROJECT}_FILE "${${EXTERNAL_PROJECT}_NAME}${${EXTERNAL_PROJECT}_EXT}")
+set(${EXTERNAL_PROJECT}_URL "http://sourceforge.net/projects/fuse/files/fuse-2.X/2.9.3/${${EXTERNAL_PROJECT}_FILE}/download")
+set(${EXTERNAL_PROJECT}_CONFIGURE "${EXTERNAL_PROJECTS_BASE}/Source/${EXTERNAL_PROJECT}/configure")
+set(${EXTERNAL_PROJECT}_UPDATE "")
+set(${EXTERNAL_PROJECT}_MAKE "")
+
+message(STATUS "FUSE is in ${EXTERNAL_PROJECTS_BASE}/Source/${EXTERNAL_PROJECT}")
+
+ExternalProject_Add(${EXTERNAL_PROJECT}
+	URL ${${EXTERNAL_PROJECT}_URL}
+	UPDATE_COMMAND ${${EXTERNAL_PROJECT}_UPDATE}
+	CONFIGURE_COMMAND ${${EXTERNAL_PROJECT}_CONFIGURE}
+	BUILD_IN_SOURCE 1
+	INSTALL_COMMAND "")
+
+endif()
