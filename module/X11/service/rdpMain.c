@@ -689,7 +689,7 @@ void ddxGiveUp()
 
 Bool LegalModifier(unsigned int key, DeviceIntPtr pDev)
 {
-	return True;
+	return TRUE;
 }
 
 void ProcessInputEvents(void)

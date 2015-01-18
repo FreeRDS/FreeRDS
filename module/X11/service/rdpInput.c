@@ -679,15 +679,24 @@ void rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr)
 
 static void rdpEnqueueMotion(int x, int y)
 {
+	int i, nevents;
 	double dx, dy;
 	int valuators[2];
 	ValuatorMask mask;
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	InternalEvent* pEventList;
+#else
+	EventListPtr pEventList;
+#endif
 
 	dx = (double) x;
 	dy = (double) y;
 	
+	nevents = GetMaximumEventsNum();
+	pEventList = InitEventList(nevents);
+
 #if (XORG_VERSION_CURRENT >= XORG_VERSION(1,14,0))
-	miPointerSetPosition(g_pointer, Absolute, &dx, &dy, &nevents, rdp_events);
+	miPointerSetPosition(g_pointer, Absolute, &dx, &dy, &nevents, pEventList);
 #elif (XORG_VERSION_CURRENT >= XORG_VERSION(1,12,0))
 	miPointerSetPosition(g_pointer, Absolute, &dx, &dy);
 #elif (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
@@ -705,41 +714,25 @@ static void rdpEnqueueMotion(int x, int y)
 	valuator_mask_set_range(&mask, 0, 2, valuators);
 
 #if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	nevents = GetPointerEvents(pEventList, g_pointer, MotionNotify, 0,
+			POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
+
+	for (i = 0; i < nevents; i++)
 	{
-		int i, nevents;
-		InternalEvent* pEventList;
-
-		nevents = GetMaximumEventsNum();
-		pEventList = InitEventList(nevents);
-
-		nevents = GetPointerEvents(pEventList, g_pointer, MotionNotify, 0,
-				POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
-
-		for (i = 0; i < nevents; i++)
-		{
-			mieqProcessDeviceEvent(g_pointer, &pEventList[i], 0);
-		}
-
-		FreeEventList(pEventList, GetMaximumEventsNum());
+		mieqProcessDeviceEvent(g_pointer, &pEventList[i], 0);
 	}
+
+	FreeEventList(pEventList, GetMaximumEventsNum());
 #else
+	nevents = GetPointerEvents(pEventList, g_pointer, MotionNotify, 0,
+			POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
+
+	for (i = 0; i < nevents; i++)
 	{
-		int i, nevents;
-		EventListPtr pEventList;
-
-		nevents = GetMaximumEventsNum();
-		pEventList = InitEventList(nevents);
-
-		nevents = GetPointerEvents(pEventList, g_pointer, MotionNotify, 0,
-				POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
-
-		for (i = 0; i < nevents; i++)
-		{
-			mieqProcessDeviceEvent(g_pointer, (InternalEvent*) pEventList[i].event, 0);
-		}
-
-		FreeEventList(pEventList, GetMaximumEventsNum());
+		mieqProcessDeviceEvent(g_pointer, (InternalEvent*) pEventList[i].event, 0);
 	}
+
+	FreeEventList(pEventList, GetMaximumEventsNum());
 #endif
 }
 
