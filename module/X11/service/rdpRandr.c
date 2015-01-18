@@ -103,7 +103,9 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 
 	rdpModeSelect(pScreen, randr->width, randr->height);
 
-	SetRootClip(pScreen, FALSE);
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	SetRootClip(pScreen, False);
+#endif
 
 	pRoot = pScreen->root;
 
@@ -119,10 +121,12 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 	pScreen->mmWidth = mmWidth;
 	pScreen->mmHeight = mmHeight;
 
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,12,0))
 	screenInfo.x = 0;
 	screenInfo.y = 0;
 	screenInfo.width = width;
 	screenInfo.height = height;
+#endif
 
 	if (g_rdpScreen.pfbMemory)
 		rdpScreenFrameBufferFree();
@@ -155,7 +159,9 @@ Bool rdpRRScreenSetSize(ScreenPtr pScreen, CARD16 width, CARD16 height, CARD32 m
 
 	RRGetInfo(pScreen, TRUE);
 
-	SetRootClip(pScreen, TRUE);
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	SetRootClip(pScreen, True);
+#endif
 
 	miPaintWindow(pRoot, &pRoot->borderClip, PW_BACKGROUND);
 

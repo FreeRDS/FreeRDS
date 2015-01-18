@@ -667,7 +667,11 @@ void InitInput(int argc, char** argv)
 	mieqInit();
 }
 
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
 void ddxGiveUp(enum ExitCode error)
+#else
+void ddxGiveUp()
+#endif
 {
 	char unixSocketName[128];
 
@@ -685,7 +689,7 @@ void ddxGiveUp(enum ExitCode error)
 
 Bool LegalModifier(unsigned int key, DeviceIntPtr pDev)
 {
-	return 1; /* true */
+	return True;
 }
 
 void ProcessInputEvents(void)
@@ -698,10 +702,17 @@ void rfbRootPropertyChange(PropertyPtr pProp)
 
 }
 
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
 void AbortDDX(enum ExitCode error)
 {
 	ddxGiveUp(error);
 }
+#else
+void AbortDDX()
+{
+	ddxGiveUp();
+}
+#endif
 
 #if (XORG_VERSION_CURRENT >= XORG_VERSION(1,13,0))
 void OsVendorFatalError(const char *f, va_list args)

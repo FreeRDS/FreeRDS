@@ -243,12 +243,24 @@ set_property(TARGET "Xext-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/Xext/.
 add_library("Xi-static" STATIC IMPORTED)
 set_property(TARGET "Xi-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/Xi/.libs/libXi.a")
 
-add_library("glx-static" STATIC IMPORTED)
-set_property(TARGET "glx-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/glx/.libs/libglx.a")
+set(WITH_LIBGLX 0)
+set(LIBGLX "${XOBJBASE}/glx/.libs/libglx.a")
 
-add_library("glxdri-static" STATIC IMPORTED)
-set_property(TARGET "glxdri-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/glx/.libs/libglxdri.a")
+if(EXISTS ${LIBGLX})
+	set(WITH_LIBGLX 1)
+	add_library("glx-static" STATIC IMPORTED)
+	set_property(TARGET "glx-static" PROPERTY IMPORTED_LOCATION ${LIBGLX})
+endif()
 
+set(WITH_LIBGLXDRI 0)
+set(LIBGLXDRI "${XOBJBASE}/glx/.libs/libglxdri.a")
+
+if(EXISTS ${LIBGLXDRI})
+	set(WITH_LIBGLXDRI 1)
+	add_library("glxdri-static" STATIC IMPORTED)
+	set_property(TARGET "glxdri-static" PROPERTY IMPORTED_LOCATION ${LIBGLXDRI})
+endif()
+	
 set(WITH_LIBXFIXES 0)
 set(LIBXFIXES "${XOBJBASE}/xfixes/.libs/libxfixes.a")
 
@@ -322,7 +334,7 @@ set(${MODULE_PREFIX}_INCLUDES
 
 include_directories(${${MODULE_PREFIX}_INCLUDES})
 
-set(${MODULE_PREFIX}_DEFINES "-DHAVE_XORG_CONFIG_H -DXF86PM")
+set(${MODULE_PREFIX}_DEFINES "-DHAVE_XORG_CONFIG_H")
 
 add_definitions(${${MODULE_PREFIX}_DEFINES})
 
@@ -337,9 +349,17 @@ list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
 set(${MODULE_PREFIX}_STATIC_LIBS
-	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
-	render-static xkb-static Xext-static Xi-static glx-static glxdri-static)
+	composite-static dbe-static dix-static main-static fb-static mi-static
+	os-static randr-static record-static render-static xkb-static Xext-static Xi-static)
 
+if(WITH_LIBGLX)
+	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS glx-static)
+endif()
+	
+if(WITH_LIBGLXDRI)
+	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS glxdri-static)
+endif()
+	
 if(WITH_LIBXFIXES)
 	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS xfixes-static)
 endif()

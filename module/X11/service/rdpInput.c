@@ -403,7 +403,9 @@ int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 			InitValuatorAxisStruct(pDevice, 0, axes_labels[0], NO_AXIS_LIMITS, NO_AXIS_LIMITS, 1, 0, 1, Relative);
 			InitValuatorAxisStruct(pDevice, 1, axes_labels[1], NO_AXIS_LIMITS, NO_AXIS_LIMITS, 1, 0, 1, Relative);
 			InitValuatorAxisStruct(pDevice, 2, axes_labels[2], NO_AXIS_LIMITS, NO_AXIS_LIMITS, 1, 0, 1, Relative);
-		    SetScrollValuator(pDevice, 2, SCROLL_TYPE_VERTICAL, -1.0, SCROLL_FLAG_PREFERRED);
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,12,0))
+			SetScrollValuator(pDevice, 2, SCROLL_TYPE_VERTICAL, -1.0, SCROLL_FLAG_PREFERRED);
+#endif
 			break;
 
 		case DEVICE_ON:
@@ -677,73 +679,139 @@ void rdpSpriteDeviceCursorCleanup(DeviceIntPtr pDev, ScreenPtr pScr)
 
 static void rdpEnqueueMotion(int x, int y)
 {
-	int i;
-	int nevents;
 	double dx, dy;
 	int valuators[2];
 	ValuatorMask mask;
-	InternalEvent* rdp_events;
 
 	dx = (double) x;
 	dy = (double) y;
-	nevents = GetMaximumEventsNum();
-	rdp_events = InitEventList(nevents);
 	
-#if (XORG_VERSION_CURRENT > XORG_VERSION(1,14,0))
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,14,0))
 	miPointerSetPosition(g_pointer, Absolute, &dx, &dy, &nevents, rdp_events);
-#else
+#elif (XORG_VERSION_CURRENT >= XORG_VERSION(1,12,0))
 	miPointerSetPosition(g_pointer, Absolute, &dx, &dy);
+#elif (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	miPointerSetPosition(g_pointer, Absolute, &x, &y);
+	dx = (double) x;
+	dy = (double) y;
+#else
+	miPointerSetPosition(g_pointer, &x, &y);
+	dx = (double) x;
+	dy = (double) y;
 #endif
 
 	valuators[0] = dx;
 	valuators[1] = dy;
 	valuator_mask_set_range(&mask, 0, 2, valuators);
 
-	nevents = GetPointerEvents(rdp_events, g_pointer, MotionNotify, 0,
-			POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	{
+		int i, nevents;
+		InternalEvent* pEventList;
 
-	for (i = 0; i < nevents; i++)
-		mieqProcessDeviceEvent(g_pointer, &rdp_events[i], 0);
+		nevents = GetMaximumEventsNum();
+		pEventList = InitEventList(nevents);
 
-	FreeEventList(rdp_events, GetMaximumEventsNum());
+		nevents = GetPointerEvents(pEventList, g_pointer, MotionNotify, 0,
+				POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
+
+		for (i = 0; i < nevents; i++)
+		{
+			mieqProcessDeviceEvent(g_pointer, &pEventList[i], 0);
+		}
+
+		FreeEventList(pEventList, GetMaximumEventsNum());
+	}
+#else
+	{
+		int i, nevents;
+		EventListPtr pEventList;
+
+		nevents = GetMaximumEventsNum();
+		pEventList = InitEventList(nevents);
+
+		nevents = GetPointerEvents(pEventList, g_pointer, MotionNotify, 0,
+				POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
+
+		for (i = 0; i < nevents; i++)
+		{
+			mieqProcessDeviceEvent(g_pointer, (InternalEvent*) pEventList[i].event, 0);
+		}
+
+		FreeEventList(pEventList, GetMaximumEventsNum());
+	}
+#endif
 }
 
 static void rdpEnqueueButton(int type, int buttons)
 {
-	int i;
-	int nevents;
 	ValuatorMask mask;
-	InternalEvent* rdp_events;
-	int valuators[MAX_VALUATORS] = {0};
-
-	nevents = GetMaximumEventsNum();
-	rdp_events = InitEventList(nevents);
+	int valuators[MAX_VALUATORS] = { 0 };
 
 	valuator_mask_set_range(&mask, 0, 0, valuators);
 
-	nevents = GetPointerEvents(rdp_events, g_pointer, type, buttons, 0, &mask);
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	{
+		int i, nevents;
+		InternalEvent* pEventList;
 
-	for (i = 0; i < nevents; i++)
-		mieqProcessDeviceEvent(g_pointer, &rdp_events[i], 0);
+		nevents = GetMaximumEventsNum();
+		pEventList = InitEventList(nevents);
 
-	FreeEventList(rdp_events, GetMaximumEventsNum());
+		nevents = GetPointerEvents(pEventList, g_pointer, type, buttons, 0, &mask);
+
+		for (i = 0; i < nevents; i++)
+			mieqProcessDeviceEvent(g_pointer, &pEventList[i], 0);
+
+		FreeEventList(pEventList, GetMaximumEventsNum());
+	}
+#else
+	{
+		int i, nevents;
+		EventListPtr pEventList;
+
+		nevents = GetMaximumEventsNum();
+		pEventList = InitEventList(nevents);
+
+		nevents = GetPointerEvents(pEventList, g_pointer, type, buttons, 0, &mask);
+
+		for (i = 0; i < nevents; i++)
+			mieqProcessDeviceEvent(g_pointer, (InternalEvent*) pEventList[i].event, 0);
+
+		FreeEventList(pEventList, GetMaximumEventsNum());
+	}
+#endif
 }
 
 static void rdpEnqueueKey(int type, int scancode)
 {
-	int i;
-	int nevents;
-	InternalEvent* rdp_events;
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	int i, nevents;
+	InternalEvent* pEventList;
 
 	nevents = GetMaximumEventsNum();
-	rdp_events = InitEventList(nevents);
+	pEventList = InitEventList(nevents);
 
-	nevents = GetKeyboardEvents(rdp_events, g_keyboard, type, scancode, NULL);
+	nevents = GetKeyboardEvents(pEventList, g_keyboard, type, scancode, NULL);
 
 	for (i = 0; i < nevents; i++)
-		mieqProcessDeviceEvent(g_pointer, &rdp_events[i], 0);
+		mieqProcessDeviceEvent(g_pointer, &pEventList[i], 0);
 
-	FreeEventList(rdp_events, GetMaximumEventsNum());
+	FreeEventList(pEventList, GetMaximumEventsNum());
+#else
+	int i, nevents;
+	EventListPtr pEventList;
+
+	nevents = GetMaximumEventsNum();
+	pEventList = InitEventList(nevents);
+
+	nevents = GetKeyboardEvents(pEventList, g_keyboard, type, scancode);
+
+	for (i = 0; i < nevents; i++)
+		mieqProcessDeviceEvent(g_pointer, (InternalEvent*) pEventList[i].event, 0);
+
+	FreeEventList(pEventList, GetMaximumEventsNum());
+#endif
 }
 
 void PtrAddMotionEvent(int x, int y)
@@ -751,8 +819,9 @@ void PtrAddMotionEvent(int x, int y)
 	static int sx = 0;
 	static int sy = 0;
 
-	if (sx != x || sy != y)
+	if ((sx != x) || (sy != y))
 		rdpEnqueueMotion(x, y);
+
 	sx = x;
 	sy = y;
 }
@@ -848,8 +917,14 @@ void KbdAddSyncEvent(DWORD flags)
 	KeyClassPtr keyc;
 	char numLock = -1;
 	char scrollLock = -1;
+	DeviceIntPtr master = NULL;
 	DeviceIntPtr pDev = g_keyboard;
-	DeviceIntPtr master = pDev->key->xkbInfo->device->master;
+
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,11,0))
+	master = pDev->key->xkbInfo->device->master;
+#else
+	master = pDev->key->xkbInfo->device->u.master;
+#endif
 
 	if (!master)
 		return; /* no master device */
