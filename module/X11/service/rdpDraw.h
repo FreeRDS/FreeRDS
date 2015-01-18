@@ -42,9 +42,6 @@
 int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC);
 void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n, BoxPtr pbox);
 
-Bool rdpCloseScreen(ScreenPtr pScreen);
-void rdpQueryBestSize(int xclass, unsigned short* pWidth, unsigned short* pHeight, ScreenPtr pScreen);
-
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint);
 Bool rdpDestroyPixmap(PixmapPtr pPixmap);
 
@@ -55,7 +52,6 @@ Bool rdpCreateGC(GCPtr pGC);
 void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion);
 void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool generateExposures);
 RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed);
-Bool rdpSaveScreen(ScreenPtr pScreen, int on);
 Bool rdpRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
 Bool rdpUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
 void rdpCursorLimits(ScreenPtr pScreen, CursorPtr pCursor, BoxPtr pHotBox, BoxPtr pTopLeftBox);

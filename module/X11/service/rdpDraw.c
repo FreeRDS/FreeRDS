@@ -94,6 +94,27 @@ GCOps g_rdpGCOps =
 	rdpPushPixels
 };
 
+#define GC_FUNC_PROLOGUE(_pGC) \
+		{ \
+			priv = (rdpGCPtr)(dixGetPrivateAddr(&(_pGC->devPrivates), &g_rdpGCIndex)); \
+			(_pGC)->funcs = priv->funcs; \
+			if (priv->ops != 0) \
+			{ \
+				(_pGC)->ops = priv->ops; \
+			} \
+		}
+
+#define GC_FUNC_EPILOGUE(_pGC) \
+		{ \
+	priv->funcs = (_pGC)->funcs; \
+	(_pGC)->funcs = &g_rdpGCFuncs; \
+	if (priv->ops != 0) \
+	{ \
+		priv->ops = (_pGC)->ops; \
+		(_pGC)->ops = &g_rdpGCOps; \
+	} \
+		}
+
 /* return 0, draw nothing */
 /* return 1, draw with no clip */
 /* return 2, draw using clip */
@@ -238,27 +259,6 @@ void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n
 	}
 }
 
-#define GC_FUNC_PROLOGUE(_pGC) \
-		{ \
-			priv = (rdpGCPtr)(dixGetPrivateAddr(&(_pGC->devPrivates), &g_rdpGCIndex)); \
-			(_pGC)->funcs = priv->funcs; \
-			if (priv->ops != 0) \
-			{ \
-				(_pGC)->ops = priv->ops; \
-			} \
-		}
-
-#define GC_FUNC_EPILOGUE(_pGC) \
-		{ \
-	priv->funcs = (_pGC)->funcs; \
-	(_pGC)->funcs = &g_rdpGCFuncs; \
-	if (priv->ops != 0) \
-	{ \
-		priv->ops = (_pGC)->ops; \
-		(_pGC)->ops = &g_rdpGCOps; \
-	} \
-		}
-
 static void rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
 {
 	rdpGCRec* priv;
@@ -330,65 +330,6 @@ static void rdpCopyClip(GCPtr dst, GCPtr src)
 	GC_FUNC_PROLOGUE(dst);
 	dst->funcs->CopyClip(dst, src);
 	GC_FUNC_EPILOGUE(dst);
-}
-
-#define GC_OP_PROLOGUE(_pGC) \
-{ \
-	priv = (rdpGCPtr)dixGetPrivateAddr(&(pGC->devPrivates), &g_rdpGCIndex); \
-	oldFuncs = _pGC->funcs; \
-	(_pGC)->funcs = priv->funcs; \
-	(_pGC)->ops = priv->ops; \
-}
-
-#define GC_OP_EPILOGUE(_pGC) \
-{ \
-	priv->ops = (_pGC)->ops; \
-	(_pGC)->funcs = oldFuncs; \
-	(_pGC)->ops = &g_rdpGCOps; \
-}
-
-Bool rdpCloseScreen(ScreenPtr pScreen)
-{
-	LLOGLN(10, ("in rdpCloseScreen"));
-	pScreen->CloseScreen = g_rdpScreen.CloseScreen;
-	pScreen->CreateGC = g_rdpScreen.CreateGC;
-	//pScreen->PaintWindowBackground = g_rdpScreen.PaintWindowBackground;
-	//pScreen->PaintWindowBorder = g_rdpScreen.PaintWindowBorder;
-	pScreen->CopyWindow = g_rdpScreen.CopyWindow;
-	pScreen->ClearToBackground = g_rdpScreen.ClearToBackground;
-	//pScreen->RestoreAreas = g_rdpScreen.RestoreAreas;
-	return TRUE;
-}
-
-void rdpQueryBestSize(int xclass, unsigned short* pWidth, unsigned short* pHeight, ScreenPtr pScreen)
-{
-	unsigned short w;
-
-	switch (xclass)
-	{
-		case CursorShape:
-
-			*pWidth = 96;
-			*pHeight = 96;
-
-			if (*pWidth > pScreen->width)
-				*pWidth = pScreen->width;
-			if (*pHeight > pScreen->height)
-				*pHeight = pScreen->height;
-
-			break;
-
-		case TileShape:
-		case StippleShape:
-
-			w = *pWidth;
-
-			if ((w & (w - 1)) && w < FB_UNIT)
-			{
-				for (w = 1; w < *pWidth; w <<= 1);
-					*pWidth = w;
-			}
-	}
 }
 
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint)
@@ -481,11 +422,6 @@ RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 	RegionUninit(&reg);
 
 	return rv;
-}
-
-Bool rdpSaveScreen(ScreenPtr pScreen, int on)
-{
-	return TRUE;
 }
 
 /* it looks like all the antialias draws go through here */

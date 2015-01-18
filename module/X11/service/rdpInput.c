@@ -691,6 +691,8 @@ static void rdpEnqueueMotion(int x, int y)
 	
 #if (XORG_VERSION_CURRENT > XORG_VERSION(1,14,0))
 	miPointerSetPosition(g_pointer, Absolute, &dx, &dy, &nevents, rdp_events);
+#else
+	miPointerSetPosition(g_pointer, Absolute, &dx, &dy);
 #endif
 
 	valuators[0] = dx;

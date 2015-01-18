@@ -291,7 +291,7 @@ set(LIBDRI3 "${XOBJBASE}/dri3/.libs/libdri3.a")
 if(EXISTS ${LIBDRI3})
 	set(WITH_LIBDRI3 1)
 	add_library("dri3-static" STATIC IMPORTED)
-	set_property(TARGET "dri3-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/dri3/.libs/libdri3.a")
+	set_property(TARGET "dri3-static" PROPERTY IMPORTED_LOCATION ${LIBDRI3})
 endif()
 
 set(WITH_LIBPRESENT 0)
@@ -300,7 +300,7 @@ set(LIBPRESENT "${XOBJBASE}/present/.libs/libpresent.a")
 if(EXISTS ${LIBPRESENT})
 	set(WITH_LIBPRESENT 1)
 	add_library("present-static" STATIC IMPORTED)
-	set_property(TARGET "present-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/present/.libs/libpresent.a")
+	set_property(TARGET "present-static" PROPERTY IMPORTED_LOCATION ${LIBPRESENT})
 endif()
 
 set(${MODULE_PREFIX}_INCLUDES
@@ -316,9 +316,9 @@ set(${MODULE_PREFIX}_INCLUDES
 	"${XSRCBASE}/render"
 	"${XSRCBASE}/randr"
 	"${XSRCBASE}/fb"
+	"${XSRCBASE}/glx"
 	"${XSRCBASE}/hw/xfree86/common"
-	"${XSRCBASE}/present"
-	"${XOBJBASE}/include")
+	"${XSRCBASE}/present")
 
 include_directories(${${MODULE_PREFIX}_INCLUDES})
 
