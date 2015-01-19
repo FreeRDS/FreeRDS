@@ -22,29 +22,7 @@
  */
 
 #include "rdp.h"
-#include "gcops.h"
 #include "rdpDraw.h"
-
-#include "rdpCopyArea.h"
-#include "rdpPolyFillRect.h"
-#include "rdpPutImage.h"
-#include "rdpPolyRectangle.h"
-#include "rdpPolylines.h"
-#include "rdpPolySegment.h"
-#include "rdpFillSpans.h"
-#include "rdpSetSpans.h"
-#include "rdpCopyPlane.h"
-#include "rdpPolyPoint.h"
-#include "rdpPolyArc.h"
-#include "rdpFillPolygon.h"
-#include "rdpPolyFillArc.h"
-#include "rdpPolyText8.h"
-#include "rdpPolyText16.h"
-#include "rdpImageText8.h"
-#include "rdpImageText16.h"
-#include "rdpImageGlyphBlt.h"
-#include "rdpPolyGlyphBlt.h"
-#include "rdpPushPixels.h"
 
 #define LOG_LEVEL 1
 #define LLOG(_level, _args) \
@@ -59,61 +37,8 @@ extern ScreenPtr g_pScreen;
 
 static int g_doing_font = 0;
 
-GCFuncs g_rdpGCFuncs =
-{
-	rdpValidateGC,
-	rdpChangeGC,
-	rdpCopyGC,
-	rdpDestroyGC,
-	rdpChangeClip,
-	rdpDestroyClip,
-	rdpCopyClip
-};
-
-GCOps g_rdpGCOps =
-{
-	rdpFillSpans,
-	rdpSetSpans,
-	rdpPutImage,
-	rdpCopyArea,
-	rdpCopyPlane,
-	rdpPolyPoint,
-	rdpPolylines,
-	rdpPolySegment,
-	rdpPolyRectangle,
-	rdpPolyArc,
-	rdpFillPolygon,
-	rdpPolyFillRect,
-	rdpPolyFillArc,
-	rdpPolyText8,
-	rdpPolyText16,
-	rdpImageText8,
-	rdpImageText16,
-	rdpImageGlyphBlt,
-	rdpPolyGlyphBlt,
-	rdpPushPixels
-};
-
-#define GC_FUNC_PROLOGUE(_pGC) \
-		{ \
-			priv = (rdpGCPtr)(dixGetPrivateAddr(&(_pGC->devPrivates), &g_rdpGCIndex)); \
-			(_pGC)->funcs = priv->funcs; \
-			if (priv->ops != 0) \
-			{ \
-				(_pGC)->ops = priv->ops; \
-			} \
-		}
-
-#define GC_FUNC_EPILOGUE(_pGC) \
-		{ \
-	priv->funcs = (_pGC)->funcs; \
-	(_pGC)->funcs = &g_rdpGCFuncs; \
-	if (priv->ops != 0) \
-	{ \
-		priv->ops = (_pGC)->ops; \
-		(_pGC)->ops = &g_rdpGCOps; \
-	} \
-		}
+extern GCOps g_rdpGCOps;
+extern GCFuncs g_rdpGCFuncs;
 
 /* return 0, draw nothing */
 /* return 1, draw with no clip */
@@ -257,79 +182,6 @@ void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n
 	{
 		pbox->x1 += FONTMINBOUNDS(font, leftSideBearing);
 	}
-}
-
-static void rdpValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr d)
-{
-	rdpGCRec* priv;
-
-	LLOGLN(10, ("rdpValidateGC:"));
-	GC_FUNC_PROLOGUE(pGC);
-	pGC->funcs->ValidateGC(pGC, changes, d);
-
-	priv->ops = pGC->ops;
-
-	GC_FUNC_EPILOGUE(pGC);
-}
-
-static void rdpChangeGC(GCPtr pGC, unsigned long mask)
-{
-	rdpGCRec* priv;
-
-	LLOGLN(10, ("in rdpChangeGC"));
-	GC_FUNC_PROLOGUE(pGC);
-	pGC->funcs->ChangeGC(pGC, mask);
-	GC_FUNC_EPILOGUE(pGC);
-}
-
-static void rdpCopyGC(GCPtr src, unsigned long mask, GCPtr dst)
-{
-	rdpGCRec* priv;
-
-	LLOGLN(10, ("in rdpCopyGC"));
-	GC_FUNC_PROLOGUE(dst);
-	dst->funcs->CopyGC(src, mask, dst);
-	GC_FUNC_EPILOGUE(dst);
-}
-
-static void rdpDestroyGC(GCPtr pGC)
-{
-	rdpGCRec* priv;
-
-	LLOGLN(10, ("in rdpDestroyGC"));
-	GC_FUNC_PROLOGUE(pGC);
-	pGC->funcs->DestroyGC(pGC);
-	GC_FUNC_EPILOGUE(pGC);
-}
-
-static void rdpChangeClip(GCPtr pGC, int type, pointer pValue, int nrects)
-{
-	rdpGCRec* priv;
-
-	LLOGLN(10, ("in rdpChangeClip"));
-	GC_FUNC_PROLOGUE(pGC);
-	pGC->funcs->ChangeClip(pGC, type, pValue, nrects);
-	GC_FUNC_EPILOGUE(pGC);
-}
-
-static void rdpDestroyClip(GCPtr pGC)
-{
-	rdpGCRec* priv;
-
-	LLOGLN(10, ("in rdpDestroyClip"));
-	GC_FUNC_PROLOGUE(pGC);
-	pGC->funcs->DestroyClip(pGC);
-	GC_FUNC_EPILOGUE(pGC);
-}
-
-static void rdpCopyClip(GCPtr dst, GCPtr src)
-{
-	rdpGCRec* priv;
-
-	LLOGLN(0, ("in rdpCopyClip"));
-	GC_FUNC_PROLOGUE(dst);
-	dst->funcs->CopyClip(dst, src);
-	GC_FUNC_EPILOGUE(dst);
 }
 
 PixmapPtr rdpCreatePixmap(ScreenPtr pScreen, int width, int height, int depth, unsigned usage_hint)

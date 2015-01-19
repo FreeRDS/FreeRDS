@@ -134,58 +134,21 @@ include_directories(${XFONT_INCLUDE_DIRS} ${XAU_INCLUDE_DIRS} ${GL_INCLUDE_DIRS}
 	${XDMCP_INCLUDE_DIRS} ${XDAMAGE_INCLUDE_DIRS} ${PIXMAN_INCLUDE_DIRS})
 
 set(${MODULE_PREFIX}_SRCS
-	gcops.h
-	rdpCopyArea.c
-	rdpCopyArea.h
-	rdpCopyPlane.c
-	rdpCopyPlane.h
+	rdp.h
 	rdpDraw.c
 	rdpDraw.h
-	rdpFillPolygon.c
-	rdpFillPolygon.h
-	rdpFillSpans.c
-	rdpFillSpans.h
-	rdp.h
-	rdpImageGlyphBlt.c
-	rdpImageGlyphBlt.h
-	rdpImageText16.c
-	rdpImageText16.h
-	rdpImageText8.c
-	rdpImageText8.h
+	rdpGCFuncs.c
+	rdpGCFuncs.h
+	rdpGCOps.c
+	rdpGCOps.h
 	rdpInput.c
 	rdpInput.h
 	rdpMain.c
 	rdpMisc.c
-	rdpPolyArc.c
-	rdpPolyArc.h
-	rdpPolyFillArc.c
-	rdpPolyFillArc.h
-	rdpPolyFillRect.c
-	rdpPolyFillRect.h
-	rdpPolyGlyphBlt.c
-	rdpPolyGlyphBlt.h
-	rdpPolylines.c
-	rdpPolylines.h
-	rdpPolyPoint.c
-	rdpPolyPoint.h
-	rdpPolyRectangle.c
-	rdpPolyRectangle.h
-	rdpPolySegment.c
-	rdpPolySegment.h
-	rdpPolyText16.c
-	rdpPolyText16.h
-	rdpPolyText8.c
-	rdpPolyText8.h
-	rdpPushPixels.c
-	rdpPushPixels.h
-	rdpPutImage.c
-	rdpPutImage.h
 	rdpRandr.c
 	rdpRandr.h
 	rdpModes.c
 	rdpModes.h
-	rdpSetSpans.c
-	rdpSetSpans.h
 	rdpWindow.c
 	rdpWindow.h
 	rdpPalette.c

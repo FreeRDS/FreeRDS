@@ -1,8 +1,7 @@
 /**
  * FreeRDS: FreeRDP Remote Desktop Services (RDS)
  *
- * Copyright 2005-2012 Jay Sorg
- * Copyright 2013-2014 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+ * Copyright 2013-2015 Marc-Andre Moreau <marcandre.moreau@gmail.com>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,10 +20,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __RDPPUTIMAGE_H
-#define __RDPPUTIMAGE_H
+#ifndef XRDS_RDP_GC_OPS_H
+#define XRDS_RDP_GC_OPS_H
 
-void rdpPutImage(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y,
-		int w, int h, int leftPad, int format, char* pBits);
 
-#endif
+
+#endif /* XRDS_RDP_GC_OPS_H */

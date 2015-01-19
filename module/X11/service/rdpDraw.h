@@ -24,21 +24,6 @@
 #ifndef __RDPDRAW_H
 #define __RDPDRAW_H
 
-#define GC_OP_PROLOGUE(_pGC) \
-{ \
-	priv = (rdpGCPtr)dixGetPrivateAddr(&(pGC->devPrivates), &g_rdpGCIndex); \
-	oldFuncs = _pGC->funcs; \
-	(_pGC)->funcs = priv->funcs; \
-	(_pGC)->ops = priv->ops; \
-}
-
-#define GC_OP_EPILOGUE(_pGC) \
-{ \
-	priv->ops = (_pGC)->ops; \
-	(_pGC)->funcs = oldFuncs; \
-	(_pGC)->ops = &g_rdpGCOps; \
-}
-
 int rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC);
 void GetTextBoundingBox(DrawablePtr pDrawable, FontPtr font, int x, int y, int n, BoxPtr pbox);
 
@@ -52,13 +37,6 @@ Bool rdpCreateGC(GCPtr pGC);
 void rdpCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pOldRegion);
 void rdpClearToBackground(WindowPtr pWin, int x, int y, int w, int h, Bool generateExposures);
 RegionPtr rdpRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed);
-Bool rdpRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
-Bool rdpUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
-void rdpCursorLimits(ScreenPtr pScreen, CursorPtr pCursor, BoxPtr pHotBox, BoxPtr pTopLeftBox);
-void rdpConstrainCursor(ScreenPtr pScreen, BoxPtr pBox);
-Bool rdpSetCursorPosition(ScreenPtr pScreen, int x, int y, Bool generateEvent);
-Bool rdpDisplayCursor(ScreenPtr pScreen, CursorPtr pCursor);
-void rdpRecolorCursor(ScreenPtr pScreen, CursorPtr pCursor, Bool displayed);
 void rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 		INT16 xSrc, INT16 ySrc, INT16 xMask, INT16 yMask, INT16 xDst,
 		INT16 yDst, CARD16 width, CARD16 height);
