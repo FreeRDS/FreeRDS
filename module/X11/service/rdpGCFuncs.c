@@ -30,21 +30,21 @@ extern DevPrivateKeyRec g_rdpGCIndex;
 #define GC_FUNC_PROLOGUE(_pGC) \
 { \
 	priv = (rdpGCPtr)(dixGetPrivateAddr(&(_pGC->devPrivates), &g_rdpGCIndex)); \
-	(_pGC)->funcs = priv->funcs; \
+	(_pGC)->funcs = (GCFUNCS_TYPE*) priv->funcs; \
 	if (priv->ops != 0) \
 	{ \
-		(_pGC)->ops = priv->ops; \
+		(_pGC)->ops = (GCOPS_TYPE*) priv->ops; \
 	} \
 }
 
 #define GC_FUNC_EPILOGUE(_pGC) \
 { \
 	priv->funcs = (_pGC)->funcs; \
-	(_pGC)->funcs = &g_rdpGCFuncs; \
+	(_pGC)->funcs = (GCFUNCS_TYPE*) &g_rdpGCFuncs; \
 	if (priv->ops != 0) \
 	{ \
 		priv->ops = (_pGC)->ops; \
-		(_pGC)->ops = &g_rdpGCOps; \
+		(_pGC)->ops = (GCOPS_TYPE*) &g_rdpGCOps; \
 	} \
 }
 

@@ -161,10 +161,18 @@ struct _rdpScreenInfoRec
 typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
 typedef rdpScreenInfoRec* rdpScreenInfoPtr;
 
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,16,0))
+#define GCFUNCS_TYPE	const GCFuncs
+#define GCOPS_TYPE	const GCOps
+#else
+#define GCFUNCS_TYPE	GCFuncs
+#define GCOPS_TYPE	GCOps
+#endif
+
 struct _rdpGCRec
 {
-	GCFuncs* funcs;
-	GCOps* ops;
+	const GCFuncs* funcs;
+	const GCOps* ops;
 };
 typedef struct _rdpGCRec rdpGCRec;
 typedef rdpGCRec* rdpGCPtr;

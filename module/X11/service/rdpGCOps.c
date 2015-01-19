@@ -35,15 +35,15 @@ extern DevPrivateKeyRec g_rdpPixmapIndex;
 { \
 	priv = (rdpGCPtr)dixGetPrivateAddr(&(pGC->devPrivates), &g_rdpGCIndex); \
 	oldFuncs = _pGC->funcs; \
-	(_pGC)->funcs = priv->funcs; \
-	(_pGC)->ops = priv->ops; \
+	(_pGC)->funcs = (GCFUNCS_TYPE*) priv->funcs; \
+	(_pGC)->ops = (GCOPS_TYPE*) priv->ops; \
 }
 
 #define GC_OP_EPILOGUE(_pGC) \
 { \
 	priv->ops = (_pGC)->ops; \
-	(_pGC)->funcs = oldFuncs; \
-	(_pGC)->ops = &g_rdpGCOps; \
+	(_pGC)->funcs = (GCFUNCS_TYPE*) oldFuncs; \
+	(_pGC)->ops = (GCOPS_TYPE*) &g_rdpGCOps; \
 }
 
 /**
@@ -53,7 +53,7 @@ extern DevPrivateKeyRec g_rdpPixmapIndex;
 static void rdpFillSpansOrg(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->FillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
@@ -116,7 +116,7 @@ void rdpSetSpansOrg(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 		DDXPointPtr ppt, int *pwidth, int nspans, int fSorted)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
@@ -181,7 +181,7 @@ void rdpSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
 static void rdpPutImageOrg(DrawablePtr pDst, GCPtr pGC, int depth, int x, int y, int w, int h, int leftPad, int format, char *pBits)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PutImage(pDst, pGC, depth, x, y, w, h, leftPad, format, pBits);
@@ -255,7 +255,7 @@ static RegionPtr rdpCopyAreaOrg(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 		int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 	RegionPtr rv;
 
 	GC_OP_PROLOGUE(pGC);
@@ -492,7 +492,7 @@ RegionPtr rdpCopyPlaneOrg(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 {
 	RegionPtr rv;
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	rv = pGC->ops->CopyPlane(pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, bitPlane);
@@ -594,7 +594,7 @@ RegionPtr rdpCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
 void rdpPolyPointOrg(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointPtr in_pts)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PolyPoint(pDrawable, pGC, mode, npt, in_pts);
@@ -757,7 +757,7 @@ void rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 void rdpPolylinesOrg(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointPtr pptInit)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->Polylines(pDrawable, pGC, mode, npt, pptInit);
@@ -922,7 +922,7 @@ void rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt, DDXPointP
 void rdpPolySegmentOrg(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PolySegment(pDrawable, pGC, nseg, pSegs);
@@ -1055,7 +1055,7 @@ void rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 void rdpPolyRectangleOrg(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *rects)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PolyRectangle(pDrawable, pGC, nrects, rects);
@@ -1249,7 +1249,7 @@ void rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects, xRectangle *
 void rdpPolyArcOrg(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PolyArc(pDrawable, pGC, narcs, parcs);
@@ -1377,7 +1377,7 @@ void rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 void rdpFillPolygonOrg(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int count, DDXPointPtr pPts)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->FillPolygon(pDrawable, pGC, shape, mode, count, pPts);
@@ -1504,7 +1504,7 @@ void rdpFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 static void rdpPolyFillRectOrg(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle *prectInit)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
@@ -1641,7 +1641,7 @@ void rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 void rdpPolyFillArcOrg(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PolyFillArc(pDrawable, pGC, narcs, parcs);
@@ -1774,7 +1774,7 @@ int rdpPolyText8Org(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, c
 {
 	int rv;
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	rv = pGC->ops->PolyText8(pDrawable, pGC, x, y, count, chars);
@@ -1873,7 +1873,7 @@ int rdpPolyText16Org(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, 
 {
 	int rv;
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	rv = pGC->ops->PolyText16(pDrawable, pGC, x, y, count, chars);
@@ -1971,7 +1971,7 @@ int rdpPolyText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, uns
 void rdpImageText8Org(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, char *chars)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->ImageText8(pDrawable, pGC, x, y, count, chars);
@@ -2068,7 +2068,7 @@ void rdpImageText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, ch
 void rdpImageText16Org(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, unsigned short *chars)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->ImageText16(pDrawable, pGC, x, y, count, chars);
@@ -2165,7 +2165,7 @@ void rdpImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count, u
 void rdpImageGlyphBltOrg(DrawablePtr pDrawable, GCPtr pGC, int x, int y, unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->ImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
@@ -2262,7 +2262,7 @@ void rdpPolyGlyphBltOrg(DrawablePtr pDrawable, GCPtr pGC,
 		int x, int y, unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
@@ -2360,7 +2360,7 @@ void rdpPolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC,
 void rdpPushPixelsOrg(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst, int w, int h, int x, int y)
 {
 	rdpGCPtr priv;
-	GCFuncs *oldFuncs;
+	const GCFuncs* oldFuncs;
 
 	GC_OP_PROLOGUE(pGC);
 	pGC->ops->PushPixels(pGC, pBitMap, pDst, w, h, x, y);
