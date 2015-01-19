@@ -72,6 +72,15 @@
 #include "xkbsrv.h"
 #undef ATOM
 
+#define XORG_VERSION(_major, _minor, _patch) \
+	(((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
+
+#define X11RDPVER "0.7.7"
+
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,16,0))
+typedef void *pointer;
+#endif
+
 #ifndef WINPR_NO_CREATE_WINDOW
 #define WINPR_NO_CREATE_WINDOW
 #endif
@@ -151,10 +160,6 @@ struct _rdpScreenInfoRec
 };
 typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
 typedef rdpScreenInfoRec* rdpScreenInfoPtr;
-
-#define XORG_VERSION(_major, _minor, _patch) (((_major) * 10000000) + ((_minor) * 100000) + ((_patch) * 1000) + 0)
-
-#define X11RDPVER "0.7.7"
 
 struct _rdpGCRec
 {

@@ -601,12 +601,16 @@ static ExtensionModule rdpExtensions[] =
 
 static void rdpExtensionInit(void)
 {
+#if (XORG_VERSION_CURRENT >= XORG_VERSION(1,16,0))
+	LoadExtensionList(rdpExtensions, ARRAYSIZE(rdpExtensions), TRUE);
+#else
 	int i;
 
 	for (i = 0; i < ARRAYSIZE(rdpExtensions); i++)
 	{
 		LoadExtension(&rdpExtensions[i], TRUE);
 	}
+#endif
 }
 
 /* InitOutput is called every time the server resets.  It should call
