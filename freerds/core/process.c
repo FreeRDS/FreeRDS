@@ -40,73 +40,10 @@
 
 #include <freerds/auth.h>
 
-#include <winpr/tools/makecert.h>
-
 #include "rpc.h"
 #include "channels.h"
 
 extern rdsServer* g_Server;
-
-BOOL freerds_peer_capabilities(freerdp_peer* client)
-{
-	return TRUE;
-}
-
-BOOL freerds_peer_post_connect(freerdp_peer* client)
-{
-	UINT32 ColorDepth;
-	UINT32 DesktopWidth;
-	UINT32 DesktopHeight;
-	rdpSettings* settings;
-	rdsConnection* connection;
-
-	settings = client->settings;
-	connection = (rdsConnection*) client->context;
-
-	fprintf(stderr, "Client %s is connected", client->hostname);
-
-	if (client->settings->AutoLogonEnabled)
-	{
-		fprintf(stderr, " and wants to login automatically as %s\\%s",
-			client->settings->Domain ? client->settings->Domain : "",
-			client->settings->Username);
-	}
-	fprintf(stderr, "\n");
-
-	DesktopWidth = settings->DesktopWidth;
-	DesktopHeight = settings->DesktopHeight;
-	ColorDepth = settings->ColorDepth;
-
-	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
-		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
-
-	//if ((DesktopWidth % 4) != 0)
-	//	DesktopWidth += (DesktopWidth % 4);
-
-	//if ((DesktopHeight % 4) != 0)
-	//	DesktopHeight += (DesktopHeight % 4);
-
-	if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight)
-			|| (ColorDepth != settings->ColorDepth))
-	{
-		fprintf(stderr, "Resizing desktop to %dx%dx%d\n", DesktopWidth, DesktopHeight, ColorDepth);
-
-		settings->DesktopWidth = DesktopWidth;
-		settings->DesktopHeight = DesktopHeight;
-		settings->ColorDepth = ColorDepth;
-
-		client->update->DesktopResize(client->update->context);
-
-		return TRUE;
-	}
-
-	freerds_channels_post_connect(connection);
-
-	connection->encoder = freerds_bitmap_encoder_new(settings->DesktopWidth,
-			settings->DesktopHeight, settings->ColorDepth);
-
-	return TRUE;
-}
 
 int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
 {
@@ -126,31 +63,64 @@ int freerds_init_client(HANDLE hClientPipe, rdpSettings* settings, wStream* s)
 	return freerds_named_pipe_write(hClientPipe, Stream_Buffer(s), Stream_GetPosition(s));
 }
 
-BOOL freerds_peer_activate(freerdp_peer* client)
+BOOL freerds_peer_capabilities(freerdp_peer* client)
+{
+	return TRUE;
+}
+
+BOOL freerds_peer_post_connect(freerdp_peer* client)
 {
 	int error_code;
 	char* endpoint;
+	UINT32 ColorDepth;
+	UINT32 DesktopWidth;
+	UINT32 DesktopHeight;
 	rdpSettings* settings;
+	rdsConnection* connection;
+	rdsBackendConnector* connector;
 	FDSAPI_LOGON_USER_REQUEST request;
 	FDSAPI_LOGON_USER_RESPONSE response;
-	rdsConnection* connection = (rdsConnection*) client->context;
-	rdsBackendConnector* connector = connection->connector;
-
-	if (connector)
-	{
-		fprintf(stderr, "reactivation\n");
-		return TRUE;
-	}
 
 	settings = client->settings;
+	connection = (rdsConnection*) client->context;
+	connector = connection->connector;
 
-	if (settings->Password)
+	fprintf(stderr, "Client %s is connected", client->hostname);
+
+	if (settings->Username && settings->Password)
 		settings->AutoLogonEnabled = TRUE;
 
-	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
-							settings->SurfaceFrameMarkerEnabled);
-	
-	fprintf(stderr, "codec mode %d\n", connection->codecMode);
+	if (client->settings->AutoLogonEnabled)
+	{
+		fprintf(stderr, " and wants to login automatically as %s\\%s",
+			client->settings->Domain ? client->settings->Domain : "",
+			client->settings->Username);
+	}
+	fprintf(stderr, "\n");
+
+	DesktopWidth = settings->DesktopWidth;
+	DesktopHeight = settings->DesktopHeight;
+	ColorDepth = settings->ColorDepth;
+
+	if (settings->MultifragMaxRequestSize < 0x3F0000)
+		settings->NSCodec = FALSE; /* NSCodec compressor does not support fragmentation yet */
+
+	fprintf(stderr, "Client requested desktop: %dx%dx%d\n",
+		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
+
+	if ((DesktopWidth != settings->DesktopWidth) || (DesktopHeight != settings->DesktopHeight)
+			|| (ColorDepth != settings->ColorDepth))
+	{
+		fprintf(stderr, "Resizing desktop to %dx%dx%d\n", DesktopWidth, DesktopHeight, ColorDepth);
+
+		settings->DesktopWidth = DesktopWidth;
+		settings->DesktopHeight = DesktopHeight;
+		settings->ColorDepth = ColorDepth;
+
+		client->update->DesktopResize(client->update->context);
+	}
+
+	freerds_channels_post_connect(connection);
 
 	ZeroMemory(&request, sizeof(request));
 
@@ -186,66 +156,43 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	if (!freerds_connector_connect(connector))
 		return FALSE;
 
-	fprintf(stderr, "Client Activated\n");
-
 	return TRUE;
 }
 
-const char* makecert_argv[4] =
+BOOL freerds_peer_activate(freerdp_peer* client)
 {
-	"makecert",
-	"-rdp",
-	"-live",
-	"-silent"
-};
+	rdpSettings* settings;
+	rdsConnection* connection = (rdsConnection*) client->context;
 
-int makecert_argc = (sizeof(makecert_argv) / sizeof(char*));
+	fprintf(stderr, "Client Activated\n");
 
-int freerds_generate_certificate(rdpSettings* settings)
-{
-	char* config_home;
-	char* server_file_path;
-	MAKECERT_CONTEXT* context;
+	settings = client->settings;
 
-	config_home = GetKnownPath(KNOWN_PATH_XDG_CONFIG_HOME);
-
-	if (!PathFileExistsA(config_home))
-		CreateDirectoryA(config_home, 0);
-
-	free(config_home);
-
-	if (!PathFileExistsA(settings->ConfigPath))
-		CreateDirectoryA(settings->ConfigPath, 0);
-
-	server_file_path = GetCombinedPath(settings->ConfigPath, "server");
-
-	if (!PathFileExistsA(server_file_path))
-		CreateDirectoryA(server_file_path, 0);
-
-	settings->CertificateFile = GetCombinedPath(server_file_path, "server.crt");
-	settings->PrivateKeyFile = GetCombinedPath(server_file_path, "server.key");
-
-	if ((!PathFileExistsA(settings->CertificateFile)) ||
-			(!PathFileExistsA(settings->PrivateKeyFile)))
+	if (settings->ClientDir && (strcmp(settings->ClientDir, "librdp") == 0))
 	{
-		context = makecert_context_new();
+		/* Hack for Mac/iOS/Android Microsoft RDP clients */
 
-		makecert_context_process(context, makecert_argc, (char**) makecert_argv);
+		settings->RemoteFxCodec = FALSE;
 
-		makecert_context_set_output_file_name(context, "server");
+		settings->NSCodec = FALSE;
+		settings->NSCodecAllowSubsampling = FALSE;
 
-		if (!PathFileExistsA(settings->CertificateFile))
-			makecert_context_output_certificate_file(context, server_file_path);
-
-		if (!PathFileExistsA(settings->PrivateKeyFile))
-			makecert_context_output_private_key_file(context, server_file_path);
-
-		makecert_context_free(context);
+		settings->SurfaceFrameMarkerEnabled = FALSE;
 	}
 
-	free(server_file_path);
+	connection->codecMode = (settings->RemoteFxCodec && settings->FrameAcknowledge &&
+						settings->SurfaceFrameMarkerEnabled);
 
-	return 0;
+	if (connection->encoder)
+	{
+		freerds_encoder_free(connection->encoder);
+		connection->encoder = NULL;
+	}
+
+	connection->encoder = freerds_encoder_new(connection,
+		settings->DesktopWidth, settings->DesktopHeight, settings->ColorDepth);
+
+	return TRUE;
 }
 
 void freerds_input_synchronize_event(rdpInput* input, UINT32 flags)
@@ -508,7 +455,6 @@ void* freerds_connection_main_thread(void* arg)
 	settings = client->settings;
 
 	freerds_server_add_connection(g_Server, connection);
-	freerds_generate_certificate(settings);
 
 	settings->RdpSecurity = TRUE;
 	settings->TlsSecurity = TRUE;

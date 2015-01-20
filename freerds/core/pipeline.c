@@ -27,10 +27,12 @@
 
 int freerds_server_message_enqueue(rdsBackend* backend, RDS_MSG_COMMON* msg)
 {
-	void* dup = NULL;
-	dup = freerds_server_message_copy(msg);
+	void* copy = NULL;
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
 
-	LinkedList_AddLast(((rdsBackendConnector *)backend)->ServerList, (void*) dup);
+	copy = freerds_server_message_copy(msg);
+
+	LinkedList_AddLast(connector->ServerList, (void*) copy);
 
 	return 0;
 }
@@ -42,7 +44,10 @@ int freerds_server_message_enqueue(rdsBackend* backend, RDS_MSG_COMMON* msg)
 int freerds_message_server_is_terminated(rdsBackend* backend)
 {
 	int status;
-	status = ((rdsBackendConnector*) backend)->ServerProxy->IsTerminated(backend);
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
+
+	status = connector->ServerProxy->IsTerminated(backend);
+
 	return status;
 }
 
@@ -174,13 +179,11 @@ int freerds_message_server_paint_offscreen_surface(rdsBackend* backend, RDS_MSG_
 
 int freerds_message_server_window_new_update(rdsBackend* backend, RDS_MSG_WINDOW_NEW_UPDATE* msg)
 {
-	//mod->ServerProxy->WindowNewUpdate(mod, msg);
 	return 0;
 }
 
 int freerds_message_server_window_delete(rdsBackend* backend, RDS_MSG_WINDOW_DELETE* msg)
 {
-	//mod->ServerProxy->WindowDelete(mod, msg);
 	return 0;
 }
 
@@ -188,7 +191,7 @@ int freerds_message_server_queue_process_message(rdsBackendConnector* connector,
 {
 	int status;
 	rdsServerInterface* ServerProxy;
-	rdsBackend *backend = (rdsBackend *)connector;
+	rdsBackend* backend = (rdsBackend*) connector;
 
 	ServerProxy = connector->ServerProxy;
 
@@ -420,23 +423,16 @@ int freerds_message_server_queue_pack(rdsBackendConnector* connector)
 
 int freerds_message_server_queue_process_pending_messages(rdsBackendConnector* connector)
 {
-	int count;
 	int status;
 	wMessage message;
 	wMessageQueue* queue;
 
-	count = 0;
 	status = 0;
 	queue = connector->ServerQueue;
 
-	while (MessageQueue_Peek(queue, &message, TRUE))
+	if (MessageQueue_Peek(queue, &message, TRUE))
 	{
 		status = freerds_message_server_queue_process_message(connector, &message);
-
-		if (!status)
-			break;
-
-		count++;
 	}
 
 	return status;
@@ -444,10 +440,11 @@ int freerds_message_server_queue_process_pending_messages(rdsBackendConnector* c
 
 int freerds_message_server_connector_init(rdsBackendConnector* backend)
 {
-	rdsBackendConnector* connector = (rdsBackendConnector *)backend;
+	rdsBackendConnector* connector = (rdsBackendConnector*) backend;
+
 	connector->ServerProxy = (rdsServerInterface*) malloc(sizeof(rdsServerInterface));
 
-	//mod->ServerProxy = NULL; /* disable */
+	//connector->ServerProxy = NULL; /* disable */
 
 	if (connector->ServerProxy)
 	{

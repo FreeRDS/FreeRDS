@@ -134,58 +134,21 @@ include_directories(${XFONT_INCLUDE_DIRS} ${XAU_INCLUDE_DIRS} ${GL_INCLUDE_DIRS}
 	${XDMCP_INCLUDE_DIRS} ${XDAMAGE_INCLUDE_DIRS} ${PIXMAN_INCLUDE_DIRS})
 
 set(${MODULE_PREFIX}_SRCS
-	gcops.h
-	rdpCopyArea.c
-	rdpCopyArea.h
-	rdpCopyPlane.c
-	rdpCopyPlane.h
+	rdp.h
 	rdpDraw.c
 	rdpDraw.h
-	rdpFillPolygon.c
-	rdpFillPolygon.h
-	rdpFillSpans.c
-	rdpFillSpans.h
-	rdp.h
-	rdpImageGlyphBlt.c
-	rdpImageGlyphBlt.h
-	rdpImageText16.c
-	rdpImageText16.h
-	rdpImageText8.c
-	rdpImageText8.h
+	rdpGCFuncs.c
+	rdpGCFuncs.h
+	rdpGCOps.c
+	rdpGCOps.h
 	rdpInput.c
 	rdpInput.h
 	rdpMain.c
 	rdpMisc.c
-	rdpPolyArc.c
-	rdpPolyArc.h
-	rdpPolyFillArc.c
-	rdpPolyFillArc.h
-	rdpPolyFillRect.c
-	rdpPolyFillRect.h
-	rdpPolyGlyphBlt.c
-	rdpPolyGlyphBlt.h
-	rdpPolylines.c
-	rdpPolylines.h
-	rdpPolyPoint.c
-	rdpPolyPoint.h
-	rdpPolyRectangle.c
-	rdpPolyRectangle.h
-	rdpPolySegment.c
-	rdpPolySegment.h
-	rdpPolyText16.c
-	rdpPolyText16.h
-	rdpPolyText8.c
-	rdpPolyText8.h
-	rdpPushPixels.c
-	rdpPushPixels.h
-	rdpPutImage.c
-	rdpPutImage.h
 	rdpRandr.c
 	rdpRandr.h
 	rdpModes.c
 	rdpModes.h
-	rdpSetSpans.c
-	rdpSetSpans.h
 	rdpWindow.c
 	rdpWindow.h
 	rdpPalette.c
@@ -243,12 +206,24 @@ set_property(TARGET "Xext-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/Xext/.
 add_library("Xi-static" STATIC IMPORTED)
 set_property(TARGET "Xi-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/Xi/.libs/libXi.a")
 
-add_library("glx-static" STATIC IMPORTED)
-set_property(TARGET "glx-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/glx/.libs/libglx.a")
+set(WITH_LIBGLX 0)
+set(LIBGLX "${XOBJBASE}/glx/.libs/libglx.a")
 
-add_library("glxdri-static" STATIC IMPORTED)
-set_property(TARGET "glxdri-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/glx/.libs/libglxdri.a")
+if(EXISTS ${LIBGLX})
+	set(WITH_LIBGLX 1)
+	add_library("glx-static" STATIC IMPORTED)
+	set_property(TARGET "glx-static" PROPERTY IMPORTED_LOCATION ${LIBGLX})
+endif()
 
+set(WITH_LIBGLXDRI 0)
+set(LIBGLXDRI "${XOBJBASE}/glx/.libs/libglxdri.a")
+
+if(EXISTS ${LIBGLXDRI})
+	set(WITH_LIBGLXDRI 1)
+	add_library("glxdri-static" STATIC IMPORTED)
+	set_property(TARGET "glxdri-static" PROPERTY IMPORTED_LOCATION ${LIBGLXDRI})
+endif()
+	
 set(WITH_LIBXFIXES 0)
 set(LIBXFIXES "${XOBJBASE}/xfixes/.libs/libxfixes.a")
 
@@ -291,7 +266,7 @@ set(LIBDRI3 "${XOBJBASE}/dri3/.libs/libdri3.a")
 if(EXISTS ${LIBDRI3})
 	set(WITH_LIBDRI3 1)
 	add_library("dri3-static" STATIC IMPORTED)
-	set_property(TARGET "dri3-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/dri3/.libs/libdri3.a")
+	set_property(TARGET "dri3-static" PROPERTY IMPORTED_LOCATION ${LIBDRI3})
 endif()
 
 set(WITH_LIBPRESENT 0)
@@ -300,7 +275,7 @@ set(LIBPRESENT "${XOBJBASE}/present/.libs/libpresent.a")
 if(EXISTS ${LIBPRESENT})
 	set(WITH_LIBPRESENT 1)
 	add_library("present-static" STATIC IMPORTED)
-	set_property(TARGET "present-static" PROPERTY IMPORTED_LOCATION "${XOBJBASE}/present/.libs/libpresent.a")
+	set_property(TARGET "present-static" PROPERTY IMPORTED_LOCATION ${LIBPRESENT})
 endif()
 
 set(${MODULE_PREFIX}_INCLUDES
@@ -316,13 +291,13 @@ set(${MODULE_PREFIX}_INCLUDES
 	"${XSRCBASE}/render"
 	"${XSRCBASE}/randr"
 	"${XSRCBASE}/fb"
+	"${XSRCBASE}/glx"
 	"${XSRCBASE}/hw/xfree86/common"
-	"${XSRCBASE}/present"
-	"${XOBJBASE}/include")
+	"${XSRCBASE}/present")
 
 include_directories(${${MODULE_PREFIX}_INCLUDES})
 
-set(${MODULE_PREFIX}_DEFINES "-DHAVE_XORG_CONFIG_H -DXF86PM")
+set(${MODULE_PREFIX}_DEFINES "-DHAVE_XORG_CONFIG_H")
 
 add_definitions(${${MODULE_PREFIX}_DEFINES})
 
@@ -337,9 +312,17 @@ list(APPEND ${MODULE_PREFIX}_LIBS winpr)
 list(APPEND ${MODULE_PREFIX}_LIBS freerds-backend)
 
 set(${MODULE_PREFIX}_STATIC_LIBS
-	composite-static dbe-static dix-static main-static fb-static mi-static os-static randr-static record-static
-	render-static xkb-static Xext-static Xi-static glx-static glxdri-static)
+	composite-static dbe-static dix-static main-static fb-static mi-static
+	os-static randr-static record-static render-static xkb-static Xext-static Xi-static)
 
+if(WITH_LIBGLX)
+	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS glx-static)
+endif()
+	
+if(WITH_LIBGLXDRI)
+	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS glxdri-static)
+endif()
+	
 if(WITH_LIBXFIXES)
 	list(APPEND ${MODULE_PREFIX}_STATIC_LIBS xfixes-static)
 endif()

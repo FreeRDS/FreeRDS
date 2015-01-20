@@ -29,8 +29,6 @@ int rdpMouseProc(DeviceIntPtr pDevice, int onoff);
 Bool rdpCursorOffScreen(ScreenPtr* ppScreen, int* x, int* y);
 void rdpCrossScreen(ScreenPtr pScreen, Bool entering);
 void rdpPointerWarpCursor(DeviceIntPtr pDev, ScreenPtr pScr, int x, int y);
-void rdpPointerEnqueueEvent(DeviceIntPtr pDev, InternalEvent* event);
-void rdpPointerNewEventScreen(DeviceIntPtr pDev, ScreenPtr pScr, Bool fromDIX);
 Bool rdpSpriteRealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs);
 Bool rdpSpriteUnrealizeCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs);
 void rdpSpriteSetCursor(DeviceIntPtr pDev, ScreenPtr pScr, CursorPtr pCurs, int x, int y);

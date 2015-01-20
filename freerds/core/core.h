@@ -63,7 +63,7 @@ struct rds_connection
 
 	BOOL codecMode;
 	int bytesPerPixel;
-	rdsBitmapEncoder* encoder;
+	rdsEncoder* encoder;
 
 	UINT32 frameId;
 	wListDictionary* FrameList;
@@ -138,10 +138,6 @@ FREERDP_API int freerds_orders_text(rdsConnection* connection, RDS_MSG_GLYPH_IND
 
 FREERDP_API int freerds_orders_send_palette(rdsConnection* connection, int* palette, int cache_id);
 
-FREERDP_API int freerds_orders_send_raw_bitmap(rdsConnection* connection,
-		int width, int height, int bpp, char* data,
-		int cache_id, int cache_idx);
-
 FREERDP_API int freerds_orders_send_bitmap(rdsConnection* connection,
 		int width, int height, int bpp, char* data,
 		int cache_id, int cache_idx);
@@ -149,15 +145,6 @@ FREERDP_API int freerds_orders_send_bitmap(rdsConnection* connection,
 FREERDP_API int freerds_orders_send_font(rdsConnection* connection, RDS_MSG_CACHE_GLYPH* msg);
 
 FREERDP_API int freerds_reset(rdsConnection* connection, RDS_MSG_RESET* msg);
-
-FREERDP_API int freerds_orders_send_raw_bitmap2(rdsConnection* connection,
-		int width, int height, int bpp, char* data, int cache_id, int cache_idx);
-
-FREERDP_API int freerds_orders_send_bitmap2(rdsConnection* connection,
-		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints);
-
-FREERDP_API int freerds_orders_send_bitmap3(rdsConnection* connection,
-		int width, int height, int bpp, char* data, int cache_id, int cache_idx, int hints);
 
 FREERDP_API int freerds_orders_send_brush(rdsConnection* connection, int width, int height,
 		int bpp, int type, int size, char* data, int cache_id);

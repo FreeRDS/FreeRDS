@@ -36,6 +36,8 @@ struct _RDS_MODULE_COMMON
 	HANDLE userToken;
 	char* envBlock;
 	char* baseConfigPath;
+	int desktopWidth;
+	int desktopHeight;
 };
 typedef struct _RDS_MODULE_COMMON RDS_MODULE_COMMON;
 

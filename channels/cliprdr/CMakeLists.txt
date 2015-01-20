@@ -19,6 +19,8 @@ project(freerds-cliprdr-plugin CXX)
 set(MODULE_PREFIX "FREERDS_CLIPRDR_PLUGIN")
 set(MODULE_NAME "freerds-cliprdr-plugin")
 
+include_directories(${X11_INCLUDE_DIRS})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -29,6 +31,20 @@ set(${MODULE_PREFIX}_SRCS
 add_library(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
 
 set(${MODULE_PREFIX}_LIBS cliprdr-server winpr)
+
+list(APPEND ${MODULE_PREFIX}_LIBS ${X11_LIBRARIES})
+
+set(XFIXES_FEATURE_TYPE "RECOMMENDED")
+set(XFIXES_FEATURE_PURPOSE "X11 xfixes extension")
+set(XFIXES_FEATURE_DESCRIPTION "Useful additions to the X11 core protocol")
+
+find_feature(Xfixes ${XFIXES_FEATURE_TYPE} ${XFIXES_FEATURE_PURPOSE} ${XFIXES_FEATURE_DESCRIPTION})
+
+if(WITH_XFIXES)
+	add_definitions(-DWITH_XFIXES)
+	include_directories(${XFIXES_INCLUDE_DIRS})
+	list(APPEND ${MODULE_PREFIX}_LIBS ${XFIXES_LIBRARIES})
+endif()
 
 target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 
