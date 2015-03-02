@@ -1743,7 +1743,7 @@ done:
  * Drive Read File Complete
  **************************************/
 
-void rdpdr_fuse_on_drive_read_file_complete(RdpdrServerContext *context, void *callbackData, UINT32 IoStatus, const char *buf, size_t length)
+void rdpdr_fuse_on_drive_read_file_complete(RdpdrServerContext *context, void *callbackData, UINT32 IoStatus, const char *buf, UINT32 length)
 {
     RDPDR_FUSE_INFO   *fip;
 
@@ -1754,7 +1754,7 @@ void rdpdr_fuse_on_drive_read_file_complete(RdpdrServerContext *context, void *c
         return;
     }
 
-    fuse_reply_buf(fip->req, buf, length);
+    fuse_reply_buf(fip->req, buf, (size_t) length);
     free(fip);
 }
 
@@ -1762,7 +1762,7 @@ void rdpdr_fuse_on_drive_read_file_complete(RdpdrServerContext *context, void *c
  * Drive Write File Complete
  **************************************/
 
-void rdpdr_fuse_on_drive_write_file_complete(RdpdrServerContext *context, void *callbackData, UINT32 IoStatus, size_t length)
+void rdpdr_fuse_on_drive_write_file_complete(RdpdrServerContext *context, void *callbackData, UINT32 IoStatus, UINT32 length)
 {
     RDPDR_INODE     *rinode;
     RDPDR_FUSE_INFO *fip;
@@ -1777,7 +1777,7 @@ void rdpdr_fuse_on_drive_write_file_complete(RdpdrServerContext *context, void *
     WLog_Print(g_logger, WLOG_DEBUG, "+++ RDPDR_FUSE_INFO=%p, RDPDR_FUSE_INFO->fi=%p RDPDR_FUSE_INFO->fi->fh=%p",
               fip, fip->fi, fip->fi->fh);
 
-    fuse_reply_write(fip->req, length);
+    fuse_reply_write(fip->req, (size_t) length);
 
     /* update file size */
     if ((rinode = g_rdpdr_fs.inode_table[fip->inode]) != NULL)
