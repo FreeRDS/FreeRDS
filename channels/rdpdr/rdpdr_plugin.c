@@ -17,7 +17,8 @@
  * limitations under the License.
  */
 
-#include "channel_plugin.h"
+#include <freerds/channel_plugin.h>
+
 #include "rdpdr_plugin.h"
 #include "rdpdr_fuse.h"
 

@@ -26,7 +26,8 @@
 #include <winpr/wtsapi.h>
 #include <winpr/wtypes.h>
 
-#include "channel_plugin.h"
+#include <freerds/channel_plugin.h>"
+
 #include "channel_utils.h"
 
 static const char *g_standardPlugins[] =

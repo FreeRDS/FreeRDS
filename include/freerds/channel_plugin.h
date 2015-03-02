@@ -31,7 +31,7 @@ struct vcplugin_t
 	ULONG sessionId;
 	ULONG x11DisplayNum;
 
-	char *name;
+	const char *name;
 	void *context;
 
 	BOOL (*OnPluginInitialize)(VCPlugin *);

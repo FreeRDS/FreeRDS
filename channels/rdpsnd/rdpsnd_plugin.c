@@ -24,9 +24,9 @@
 
 #include <freerdp/server/rdpsnd.h>
 
+#include <freerds/channel_plugin.h>
 #include <freerds/rpc.h>
 
-#include "channel_plugin.h"
 #include "rdpsnd_plugin_msgs.h"
 
 typedef struct

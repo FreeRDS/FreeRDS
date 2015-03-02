@@ -39,7 +39,7 @@
 
 #include <freerdp/server/cliprdr.h>
 
-#include "channel_plugin.h"
+#include <freerds/channel_plugin.h>
 
 struct _CLIPRDR_PLUGIN_CONTEXT
 {
