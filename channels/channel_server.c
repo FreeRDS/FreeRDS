@@ -151,12 +151,20 @@ static void load_vc_plugins()
 	{
 		do
 		{
+			char *fileExt;
 			VCPlugin* pVCPlugin;
 
 			if (strcmp(win32FindData.cFileName, ".") == 0) continue;
 			if (strcmp(win32FindData.cFileName, "..") == 0) continue;
 
 			sprintf(filePath, "%s/%s", pluginsDir, win32FindData.cFileName);
+
+			fileExt = strstr(filePath, ".so");
+			if (fileExt && (strlen(fileExt) == 3))
+			{
+				*fileExt = '\0';
+			}
+
 			pVCPlugin = load_vc_plugin(filePath);
 
 			if (pVCPlugin)
