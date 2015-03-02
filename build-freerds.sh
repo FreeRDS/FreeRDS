@@ -179,7 +179,8 @@ case $LINUX_DISTRO_NAME in
     libpciaccess-devel openssl-devel gettext file pam-devel libjpeg-devel pixman-devel \
     libX11-devel libXfixes-devel libXfont-devel xorg-x11-proto-devel xorg-x11-xtrans-devel \
     flex bison libxslt perl-libxml-perl xorg-x11-font-utils xmlto-tex docbook-utils-pdf \
-    boost-devel qt4-devel fuse-devel
+    boost-devel qt4-devel pulseaudio-devel libtool-ltdl-devel libsndfile-devel speex-devel \
+    fuse-devel
     ;;
 esac
 
