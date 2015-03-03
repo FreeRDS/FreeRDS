@@ -304,6 +304,9 @@ static void rdpsnd_plugin_on_session_create(VCPlugin *plugin)
 	if (!context) return;
 
 	WLog_Print(context->log, WLOG_DEBUG, "on_session_create");
+
+	/* Load the pulseaudio sink for FreeRDS. */
+	system("pactl load-module module-freerds-sink");
 }
 
 static void rdpsnd_plugin_on_session_delete(VCPlugin *plugin)
