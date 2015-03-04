@@ -38,6 +38,7 @@
 
 #include <winpr/pipe.h>
 #include <winpr/path.h>
+#include <winpr/shell.h>
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/wlog.h>
@@ -218,8 +219,11 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	char* filename;
 	char* pipeName;
 	rdsModuleX11* x11;
-	char lpCommandLine[256];
+	char commandLine[256];
+	char currentDir[256];
+	char* lpCurrentDir;
 	char startupname[256];
+	DWORD cchSize;
 
 	x11 = (rdsModuleX11*) module;
 	x11->monitorStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -244,25 +248,34 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(envstr, sizeof(envstr), ":%d", (int) (x11->displayNum));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "DISPLAY", envstr);
 
-	sprintf_s(lpCommandLine, sizeof(lpCommandLine), "%s :%d -geometry %dx%d -depth %d -dpi 96",
+	sprintf_s(commandLine, sizeof(commandLine), "%s :%d -geometry %dx%d -depth %d -dpi 96",
 			"Xrds", (int) (x11->displayNum), module->desktopWidth, module->desktopHeight, 24);
+
+	lpCurrentDir = NULL;
+	cchSize = sizeof(currentDir);
+	ZeroMemory(currentDir, sizeof(currentDir));
+	if (GetUserProfileDirectoryA(x11->commonModule.userToken, currentDir, &cchSize))
+	{
+		WLog_Print(gModuleLog, WLOG_DEBUG, "HOME=%s", currentDir);
+		lpCurrentDir = currentDir;
+	}
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
-	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, lpCommandLine,
-			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
+	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, commandLine,
+			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, lpCurrentDir,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
 	if (!status)
 	{
 		WLog_Print(gModuleLog, WLOG_ERROR , "s %d, problem starting Xrds (status %d - cmd %s)",
-		SessionId, status, lpCommandLine);
+		SessionId, status, commandLine);
 		free(pipeName);
 		return NULL;
 	}
 
 	WLog_Print(gModuleLog, WLOG_DEBUG, "s %d, Xrds Process started: %d (pid %d - cmd %s)",
-			SessionId, status, x11->X11ProcessInformation.dwProcessId, lpCommandLine);
+			SessionId, status, x11->X11ProcessInformation.dwProcessId, commandLine);
 
 	if (!WaitNamedPipeA(pipeName, 5 * 1000))
 	{
@@ -299,7 +312,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	strcpy(startupname, "freerds-channels");
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, startupname,
-		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
+		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, lpCurrentDir,
 		&(x11->CSStartupInfo), &(x11->CSProcessInformation));
 
 	if (!status)
@@ -326,7 +339,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	}
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, startupname,
-		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
+		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, lpCurrentDir,
 		&(x11->WMStartupInfo), &(x11->WMProcessInformation));
 
 	if (!status)
