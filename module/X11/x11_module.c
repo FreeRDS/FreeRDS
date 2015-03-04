@@ -263,7 +263,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, commandLine,
-			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, lpCurrentDir,
+			NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 			&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
 
 	if (!status)
@@ -312,7 +312,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	strcpy(startupname, "freerds-channels");
 
 	status = CreateProcessAsUserA(x11->commonModule.userToken, NULL, startupname,
-		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, lpCurrentDir,
+		NULL, NULL, FALSE, 0, x11->commonModule.envBlock, NULL,
 		&(x11->CSStartupInfo), &(x11->CSProcessInformation));
 
 	if (!status)
