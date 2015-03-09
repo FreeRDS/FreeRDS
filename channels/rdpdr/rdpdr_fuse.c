@@ -87,6 +87,7 @@ int rdpdr_fuse_add_clip_dir_item(char *filename, int flags, int size, int lindex
 #include <pthread.h>
 #include <inttypes.h>
 #include <sched.h>
+#include <grp.h>
 
 #include <winpr/collections.h>
 #include <winpr/wlog.h>
@@ -344,8 +345,56 @@ static void rdpdr_fuse_delete_stale_entries(int pinode);
 int rdpdr_fuse_init(RdpdrPluginContext *rdpdrPluginContext)
 {
     struct stat statbuf;
+    struct group *fuse_group;
+    int ngroups;
+    int found;
 
     struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+
+    /* Verify the user is a member of the FUSE group. */
+    fuse_group = getgrnam("fuse");
+    if (!fuse_group)
+    {
+        WLog_Print(rdpdrPluginContext->log, WLOG_DEBUG,
+            "FUSE group is not defined in system");
+        return -1;
+    }
+
+    found = 0;
+
+    ngroups = getgroups(0, NULL);
+    if (ngroups > 0)
+    {
+        gid_t *groups;
+        int i;
+
+        groups = (gid_t *) malloc(ngroups * sizeof(gid_t));
+        if (!groups)
+        {
+            WLog_Print(rdpdrPluginContext->log, WLOG_DEBUG, "memory allocation error");
+            return -1;
+        }
+
+        getgroups(ngroups, groups);
+
+        for (i = 0; i < ngroups; i++)
+        {
+            if (groups[i] == fuse_group->gr_gid)
+            {
+                found = 1;
+                break;
+            }
+        }
+
+        free(groups);
+    }
+
+    if (!found)
+    {
+        WLog_Print(rdpdrPluginContext->log, WLOG_DEBUG,
+            "The user is not a member of the FUSE group");
+        return -1;
+    }
 
     g_rdpdrPluginContext = rdpdrPluginContext;
 	g_rdpdrServerContext = rdpdrPluginContext->rdpdrServer;
