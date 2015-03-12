@@ -135,6 +135,16 @@ void monitoring_thread(void* arg)
 		}
 	}
 
+	if (x11->CSProcessInformation.hProcess)
+	{
+		kill(x11->CSProcessInformation.dwProcessId, SIGTERM);
+		if (waitpid(x11->CSProcessInformation.dwProcessId, &status, 0) != 0)
+		{
+			ret = clean_up_process(&(x11->CSProcessInformation));
+			WLog_Print(gModuleLog, WLOG_DEBUG, "s %d: CS process exited with %d (monitoring thread)", x11->commonModule.sessionId, ret);
+		}
+	}
+
 	g_Status.shutdown(x11->commonModule.sessionId);
 	return;
 }

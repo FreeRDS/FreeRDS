@@ -26,7 +26,7 @@
 #include <winpr/wtsapi.h>
 #include <winpr/wtypes.h>
 
-#include <freerds/channel_plugin.h>"
+#include <freerds/channel_plugin.h>
 
 #include "channel_utils.h"
 
@@ -337,6 +337,8 @@ void shutdown(int signal)
 
 	fire_session_event(WTS_EVENT_LOGOFF);
 	fire_session_event(WTS_EVENT_DELETE);
+
+	exit(0);
 }
 
 int main(int argc, char **argv)
