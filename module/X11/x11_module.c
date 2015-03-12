@@ -212,6 +212,14 @@ unsigned int detect_free_display()
 
 char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 {
+	static const char* envNames[] = {
+		"WLOG_APPENDER",
+		"WLOG_FILTER",
+		"WLOG_LEVEL",
+		"WLOG_FILEAPPENDER_OUTPUT_FILE_PATH",
+		"WLOG_FILEAPPENDER_OUTPUT_FILE_NAME"
+	};
+
 	BOOL status = TRUE;
 	DWORD SessionId;
 	char envstr[256];
@@ -224,6 +232,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	char* lpCurrentDir;
 	char startupname[256];
 	DWORD cchSize;
+	int i;
 
 	x11 = (rdsModuleX11*) module;
 	x11->monitorStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -251,6 +260,7 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	sprintf_s(commandLine, sizeof(commandLine), "%s :%d -geometry %dx%d -depth %d -dpi 96",
 			"Xrds", (int) (x11->displayNum), module->desktopWidth, module->desktopHeight, 24);
 
+	/* Get the user's home directory. */
 	lpCurrentDir = NULL;
 	cchSize = sizeof(currentDir);
 	ZeroMemory(currentDir, sizeof(currentDir));
@@ -258,6 +268,19 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 	{
 		WLog_Print(gModuleLog, WLOG_DEBUG, "HOME=%s", currentDir);
 		lpCurrentDir = currentDir;
+	}
+
+	/* Propagate environment variables. */
+	for (i = 0; i < (sizeof(envNames) / sizeof(envNames[0])); i++)
+	{
+		const char* envname = envNames[i];
+
+		envstrp = getenv(envname);
+		if (envstrp)
+		{
+			WLog_Print(gModuleLog, WLOG_DEBUG, "%s=%s", envname, envstrp);
+			SetEnvironmentVariableEBA(&x11->commonModule.envBlock, envname, envstrp);
+		}
 	}
 
 	x11_rds_module_reset_process_informations(&(x11->X11StartupInfo), &(x11->X11ProcessInformation));
@@ -289,24 +312,6 @@ char* x11_rds_module_start(RDS_MODULE_COMMON* module)
 
 	sprintf_s(envstr, sizeof(envstr), "%d", (int) (x11->commonModule.sessionId));
 	SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "FREERDS_SID", envstr);
-
-	envstrp = getenv("WLOG_APPENDER");
-	if (envstrp)
-	{
-		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "WLOG_APPENDER", envstrp);
-	}
-
-	envstrp = getenv("WLOG_FILTER");
-	if (envstrp)
-	{
-		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "WLOG_FILTER", envstrp);
-	}
-
-	envstrp = getenv("WLOG_LEVEL");
-	if (envstrp)
-	{
-		SetEnvironmentVariableEBA(&x11->commonModule.envBlock, "WLOG_LEVEL", envstrp);
-	}
 
 	/* Start the FreeRDS channel server. */
 	strcpy(startupname, "freerds-channels");
