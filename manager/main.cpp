@@ -31,7 +31,10 @@
 #include <winpr/wtypes.h>
 #include <winpr/synch.h>
 #include <winpr/cmdline.h>
+#include <winpr/environment.h>
+#include <winpr/library.h>
 #include <winpr/path.h>
+#include <winpr/wlog.h>
 
 #define FREERDS_PID_FILE	"freerds-manager.pid"
 
@@ -89,6 +92,11 @@ int freerds_daemonize_process(const char* pid_file)
 	int pid;
 	FILE* fd;
 	char text[32];
+	char logFilePath[512];
+	char* logFileName;
+	char* delimiter;
+	wLog* wLog;
+	wLogFileAppender* wLogAppender;
 
 	if (!PathFileExistsA(FREERDS_VAR_PATH))
 		CreateDirectoryA(FREERDS_VAR_PATH, NULL);
@@ -147,6 +155,26 @@ int freerds_daemonize_process(const char* pid_file)
 	open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 	open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 	open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+	/* Set up logging. */
+	GetModuleFileName(NULL, logFilePath, sizeof(logFilePath));
+	strcat(logFilePath, ".log");
+
+	delimiter = strrchr(logFilePath, '/');
+	logFileName = delimiter + 1;
+	*delimiter = '\0';
+
+	SetEnvironmentVariable("WLOG_APPENDER", "FILE");
+	SetEnvironmentVariable("WLOG_FILEAPPENDER_OUTPUT_FILE_PATH", logFilePath);
+	SetEnvironmentVariable("WLOG_FILEAPPENDER_OUTPUT_FILE_NAME", logFileName);
+
+	wLog = WLog_GetRoot();
+	WLog_SetLogAppenderType(wLog, WLOG_APPENDER_FILE);
+	wLogAppender = (wLogFileAppender*) WLog_GetLogAppender(wLog);
+	WLog_FileAppender_SetOutputFilePath(wLog, wLogAppender, logFilePath);
+	WLog_FileAppender_SetOutputFileName(wLog, wLogAppender, logFileName);
+
+	WLog_DBG("main", "started");
 
 	/* end of daemonizing code */
 

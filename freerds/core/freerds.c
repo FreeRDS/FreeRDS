@@ -42,8 +42,10 @@
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/cmdline.h>
+#include <winpr/environment.h>
 #include <winpr/library.h>
 #include <winpr/wtsapi.h>
+#include <winpr/wlog.h>
 
 #include "rpc.h"
 
@@ -248,6 +250,10 @@ int main(int argc, char** argv)
 
 	if (!no_daemon)
 	{
+		char logFilePath[512];
+		char* logFileName;
+		char* delimiter;
+
 		/* start of daemonizing code */
 		pid = fork();
 
@@ -288,6 +294,20 @@ int main(int argc, char** argv)
 		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		open("/dev/null", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+		
+		GetModuleFileName(NULL, logFilePath, sizeof(logFilePath));
+		strcat(logFilePath, ".log");
+
+		delimiter = strrchr(logFilePath, '/');
+		logFileName = delimiter + 1;
+		*delimiter = '\0';
+
+		SetEnvironmentVariable("WLOG_APPENDER", "FILE");
+		SetEnvironmentVariable("WLOG_FILEAPPENDER_OUTPUT_FILE_PATH", logFilePath);
+		SetEnvironmentVariable("WLOG_FILEAPPENDER_OUTPUT_FILE_NAME", logFileName);
+
+		WLog_Init();
+
 		/* end of daemonizing code */
 	}
 
