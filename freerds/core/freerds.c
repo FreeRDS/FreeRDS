@@ -80,7 +80,7 @@ char* freerds_get_home_path()
 	return freerds_home_path;
 }
 
-COMMAND_LINE_ARGUMENT_A freerds_args[] =
+COMMAND_LINE_ARGUMENT_A freerds_server_args[] =
 {
 	{ "kill", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, NULL, "kill daemon" },
 	{ "no-daemon", COMMAND_LINE_VALUE_FLAG, "", NULL, NULL, -1, "nodaemon", "no daemon" },
@@ -147,9 +147,9 @@ int main(int argc, char** argv)
 	flags |= COMMAND_LINE_SIGIL_DASH | COMMAND_LINE_SIGIL_DOUBLE_DASH;
 
 	status = CommandLineParseArgumentsA(argc, (const char**) argv,
-			freerds_args, flags, NULL, NULL, NULL);
+			freerds_server_args, flags, NULL, NULL, NULL);
 
-	arg = freerds_args;
+	arg = freerds_server_args;
 
 	do
 	{
@@ -171,12 +171,12 @@ int main(int argc, char** argv)
 	}
 	while ((arg = CommandLineFindNextArgumentA(arg)) != NULL);
 
-	sprintf_s(pid_file, 255, "%s/freerds.pid", FREERDS_PID_PATH);
+	sprintf_s(pid_file, 255, "%s/freerds-server.pid", FREERDS_PID_PATH);
 
 #ifndef _WIN32
 	if (kill_process)
 	{
-		printf("stopping FreeRDS\n");
+		printf("stopping FreeRDS server\n");
 
 		fd = NULL;
 
@@ -187,7 +187,7 @@ int main(int argc, char** argv)
 
 		if (!fd)
 		{
-			printf("problem opening freerds.pid [%s]\n", pid_file);
+			printf("problem opening pid file [%s]\n", pid_file);
 			printf("maybe its not running\n");
 		}
 		else
@@ -211,8 +211,8 @@ int main(int argc, char** argv)
 
 	if (PathFileExistsA(pid_file))
 	{
-		printf("It looks like FreeRDS is already running,\n");
-		printf("if not delete the freerds.pid file and try again\n");
+		printf("It looks like FreeRDS server is already running,\n");
+		printf("if not delete the freerds-server.pid file and try again\n");
 		return 0;
 	}
 
@@ -277,8 +277,8 @@ int main(int argc, char** argv)
 
 		if (!fd)
 		{
-			printf("trying to write process id to freerds.pid\n");
-			printf("problem opening freerds.pid\n");
+			printf("trying to write process id to freerds-server.pid\n");
+			printf("problem opening freerds-server.pid\n");
 		}
 		else
 		{
