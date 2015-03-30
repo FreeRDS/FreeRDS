@@ -118,11 +118,11 @@ FAIL:
 
 static void load_vc_plugins()
 {
-	static const char *pluginsDir = "plugins";
-
 	int i;
+	char *delimiter;
 	HANDLE hFindFile;
 	char filePath[MAX_PATH];
+	char pluginsDir[MAX_PATH];
 	WIN32_FIND_DATA win32FindData;
 
 	if (g_pluginList) return;
@@ -144,6 +144,14 @@ static void load_vc_plugins()
 	}
 
 	/* Load third party plugins. */
+	GetModuleFileName(NULL, pluginsDir, sizeof(pluginsDir));
+	if ((delimiter = strrchr(pluginsDir, '/')) != NULL)
+	{
+		sprintf(delimiter + 1, "plugins");
+	}
+
+	WLog_Print(g_logger, WLOG_DEBUG, "pluginsDir=%s", pluginsDir);
+
 	sprintf(filePath, "%s/*", pluginsDir);
 	hFindFile = FindFirstFile(filePath, &win32FindData);
 
