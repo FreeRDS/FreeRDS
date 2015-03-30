@@ -168,9 +168,16 @@ static void rdpdr_plugin_on_session_logon(VCPlugin *plugin)
 		//rdpdrServer->supportsPrinters = TRUE;
 		//rdpdrServer->supportsSmartcards = TRUE;
 
-		rdpdr_fuse_init(context);
-
-		context->hThread = CreateThread(NULL, 0, rdpdr_plugin_fuse_thread, context, 0, &context->dwThreadId);
+		if (!rdpdr_fuse_init(context))
+		{
+			context->hThread = CreateThread(
+				NULL, 0, rdpdr_plugin_fuse_thread,
+				context, 0, &context->dwThreadId);
+		}
+		else
+		{
+			rdpdrServer->supportsDrives = FALSE;
+		}
 
 		if (rdpdrServer->Start(rdpdrServer) != 0)
 		{
