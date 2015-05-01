@@ -29,6 +29,7 @@
 #include "input.h"
 #include "inpututils.h"
 
+#include <winpr/crt.h>
 #include <winpr/input.h>
 
 #include "rdpInput.h"
@@ -218,6 +219,33 @@ static KeySym g_kbdMap[] =
 	NoSymbol,        NoSymbol
 };
 
+#if 0
+static void WriteLog(const char* format, ...)
+{
+	char filename[MAX_PATH];
+	va_list argList;
+	FILE *fp;
+
+	sprintf(filename, "/tmp/Xrds-%d", getpid());
+	fp = fopen(filename, "a");
+	if (fp)
+	{
+		char timestamp[30];
+		time_t gmtTime = time(NULL);
+		struct tm *tm = localtime(&gmtTime);
+		strftime(timestamp, sizeof(timestamp), "%d-%b-%Y %H:%M:%D", tm);
+		va_start(argList, format);
+		fprintf(fp, "%s - ", timestamp);
+		vfprintf(fp, format, argList);
+		fprintf(fp, "\n");
+		va_end(argList);
+		fclose(fp);
+	}
+}
+#else
+#define WriteLog(format,...)
+#endif
+
 void KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8 *pModMap)
 {
 	int i;
@@ -282,10 +310,79 @@ void rdpChangeKeyboardControl(DeviceIntPtr pDev, KeybdCtrl *ctrl)
 
 }
 
+int KbdGetProperty(const char* propertyName, const char* defaultValue, char* buffer, int size)
+{
+	FILE* file;
+	char line[512];
+	int found;
+
+	file = fopen("/etc/sysconfig/keyboard", "r");
+	if (!file)
+		return 0;
+
+	found = 0;
+
+	memset(buffer, 0, size);
+
+	while (fgets(line, sizeof(line), file))
+	{
+		char* pNewLine;
+		char* pEqualSign;
+		char* pDoubleQuote;
+		char* pValue;
+
+		pNewLine = strchr(line, '\n');
+		if (pNewLine)
+		{
+			*pNewLine ='\0';
+		}
+
+		pEqualSign = strchr(line, '=');
+		if (pEqualSign)
+		{
+			*pEqualSign = '\0';
+
+			if (_stricmp(line, propertyName) == 0)
+			{
+				pValue = pEqualSign + 1;
+				if (*pValue == '\"')
+				{
+					pValue++;
+
+					pDoubleQuote = strchr(pValue, '\"');
+					if (pDoubleQuote)
+					{
+						*pDoubleQuote = '\0';
+					}
+				}
+
+				strncpy(buffer, pValue, size);
+
+				found = 1;
+
+				break;
+			}
+		}
+	}
+
+	fclose(file);
+
+	if (!found)
+	{
+		strncpy(buffer, defaultValue, size);
+	}
+
+	return found;
+}
+
 int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 {
 	KeySymsRec keySyms;
 	CARD8 modMap[MAP_LENGTH];
+	char command[512];
+	char kbdTable[256];
+	char kbdModel[256];
+	char kbdLayout[256];
 	DevicePtr pDev;
 	XkbRMLVOSet set;
 
@@ -295,15 +392,25 @@ int rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 	{
 		case DEVICE_INIT:
 			KbdDeviceInit(pDevice, &keySyms, modMap);
+
+			/* Default the keyboard model and layout to that of the system. */
+			KbdGetProperty("KEYTABLE", "us", kbdTable, sizeof(kbdTable));
+			KbdGetProperty("MODEL", "pc104", kbdModel, sizeof(kbdModel));
+			KbdGetProperty("LAYOUT", "us", kbdLayout, sizeof(kbdLayout));
+
 			ZeroMemory(&set, sizeof(set));
 			set.rules = "evdev";
-			set.model = "pc104";
-			set.layout = "us";
+			set.model = kbdModel;
+			set.layout = kbdLayout;
 			set.variant = "";
 			set.options = "";
 			InitKeyboardDeviceStruct(pDevice, &set, rdpBell,
 					rdpChangeKeyboardControl);
 			//XkbDDXChangeControls(pDevice, 0, 0);
+
+			//sprintf(command, "setxkbmap %s", kbdTable);
+			//system(command);
+
 			break;
 
 		case DEVICE_ON:
@@ -360,6 +467,8 @@ int rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 	DevicePtr pDev;
 	Atom btn_labels[10];
 	Atom axes_labels[3];
+
+	WriteLog("%s: pDevice=%p, onoff=%d", __FUNCTION__, pDevice, onoff);
 
 	pDev = (DevicePtr) pDevice;
 
@@ -812,6 +921,8 @@ void PtrAddMotionEvent(int x, int y)
 	static int sx = 0;
 	static int sy = 0;
 
+	WriteLog("%s: x=%d, y=%d", __FUNCTION__, x, y);
+
 	if ((sx != x) || (sy != y))
 		rdpEnqueueMotion(x, y);
 
@@ -824,6 +935,8 @@ void PtrAddButtonEvent(int buttonMask)
 	int i;
 	int type;
 	int buttons;
+
+	WriteLog("%s: buttonMask=%x", __FUNCTION__, buttonMask);
 
 	for (i = 0; i < 10; i++)
 	{
@@ -855,6 +968,8 @@ void KbdAddScancodeEvent(DWORD flags, DWORD scancode, DWORD keyboardType)
 	DWORD vkcodeWithFlags;
 	DWORD scancodeWithFlags;
 
+	WriteLog("%s: flags=%lx, scancode=%lx, keyboardType=%lx", __FUNCTION__, flags, scancode, keyboardType);
+
 	type = (flags & KBD_FLAGS_RELEASE) ? KeyRelease : KeyPress;
 
 	scancodeWithFlags = scancode;
@@ -878,6 +993,8 @@ void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode)
 	int keycode;
 	DWORD vkcodeWithFlags;
 
+	WriteLog("%s: flags=%lx, vkcode=%lx", __FUNCTION__, flags, vkcode);
+
 	type = (flags & KBD_FLAGS_DOWN) ? KeyPress : KeyRelease;
 
 	vkcodeWithFlags = vkcode | ((flags & KBD_FLAGS_EXTENDED) ? KBDEXT : 0);
@@ -889,7 +1006,49 @@ void KbdAddVirtualKeyCodeEvent(DWORD flags, DWORD vkcode)
 
 void KbdAddUnicodeEvent(DWORD flags, DWORD code)
 {
-	/* TODO: unicode input */
+    KeySymsPtr pKeySyms;
+	KeySym keySym;
+	int keycode;
+	int type;
+    int i, j;
+
+	WriteLog("%s: flags=%lx, code=%lx", __FUNCTION__, flags, code);
+
+	pKeySyms = XkbGetCoreMap(g_keyboard);
+	keySym = code;
+
+	type = (flags & KBD_FLAGS_RELEASE) ? KeyRelease : KeyPress;
+
+	keycode = 0;
+
+	WriteLog("minKeyCode=%d, maxKeyCode=%d, mapWidth=%d",
+		pKeySyms->minKeyCode, pKeySyms->maxKeyCode, pKeySyms->mapWidth);
+
+    for (i = pKeySyms->minKeyCode; i <= pKeySyms->maxKeyCode; i++)
+	{
+		KeySym *pmap = &pKeySyms->map[(i - pKeySyms->minKeyCode) * pKeySyms->mapWidth];
+		for (j = 0; j < pKeySyms->mapWidth; j++)
+		{
+			if (pmap[j] == keySym)
+			{
+				WriteLog("%s: Translated keySym=0x%04x to keyCode=%d", __FUNCTION__, keySym, i);
+				keycode = i;
+			}
+		}
+    }
+
+	if (keycode != 0)
+	{
+		if (type == KeyPress)
+		{
+			rdpEnqueueKey(KeyPress, keycode);
+			rdpEnqueueKey(KeyRelease, keycode);
+		}
+		else
+		{
+			rdpEnqueueKey(type, keycode);
+		}
+	}
 }
 
 static void kbdSyncState(int xkb_flags, int rdp_flags, int keycode)
