@@ -195,7 +195,7 @@ BOOL freerds_peer_activate(freerdp_peer* client)
 	return TRUE;
 }
 
-void freerds_input_synchronize_event(rdpInput* input, UINT32 flags)
+BOOL freerds_input_synchronize_event(rdpInput* input, UINT32 flags)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
 	rdsBackend* backend = (rdsBackend *)connection->connector;
@@ -207,9 +207,11 @@ void freerds_input_synchronize_event(rdpInput* input, UINT32 flags)
 			backend->client->SynchronizeKeyboardEvent(backend, flags);
 		}
 	}
+
+	return TRUE;
 }
 
-void freerds_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
+BOOL freerds_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
 	rdsBackend* backend = (rdsBackend *)connection->connector;
@@ -221,9 +223,11 @@ void freerds_input_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 			backend->client->ScancodeKeyboardEvent(backend, flags, code, connection->settings->KeyboardType);
 		}
 	}
+
+	return TRUE;
 }
 
-void freerds_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
+BOOL freerds_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 code)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
 	rdsBackend* backend = (rdsBackend *)connection->connector;
@@ -235,9 +239,11 @@ void freerds_input_unicode_keyboard_event(rdpInput* input, UINT16 flags, UINT16 
 			backend->client->UnicodeKeyboardEvent(backend, flags, code);
 		}
 	}
+
+	return TRUE;
 }
 
-void freerds_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
+BOOL freerds_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
 	rdsBackend* backend = (rdsBackend *)connection->connector;
@@ -249,9 +255,11 @@ void freerds_input_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y
 			backend->client->MouseEvent(backend, flags, x, y);
 		}
 	}
+
+	return TRUE;
 }
 
-void freerds_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
+BOOL freerds_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	rdsConnection* connection = (rdsConnection*) input->context;
 	rdsBackend* backend = (rdsBackend *)connection->connector;
@@ -263,6 +271,8 @@ void freerds_input_extended_mouse_event(rdpInput* input, UINT16 flags, UINT16 x,
 			backend->client->ExtendedMouseEvent(backend, flags, x, y);
 		}
 	}
+
+	return TRUE;
 }
 
 void freerds_input_register_callbacks(rdpInput* input)
@@ -274,7 +284,7 @@ void freerds_input_register_callbacks(rdpInput* input)
 	input->ExtendedMouseEvent = freerds_input_extended_mouse_event;
 }
 
-void freerds_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
+BOOL freerds_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
 {
 	SURFACE_FRAME* frame;
 	rdsConnection* connection = (rdsConnection*) context;
@@ -286,15 +296,19 @@ void freerds_update_frame_acknowledge(rdpContext* context, UINT32 frameId)
 		ListDictionary_Remove(connection->FrameList, (void*) (size_t) frameId);
 		free(frame);
 	}
+
+	return TRUE;
 }
 
-void freerds_suppress_output(rdpContext* context, BYTE allow, RECTANGLE_16* area)
+BOOL freerds_suppress_output(rdpContext* context, BYTE allow, RECTANGLE_16* area)
 {
 	rdsConnection* connection = (rdsConnection*) context;
 	rdsBackend* backend = (rdsBackend *)connection->connector;
 
 	if (backend && backend->client && backend->client->SuppressOutput)
 		backend->client->SuppressOutput(backend, allow);
+
+	return TRUE;
 }
 
 BOOL freerds_client_process_switch_session(rdsConnection* connection, wMessage* message)

@@ -167,7 +167,7 @@ void freerds_peer_context_free(freerdp_peer* client, rdsConnection* context)
 	ArrayList_Free(context->channels);
 }
 
-void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
+BOOL freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 {
 	rdsConnection* connection;
 
@@ -180,6 +180,8 @@ void freerds_peer_accepted(freerdp_listener* instance, freerdp_peer* client)
 
 	connection->Thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)
 			freerds_connection_main_thread, client, 0, NULL);
+
+	return TRUE;
 }
 
 int freerds_server_main_loop(rdsServer* server)
@@ -210,11 +212,7 @@ int freerds_server_main_loop(rdsServer* server)
 		events[nCount++] = TermEvent;
 		events[nCount++] = ChannelEvent;
 
-		if (listener->GetEventHandles(listener, events, &nCount) < 0)
-		{
-			fprintf(stderr, "Failed to get FreeRDP file descriptor\n");
-			break;
-		}
+		nCount += listener->GetEventHandles(listener, events, 32 - nCount);
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 

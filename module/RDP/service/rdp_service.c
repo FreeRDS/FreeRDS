@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 
 	freerdp_register_addin_provider(freerdp_channels_load_static_addin_entry, 0);
 
-	status = freerdp_client_settings_parse_command_line(settings, argc, argv);
+	status = freerdp_client_settings_parse_command_line(settings, argc, argv, TRUE);
 
 	status = freerdp_client_settings_command_line_status_print(settings, status, argc, argv);
 

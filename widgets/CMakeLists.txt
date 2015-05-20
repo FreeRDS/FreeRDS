@@ -14,4 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(simple_greeter)
+set(QT4_FEATURE_TYPE "RECOMMENDED")
+set(QT4_FEATURE_PURPOSE "Qt4")
+set(QT4_FEATURE_DESCRIPTION "Qt4 library")
+find_feature(Qt4 ${QT4_FEATURE_TYPE} ${QT4_FEATURE_PURPOSE} ${QT4_FEATURE_DESCRIPTION})
+
+if(Qt4_FOUND)
+	add_subdirectory(simple_greeter)
+endif()
+

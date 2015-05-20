@@ -96,6 +96,13 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 	set(BUILD_SHARED_LIBS ON)
 endif()
 
+if(UNIX AND NOT APPLE)
+	set(PULSE_FEATURE_TYPE "RECOMMENDED")
+	set(PULSE_FEATURE_PURPOSE "PulseAudio")
+	set(PULSE_FEATURE_DESCRIPTION "PulseAudio library")
+	find_feature(Pulse ${PULSE_FEATURE_TYPE} ${PULSE_FEATURE_PURPOSE} ${PULSE_FEATURE_DESCRIPTION})
+endif()
+
 add_subdirectory(external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/msgpack/src)
 

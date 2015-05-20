@@ -21,12 +21,11 @@ include(ExternalProject)
 set(EXTERNAL_PROJECTS_BASE "${CMAKE_CURRENT_BINARY_DIR}")
 set_property(DIRECTORY PROPERTY "EP_BASE" ${EXTERNAL_PROJECTS_BASE})
 
-
 #
 # pulseaudio (used by RDPSND)
 #
 
-include(FindPulse)
+if(PULSE_FOUND)
 
 message(STATUS "Using pulseaudio sources version ${PULSE_VERSION_MAJOR}.${PULSE_VERSION_MINOR}")
 
@@ -50,6 +49,7 @@ ExternalProject_Add(${EXTERNAL_PROJECT}
 	BUILD_COMMAND ""
 	INSTALL_COMMAND "")
 
+endif()
 
 #
 # FUSE - Filesystem in User Space (used by RDPDR)

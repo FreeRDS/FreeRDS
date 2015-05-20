@@ -19,8 +19,6 @@ project(module-freerds-sink CXX)
 set(MODULE_PREFIX "MODULE_FREERDS_SINK")
 set(MODULE_NAME "module-freerds-sink")
 
-include(FindPulse)
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 

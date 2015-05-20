@@ -19,6 +19,13 @@ project(freerds-channels CXX)
 set(MODULE_PREFIX "FREERDS_CHANNELS")
 set(MODULE_NAME "freerds-channels")
 
+if(UNIX AND NOT APPLE)
+	set(FUSE_FEATURE_TYPE "RECOMMENDED")
+	set(FUSE_FEATURE_PURPOSE "FUSE")
+	set(FUSE_FEATURE_DESCRIPTION "FUSE library")
+	find_feature(FUSE ${FUSE_FEATURE_TYPE} ${FUSE_FEATURE_PURPOSE} ${FUSE_FEATURE_DESCRIPTION})
+endif()
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -35,5 +42,12 @@ target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
 install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_subdirectory(cliprdr)
-add_subdirectory(rdpdr)
-add_subdirectory(rdpsnd)
+
+if(PULSE_FOUND)
+	add_subdirectory(rdpsnd)
+endif()
+
+if(FUSE_FOUND)
+	add_subdirectory(rdpdr)
+endif()
+

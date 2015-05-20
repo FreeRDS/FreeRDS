@@ -155,7 +155,7 @@ int rds_check_shared_framebuffer(rdsContext* rds)
 	return 0;
 }
 
-void rds_begin_paint(rdpContext* context)
+BOOL rds_begin_paint(rdpContext* context)
 {
 	rdsContext* rds;
 	rdpGdi* gdi = context->gdi;
@@ -166,9 +166,11 @@ void rds_begin_paint(rdpContext* context)
 
 	gdi->primary->hdc->hwnd->invalid->null = 1;
 	gdi->primary->hdc->hwnd->ninvalid = 0;
+
+	return TRUE;
 }
 
-void rds_end_paint(rdpContext* context)
+BOOL rds_end_paint(rdpContext* context)
 {
 	INT32 x, y;
 	UINT32 w, h;
@@ -228,7 +230,7 @@ void rds_end_paint(rdpContext* context)
 		h = settings->DesktopHeight - y;
 
 	if (w * h < 1)
-		return;
+		return TRUE;
 
 	msg.nLeftRect = x;
 	msg.nTopRect = y;
@@ -243,15 +245,17 @@ void rds_end_paint(rdpContext* context)
 
 	msg.type = RDS_SERVER_PAINT_RECT;
 	connector->server->PaintRect(connector, &msg);
+
+	return TRUE;
 }
 
-void rds_surface_frame_marker(rdpContext* context, SURFACE_FRAME_MARKER* surfaceFrameMarker)
+BOOL rds_surface_frame_marker(rdpContext* context, SURFACE_FRAME_MARKER* surfaceFrameMarker)
 {
-	rdsContext* rds;
-
-	rds = (rdsContext*) context;
+	rdsContext* rds = (rdsContext*) context;
 
 	WLog_Print(rds->log, WLOG_DEBUG, "RdsSurfaceFrameMarker");
+
+	return TRUE;
 }
 
 void rds_OnConnectionResultEventHandler(rdpContext* context, ConnectionResultEventArgs* e)
@@ -430,9 +434,9 @@ void* rds_client_thread(void* arg)
  * Client Interface
  */
 
-void rds_freerdp_client_global_init()
+BOOL rds_freerdp_client_global_init()
 {
-
+	return TRUE;
 }
 
 void rds_freerdp_client_global_uninit()
