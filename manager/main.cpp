@@ -28,7 +28,7 @@
 
 #include <session/ApplicationContext.h>
 
-#include <winpr/wtypes.h>
+#include <winpr/debug.h>
 #include <winpr/synch.h>
 #include <winpr/cmdline.h>
 #include <winpr/environment.h>
@@ -56,6 +56,51 @@ COMMAND_LINE_ARGUMENT_A freerds_session_manager_args[] =
 };
 
 #ifndef _WIN32
+
+void freerds_crash_handler(int signum)
+{
+	void* bt;
+	int index;
+	char** symbols;
+	size_t count = 0;
+
+	WLog_FATAL("CRASH", "fatal signal %d received", signum);
+
+	bt = winpr_backtrace(32);
+
+	symbols = winpr_backtrace_symbols(bt, &count);
+
+	for (index = 0; index < count; index++)
+	{
+		WLog_FATAL("CRASH", "%s", symbols[index]);
+	}
+
+	winpr_backtrace_free(bt);
+
+	exit(-1);
+}
+
+void freerds_crash_setup()
+{
+	int index;
+	sigset_t set;
+	int signals[] = { SIGSEGV, SIGILL, SIGBUS, SIGFPE, SIGSTKFLT, SIGSYS, SIGPIPE };
+	int count = sizeof(signals) / sizeof(int);
+
+	sigemptyset(&set);
+
+	for (index = 0; index < count; index++)
+	{
+		sigaddset(&set, signals[index]);
+	}
+
+	sigprocmask(SIG_UNBLOCK, &set, NULL);
+
+	for (index = 0; index < count; index++)
+	{
+		signal(signals[index], freerds_crash_handler);
+	}
+}
 
 int freerds_kill_daemon(const char* pid_file)
 {
@@ -255,6 +300,8 @@ int main(int argc, char** argv)
 		if (status < 0)
 			return 1;
 	}
+
+	freerds_crash_setup();
 
 	g_TermEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 

@@ -39,6 +39,7 @@
 
 #include <winpr/crt.h>
 #include <winpr/path.h>
+#include <winpr/debug.h>
 #include <winpr/synch.h>
 #include <winpr/thread.h>
 #include <winpr/cmdline.h>
@@ -118,9 +119,49 @@ HANDLE g_get_term_event(void)
 	return g_TermEvent;
 }
 
-void pipe_sig(int sig_num)
+void freerds_crash_handler(int signum)
 {
-	printf("FreeRDS SIGPIPE (%d)\n", sig_num);
+	void* bt;
+	int index;
+	char** symbols;
+	size_t count = 0;
+
+	WLog_FATAL("CRASH", "fatal signal %d received", signum);
+
+	bt = winpr_backtrace(32);
+
+	symbols = winpr_backtrace_symbols(bt, &count);
+
+	for (index = 0; index < count; index++)
+	{
+		WLog_FATAL("CRASH", "%s", symbols[index]);
+	}
+
+	winpr_backtrace_free(bt);
+
+	exit(-1);
+}
+
+void freerds_crash_setup()
+{
+	int index;
+	sigset_t set;
+	int signals[] = { SIGSEGV, SIGILL, SIGBUS, SIGFPE, SIGSTKFLT, SIGSYS, SIGPIPE };
+	int count = sizeof(signals) / sizeof(int);
+
+	sigemptyset(&set);
+
+	for (index = 0; index < count; index++)
+	{
+		sigaddset(&set, signals[index]);
+	}
+
+	sigprocmask(SIG_UNBLOCK, &set, NULL);
+
+	for (index = 0; index < count; index++)
+	{
+		signal(signals[index], freerds_crash_handler);
+	}
 }
 
 int main(int argc, char** argv)
@@ -311,11 +352,12 @@ int main(int argc, char** argv)
 		/* end of daemonizing code */
 	}
 
-	/* unbock required signals */
+	/* unblock required signals */
 	sigemptyset(&set);
 	sigaddset(&set, SIGINT);
 	sigaddset(&set, SIGPIPE);
 	sigaddset(&set, SIGTERM);
+	sigaddset(&set, SIGSEGV);
 	sigprocmask(SIG_UNBLOCK, &set, NULL);
 #endif
 
@@ -325,7 +367,7 @@ int main(int argc, char** argv)
 #ifndef _WIN32
 	signal(SIGINT, freerds_shutdown);
 	signal(SIGTERM, freerds_shutdown);
-	signal(SIGPIPE, pipe_sig);
+	freerds_crash_setup();
 #endif
 
 	pid = GetCurrentProcessId();

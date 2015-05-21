@@ -212,7 +212,7 @@ int freerds_server_main_loop(rdsServer* server)
 		events[nCount++] = TermEvent;
 		events[nCount++] = ChannelEvent;
 
-		nCount += listener->GetEventHandles(listener, events, 32 - nCount);
+		nCount += listener->GetEventHandles(listener, &events[nCount], 32 - nCount);
 
 		status = WaitForMultipleObjects(nCount, events, FALSE, INFINITE);
 
